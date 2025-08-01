@@ -61,15 +61,15 @@
 - [x] Add `findMissingTranslations(languages: string[]): string[]` function
 - [x] Add `findUnusedTranslations(languages: string[]): string[]` function
 
-### **Story 4.6: Locale-Aware Generation**
-- [ ] Create `apps/cli/src/localization/generators/locale-generator.ts`
-- [ ] Add `generateLocalizedComponent(options: ComponentOptions): GenerationResult` function
-- [ ] Add `generateLocalizedPage(options: PageOptions): GenerationResult` function
-- [ ] Add `addLocalizationToExisting(projectPath: string, locales: string[]): void` function
-- [ ] Add locale-specific template selection logic
-- [ ] Add translation key injection in generated components
-- [ ] Add locale-specific routing for Next.js applications
-- [ ] Add locale-specific configuration file generation
+### **Story 4.6: Locale-Aware Generation** ✅
+- [x] Create `apps/cli/src/localization/generators/locale-generator.ts`
+- [x] Add `generateLocalizedComponent(options: ComponentOptions): GenerationResult` function
+- [x] Add `generateLocalizedPage(options: PageOptions): GenerationResult` function
+- [x] Add `addLocalizationToExisting(projectPath: string, locales: string[]): void` function
+- [x] Add locale-specific template selection logic
+- [x] Add translation key injection in generated components
+- [x] Add locale-specific routing for Next.js applications
+- [x] Add locale-specific configuration file generation
 
 ---
 
