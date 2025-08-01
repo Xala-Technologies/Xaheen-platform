@@ -20,17 +20,17 @@
 - [x] Add PDF encryption and password protection (placeholder implemented)
 - [x] Add PDF digital signature support (placeholder implemented)
 
-### **Story 7.2: Norwegian Invoice Generation**
-- [ ] Create `apps/cli/src/documents/generators/invoice-generator.ts`
-- [ ] Add Norwegian invoice template with MVA (VAT) calculation
-- [ ] Add `generateNorwegianInvoice(data: InvoiceData): Promise<Buffer>` function
-- [ ] Create `apps/cli/templates/documents/norwegian-invoice.hbs` template
-- [ ] Add Norwegian business information fields (org number, MVA number)
-- [ ] Add Norwegian VAT rates (25%, 15%, 12%, 0%)
-- [ ] Add Norwegian date and currency formatting
-- [ ] Add Norwegian address formatting
-- [ ] Add invoice numbering and reference handling
-- [ ] Add payment terms and bank account information
+### **Story 7.2: Norwegian Invoice Generation** ✅
+- [x] Create `apps/cli/src/documents/generators/invoice-generator.ts`
+- [x] Add Norwegian invoice template with MVA (VAT) calculation
+- [x] Add `generateNorwegianInvoice(data: InvoiceData): Promise<Buffer>` function
+- [x] Create `apps/cli/templates/documents/norwegian-invoice.hbs` template
+- [x] Add Norwegian business information fields (org number, MVA number)
+- [x] Add Norwegian VAT rates (25%, 15%, 12%, 0%)
+- [x] Add Norwegian date and currency formatting
+- [x] Add Norwegian address formatting
+- [x] Add invoice numbering and reference handling
+- [x] Add payment terms and bank account information
 
 ### **Story 7.3: CSV Import/Export System**
 - [ ] Create `apps/cli/src/documents/processors/csv-processor.ts`

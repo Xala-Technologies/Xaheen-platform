@@ -147,21 +147,46 @@ export async function generatePageHandler(
 		// Generate the page
 		log.info(`Generating ${layout} page: ${pageName} at route ${route}`);
 		
-		// Generate page file
-		await generatePageFile(context);
+		// Use the page generator
+		const { generatePage, type PageGenerationOptions } = await import("../../generators/page-generator");
+		
+		const generationOptions: PageGenerationOptions = {
+			name,
+			pageName,
+			fileName,
+			route,
+			routePath,
+			layout,
+			requiresAuth,
+			seo,
+			ui,
+			compliance,
+			locales,
+			primaryLocale: locales[0] || "en",
+			projectRoot,
+			targetDir,
+			framework,
+			hasAppRouter: framework === "next" && await hasNextAppRouter(projectRoot),
+			includeLoading: layout !== "blank" && framework === "next",
+			includeError: layout !== "blank" && framework === "next",
+			includeLayout: layout !== "default" && layout !== "blank",
+			includeMetadata: true,
+		};
 
-		// Generate layout if needed
-		if (layout !== "default" && layout !== "blank") {
-			await generateLayoutFile(context);
+		const result = await generatePage(generationOptions);
+
+		if (!result.success) {
+			consola.error("Failed to generate page:");
+			result.errors?.forEach(error => consola.error(`  - ${error}`));
+			process.exit(1);
 		}
+
+		result.warnings?.forEach(warning => consola.warn(warning));
 
 		// Generate associated components
 		if (components.length > 0) {
 			await generatePageComponents(context);
 		}
-
-		// Update routing configuration if needed
-		await updateRoutingConfiguration(context);
 
 		// Add breadcrumb configuration
 		if (layout === "dashboard" || layout === "auth") {
@@ -171,7 +196,7 @@ export async function generatePageHandler(
 		log.success(`Page ${pageName} generated successfully at ${route}!`);
 		
 		// Display next steps
-		displayNextSteps(context);
+		displayNextSteps(context, result);
 
 	} catch (error) {
 		consola.error("Failed to generate page:", error);
@@ -486,303 +511,6 @@ async function promptComponentGeneration(pageName: string): Promise<string[]> {
 }
 
 /**
- * Generate page file
- */
-async function generatePageFile(context: PageContext): Promise<void> {
-	const { framework, targetDir, fileName, hasAppRouter } = context;
-	
-	let content = "";
-	
-	if (framework === "next") {
-		content = generateNextPageContent(context);
-	} else if (framework === "nuxt") {
-		content = generateNuxtPageContent(context);
-	} else if (framework === "tanstack-start") {
-		content = generateTanStackPageContent(context);
-	}
-
-	const pageFile = getPageFileName(framework, fileName);
-	const pagePath = path.join(targetDir, pageFile);
-	
-	await fs.writeFile(pagePath, content);
-}
-
-/**
- * Generate Next.js page content
- */
-function generateNextPageContent(context: PageContext): string {
-	const { pageName, requiresAuth, layout, seo, ui, compliance, hasAppRouter } = context;
-	
-	if (hasAppRouter) {
-		// App Router page
-		return `import type { Metadata } from 'next';
-${requiresAuth ? "import { requireAuth } from '@/lib/auth';\n" : ""}
-${layout !== "blank" ? `import { ${layout}Layout } from '@/components/layouts/${layout}-layout';\n` : ""}
-
-export const metadata: Metadata = {
-  title: '${seo.title}',
-  description: '${seo.description}',
-  keywords: ${JSON.stringify(seo.keywords)},
-};
-
-${requiresAuth ? "@requireAuth\n" : ""}export default function ${pageName}() {
-  return (
-    ${layout !== "blank" ? `<${layout}Layout>` : "<>"}
-      <div className="${ui === "xala" ? "page page--standard" : "container mx-auto px-4 py-8"}">
-        <h1 className="${ui === "xala" ? "heading heading--xl" : "text-4xl font-bold mb-6"}">
-          ${seo.title}
-        </h1>
-        <p className="${ui === "xala" ? "text text--body" : "text-gray-600"}">
-          ${seo.description}
-        </p>
-        ${compliance === "norwegian" ? '\n        {/* Norwegian compliance features */}' : ""}
-      </div>
-    ${layout !== "blank" ? `</${layout}Layout>` : "</>"}
-  );
-}
-`;
-	} else {
-		// Pages Router page
-		return `import { GetServerSideProps } from 'next';
-import Head from 'next/head';
-${requiresAuth ? "import { withAuth } from '@/lib/auth';\n" : ""}
-${layout !== "blank" ? `import { ${layout}Layout } from '@/components/layouts/${layout}-layout';\n` : ""}
-
-interface ${pageName}Props {
-  // Add props here
-}
-
-${requiresAuth ? "export const getServerSideProps: GetServerSideProps = withAuth(async (context) => {\n  return { props: {} };\n});\n" : ""}
-
-export default function ${pageName}(props: ${pageName}Props) {
-  return (
-    <>
-      <Head>
-        <title>${seo.title}</title>
-        <meta name="description" content="${seo.description}" />
-        <meta name="keywords" content="${seo.keywords.join(", ")}" />
-      </Head>
-      ${layout !== "blank" ? `<${layout}Layout>` : "<>"}
-        <div className="${ui === "xala" ? "page page--standard" : "container mx-auto px-4 py-8"}">
-          <h1 className="${ui === "xala" ? "heading heading--xl" : "text-4xl font-bold mb-6"}">
-            ${seo.title}
-          </h1>
-          <p className="${ui === "xala" ? "text text--body" : "text-gray-600"}">
-            ${seo.description}
-          </p>
-        </div>
-      ${layout !== "blank" ? `</${layout}Layout>` : "</>"}
-    </>
-  );
-}
-`;
-	}
-}
-
-/**
- * Generate Nuxt page content
- */
-function generateNuxtPageContent(context: PageContext): string {
-	const { pageName, requiresAuth, layout, seo, ui, compliance } = context;
-	
-	return `<template>
-  <${layout !== "blank" ? `${layout}-layout` : "div"}>
-    <div :class="${ui === "xala" ? "'page page--standard'" : "'container mx-auto px-4 py-8'"}">
-      <h1 :class="${ui === "xala" ? "'heading heading--xl'" : "'text-4xl font-bold mb-6'"}">
-        {{ title }}
-      </h1>
-      <p :class="${ui === "xala" ? "'text text--body'" : "'text-gray-600'"}">
-        {{ description }}
-      </p>
-      ${compliance === "norwegian" ? '\n      <!-- Norwegian compliance features -->' : ""}
-    </div>
-  </${layout !== "blank" ? `${layout}-layout` : "div"}>
-</template>
-
-<script setup lang="ts">
-${requiresAuth ? "import { requireAuth } from '@/composables/auth';\n" : ""}
-${layout !== "blank" ? `import ${layout}Layout from '@/components/layouts/${layout}-layout.vue';\n` : ""}
-
-${requiresAuth ? "requireAuth();\n" : ""}
-
-const title = '${seo.title}';
-const description = '${seo.description}';
-
-useSeoMeta({
-  title,
-  description,
-  keywords: ${JSON.stringify(seo.keywords)},
-});
-</script>
-
-<style scoped>
-/* Page-specific styles */
-</style>
-`;
-}
-
-/**
- * Generate TanStack Start page content
- */
-function generateTanStackPageContent(context: PageContext): string {
-	const { pageName, requiresAuth, layout, seo, ui } = context;
-	
-	return `import { createFileRoute } from '@tanstack/react-router';
-${requiresAuth ? "import { requireAuth } from '@/lib/auth';\n" : ""}
-${layout !== "blank" ? `import { ${layout}Layout } from '@/components/layouts/${layout}-layout';\n` : ""}
-
-export const Route = createFileRoute('${context.route}')({
-  ${requiresAuth ? "beforeLoad: requireAuth,\n  " : ""}component: ${pageName},
-});
-
-function ${pageName}() {
-  return (
-    ${layout !== "blank" ? `<${layout}Layout>` : "<>"}
-      <div className="${ui === "xala" ? "page page--standard" : "container mx-auto px-4 py-8"}">
-        <h1 className="${ui === "xala" ? "heading heading--xl" : "text-4xl font-bold mb-6"}">
-          ${seo.title}
-        </h1>
-        <p className="${ui === "xala" ? "text text--body" : "text-gray-600"}">
-          ${seo.description}
-        </p>
-      </div>
-    ${layout !== "blank" ? `</${layout}Layout>` : "</>"}
-  );
-}
-`;
-}
-
-/**
- * Generate layout file if needed
- */
-async function generateLayoutFile(context: PageContext): Promise<void> {
-	const { projectRoot, layout, ui, framework } = context;
-	
-	// Determine layout directory
-	const layoutDir = path.join(
-		projectRoot,
-		framework === "nuxt" ? "components" : "src/components",
-		"layouts"
-	);
-	
-	const layoutFileName = `${layout}-layout.${framework === "nuxt" ? "vue" : "tsx"}`;
-	const layoutPath = path.join(layoutDir, layoutFileName);
-	
-	// Check if layout already exists
-	if (await fs.pathExists(layoutPath)) {
-		return;
-	}
-
-	await fs.ensureDir(layoutDir);
-	
-	let content = "";
-	if (framework === "nuxt") {
-		content = generateNuxtLayoutContent(layout, ui);
-	} else {
-		content = generateReactLayoutContent(layout, ui);
-	}
-
-	await fs.writeFile(layoutPath, content);
-}
-
-/**
- * Generate React layout content
- */
-function generateReactLayoutContent(layout: PageLayout, ui: UISystem): string {
-	const className = ui === "xala" ? `layout layout--${layout}` : `min-h-screen bg-gray-50`;
-	
-	return `import React from 'react';
-
-interface ${layout}LayoutProps {
-  children: React.ReactNode;
-}
-
-export const ${layout}Layout = ({ children }: ${layout}LayoutProps): JSX.Element => {
-  return (
-    <div className="${className}">
-      ${layout === "dashboard" ? generateDashboardLayoutContent(ui) : ""}
-      ${layout === "auth" ? generateAuthLayoutContent(ui) : ""}
-      ${layout === "marketing" ? generateMarketingLayoutContent(ui) : ""}
-      <main className="${ui === "xala" ? "layout__main" : "flex-1"}">
-        {children}
-      </main>
-    </div>
-  );
-};
-`;
-}
-
-/**
- * Generate Nuxt layout content
- */
-function generateNuxtLayoutContent(layout: PageLayout, ui: UISystem): string {
-	return `<template>
-  <div :class="${ui === "xala" ? "'layout layout--" + layout + "'" : "'min-h-screen bg-gray-50'"}">
-    ${layout === "dashboard" ? generateDashboardLayoutContentVue(ui) : ""}
-    ${layout === "auth" ? generateAuthLayoutContentVue(ui) : ""}
-    ${layout === "marketing" ? generateMarketingLayoutContentVue(ui) : ""}
-    <main :class="${ui === "xala" ? "'layout__main'" : "'flex-1'"}">
-      <slot />
-    </main>
-  </div>
-</template>
-
-<script setup lang="ts">
-const layout = '${layout}';
-</script>
-
-<style scoped>
-/* Layout-specific styles */
-</style>
-`;
-}
-
-/**
- * Generate dashboard layout content
- */
-function generateDashboardLayoutContent(ui: UISystem): string {
-	return `<aside className="${ui === "xala" ? "layout__sidebar" : "w-64 bg-white shadow-sm"}">
-        {/* Sidebar navigation */}
-      </aside>`;
-}
-
-function generateDashboardLayoutContentVue(ui: UISystem): string {
-	return `<aside :class="${ui === "xala" ? "'layout__sidebar'" : "'w-64 bg-white shadow-sm'"}">
-      <!-- Sidebar navigation -->
-    </aside>`;
-}
-
-/**
- * Generate auth layout content
- */
-function generateAuthLayoutContent(ui: UISystem): string {
-	return `<div className="${ui === "xala" ? "layout__auth-container" : "flex items-center justify-center min-h-screen"}">
-        {/* Auth form container */}
-      </div>`;
-}
-
-function generateAuthLayoutContentVue(ui: UISystem): string {
-	return `<div :class="${ui === "xala" ? "'layout__auth-container'" : "'flex items-center justify-center min-h-screen'"}">
-      <!-- Auth form container -->
-    </div>`;
-}
-
-/**
- * Generate marketing layout content
- */
-function generateMarketingLayoutContent(ui: UISystem): string {
-	return `<header className="${ui === "xala" ? "layout__header" : "bg-white shadow-sm"}">
-        {/* Marketing header */}
-      </header>`;
-}
-
-function generateMarketingLayoutContentVue(ui: UISystem): string {
-	return `<header :class="${ui === "xala" ? "'layout__header'" : "'bg-white shadow-sm'"}">
-      <!-- Marketing header -->
-    </header>`;
-}
-
-/**
  * Generate page components
  */
 async function generatePageComponents(context: PageContext): Promise<void> {
@@ -807,33 +535,6 @@ async function generatePageComponents(context: PageContext): Promise<void> {
 		};
 
 		await generateComponent(componentOptions);
-	}
-}
-
-/**
- * Update routing configuration
- */
-async function updateRoutingConfiguration(context: PageContext): Promise<void> {
-	const { framework, projectRoot, route, requiresAuth } = context;
-	
-	if (framework === "tanstack-start" || framework === "tanstack-router") {
-		// Update route configuration for TanStack Router
-		const routesConfigPath = path.join(projectRoot, "src", "routes.config.ts");
-		
-		if (await fs.pathExists(routesConfigPath)) {
-			let content = await fs.readFile(routesConfigPath, "utf-8");
-			
-			// Add route to configuration
-			const routeConfig = `  {
-    path: '${route}',
-    ${requiresAuth ? "auth: true," : ""}
-  },`;
-			
-			// Insert before the closing bracket
-			content = content.replace(/\](\s*\))/, `${routeConfig}\n]$1`);
-			
-			await fs.writeFile(routesConfigPath, content);
-		}
 	}
 }
 
@@ -864,11 +565,16 @@ async function addBreadcrumbConfiguration(context: PageContext): Promise<void> {
 /**
  * Display next steps
  */
-function displayNextSteps(context: PageContext): void {
+function displayNextSteps(context: PageContext, result: import("../../generators/page-generator").GenerationResult): void {
 	const { pageName, route, framework, components, requiresAuth, layout } = context;
+	
+	const files = result.files.map(f => path.relative(context.projectRoot, f));
 	
 	const steps = [
 		`Page ${pageName} created at route: ${route}`,
+		"",
+		`Generated files:`,
+		...files.map(f => `  - ${f}`),
 		"",
 		"Next steps:",
 		"1. Implement your page logic",
