@@ -75,17 +75,17 @@
 
 ## 🔐 **PHASE 5: AUTHENTICATION SYSTEMS**
 
-### **Story 5.1: Vipps Integration**
-- [ ] Create `apps/cli/src/integrations/auth/vipps.ts`
-- [ ] Add Vipps SDK configuration and initialization
-- [ ] Add `generateVippsAuthComponent(options: AuthOptions): GenerationResult` function
-- [ ] Add `generateVippsAuthService(options: AuthOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/auth/vipps-login.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/vipps-callback.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/vipps-service.ts.hbs` template
-- [ ] Add Vipps environment configuration (test/production)
-- [ ] Add Vipps webhook handling templates
-- [ ] Add Vipps user profile integration
+### **Story 5.1: Vipps Integration** ✅
+- [x] Create `apps/cli/src/integrations/auth/vipps.ts`
+- [x] Add Vipps SDK configuration and initialization
+- [x] Add `generateVippsAuthComponent(options: AuthOptions): GenerationResult` function
+- [x] Add `generateVippsAuthService(options: AuthOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/auth/vipps-login.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/vipps-callback.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/vipps-service.ts.hbs` template
+- [x] Add Vipps environment configuration (test/production)
+- [x] Add Vipps webhook handling templates
+- [x] Add Vipps user profile integration
 
 ### **Story 5.2: BankID Integration**
 - [ ] Create `apps/cli/src/integrations/auth/bankid.ts`

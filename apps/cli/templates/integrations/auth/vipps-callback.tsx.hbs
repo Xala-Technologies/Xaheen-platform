@@ -1,0 +1,395 @@
+import React, { useEffect, useState } from 'react';
+{{#if (eq framework 'nextjs')}}
+import { useRouter } from 'next/router';
+{{else}}
+import { useNavigate } from 'react-router-dom';
+{{/if}}
+{{#if typescript}}
+import type { VippsUserProfile } from './vipps.types';
+{{/if}}
+
+{{#if typescript}}
+interface VippsCallbackProps {
+  onSuccess?: (user: VippsUserProfile) => void;
+  onError?: (error: Error) => void;
+  successRedirectUrl?: string;
+  errorRedirectUrl?: string;
+  className?: string;
+}
+
+interface CallbackState {
+  status: 'loading' | 'success' | 'error';
+  user: VippsUserProfile | null;
+  error: string | null;
+}
+{{/if}}
+
+export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}} = ({
+  onSuccess,
+  onError,
+  successRedirectUrl = '/dashboard',
+  errorRedirectUrl = '/login',
+  className = '',
+}) => {
+  const [state, setState] = useState{{#if typescript}}<CallbackState>{{/if}}({
+    status: 'loading',
+    user: null,
+    error: null,
+  });
+
+  {{#if (eq framework 'nextjs')}}
+  const router = useRouter();
+  {{else}}
+  const navigate = useNavigate();
+  {{/if}}
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        // Extract parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        // Handle OAuth errors
+        if (error) {
+          throw new Error(errorDescription || `OAuth error: ${error}`);
+        }
+
+        // Validate required parameters
+        if (!code) {
+          throw new Error('Authorization code not found in callback URL');
+        }
+
+        if (!state) {
+          throw new Error('State parameter not found in callback URL');
+        }
+
+        // Validate state parameter
+        const storedState = sessionStorage.getItem('vipps_auth_state');
+        if (state !== storedState) {
+          throw new Error('Invalid state parameter - possible CSRF attack');
+        }
+
+        // Get stored redirect URL
+        const storedRedirectUrl = sessionStorage.getItem('vipps_redirect_url');
+        const redirectUri = storedRedirectUrl || window.location.origin + window.location.pathname;
+
+        // Exchange authorization code for access token
+        const tokenResponse = await fetch('/api/auth/vipps/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code,
+            redirectUri,
+            state,
+          }),
+        });
+
+        if (!tokenResponse.ok) {
+          const errorData = await tokenResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || `Token exchange failed: ${tokenResponse.statusText}`);
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // Fetch user profile if available
+        let user{{#if typescript}}: VippsUserProfile{{/if}} = tokenData.user;
+        
+        if (!user && tokenData.access_token) {
+          const profileResponse = await fetch('/api/auth/vipps/profile', {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+            },
+          });
+
+          if (profileResponse.ok) {
+            user = await profileResponse.json();
+          }
+        }
+
+        // Update state with success
+        setState({
+          status: 'success',
+          user,
+          error: null,
+        });
+
+        // Call success callback
+        if (user) {
+          onSuccess?.(user);
+        }
+
+        // Clean up session storage
+        sessionStorage.removeItem('vipps_auth_state');
+        sessionStorage.removeItem('vipps_redirect_url');
+
+        // Store authentication data if needed
+        if (tokenData.access_token) {
+          // You might want to store this in a more secure way
+          sessionStorage.setItem('vipps_access_token', tokenData.access_token);
+          
+          if (tokenData.refresh_token) {
+            sessionStorage.setItem('vipps_refresh_token', tokenData.refresh_token);
+          }
+        }
+
+        // Redirect after a short delay to show success message
+        setTimeout(() => {
+          {{#if (eq framework 'nextjs')}}
+          router.push(successRedirectUrl);
+          {{else}}
+          navigate(successRedirectUrl);
+          {{/if}}
+        }, 2000);
+
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+        
+        console.error('Vipps callback error:', err);
+        
+        setState({
+          status: 'error',
+          user: null,
+          error: errorMessage,
+        });
+
+        // Call error callback
+        onError?.(new Error(errorMessage));
+
+        // Clean up session storage on error
+        sessionStorage.removeItem('vipps_auth_state');
+        sessionStorage.removeItem('vipps_redirect_url');
+
+        // Redirect to error page after delay
+        setTimeout(() => {
+          {{#if (eq framework 'nextjs')}}
+          router.push(errorRedirectUrl);
+          {{else}}
+          navigate(errorRedirectUrl);
+          {{/if}}
+        }, 3000);
+      }
+    };
+
+    // Only run callback handling once
+    handleCallback();
+  }, [onSuccess, onError, successRedirectUrl, errorRedirectUrl{{#if (eq framework 'nextjs')}}, router{{else}}, navigate{{/if}}]);
+
+  const containerStyles = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    padding: '2rem',
+    textAlign: 'center' as const,
+  };
+
+  const iconStyles = {
+    width: '64px',
+    height: '64px',
+    marginBottom: '1rem',
+  };
+
+  const titleStyles = {
+    fontSize: '1.5rem',
+    fontWeight: '600',
+    marginBottom: '0.5rem',
+    color: '#1f2937',
+  };
+
+  const messageStyles = {
+    color: '#6b7280',
+    marginBottom: '1.5rem',
+    maxWidth: '400px',
+    lineHeight: '1.5',
+  };
+
+  const buttonStyles = {
+    backgroundColor: '#ff5b24',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px 24px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    transition: 'background-color 0.2s ease',
+  };
+
+  if (state.status === 'loading') {
+    return (
+      <div className={`vipps-callback-loading ${className}`} style={containerStyles}>
+        <div style={iconStyles}>
+          <LoadingIcon />
+        </div>
+        <h2 style={titleStyles}>Behandler Vipps-autentisering</h2>
+        <p style={messageStyles}>
+          Vi bekrefter din identitet med Vipps. Dette tar vanligvis bare noen sekunder.
+        </p>
+      </div>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className={`vipps-callback-error ${className}`} style={containerStyles}>
+        <div style={iconStyles}>
+          <ErrorIcon />
+        </div>
+        <h2 style={{ ...titleStyles, color: '#dc2626' }}>Autentisering feilet</h2>
+        <p style={messageStyles}>
+          {state.error || 'Det oppstod en feil under autentisering med Vipps.'}
+        </p>
+        <button
+          onClick={() => {
+            {{#if (eq framework 'nextjs')}}
+            router.push(errorRedirectUrl);
+            {{else}}
+            navigate(errorRedirectUrl);
+            {{/if}}
+          }}
+          style={buttonStyles}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#e04e1f';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#ff5b24';
+          }}
+        >
+          Prøv igjen
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`vipps-callback-success ${className}`} style={containerStyles}>
+      <div style={iconStyles}>
+        <SuccessIcon />
+      </div>
+      <h2 style={{ ...titleStyles, color: '#059669' }}>Autentisering vellykket!</h2>
+      <p style={messageStyles}>
+        Du er nå logget inn med Vipps. 
+        {state.user?.name && ` Velkommen, ${state.user.name}!`}
+        <br />
+        Du blir videresendt til dashboard...
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+        <MiniLoadingIcon />
+        <span>Videresender...</span>
+      </div>
+    </div>
+  );
+};
+
+// Icon components
+const LoadingIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="#ff5b24"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 2s linear infinite, dash 1.5s ease-in-out infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 150;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -35;
+        }
+        100% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -124;
+        }
+      }
+    `}</style>
+  </svg>
+);
+
+const SuccessIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#10b981" />
+    <path
+      d="M9 12l2 2 4-4"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ErrorIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#ef4444" />
+    <path
+      d="M15 9l-6 6M9 9l6 6"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const MiniLoadingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 1s linear infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </svg>
+);
+
+// Utility function to parse callback URL parameters
+export const parseVippsCallback = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    code: urlParams.get('code'),
+    state: urlParams.get('state'),
+    error: urlParams.get('error'),
+    errorDescription: urlParams.get('error_description'),
+  };
+};
