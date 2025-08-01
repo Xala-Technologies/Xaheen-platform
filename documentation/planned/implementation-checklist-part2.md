@@ -179,17 +179,17 @@
 - [x] Add Slack OAuth integration
 - [x] Add Slack workspace management
 
-### **Story 6.3: Microsoft Teams Integration**
-- [ ] Create `apps/cli/src/integrations/services/teams.ts`
-- [ ] Add Microsoft Graph API configuration
-- [ ] Add `generateTeamsComponent(options: IntegrationOptions): GenerationResult` function
-- [ ] Add `generateTeamsService(options: IntegrationOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/services/teams-client.ts.hbs` template
-- [ ] Create `apps/cli/templates/integrations/services/teams-webhook.ts.hbs` template
-- [ ] Add Teams bot framework integration
-- [ ] Add Teams notification sending
-- [ ] Add Teams OAuth integration with Azure AD
-- [ ] Add Teams meeting integration
+### **Story 6.3: Microsoft Teams Integration** ✅
+- [x] Create `apps/cli/src/integrations/services/teams.ts`
+- [x] Add Microsoft Graph API configuration
+- [x] Add `generateTeamsComponent(options: IntegrationOptions): GenerationResult` function
+- [x] Add `generateTeamsService(options: IntegrationOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/services/teams-client.ts.hbs` template
+- [x] Create `apps/cli/templates/integrations/services/teams-webhook.ts.hbs` template
+- [x] Add Teams bot framework integration
+- [x] Add Teams notification sending
+- [x] Add Teams OAuth integration with Azure AD
+- [x] Add Teams meeting integration
 
 ### **Story 6.4: Vipps Payment Integration**
 - [ ] Create `apps/cli/src/integrations/services/vipps-payment.ts`

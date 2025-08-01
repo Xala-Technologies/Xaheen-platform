@@ -1,0 +1,568 @@
+{{#if typescript}}
+import type { 
+  Client,
+  PageCollection,
+  User,
+  Team,
+  Channel,
+  ChatMessage,
+  Event,
+  OnlineMeeting
+} from '@microsoft/microsoft-graph-client';
+{{/if}}
+import { Client } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
+import { ClientSecretCredential } from '@azure/identity';
+
+/**
+ * Microsoft Teams Client for {{projectName}}
+ * Provides Graph API integration for Teams operations
+ */
+export class TeamsClient {
+  private graphClient{{#if typescript}}: Client{{/if}};
+  private tenantId{{#if typescript}}: string{{/if}};
+  private clientId{{#if typescript}}: string{{/if}};
+
+  constructor(
+    tenantId{{#if typescript}}: string{{/if}},
+    clientId{{#if typescript}}: string{{/if}},
+    clientSecret{{#if typescript}}: string{{/if}}
+  ) {
+    this.tenantId = tenantId;
+    this.clientId = clientId;
+
+    // Initialize Azure AD authentication
+    const credential = new ClientSecretCredential(
+      tenantId,
+      clientId,
+      clientSecret
+    );
+
+    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+      scopes: [
+        'https://graph.microsoft.com/.default'
+      ]
+    });
+
+    // Initialize Graph client
+    this.graphClient = Client.initWithMiddleware({
+      authProvider
+    });
+  }
+
+  /**
+   * Get all teams in the organization
+   */
+  async getTeams(){{#if typescript}}: Promise<Team[]>{{/if}} {
+    try {
+      const teams = await this.graphClient
+        .api('/groups')
+        .filter("resourceProvisioningOptions/Any(x:x eq 'Team')")
+        .select('id,displayName,description')
+        .get();
+
+      return teams.value || [];
+    } catch (error) {
+      console.error('Failed to get teams:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get channels for a specific team
+   */
+  async getChannels(teamId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<Channel[]>{{/if}} {
+    try {
+      const channels = await this.graphClient
+        .api(`/teams/${teamId}/channels`)
+        .get();
+
+      return channels.value || [];
+    } catch (error) {
+      console.error('Failed to get channels:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send a message to a channel
+   */
+  async sendChannelMessage(
+    teamId{{#if typescript}}: string{{/if}},
+    channelId{{#if typescript}}: string{{/if}},
+    message{{#if typescript}}: string{{/if}},
+    isImportant{{#if typescript}}: boolean{{/if}} = false
+  ){{#if typescript}}: Promise<ChatMessage>{{/if}} {
+    try {
+      const chatMessage = {
+        body: {
+          contentType: 'html',
+          content: message
+        },
+        importance: isImportant ? 'high' : 'normal'
+      };
+
+      const result = await this.graphClient
+        .api(`/teams/${teamId}/channels/${channelId}/messages`)
+        .post(chatMessage);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to send channel message:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send a notification with adaptive card
+   */
+  async sendAdaptiveCard(
+    teamId{{#if typescript}}: string{{/if}},
+    channelId{{#if typescript}}: string{{/if}},
+    card{{#if typescript}}: any{{/if}}
+  ){{#if typescript}}: Promise<ChatMessage>{{/if}} {
+    try {
+      const message = {
+        body: {
+          contentType: 'html',
+          content: '<attachment id="0"></attachment>'
+        },
+        attachments: [
+          {
+            id: '0',
+            contentType: 'application/vnd.microsoft.card.adaptive',
+            content: JSON.stringify(card)
+          }
+        ]
+      };
+
+      const result = await this.graphClient
+        .api(`/teams/${teamId}/channels/${channelId}/messages`)
+        .post(message);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to send adaptive card:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new team
+   */
+  async createTeam(
+    displayName{{#if typescript}}: string{{/if}},
+    description{{#if typescript}}: string{{/if}},
+    visibility{{#if typescript}}: 'private' | 'public'{{/if}} = 'private'
+  ){{#if typescript}}: Promise<Team>{{/if}} {
+    try {
+      const team = {
+        'template@odata.bind': 'https://graph.microsoft.com/v1.0/teamsTemplates(\'standard\')',
+        displayName,
+        description,
+        visibility
+      };
+
+      const result = await this.graphClient
+        .api('/teams')
+        .post(team);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to create team:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a channel in a team
+   */
+  async createChannel(
+    teamId{{#if typescript}}: string{{/if}},
+    displayName{{#if typescript}}: string{{/if}},
+    description{{#if typescript}}: string{{/if}},
+    membershipType{{#if typescript}}: 'standard' | 'private'{{/if}} = 'standard'
+  ){{#if typescript}}: Promise<Channel>{{/if}} {
+    try {
+      const channel = {
+        displayName,
+        description,
+        membershipType
+      };
+
+      const result = await this.graphClient
+        .api(`/teams/${teamId}/channels`)
+        .post(channel);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to create channel:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get team members
+   */
+  async getTeamMembers(teamId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<User[]>{{/if}} {
+    try {
+      const members = await this.graphClient
+        .api(`/teams/${teamId}/members`)
+        .get();
+
+      return members.value || [];
+    } catch (error) {
+      console.error('Failed to get team members:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add member to team
+   */
+  async addTeamMember(
+    teamId{{#if typescript}}: string{{/if}},
+    userEmail{{#if typescript}}: string{{/if}},
+    roles{{#if typescript}}: string[]{{/if}} = []
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      const member = {
+        '@odata.type': '#microsoft.graph.aadUserConversationMember',
+        'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userEmail}')`,
+        roles
+      };
+
+      const result = await this.graphClient
+        .api(`/teams/${teamId}/members`)
+        .post(member);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to add team member:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create an online meeting
+   */
+  async createMeeting(
+    subject{{#if typescript}}: string{{/if}},
+    startDateTime{{#if typescript}}: string{{/if}},
+    endDateTime{{#if typescript}}: string{{/if}},
+    participants{{#if typescript}}: string[]{{/if}} = []
+  ){{#if typescript}}: Promise<OnlineMeeting>{{/if}} {
+    try {
+      const meeting = {
+        subject,
+        startDateTime,
+        endDateTime,
+        participants: {
+          attendees: participants.map(email => ({
+            identity: {
+              user: {
+                id: email
+              }
+            }
+          }))
+        }
+      };
+
+      const result = await this.graphClient
+        .api('/me/onlineMeetings')
+        .post(meeting);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to create meeting:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get calendar events
+   */
+  async getCalendarEvents(
+    startDate{{#if typescript}}: Date{{/if}},
+    endDate{{#if typescript}}: Date{{/if}}
+  ){{#if typescript}}: Promise<Event[]>{{/if}} {
+    try {
+      const events = await this.graphClient
+        .api('/me/events')
+        .filter(`start/dateTime ge '${startDate.toISOString()}' and end/dateTime le '${endDate.toISOString()}'`)
+        .orderby('start/dateTime')
+        .get();
+
+      return events.value || [];
+    } catch (error) {
+      console.error('Failed to get calendar events:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send a chat message to user
+   */
+  async sendChatMessage(
+    userId{{#if typescript}}: string{{/if}},
+    message{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      // First, create or get 1:1 chat
+      const chat = {
+        chatType: 'oneOnOne',
+        members: [
+          {
+            '@odata.type': '#microsoft.graph.aadUserConversationMember',
+            'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
+          }
+        ]
+      };
+
+      const chatResult = await this.graphClient
+        .api('/chats')
+        .post(chat);
+
+      // Send message to the chat
+      const chatMessage = {
+        body: {
+          contentType: 'text',
+          content: message
+        }
+      };
+
+      const messageResult = await this.graphClient
+        .api(`/chats/${chatResult.id}/messages`)
+        .post(chatMessage);
+
+      return messageResult;
+    } catch (error) {
+      console.error('Failed to send chat message:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file to Teams channel
+   */
+  async uploadFile(
+    teamId{{#if typescript}}: string{{/if}},
+    channelId{{#if typescript}}: string{{/if}},
+    fileName{{#if typescript}}: string{{/if}},
+    fileContent{{#if typescript}}: Buffer | string{{/if}}
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      // Get the channel's files folder
+      const driveItem = await this.graphClient
+        .api(`/teams/${teamId}/channels/${channelId}/filesFolder`)
+        .get();
+
+      // Upload file
+      const result = await this.graphClient
+        .api(`/drives/${driveItem.parentReference.driveId}/items/${driveItem.id}:/${fileName}:/content`)
+        .put(fileContent);
+
+      return result;
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user presence
+   */
+  async getUserPresence(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      const presence = await this.graphClient
+        .api(`/users/${userId}/presence`)
+        .get();
+
+      return presence;
+    } catch (error) {
+      console.error('Failed to get user presence:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create deployment notification card
+   */
+  createDeploymentCard(
+    environment{{#if typescript}}: string{{/if}},
+    version{{#if typescript}}: string{{/if}},
+    status{{#if typescript}}: 'started' | 'success' | 'failed'{{/if}},
+    details{{#if typescript}}?: string{{/if}}
+  ){{#if typescript}}: any{{/if}} {
+    const statusConfig = {
+      started: { color: 'Accent', icon: '🚀', text: 'Deployment Started' },
+      success: { color: 'Good', icon: '✅', text: 'Deployment Successful' },
+      failed: { color: 'Attention', icon: '❌', text: 'Deployment Failed' }
+    };
+
+    const config = statusConfig[status];
+
+    return {
+      type: 'AdaptiveCard',
+      $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+      version: '1.3',
+      body: [
+        {
+          type: 'Container',
+          style: config.color,
+          items: [
+            {
+              type: 'ColumnSet',
+              columns: [
+                {
+                  type: 'Column',
+                  width: 'auto',
+                  items: [
+                    {
+                      type: 'TextBlock',
+                      text: config.icon,
+                      size: 'Large'
+                    }
+                  ]
+                },
+                {
+                  type: 'Column',
+                  width: 'stretch',
+                  items: [
+                    {
+                      type: 'TextBlock',
+                      text: config.text,
+                      size: 'Large',
+                      weight: 'Bolder'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'FactSet',
+          facts: [
+            {
+              title: 'Environment',
+              value: environment
+            },
+            {
+              title: 'Version',
+              value: version
+            },
+            {
+              title: 'Time',
+              value: new Date().toLocaleString()
+            }
+          ]
+        },
+        ...(details ? [{
+          type: 'TextBlock',
+          text: details,
+          wrap: true,
+          separator: true
+        }] : [])
+      ],
+      actions: [
+        {
+          type: 'Action.OpenUrl',
+          title: 'View Deployment',
+          url: `https://{{projectName}}.com/deployments/${version}`
+        }
+      ]
+    };
+  }
+
+  /**
+   * Create alert notification card
+   */
+  createAlertCard(
+    title{{#if typescript}}: string{{/if}},
+    message{{#if typescript}}: string{{/if}},
+    severity{{#if typescript}}: 'info' | 'warning' | 'error' | 'success'{{/if}} = 'info'
+  ){{#if typescript}}: any{{/if}} {
+    const severityConfig = {
+      info: { color: 'Default', icon: 'ℹ️' },
+      warning: { color: 'Warning', icon: '⚠️' },
+      error: { color: 'Attention', icon: '❌' },
+      success: { color: 'Good', icon: '✅' }
+    };
+
+    const config = severityConfig[severity];
+
+    return {
+      type: 'AdaptiveCard',
+      $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+      version: '1.3',
+      body: [
+        {
+          type: 'Container',
+          style: config.color,
+          items: [
+            {
+              type: 'ColumnSet',
+              columns: [
+                {
+                  type: 'Column',
+                  width: 'auto',
+                  items: [
+                    {
+                      type: 'TextBlock',
+                      text: config.icon,
+                      size: 'Large'
+                    }
+                  ]
+                },
+                {
+                  type: 'Column',
+                  width: 'stretch',
+                  items: [
+                    {
+                      type: 'TextBlock',
+                      text: title,
+                      size: 'Large',
+                      weight: 'Bolder'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'TextBlock',
+          text: message,
+          wrap: true,
+          separator: true
+        },
+        {
+          type: 'TextBlock',
+          text: `Time: ${new Date().toLocaleString()} | App: {{projectName}}`,
+          size: 'Small',
+          color: 'Light',
+          separator: true
+        }
+      ]
+    };
+  }
+}
+
+// Export factory function
+export function createTeamsClient(
+  tenantId{{#if typescript}}: string{{/if}} = process.env.TEAMS_TENANT_ID || '',
+  clientId{{#if typescript}}: string{{/if}} = process.env.TEAMS_CLIENT_ID || '',
+  clientSecret{{#if typescript}}: string{{/if}} = process.env.TEAMS_CLIENT_SECRET || ''
+){{#if typescript}}: TeamsClient{{/if}} {
+  if (!tenantId || !clientId || !clientSecret) {
+    throw new Error('Teams credentials are required (tenantId, clientId, clientSecret)');
+  }
+
+  return new TeamsClient(tenantId, clientId, clientSecret);
+}
+
+// Export default instance if credentials are available
+{{#if typescript}}export default{{else}}module.exports = {{/if}} (process.env.TEAMS_TENANT_ID && process.env.TEAMS_CLIENT_ID && process.env.TEAMS_CLIENT_SECRET)
+  ? createTeamsClient()
+  : { createTeamsClient };
