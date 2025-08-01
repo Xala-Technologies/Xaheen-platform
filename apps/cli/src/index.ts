@@ -939,6 +939,102 @@ const router = t.router({
 			}),
 	}),
 		
+	// Compliance commands - Story 3.8
+	compliance: t.router({
+		add: t.procedure
+			.meta({ description: "Add compliance features to existing project" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						level: ComplianceSchema.describe("Compliance level to add"),
+						wcagLevel: z.enum(["A", "AA", "AAA"]).optional().default("AA")
+							.describe("WCAG accessibility level"),
+						nsmClassification: z.enum(["OPEN", "INTERNAL", "RESTRICTED", "CONFIDENTIAL"]).optional().default("INTERNAL")
+							.describe("NSM security classification"),
+						generateComponents: z.boolean().optional().default(true)
+							.describe("Generate compliance components"),
+						generateServices: z.boolean().optional().default(true)
+							.describe("Generate compliance services"),
+						generatePolicies: z.boolean().optional().default(true)
+							.describe("Generate compliance policies"),
+						updateConfig: z.boolean().optional().default(true)
+							.describe("Update project configuration"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.8
+				consola.info(`Adding compliance features with options:`, options);
+				consola.warn("Compliance feature addition not yet implemented - coming in Story 3.8");
+			}),
+			
+		validate: t.procedure
+			.meta({ description: "Validate project compliance against standards" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						standards: z.array(z.enum(["gdpr", "nsm", "wcag", "all"])).optional().default(["all"])
+							.describe("Standards to validate against"),
+						wcagLevel: z.enum(["A", "AA", "AAA"]).optional().default("AA")
+							.describe("WCAG level to validate"),
+						checkAccessibility: z.boolean().optional().default(true)
+							.describe("Check accessibility compliance"),
+						checkSecurity: z.boolean().optional().default(true)
+							.describe("Check security compliance"),
+						checkPrivacy: z.boolean().optional().default(true)
+							.describe("Check privacy compliance"),
+						checkDataProtection: z.boolean().optional().default(true)
+							.describe("Check data protection compliance"),
+						fix: z.boolean().optional().default(false)
+							.describe("Attempt to fix violations"),
+						verbose: z.boolean().optional().default(false)
+							.describe("Show detailed validation output"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.8
+				consola.info(`Validating compliance with options:`, options);
+				consola.warn("Compliance validation not yet implemented - coming in Story 3.8");
+			}),
+			
+		report: t.procedure
+			.meta({ description: "Generate compliance report for project" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						format: z.enum(["html", "pdf", "json", "markdown"]).optional().default("html")
+							.describe("Report format"),
+						includeViolations: z.boolean().optional().default(true)
+							.describe("Include violation details"),
+						includeRemediation: z.boolean().optional().default(true)
+							.describe("Include remediation suggestions"),
+						includeScore: z.boolean().optional().default(true)
+							.describe("Include compliance scores"),
+						includeCertification: z.boolean().optional().default(true)
+							.describe("Include certification status"),
+						includeActionItems: z.boolean().optional().default(true)
+							.describe("Include action items"),
+						outputPath: z.string().optional()
+							.describe("Output path for report"),
+						language: LanguageSchema.optional().default("en")
+							.describe("Report language"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.8
+				consola.info(`Generating compliance report with options:`, options);
+				consola.warn("Compliance report generation not yet implemented - coming in Story 3.8");
+			}),
+	}),
+		
 	sponsors: t.procedure
 		.meta({ description: "Show Xaheen Platform sponsors" })
 		.mutation(async () => {

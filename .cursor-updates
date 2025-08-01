@@ -12,3 +12,4 @@
 - Implemented localization commands (Story 3.4) with all locale subcommands in tRPC router
 - Implemented authentication commands (Story 3.5) with all auth subcommands in tRPC router
 - Implemented integration commands (Story 3.6) with all integration subcommands in tRPC router
+- Implemented document commands (Story 3.7) with all document subcommands in tRPC router
