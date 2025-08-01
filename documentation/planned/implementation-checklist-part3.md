@@ -120,17 +120,17 @@
 - [x] Add ARIA attribute validation
 - [x] Add accessibility audit report generation
 
-### **Story 8.4: Combined Norwegian Compliance**
-- [ ] Create `apps/cli/src/validators/norwegian-validator.ts`
-- [ ] Add combined GDPR + NSM + WCAG validation
-- [ ] Add `validateNorwegianCompliance(code: string): Promise<NorwegianResult>` function
-- [ ] Add compliance scoring and certification levels
-- [ ] Add remediation recommendations and action items
-- [ ] Add compliance dashboard and monitoring
-- [ ] Add automated compliance testing in CI/CD
-- [ ] Add compliance report generation in multiple formats
-- [ ] Add compliance trend analysis and tracking
-- [ ] Add compliance certification and attestation
+### **Story 8.4: Combined Norwegian Compliance** ✅
+- [x] Create `apps/cli/src/validators/norwegian-validator.ts`
+- [x] Add combined GDPR + NSM + WCAG validation
+- [x] Add `validateNorwegianCompliance(code: string): Promise<NorwegianResult>` function
+- [x] Add compliance scoring and certification levels
+- [x] Add remediation recommendations and action items
+- [x] Add compliance dashboard and monitoring
+- [x] Add automated compliance testing in CI/CD
+- [x] Add compliance report generation in multiple formats
+- [x] Add compliance trend analysis and tracking
+- [x] Add compliance certification and attestation
 
 ### **Story 8.5: Validation Integration**
 - [ ] Create `apps/cli/src/validators/validation-engine.ts`
