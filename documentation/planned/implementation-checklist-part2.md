@@ -167,17 +167,17 @@
 - [x] Add Altinn authentication integration with BankID
 - [x] Add GDPR-compliant data handling for government services
 
-### **Story 6.2: Slack Integration**
-- [ ] Create `apps/cli/src/integrations/services/slack.ts`
-- [ ] Add Slack SDK configuration and initialization
-- [ ] Add `generateSlackComponent(options: IntegrationOptions): GenerationResult` function
-- [ ] Add `generateSlackService(options: IntegrationOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/services/slack-client.ts.hbs` template
-- [ ] Create `apps/cli/templates/integrations/services/slack-webhook.ts.hbs` template
-- [ ] Add Slack bot command handling
-- [ ] Add Slack notification sending
-- [ ] Add Slack OAuth integration
-- [ ] Add Slack workspace management
+### **Story 6.2: Slack Integration** ✅
+- [x] Create `apps/cli/src/integrations/services/slack.ts`
+- [x] Add Slack SDK configuration and initialization
+- [x] Add `generateSlackComponent(options: IntegrationOptions): GenerationResult` function
+- [x] Add `generateSlackService(options: IntegrationOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/services/slack-client.ts.hbs` template
+- [x] Create `apps/cli/templates/integrations/services/slack-webhook.ts.hbs` template
+- [x] Add Slack bot command handling
+- [x] Add Slack notification sending
+- [x] Add Slack OAuth integration
+- [x] Add Slack workspace management
 
 ### **Story 6.3: Microsoft Teams Integration**
 - [ ] Create `apps/cli/src/integrations/services/teams.ts`
