@@ -1,0 +1,518 @@
+{{#if typescript}}
+import type { 
+  ContractData,
+  ContractType,
+  Party,
+  Terms,
+  Clause,
+  SignatureBlock
+} from '../types/contracts';
+{{/if}}
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+
+/**
+ * Contract Generator for {{projectName}}
+ * Creates legally compliant Norwegian contract documents
+ */
+export class ContractManager {
+  private readonly translations = {
+    nb: {
+      // Contract types
+      employmentContract: 'Arbeidsavtale',
+      serviceContract: 'Tjenesteavtale', 
+      rentalContract: 'Leieavtale',
+      purchaseContract: 'Kjøpsavtale',
+      ndaContract: 'Konfidensialitetsavtale',
+      partnershipContract: 'Partnerskapsavtale',
+      loanContract: 'Låneavtale',
+      
+      // Common terms
+      contract: 'Kontrakt',
+      agreement: 'Avtale',
+      between: 'mellom',
+      and: 'og',
+      parties: 'Parter',
+      party: 'Part',
+      witness: 'Vitne',
+      guarantor: 'Garantist',
+      
+      // Document sections
+      terms: 'Vilkår',
+      conditions: 'Betingelser',
+      clauses: 'Klausuler',
+      signatures: 'Signaturer',
+      appendices: 'Vedlegg',
+      definitions: 'Definisjoner',
+      
+      // Terms and conditions
+      effectiveDate: 'Ikrafttredelse',
+      expirationDate: 'Utløpsdato',
+      duration: 'Varighet',
+      termination: 'Oppsigelse',
+      terminationNotice: 'Oppsigelsestid',
+      autoRenewal: 'Automatisk fornyelse',
+      governingLaw: 'Lovvalg',
+      jurisdiction: 'Verneting',
+      disputeResolution: 'Tvisteløsning',
+      
+      // Financial terms
+      amount: 'Beløp',
+      price: 'Pris',
+      payment: 'Betaling',
+      paymentTerms: 'Betalingsbetingelser',
+      currency: 'Valuta',
+      vat: 'MVA',
+      vatIncluded: 'inkl. mva',
+      vatExcluded: 'ekskl. mva',
+      invoice: 'Faktura',
+      dueDate: 'Forfallsdato',
+      latePaymentInterest: 'Forsinkelsesrente',
+      penalty: 'Gebyr',
+      deposit: 'Depositum',
+      
+      // Party information
+      name: 'Navn',
+      title: 'Tittel',
+      orgNumber: 'Org.nr',
+      personalNumber: 'Personnr',
+      address: 'Adresse',
+      phone: 'Telefon',
+      email: 'E-post',
+      representative: 'Representert ved',
+      
+      // Signature fields
+      place: 'Sted',
+      date: 'Dato',
+      signature: 'Signatur',
+      signedBy: 'Signert av',
+      digitalSignature: 'Digital signatur',
+      bankidSignature: 'BankID-signatur',
+      
+      // Metadata
+      version: 'Versjon',
+      createdDate: 'Opprettet',
+      modifiedDate: 'Endret',
+      confidential: 'Konfidensielt',
+      internal: 'Intern',
+      public: 'Offentlig',
+      page: 'Side',
+      of: 'av',
+      
+      // Legal clauses
+      confidentiality: 'Konfidensialitet',
+      liability: 'Ansvar',
+      forceMajeure: 'Force majeure',
+      warranty: 'Garanti',
+      indemnification: 'Skadesløsholdelse',
+      intellectualProperty: 'Immaterielle rettigheter',
+      dataProtection: 'Personvern',
+      gdprCompliance: 'GDPR-etterlevelse'
+    },
+    en: {
+      // Contract types
+      employmentContract: 'Employment Contract',
+      serviceContract: 'Service Agreement',
+      rentalContract: 'Rental Agreement',
+      purchaseContract: 'Purchase Agreement',
+      ndaContract: 'Non-Disclosure Agreement',
+      partnershipContract: 'Partnership Agreement',
+      loanContract: 'Loan Agreement',
+      
+      // Common terms
+      contract: 'Contract',
+      agreement: 'Agreement',
+      between: 'between',
+      and: 'and',
+      parties: 'Parties',
+      party: 'Party',
+      witness: 'Witness',
+      guarantor: 'Guarantor',
+      
+      // Document sections
+      terms: 'Terms',
+      conditions: 'Conditions',
+      clauses: 'Clauses',
+      signatures: 'Signatures',
+      appendices: 'Appendices',
+      definitions: 'Definitions',
+      
+      // Terms and conditions
+      effectiveDate: 'Effective Date',
+      expirationDate: 'Expiration Date',
+      duration: 'Duration',
+      termination: 'Termination',
+      terminationNotice: 'Notice Period',
+      autoRenewal: 'Auto-renewal',
+      governingLaw: 'Governing Law',
+      jurisdiction: 'Jurisdiction',
+      disputeResolution: 'Dispute Resolution',
+      
+      // Financial terms
+      amount: 'Amount',
+      price: 'Price',
+      payment: 'Payment',
+      paymentTerms: 'Payment Terms',
+      currency: 'Currency',
+      vat: 'VAT',
+      vatIncluded: 'incl. VAT',
+      vatExcluded: 'excl. VAT',
+      invoice: 'Invoice',
+      dueDate: 'Due Date',
+      latePaymentInterest: 'Late Payment Interest',
+      penalty: 'Penalty',
+      deposit: 'Deposit',
+      
+      // Party information
+      name: 'Name',
+      title: 'Title',
+      orgNumber: 'Org. No.',
+      personalNumber: 'Personal No.',
+      address: 'Address',
+      phone: 'Phone',
+      email: 'Email',
+      representative: 'Represented by',
+      
+      // Signature fields
+      place: 'Place',
+      date: 'Date',
+      signature: 'Signature',
+      signedBy: 'Signed by',
+      digitalSignature: 'Digital Signature',
+      bankidSignature: 'BankID Signature',
+      
+      // Metadata
+      version: 'Version',
+      createdDate: 'Created',
+      modifiedDate: 'Modified',
+      confidential: 'Confidential',
+      internal: 'Internal',
+      public: 'Public',
+      page: 'Page',
+      of: 'of',
+      
+      // Legal clauses
+      confidentiality: 'Confidentiality',
+      liability: 'Liability',
+      forceMajeure: 'Force Majeure',
+      warranty: 'Warranty',
+      indemnification: 'Indemnification',
+      intellectualProperty: 'Intellectual Property',
+      dataProtection: 'Data Protection',
+      gdprCompliance: 'GDPR Compliance'
+    }
+  };
+
+  // Norwegian legal clause library
+  private readonly legalClauses = {
+    nb: {
+      standardEmployment: {
+        position: 'Arbeidstaker ansettes i stillingen som {{position}} med tjenestested {{location}}. Stillingen er {{employmentType}}.',
+        duties: 'Arbeidstakers hovedoppgaver omfatter {{duties}}. Arbeidstaker forplikter seg til å utføre sitt arbeid i samsvar med de instrukser og retningslinjer som til enhver tid gjelder.',
+        salary: 'Arbeidstaker skal ha en årlig bruttolønn på kr {{salary}}. Lønnen utbetales månedlig den {{payDay}}. i måneden.',
+        workingHours: 'Normal arbeidstid er {{hours}} timer per uke, fordelt på {{days}} dager. Arbeidstiden følger arbeidsgivers normale kontortid.',
+        overtime: 'Overtidsarbeid kompenseres i henhold til arbeidsmiljølovens bestemmelser og bedriftens retningslinjer.',
+        vacation: 'Arbeidstaker har rett til ferie i henhold til ferieloven. Feriepenger utbetales i samsvar med ferielovens bestemmelser.',
+        sickness: 'Ved sykdom gjelder arbeidsmiljølovens og folketrygdlovens bestemmelser.',
+        termination: 'For oppsigelse gjelder en gjensidig oppsigelsesfrist på {{notice}} måneder. Oppsigelse skal skje skriftlig.',
+        confidentiality: 'Arbeidstaker har taushetsplikt om forhold vedkommende får kjennskap til i sitt arbeid. Taushetsplikten gjelder også etter ansettelsesforholdets opphør.',
+        competitionClause: 'Arbeidstaker kan ikke i ansettelsestiden drive eller delta i virksomhet som konkurrerer med arbeidsgiver uten skriftlig samtykke.'
+      },
+      standardService: {
+        scope: 'Leverandøren skal levere følgende tjenester: {{services}}. Tjenestene skal leveres i henhold til vedlagte spesifikasjon.',
+        deliverables: 'Leverandøren skal levere følgende: {{deliverables}}. Alle leveranser skal være i henhold til avtalte kvalitetsstandarder.',
+        timeline: 'Tjenestene skal leveres i perioden fra {{startDate}} til {{endDate}}. Detaljert tidsplan fremgår av vedlegg.',
+        payment: 'Total kontraktssum er kr {{amount}} ekskl. mva. Betaling skjer mot faktura med {{paymentTerms}} dagers betalingsfrist.',
+        invoicing: 'Fakturering skjer {{invoiceFrequency}}. Faktura skal inneholde spesifikasjon av utført arbeid.',
+        changes: 'Endringer i omfang eller spesifikasjon skal avtales skriftlig mellom partene før iverksettelse.',
+        warranty: 'Leverandøren garanterer at tjenestene leveres fagmessig og i henhold til god bransjeskikk.',
+        liability: 'Leverandørens samlede erstatningsansvar er begrenset til kontraktssummen, med mindre skaden skyldes grov uaktsomhet.',
+        termination: 'Avtalen kan sies opp av begge parter med {{notice}} dagers skriftlig varsel.',
+        intellectualProperty: 'Alle rettigheter til resultater av tjenestene tilfaller kjøper ved betaling.'
+      },
+      standardRental: {
+        property: 'Utleier leier ut {{propertyType}} beliggende {{address}} til leietaker.',
+        rentAmount: 'Månedlig leie utgjør kr {{rent}}. Leien betales forskuddsvis innen den {{dueDay}}. hver måned.',
+        deposit: 'Ved kontraktsinngåelse skal leietaker innbetale et depositum på kr {{deposit}}, tilsvarende {{months}} måneders leie.',
+        utilities: 'I tillegg til leien betaler leietaker {{utilities}}. Strøm avregnes etter målt forbruk.',
+        duration: 'Leieforholdet gjelder fra {{startDate}} til {{endDate}}. Etter utløp fortsetter leieforholdet løpende med {{notice}} måneders gjensidig oppsigelse.',
+        maintenance: 'Utleier er ansvarlig for utvendig vedlikehold. Leietaker er ansvarlig for innvendig vedlikehold og renhold.',
+        subletting: 'Fremleie er ikke tillatt uten skriftlig samtykke fra utleier.',
+        pets: 'Husdyrhold {{petsAllowed}} etter nærmere avtale med utleier.',
+        inspection: 'Ved inn- og utflytting foretas besiktigelse med protokoll som signeres av begge parter.',
+        houseRules: 'Leietaker plikter å følge gjeldende husordensregler og vise hensyn til naboer.'
+      }
+    },
+    en: {
+      standardEmployment: {
+        position: 'The Employee is hired for the position of {{position}} with place of work at {{location}}. The position is {{employmentType}}.',
+        duties: 'The Employee\'s main duties include {{duties}}. The Employee undertakes to perform work in accordance with applicable instructions and guidelines.',
+        salary: 'The Employee shall receive an annual gross salary of NOK {{salary}}. Salary is paid monthly on the {{payDay}} of each month.',
+        workingHours: 'Normal working hours are {{hours}} hours per week, distributed over {{days}} days. Working hours follow the employer\'s normal office hours.',
+        overtime: 'Overtime work is compensated according to the Working Environment Act and company guidelines.',
+        vacation: 'The Employee is entitled to vacation in accordance with the Holiday Act. Holiday pay is paid according to the provisions of the Holiday Act.',
+        sickness: 'In case of illness, the provisions of the Working Environment Act and National Insurance Act apply.',
+        termination: 'A mutual notice period of {{notice}} months applies. Notice must be given in writing.',
+        confidentiality: 'The Employee has a duty of confidentiality regarding matters learned during employment. This duty continues after termination.',
+        competitionClause: 'The Employee may not engage in competing business during employment without written consent.'
+      }
+    }
+  };
+
+  /**
+   * Generate contract from template
+   */
+  async generateContract(
+    type{{#if typescript}}: ContractType{{/if}},
+    data{{#if typescript}}: ContractData{{/if}}
+  ){{#if typescript}}: Promise<Buffer>{{/if}} {
+    // Create PDF document
+    const pdfDoc = await PDFDocument.create();
+    
+    // Set document metadata
+    this.setDocumentMetadata(pdfDoc, data);
+    
+    // Generate pages
+    await this.generateCoverPage(pdfDoc, data);
+    await this.generatePartyPage(pdfDoc, data);
+    await this.generateClausesPages(pdfDoc, data);
+    await this.generateTermsPage(pdfDoc, data);
+    await this.generateSignaturePage(pdfDoc, data);
+    
+    // Add appendices if any
+    if (data.appendices?.length) {
+      await this.generateAppendices(pdfDoc, data);
+    }
+    
+    // Add page numbers and headers
+    await this.addPageNumbersAndHeaders(pdfDoc, data);
+    
+    // Save and return PDF
+    const pdfBytes = await pdfDoc.save();
+    return Buffer.from(pdfBytes);
+  }
+
+  /**
+   * Add clause to contract
+   */
+  addClause(
+    contract{{#if typescript}}: ContractData{{/if}},
+    clause{{#if typescript}}: Clause{{/if}}
+  ){{#if typescript}}: ContractData{{/if}} {
+    // Insert clause in correct order
+    const insertIndex = contract.clauses.findIndex(c => c.order > clause.order);
+    
+    if (insertIndex === -1) {
+      contract.clauses.push(clause);
+    } else {
+      contract.clauses.splice(insertIndex, 0, clause);
+    }
+    
+    // Update version
+    contract.metadata.version = this.incrementVersion(contract.metadata.version);
+    contract.metadata.modifiedDate = new Date();
+    
+    return contract;
+  }
+
+  /**
+   * Validate contract compliance
+   */
+  validateCompliance(
+    contract{{#if typescript}}: ContractData{{/if}}
+  ){{#if typescript}}: { valid: boolean; issues: string[] }{{/if}} {
+    const issues{{#if typescript}}: string[]{{/if}} = [];
+    
+    // Check required parties
+    if (!contract.parties.some(p => p.role === 'party1')) {
+      issues.push('Missing Party 1');
+    }
+    if (!contract.parties.some(p => p.role === 'party2')) {
+      issues.push('Missing Party 2');
+    }
+    
+    // Check Norwegian org numbers
+    contract.parties.forEach(party => {
+      if (party.type === 'company' && party.address.country === 'Norge') {
+        if (!party.orgNumber || !/^\d{9}$/.test(party.orgNumber)) {
+          issues.push(`Invalid Norwegian org number for ${party.name}`);
+        }
+      }
+    });
+    
+    // Check required terms
+    if (!contract.terms.effectiveDate) {
+      issues.push('Missing effective date');
+    }
+    if (!contract.terms.governingLaw) {
+      issues.push('Missing governing law');
+    }
+    if (!contract.terms.jurisdiction) {
+      issues.push('Missing jurisdiction');
+    }
+    
+    // Check signatures
+    const requiredSignatures = contract.parties
+      .filter(p => ['party1', 'party2'].includes(p.role))
+      .map(p => p.role);
+    
+    requiredSignatures.forEach(role => {
+      if (!contract.signatures.some(s => s.partyRole === role)) {
+        issues.push(`Missing signature block for ${role}`);
+      }
+    });
+    
+    // Check GDPR compliance for employment contracts
+    if (contract.type === 'employment') {
+      const hasDataProtection = contract.clauses.some(c => 
+        c.content.toLowerCase().includes('personvern') || 
+        c.content.toLowerCase().includes('gdpr')
+      );
+      if (!hasDataProtection) {
+        issues.push('Missing GDPR/data protection clause for employment contract');
+      }
+    }
+    
+    return {
+      valid: issues.length === 0,
+      issues
+    };
+  }
+
+  /**
+   * Handle contract versioning
+   */
+  createNewVersion(
+    contract{{#if typescript}}: ContractData{{/if}},
+    changes{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: ContractData{{/if}} {
+    // Store previous version
+    if (!contract.metadata.previousVersions) {
+      contract.metadata.previousVersions = [];
+    }
+    contract.metadata.previousVersions.push(contract.metadata.version);
+    
+    // Update version
+    contract.metadata.version = this.incrementVersion(contract.metadata.version);
+    contract.metadata.modifiedDate = new Date();
+    contract.metadata.changeLog = changes;
+    
+    // Reset signatures for new version
+    contract.signatures = contract.signatures.map(sig => ({
+      ...sig,
+      signedDate: undefined,
+      signatureData: undefined
+    }));
+    
+    return contract;
+  }
+
+  /**
+   * Track contract lifecycle
+   */
+  getContractStatus(
+    contract{{#if typescript}}: ContractData{{/if}}
+  ){{#if typescript}}: string{{/if}} {
+    const now = new Date();
+    const allSigned = contract.signatures.every(s => s.signedDate);
+    
+    if (!allSigned) {
+      return 'pending_signatures';
+    }
+    
+    if (contract.terms.effectiveDate > now) {
+      return 'not_yet_effective';
+    }
+    
+    if (contract.terms.expirationDate && contract.terms.expirationDate < now) {
+      return 'expired';
+    }
+    
+    return 'active';
+  }
+
+  /**
+   * Generate BankID signature request
+   */
+  async requestBankIDSignature(
+    contract{{#if typescript}}: ContractData{{/if}},
+    partyRole{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<string>{{/if}} {
+    const party = contract.parties.find(p => p.role === partyRole);
+    if (!party) {
+      throw new Error(`Party with role ${partyRole} not found`);
+    }
+    
+    // Generate signature request
+    const signatureRequest = {
+      documentId: contract.metadata.id,
+      documentTitle: contract.title,
+      personalNumber: party.personalNumber,
+      signerName: party.name,
+      language: contract.language,
+      signText: this.getSignatureText(contract, party)
+    };
+    
+    // TODO: Integrate with actual BankID service
+    console.log('BankID signature request:', signatureRequest);
+    
+    return 'bankid-request-id';
+  }
+
+  /**
+   * Helper: Get signature text
+   */
+  private getSignatureText(
+    contract{{#if typescript}}: ContractData{{/if}},
+    party{{#if typescript}}: Party{{/if}}
+  ){{#if typescript}}: string{{/if}} {
+    const lang = contract.language;
+    
+    if (lang === 'nb') {
+      return `Ved å signere bekrefter ${party.name} å ha lest og forstått ${contract.title} og forplikter seg til å overholde avtalens vilkår.`;
+    } else {
+      return `By signing, ${party.name} confirms having read and understood ${contract.title} and commits to comply with the terms of the agreement.`;
+    }
+  }
+
+  /**
+   * Helper: Increment version number
+   */
+  private incrementVersion(version{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    const [major, minor] = version.split('.').map(Number);
+    return `${major}.${minor + 1}`;
+  }
+
+  /**
+   * Helper: Translate text
+   */
+  private translate(key{{#if typescript}}: string{{/if}}, language{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    return this.translations[language]?.[key] || this.translations['nb']?.[key] || key;
+  }
+
+  /**
+   * Helper: Format date
+   */
+  private formatDate(date{{#if typescript}}: Date{{/if}}, language{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    const locale = language === 'nb' ? 'nb-NO' : language === 'nn' ? 'nn-NO' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+  }
+
+  /**
+   * Helper: Format currency
+   */
+  private formatCurrency(amount{{#if typescript}}: number{{/if}}, currency{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: currency || 'NOK',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+}
+
+// Export manager instance
+export const contractManager = new ContractManager();

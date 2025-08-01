@@ -56,17 +56,17 @@
 - [x] Add report distribution via email/Slack
 - [x] Add report archiving and retention
 
-### **Story 7.5: Contract Document Generation**
-- [ ] Create `apps/cli/src/documents/generators/contract-generator.ts`
-- [ ] Add Norwegian legal document templates
-- [ ] Add `generateContract(template: string, parties: any[]): Promise<Buffer>` function
-- [ ] Create `apps/cli/templates/documents/contract-template.hbs` template
-- [ ] Add Norwegian legal clause library
-- [ ] Add digital signature integration
-- [ ] Add contract versioning and change tracking
-- [ ] Add legal compliance validation
-- [ ] Add contract expiration and renewal handling
-- [ ] Add contract storage and retrieval system
+### **Story 7.5: Contract Document Generation** ✅
+- [x] Create `apps/cli/src/documents/generators/contract-generator.ts`
+- [x] Add Norwegian legal document templates
+- [x] Add `generateContract(template: string, parties: any[]): Promise<Buffer>` function
+- [x] Create `apps/cli/templates/documents/contract-template.hbs` template
+- [x] Add Norwegian legal clause library
+- [x] Add digital signature integration
+- [x] Add contract versioning and change tracking
+- [x] Add legal compliance validation
+- [x] Add contract expiration and renewal handling
+- [x] Add contract storage and retrieval system
 
 ### **Story 7.6: Document Security and Compliance**
 - [ ] Create `apps/cli/src/documents/security/document-security.ts`
