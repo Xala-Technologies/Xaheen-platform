@@ -1,31 +1,31 @@
 {
-  "compilerOptions": {
-    // Language and Environment
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    
-    // Strict Type-Checking Options
-    "strict": true,                           // Enable all strict type-checking options
-    
-    // Module Resolution
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    
-    // Emit
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    
-    // Interop Constraints
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": false,
-    
-    // Skip Type Checking
-    "skipLibCheck": true
-  }
+	"compilerOptions": {
+		// Language and Environment
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+
+		// Strict Type-Checking Options
+		"strict": true, // Enable all strict type-checking options
+
+		// Module Resolution
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+
+		// Emit
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+
+		// Interop Constraints
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": false,
+
+		// Skip Type Checking
+		"skipLibCheck": true
+	}
 }

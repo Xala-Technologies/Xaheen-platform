@@ -1,10 +1,10 @@
 "use client";
 
+import { Card, ScrollArea } from "@xala-technologies/ui-system";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { ScrollArea, Card } from "@xala-technologies/ui-system";
 import { cn } from "@/lib/utils";
 
 type TechOption = {

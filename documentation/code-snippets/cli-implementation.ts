@@ -1,12 +1,13 @@
 // cli/src/index.ts
 #!/usr/bin/env node
-import { Command } from 'commander';
+
 import { prompts } from '@clack/prompts';
-import { create } from './commands/create';
+import { Command } from 'commander';
+import { version } from '../../package.json';
 import { add } from './commands/add';
 import { configure } from './commands/configure';
+import { create } from './commands/create';
 import { logger } from './utils/logger';
-import { version } from '../../package.json';
 
 const program = new Command();
 
@@ -45,14 +46,14 @@ program
 program.parse();
 
 // cli/src/commands/create.ts
-import { prompts, intro, outro, spinner, confirm, select, text, multiselect, cancel, isCancel } from '@clack/prompts';
-import { detectPackageManager, validateProjectName } from '../utils/helpers';
-import { installDependencies } from '../utils/install';
+import { cancel, confirm, intro, isCancel, multiselect, outro, prompts, select, spinner, text } from '@clack/prompts';
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
 import { generateProject } from '../generators/project';
 import { initGit } from '../utils/git';
-import chalk from 'chalk';
-import path from 'path';
-import fs from 'fs-extra';
+import { detectPackageManager, validateProjectName } from '../utils/helpers';
+import { installDependencies } from '../utils/install';
 
 interface CreateOptions {
   template?: string;
@@ -307,13 +308,13 @@ ${chalk.dim('Happy coding! 🚀')}
 // cli/src/generators/project.ts
 import fs from 'fs-extra';
 import path from 'path';
-import { generatePackageJson } from './package-json';
-import { generateTsConfig } from './tsconfig';
+import { copyTemplate } from '../utils/template';
 import { generateESLintConfig } from './eslint';
+import { generateGitignore } from './gitignore';
+import { generatePackageJson } from './package-json';
 import { generatePrettierConfig } from './prettier';
 import { generateReadme } from './readme';
-import { generateGitignore } from './gitignore';
-import { copyTemplate } from '../utils/template';
+import { generateTsConfig } from './tsconfig';
 
 export async function generateProject(projectPath: string, config: ProjectConfig) {
   // Create project directory

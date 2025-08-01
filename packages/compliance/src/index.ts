@@ -1,10 +1,9 @@
 // Main entry point for @xaheen/compliance
 
-// Export types
-export * from './types';
+// Export helpers
+export { NSMHelper } from "./helpers/nsm-helper";
 
 // Export services
-export { ComplianceService } from './services/compliance-service';
-
-// Export helpers
-export { NSMHelper } from './helpers/nsm-helper';
+export { ComplianceService } from "./services/compliance-service";
+// Export types
+export * from "./types";

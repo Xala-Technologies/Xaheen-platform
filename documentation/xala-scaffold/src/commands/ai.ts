@@ -13,24 +13,24 @@
  * - Code analysis and improvement
  */
 
+import chalk from 'chalk';
 import { Command } from 'commander';
-import { injectable, inject } from 'inversify';
-import { 
-  ILoggingService, 
-  IConfigurationService, 
-  ILocalizationService,
-  IFileSystemService
-} from '../architecture/interfaces.js';
-import { AIServiceFactory } from '../ai/services/AIServiceFactory.js';
-import { KnowledgeBaseSeeder } from '../rag/knowledge-base/KnowledgeBaseSeeder.js';
-import { AIEnhancedComponentGenerator } from '../generators/ai-enhanced-component-generator.js';
+import { inject, injectable } from 'inversify';
+import ora from 'ora';
 import { PromptTemplateEngine } from '../ai/prompts/PromptTemplateEngine.js';
-import { LocaleCode, NorwegianCompliance } from '../types/compliance.js';
+import { AIServiceFactory } from '../ai/services/AIServiceFactory.js';
+import { 
+  IConfigurationService, 
+  IFileSystemService, 
+  ILocalizationService,
+  ILoggingService 
+} from '../architecture/interfaces.js';
+import { AIEnhancedComponentGenerator } from '../generators/ai-enhanced-component-generator.js';
+import { KnowledgeBaseSeeder } from '../rag/knowledge-base/KnowledgeBaseSeeder.js';
+import { PatternMatcher } from '../rag/pattern-matching/PatternMatcher.js';
 import { ChromaDBStore } from '../rag/vector-store/ChromaDBStore.js';
 import { EmbeddingGenerator } from '../rag/vector-store/EmbeddingGenerator.js';
-import { PatternMatcher } from '../rag/pattern-matching/PatternMatcher.js';
-import chalk from 'chalk';
-import ora from 'ora';
+import { LocaleCode, NorwegianCompliance } from '../types/compliance.js';
 
 /**
  * AI generation options

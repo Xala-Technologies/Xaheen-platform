@@ -308,9 +308,9 @@ export const effects = {
 
 // packages/design-system/src/tokens/index.ts
 export { colors } from './colors';
-export { typography } from './typography';
-export { spacing } from './spacing';
 export { effects } from './effects';
+export { spacing } from './spacing';
+export { typography } from './typography';
 
 export const tokens = {
   colors,
@@ -437,7 +437,7 @@ function kebabCase(str: string): string {
 
 // packages/design-system/src/components/ThemeProvider.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { lightTheme, darkTheme, Theme } from '../theme/theme';
+import { darkTheme, lightTheme, Theme } from '../theme/theme';
 import { generateCSSVariables } from '../utils/css-variables';
 
 type ThemeMode = 'light' | 'dark' | 'system';

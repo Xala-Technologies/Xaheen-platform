@@ -1,149 +1,149 @@
 // apps/cli/src/templates/xala-templates.ts
-import { ProjectTemplate } from '../types';
+import { ProjectTemplate } from "../types";
 
 export const xalaTemplates: Record<string, ProjectTemplate> = {
-  'xala-enterprise-app': {
-    name: 'Xala Enterprise Application',
-    description: 'Full-stack enterprise app with Norwegian compliance',
-    dependencies: {
-      // Core UI System
-      '@xala-technologies/ui-system': '^5.0.0',
-      
-      // Frontend
-      'react': '^18.2.0',
-      'react-dom': '^18.2.0',
-      'next': '^14.0.0',
-      '@tanstack/react-query': '^5.0.0',
-      
-      // Backend
-      'hono': '^3.0.0',
-      '@hono/zod-validator': '^0.2.0',
-      'drizzle-orm': '^0.29.0',
-      'postgres': '^3.4.0',
-      
-      // Authentication
-      'lucia': '^3.0.0',
-      '@lucia-auth/adapter-drizzle': '^1.0.0',
-      
-      // Validation
-      'zod': '^3.22.0',
-      
-      // Norwegian specific
-      'norwegian-national-id-validator': '^4.0.0',
-      'norwegian-organization-number': '^2.0.0',
-    },
-    devDependencies: {
-      '@types/react': '^18.2.0',
-      '@types/react-dom': '^18.2.0',
-      '@types/node': '^20.0.0',
-      'typescript': '^5.3.0',
-      'tsx': '^4.0.0',
-      'vite': '^5.0.0',
-      '@vitejs/plugin-react': '^4.2.0',
-      'tailwindcss': '^3.4.0',
-      'postcss': '^8.4.0',
-      'autoprefixer': '^10.4.0',
-      'eslint': '^8.50.0',
-      'prettier': '^3.1.0',
-    },
-    structure: {
-      'apps/': {
-        'web/': {
-          'src/': {
-            'app/': 'Next.js app directory',
-            'components/': 'Application components',
-            'features/': 'Feature modules',
-            'lib/': 'Utilities and helpers',
-            'styles/': 'Global styles',
-          },
-        },
-        'api/': {
-          'src/': {
-            'routes/': 'API routes',
-            'services/': 'Business logic',
-            'middleware/': 'API middleware',
-            'db/': 'Database schema',
-          },
-        },
-      },
-      'packages/': {
-        'shared/': 'Shared types and utilities',
-        'config/': 'Shared configurations',
-      },
-    },
-  },
-  
-  'xala-chat-interface': {
-    name: 'Xala Chat Interface',
-    description: 'AI chat application with Norwegian compliance',
-    dependencies: {
-      '@xala-technologies/ui-system': '^5.0.0',
-      'react': '^18.2.0',
-      'react-dom': '^18.2.0',
-      'next': '^14.0.0',
-      '@tanstack/react-query': '^5.0.0',
-      'ai': '^3.0.0',
-      'openai': '^4.0.0',
-      'zod': '^3.22.0',
-    },
-    structure: {
-      'src/': {
-        'app/': {
-          'chat/': 'Chat interface pages',
-          'api/': 'API routes for chat',
-        },
-        'components/': {
-          'chat/': 'Chat-specific components',
-        },
-        'lib/': {
-          'ai/': 'AI integration',
-          'classification/': 'NSM classification logic',
-        },
-      },
-    },
-  },
-  
-  'xala-government-portal': {
-    name: 'Xala Government Portal',
-    description: 'Norwegian government compliant portal',
-    dependencies: {
-      '@xala-technologies/ui-system': '^5.0.0',
-      'react': '^18.2.0',
-      'react-dom': '^18.2.0',
-      'next': '^14.0.0',
-      '@tanstack/react-query': '^5.0.0',
-      'norwegian-national-id-validator': '^4.0.0',
-      'norwegian-organization-number': '^2.0.0',
-      '@altinn/altinn-js': '^1.0.0',
-      'zod': '^3.22.0',
-    },
-    structure: {
-      'src/': {
-        'app/': 'Next.js app directory',
-        'components/': {
-          'forms/': 'Government form components',
-          'classification/': 'NSM classification components',
-        },
-        'lib/': {
-          'auth/': 'BankID/MinID integration',
-          'compliance/': 'GDPR and compliance utilities',
-        },
-      },
-    },
-  },
+	"xala-enterprise-app": {
+		name: "Xala Enterprise Application",
+		description: "Full-stack enterprise app with Norwegian compliance",
+		dependencies: {
+			// Core UI System
+			"@xala-technologies/ui-system": "^5.0.0",
+
+			// Frontend
+			react: "^18.2.0",
+			"react-dom": "^18.2.0",
+			next: "^14.0.0",
+			"@tanstack/react-query": "^5.0.0",
+
+			// Backend
+			hono: "^3.0.0",
+			"@hono/zod-validator": "^0.2.0",
+			"drizzle-orm": "^0.29.0",
+			postgres: "^3.4.0",
+
+			// Authentication
+			lucia: "^3.0.0",
+			"@lucia-auth/adapter-drizzle": "^1.0.0",
+
+			// Validation
+			zod: "^3.22.0",
+
+			// Norwegian specific
+			"norwegian-national-id-validator": "^4.0.0",
+			"norwegian-organization-number": "^2.0.0",
+		},
+		devDependencies: {
+			"@types/react": "^18.2.0",
+			"@types/react-dom": "^18.2.0",
+			"@types/node": "^20.0.0",
+			typescript: "^5.3.0",
+			tsx: "^4.0.0",
+			vite: "^5.0.0",
+			"@vitejs/plugin-react": "^4.2.0",
+			tailwindcss: "^3.4.0",
+			postcss: "^8.4.0",
+			autoprefixer: "^10.4.0",
+			eslint: "^8.50.0",
+			prettier: "^3.1.0",
+		},
+		structure: {
+			"apps/": {
+				"web/": {
+					"src/": {
+						"app/": "Next.js app directory",
+						"components/": "Application components",
+						"features/": "Feature modules",
+						"lib/": "Utilities and helpers",
+						"styles/": "Global styles",
+					},
+				},
+				"api/": {
+					"src/": {
+						"routes/": "API routes",
+						"services/": "Business logic",
+						"middleware/": "API middleware",
+						"db/": "Database schema",
+					},
+				},
+			},
+			"packages/": {
+				"shared/": "Shared types and utilities",
+				"config/": "Shared configurations",
+			},
+		},
+	},
+
+	"xala-chat-interface": {
+		name: "Xala Chat Interface",
+		description: "AI chat application with Norwegian compliance",
+		dependencies: {
+			"@xala-technologies/ui-system": "^5.0.0",
+			react: "^18.2.0",
+			"react-dom": "^18.2.0",
+			next: "^14.0.0",
+			"@tanstack/react-query": "^5.0.0",
+			ai: "^3.0.0",
+			openai: "^4.0.0",
+			zod: "^3.22.0",
+		},
+		structure: {
+			"src/": {
+				"app/": {
+					"chat/": "Chat interface pages",
+					"api/": "API routes for chat",
+				},
+				"components/": {
+					"chat/": "Chat-specific components",
+				},
+				"lib/": {
+					"ai/": "AI integration",
+					"classification/": "NSM classification logic",
+				},
+			},
+		},
+	},
+
+	"xala-government-portal": {
+		name: "Xala Government Portal",
+		description: "Norwegian government compliant portal",
+		dependencies: {
+			"@xala-technologies/ui-system": "^5.0.0",
+			react: "^18.2.0",
+			"react-dom": "^18.2.0",
+			next: "^14.0.0",
+			"@tanstack/react-query": "^5.0.0",
+			"norwegian-national-id-validator": "^4.0.0",
+			"norwegian-organization-number": "^2.0.0",
+			"@altinn/altinn-js": "^1.0.0",
+			zod: "^3.22.0",
+		},
+		structure: {
+			"src/": {
+				"app/": "Next.js app directory",
+				"components/": {
+					"forms/": "Government form components",
+					"classification/": "NSM classification components",
+				},
+				"lib/": {
+					"auth/": "BankID/MinID integration",
+					"compliance/": "GDPR and compliance utilities",
+				},
+			},
+		},
+	},
 };
 
 // apps/cli/src/generators/xala-project-generator.ts
-import fs from 'fs-extra';
-import path from 'path';
-import { ProjectConfig } from '../types';
+import fs from "fs-extra";
+import path from "path";
+import { ProjectConfig } from "../types";
 
 export async function generateXalaProject(
-  projectPath: string,
-  config: ProjectConfig
+	projectPath: string,
+	config: ProjectConfig,
 ) {
-  // Generate root layout with Xala UI System providers
-  const rootLayoutContent = `import { 
+	// Generate root layout with Xala UI System providers
+	const rootLayoutContent = `import { 
   DesignSystemProvider,
   SSRProvider,
   HydrationProvider,
@@ -169,15 +169,15 @@ export default function RootLayout({
     <html lang="nb-NO">
       <body className={inter.className}>
         <DesignSystemProvider 
-          theme="${config.theme || 'light'}" 
-          platform="${config.platform || 'web'}"
+          theme="${config.theme || "light"}" 
+          platform="${config.platform || "web"}"
           locale="nb-NO"
           fallbackLocale="en"
         >
           <SSRProvider>
             <HydrationProvider>
               <ThemeProvider
-                defaultTheme="${config.defaultTheme || 'system'}"
+                defaultTheme="${config.defaultTheme || "system"}"
                 storageKey="${config.name}-theme"
               >
                 <LocaleProvider defaultLocale="nb-NO">
@@ -192,13 +192,13 @@ export default function RootLayout({
   );
 }`;
 
-  await fs.writeFile(
-    path.join(projectPath, 'apps/web/src/app/layout.tsx'),
-    rootLayoutContent
-  );
+	await fs.writeFile(
+		path.join(projectPath, "apps/web/src/app/layout.tsx"),
+		rootLayoutContent,
+	);
 
-  // Generate home page with Xala components
-  const homePageContent = `import { 
+	// Generate home page with Xala components
+	const homePageContent = `import { 
   PageLayout,
   Section,
   Container,
@@ -274,13 +274,13 @@ export default function HomePage() {
   );
 }`;
 
-  await fs.writeFile(
-    path.join(projectPath, 'apps/web/src/app/page.tsx'),
-    homePageContent
-  );
+	await fs.writeFile(
+		path.join(projectPath, "apps/web/src/app/page.tsx"),
+		homePageContent,
+	);
 
-  // Generate global styles with Xala token integration
-  const globalStylesContent = `@import '@xala-technologies/ui-system/styles/core.css';
+	// Generate global styles with Xala token integration
+	const globalStylesContent = `@import '@xala-technologies/ui-system/styles/core.css';
 @import '@xala-technologies/ui-system/styles/tokens.css';
 
 /* Custom styles using Xala design tokens */
@@ -307,21 +307,24 @@ body {
   );
 }`;
 
-  await fs.writeFile(
-    path.join(projectPath, 'apps/web/src/app/globals.css'),
-    globalStylesContent
-  );
+	await fs.writeFile(
+		path.join(projectPath, "apps/web/src/app/globals.css"),
+		globalStylesContent,
+	);
 
-  // Generate example components using Xala UI System
-  await generateXalaComponents(projectPath, config);
-  
-  // Generate configuration files
-  await generateXalaConfig(projectPath, config);
+	// Generate example components using Xala UI System
+	await generateXalaComponents(projectPath, config);
+
+	// Generate configuration files
+	await generateXalaConfig(projectPath, config);
 }
 
-async function generateXalaComponents(projectPath: string, config: ProjectConfig) {
-  // Generate a custom form component with Norwegian validation
-  const norwegianFormContent = `import { 
+async function generateXalaComponents(
+	projectPath: string,
+	config: ProjectConfig,
+) {
+	// Generate a custom form component with Norwegian validation
+	const norwegianFormContent = `import { 
   Card,
   Stack,
   Heading,
@@ -430,15 +433,18 @@ export function NorwegianRegistrationForm() {
   );
 }`;
 
-  await fs.ensureDir(path.join(projectPath, 'apps/web/src/components/forms'));
-  await fs.writeFile(
-    path.join(projectPath, 'apps/web/src/components/forms/NorwegianRegistrationForm.tsx'),
-    norwegianFormContent
-  );
+	await fs.ensureDir(path.join(projectPath, "apps/web/src/components/forms"));
+	await fs.writeFile(
+		path.join(
+			projectPath,
+			"apps/web/src/components/forms/NorwegianRegistrationForm.tsx",
+		),
+		norwegianFormContent,
+	);
 
-  // Generate a chat interface component
-  if (config.features?.includes('chat')) {
-    const chatInterfaceContent = `import {
+	// Generate a chat interface component
+	if (config.features?.includes("chat")) {
+		const chatInterfaceContent = `import {
   Stack,
   MessageBubble,
   ActionBar,
@@ -524,28 +530,28 @@ export function ChatInterface() {
   );
 }`;
 
-    await fs.ensureDir(path.join(projectPath, 'apps/web/src/components/chat'));
-    await fs.writeFile(
-      path.join(projectPath, 'apps/web/src/components/chat/ChatInterface.tsx'),
-      chatInterfaceContent
-    );
-  }
+		await fs.ensureDir(path.join(projectPath, "apps/web/src/components/chat"));
+		await fs.writeFile(
+			path.join(projectPath, "apps/web/src/components/chat/ChatInterface.tsx"),
+			chatInterfaceContent,
+		);
+	}
 }
 
 async function generateXalaConfig(projectPath: string, config: ProjectConfig) {
-  // Generate Xala-specific configuration
-  const xalaConfigContent = `import { defineConfig } from '@xala-technologies/ui-system';
+	// Generate Xala-specific configuration
+	const xalaConfigContent = `import { defineConfig } from '@xala-technologies/ui-system';
 
 export default defineConfig({
   // Theme configuration
   theme: {
-    defaultMode: '${config.defaultTheme || 'system'}',
+    defaultMode: '${config.defaultTheme || "system"}',
     customTokens: {
       colors: {
         // Add custom brand colors
         brand: {
-          primary: '${config.brandColors?.primary || '#0066ff'}',
-          secondary: '${config.brandColors?.secondary || '#ff6600'}',
+          primary: '${config.brandColors?.primary || "#0066ff"}',
+          secondary: '${config.brandColors?.secondary || "#ff6600"}',
         },
       },
     },
@@ -553,7 +559,7 @@ export default defineConfig({
 
   // Platform-specific settings
   platform: {
-    target: '${config.platform || 'web'}',
+    target: '${config.platform || "web"}',
     ssr: true,
     hydration: {
       strategy: 'progressive',
@@ -565,7 +571,7 @@ export default defineConfig({
     locale: 'nb-NO',
     fallbackLocale: 'en',
     classification: {
-      enabled: ${config.features?.includes('classification') || false},
+      enabled: ${config.features?.includes("classification") || false},
       levels: ['ÅPEN', 'BEGRENSET', 'KONFIDENSIELT', 'HEMMELIG'],
     },
     wcag: {
@@ -580,7 +586,7 @@ export default defineConfig({
 
   // Multi-tenant configuration
   multiTenant: {
-    enabled: ${config.features?.includes('multiTenant') || false},
+    enabled: ${config.features?.includes("multiTenant") || false},
     tenants: [
       {
         id: 'default',
@@ -603,126 +609,152 @@ export default defineConfig({
   },
 });`;
 
-  await fs.writeFile(
-    path.join(projectPath, 'xala.config.ts'),
-    xalaConfigContent
-  );
+	await fs.writeFile(
+		path.join(projectPath, "xala.config.ts"),
+		xalaConfigContent,
+	);
 
-  // Generate TypeScript configuration with Xala UI System paths
-  const tsconfigContent = {
-    compilerOptions: {
-      target: 'ES2022',
-      lib: ['ES2022', 'dom', 'dom.iterable'],
-      module: 'ESNext',
-      moduleResolution: 'bundler',
-      strict: true,
-      esModuleInterop: true,
-      skipLibCheck: true,
-      forceConsistentCasingInFileNames: true,
-      resolveJsonModule: true,
-      jsx: 'preserve',
-      incremental: true,
-      paths: {
-        '@/*': ['./src/*'],
-        '@xala/*': ['./node_modules/@xala-technologies/ui-system/*'],
-        '@components/*': ['./src/components/*'],
-        '@features/*': ['./src/features/*'],
-        '@lib/*': ['./src/lib/*'],
-      },
-    },
-    include: ['**/*.ts', '**/*.tsx'],
-    exclude: ['node_modules'],
-  };
+	// Generate TypeScript configuration with Xala UI System paths
+	const tsconfigContent = {
+		compilerOptions: {
+			target: "ES2022",
+			lib: ["ES2022", "dom", "dom.iterable"],
+			module: "ESNext",
+			moduleResolution: "bundler",
+			strict: true,
+			esModuleInterop: true,
+			skipLibCheck: true,
+			forceConsistentCasingInFileNames: true,
+			resolveJsonModule: true,
+			jsx: "preserve",
+			incremental: true,
+			paths: {
+				"@/*": ["./src/*"],
+				"@xala/*": ["./node_modules/@xala-technologies/ui-system/*"],
+				"@components/*": ["./src/components/*"],
+				"@features/*": ["./src/features/*"],
+				"@lib/*": ["./src/lib/*"],
+			},
+		},
+		include: ["**/*.ts", "**/*.tsx"],
+		exclude: ["node_modules"],
+	};
 
-  await fs.writeJson(
-    path.join(projectPath, 'tsconfig.json'),
-    tsconfigContent,
-    { spaces: 2 }
-  );
+	await fs.writeJson(path.join(projectPath, "tsconfig.json"), tsconfigContent, {
+		spaces: 2,
+	});
 }
 
+import { prompts } from "@clack/prompts";
 // apps/cli/src/commands/create-xala.ts
-import { Command } from 'commander';
-import { prompts } from '@clack/prompts';
-import { generateXalaProject } from '../generators/xala-project-generator';
-import { xalaTemplates } from '../templates/xala-templates';
+import { Command } from "commander";
+import { generateXalaProject } from "../generators/xala-project-generator";
+import { xalaTemplates } from "../templates/xala-templates";
 
 export function registerXalaCommand(program: Command) {
-  program
-    .command('create-xala [project-name]')
-    .description('Create a new Xala-powered enterprise application')
-    .option('-t, --template <template>', 'Use a specific Xala template')
-    .option('--classification', 'Enable NSM classification features')
-    .option('--multi-tenant', 'Enable multi-tenant support')
-    .option('--platform <platform>', 'Target platform (web|mobile|desktop)')
-    .action(async (projectName, options) => {
-      const config: any = {};
+	program
+		.command("create-xala [project-name]")
+		.description("Create a new Xala-powered enterprise application")
+		.option("-t, --template <template>", "Use a specific Xala template")
+		.option("--classification", "Enable NSM classification features")
+		.option("--multi-tenant", "Enable multi-tenant support")
+		.option("--platform <platform>", "Target platform (web|mobile|desktop)")
+		.action(async (projectName, options) => {
+			const config: any = {};
 
-      // Interactive setup
-      if (!projectName) {
-        projectName = await prompts.text({
-          message: 'What is your project name?',
-          placeholder: 'my-xala-app',
-        });
-      }
+			// Interactive setup
+			if (!projectName) {
+				projectName = await prompts.text({
+					message: "What is your project name?",
+					placeholder: "my-xala-app",
+				});
+			}
 
-      config.name = projectName;
+			config.name = projectName;
 
-      // Template selection
-      const template = options.template || await prompts.select({
-        message: 'Select a Xala template:',
-        options: [
-          { value: 'xala-enterprise-app', label: 'Enterprise Application' },
-          { value: 'xala-chat-interface', label: 'AI Chat Interface' },
-          { value: 'xala-government-portal', label: 'Government Portal' },
-          { value: 'custom', label: 'Custom Configuration' },
-        ],
-      });
+			// Template selection
+			const template =
+				options.template ||
+				(await prompts.select({
+					message: "Select a Xala template:",
+					options: [
+						{ value: "xala-enterprise-app", label: "Enterprise Application" },
+						{ value: "xala-chat-interface", label: "AI Chat Interface" },
+						{ value: "xala-government-portal", label: "Government Portal" },
+						{ value: "custom", label: "Custom Configuration" },
+					],
+				}));
 
-      config.template = template;
+			config.template = template;
 
-      // Platform selection
-      config.platform = options.platform || await prompts.select({
-        message: 'Select target platform:',
-        options: [
-          { value: 'web', label: 'Web Application' },
-          { value: 'mobile', label: 'Mobile Application' },
-          { value: 'desktop', label: 'Desktop Application' },
-          { value: 'all', label: 'Multi-platform' },
-        ],
-      });
+			// Platform selection
+			config.platform =
+				options.platform ||
+				(await prompts.select({
+					message: "Select target platform:",
+					options: [
+						{ value: "web", label: "Web Application" },
+						{ value: "mobile", label: "Mobile Application" },
+						{ value: "desktop", label: "Desktop Application" },
+						{ value: "all", label: "Multi-platform" },
+					],
+				}));
 
-      // Feature selection
-      const features = await prompts.multiselect({
-        message: 'Select features to include:',
-        options: [
-          { value: 'classification', label: 'NSM Classification', hint: 'ÅPEN, BEGRENSET, etc.' },
-          { value: 'chat', label: 'Chat Interface', hint: 'MessageBubble, ActionBar' },
-          { value: 'forms', label: 'Norwegian Forms', hint: 'Personal/Org number validation' },
-          { value: 'multiTenant', label: 'Multi-tenant', hint: 'White-label support' },
-          { value: 'auth', label: 'Authentication', hint: 'BankID/MinID integration' },
-          { value: 'analytics', label: 'Analytics', hint: 'GDPR-compliant analytics' },
-        ],
-      });
+			// Feature selection
+			const features = await prompts.multiselect({
+				message: "Select features to include:",
+				options: [
+					{
+						value: "classification",
+						label: "NSM Classification",
+						hint: "ÅPEN, BEGRENSET, etc.",
+					},
+					{
+						value: "chat",
+						label: "Chat Interface",
+						hint: "MessageBubble, ActionBar",
+					},
+					{
+						value: "forms",
+						label: "Norwegian Forms",
+						hint: "Personal/Org number validation",
+					},
+					{
+						value: "multiTenant",
+						label: "Multi-tenant",
+						hint: "White-label support",
+					},
+					{
+						value: "auth",
+						label: "Authentication",
+						hint: "BankID/MinID integration",
+					},
+					{
+						value: "analytics",
+						label: "Analytics",
+						hint: "GDPR-compliant analytics",
+					},
+				],
+			});
 
-      config.features = features;
+			config.features = features;
 
-      // Theme configuration
-      const themeMode = await prompts.select({
-        message: 'Default theme mode:',
-        options: [
-          { value: 'light', label: 'Light' },
-          { value: 'dark', label: 'Dark' },
-          { value: 'system', label: 'System (auto)' },
-        ],
-      });
+			// Theme configuration
+			const themeMode = await prompts.select({
+				message: "Default theme mode:",
+				options: [
+					{ value: "light", label: "Light" },
+					{ value: "dark", label: "Dark" },
+					{ value: "system", label: "System (auto)" },
+				],
+			});
 
-      config.defaultTheme = themeMode;
+			config.defaultTheme = themeMode;
 
-      // Generate the project
-      await generateXalaProject(projectName, config);
+			// Generate the project
+			await generateXalaProject(projectName, config);
 
-      console.log(`
+			console.log(`
 ✅ Xala project created successfully!
 
 Next steps:
@@ -735,5 +767,5 @@ Resources:
   🎨 Design Tokens: View xala.config.ts
   🏢 Enterprise Support: contact@xala.no
 `);
-    });
+		});
 }

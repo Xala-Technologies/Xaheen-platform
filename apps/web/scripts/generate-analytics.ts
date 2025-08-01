@@ -60,7 +60,8 @@ async function generateAnalyticsData() {
 							const timestamp = row["*.timestamp"] || new Date().toISOString();
 							const date = timestamp.includes("T")
 								? timestamp.split("T")[0]!
-								: (timestamp.split(" ")[0] || new Date().toISOString().split("T")[0]!);
+								: timestamp.split(" ")[0] ||
+									new Date().toISOString().split("T")[0]!;
 
 							let hour = 0;
 							try {
@@ -122,9 +123,10 @@ async function generateAnalyticsData() {
 		});
 
 		const lines = csvText.split("\n");
-		const timestampColumn = lines[0]
-			?.split(",")
-			.findIndex((header) => header.includes("timestamp")) ?? -1;
+		const timestampColumn =
+			lines[0]
+				?.split(",")
+				.findIndex((header) => header.includes("timestamp")) ?? -1;
 
 		let lastUpdated: string | null = null;
 		if (timestampColumn !== -1) {

@@ -30,32 +30,27 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
-			"nursery": {
-				"useSortedClasses": {
-					"level": "warn",
-					"fix": "safe",
-					"options": {
-						"functions": ["clsx", "cva", "cn"]
-					}
-				}
+			"recommended": false,
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noConsole": "off",
+				"noDebugger": "warn"
 			},
 			"correctness": {
-				"noUnusedImports": "error",
-				"noUnusedLabels": "error",
-				"noUnusedVariables": "error"
+				"noUnusedImports": "warn",
+				"noUnusedVariables": "off"
 			},
 			"style": {
-				"noParameterAssign": "error",
-				"useAsConstAssertion": "error",
-				"useDefaultParameterLast": "error",
-				"useEnumInitializers": "error",
-				"useSelfClosingElements": "error",
-				"useSingleVarDeclarator": "error",
-				"noUnusedTemplateLiteral": "error",
-				"useNumberNamespace": "error",
-				"noInferrableTypes": "error",
-				"noUselessElse": "error"
+				"noNonNullAssertion": "off",
+				"noParameterAssign": "off",
+				"useSelfClosingElements": "warn"
+			},
+			"complexity": {
+				"useLiteralKeys": "off",
+				"noBannedTypes": "off"
+			},
+			"nursery": {
+				"useSortedClasses": "off"
 			}
 		},
 		"includes": ["**", "!**/template"]

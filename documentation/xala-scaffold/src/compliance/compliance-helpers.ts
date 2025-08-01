@@ -1,14 +1,18 @@
 /**
  * Norwegian Compliance Helper Functions
- * 
+ *
  * Utility functions and helpers for implementing Norwegian compliance
  * in generated code and templates. These functions provide common
  * compliance patterns and snippets that can be used throughout
  * the scaffolding system.
  */
 
-import { NSMClassification, GDPRDataCategory, WCAGLevel } from './norwegian-compliance.js';
-import { LocaleCode } from '../localization/types.js';
+import { LocaleCode } from "../localization/types.js";
+import {
+	GDPRDataCategory,
+	NSMClassification,
+	WCAGLevel,
+} from "./norwegian-compliance.js";
 
 // === Template Helper Functions ===
 
@@ -16,41 +20,41 @@ import { LocaleCode } from '../localization/types.js';
  * Generate WCAG compliance level comment
  */
 export function wcagLevel(level: WCAGLevel): string {
-  switch (level) {
-    case WCAGLevel.A:
-      return 'WCAG 2.1 Level A Compliance';
-    case WCAGLevel.AA:
-      return 'WCAG 2.1 Level AA Compliance';
-    case WCAGLevel.AAA:
-      return 'WCAG 2.1 Level AAA Compliance';
-    default:
-      return 'WCAG 2.1 Compliance';
-  }
+	switch (level) {
+		case WCAGLevel.A:
+			return "WCAG 2.1 Level A Compliance";
+		case WCAGLevel.AA:
+			return "WCAG 2.1 Level AA Compliance";
+		case WCAGLevel.AAA:
+			return "WCAG 2.1 Level AAA Compliance";
+		default:
+			return "WCAG 2.1 Compliance";
+	}
 }
 
 /**
  * Generate GDPR compliance notice
  */
 export function gdprNotice(): string {
-  return 'GDPR: This component handles personal data in compliance with Norwegian data protection laws';
+	return "GDPR: This component handles personal data in compliance with Norwegian data protection laws";
 }
 
 /**
  * Generate NSM classification comment
  */
 export function nsmClassification(classification: NSMClassification): string {
-  switch (classification) {
-    case NSMClassification.OPEN:
-      return 'NSM Classification: OPEN - Public information';
-    case NSMClassification.RESTRICTED:
-      return 'NSM Classification: RESTRICTED - Access controlled information';
-    case NSMClassification.CONFIDENTIAL:
-      return 'NSM Classification: CONFIDENTIAL - Sensitive information requiring strong protection';
-    case NSMClassification.SECRET:
-      return 'NSM Classification: SECRET - Highly sensitive information requiring maximum protection';
-    default:
-      return 'NSM Classification: Not specified';
-  }
+	switch (classification) {
+		case NSMClassification.OPEN:
+			return "NSM Classification: OPEN - Public information";
+		case NSMClassification.RESTRICTED:
+			return "NSM Classification: RESTRICTED - Access controlled information";
+		case NSMClassification.CONFIDENTIAL:
+			return "NSM Classification: CONFIDENTIAL - Sensitive information requiring strong protection";
+		case NSMClassification.SECRET:
+			return "NSM Classification: SECRET - Highly sensitive information requiring maximum protection";
+		default:
+			return "NSM Classification: Not specified";
+	}
 }
 
 // === Security Header Helpers ===
@@ -59,57 +63,66 @@ export function nsmClassification(classification: NSMClassification): string {
  * Generate Content Security Policy header
  */
 export function generateCSP(classification: NSMClassification): string {
-  const baseCSP = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self'",
-    "connect-src 'self'",
-  ];
-  
-  if (classification === NSMClassification.SECRET || classification === NSMClassification.CONFIDENTIAL) {
-    // Stricter CSP for higher classifications
-    return [
-      "default-src 'self'",
-      "script-src 'self'",
-      "style-src 'self'",
-      "img-src 'self' data:",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; ');
-  }
-  
-  return baseCSP.join('; ');
+	const baseCSP = [
+		"default-src 'self'",
+		"script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+		"style-src 'self' 'unsafe-inline'",
+		"img-src 'self' data: https:",
+		"font-src 'self'",
+		"connect-src 'self'",
+	];
+
+	if (
+		classification === NSMClassification.SECRET ||
+		classification === NSMClassification.CONFIDENTIAL
+	) {
+		// Stricter CSP for higher classifications
+		return [
+			"default-src 'self'",
+			"script-src 'self'",
+			"style-src 'self'",
+			"img-src 'self' data:",
+			"font-src 'self'",
+			"connect-src 'self'",
+			"frame-ancestors 'none'",
+			"base-uri 'self'",
+			"form-action 'self'",
+		].join("; ");
+	}
+
+	return baseCSP.join("; ");
 }
 
 /**
  * Generate security headers object
  */
-export function generateSecurityHeaders(classification: NSMClassification): Record<string, string> {
-  const headers: Record<string, string> = {
-    'X-Frame-Options': 'DENY',
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'X-XSS-Protection': '1; mode=block',
-    'Content-Security-Policy': generateCSP(classification),
-  };
-  
-  if (classification !== NSMClassification.OPEN) {
-    headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
-    headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()';
-  }
-  
-  if (classification === NSMClassification.SECRET || classification === NSMClassification.CONFIDENTIAL) {
-    headers['X-Permitted-Cross-Domain-Policies'] = 'none';
-    headers['X-Download-Options'] = 'noopen';
-    headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private';
-  }
-  
-  return headers;
+export function generateSecurityHeaders(
+	classification: NSMClassification,
+): Record<string, string> {
+	const headers: Record<string, string> = {
+		"X-Frame-Options": "DENY",
+		"X-Content-Type-Options": "nosniff",
+		"Referrer-Policy": "strict-origin-when-cross-origin",
+		"X-XSS-Protection": "1; mode=block",
+		"Content-Security-Policy": generateCSP(classification),
+	};
+
+	if (classification !== NSMClassification.OPEN) {
+		headers["Strict-Transport-Security"] =
+			"max-age=31536000; includeSubDomains";
+		headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+	}
+
+	if (
+		classification === NSMClassification.SECRET ||
+		classification === NSMClassification.CONFIDENTIAL
+	) {
+		headers["X-Permitted-Cross-Domain-Policies"] = "none";
+		headers["X-Download-Options"] = "noopen";
+		headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private";
+	}
+
+	return headers;
 }
 
 // === GDPR Helper Functions ===
@@ -118,12 +131,12 @@ export function generateSecurityHeaders(classification: NSMClassification): Reco
  * Generate GDPR consent management code
  */
 export function generateGDPRConsent(): {
-  interface: string;
-  implementation: string;
-  usage: string;
+	interface: string;
+	implementation: string;
+	usage: string;
 } {
-  return {
-    interface: `
+	return {
+		interface: `
 interface GDPRConsent {
   necessary: boolean;
   analytics: boolean;
@@ -139,8 +152,8 @@ interface ConsentManager {
   revokeConsent(): void;
   hasConsent(category: keyof GDPRConsent): boolean;
 }`,
-    
-    implementation: `
+
+		implementation: `
 class GDPRConsentManager implements ConsentManager {
   private static readonly STORAGE_KEY = 'gdpr-consent';
   private static readonly CURRENT_VERSION = '1.0.0';
@@ -191,8 +204,8 @@ class GDPRConsentManager implements ConsentManager {
     // Implementation would clear analytics, marketing, and preference data
   }
 }`,
-    
-    usage: `
+
+		usage: `
 // Usage in components
 const consentManager = new GDPRConsentManager();
 
@@ -206,18 +219,18 @@ window.addEventListener('gdpr-consent-changed', (event) => {
   const consent = event.detail;
   // Update tracking based on new consent
 });`,
-  };
+	};
 }
 
 /**
  * Generate GDPR data deletion code
  */
 export function generateGDPRDeletion(): {
-  interface: string;
-  implementation: string;
+	interface: string;
+	implementation: string;
 } {
-  return {
-    interface: `
+	return {
+		interface: `
 interface DataDeletionRequest {
   userId: string;
   categories: ('profile' | 'activity' | 'preferences' | 'all')[];
@@ -230,8 +243,8 @@ interface DataDeletionService {
   getDeleteionStatus(requestId: string): Promise<'pending' | 'processing' | 'completed' | 'failed'>;
   cancelDeletion(requestId: string): Promise<boolean>;
 }`,
-    
-    implementation: `
+
+		implementation: `
 class GDPRDataDeletionService implements DataDeletionService {
   async requestDeletion(request: DataDeletionRequest): Promise<string> {
     const requestId = crypto.randomUUID();
@@ -264,7 +277,7 @@ class GDPRDataDeletionService implements DataDeletionService {
     // Implementation would queue background deletion job
   }
 }`,
-  };
+	};
 }
 
 // === WCAG Helper Functions ===
@@ -273,11 +286,11 @@ class GDPRDataDeletionService implements DataDeletionService {
  * Generate WCAG-compliant form validation
  */
 export function generateWCAGFormValidation(): {
-  component: string;
-  styles: string;
+	component: string;
+	styles: string;
 } {
-  return {
-    component: `
+	return {
+		component: `
 interface WCAGFormFieldProps {
   id: string;
   label: string;
@@ -334,8 +347,8 @@ const WCAGFormField: React.FC<WCAGFormFieldProps> = ({
     </div>
   );
 };`,
-    
-    styles: `
+
+		styles: `
 .wcag-form-field {
   margin-bottom: 1.5rem;
 }
@@ -386,38 +399,38 @@ button:focus {
     padding: 0.25rem;
   }
 }`,
-  };
+	};
 }
 
 /**
  * Generate skip navigation links
  */
-export function generateSkipNavigation(locale: LocaleCode = 'nb-NO'): {
-  component: string;
-  styles: string;
+export function generateSkipNavigation(locale: LocaleCode = "nb-NO"): {
+	component: string;
+	styles: string;
 } {
-  const translations = {
-    'nb-NO': {
-      skipToContent: 'Hopp til hovedinnhold',
-      skipToNavigation: 'Hopp til navigasjon',
-      skipToSearch: 'Hopp til søk',
-    },
-    'nn-NO': {
-      skipToContent: 'Hopp til hovudinnhald',
-      skipToNavigation: 'Hopp til navigasjon',
-      skipToSearch: 'Hopp til søk',
-    },
-    'en-US': {
-      skipToContent: 'Skip to main content',
-      skipToNavigation: 'Skip to navigation',
-      skipToSearch: 'Skip to search',
-    },
-  };
-  
-  const t = translations[locale] || translations['en-US'];
-  
-  return {
-    component: `
+	const translations = {
+		"nb-NO": {
+			skipToContent: "Hopp til hovedinnhold",
+			skipToNavigation: "Hopp til navigasjon",
+			skipToSearch: "Hopp til søk",
+		},
+		"nn-NO": {
+			skipToContent: "Hopp til hovudinnhald",
+			skipToNavigation: "Hopp til navigasjon",
+			skipToSearch: "Hopp til søk",
+		},
+		"en-US": {
+			skipToContent: "Skip to main content",
+			skipToNavigation: "Skip to navigation",
+			skipToSearch: "Skip to search",
+		},
+	};
+
+	const t = translations[locale] || translations["en-US"];
+
+	return {
+		component: `
 const SkipNavigation: React.FC = () => {
   return (
     <nav className="skip-navigation" aria-label="Skip navigation">
@@ -433,8 +446,8 @@ const SkipNavigation: React.FC = () => {
     </nav>
   );
 };`,
-    
-    styles: `
+
+		styles: `
 .skip-navigation {
   position: absolute;
   top: -40px;
@@ -469,7 +482,7 @@ const SkipNavigation: React.FC = () => {
     border: 2px solid #fff;
   }
 }`,
-  };
+	};
 }
 
 // === Norwegian Language Helpers ===
@@ -478,12 +491,12 @@ const SkipNavigation: React.FC = () => {
  * Generate Norwegian locale support
  */
 export function generateNorwegianLocaleSupport(): {
-  dateFormatter: string;
-  numberFormatter: string;
-  currencyFormatter: string;
+	dateFormatter: string;
+	numberFormatter: string;
+	currencyFormatter: string;
 } {
-  return {
-    dateFormatter: `
+	return {
+		dateFormatter: `
 class NorwegianDateFormatter {
   private static readonly LOCALES = {
     'nb-NO': 'nb-NO',
@@ -515,8 +528,8 @@ class NorwegianDateFormatter {
     }).format(date);
   }
 }`,
-    
-    numberFormatter: `
+
+		numberFormatter: `
 class NorwegianNumberFormatter {
   static formatNumber(value: number, locale: 'nb-NO' | 'nn-NO' = 'nb-NO'): string {
     return new Intl.NumberFormat(locale).format(value);
@@ -537,8 +550,8 @@ class NorwegianNumberFormatter {
     }).format(value);
   }
 }`,
-    
-    currencyFormatter: `
+
+		currencyFormatter: `
 class NorwegianCurrencyFormatter {
   static formatNOK(amount: number, locale: 'nb-NO' | 'nn-NO' = 'nb-NO'): string {
     return new Intl.NumberFormat(locale, {
@@ -561,7 +574,7 @@ class NorwegianCurrencyFormatter {
     }).format(amount);
   }
 }`,
-  };
+	};
 }
 
 // === Audit Trail Helpers ===
@@ -570,13 +583,13 @@ class NorwegianCurrencyFormatter {
  * Generate audit trail code
  */
 export function generateAuditTrail(classification: NSMClassification): {
-  interface: string;
-  implementation: string;
+	interface: string;
+	implementation: string;
 } {
-  const includeDetails = classification !== NSMClassification.OPEN;
-  
-  return {
-    interface: `
+	const includeDetails = classification !== NSMClassification.OPEN;
+
+	return {
+		interface: `
 interface AuditEvent {
   id: string;
   timestamp: string;
@@ -595,8 +608,8 @@ interface AuditLogger {
   log(event: Omit<AuditEvent, 'id' | 'timestamp'>): Promise<void>;
   query(filters: Partial<AuditEvent>): Promise<AuditEvent[]>;
 }`,
-    
-    implementation: `
+
+		implementation: `
 class ComplianceAuditLogger implements AuditLogger {
   private static readonly CLASSIFICATION = '${classification}';
   
@@ -608,7 +621,9 @@ class ComplianceAuditLogger implements AuditLogger {
       ...event,
     };
     
-    ${includeDetails ? `
+    ${
+			includeDetails
+				? `
     // Enhanced logging for restricted/confidential data
     console.log('AUDIT:', {
       ...auditEvent,
@@ -618,10 +633,12 @@ class ComplianceAuditLogger implements AuditLogger {
     
     // Store in secure audit log
     await this.storeSecureAuditEvent(auditEvent);
-    ` : `
+    `
+				: `
     // Basic audit logging for open data
     console.log('AUDIT:', auditEvent);
-    `}
+    `
+		}
   }
   
   async query(filters: Partial<AuditEvent>): Promise<AuditEvent[]> {
@@ -629,30 +646,34 @@ class ComplianceAuditLogger implements AuditLogger {
     return [];
   }
   
-  ${includeDetails ? `
+  ${
+		includeDetails
+			? `
   private async storeSecureAuditEvent(event: AuditEvent): Promise<void> {
     // Implementation would store in encrypted audit trail
     // with proper access controls and retention policies
   }
-  ` : ''}
+  `
+			: ""
+	}
 }`,
-  };
+	};
 }
 
 // === Export all helper functions ===
 
 export const ComplianceHelpers = {
-  wcagLevel,
-  gdprNotice,
-  nsmClassification,
-  generateCSP,
-  generateSecurityHeaders,
-  generateGDPRConsent,
-  generateGDPRDeletion,
-  generateWCAGFormValidation,
-  generateSkipNavigation,
-  generateNorwegianLocaleSupport,
-  generateAuditTrail,
+	wcagLevel,
+	gdprNotice,
+	nsmClassification,
+	generateCSP,
+	generateSecurityHeaders,
+	generateGDPRConsent,
+	generateGDPRDeletion,
+	generateWCAGFormValidation,
+	generateSkipNavigation,
+	generateNorwegianLocaleSupport,
+	generateAuditTrail,
 };
 
 export default ComplianceHelpers;

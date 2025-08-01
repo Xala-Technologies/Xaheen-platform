@@ -319,7 +319,9 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 		if (nextStack.api === "none" && (isConvex || isBackendNone)) {
 		} else if (nextStack.api === "none" && !(isConvex || isBackendNone)) {
 			if (nextStack.examples.length > 0) {
-				notes["api"].notes.push("API 'None' selected: Examples will be removed.");
+				notes["api"].notes.push(
+					"API 'None' selected: Examples will be removed.",
+				);
 				notes["examples"].notes.push(
 					"Examples require an API. They will be removed when API is 'None'.",
 				);
@@ -452,7 +454,9 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "prisma-postgres") {
 				if (nextStack.database !== "postgres") {
-					notes["dbSetup"].notes.push("Requires PostgreSQL. It will be selected.");
+					notes["dbSetup"].notes.push(
+						"Requires PostgreSQL. It will be selected.",
+					);
 					notes["database"].notes.push(
 						"Prisma PostgreSQL setup requires PostgreSQL. It will be selected.",
 					);
@@ -592,8 +596,8 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					);
 					notes["dbSetup"].hasIssue = true;
 					if (notes["backend"]) {
-					notes["backend"].hasIssue = true;
-				}
+						notes["backend"].hasIssue = true;
+					}
 					nextStack.backend = "hono";
 					changed = true;
 					changes.push({
@@ -646,8 +650,8 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					);
 					notes["runtime"].hasIssue = true;
 					if (notes["backend"]) {
-					notes["backend"].hasIssue = true;
-				}
+						notes["backend"].hasIssue = true;
+					}
 					nextStack.backend = "hono";
 					changed = true;
 					changes.push({
@@ -862,8 +866,8 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 						"AI example is not compatible with Elysia. It will be removed.",
 					);
 					if (notes["backend"]) {
-					notes["backend"].hasIssue = true;
-				}
+						notes["backend"].hasIssue = true;
+					}
 					notes["examples"].hasIssue = true;
 				}
 				if (isSolid && uniqueIncompatibleExamples.includes("ai")) {

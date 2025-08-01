@@ -14,16 +14,16 @@
  * - Interactive refinement
  */
 
-import { injectable, inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { z } from 'zod';
-import { 
-  ILoggingService, 
-  IConfigurationService, 
-  ILocalizationService,
-  IFileSystemService 
-} from '../architecture/interfaces.js';
 import { AIServiceFactory } from '../ai/services/AIServiceFactory.js';
-import { PatternMatcher, IPatternMatch } from '../rag/pattern-matching/PatternMatcher.js';
+import { 
+  IConfigurationService, 
+  IFileSystemService, 
+  ILocalizationService,
+  ILoggingService 
+} from '../architecture/interfaces.js';
+import { IPatternMatch, PatternMatcher } from '../rag/pattern-matching/PatternMatcher.js';
 import { LocaleCode, NorwegianCompliance } from '../types/compliance.js';
 import { BaseGenerator, GenerationContext, TemplateFile } from './base-generator.js';
 

@@ -1,9 +1,9 @@
 /**
  * Prompt Template Engine
- * 
+ *
  * Manages AI prompt templates for consistent code generation with Norwegian compliance.
  * Supports dynamic template rendering, localization, and context-aware prompts.
- * 
+ *
  * Features:
  * - Template-based prompt generation
  * - Norwegian compliance prompts
@@ -13,113 +13,116 @@
  * - Template composition and inheritance
  */
 
-import { EventEmitter } from 'events';
-import { ILoggingService, IConfigurationService } from '../../architecture/interfaces.js';
-import { LocaleCode, NorwegianCompliance } from '../../types/compliance.js';
+import { EventEmitter } from "events";
+import {
+	IConfigurationService,
+	ILoggingService,
+} from "../../architecture/interfaces.js";
+import { LocaleCode, NorwegianCompliance } from "../../types/compliance.js";
 
 /**
  * Prompt template definition
  */
 export interface IPromptTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: 'component' | 'service' | 'api' | 'test' | 'analysis' | 'general';
-  locale: LocaleCode;
-  template: string;
-  variables: IPromptVariable[];
-  examples?: IPromptExample[];
-  metadata: IPromptMetadata;
+	id: string;
+	name: string;
+	description: string;
+	category: "component" | "service" | "api" | "test" | "analysis" | "general";
+	locale: LocaleCode;
+	template: string;
+	variables: IPromptVariable[];
+	examples?: IPromptExample[];
+	metadata: IPromptMetadata;
 }
 
 /**
  * Prompt template variable
  */
 export interface IPromptVariable {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
-  required: boolean;
-  description: string;
-  defaultValue?: any;
-  validation?: string; // Regex pattern for validation
+	name: string;
+	type: "string" | "number" | "boolean" | "array" | "object";
+	required: boolean;
+	description: string;
+	defaultValue?: any;
+	validation?: string; // Regex pattern for validation
 }
 
 /**
  * Prompt example
  */
 export interface IPromptExample {
-  title: string;
-  description: string;
-  variables: Record<string, any>;
-  expectedOutput?: string;
+	title: string;
+	description: string;
+	variables: Record<string, any>;
+	expectedOutput?: string;
 }
 
 /**
  * Prompt metadata
  */
 export interface IPromptMetadata {
-  version: string;
-  author: string;
-  created: string;
-  updated: string;
-  tags: string[];
-  complexity: 'low' | 'medium' | 'high';
-  estimatedTokens: number;
+	version: string;
+	author: string;
+	created: string;
+	updated: string;
+	tags: string[];
+	complexity: "low" | "medium" | "high";
+	estimatedTokens: number;
 }
 
 /**
  * Prompt rendering context
  */
 export interface IPromptContext {
-  variables: Record<string, any>;
-  locale: LocaleCode;
-  compliance: NorwegianCompliance;
-  projectContext?: {
-    framework: string;
-    language: string;
-    designSystem?: string;
-    conventions?: string[];
-  };
-  userPreferences?: {
-    codeStyle: string;
-    verbosity: 'minimal' | 'normal' | 'detailed';
-    includeComments: boolean;
-    explainDecisions: boolean;
-  };
+	variables: Record<string, any>;
+	locale: LocaleCode;
+	compliance: NorwegianCompliance;
+	projectContext?: {
+		framework: string;
+		language: string;
+		designSystem?: string;
+		conventions?: string[];
+	};
+	userPreferences?: {
+		codeStyle: string;
+		verbosity: "minimal" | "normal" | "detailed";
+		includeComments: boolean;
+		explainDecisions: boolean;
+	};
 }
 
 /**
  * Rendered prompt result
  */
 export interface IRenderedPrompt {
-  content: string;
-  metadata: {
-    templateId: string;
-    locale: LocaleCode;
-    variables: Record<string, any>;
-    estimatedTokens: number;
-    renderTime: number;
-  };
-  warnings: string[];
-  errors: string[];
+	content: string;
+	metadata: {
+		templateId: string;
+		locale: LocaleCode;
+		variables: Record<string, any>;
+		estimatedTokens: number;
+		renderTime: number;
+	};
+	warnings: string[];
+	errors: string[];
 }
 
 /**
  * Prompt Template Engine
  */
 export class PromptTemplateEngine extends EventEmitter {
-  private templates = new Map<string, IPromptTemplate>();
-  private initialized = false;
+	private templates = new Map<string, IPromptTemplate>();
+	private initialized = false;
 
-  // Built-in Norwegian compliance prompts
-  private readonly BUILT_IN_TEMPLATES: IPromptTemplate[] = [
-    {
-      id: 'norwegian-react-component',
-      name: 'Norwegian React Component',
-      description: 'Generate React component with Norwegian compliance',
-      category: 'component',
-      locale: 'nb-NO',
-      template: `Du er en ekspert utvikler som lager React-komponenter med norsk compliance.
+	// Built-in Norwegian compliance prompts
+	private readonly BUILT_IN_TEMPLATES: IPromptTemplate[] = [
+		{
+			id: "norwegian-react-component",
+			name: "Norwegian React Component",
+			description: "Generate React component with Norwegian compliance",
+			category: "component",
+			locale: "nb-NO",
+			template: `Du er en ekspert utvikler som lager React-komponenter med norsk compliance.
 
 OPPGAVE: Lag en React-komponent basert på følgende beskrivelse:
 "{{description}}"
@@ -152,96 +155,98 @@ STIL:
 - Bruk semantic HTML elementer
 
 Generer kun koden, ingen forklaring.`,
-      variables: [
-        {
-          name: 'description',
-          type: 'string',
-          required: true,
-          description: 'Beskrivelse av komponenten som skal lages'
-        },
-        {
-          name: 'nsmClassification',
-          type: 'string',
-          required: true,
-          description: 'NSM sikkerhetskklassifisering',
-          defaultValue: 'OPEN'
-        },
-        {
-          name: 'gdprCompliant',
-          type: 'boolean',
-          required: true,
-          description: 'GDPR compliance påkrevd',
-          defaultValue: true
-        },
-        {
-          name: 'wcagLevel',
-          type: 'string',
-          required: true,
-          description: 'WCAG tilgjengelighetsnivå',
-          defaultValue: 'AAA'
-        },
-        {
-          name: 'supportedLanguages',
-          type: 'array',
-          required: true,
-          description: 'Støttede språk',
-          defaultValue: ['nb-NO', 'en-US']
-        },
-        {
-          name: 'accessibility',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder tilgjengelighetsfunksjoner',
-          defaultValue: true
-        },
-        {
-          name: 'localization',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder flerspråklig støtte',
-          defaultValue: true
-        },
-        {
-          name: 'auditTrail',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder audit logging',
-          defaultValue: false
-        }
-      ],
-      examples: [
-        {
-          title: 'Login Button',
-          description: 'Lag en login-knapp med norsk compliance',
-          variables: {
-            description: 'En login-knapp med sikker autentisering og audit logging',
-            nsmClassification: 'RESTRICTED',
-            gdprCompliant: true,
-            wcagLevel: 'AAA',
-            supportedLanguages: ['nb-NO', 'en-US'],
-            accessibility: true,
-            localization: true,
-            auditTrail: true
-          }
-        }
-      ],
-      metadata: {
-        version: '1.0.0',
-        author: 'Xala Enterprise',
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        tags: ['react', 'typescript', 'norwegian', 'compliance', 'component'],
-        complexity: 'medium',
-        estimatedTokens: 800
-      }
-    },
-    {
-      id: 'english-react-component',
-      name: 'English React Component',
-      description: 'Generate React component with Norwegian compliance (English prompts)',
-      category: 'component',
-      locale: 'en-US',
-      template: `You are an expert developer creating React components with Norwegian compliance.
+			variables: [
+				{
+					name: "description",
+					type: "string",
+					required: true,
+					description: "Beskrivelse av komponenten som skal lages",
+				},
+				{
+					name: "nsmClassification",
+					type: "string",
+					required: true,
+					description: "NSM sikkerhetskklassifisering",
+					defaultValue: "OPEN",
+				},
+				{
+					name: "gdprCompliant",
+					type: "boolean",
+					required: true,
+					description: "GDPR compliance påkrevd",
+					defaultValue: true,
+				},
+				{
+					name: "wcagLevel",
+					type: "string",
+					required: true,
+					description: "WCAG tilgjengelighetsnivå",
+					defaultValue: "AAA",
+				},
+				{
+					name: "supportedLanguages",
+					type: "array",
+					required: true,
+					description: "Støttede språk",
+					defaultValue: ["nb-NO", "en-US"],
+				},
+				{
+					name: "accessibility",
+					type: "boolean",
+					required: false,
+					description: "Inkluder tilgjengelighetsfunksjoner",
+					defaultValue: true,
+				},
+				{
+					name: "localization",
+					type: "boolean",
+					required: false,
+					description: "Inkluder flerspråklig støtte",
+					defaultValue: true,
+				},
+				{
+					name: "auditTrail",
+					type: "boolean",
+					required: false,
+					description: "Inkluder audit logging",
+					defaultValue: false,
+				},
+			],
+			examples: [
+				{
+					title: "Login Button",
+					description: "Lag en login-knapp med norsk compliance",
+					variables: {
+						description:
+							"En login-knapp med sikker autentisering og audit logging",
+						nsmClassification: "RESTRICTED",
+						gdprCompliant: true,
+						wcagLevel: "AAA",
+						supportedLanguages: ["nb-NO", "en-US"],
+						accessibility: true,
+						localization: true,
+						auditTrail: true,
+					},
+				},
+			],
+			metadata: {
+				version: "1.0.0",
+				author: "Xala Enterprise",
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				tags: ["react", "typescript", "norwegian", "compliance", "component"],
+				complexity: "medium",
+				estimatedTokens: 800,
+			},
+		},
+		{
+			id: "english-react-component",
+			name: "English React Component",
+			description:
+				"Generate React component with Norwegian compliance (English prompts)",
+			category: "component",
+			locale: "en-US",
+			template: `You are an expert developer creating React components with Norwegian compliance.
 
 TASK: Create a React component based on this description:
 "{{description}}"
@@ -274,80 +279,80 @@ STYLE:
 - Use semantic HTML elements
 
 Generate only the code, no explanation.`,
-      variables: [
-        {
-          name: 'description',
-          type: 'string',
-          required: true,
-          description: 'Description of the component to create'
-        },
-        {
-          name: 'nsmClassification',
-          type: 'string',
-          required: true,
-          description: 'NSM security classification',
-          defaultValue: 'OPEN'
-        },
-        {
-          name: 'gdprCompliant',
-          type: 'boolean',
-          required: true,
-          description: 'GDPR compliance required',
-          defaultValue: true
-        },
-        {
-          name: 'wcagLevel',
-          type: 'string',
-          required: true,
-          description: 'WCAG accessibility level',
-          defaultValue: 'AAA'
-        },
-        {
-          name: 'supportedLanguages',
-          type: 'array',
-          required: true,
-          description: 'Supported languages',
-          defaultValue: ['nb-NO', 'en-US']
-        },
-        {
-          name: 'accessibility',
-          type: 'boolean',
-          required: false,
-          description: 'Include accessibility features',
-          defaultValue: true
-        },
-        {
-          name: 'localization',
-          type: 'boolean',
-          required: false,
-          description: 'Include multi-language support',
-          defaultValue: true
-        },
-        {
-          name: 'auditTrail',
-          type: 'boolean',
-          required: false,
-          description: 'Include audit logging',
-          defaultValue: false
-        }
-      ],
-      metadata: {
-        version: '1.0.0',
-        author: 'Xala Enterprise',
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        tags: ['react', 'typescript', 'norwegian', 'compliance', 'component'],
-        complexity: 'medium',
-        estimatedTokens: 800
-      }
-    },
-    {
-      id: 'code-analysis-prompt',
-      name: 'Code Analysis Prompt',
-      description: 'Analyze code for patterns, quality, and compliance',
-      category: 'analysis',
-      locale: 'nb-NO',
-      template: `Du er en ekspert kodeanalysator med fokus på norsk compliance og kodekvalitet.
+			variables: [
+				{
+					name: "description",
+					type: "string",
+					required: true,
+					description: "Description of the component to create",
+				},
+				{
+					name: "nsmClassification",
+					type: "string",
+					required: true,
+					description: "NSM security classification",
+					defaultValue: "OPEN",
+				},
+				{
+					name: "gdprCompliant",
+					type: "boolean",
+					required: true,
+					description: "GDPR compliance required",
+					defaultValue: true,
+				},
+				{
+					name: "wcagLevel",
+					type: "string",
+					required: true,
+					description: "WCAG accessibility level",
+					defaultValue: "AAA",
+				},
+				{
+					name: "supportedLanguages",
+					type: "array",
+					required: true,
+					description: "Supported languages",
+					defaultValue: ["nb-NO", "en-US"],
+				},
+				{
+					name: "accessibility",
+					type: "boolean",
+					required: false,
+					description: "Include accessibility features",
+					defaultValue: true,
+				},
+				{
+					name: "localization",
+					type: "boolean",
+					required: false,
+					description: "Include multi-language support",
+					defaultValue: true,
+				},
+				{
+					name: "auditTrail",
+					type: "boolean",
+					required: false,
+					description: "Include audit logging",
+					defaultValue: false,
+				},
+			],
+			metadata: {
+				version: "1.0.0",
+				author: "Xala Enterprise",
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				tags: ["react", "typescript", "norwegian", "compliance", "component"],
+				complexity: "medium",
+				estimatedTokens: 800,
+			},
+		},
+		{
+			id: "code-analysis-prompt",
+			name: "Code Analysis Prompt",
+			description: "Analyze code for patterns, quality, and compliance",
+			category: "analysis",
+			locale: "nb-NO",
+			template: `Du er en ekspert kodeanalysator med fokus på norsk compliance og kodekvalitet.
 
 OPPGAVE: Analyser følgende kode:
 
@@ -394,45 +399,46 @@ LEVER RESULTAT SOM:
 - Kodeeksempler for forbedringer
 
 {{#if includeMetrics}}Inkluder også kvantitative mål som syklomatisk kompleksitet og vedlikeholdsbarhetsindeks.{{/if}}`,
-      variables: [
-        {
-          name: 'code',
-          type: 'string',
-          required: true,
-          description: 'Koden som skal analyseres'
-        },
-        {
-          name: 'language',
-          type: 'string',
-          required: true,
-          description: 'Programmeringsspråk',
-          defaultValue: 'typescript'
-        },
-        {
-          name: 'includeMetrics',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder kvantitative mål',
-          defaultValue: false
-        }
-      ],
-      metadata: {
-        version: '1.0.0',
-        author: 'Xala Enterprise',
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        tags: ['analysis', 'quality', 'compliance', 'norwegian'],
-        complexity: 'high',
-        estimatedTokens: 1200
-      }
-    },
-    {
-      id: 'test-generation-prompt',
-      name: 'Test Generation Prompt',
-      description: 'Generate comprehensive tests with Norwegian compliance testing',
-      category: 'test',
-      locale: 'nb-NO',
-      template: `Du er en ekspert på testing som lager omfattende tester med norsk compliance fokus.
+			variables: [
+				{
+					name: "code",
+					type: "string",
+					required: true,
+					description: "Koden som skal analyseres",
+				},
+				{
+					name: "language",
+					type: "string",
+					required: true,
+					description: "Programmeringsspråk",
+					defaultValue: "typescript",
+				},
+				{
+					name: "includeMetrics",
+					type: "boolean",
+					required: false,
+					description: "Inkluder kvantitative mål",
+					defaultValue: false,
+				},
+			],
+			metadata: {
+				version: "1.0.0",
+				author: "Xala Enterprise",
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				tags: ["analysis", "quality", "compliance", "norwegian"],
+				complexity: "high",
+				estimatedTokens: 1200,
+			},
+		},
+		{
+			id: "test-generation-prompt",
+			name: "Test Generation Prompt",
+			description:
+				"Generate comprehensive tests with Norwegian compliance testing",
+			category: "test",
+			locale: "nb-NO",
+			template: `Du er en ekspert på testing som lager omfattende tester med norsk compliance fokus.
 
 OPPGAVE: Lag tester for følgende komponent/kode:
 
@@ -487,360 +493,393 @@ GENERER:
 - Custom matchers for compliance
 
 {{#if includeE2E}}Inkluder også ende-til-ende tester med Playwright.{{/if}}`,
-      variables: [
-        {
-          name: 'code',
-          type: 'string',
-          required: true,
-          description: 'Koden som skal testes'
-        },
-        {
-          name: 'language',
-          type: 'string',
-          required: true,
-          description: 'Programmeringsspråk',
-          defaultValue: 'typescript'
-        },
-        {
-          name: 'testFramework',
-          type: 'string',
-          required: true,
-          description: 'Testramme som skal brukes',
-          defaultValue: 'Jest'
-        },
-        {
-          name: 'wcagLevel',
-          type: 'string',
-          required: true,
-          description: 'WCAG nivå for tilgjengelighetstester',
-          defaultValue: 'AAA'
-        },
-        {
-          name: 'gdprTesting',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder GDPR testing',
-          defaultValue: true
-        },
-        {
-          name: 'performanceTesting',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder performance testing',
-          defaultValue: false
-        },
-        {
-          name: 'includeE2E',
-          type: 'boolean',
-          required: false,
-          description: 'Inkluder ende-til-ende tester',
-          defaultValue: false
-        }
-      ],
-      metadata: {
-        version: '1.0.0',
-        author: 'Xala Enterprise',
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        tags: ['testing', 'compliance', 'accessibility', 'norwegian'],
-        complexity: 'high',
-        estimatedTokens: 1500
-      }
-    }
-  ];
+			variables: [
+				{
+					name: "code",
+					type: "string",
+					required: true,
+					description: "Koden som skal testes",
+				},
+				{
+					name: "language",
+					type: "string",
+					required: true,
+					description: "Programmeringsspråk",
+					defaultValue: "typescript",
+				},
+				{
+					name: "testFramework",
+					type: "string",
+					required: true,
+					description: "Testramme som skal brukes",
+					defaultValue: "Jest",
+				},
+				{
+					name: "wcagLevel",
+					type: "string",
+					required: true,
+					description: "WCAG nivå for tilgjengelighetstester",
+					defaultValue: "AAA",
+				},
+				{
+					name: "gdprTesting",
+					type: "boolean",
+					required: false,
+					description: "Inkluder GDPR testing",
+					defaultValue: true,
+				},
+				{
+					name: "performanceTesting",
+					type: "boolean",
+					required: false,
+					description: "Inkluder performance testing",
+					defaultValue: false,
+				},
+				{
+					name: "includeE2E",
+					type: "boolean",
+					required: false,
+					description: "Inkluder ende-til-ende tester",
+					defaultValue: false,
+				},
+			],
+			metadata: {
+				version: "1.0.0",
+				author: "Xala Enterprise",
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				tags: ["testing", "compliance", "accessibility", "norwegian"],
+				complexity: "high",
+				estimatedTokens: 1500,
+			},
+		},
+	];
 
-  constructor(
-    private readonly logger: ILoggingService,
-    private readonly config: IConfigurationService
-  ) {
-    super();
-  }
+	constructor(
+		private readonly logger: ILoggingService,
+		private readonly config: IConfigurationService,
+	) {
+		super();
+	}
 
-  /**
-   * Initialize the prompt template engine
-   */
-  async initialize(): Promise<void> {
-    try {
-      this.logger.info('Initializing Prompt Template Engine');
+	/**
+	 * Initialize the prompt template engine
+	 */
+	async initialize(): Promise<void> {
+		try {
+			this.logger.info("Initializing Prompt Template Engine");
 
-      // Load built-in templates
-      this.loadBuiltInTemplates();
+			// Load built-in templates
+			this.loadBuiltInTemplates();
 
-      // Load custom templates from configuration
-      await this.loadCustomTemplates();
+			// Load custom templates from configuration
+			await this.loadCustomTemplates();
 
-      this.initialized = true;
-      this.emit('initialized');
+			this.initialized = true;
+			this.emit("initialized");
 
-      this.logger.info('Prompt Template Engine initialized successfully', {
-        templatesCount: this.templates.size
-      });
-    } catch (error) {
-      this.logger.error('Failed to initialize Prompt Template Engine', error as Error);
-      throw error;
-    }
-  }
+			this.logger.info("Prompt Template Engine initialized successfully", {
+				templatesCount: this.templates.size,
+			});
+		} catch (error) {
+			this.logger.error(
+				"Failed to initialize Prompt Template Engine",
+				error as Error,
+			);
+			throw error;
+		}
+	}
 
-  /**
-   * Render a prompt template
-   */
-  async renderPrompt(templateId: string, context: IPromptContext): Promise<IRenderedPrompt> {
-    const startTime = Date.now();
+	/**
+	 * Render a prompt template
+	 */
+	async renderPrompt(
+		templateId: string,
+		context: IPromptContext,
+	): Promise<IRenderedPrompt> {
+		const startTime = Date.now();
 
-    try {
-      this.logger.debug('Rendering prompt template', {
-        templateId,
-        locale: context.locale
-      });
+		try {
+			this.logger.debug("Rendering prompt template", {
+				templateId,
+				locale: context.locale,
+			});
 
-      const template = this.getTemplate(templateId, context.locale);
-      if (!template) {
-        throw new Error(`Template not found: ${templateId} for locale ${context.locale}`);
-      }
+			const template = this.getTemplate(templateId, context.locale);
+			if (!template) {
+				throw new Error(
+					`Template not found: ${templateId} for locale ${context.locale}`,
+				);
+			}
 
-      // Validate required variables
-      const validation = this.validateContext(template, context);
-      if (validation.errors.length > 0) {
-        throw new Error(`Template validation failed: ${validation.errors.join(', ')}`);
-      }
+			// Validate required variables
+			const validation = this.validateContext(template, context);
+			if (validation.errors.length > 0) {
+				throw new Error(
+					`Template validation failed: ${validation.errors.join(", ")}`,
+				);
+			}
 
-      // Merge variables with defaults
-      const variables = this.mergeVariables(template, context.variables);
+			// Merge variables with defaults
+			const variables = this.mergeVariables(template, context.variables);
 
-      // Render template content
-      const content = this.renderTemplate(template.template, {
-        ...variables,
-        compliance: context.compliance,
-        projectContext: context.projectContext,
-        userPreferences: context.userPreferences
-      });
+			// Render template content
+			const content = this.renderTemplate(template.template, {
+				...variables,
+				compliance: context.compliance,
+				projectContext: context.projectContext,
+				userPreferences: context.userPreferences,
+			});
 
-      const result: IRenderedPrompt = {
-        content,
-        metadata: {
-          templateId,
-          locale: context.locale,
-          variables,
-          estimatedTokens: this.estimateTokens(content),
-          renderTime: Date.now() - startTime
-        },
-        warnings: validation.warnings,
-        errors: []
-      };
+			const result: IRenderedPrompt = {
+				content,
+				metadata: {
+					templateId,
+					locale: context.locale,
+					variables,
+					estimatedTokens: this.estimateTokens(content),
+					renderTime: Date.now() - startTime,
+				},
+				warnings: validation.warnings,
+				errors: [],
+			};
 
-      this.logger.debug('Prompt template rendered successfully', {
-        templateId,
-        estimatedTokens: result.metadata.estimatedTokens,
-        renderTime: result.metadata.renderTime
-      });
+			this.logger.debug("Prompt template rendered successfully", {
+				templateId,
+				estimatedTokens: result.metadata.estimatedTokens,
+				renderTime: result.metadata.renderTime,
+			});
 
-      this.emit('promptRendered', result);
-      return result;
+			this.emit("promptRendered", result);
+			return result;
+		} catch (error) {
+			this.logger.error("Failed to render prompt template", error as Error, {
+				templateId,
+				locale: context.locale,
+			});
 
-    } catch (error) {
-      this.logger.error('Failed to render prompt template', error as Error, {
-        templateId,
-        locale: context.locale
-      });
+			return {
+				content: "",
+				metadata: {
+					templateId,
+					locale: context.locale,
+					variables: {},
+					estimatedTokens: 0,
+					renderTime: Date.now() - startTime,
+				},
+				warnings: [],
+				errors: [error instanceof Error ? error.message : "Unknown error"],
+			};
+		}
+	}
 
-      return {
-        content: '',
-        metadata: {
-          templateId,
-          locale: context.locale,
-          variables: {},
-          estimatedTokens: 0,
-          renderTime: Date.now() - startTime
-        },
-        warnings: [],
-        errors: [error instanceof Error ? error.message : 'Unknown error']
-      };
-    }
-  }
+	/**
+	 * Get available templates
+	 */
+	getTemplates(): IPromptTemplate[] {
+		return Array.from(this.templates.values());
+	}
 
-  /**
-   * Get available templates
-   */
-  getTemplates(): IPromptTemplate[] {
-    return Array.from(this.templates.values());
-  }
+	/**
+	 * Get template by ID and locale
+	 */
+	getTemplate(id: string, locale: LocaleCode): IPromptTemplate | undefined {
+		// Try exact match first
+		const exactKey = `${id}-${locale}`;
+		if (this.templates.has(exactKey)) {
+			return this.templates.get(exactKey);
+		}
 
-  /**
-   * Get template by ID and locale
-   */
-  getTemplate(id: string, locale: LocaleCode): IPromptTemplate | undefined {
-    // Try exact match first
-    const exactKey = `${id}-${locale}`;
-    if (this.templates.has(exactKey)) {
-      return this.templates.get(exactKey);
-    }
+		// Try fallback to English
+		const fallbackKey = `${id}-en-US`;
+		if (this.templates.has(fallbackKey)) {
+			return this.templates.get(fallbackKey);
+		}
 
-    // Try fallback to English
-    const fallbackKey = `${id}-en-US`;
-    if (this.templates.has(fallbackKey)) {
-      return this.templates.get(fallbackKey);
-    }
+		// Try template ID without locale
+		return this.templates.get(id);
+	}
 
-    // Try template ID without locale
-    return this.templates.get(id);
-  }
+	/**
+	 * Add custom template
+	 */
+	addTemplate(template: IPromptTemplate): void {
+		const key = `${template.id}-${template.locale}`;
+		this.templates.set(key, template);
 
-  /**
-   * Add custom template
-   */
-  addTemplate(template: IPromptTemplate): void {
-    const key = `${template.id}-${template.locale}`;
-    this.templates.set(key, template);
-    
-    this.logger.debug('Template added', {
-      id: template.id,
-      locale: template.locale,
-      category: template.category
-    });
+		this.logger.debug("Template added", {
+			id: template.id,
+			locale: template.locale,
+			category: template.category,
+		});
 
-    this.emit('templateAdded', template);
-  }
+		this.emit("templateAdded", template);
+	}
 
-  /**
-   * Remove template
-   */
-  removeTemplate(id: string, locale: LocaleCode): boolean {
-    const key = `${id}-${locale}`;
-    const removed = this.templates.delete(key);
-    
-    if (removed) {
-      this.logger.debug('Template removed', { id, locale });
-      this.emit('templateRemoved', { id, locale });
-    }
-    
-    return removed;
-  }
+	/**
+	 * Remove template
+	 */
+	removeTemplate(id: string, locale: LocaleCode): boolean {
+		const key = `${id}-${locale}`;
+		const removed = this.templates.delete(key);
 
-  // === Private Helper Methods ===
+		if (removed) {
+			this.logger.debug("Template removed", { id, locale });
+			this.emit("templateRemoved", { id, locale });
+		}
 
-  /**
-   * Load built-in templates
-   */
-  private loadBuiltInTemplates(): void {
-    for (const template of this.BUILT_IN_TEMPLATES) {
-      const key = `${template.id}-${template.locale}`;
-      this.templates.set(key, template);
-    }
+		return removed;
+	}
 
-    this.logger.debug('Built-in templates loaded', {
-      count: this.BUILT_IN_TEMPLATES.length
-    });
-  }
+	// === Private Helper Methods ===
 
-  /**
-   * Load custom templates from configuration
-   */
-  private async loadCustomTemplates(): Promise<void> {
-    try {
-      const customTemplatesPath = this.config.get<string>('ai.prompts.customTemplatesPath');
-      if (!customTemplatesPath) {
-        return;
-      }
+	/**
+	 * Load built-in templates
+	 */
+	private loadBuiltInTemplates(): void {
+		for (const template of this.BUILT_IN_TEMPLATES) {
+			const key = `${template.id}-${template.locale}`;
+			this.templates.set(key, template);
+		}
 
-      // In a real implementation, this would load templates from files
-      this.logger.debug('Custom templates path configured', { path: customTemplatesPath });
+		this.logger.debug("Built-in templates loaded", {
+			count: this.BUILT_IN_TEMPLATES.length,
+		});
+	}
 
-    } catch (error) {
-      this.logger.warn('Failed to load custom templates', error as Error);
-    }
-  }
+	/**
+	 * Load custom templates from configuration
+	 */
+	private async loadCustomTemplates(): Promise<void> {
+		try {
+			const customTemplatesPath = this.config.get<string>(
+				"ai.prompts.customTemplatesPath",
+			);
+			if (!customTemplatesPath) {
+				return;
+			}
 
-  /**
-   * Validate context against template requirements
-   */
-  private validateContext(
-    template: IPromptTemplate, 
-    context: IPromptContext
-  ): { errors: string[]; warnings: string[] } {
-    const errors: string[] = [];
-    const warnings: string[] = [];
+			// In a real implementation, this would load templates from files
+			this.logger.debug("Custom templates path configured", {
+				path: customTemplatesPath,
+			});
+		} catch (error) {
+			this.logger.warn("Failed to load custom templates", error as Error);
+		}
+	}
 
-    // Check required variables
-    for (const variable of template.variables) {
-      if (variable.required && !(variable.name in context.variables)) {
-        errors.push(`Required variable missing: ${variable.name}`);
-      }
+	/**
+	 * Validate context against template requirements
+	 */
+	private validateContext(
+		template: IPromptTemplate,
+		context: IPromptContext,
+	): { errors: string[]; warnings: string[] } {
+		const errors: string[] = [];
+		const warnings: string[] = [];
 
-      // Validate variable types and patterns
-      if (variable.name in context.variables) {
-        const value = context.variables[variable.name];
-        
-        if (variable.validation) {
-          const regex = new RegExp(variable.validation);
-          if (typeof value === 'string' && !regex.test(value)) {
-            warnings.push(`Variable ${variable.name} does not match expected pattern`);
-          }
-        }
-      }
-    }
+		// Check required variables
+		for (const variable of template.variables) {
+			if (variable.required && !(variable.name in context.variables)) {
+				errors.push(`Required variable missing: ${variable.name}`);
+			}
 
-    return { errors, warnings };
-  }
+			// Validate variable types and patterns
+			if (variable.name in context.variables) {
+				const value = context.variables[variable.name];
 
-  /**
-   * Merge variables with template defaults
-   */
-  private mergeVariables(template: IPromptTemplate, variables: Record<string, any>): Record<string, any> {
-    const merged = { ...variables };
+				if (variable.validation) {
+					const regex = new RegExp(variable.validation);
+					if (typeof value === "string" && !regex.test(value)) {
+						warnings.push(
+							`Variable ${variable.name} does not match expected pattern`,
+						);
+					}
+				}
+			}
+		}
 
-    // Add default values for missing variables
-    for (const variable of template.variables) {
-      if (!(variable.name in merged) && variable.defaultValue !== undefined) {
-        merged[variable.name] = variable.defaultValue;
-      }
-    }
+		return { errors, warnings };
+	}
 
-    return merged;
-  }
+	/**
+	 * Merge variables with template defaults
+	 */
+	private mergeVariables(
+		template: IPromptTemplate,
+		variables: Record<string, any>,
+	): Record<string, any> {
+		const merged = { ...variables };
 
-  /**
-   * Render template with Handlebars-like syntax
-   */
-  private renderTemplate(template: string, variables: Record<string, any>): string {
-    let rendered = template;
+		// Add default values for missing variables
+		for (const variable of template.variables) {
+			if (!(variable.name in merged) && variable.defaultValue !== undefined) {
+				merged[variable.name] = variable.defaultValue;
+			}
+		}
 
-    // Replace simple variables {{variable}}
-    rendered = rendered.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
-      return variables[varName] !== undefined ? String(variables[varName]) : match;
-    });
+		return merged;
+	}
 
-    // Replace array variables {{#each array}}{{this}}{{/each}}
-    rendered = rendered.replace(/\{\{#each (\w+)\}\}(.*?)\{\{\/each\}\}/gs, (match, arrayName, itemTemplate) => {
-      const array = variables[arrayName];
-      if (Array.isArray(array)) {
-        return array.map(item => itemTemplate.replace(/\{\{this\}\}/g, String(item))).join('');
-      }
-      return '';
-    });
+	/**
+	 * Render template with Handlebars-like syntax
+	 */
+	private renderTemplate(
+		template: string,
+		variables: Record<string, any>,
+	): string {
+		let rendered = template;
 
-    // Replace conditional blocks {{#if condition}}content{{/if}}
-    rendered = rendered.replace(/\{\{#if (\w+)\}\}(.*?)\{\{\/if\}\}/gs, (match, conditionName, content) => {
-      const condition = variables[conditionName];
-      return condition ? content : '';
-    });
+		// Replace simple variables {{variable}}
+		rendered = rendered.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+			return variables[varName] !== undefined
+				? String(variables[varName])
+				: match;
+		});
 
-    // Replace nested object properties {{object.property}}
-    rendered = rendered.replace(/\{\{(\w+)\.(\w+)\}\}/g, (match, objName, propName) => {
-      const obj = variables[objName];
-      if (obj && typeof obj === 'object' && propName in obj) {
-        return String(obj[propName]);
-      }
-      return match;
-    });
+		// Replace array variables {{#each array}}{{this}}{{/each}}
+		rendered = rendered.replace(
+			/\{\{#each (\w+)\}\}(.*?)\{\{\/each\}\}/gs,
+			(match, arrayName, itemTemplate) => {
+				const array = variables[arrayName];
+				if (Array.isArray(array)) {
+					return array
+						.map((item) => itemTemplate.replace(/\{\{this\}\}/g, String(item)))
+						.join("");
+				}
+				return "";
+			},
+		);
 
-    return rendered;
-  }
+		// Replace conditional blocks {{#if condition}}content{{/if}}
+		rendered = rendered.replace(
+			/\{\{#if (\w+)\}\}(.*?)\{\{\/if\}\}/gs,
+			(match, conditionName, content) => {
+				const condition = variables[conditionName];
+				return condition ? content : "";
+			},
+		);
 
-  /**
-   * Estimate token count for content
-   */
-  private estimateTokens(content: string): number {
-    // Rough estimation: ~4 characters per token
-    return Math.ceil(content.length / 4);
-  }
+		// Replace nested object properties {{object.property}}
+		rendered = rendered.replace(
+			/\{\{(\w+)\.(\w+)\}\}/g,
+			(match, objName, propName) => {
+				const obj = variables[objName];
+				if (obj && typeof obj === "object" && propName in obj) {
+					return String(obj[propName]);
+				}
+				return match;
+			},
+		);
+
+		return rendered;
+	}
+
+	/**
+	 * Estimate token count for content
+	 */
+	private estimateTokens(content: string): number {
+		// Rough estimation: ~4 characters per token
+		return Math.ceil(content.length / 4);
+	}
 }

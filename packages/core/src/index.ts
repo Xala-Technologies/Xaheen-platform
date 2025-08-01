@@ -1,10 +1,9 @@
 // Main entry point for @xaheen/xala-core
 
-// Export all interfaces
-export * from './interfaces';
-
 // Export architecture components
-export * from './architecture';
+export * from "./architecture";
+// Export all interfaces
+export * from "./interfaces";
 
 // Export utilities
-export { logger } from './utils/logger';
+export { logger } from "./utils/logger";

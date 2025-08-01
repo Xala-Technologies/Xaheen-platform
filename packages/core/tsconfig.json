@@ -1,12 +1,12 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "lib": ["ES2022"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["node"],
-    "noEmit": false
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ES2022"],
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"types": ["node"],
+		"noEmit": false
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
 }

@@ -1,261 +1,290 @@
 // apps/cli/src/extensions/xaheen/standards.ts
-import { ESLintConfig, PrettierConfig, TypeScriptConfig } from '../types';
+import { ESLintConfig, PrettierConfig, TypeScriptConfig } from "../types";
 
 export const XaheenDevelopmentStandards = {
-  typescript: {
-    compilerOptions: {
-      // MANDATORY STRICT MODE
-      strict: true,
-      noImplicitAny: true,
-      strictNullChecks: true,
-      strictFunctionTypes: true,
-      strictBindCallApply: true,
-      strictPropertyInitialization: true,
-      noImplicitThis: true,
-      alwaysStrict: true,
-      
-      // Additional strictness
-      noUnusedLocals: true,
-      noUnusedParameters: true,
-      noImplicitReturns: true,
-      noFallthroughCasesInSwitch: true,
-      noUncheckedIndexedAccess: true,
-      noPropertyAccessFromIndexSignature: true,
-      
-      // Modern features
-      target: "ES2022",
-      module: "ESNext",
-      moduleResolution: "bundler",
-      jsx: "preserve",
-      
-      // Type checking
-      skipLibCheck: true,
-      esModuleInterop: true,
-      resolveJsonModule: true,
-      isolatedModules: true,
-      forceConsistentCasingInFileNames: true,
-    }
-  } as TypeScriptConfig,
+	typescript: {
+		compilerOptions: {
+			// MANDATORY STRICT MODE
+			strict: true,
+			noImplicitAny: true,
+			strictNullChecks: true,
+			strictFunctionTypes: true,
+			strictBindCallApply: true,
+			strictPropertyInitialization: true,
+			noImplicitThis: true,
+			alwaysStrict: true,
 
-  eslint: {
-    extends: [
-      'eslint:recommended',
-      'plugin:@typescript-eslint/strict-type-checked',
-      'plugin:@typescript-eslint/stylistic-type-checked',
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:jsx-a11y/strict', // WCAG 2.2 AAA compliance
-    ],
-    rules: {
-      // TypeScript strict rules
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/explicit-function-return-type': ['error', {
-        allowExpressions: false,
-        allowTypedFunctionExpressions: false,
-        allowHigherOrderFunctions: false,
-      }],
-      '@typescript-eslint/explicit-module-boundary-types': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      
-      // React component rules
-      'react/function-component-definition': ['error', {
-        namedComponents: 'arrow-function',
-        unnamedComponents: 'arrow-function',
-      }],
-      'react/prop-types': 'off', // TypeScript handles this
-      'react/require-default-props': 'off',
-      'react/jsx-props-no-spreading': 'off',
-      
-      // Forbidden patterns
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'JSXElement[openingElement.name.name=/^(div|span|p|h[1-6]|ul|li|ol|section|article|main|header|footer|nav|button|input|form|label|select|textarea|a|img|table|tr|td|th)$/]',
-          message: 'Raw HTML elements are forbidden. Use semantic components from @xaheen/ui-system instead.',
-        },
-      ],
-      
-      // Security rules
-      'react/no-danger': 'error',
-      'react/no-danger-with-children': 'error',
-      
-      // Accessibility rules (WCAG 2.2 AAA)
-      'jsx-a11y/no-access-key': 'error',
-      'jsx-a11y/aria-role': 'error',
-      'jsx-a11y/lang': 'error',
-      'jsx-a11y/no-autofocus': 'error',
-      
-      // Import rules
-      'import/order': ['error', {
-        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-        'newlines-between': 'always',
-        alphabetize: { order: 'asc', caseInsensitive: true },
-      }],
-    },
-  } as ESLintConfig,
+			// Additional strictness
+			noUnusedLocals: true,
+			noUnusedParameters: true,
+			noImplicitReturns: true,
+			noFallthroughCasesInSwitch: true,
+			noUncheckedIndexedAccess: true,
+			noPropertyAccessFromIndexSignature: true,
 
-  prettier: {
-    semi: true,
-    singleQuote: true,
-    tabWidth: 2,
-    trailingComma: 'all',
-    printWidth: 100,
-    arrowParens: 'always',
-    endOfLine: 'lf',
-  } as PrettierConfig,
+			// Modern features
+			target: "ES2022",
+			module: "ESNext",
+			moduleResolution: "bundler",
+			jsx: "preserve",
 
-  gitignore: [
-    'node_modules/',
-    'dist/',
-    'build/',
-    '.next/',
-    '.turbo/',
-    '*.log',
-    '.env*',
-    '!.env.example',
-    '.DS_Store',
-    'coverage/',
-    '.nyc_output/',
-    '*.tsbuildinfo',
-  ],
+			// Type checking
+			skipLibCheck: true,
+			esModuleInterop: true,
+			resolveJsonModule: true,
+			isolatedModules: true,
+			forceConsistentCasingInFileNames: true,
+		},
+	} as TypeScriptConfig,
 
-  vscode: {
-    'editor.defaultFormatter': 'esbenp.prettier-vscode',
-    'editor.formatOnSave': true,
-    'editor.codeActionsOnSave': {
-      'source.fixAll.eslint': true,
-      'source.organizeImports': true,
-    },
-    'typescript.tsdk': 'node_modules/typescript/lib',
-    'typescript.enablePromptUseWorkspaceTsdk': true,
-    'css.validate': false, // Using Tailwind
-    'tailwindCSS.emmetCompletions': false, // No raw HTML
-  },
+	eslint: {
+		extends: [
+			"eslint:recommended",
+			"plugin:@typescript-eslint/strict-type-checked",
+			"plugin:@typescript-eslint/stylistic-type-checked",
+			"plugin:react/recommended",
+			"plugin:react-hooks/recommended",
+			"plugin:jsx-a11y/strict", // WCAG 2.2 AAA compliance
+		],
+		rules: {
+			// TypeScript strict rules
+			"@typescript-eslint/no-explicit-any": "error",
+			"@typescript-eslint/explicit-function-return-type": [
+				"error",
+				{
+					allowExpressions: false,
+					allowTypedFunctionExpressions: false,
+					allowHigherOrderFunctions: false,
+				},
+			],
+			"@typescript-eslint/explicit-module-boundary-types": "error",
+			"@typescript-eslint/no-unsafe-assignment": "error",
+			"@typescript-eslint/no-unsafe-member-access": "error",
+			"@typescript-eslint/no-unsafe-call": "error",
+			"@typescript-eslint/no-unsafe-return": "error",
+
+			// React component rules
+			"react/function-component-definition": [
+				"error",
+				{
+					namedComponents: "arrow-function",
+					unnamedComponents: "arrow-function",
+				},
+			],
+			"react/prop-types": "off", // TypeScript handles this
+			"react/require-default-props": "off",
+			"react/jsx-props-no-spreading": "off",
+
+			// Forbidden patterns
+			"no-restricted-syntax": [
+				"error",
+				{
+					selector:
+						"JSXElement[openingElement.name.name=/^(div|span|p|h[1-6]|ul|li|ol|section|article|main|header|footer|nav|button|input|form|label|select|textarea|a|img|table|tr|td|th)$/]",
+					message:
+						"Raw HTML elements are forbidden. Use semantic components from @xaheen/ui-system instead.",
+				},
+			],
+
+			// Security rules
+			"react/no-danger": "error",
+			"react/no-danger-with-children": "error",
+
+			// Accessibility rules (WCAG 2.2 AAA)
+			"jsx-a11y/no-access-key": "error",
+			"jsx-a11y/aria-role": "error",
+			"jsx-a11y/lang": "error",
+			"jsx-a11y/no-autofocus": "error",
+
+			// Import rules
+			"import/order": [
+				"error",
+				{
+					groups: [
+						"builtin",
+						"external",
+						"internal",
+						"parent",
+						"sibling",
+						"index",
+					],
+					"newlines-between": "always",
+					alphabetize: { order: "asc", caseInsensitive: true },
+				},
+			],
+		},
+	} as ESLintConfig,
+
+	prettier: {
+		semi: true,
+		singleQuote: true,
+		tabWidth: 2,
+		trailingComma: "all",
+		printWidth: 100,
+		arrowParens: "always",
+		endOfLine: "lf",
+	} as PrettierConfig,
+
+	gitignore: [
+		"node_modules/",
+		"dist/",
+		"build/",
+		".next/",
+		".turbo/",
+		"*.log",
+		".env*",
+		"!.env.example",
+		".DS_Store",
+		"coverage/",
+		".nyc_output/",
+		"*.tsbuildinfo",
+	],
+
+	vscode: {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": true,
+			"source.organizeImports": true,
+		},
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+		"css.validate": false, // Using Tailwind
+		"tailwindCSS.emmetCompletions": false, // No raw HTML
+	},
 };
 
+import fs from "fs-extra";
+import { glob } from "glob";
+import path from "path";
 // apps/cli/src/extensions/xaheen/validators.ts
-import { z } from 'zod';
-import fs from 'fs-extra';
-import path from 'path';
-import { glob } from 'glob';
+import { z } from "zod";
 
 export class XaheenCodeValidator {
-  private static readonly FORBIDDEN_PATTERNS = [
-    // Raw HTML elements
-    /<(div|span|p|h[1-6]|ul|li|ol|section|article|main|header|footer|nav|button|input|form|label|select|textarea|a|img|table|tr|td|th)[^>]*>/g,
-    
-    // Inline styles
-    /style\s*=\s*{/g,
-    
-    // Hardcoded styling values
-    /className\s*=\s*["'].*?(p-\d+|m-\d+|text-\[|bg-\[|w-\d+|h-\d+)/g,
-    
-    // Any type usage
-    /:\s*any\b/g,
-    
-    // Missing return types
-    /const\s+\w+\s*=\s*\([^)]*\)\s*=>\s*{/g,
-    
-    // Class components
-    /class\s+\w+\s+extends\s+(React\.)?Component/g,
-  ];
+	private static readonly FORBIDDEN_PATTERNS = [
+		// Raw HTML elements
+		/<(div|span|p|h[1-6]|ul|li|ol|section|article|main|header|footer|nav|button|input|form|label|select|textarea|a|img|table|tr|td|th)[^>]*>/g,
 
-  static async validateProject(projectPath: string): Promise<ValidationResult> {
-    const errors: ValidationError[] = [];
-    const warnings: ValidationWarning[] = [];
+		// Inline styles
+		/style\s*=\s*{/g,
 
-    // Find all TypeScript/React files
-    const files = await glob('**/*.{ts,tsx}', {
-      cwd: projectPath,
-      ignore: ['node_modules/**', 'dist/**', 'build/**'],
-    });
+		// Hardcoded styling values
+		/className\s*=\s*["'].*?(p-\d+|m-\d+|text-\[|bg-\[|w-\d+|h-\d+)/g,
 
-    for (const file of files) {
-      const filePath = path.join(projectPath, file);
-      const content = await fs.readFile(filePath, 'utf-8');
-      
-      // Check for forbidden patterns
-      for (const pattern of this.FORBIDDEN_PATTERNS) {
-        const matches = content.match(pattern);
-        if (matches) {
-          errors.push({
-            file,
-            line: this.getLineNumber(content, matches[0]),
-            message: `Forbidden pattern found: ${matches[0]}`,
-            severity: 'error',
-          });
-        }
-      }
+		// Any type usage
+		/:\s*any\b/g,
 
-      // Validate imports
-      const importErrors = this.validateImports(content, file);
-      errors.push(...importErrors);
+		// Missing return types
+		/const\s+\w+\s*=\s*\([^)]*\)\s*=>\s*{/g,
 
-      // Check for proper typing
-      const typingErrors = this.validateTyping(content, file);
-      errors.push(...typingErrors);
-    }
+		// Class components
+		/class\s+\w+\s+extends\s+(React\.)?Component/g,
+	];
 
-    return { errors, warnings, isValid: errors.length === 0 };
-  }
+	static async validateProject(projectPath: string): Promise<ValidationResult> {
+		const errors: ValidationError[] = [];
+		const warnings: ValidationWarning[] = [];
 
-  private static validateImports(content: string, file: string): ValidationError[] {
-    const errors: ValidationError[] = [];
-    const lines = content.split('\n');
+		// Find all TypeScript/React files
+		const files = await glob("**/*.{ts,tsx}", {
+			cwd: projectPath,
+			ignore: ["node_modules/**", "dist/**", "build/**"],
+		});
 
-    lines.forEach((line, index) => {
-      // Check for non-semantic imports
-      if (line.includes('from \'react\'') && !line.includes('React')) {
-        if (line.match(/<div|<span|<p|<h[1-6]/)) {
-          errors.push({
-            file,
-            line: index + 1,
-            message: 'Importing HTML elements is forbidden. Use @xaheen/ui-system components.',
-            severity: 'error',
-          });
-        }
-      }
-    });
+		for (const file of files) {
+			const filePath = path.join(projectPath, file);
+			const content = await fs.readFile(filePath, "utf-8");
 
-    return errors;
-  }
+			// Check for forbidden patterns
+			for (const pattern of this.FORBIDDEN_PATTERNS) {
+				const matches = content.match(pattern);
+				if (matches) {
+					errors.push({
+						file,
+						line: this.getLineNumber(content, matches[0]),
+						message: `Forbidden pattern found: ${matches[0]}`,
+						severity: "error",
+					});
+				}
+			}
 
-  private static validateTyping(content: string, file: string): ValidationError[] {
-    const errors: ValidationError[] = [];
-    
-    // Check for components without explicit return types
-    const componentPattern = /export\s+const\s+(\w+)\s*=\s*\([^)]*\)\s*=>\s*[^:]/g;
-    const matches = content.matchAll(componentPattern);
-    
-    for (const match of matches) {
-      if (!match[0].includes(': JSX.Element') && !match[0].includes(': React.ReactElement')) {
-        errors.push({
-          file,
-          line: this.getLineNumber(content, match[0]),
-          message: `Component ${match[1]} must have explicit return type: JSX.Element or React.ReactElement`,
-          severity: 'error',
-        });
-      }
-    }
+			// Validate imports
+			const importErrors = this.validateImports(content, file);
+			errors.push(...importErrors);
 
-    return errors;
-  }
+			// Check for proper typing
+			const typingErrors = this.validateTyping(content, file);
+			errors.push(...typingErrors);
+		}
 
-  private static getLineNumber(content: string, match: string): number {
-    const index = content.indexOf(match);
-    return content.substring(0, index).split('\n').length;
-  }
+		return { errors, warnings, isValid: errors.length === 0 };
+	}
+
+	private static validateImports(
+		content: string,
+		file: string,
+	): ValidationError[] {
+		const errors: ValidationError[] = [];
+		const lines = content.split("\n");
+
+		lines.forEach((line, index) => {
+			// Check for non-semantic imports
+			if (line.includes("from 'react'") && !line.includes("React")) {
+				if (line.match(/<div|<span|<p|<h[1-6]/)) {
+					errors.push({
+						file,
+						line: index + 1,
+						message:
+							"Importing HTML elements is forbidden. Use @xaheen/ui-system components.",
+						severity: "error",
+					});
+				}
+			}
+		});
+
+		return errors;
+	}
+
+	private static validateTyping(
+		content: string,
+		file: string,
+	): ValidationError[] {
+		const errors: ValidationError[] = [];
+
+		// Check for components without explicit return types
+		const componentPattern =
+			/export\s+const\s+(\w+)\s*=\s*\([^)]*\)\s*=>\s*[^:]/g;
+		const matches = content.matchAll(componentPattern);
+
+		for (const match of matches) {
+			if (
+				!match[0].includes(": JSX.Element") &&
+				!match[0].includes(": React.ReactElement")
+			) {
+				errors.push({
+					file,
+					line: this.getLineNumber(content, match[0]),
+					message: `Component ${match[1]} must have explicit return type: JSX.Element or React.ReactElement`,
+					severity: "error",
+				});
+			}
+		}
+
+		return errors;
+	}
+
+	private static getLineNumber(content: string, match: string): number {
+		const index = content.indexOf(match);
+		return content.substring(0, index).split("\n").length;
+	}
 }
 
 // apps/cli/src/extensions/xaheen/generators/component-generator.ts
 export class XaheenComponentGenerator {
-  static generateComponent(config: ComponentConfig): string {
-    const { name, props = [], hooks = [], children = false } = config;
+	static generateComponent(config: ComponentConfig): string {
+		const { name, props = [], hooks = [], children = false } = config;
 
-    return `import React${hooks.length > 0 ? `, { ${hooks.join(', ')} }` : ''} from 'react';
+		return `import React${hooks.length > 0 ? `, { ${hooks.join(", ")} }` : ""} from 'react';
 import { 
   Stack,
   Card,
@@ -265,7 +294,7 @@ import {
 } from '@xaheen/ui-system';
 import type { Result } from '@xaheen/shared';
 
-${props.length > 0 ? this.generatePropsInterface(name, props, children) : ''}
+${props.length > 0 ? this.generatePropsInterface(name, props, children) : ""}
 
 /**
  * ${name} component following Xaheen development standards
@@ -274,16 +303,20 @@ ${props.length > 0 ? this.generatePropsInterface(name, props, children) : ''}
  * @example
  * <${name} />
  */
-export const ${name} = (${props.length > 0 || children ? `{ 
-  ${[...props.map(p => p.name), children ? 'children' : ''].filter(Boolean).join(',\n  ')} 
-}: ${name}Props` : ''}): JSX.Element => {
-  ${hooks.length > 0 ? this.generateHooks(hooks) : ''}
+export const ${name} = (${
+			props.length > 0 || children
+				? `{ 
+  ${[...props.map((p) => p.name), children ? "children" : ""].filter(Boolean).join(",\n  ")} 
+}: ${name}Props`
+				: ""
+		}): JSX.Element => {
+  ${hooks.length > 0 ? this.generateHooks(hooks) : ""}
   
   return (
     <Card variant="elevated" size="lg">
       <Stack spacing="8" align="stretch">
         <Text variant="heading" size="xl">${name}</Text>
-        ${children ? '{children}' : ''}
+        ${children ? "{children}" : ""}
       </Stack>
     </Card>
   );
@@ -291,34 +324,36 @@ export const ${name} = (${props.length > 0 || children ? `{
 
 ${name}.displayName = '${name}';
 `;
-  }
+	}
 
-  private static generatePropsInterface(
-    name: string, 
-    props: PropDefinition[], 
-    children: boolean
-  ): string {
-    return `interface ${name}Props {
-  ${props.map(prop => `readonly ${prop.name}${prop.required ? '' : '?'}: ${prop.type};`).join('\n  ')}
-  ${children ? 'readonly children?: React.ReactNode;' : ''}
+	private static generatePropsInterface(
+		name: string,
+		props: PropDefinition[],
+		children: boolean,
+	): string {
+		return `interface ${name}Props {
+  ${props.map((prop) => `readonly ${prop.name}${prop.required ? "" : "?"}: ${prop.type};`).join("\n  ")}
+  ${children ? "readonly children?: React.ReactNode;" : ""}
 }`;
-  }
+	}
 
-  private static generateHooks(hooks: string[]): string {
-    const hookImplementations: Record<string, string> = {
-      useState: 'const [state, setState] = useState<string>(\'\');',
-      useCallback: 'const handleAction = useCallback(() => {\n    // Implementation\n  }, []);',
-      useMemo: 'const computedValue = useMemo(() => {\n    return \'computed\';\n  }, []);',
-      useEffect: 'useEffect(() => {\n    // Side effect\n  }, []);',
-    };
+	private static generateHooks(hooks: string[]): string {
+		const hookImplementations: Record<string, string> = {
+			useState: "const [state, setState] = useState<string>('');",
+			useCallback:
+				"const handleAction = useCallback(() => {\n    // Implementation\n  }, []);",
+			useMemo:
+				"const computedValue = useMemo(() => {\n    return 'computed';\n  }, []);",
+			useEffect: "useEffect(() => {\n    // Side effect\n  }, []);",
+		};
 
-    return hooks.map(hook => hookImplementations[hook] || '').join('\n  ');
-  }
+		return hooks.map((hook) => hookImplementations[hook] || "").join("\n  ");
+	}
 }
 
 // apps/cli/src/extensions/xaheen/templates/xaheen-app.template.ts
 export const XaheenAppTemplate = {
-  'src/app/layout.tsx': `import React from 'react';
+	"src/app/layout.tsx": `import React from 'react';
 import { 
   DesignSystemProvider,
   SSRProvider,
@@ -368,7 +403,7 @@ export default function RootLayout({
   );
 }`,
 
-  'src/app/page.tsx': `import React from 'react';
+	"src/app/page.tsx": `import React from 'react';
 import { 
   PageLayout,
   Section,
@@ -447,7 +482,7 @@ export default function HomePage(): JSX.Element {
   );
 }`,
 
-  'src/components/brand/XaheenLogo.tsx': `import React from 'react';
+	"src/components/brand/XaheenLogo.tsx": `import React from 'react';
 import { Stack, Text, type StackProps } from '@xaheen/ui-system';
 
 interface XaheenLogoProps {
@@ -495,19 +530,27 @@ export const XaheenLogo = ({
 
 XaheenLogo.displayName = 'XaheenLogo';`,
 
-  '.eslintrc.js': `module.exports = ${JSON.stringify(XaheenDevelopmentStandards.eslint, null, 2)};`,
+	".eslintrc.js": `module.exports = ${JSON.stringify(XaheenDevelopmentStandards.eslint, null, 2)};`,
 
-  'tsconfig.json': JSON.stringify({
-    ...XaheenDevelopmentStandards.typescript,
-    include: ['**/*.ts', '**/*.tsx'],
-    exclude: ['node_modules', 'dist', 'build'],
-  }, null, 2),
+	"tsconfig.json": JSON.stringify(
+		{
+			...XaheenDevelopmentStandards.typescript,
+			include: ["**/*.ts", "**/*.tsx"],
+			exclude: ["node_modules", "dist", "build"],
+		},
+		null,
+		2,
+	),
 
-  '.prettierrc': JSON.stringify(XaheenDevelopmentStandards.prettier, null, 2),
+	".prettierrc": JSON.stringify(XaheenDevelopmentStandards.prettier, null, 2),
 
-  '.vscode/settings.json': JSON.stringify(XaheenDevelopmentStandards.vscode, null, 2),
+	".vscode/settings.json": JSON.stringify(
+		XaheenDevelopmentStandards.vscode,
+		null,
+		2,
+	),
 
-  'src/utils/result.ts': `/**
+	"src/utils/result.ts": `/**
  * Result type for proper error handling
  * Following Xaheen's functional programming patterns
  */
@@ -557,33 +600,33 @@ export const failure = <E>(error: E): Failure<E> => new Failure(error);`,
 
 // Type definitions
 interface ValidationError {
-  file: string;
-  line: number;
-  message: string;
-  severity: 'error' | 'warning';
+	file: string;
+	line: number;
+	message: string;
+	severity: "error" | "warning";
 }
 
 interface ValidationWarning {
-  file: string;
-  message: string;
+	file: string;
+	message: string;
 }
 
 interface ValidationResult {
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-  isValid: boolean;
+	errors: ValidationError[];
+	warnings: ValidationWarning[];
+	isValid: boolean;
 }
 
 interface PropDefinition {
-  name: string;
-  type: string;
-  required: boolean;
-  defaultValue?: string;
+	name: string;
+	type: string;
+	required: boolean;
+	defaultValue?: string;
 }
 
 interface ComponentConfig {
-  name: string;
-  props?: PropDefinition[];
-  hooks?: string[];
-  children?: boolean;
+	name: string;
+	props?: PropDefinition[];
+	hooks?: string[];
+	children?: boolean;
 }
