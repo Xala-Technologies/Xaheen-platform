@@ -441,6 +441,181 @@ const router = t.router({
 			}),
 	}),
 		
+	// Authentication commands - Story 3.5
+	auth: t.router({
+		add: t.procedure
+			.meta({ description: "Add authentication providers to existing project" })
+			.input(
+				z.tuple([
+					z.array(AuthProviderSchema).min(1).describe("Auth providers to add"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						primary: AuthProviderSchema.optional()
+							.describe("Primary auth provider"),
+						mfa: z.boolean().optional().default(false)
+							.describe("Enable multi-factor authentication"),
+						generateComponents: z.boolean().optional().default(true)
+							.describe("Generate auth components"),
+						updateConfig: z.boolean().optional().default(true)
+							.describe("Update project configuration"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [providers, options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Adding auth providers: ${providers.join(", ")} with options:`, options);
+				consola.warn("Auth provider addition not yet implemented - coming in Story 3.5");
+			}),
+			
+		component: t.procedure
+			.meta({ description: "Generate authentication components" })
+			.input(
+				z.tuple([
+					z.string().describe("Component name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						type: z.enum(["login", "register", "profile", "forgot-password", "mfa", "session"])
+							.optional().default("login")
+							.describe("Auth component type"),
+						provider: AuthProviderSchema.optional()
+							.describe("Target auth provider"),
+						ui: UISystemSchema.optional().default("default")
+							.describe("UI system to use"),
+						outputPath: z.string().optional()
+							.describe("Output path for component"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Generating auth component: ${name} with options:`, options);
+				consola.warn("Auth component generation not yet implemented - coming in Story 3.5");
+			}),
+			
+		page: t.procedure
+			.meta({ description: "Generate authentication pages" })
+			.input(
+				z.tuple([
+					z.string().describe("Page name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						type: z.enum(["login", "register", "dashboard", "settings", "admin"])
+							.optional().default("login")
+							.describe("Auth page type"),
+						provider: AuthProviderSchema.optional()
+							.describe("Target auth provider"),
+						ui: UISystemSchema.optional().default("default")
+							.describe("UI system to use"),
+						route: z.string().optional()
+							.describe("Page route path"),
+						protected: z.boolean().optional().default(false)
+							.describe("Require authentication"),
+						outputPath: z.string().optional()
+							.describe("Output path for page"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Generating auth page: ${name} with options:`, options);
+				consola.warn("Auth page generation not yet implemented - coming in Story 3.5");
+			}),
+			
+		service: t.procedure
+			.meta({ description: "Generate authentication service classes" })
+			.input(
+				z.tuple([
+					z.string().describe("Service name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						provider: AuthProviderSchema.optional()
+							.describe("Target auth provider"),
+						features: z.array(z.enum(["login", "logout", "register", "mfa", "session", "refresh"]))
+							.optional().default(["login", "logout"])
+							.describe("Service features to include"),
+						outputPath: z.string().optional()
+							.describe("Output path for service"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						testing: z.boolean().optional().default(true)
+							.describe("Generate tests"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Generating auth service: ${name} with options:`, options);
+				consola.warn("Auth service generation not yet implemented - coming in Story 3.5");
+			}),
+			
+		oauth: t.procedure
+			.meta({ description: "Configure OAuth providers" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						provider: z.enum(["google", "github", "microsoft", "facebook", "twitter"])
+							.describe("OAuth provider to configure"),
+						clientId: z.string().optional()
+							.describe("OAuth client ID"),
+						clientSecret: z.string().optional()
+							.describe("OAuth client secret"),
+						redirectUri: z.string().optional()
+							.describe("OAuth redirect URI"),
+						scopes: z.array(z.string()).optional()
+							.describe("OAuth scopes"),
+						generateEnv: z.boolean().optional().default(true)
+							.describe("Update environment variables"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Configuring OAuth provider with options:`, options);
+				consola.warn("OAuth configuration not yet implemented - coming in Story 3.5");
+			}),
+			
+		session: t.procedure
+			.meta({ description: "Configure session management" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						type: z.enum(["jwt", "cookie", "database", "redis"])
+							.optional().default("jwt")
+							.describe("Session storage type"),
+						duration: z.number().optional().default(86400)
+							.describe("Session duration in seconds"),
+						refreshEnabled: z.boolean().optional().default(true)
+							.describe("Enable token refresh"),
+						secure: z.boolean().optional().default(true)
+							.describe("Use secure cookies"),
+						sameSite: z.enum(["strict", "lax", "none"]).optional().default("lax")
+							.describe("Cookie SameSite policy"),
+						generateConfig: z.boolean().optional().default(true)
+							.describe("Generate configuration files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.5
+				consola.info(`Configuring session management with options:`, options);
+				consola.warn("Session configuration not yet implemented - coming in Story 3.5");
+			}),
+	}),
+		
 	sponsors: t.procedure
 		.meta({ description: "Show Xaheen Platform sponsors" })
 		.mutation(async () => {

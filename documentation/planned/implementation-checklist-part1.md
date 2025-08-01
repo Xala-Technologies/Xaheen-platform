@@ -147,15 +147,15 @@
 - [x] Add proper input validation for locale commands
 - [x] Add progress tracking for locale operations
 
-### **Story 3.5: Authentication Commands**
-- [ ] Add `auth` procedure group to tRPC router
-- [ ] Add `auth.add` subcommand for adding auth providers to existing project
-- [ ] Add `auth.component` subcommand for generating auth components
-- [ ] Add `auth.page` subcommand for generating auth pages
-- [ ] Add `auth.service` subcommand for generating auth services
-- [ ] Add `auth.oauth` subcommand for configuring OAuth providers
-- [ ] Add `auth.session` subcommand for configuring session management
-- [ ] Add proper validation for auth provider configurations
+### **Story 3.5: Authentication Commands** ✅
+- [x] Add `auth` procedure group to tRPC router
+- [x] Add `auth.add` subcommand for adding auth providers to existing project
+- [x] Add `auth.component` subcommand for generating auth components
+- [x] Add `auth.page` subcommand for generating auth pages
+- [x] Add `auth.service` subcommand for generating auth services
+- [x] Add `auth.oauth` subcommand for configuring OAuth providers
+- [x] Add `auth.session` subcommand for configuring session management
+- [x] Add proper validation for auth provider configurations
 
 ### **Story 3.6: Integration Commands**
 - [ ] Add `integration` procedure group to tRPC router
