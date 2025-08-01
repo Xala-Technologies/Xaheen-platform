@@ -52,9 +52,9 @@
 - [x] Create `apps/cli/templates/documents/report-generator.ts.hbs` template
 - [x] Add Norwegian business report formatting
 - [x] Add multi-language report generation
-- [x] Add report scheduling and automation
-- [x] Add report distribution via email/Slack
-- [x] Add report archiving and retention
+- [x] Add report scheduling and automation (basic implementation)
+- [x] Add report distribution via email/Slack (placeholder for integration)
+- [x] Add report archiving and retention (basic implementation)
 
 ### **Story 7.5: Contract Document Generation** ✅
 - [x] Create `apps/cli/src/documents/generators/contract-generator.ts`
