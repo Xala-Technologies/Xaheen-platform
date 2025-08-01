@@ -45,6 +45,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@opennextjs/cloudflare": "^1.5.1",
+        "@xala-technologies/ui-system": "^5.0.0",
         "babel-plugin-react-compiler": "^19.1.0-rc.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -83,20 +84,6 @@
         "wrangler": "^4.24.3",
       },
     },
-    "packages/ai-services": {
-      "name": "@xaheen/ai-services",
-      "version": "0.1.0",
-      "dependencies": {
-        "zod": "^4.0.5",
-      },
-      "devDependencies": {
-        "@types/node": "^24.0.13",
-        "rimraf": "^5.0.5",
-        "tsup": "^8.0.1",
-        "typescript": "^5.8.3",
-        "vitest": "^1.1.0",
-      },
-    },
     "packages/compliance": {
       "name": "@xaheen/compliance",
       "version": "0.1.0",
@@ -125,34 +112,6 @@
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
-      },
-    },
-    "packages/localization": {
-      "name": "@xaheen/localization",
-      "version": "0.1.0",
-      "dependencies": {
-        "zod": "^4.0.5",
-      },
-      "devDependencies": {
-        "@types/node": "^24.0.13",
-        "rimraf": "^5.0.5",
-        "tsup": "^8.0.1",
-        "typescript": "^5.8.3",
-        "vitest": "^1.1.0",
-      },
-    },
-    "packages/validation": {
-      "name": "@xaheen/validation",
-      "version": "0.1.0",
-      "dependencies": {
-        "zod": "^4.0.5",
-      },
-      "devDependencies": {
-        "@types/node": "^24.0.13",
-        "rimraf": "^5.0.5",
-        "tsup": "^8.0.1",
-        "typescript": "^5.8.3",
-        "vitest": "^1.1.0",
       },
     },
   },
@@ -1093,15 +1052,11 @@
 
     "@vitest/utils": ["@vitest/utils@1.6.1", "", { "dependencies": { "diff-sequences": "^29.6.3", "estree-walker": "^3.0.3", "loupe": "^2.3.7", "pretty-format": "^29.7.0" } }, "sha512-jOrrUvXM4Av9ZWiG1EajNto0u96kWAhJ1LmPmJhXXQx/32MecEKd10pOLYgS2BQx1TgkGhloPU1ArDW2vvaY6g=="],
 
-    "@xaheen/ai-services": ["@xaheen/ai-services@workspace:packages/ai-services"],
-
     "@xaheen/compliance": ["@xaheen/compliance@workspace:packages/compliance"],
 
     "@xaheen/core": ["@xaheen/core@workspace:packages/core"],
 
-    "@xaheen/localization": ["@xaheen/localization@workspace:packages/localization"],
-
-    "@xaheen/validation": ["@xaheen/validation@workspace:packages/validation"],
+    "@xala-technologies/ui-system": ["@xala-technologies/ui-system@5.0.0", "https://npm.pkg.github.com/download/@xala-technologies/ui-system/5.0.0/fbe047ada325ce8253f7ead2eebba373573fa29b", { "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-p6yrCnyVO0mfUvpxZZ+iGolc2kedh2MXSihY538MQZ1lXOWdm7ZgX5Sgwl4f08K67rpf58bZqMlFTcneRjAjOA=="],
 
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 

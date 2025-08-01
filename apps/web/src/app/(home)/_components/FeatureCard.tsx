@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, Card } from "@xala-technologies/ui-system";
 import { cn } from "@/lib/utils";
 
 type TechOption = {
@@ -76,11 +76,11 @@ export default function FeatureCard({
 	className,
 }: FeatureCardProps) {
 	return (
-		<motion.div
-			className={cn(
-				"relative flex h-36 flex-col overflow-hidden rounded-lg border border-border bg-card p-2 shadow-sm",
-				className,
-			)}
+		<Card
+			variant="default"
+			padding="sm"
+			className={cn("relative h-36 flex flex-col overflow-hidden", className)}
+			as={motion.div}
 			layout
 		>
 			<div>
@@ -120,6 +120,6 @@ export default function FeatureCard({
 					</ul>
 				</ScrollArea>
 			</div>
-		</motion.div>
+		</Card>
 	);
 }
