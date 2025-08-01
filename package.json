@@ -32,7 +32,6 @@
 	},
 	"packageManager": "bun@1.2.16",
 	"workspaces": [
-		"apps/*",
-		"packages/*"
+		"apps/*"
 	]
 }
