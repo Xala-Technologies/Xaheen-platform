@@ -108,17 +108,17 @@
 - [x] Add security monitoring and alerting
 - [x] Add NSM compliance reporting
 
-### **Story 8.3: WCAG Accessibility Validation**
-- [ ] Create `apps/cli/src/validators/accessibility-validator.ts`
-- [ ] Add WCAG 2.2 AAA compliance validation
-- [ ] Add `validateWCAGCompliance(code: string): Promise<WCAGResult>` function
-- [ ] Add automated accessibility testing with axe-core
-- [ ] Add color contrast validation
-- [ ] Add keyboard navigation validation
-- [ ] Add screen reader compatibility validation
-- [ ] Add semantic HTML validation
-- [ ] Add ARIA attribute validation
-- [ ] Add accessibility audit report generation
+### **Story 8.3: WCAG Accessibility Validation** ✅
+- [x] Create `apps/cli/src/validators/accessibility-validator.ts`
+- [x] Add WCAG 2.2 AAA compliance validation
+- [x] Add `validateWCAGCompliance(code: string): Promise<WCAGResult>` function
+- [x] Add automated accessibility testing with axe-core
+- [x] Add color contrast validation
+- [x] Add keyboard navigation validation
+- [x] Add screen reader compatibility validation
+- [x] Add semantic HTML validation
+- [x] Add ARIA attribute validation
+- [x] Add accessibility audit report generation
 
 ### **Story 8.4: Combined Norwegian Compliance**
 - [ ] Create `apps/cli/src/validators/norwegian-validator.ts`
