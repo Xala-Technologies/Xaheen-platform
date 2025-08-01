@@ -1,0 +1,36 @@
+{
+  "name": "@xaheen/core",
+  "version": "0.0.1",
+  "description": "Core service infrastructure extracted from xala-scaffold",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./architecture": {
+      "types": "./dist/architecture/index.d.ts",
+      "import": "./dist/architecture/index.js"
+    },
+    "./interfaces": {
+      "types": "./dist/interfaces/index.d.ts",
+      "import": "./dist/interfaces/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "tsdown": "^0.12.9",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

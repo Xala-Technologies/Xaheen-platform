@@ -1,0 +1,29 @@
+{
+  "name": "@xaheen/ai",
+  "version": "0.0.1",
+  "description": "AI services for code generation and analysis",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@xaheen/core": "workspace:*",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "tsdown": "^0.12.9",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
