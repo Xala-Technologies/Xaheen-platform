@@ -42,14 +42,14 @@
 - [x] Add French number format (space as thousands separator)
 - [x] Add Arabic number format with Arabic-Indic digits option
 
-### **Story 4.4: Currency Formatting**
-- [ ] Create `apps/cli/src/localization/utils/currency-formatter.ts`
-- [ ] Add `formatCurrency(amount: number, currency: string, locale: string): string` function
-- [ ] Add Norwegian Krone (NOK) formatting
-- [ ] Add Euro (EUR) formatting for French
-- [ ] Add various currency support for Arabic regions
-- [ ] Add VAT/MVA calculation utilities for Norwegian invoices
-- [ ] Add currency conversion utilities for multi-currency applications
+### **Story 4.4: Currency Formatting** ✅
+- [x] Create `apps/cli/src/localization/utils/currency-formatter.ts`
+- [x] Add `formatCurrency(amount: number, currency: string, locale: string): string` function
+- [x] Add Norwegian Krone (NOK) formatting
+- [x] Add Euro (EUR) formatting for French
+- [x] Add various currency support for Arabic regions
+- [x] Add VAT/MVA calculation utilities for Norwegian invoices
+- [x] Add currency conversion utilities for multi-currency applications
 
 ### **Story 4.5: Translation Management**
 - [ ] Create `apps/cli/src/localization/generators/translation-manager.ts`
