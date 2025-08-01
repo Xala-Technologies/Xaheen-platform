@@ -96,17 +96,17 @@
 - [x] Add data breach notification handling
 - [x] Add GDPR audit trail generation
 
-### **Story 8.2: Norwegian NSM Security Validation**
-- [ ] Create `apps/cli/src/validators/nsm-validator.ts`
-- [ ] Add NSM security classification validation (OPEN, INTERNAL, RESTRICTED, CONFIDENTIAL)
-- [ ] Add `validateNSMCompliance(code: string): Promise<NSMResult>` function
-- [ ] Add security measure implementation validation
-- [ ] Add risk assessment and threat modeling
-- [ ] Add vulnerability assessment integration
-- [ ] Add security control validation
-- [ ] Add incident response planning
-- [ ] Add security monitoring and alerting
-- [ ] Add NSM compliance reporting
+### **Story 8.2: Norwegian NSM Security Validation** ✅
+- [x] Create `apps/cli/src/validators/nsm-validator.ts`
+- [x] Add NSM security classification validation (OPEN, INTERNAL, RESTRICTED, CONFIDENTIAL)
+- [x] Add `validateNSMCompliance(code: string): Promise<NSMResult>` function
+- [x] Add security measure implementation validation
+- [x] Add risk assessment and threat modeling
+- [x] Add vulnerability assessment integration
+- [x] Add security control validation
+- [x] Add incident response planning
+- [x] Add security monitoring and alerting
+- [x] Add NSM compliance reporting
 
 ### **Story 8.3: WCAG Accessibility Validation**
 - [ ] Create `apps/cli/src/validators/accessibility-validator.ts`
