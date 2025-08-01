@@ -30,17 +30,17 @@
 - [x] Add `dir="rtl"` attribute handling in HTML templates
 - [x] Add Arabic font family specifications in CSS templates
 
-### **Story 4.3: Cultural Formatting**
-- [ ] Create `apps/cli/src/localization/utils/date-formatter.ts`
-- [ ] Add `formatDate(date: Date, locale: string): string` function
-- [ ] Add Norwegian date format (dd.mm.yyyy) support
-- [ ] Add French date format (dd/mm/yyyy) support
-- [ ] Add Arabic date format with Hijri calendar option
-- [ ] Create `apps/cli/src/localization/utils/number-formatter.ts`
-- [ ] Add `formatNumber(number: number, locale: string): string` function
-- [ ] Add Norwegian number format (space as thousands separator)
-- [ ] Add French number format (space as thousands separator)
-- [ ] Add Arabic number format with Arabic-Indic digits option
+### **Story 4.3: Cultural Formatting** ✅
+- [x] Create `apps/cli/src/localization/utils/date-formatter.ts`
+- [x] Add `formatDate(date: Date, locale: string): string` function
+- [x] Add Norwegian date format (dd.mm.yyyy) support
+- [x] Add French date format (dd/mm/yyyy) support
+- [x] Add Arabic date format with Hijri calendar option
+- [x] Create `apps/cli/src/localization/utils/number-formatter.ts`
+- [x] Add `formatNumber(number: number, locale: string): string` function
+- [x] Add Norwegian number format (space as thousands separator)
+- [x] Add French number format (space as thousands separator)
+- [x] Add Arabic number format with Arabic-Indic digits option
 
 ### **Story 4.4: Currency Formatting**
 - [ ] Create `apps/cli/src/localization/utils/currency-formatter.ts`
