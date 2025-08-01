@@ -312,6 +312,135 @@ const router = t.router({
 			consola.warn("Project validation not yet implemented - coming in Story 3.3");
 		}),
 		
+	// Localization commands - Story 3.4
+	locale: t.router({
+		add: t.procedure
+			.meta({ description: "Add language support to existing project" })
+			.input(
+				z.tuple([
+					z.array(LanguageSchema).min(1).describe("Languages to add"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						setPrimary: z.boolean().optional().default(false)
+							.describe("Set first language as primary"),
+						generateFiles: z.boolean().optional().default(true)
+							.describe("Generate translation files"),
+						updateConfig: z.boolean().optional().default(true)
+							.describe("Update project configuration"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [languages, options] = input;
+				// Implementation will be added in Story 3.4
+				consola.info(`Adding languages: ${languages.join(", ")} with options:`, options);
+				consola.warn("Language addition not yet implemented - coming in Story 3.4");
+			}),
+			
+		extract: t.procedure
+			.meta({ description: "Extract translation keys from source code" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						sourcePaths: z.array(z.string()).optional()
+							.describe("Source paths to scan"),
+						outputPath: z.string().optional()
+							.describe("Output path for extracted keys"),
+						format: z.enum(["json", "yaml", "po"]).optional().default("json")
+							.describe("Output format for translations"),
+						includeDefaults: z.boolean().optional().default(true)
+							.describe("Include default translations"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.4
+				consola.info(`Extracting translation keys with options:`, options);
+				consola.warn("Translation extraction not yet implemented - coming in Story 3.4");
+			}),
+			
+		import: t.procedure
+			.meta({ description: "Import translations from files" })
+			.input(
+				z.tuple([
+					z.string().describe("Import file path"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						language: LanguageSchema.optional()
+							.describe("Target language for import"),
+						format: z.enum(["json", "yaml", "po", "csv"]).optional()
+							.describe("Import file format"),
+						merge: z.boolean().optional().default(true)
+							.describe("Merge with existing translations"),
+						validate: z.boolean().optional().default(true)
+							.describe("Validate imported translations"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [filePath, options] = input;
+				// Implementation will be added in Story 3.4
+				consola.info(`Importing translations from: ${filePath} with options:`, options);
+				consola.warn("Translation import not yet implemented - coming in Story 3.4");
+			}),
+			
+		export: t.procedure
+			.meta({ description: "Export translations to files" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						languages: z.array(LanguageSchema).optional()
+							.describe("Languages to export"),
+						outputPath: z.string().optional()
+							.describe("Output directory for exports"),
+						format: z.enum(["json", "yaml", "po", "csv"]).optional().default("json")
+							.describe("Export file format"),
+						includeEmpty: z.boolean().optional().default(false)
+							.describe("Include empty translations"),
+						flatten: z.boolean().optional().default(false)
+							.describe("Flatten nested keys"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.4
+				consola.info(`Exporting translations with options:`, options);
+				consola.warn("Translation export not yet implemented - coming in Story 3.4");
+			}),
+			
+		validate: t.procedure
+			.meta({ description: "Validate translation completeness and quality" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						languages: z.array(LanguageSchema).optional()
+							.describe("Languages to validate"),
+						checkMissing: z.boolean().optional().default(true)
+							.describe("Check for missing translations"),
+						checkPlurals: z.boolean().optional().default(true)
+							.describe("Validate plural forms"),
+						checkFormats: z.boolean().optional().default(true)
+							.describe("Validate format strings"),
+						checkRtl: z.boolean().optional().default(true)
+							.describe("Check RTL compatibility"),
+						report: z.boolean().optional().default(true)
+							.describe("Generate validation report"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.4
+				consola.info(`Validating translations with options:`, options);
+				consola.warn("Translation validation not yet implemented - coming in Story 3.4");
+			}),
+	}),
+		
 	sponsors: t.procedure
 		.meta({ description: "Show Xaheen Platform sponsors" })
 		.mutation(async () => {

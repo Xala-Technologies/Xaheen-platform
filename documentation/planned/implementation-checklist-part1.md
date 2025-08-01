@@ -137,15 +137,15 @@
 - [x] Add proper input validation for all new procedures
 - [x] Add error handling and user feedback for all procedures
 
-### **Story 3.4: Localization Commands**
-- [ ] Add `locale` procedure group to tRPC router
-- [ ] Add `locale.add` subcommand for adding languages to existing project
-- [ ] Add `locale.extract` subcommand for extracting translation keys
-- [ ] Add `locale.import` subcommand for importing translations from files
-- [ ] Add `locale.export` subcommand for exporting translations to files
-- [ ] Add `locale.validate` subcommand for validating translations
-- [ ] Add proper input validation for locale commands
-- [ ] Add progress tracking for locale operations
+### **Story 3.4: Localization Commands** ✅
+- [x] Add `locale` procedure group to tRPC router
+- [x] Add `locale.add` subcommand for adding languages to existing project
+- [x] Add `locale.extract` subcommand for extracting translation keys
+- [x] Add `locale.import` subcommand for importing translations from files
+- [x] Add `locale.export` subcommand for exporting translations to files
+- [x] Add `locale.validate` subcommand for validating translations
+- [x] Add proper input validation for locale commands
+- [x] Add progress tracking for locale operations
 
 ### **Story 3.5: Authentication Commands**
 - [ ] Add `auth` procedure group to tRPC router
