@@ -81,16 +81,16 @@
 - [x] Add GraphQL schema generation (if applicable)
 
 ### **Story 10.7: Layout Generation Handler**
-- [ ] Create `apps/cli/src/helpers/project-generation/layout-handler.ts`
-- [ ] Add `generateLayoutHandler(name: string, options: LayoutOptions): Promise<void>` function
-- [ ] Add layout type selection (app, page, component)
-- [ ] Add responsive design integration
-- [ ] Add navigation component integration
-- [ ] Add footer component integration
-- [ ] Add sidebar component integration
-- [ ] Add theme and styling integration
-- [ ] Add accessibility navigation features
-- [ ] Add mobile-first responsive design
+- [x] Create `apps/cli/src/helpers/project-generation/layout-handler.ts`
+- [x] Add `generateLayoutHandler(name: string, options: LayoutOptions): Promise<void>` function
+- [x] Add layout type selection (app, page, component)
+- [x] Add responsive design integration
+- [x] Add navigation component integration
+- [x] Add footer component integration
+- [x] Add sidebar component integration
+- [x] Add theme and styling integration
+- [x] Add accessibility navigation features
+- [x] Add mobile-first responsive design
 
 ### **Story 10.8: Service Generation Handler**
 - [ ] Create `apps/cli/src/helpers/project-generation/service-handler.ts`
