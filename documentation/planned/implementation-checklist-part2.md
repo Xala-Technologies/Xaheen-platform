@@ -226,13 +226,13 @@
 - [x] Add webhook security and rate limiting
 - [x] Add webhook testing and debugging tools
 
-### **Story 6.7: API Key Management**
-- [ ] Create `apps/cli/src/integrations/config/api-key-manager.ts`
-- [ ] Add secure API key storage and retrieval
-- [ ] Add environment-specific key management (dev/test/prod)
-- [ ] Add API key rotation and expiration handling
-- [ ] Add API key validation and testing
-- [ ] Create configuration templates for each integration
-- [ ] Add encrypted configuration file generation
-- [ ] Add API key audit logging
-- [ ] Add API key usage monitoring and alerting
+### **Story 6.7: API Key Management** ✅
+- [x] Create `apps/cli/src/integrations/config/api-key-manager.ts`
+- [x] Add secure API key storage and retrieval
+- [x] Add environment-specific key management (dev/test/prod)
+- [x] Add API key rotation and expiration handling
+- [x] Add API key validation and testing
+- [x] Create configuration templates for each integration
+- [x] Add encrypted configuration file generation
+- [x] Add API key audit logging
+- [x] Add API key usage monitoring and alerting
