@@ -51,15 +51,15 @@
 - [x] Add VAT/MVA calculation utilities for Norwegian invoices
 - [x] Add currency conversion utilities for multi-currency applications
 
-### **Story 4.5: Translation Management**
-- [ ] Create `apps/cli/src/localization/generators/translation-manager.ts`
-- [ ] Add `extractTranslationKeys(filePath: string): string[]` function
-- [ ] Add `generateTranslationFile(keys: string[], language: string): void` function
-- [ ] Add `importTranslations(filePath: string, language: string): void` function
-- [ ] Add `exportTranslations(language: string, format: 'json' | 'csv'): void` function
-- [ ] Add `validateTranslations(language: string): ValidationResult` function
-- [ ] Add `findMissingTranslations(languages: string[]): string[]` function
-- [ ] Add `findUnusedTranslations(languages: string[]): string[]` function
+### **Story 4.5: Translation Management** ✅
+- [x] Create `apps/cli/src/localization/generators/translation-manager.ts`
+- [x] Add `extractTranslationKeys(filePath: string): string[]` function
+- [x] Add `generateTranslationFile(keys: string[], language: string): void` function
+- [x] Add `importTranslations(filePath: string, language: string): void` function
+- [x] Add `exportTranslations(language: string, format: 'json' | 'csv'): void` function
+- [x] Add `validateTranslations(language: string): ValidationResult` function
+- [x] Add `findMissingTranslations(languages: string[]): string[]` function
+- [x] Add `findUnusedTranslations(languages: string[]): string[]` function
 
 ### **Story 4.6: Locale-Aware Generation**
 - [ ] Create `apps/cli/src/localization/generators/locale-generator.ts`
