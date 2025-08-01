@@ -182,6 +182,123 @@ export const WCAGLevelSchema = z
 export type WCAGLevel = z.infer<typeof WCAGLevelSchema>;
 
 // ============================================================================
+// DOCUMENT GENERATION TYPES - Story 7.1
+// ============================================================================
+
+/**
+ * PDF generation options schema
+ */
+export const PDFOptionsSchema = z.object({
+	title: z.string().min(1, "PDF title is required"),
+	content: z.string().min(1, "PDF content is required"),
+	author: z.string().optional(),
+	template: z.string().optional(),
+	outputPath: z.string().optional(),
+	metadata: z.object({
+		subject: z.string().optional(),
+		keywords: z.array(z.string()).optional(),
+		creator: z.string().optional(),
+		producer: z.string().optional(),
+	}).optional(),
+	security: z.object({
+		userPassword: z.string().min(6).optional(),
+		ownerPassword: z.string().min(6).optional(),
+		permissions: z.object({
+			printing: z.boolean().optional(),
+			modifying: z.boolean().optional(),
+			copying: z.boolean().optional(),
+			annotating: z.boolean().optional(),
+			fillingForms: z.boolean().optional(),
+			contentAccessibility: z.boolean().optional(),
+			documentAssembly: z.boolean().optional(),
+		}).optional(),
+	}).optional(),
+	fonts: z.object({
+		primary: z.string().optional(),
+		secondary: z.string().optional(),
+		supportNorwegian: z.boolean().optional(),
+	}).optional(),
+});
+export type PDFOptions = z.infer<typeof PDFOptionsSchema>;
+
+/**
+ * Document generation result schema
+ */
+export const DocumentResultSchema = z.object({
+	success: z.boolean(),
+	buffer: z.instanceof(Buffer).optional(),
+	filePath: z.string().optional(),
+	error: z.string().optional(),
+	metadata: z.object({
+		pages: z.number(),
+		size: z.number(),
+		generatedAt: z.date(),
+	}).optional(),
+});
+export type DocumentResult = z.infer<typeof DocumentResultSchema>;
+
+/**
+ * Norwegian invoice data schema
+ */
+export const NorwegianInvoiceSchema = z.object({
+	invoiceNumber: z.string().min(1),
+	invoiceDate: z.date(),
+	dueDate: z.date(),
+	seller: z.object({
+		name: z.string().min(1),
+		orgNumber: z.string().min(9).max(9),
+		mvaNumber: z.string().optional(),
+		address: z.string().min(1),
+		postalCode: z.string().min(4).max(4),
+		city: z.string().min(1),
+		country: z.string().default("Norge"),
+		email: z.string().email().optional(),
+		phone: z.string().optional(),
+	}),
+	buyer: z.object({
+		name: z.string().min(1),
+		orgNumber: z.string().optional(),
+		address: z.string().min(1),
+		postalCode: z.string().min(4).max(4),
+		city: z.string().min(1),
+		country: z.string().default("Norge"),
+		email: z.string().email().optional(),
+	}),
+	items: z.array(z.object({
+		description: z.string().min(1),
+		quantity: z.number().positive(),
+		unitPrice: z.number().nonnegative(),
+		mvaRate: z.enum(["0", "12", "15", "25"]).default("25"),
+		total: z.number().nonnegative(),
+	})),
+	subtotal: z.number().nonnegative(),
+	mvaAmount: z.number().nonnegative(),
+	total: z.number().nonnegative(),
+	paymentTerms: z.string().default("30 dager"),
+	bankAccount: z.string().optional(),
+	reference: z.string().optional(),
+	notes: z.string().optional(),
+});
+export type NorwegianInvoice = z.infer<typeof NorwegianInvoiceSchema>;
+
+/**
+ * CSV processing options schema
+ */
+export const CSVOptionsSchema = z.object({
+	filePath: z.string().min(1),
+	delimiter: z.string().default(","),
+	header: z.boolean().default(true),
+	encoding: z.string().default("utf-8"),
+	skipEmptyLines: z.boolean().default(true),
+	validationSchema: z.any().optional(),
+	transformFn: z.any().optional(),
+	errorHandling: z.enum(["strict", "skip", "log"]).default("strict"),
+	maxRows: z.number().positive().optional(),
+	gdprCompliant: z.boolean().default(true),
+});
+export type CSVOptions = z.infer<typeof CSVOptionsSchema>;
+
+// ============================================================================
 // ENHANCED INPUT TYPES
 // ============================================================================
 
