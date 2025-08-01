@@ -1,4 +1,4 @@
-import { IBaseService } from "../../interfaces";
+import type { IBaseService } from "../../interfaces";
 
 /**
  * Service metadata for registration

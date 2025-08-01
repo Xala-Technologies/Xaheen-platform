@@ -14,6 +14,8 @@ import type { LocaleCode, NorwegianCompliance } from "./types";
 export interface IBaseService {
 	readonly name: string;
 	readonly version: string;
+	readonly isInitialized: boolean;
+	readonly isDisposed: boolean;
 	initialize(): Promise<void>;
 	dispose(): Promise<void>;
 	healthCheck(): Promise<boolean>;
@@ -83,16 +85,6 @@ export interface IFileStats {
 }
 
 // === Observer Pattern Interfaces ===
-
-/**
- * Event emitter interface - publishes events
- */
-export interface IEventEmitter {
-	emit(event: string, data?: any): void;
-	on(event: string, handler: (data?: any) => void): () => void;
-	off(event: string, handler: (data?: any) => void): void;
-	once(event: string, handler: (data?: any) => void): () => void;
-}
 
 /**
  * Event listener interface - subscribes to events

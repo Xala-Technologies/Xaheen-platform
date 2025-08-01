@@ -1,4 +1,4 @@
-import { IServiceDependencyGraph } from "./interfaces";
+import type { IServiceDependencyGraph } from "./interfaces";
 
 /**
  * Service Dependency Graph implementation

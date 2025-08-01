@@ -1,13 +1,13 @@
 import { BaseService } from "../../architecture/base-service";
-import { IBaseService, IEventEmitter } from "../../interfaces";
+import type { IBaseService } from "../../interfaces";
 import { logger } from "../../utils/logger";
-import {
+import type {
 	IServiceDiscovery,
 	IServiceMetadata,
 	IServiceRegistration,
-	ServiceStatus,
 	IServiceDiscoveryEvents,
 } from "./interfaces";
+import { ServiceStatus } from "./interfaces";
 
 /**
  * Service Discovery implementation
@@ -189,7 +189,7 @@ export class ServiceDiscovery extends BaseService implements IServiceDiscovery {
 
 		// Return first available
 		const firstId = serviceIds.values().next().value;
-		return this.services.get(firstId);
+		return firstId ? this.services.get(firstId) : undefined;
 	}
 
 	/**
