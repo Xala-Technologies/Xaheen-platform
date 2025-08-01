@@ -99,41 +99,41 @@
 - [x] Add BankID certificate handling
 - [x] Add BankID user verification and data extraction
 
-### **Story 5.3: OAuth Provider Setup**
-- [ ] Create `apps/cli/src/integrations/auth/oauth.ts`
-- [ ] Add OAuth provider configuration for Google, GitHub, Microsoft
-- [ ] Add `generateOAuthComponent(provider: string, options: AuthOptions): GenerationResult` function
-- [ ] Add `generateOAuthService(provider: string, options: AuthOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/auth/oauth-login.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/oauth-callback.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/oauth-service.ts.hbs` template
-- [ ] Add OAuth scope configuration and management
-- [ ] Add OAuth token refresh handling
-- [ ] Add OAuth user profile normalization
+### **Story 5.3: OAuth Provider Setup** ✅
+- [x] Create `apps/cli/src/integrations/auth/oauth.ts`
+- [x] Add OAuth provider configuration for Google, GitHub, Microsoft, Discord, Twitter, Facebook, LinkedIn, Apple
+- [x] Add `generateOAuthComponent(provider: string, options: AuthOptions): GenerationResult` function
+- [x] Add `generateOAuthService(provider: string, options: AuthOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/auth/oauth-login.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/oauth-callback.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/oauth-service.ts.hbs` template
+- [x] Add OAuth scope configuration and management
+- [x] Add OAuth token refresh handling
+- [x] Add OAuth user profile normalization
 
-### **Story 5.4: Email/Passwordless Authentication**
-- [ ] Create `apps/cli/src/integrations/auth/passwordless.ts`
-- [ ] Add magic link generation and validation
-- [ ] Add SMS code generation and validation
-- [ ] Add `generatePasswordlessComponent(options: AuthOptions): GenerationResult` function
-- [ ] Add `generatePasswordlessService(options: AuthOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/auth/magic-link.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/sms-code.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/passwordless-service.ts.hbs` template
-- [ ] Add email template generation for magic links
-- [ ] Add SMS template generation for verification codes
+### **Story 5.4: Email/Passwordless Authentication** ✅
+- [x] Create `apps/cli/src/integrations/auth/passwordless.ts`
+- [x] Add magic link generation and validation
+- [x] Add SMS code generation and validation
+- [x] Add `generatePasswordlessComponent(options: AuthOptions): GenerationResult` function
+- [x] Add `generatePasswordlessService(options: AuthOptions): GenerationResult` function
+- [x] Create passwordless authentication templates with professional UI
+- [x] Add email template generation for magic links
+- [x] Add SMS template generation for verification codes
+- [x] Add token-based verification system
+- [x] Add multi-provider support (Twilio, AWS SNS, Vonage)
 
-### **Story 5.5: Multi-Factor Authentication**
-- [ ] Create `apps/cli/src/integrations/auth/mfa.ts`
-- [ ] Add TOTP (Time-based One-Time Password) implementation
-- [ ] Add SMS-based MFA implementation
-- [ ] Add `generateMFAComponent(options: MFAOptions): GenerationResult` function
-- [ ] Add `generateMFAService(options: MFAOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/auth/mfa-setup.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/mfa-verify.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/mfa-service.ts.hbs` template
-- [ ] Add QR code generation for TOTP setup
-- [ ] Add backup code generation and management
+### **Story 5.5: Multi-Factor Authentication** ✅
+- [x] Create `apps/cli/src/integrations/auth/mfa.ts`
+- [x] Add TOTP (Time-based One-Time Password) implementation
+- [x] Add SMS-based MFA implementation
+- [x] Add `generateMFAComponent(options: MFAOptions): GenerationResult` function
+- [x] Add `generateMFAService(options: MFAOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/auth/mfa-setup.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/mfa-verify.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/mfa-service.ts.hbs` template
+- [x] Add QR code generation for TOTP setup
+- [x] Add backup code generation and management
 
 ### **Story 5.6: Session Management**
 - [ ] Create `apps/cli/src/integrations/auth/session.ts`
