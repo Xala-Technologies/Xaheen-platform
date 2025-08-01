@@ -32,29 +32,29 @@
 - [x] Add invoice numbering and reference handling
 - [x] Add payment terms and bank account information
 
-### **Story 7.3: CSV Import/Export System**
-- [ ] Create `apps/cli/src/documents/processors/csv-processor.ts`
-- [ ] Add CSV parsing with Papa Parse library
-- [ ] Add `importCSV(filePath: string, schema: any): Promise<any[]>` function
-- [ ] Add `exportCSV(data: any[], headers: string[]): Promise<string>` function
-- [ ] Add `generateCSVProcessor(options: CSVOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/documents/csv-processor.ts.hbs` template
-- [ ] Add data validation and sanitization
-- [ ] Add error handling for malformed CSV files
-- [ ] Add progress tracking for large file processing
-- [ ] Add GDPR-compliant data handling and anonymization
+### **Story 7.3: CSV Import/Export System** ✅
+- [x] Create `apps/cli/src/documents/processors/csv-processor.ts`
+- [x] Add CSV parsing with Papa Parse library (using csv-parse/csv-stringify)
+- [x] Add `importCSV(filePath: string, schema: any): Promise<any[]>` function
+- [x] Add `exportCSV(data: any[], headers: string[]): Promise<string>` function
+- [x] Add `generateCSVProcessor(options: CSVOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/documents/csv-processor.ts.hbs` template
+- [x] Add data validation and sanitization
+- [x] Add error handling for malformed CSV files
+- [x] Add progress tracking for large file processing
+- [x] Add GDPR-compliant data handling and anonymization
 
-### **Story 7.4: Report Generation System**
-- [ ] Create `apps/cli/src/documents/generators/report-generator.ts`
-- [ ] Add business report templates (financial, compliance, audit)
-- [ ] Add `generateReport(type: string, data: any): Promise<Buffer>` function
-- [ ] Add chart and graph generation with Chart.js
-- [ ] Create `apps/cli/templates/documents/report-generator.ts.hbs` template
-- [ ] Add Norwegian business report formatting
-- [ ] Add multi-language report generation
-- [ ] Add report scheduling and automation
-- [ ] Add report distribution via email/Slack
-- [ ] Add report archiving and retention
+### **Story 7.4: Report Generation System** ✅
+- [x] Create `apps/cli/src/documents/generators/report-generator.ts`
+- [x] Add business report templates (financial, compliance, audit)
+- [x] Add `generateReport(type: string, data: any): Promise<Buffer>` function
+- [x] Add chart and graph generation with Chart.js
+- [x] Create `apps/cli/templates/documents/report-generator.ts.hbs` template
+- [x] Add Norwegian business report formatting
+- [x] Add multi-language report generation
+- [x] Add report scheduling and automation
+- [x] Add report distribution via email/Slack
+- [x] Add report archiving and retention
 
 ### **Story 7.5: Contract Document Generation**
 - [ ] Create `apps/cli/src/documents/generators/contract-generator.ts`
