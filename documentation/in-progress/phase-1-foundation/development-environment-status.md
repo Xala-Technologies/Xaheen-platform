@@ -23,7 +23,7 @@
 ### **CLI Test Results**
 ```bash
 $ node dist/index.js --help
-Usage: create-better-t-stack [options] [command]
+Usage: xaheen [options] [command]
 
 Available subcommands: init (default), add, sponsors, docs, builder
 ✅ All commands available and functional
@@ -42,7 +42,7 @@ Available subcommands: init (default), add, sponsors, docs, builder
 ### **Current Project Structure**
 ```
 xaheen/
-├── ✅ apps/cli/          # Working CLI (create-better-t-stack)
+├── ✅ apps/cli/          # Working CLI (xaheen)
 ├── ⚠️ apps/web/          # Web app (build issues to fix)
 ├── ✅ documentation/     # Complete documentation system
 └── ✅ node_modules/      # All dependencies installed

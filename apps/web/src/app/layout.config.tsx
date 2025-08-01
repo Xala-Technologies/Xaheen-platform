@@ -41,7 +41,7 @@ export const links: LinkItemType[] = [
 		),
 		label: "NPM",
 		type: "icon",
-		url: "https://www.npmjs.com/package/create-better-t-stack",
+		url: "https://www.npmjs.com/package/xaheen",
 		external: true,
 		secondary: true,
 	},
@@ -83,5 +83,5 @@ export const baseOptions: BaseLayoutProps = {
 		),
 	},
 	links: links,
-	githubUrl: "https://github.com/AmanVarshney01/create-better-t-stack",
+	githubUrl: "https://github.com/AmanVarshney01/xaheen",
 };

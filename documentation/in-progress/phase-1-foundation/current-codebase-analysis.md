@@ -1,4 +1,4 @@
-# Current Codebase Analysis - create-better-t-stack
+# Current Codebase Analysis - xaheen
 ## Complete Architecture Documentation
 
 **Analysis Date**: 2025-08-01  
@@ -36,7 +36,7 @@ xaheen/
 ## 🖥️ **CLI Application Analysis** (`apps/cli/`)
 
 ### **Package Information**
-- **Name**: `create-better-t-stack`
+- **Name**: `xaheen`
 - **Version**: `2.28.5`
 - **Type**: ESM module
 - **Binary**: `dist/index.js`

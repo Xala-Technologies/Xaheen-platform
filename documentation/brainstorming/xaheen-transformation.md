@@ -1,13 +1,13 @@
 ## Xaheen Platform Transformation Guide
 
 ### 🎯 Overview
-Transform create-better-t-stack into Xaheen platform with full Xala UI System integration and strict development standards.
+Transform xaheen into Xaheen platform with full Xala UI System integration and strict development standards.
 
 ### 📋 Step 1: Fork & Initial Setup
 
 ```bash
-# 1. Fork create-better-t-stack
-git clone https://github.com/xalatechnologies/create-better-t-stack.git xaheen
+# 1. Fork xaheen
+git clone https://github.com/xalatechnologies/xaheen.git xaheen
 cd xaheen
 
 # 2. Set up new remote
@@ -23,15 +23,15 @@ echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> .npmrc
 #### Update All Package Names
 ```bash
 # Update package.json files
-find . -name "package.json" -exec sed -i 's/create-better-t-stack/xaheen/g' {} +
+find . -name "package.json" -exec sed -i 's/xaheen/xaheen/g' {} +
 find . -name "package.json" -exec sed -i 's/better-t-stack/xaheen/g' {} +
 
 # Update TypeScript/JavaScript files
 find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | \
-  xargs sed -i 's/create-better-t-stack/xaheen/g'
+  xargs sed -i 's/xaheen/xaheen/g'
   
 # Update markdown files
-find . -name "*.md" -exec sed -i 's/create-better-t-stack/xaheen/g' {} +
+find . -name "*.md" -exec sed -i 's/xaheen/xaheen/g' {} +
 ```
 
 ### 📦 Step 3: Install Xala UI System

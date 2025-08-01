@@ -1,12 +1,12 @@
 {
-  "name": "create-better-t-stack",
+  "name": "xaheen",
   "version": "2.28.5",
   "description": "A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
   "type": "module",
   "license": "MIT",
   "author": "Aman Varshney",
   "bin": {
-    "create-better-t-stack": "dist/index.js"
+    "xaheen": "dist/index.js"
   },
   "files": [
     "templates",
@@ -40,7 +40,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AmanVarshney01/create-better-t-stack.git",
+    "url": "git+https://github.com/AmanVarshney01/xaheen.git",
     "directory": "apps/cli"
   },
   "homepage": "https://better-t-stack.dev/",

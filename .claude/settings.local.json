@@ -22,7 +22,12 @@
       "Bash(bun add:*)",
       "Bash(cd:*)",
       "Bash(cd:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(tsup)",
+      "Bash(bun tsup:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

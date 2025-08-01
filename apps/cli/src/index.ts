@@ -132,6 +132,6 @@ const router = t.router({
 
 createCli({
 	router,
-	name: "create-better-t-stack",
+	name: "xaheen",
 	version: getLatestCLIVersion(),
 }).run();

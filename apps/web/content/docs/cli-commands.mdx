@@ -23,16 +23,16 @@ The primary command for creating new Better-T-Stack projects.
 
 ```bash
 # Interactive setup
-npx create-better-t-stack@latest
+npx xaheen@latest
 
 # With project name
-npx create-better-t-stack@latest my-project
+npx xaheen@latest my-project
 
 # With specific directory
-npx create-better-t-stack@latest ./path/to/project
+npx xaheen@latest ./path/to/project
 
 # Use current directory
-npx create-better-t-stack@latest .
+npx xaheen@latest .
 ```
 
 ### Flags Reference
@@ -297,16 +297,16 @@ Add addons or deployment configurations to existing Better-T-Stack projects.
 
 ```bash
 # Interactive addon selection
-npx create-better-t-stack@latest add
+npx xaheen@latest add
 
 # Add specific addons
-npx create-better-t-stack@latest add --addons pwa tauri
+npx xaheen@latest add --addons pwa tauri
 
 # Add deployment
-npx create-better-t-stack@latest add --web-deploy workers
+npx xaheen@latest add --web-deploy workers
 
 # Add both
-npx create-better-t-stack@latest add --addons biome --web-deploy workers
+npx xaheen@latest add --addons biome --web-deploy workers
 ```
 
 ### Flags
@@ -324,13 +324,13 @@ npx create-better-t-stack@latest add --addons biome --web-deploy workers
 
 ```bash
 # Add PWA support to current project
-npx create-better-t-stack@latest add --addons pwa
+npx xaheen@latest add --addons pwa
 
 # Add multiple addons with dependency installation
-npx create-better-t-stack@latest add --addons biome husky --install
+npx xaheen@latest add --addons biome husky --install
 
 # Add to specific project directory
-npx create-better-t-stack@latest add --project-dir ./my-project --addons tauri
+npx xaheen@latest add --project-dir ./my-project --addons tauri
 ```
 
 ---
@@ -342,7 +342,7 @@ Display Better-T-Stack project sponsors.
 ### Usage
 
 ```bash
-npx create-better-t-stack@latest sponsors
+npx xaheen@latest sponsors
 ```
 
 Shows a list of project sponsors with their GitHub profiles and websites.
@@ -356,7 +356,7 @@ Open Better-T-Stack documentation in your default browser.
 ### Usage
 
 ```bash
-npx create-better-t-stack@latest docs
+npx xaheen@latest docs
 ```
 
 Opens: https://better-t-stack.dev/docs
@@ -370,7 +370,7 @@ Open the web-based interactive stack builder.
 ### Usage
 
 ```bash
-npx create-better-t-stack@latest builder
+npx xaheen@latest builder
 ```
 
 Opens: https://better-t-stack.dev/new
@@ -384,7 +384,7 @@ The web builder provides a visual interface for configuring your stack and gener
 ### Full-Stack Web Application
 
 ```bash
-npx create-better-t-stack@latest my-webapp \
+npx xaheen@latest my-webapp \
   --frontend tanstack-router \
   --backend hono \
   --runtime bun \
@@ -400,7 +400,7 @@ npx create-better-t-stack@latest my-webapp \
 ### Mobile + Web Application
 
 ```bash
-npx create-better-t-stack@latest my-mobile-app \
+npx xaheen@latest my-mobile-app \
   --frontend tanstack-router native-nativewind \
   --backend hono \
   --database sqlite \
@@ -413,7 +413,7 @@ npx create-better-t-stack@latest my-mobile-app \
 ### Cloudflare Workers Project
 
 ```bash
-npx create-better-t-stack@latest my-workers-app \
+npx xaheen@latest my-workers-app \
   --frontend tanstack-router \
   --backend hono \
   --runtime workers \
@@ -426,7 +426,7 @@ npx create-better-t-stack@latest my-workers-app \
 ### API-Only Project
 
 ```bash
-npx create-better-t-stack@latest my-api \
+npx xaheen@latest my-api \
   --frontend none \
   --backend fastify \
   --runtime node \
@@ -440,10 +440,10 @@ npx create-better-t-stack@latest my-api \
 
 ```bash
 # Use all defaults with immediate setup
-npx create-better-t-stack@latest my-project --yes
+npx xaheen@latest my-project --yes
 
 # Convex full-stack (automatically configures compatible options)
-npx create-better-t-stack@latest my-convex-app --backend convex
+npx xaheen@latest my-convex-app --backend convex
 ```
 
 ---

@@ -8,7 +8,7 @@
 
 ## 🎯 **Integration Objective**
 
-Integrate the Xala UI System (`@xala-technologies/ui-system@^5.0.0`) into the current web application to begin the transformation from create-better-t-stack to Xaheen platform.
+Integrate the Xala UI System (`@xala-technologies/ui-system@^5.0.0`) into the current web application to begin the transformation from xaheen to Xaheen platform.
 
 ---
 

@@ -164,7 +164,7 @@ export async function displayPostInstallInstructions(
 	output += `${pc.bold(
 		"Like Better-T Stack?",
 	)} Please consider giving us a star on GitHub:\n`;
-	output += pc.cyan("https://github.com/AmanVarshney01/create-better-t-stack");
+	output += pc.cyan("https://github.com/AmanVarshney01/xaheen");
 
 	consola.box(output);
 }

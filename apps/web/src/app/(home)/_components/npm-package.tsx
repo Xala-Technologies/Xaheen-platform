@@ -12,7 +12,7 @@ const NpmPackage = () => {
 			setVersionLoading(true);
 			try {
 				const res = await fetch(
-					"https://api.github.com/repos/AmanVarshney01/create-better-t-stack/releases",
+					"https://api.github.com/repos/AmanVarshney01/xaheen/releases",
 				);
 				if (!res.ok) throw new Error("Failed to fetch version");
 				const data = await res.json();

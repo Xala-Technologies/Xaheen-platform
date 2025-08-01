@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the **Xaheen Platform** - a comprehensive transformation of create-better-t-stack into an AI-powered, enterprise-grade development platform. The project consists of:
+This is the **Xaheen Platform** - a comprehensive transformation of xaheen into an AI-powered, enterprise-grade development platform. The project consists of:
 
 - **Main CLI**: `apps/cli` - Modern CLI tool for scaffolding TypeScript projects
 - **Documentation Website**: `apps/web` - Official website and documentation
@@ -301,7 +301,7 @@ When implementing features or making changes:
 ## Project-Specific Context
 
 ### Xaheen Platform Goals
-- Transform create-better-t-stack into enterprise-grade platform
+- Transform xaheen into enterprise-grade platform
 - Integrate AI-powered scaffolding capabilities
 - Support Norwegian compliance requirements
 - Implement multi-mode CLI (legacy, token, xala, xaheen)
@@ -317,4 +317,55 @@ When implementing features or making changes:
 - Use xala-scaffold as foundation (50% time reduction)
 - Implement multi-mode CLI for flexibility
 - Prioritize enterprise features and compliance
-- Maintain create-better-t-stack compatibility
+- Maintain xaheen compatibility
+
+
+### IMPORTANT:
+- After all changes are made, ALWAYS build the project with `pnpm build`. Ignore warnings, fix errors
+- Always add a one-sentence summary of changes to `.cursor-updates` file in markdown format at the end of every agent interaction
+- If you forget, the user can type the command "finish" and you will run the build and update `.cursor-updates`
+- Finally, update git with `git add . && git commit -m "..."`. Don't push
+
+
+#### Enhanced Design Token System (CRITICAL)
+- **MANDATORY Design Token Usage** - ALL components MUST use design tokens exclusively
+- **NO hardcoded styling permitted** - no arbitrary values like `text-[18px]` or `bg-[#f0f0f0]`
+- **NO inline styles** - Never use `style={{ }}` attribute
+- **NO direct className for styling** - Use semantic components with design tokens
+- **WCAG 2.2 AAA Compliance**: All colors, spacing, and typography meet enhanced accessibility standards
+- **Enhanced 8pt Grid System**: All spacing follows 8px increments for better visual hierarchy
+- **Component Tokens**: Pre-configured styling variants for consistent UI components
+- **Professional sizing standards** (Enhanced 8pt Grid):
+  - Button heights: `spacing[11]` (44px), `spacing[12]` (48px), `spacing[14]` (56px), `spacing[16]` (64px)
+  - Input height: `spacing[14]` (56px) or `spacing[16]` (64px) - WCAG compliant
+  - Card padding: `spacing[8]` (32px) or `spacing[10]` (40px) - Enhanced for accessibility
+  - Section spacing: `spacing[16]` (64px) or `spacing[20]` (80px) - Improved visual hierarchy
+  - Gap spacing: `spacing[4]` (16px), `spacing[6]` (24px), `spacing[8]` (32px)
+  - Border radius: `borderRadius.lg`, `borderRadius.xl`, `borderRadius['2xl']`
+  - Shadows: `shadows.md`, `shadows.lg`, `shadows.xl` - Enhanced depth perception
+
+#### Styling Patterns
+```typescript
+// ❌ FORBIDDEN Styling Patterns
+className="p-4 mb-6 text-blue-600 bg-gray-100 h-12 w-64"  // Hardcoded values
+style={{ padding: '16px', margin: '24px' }}               // Inline styles
+className="text-[18px] bg-[#f0f0f0]"                      // Arbitrary values
+<div className="flex flex-col">                            // Raw HTML elements
+className="bg-gradient-to-r from-blue-500 to-purple-600"  // Hardcoded gradients
+className="text-neutral-600"                              // Hardcoded colors
+
+// ✅ REQUIRED Styling Patterns
+import { Card, Stack, Text, Button } from '@xala-technologies/ui-system';
+
+// Typography: Enhanced sizes with accessibility focus
+variant="heading" size="3xl"        // Large headings
+variant="body" size="lg"            // Body text - enhanced readability
+
+// Spacing: Enhanced 8pt grid system
+spacing="8"                         // 32px - enhanced padding
+spacing="12"                        // 48px - enhanced section spacing
+
+// Colors: Use design token references
+variant="primary"                   // Primary button styling
+variant="elevated"                  // Enhanced card styling
+```

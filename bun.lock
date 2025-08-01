@@ -13,10 +13,10 @@
       },
     },
     "apps/cli": {
-      "name": "create-better-t-stack",
+      "name": "xaheen",
       "version": "2.28.5",
       "bin": {
-        "create-better-t-stack": "dist/index.js",
+        "xaheen": "dist/index.js",
       },
       "dependencies": {
         "@clack/prompts": "^0.11.0",
@@ -107,7 +107,7 @@
       },
       "devDependencies": {
         "@types/node": "^24.0.13",
-        "tsdown": "^0.12.9",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3",
       },
       "peerDependencies": {
@@ -1246,7 +1246,7 @@
 
     "core-js": ["core-js@3.44.0", "", {}, "sha512-aFCtd4l6GvAXwVEh3XbbVqJGHDJt0OZRa+5ePGx3LLwi12WfexqQxcsohb2wgsa/92xtl19Hd66G/L+TaAxDMw=="],
 
-    "create-better-t-stack": ["create-better-t-stack@workspace:apps/cli"],
+    "xaheen": ["xaheen@workspace:apps/cli"],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 

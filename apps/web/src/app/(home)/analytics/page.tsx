@@ -982,7 +982,7 @@ export default function AnalyticsPage() {
 							<span className=" text-muted-foreground">
 								Source:{" "}
 								<Link
-									href="https://github.com/amanvarshney01/create-better-t-stack/blob/main/apps/cli/src/utils/analytics.ts"
+									href="https://github.com/amanvarshney01/xaheen/blob/main/apps/cli/src/utils/analytics.ts"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-accent underline hover:text-primary"
@@ -1064,7 +1064,7 @@ export default function AnalyticsPage() {
 									{totalProjects.toLocaleString()}
 								</div>
 								<p className="mt-1 text-muted-foreground text-xs">
-									$ ./create-better-t-stack executions
+									$ ./xaheen executions
 								</p>
 							</div>
 						</div>

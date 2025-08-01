@@ -6,8 +6,8 @@
 
 ```bash
 # Fork the repository first, then:
-git clone https://github.com/YOUR_ORG/create-better-t-stack.git
-cd create-better-t-stack
+git clone https://github.com/YOUR_ORG/xaheen.git
+cd xaheen
 
 # Install dependencies
 bun install
@@ -19,7 +19,7 @@ git checkout -b custom-implementation
 ### 2. Project Structure Overview
 
 ```
-create-better-t-stack/
+xaheen/
 ├── apps/
 │   ├── cli/                    # CLI application
 │   │   ├── src/
@@ -234,7 +234,7 @@ npm publish
 
 ```bash
 # Users can install directly
-npx github:your-company/create-better-t-stack my-app
+npx github:your-company/xaheen my-app
 ```
 
 ### 8. Integration Examples
@@ -377,7 +377,7 @@ export const environments = {
 
 ## 📚 Resources
 
-- [Original create-better-t-stack docs](https://better-t-stack.dev)
+- [Original xaheen docs](https://better-t-stack.dev)
 - [Turborepo documentation](https://turbo.build/repo/docs)
 - [Commander.js CLI framework](https://github.com/tj/commander.js)
 - [Clack prompts](https://github.com/natemoo-re/clack)

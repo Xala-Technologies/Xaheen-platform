@@ -1,19 +1,19 @@
 ## Xaheen Platform Rebranding & Extension Guide
 
 ### 🎯 Overview
-Transform create-better-t-stack into the Xaheen platform with multiple CLI modes while maintaining existing functionality.
+Transform xaheen into the Xaheen platform with multiple CLI modes while maintaining existing functionality.
 
 ### 📋 Step 1: Repository Rebranding
 
 ```bash
 # 1. Fork and rename
-git clone https://github.com/better-t-stack/create-better-t-stack.git xaheen
+git clone https://github.com/better-t-stack/xaheen.git xaheen
 cd xaheen
 git remote set-url origin https://github.com/YOUR_ORG/xaheen.git
 
 # 2. Update package names
-find . -type f -name "package.json" -exec sed -i 's/create-better-t-stack/xaheen/g' {} +
-find . -type f -name "*.ts" -exec sed -i 's/create-better-t-stack/xaheen/g' {} +
+find . -type f -name "package.json" -exec sed -i 's/xaheen/xaheen/g' {} +
+find . -type f -name "*.ts" -exec sed -i 's/xaheen/xaheen/g' {} +
 ```
 
 ### 📦 Step 2: Package Structure
@@ -24,7 +24,7 @@ xaheen/
 │   ├── cli/                    # Main CLI app
 │   │   ├── src/
 │   │   │   ├── modes/         # NEW: CLI modes
-│   │   │   │   ├── legacy.ts # Original create-better-t-stack
+│   │   │   │   ├── legacy.ts # Original xaheen
 │   │   │   │   ├── token.ts  # Token-based CLI
 │   │   │   │   ├── xala.ts   # Xala CLI mode
 │   │   │   │   └── xaheen.ts # Xaheen CLI mode

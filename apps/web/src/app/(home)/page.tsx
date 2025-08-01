@@ -25,7 +25,7 @@ export default function HomePage() {
 	const [selectedPM, setSelectedPM] = useState<"npm" | "pnpm" | "bun">("bun");
 
 	const commands = {
-		npm: "npx create-better-t-stack@latest",
+		npm: "npx xaheen@latest",
 		pnpm: "pnpm create better-t-stack@latest",
 		bun: "bun create better-t-stack@latest",
 	};
@@ -34,7 +34,7 @@ export default function HomePage() {
 		async function fetchStars() {
 			try {
 				const response = await fetch(
-					"https://api.github.com/repos/amanvarshney01/create-better-t-stack",
+					"https://api.github.com/repos/amanvarshney01/xaheen",
 				);
 				if (response.ok) {
 					const data = await response.json();
@@ -178,7 +178,7 @@ export default function HomePage() {
 					</Link>
 
 					<Link
-						href="https://github.com/amanvarshney01/create-better-t-stack"
+						href="https://github.com/amanvarshney01/xaheen"
 						target="_blank"
 						rel="noopener noreferrer"
 					>

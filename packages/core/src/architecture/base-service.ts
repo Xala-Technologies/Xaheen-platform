@@ -1,4 +1,4 @@
-import { IBaseService, IEventEmitter, IProgressReporter } from '../interfaces/core';
+import { IBaseService, IEventEmitter, IProgressReporter } from '../interfaces';
 import { logger } from '../utils/logger';
 
 /**

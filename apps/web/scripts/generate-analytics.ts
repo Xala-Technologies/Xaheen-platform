@@ -59,8 +59,8 @@ async function generateAnalyticsData() {
 						.map((row): AnalyticsData | null => {
 							const timestamp = row["*.timestamp"] || new Date().toISOString();
 							const date = timestamp.includes("T")
-								? timestamp.split("T")[0]
-								: timestamp.split(" ")[0];
+								? timestamp.split("T")[0]!
+								: (timestamp.split(" ")[0] || new Date().toISOString().split("T")[0]!);
 
 							let hour = 0;
 							try {
@@ -79,7 +79,7 @@ async function generateAnalyticsData() {
 								row["*.properties.addons.3"],
 								row["*.properties.addons.4"],
 								row["*.properties.addons.5"],
-							].filter(Boolean);
+							].filter((addon): addon is string => Boolean(addon));
 
 							return {
 								date,
@@ -123,8 +123,8 @@ async function generateAnalyticsData() {
 
 		const lines = csvText.split("\n");
 		const timestampColumn = lines[0]
-			.split(",")
-			.findIndex((header) => header.includes("timestamp"));
+			?.split(",")
+			.findIndex((header) => header.includes("timestamp")) ?? -1;
 
 		let lastUpdated: string | null = null;
 		if (timestampColumn !== -1) {
@@ -135,7 +135,7 @@ async function generateAnalyticsData() {
 					const columns = line.split(",");
 					return columns[timestampColumn]?.replace(/"/g, "");
 				})
-				.filter(Boolean)
+				.filter((ts): ts is string => Boolean(ts))
 				.map((timestamp) => new Date(timestamp))
 				.filter((date) => !Number.isNaN(date.getTime()));
 

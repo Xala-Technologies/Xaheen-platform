@@ -216,14 +216,22 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				const valueDisplay = Array.isArray(value) ? value.join(", ") : value;
 				const message = `${displayName} set to '${valueDisplay}'`;
 
-				notes[catKey].notes.push(
-					`Convex backend selected: ${displayName} will be set to '${valueDisplay}'.`,
-				);
-				notes.backend.notes.push(
-					`Convex requires ${displayName} to be '${valueDisplay}'.`,
-				);
-				notes[catKey].hasIssue = true;
-				notes.backend.hasIssue = true;
+				if (notes[catKey]) {
+					notes[catKey].notes.push(
+						`Convex backend selected: ${displayName} will be set to '${valueDisplay}'.`,
+					);
+				}
+				if (notes["backend"]) {
+					notes["backend"].notes.push(
+						`Convex requires ${displayName} to be '${valueDisplay}'.`,
+					);
+				}
+				if (notes[catKey]) {
+					notes[catKey].hasIssue = true;
+				}
+				if (notes["backend"]) {
+					notes["backend"].hasIssue = true;
+				}
 				(nextStack[catKey] as string | string[]) = value;
 				changed = true;
 
@@ -240,14 +248,18 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 		);
 		if (nextStack.webFrontend.length !== originalWebFrontendLength) {
 			changed = true;
-			notes.webFrontend.notes.push(
-				"Nuxt and Solid are not compatible with Convex backend and have been removed.",
-			);
-			notes.backend.notes.push(
-				"Convex backend is not compatible with Nuxt or Solid.",
-			);
-			notes.webFrontend.hasIssue = true;
-			notes.backend.hasIssue = true;
+			if (notes["webFrontend"]) {
+				notes["webFrontend"].notes.push(
+					"Nuxt and Solid are not compatible with Convex backend and have been removed.",
+				);
+				notes["webFrontend"].hasIssue = true;
+			}
+			if (notes["backend"]) {
+				notes["backend"].notes.push(
+					"Convex backend is not compatible with Nuxt or Solid.",
+				);
+				notes["backend"].hasIssue = true;
+			}
 			changes.push({
 				category: "convex",
 				message: "Removed incompatible web frontends (Nuxt, Solid)",
@@ -277,10 +289,12 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				notes[catKey].notes.push(
 					`No backend selected: ${displayName} will be set to '${valueDisplay}'.`,
 				);
-				notes.backend.notes.push(
+				notes["backend"].notes.push(
 					`No backend requires ${displayName} to be '${valueDisplay}'.`,
 				);
-				notes[catKey].hasIssue = true;
+				if (notes[catKey]) {
+					notes[catKey].hasIssue = true;
+				}
 				(nextStack[catKey] as string | string[]) = value;
 				changed = true;
 				changes.push({
@@ -291,10 +305,10 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 		}
 	} else {
 		if (nextStack.runtime === "none") {
-			notes.runtime.notes.push(
+			notes["runtime"].notes.push(
 				"Runtime 'None' is only for Convex. Defaulting to 'Bun'.",
 			);
-			notes.runtime.hasIssue = true;
+			notes["runtime"].hasIssue = true;
 			nextStack.runtime = DEFAULT_STACK.runtime;
 			changed = true;
 			changes.push({
@@ -305,12 +319,12 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 		if (nextStack.api === "none" && (isConvex || isBackendNone)) {
 		} else if (nextStack.api === "none" && !(isConvex || isBackendNone)) {
 			if (nextStack.examples.length > 0) {
-				notes.api.notes.push("API 'None' selected: Examples will be removed.");
-				notes.examples.notes.push(
+				notes["api"].notes.push("API 'None' selected: Examples will be removed.");
+				notes["examples"].notes.push(
 					"Examples require an API. They will be removed when API is 'None'.",
 				);
-				notes.api.hasIssue = true;
-				notes.examples.hasIssue = true;
+				notes["api"].hasIssue = true;
+				notes["examples"].hasIssue = true;
 				nextStack.examples = [];
 				changed = true;
 				changes.push({
@@ -322,14 +336,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 
 		if (nextStack.database === "none") {
 			if (nextStack.orm !== "none") {
-				notes.database.notes.push(
+				notes["database"].notes.push(
 					"Database 'None' selected: ORM will be set to 'None'.",
 				);
-				notes.orm.notes.push(
+				notes["orm"].notes.push(
 					"ORM requires a database. It will be set to 'None'.",
 				);
-				notes.database.hasIssue = true;
-				notes.orm.hasIssue = true;
+				notes["database"].hasIssue = true;
+				notes["orm"].hasIssue = true;
 				nextStack.orm = "none";
 				changed = true;
 				changes.push({
@@ -338,14 +352,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				});
 			}
 			if (nextStack.auth === "true") {
-				notes.database.notes.push(
+				notes["database"].notes.push(
 					"Database 'None' selected: Auth will be disabled.",
 				);
-				notes.auth.notes.push(
+				notes["auth"].notes.push(
 					"Authentication requires a database. It will be disabled.",
 				);
-				notes.database.hasIssue = true;
-				notes.auth.hasIssue = true;
+				notes["database"].hasIssue = true;
+				notes["auth"].hasIssue = true;
 				nextStack.auth = "false";
 				changed = true;
 				changes.push({
@@ -354,14 +368,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				});
 			}
 			if (nextStack.dbSetup !== "none") {
-				notes.database.notes.push(
+				notes["database"].notes.push(
 					"Database 'None' selected: DB Setup will be set to 'Basic'.",
 				);
-				notes.dbSetup.notes.push(
+				notes["dbSetup"].notes.push(
 					"DB Setup requires a database. It will be set to 'Basic Setup'.",
 				);
-				notes.database.hasIssue = true;
-				notes.dbSetup.hasIssue = true;
+				notes["database"].hasIssue = true;
+				notes["dbSetup"].hasIssue = true;
 				nextStack.dbSetup = "none";
 				changed = true;
 				changes.push({
@@ -371,14 +385,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 			}
 		} else if (nextStack.database === "mongodb") {
 			if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
-				notes.database.notes.push(
+				notes["database"].notes.push(
 					"MongoDB requires Prisma or Mongoose ORM. Prisma will be selected.",
 				);
-				notes.orm.notes.push(
+				notes["orm"].notes.push(
 					"MongoDB requires Prisma or Mongoose ORM. Prisma will be selected.",
 				);
-				notes.database.hasIssue = true;
-				notes.orm.hasIssue = true;
+				notes["database"].hasIssue = true;
+				notes["orm"].hasIssue = true;
 				nextStack.orm = "prisma";
 				changed = true;
 				changes.push({
@@ -388,14 +402,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 			}
 		} else {
 			if (nextStack.orm === "mongoose") {
-				notes.database.notes.push(
+				notes["database"].notes.push(
 					"Relational databases are not compatible with Mongoose ORM. Defaulting to Drizzle.",
 				);
-				notes.orm.notes.push(
+				notes["orm"].notes.push(
 					"Mongoose ORM only works with MongoDB. Defaulting to Drizzle.",
 				);
-				notes.database.hasIssue = true;
-				notes.orm.hasIssue = true;
+				notes["database"].hasIssue = true;
+				notes["orm"].hasIssue = true;
 				nextStack.orm = "drizzle";
 				changed = true;
 				changes.push({
@@ -405,14 +419,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 			}
 			if (nextStack.dbSetup === "turso") {
 				if (nextStack.database !== "sqlite") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Turso requires SQLite. It will be selected.",
 					);
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"Turso DB setup requires SQLite. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "sqlite";
 					changed = true;
 					changes.push({
@@ -421,14 +435,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					});
 				}
 				if (nextStack.orm !== "drizzle") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Turso requires Drizzle ORM. It will be selected.",
 					);
-					notes.orm.notes.push(
+					notes["orm"].notes.push(
 						"Turso DB setup requires Drizzle ORM. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.orm.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["orm"].hasIssue = true;
 					nextStack.orm = "drizzle";
 					changed = true;
 					changes.push({
@@ -438,12 +452,12 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "prisma-postgres") {
 				if (nextStack.database !== "postgres") {
-					notes.dbSetup.notes.push("Requires PostgreSQL. It will be selected.");
-					notes.database.notes.push(
+					notes["dbSetup"].notes.push("Requires PostgreSQL. It will be selected.");
+					notes["database"].notes.push(
 						"Prisma PostgreSQL setup requires PostgreSQL. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "postgres";
 					changed = true;
 					changes.push({
@@ -454,12 +468,12 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "mongodb-atlas") {
 				if (nextStack.database !== "mongodb") {
-					notes.dbSetup.notes.push("Requires MongoDB. It will be selected.");
-					notes.database.notes.push(
+					notes["dbSetup"].notes.push("Requires MongoDB. It will be selected.");
+					notes["database"].notes.push(
 						"MongoDB Atlas setup requires MongoDB. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "mongodb";
 					changed = true;
 					changes.push({
@@ -469,14 +483,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					});
 				}
 				if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Requires Prisma or Mongoose ORM. Prisma will be selected.",
 					);
-					notes.orm.notes.push(
+					notes["orm"].notes.push(
 						"MongoDB Atlas setup requires Prisma or Mongoose ORM. Prisma will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.orm.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["orm"].hasIssue = true;
 					nextStack.orm = "prisma";
 					changed = true;
 					changes.push({
@@ -487,14 +501,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "neon") {
 				if (nextStack.database !== "postgres") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Neon requires PostgreSQL. It will be selected.",
 					);
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"Neon DB setup requires PostgreSQL. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "postgres";
 					changed = true;
 					changes.push({
@@ -504,14 +518,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "supabase") {
 				if (nextStack.database !== "postgres") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Supabase (local) requires PostgreSQL. It will be selected.",
 					);
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"Supabase (local) DB setup requires PostgreSQL. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "postgres";
 					changed = true;
 					changes.push({
@@ -522,14 +536,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "d1") {
 				if (nextStack.database !== "sqlite") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Cloudflare D1 requires SQLite. It will be selected.",
 					);
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"Cloudflare D1 DB setup requires SQLite. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "sqlite";
 					changed = true;
 					changes.push({
@@ -538,14 +552,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					});
 				}
 				if (nextStack.runtime !== "workers") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Cloudflare D1 requires Cloudflare Workers runtime. It will be selected.",
 					);
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare D1 DB setup requires Cloudflare Workers runtime. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.runtime.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["runtime"].hasIssue = true;
 					nextStack.runtime = "workers";
 					changed = true;
 					changes.push({
@@ -554,14 +568,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					});
 				}
 				if (nextStack.orm !== "drizzle") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Cloudflare D1 requires Drizzle ORM. It will be selected.",
 					);
-					notes.orm.notes.push(
+					notes["orm"].notes.push(
 						"Cloudflare D1 DB setup requires Drizzle ORM. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.orm.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["orm"].hasIssue = true;
 					nextStack.orm = "drizzle";
 					changed = true;
 					changes.push({
@@ -570,14 +584,16 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					});
 				}
 				if (nextStack.backend !== "hono") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Cloudflare D1 requires Hono backend. It will be selected.",
 					);
-					notes.backend.notes.push(
+					notes["backend"].notes.push(
 						"Cloudflare D1 DB setup requires Hono backend. It will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.backend.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					if (notes["backend"]) {
+					notes["backend"].hasIssue = true;
+				}
 					nextStack.backend = "hono";
 					changed = true;
 					changes.push({
@@ -587,11 +603,11 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 			} else if (nextStack.dbSetup === "docker") {
 				if (nextStack.database === "sqlite") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Docker setup is not needed for SQLite. It will be set to 'Basic Setup'.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.dbSetup = "none";
 					changed = true;
 					changes.push({
@@ -602,14 +618,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 
 				if (nextStack.runtime === "workers") {
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Docker setup is not compatible with Cloudflare Workers runtime. Bun runtime will be selected.",
 					);
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare Workers runtime does not support Docker setup. Bun runtime will be selected.",
 					);
-					notes.dbSetup.hasIssue = true;
-					notes.runtime.hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
+					notes["runtime"].hasIssue = true;
 					nextStack.runtime = "bun";
 					changed = true;
 					changes.push({
@@ -622,14 +638,16 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 
 			if (nextStack.runtime === "workers") {
 				if (nextStack.backend !== "hono") {
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare Workers runtime requires Hono backend. Hono will be selected.",
 					);
-					notes.backend.notes.push(
+					notes["backend"].notes.push(
 						"Cloudflare Workers runtime requires Hono backend. It will be selected.",
 					);
-					notes.runtime.hasIssue = true;
-					notes.backend.hasIssue = true;
+					notes["runtime"].hasIssue = true;
+					if (notes["backend"]) {
+					notes["backend"].hasIssue = true;
+				}
 					nextStack.backend = "hono";
 					changed = true;
 					changes.push({
@@ -639,14 +657,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 
 				if (nextStack.orm !== "drizzle" && nextStack.orm !== "none") {
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare Workers runtime requires Drizzle ORM or no ORM. Drizzle will be selected.",
 					);
-					notes.orm.notes.push(
+					notes["orm"].notes.push(
 						"Cloudflare Workers runtime requires Drizzle ORM or no ORM. Drizzle will be selected.",
 					);
-					notes.runtime.hasIssue = true;
-					notes.orm.hasIssue = true;
+					notes["runtime"].hasIssue = true;
+					notes["orm"].hasIssue = true;
 					nextStack.orm = "drizzle";
 					changed = true;
 					changes.push({
@@ -656,14 +674,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 
 				if (nextStack.database === "mongodb") {
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare Workers runtime is not compatible with MongoDB. SQLite will be selected.",
 					);
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"MongoDB is not compatible with Cloudflare Workers runtime. SQLite will be selected.",
 					);
-					notes.runtime.hasIssue = true;
-					notes.database.hasIssue = true;
+					notes["runtime"].hasIssue = true;
+					notes["database"].hasIssue = true;
 					nextStack.database = "sqlite";
 					changed = true;
 					changes.push({
@@ -674,14 +692,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				}
 
 				if (nextStack.dbSetup === "docker") {
-					notes.runtime.notes.push(
+					notes["runtime"].notes.push(
 						"Cloudflare Workers runtime does not support Docker setup. D1 will be selected.",
 					);
-					notes.dbSetup.notes.push(
+					notes["dbSetup"].notes.push(
 						"Docker setup is not compatible with Cloudflare Workers runtime. D1 will be selected.",
 					);
-					notes.runtime.hasIssue = true;
-					notes.dbSetup.hasIssue = true;
+					notes["runtime"].hasIssue = true;
+					notes["dbSetup"].hasIssue = true;
 					nextStack.dbSetup = "d1";
 					changed = true;
 					changes.push({
@@ -697,14 +715,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 			const isSolid = nextStack.webFrontend.includes("solid");
 			if ((isNuxt || isSvelte || isSolid) && nextStack.api === "trpc") {
 				const frontendName = isNuxt ? "Nuxt" : isSvelte ? "Svelte" : "Solid";
-				notes.api.notes.push(
+				notes["api"].notes.push(
 					`${frontendName} requires oRPC. It will be selected automatically.`,
 				);
-				notes.webFrontend.notes.push(
+				notes["webFrontend"].notes.push(
 					`Selected ${frontendName}: API will be set to oRPC.`,
 				);
-				notes.api.hasIssue = true;
-				notes.webFrontend.hasIssue = true;
+				notes["api"].hasIssue = true;
+				notes["webFrontend"].hasIssue = true;
 				nextStack.api = "orpc";
 				changed = true;
 				changes.push({
@@ -719,14 +737,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 
 			if (!isPWACompat && nextStack.addons.includes("pwa")) {
 				incompatibleAddons.push("pwa");
-				notes.webFrontend.notes.push(
+				notes["webFrontend"].notes.push(
 					"PWA addon requires TanStack/React Router or Solid. Addon will be removed.",
 				);
-				notes.addons.notes.push(
+				notes["addons"].notes.push(
 					"PWA requires TanStack/React Router/Solid. It will be removed.",
 				);
-				notes.webFrontend.hasIssue = true;
-				notes.addons.hasIssue = true;
+				notes["webFrontend"].hasIssue = true;
+				notes["addons"].hasIssue = true;
 				changes.push({
 					category: "addons",
 					message: "PWA addon removed (requires compatible web frontend)",
@@ -734,14 +752,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 			}
 			if (!isTauriCompat && nextStack.addons.includes("tauri")) {
 				incompatibleAddons.push("tauri");
-				notes.webFrontend.notes.push(
+				notes["webFrontend"].notes.push(
 					"Tauri addon requires TanStack/React Router, Nuxt, Svelte, Solid, or Next.js. Addon will be removed.",
 				);
-				notes.addons.notes.push(
+				notes["addons"].notes.push(
 					"Tauri requires TanStack/React Router/Nuxt/Svelte/Solid/Next.js. It will be removed.",
 				);
-				notes.webFrontend.hasIssue = true;
-				notes.addons.hasIssue = true;
+				notes["webFrontend"].hasIssue = true;
+				notes["addons"].hasIssue = true;
 				changes.push({
 					category: "addons",
 					message: "Tauri addon removed (requires compatible web frontend)",
@@ -761,14 +779,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				!nextStack.addons.includes("biome") &&
 				!nextStack.addons.includes("oxlint")
 			) {
-				notes.addons.notes.push(
+				notes["addons"].notes.push(
 					"Husky addon is selected without a linter. Consider adding Biome or Oxlint for lint-staged integration.",
 				);
 			}
 
 			if (nextStack.addons.includes("ultracite")) {
 				if (nextStack.addons.includes("biome")) {
-					notes.addons.notes.push(
+					notes["addons"].notes.push(
 						"Ultracite includes Biome setup. Biome addon will be removed.",
 					);
 					nextStack.addons = nextStack.addons.filter(
@@ -786,7 +804,7 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 				nextStack.addons.includes("oxlint") &&
 				nextStack.addons.includes("biome")
 			) {
-				notes.addons.notes.push(
+				notes["addons"].notes.push(
 					"Both Oxlint and Biome are selected. Consider using only one linter.",
 				);
 			}
@@ -824,37 +842,39 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 					nextStack.database === "none" &&
 					uniqueIncompatibleExamples.includes("todo")
 				) {
-					notes.database.notes.push(
+					notes["database"].notes.push(
 						"Todo example requires a database. It will be removed.",
 					);
-					notes.examples.notes.push(
+					notes["examples"].notes.push(
 						"Todo example requires a database. It will be removed.",
 					);
-					notes.database.hasIssue = true;
-					notes.examples.hasIssue = true;
+					notes["database"].hasIssue = true;
+					notes["examples"].hasIssue = true;
 				}
 				if (
 					nextStack.backend === "elysia" &&
 					uniqueIncompatibleExamples.includes("ai")
 				) {
-					notes.backend.notes.push(
+					notes["backend"].notes.push(
 						"AI example is not compatible with Elysia. It will be removed.",
 					);
-					notes.examples.notes.push(
+					notes["examples"].notes.push(
 						"AI example is not compatible with Elysia. It will be removed.",
 					);
-					notes.backend.hasIssue = true;
-					notes.examples.hasIssue = true;
+					if (notes["backend"]) {
+					notes["backend"].hasIssue = true;
+				}
+					notes["examples"].hasIssue = true;
 				}
 				if (isSolid && uniqueIncompatibleExamples.includes("ai")) {
-					notes.webFrontend.notes.push(
+					notes["webFrontend"].notes.push(
 						"AI example is not compatible with Solid. It will be removed.",
 					);
-					notes.examples.notes.push(
+					notes["examples"].notes.push(
 						"AI example is not compatible with Solid. It will be removed.",
 					);
-					notes.webFrontend.hasIssue = true;
-					notes.examples.hasIssue = true;
+					notes["webFrontend"].hasIssue = true;
+					notes["examples"].hasIssue = true;
 				}
 
 				const originalExamplesLength = nextStack.examples.length;
@@ -869,14 +889,14 @@ const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
 
 	const webFrontendsSelected = nextStack.webFrontend.some((f) => f !== "none");
 	if (!webFrontendsSelected && nextStack.webDeploy !== "none") {
-		notes.webDeploy.notes.push(
+		notes["webDeploy"].notes.push(
 			"Web deployment requires a web frontend. It will be disabled.",
 		);
-		notes.webFrontend.notes.push(
+		notes["webFrontend"].notes.push(
 			"No web frontend selected: Deployment has been disabled.",
 		);
-		notes.webDeploy.hasIssue = true;
-		notes.webFrontend.hasIssue = true;
+		notes["webDeploy"].hasIssue = true;
+		notes["webFrontend"].hasIssue = true;
 		nextStack.webDeploy = "none";
 		changed = true;
 		changes.push({
@@ -896,7 +916,7 @@ const generateCommand = (stackState: StackState): string => {
 	let base: string;
 	switch (stackState.packageManager) {
 		case "npm":
-			base = "npx create-better-t-stack@latest";
+			base = "npx xaheen@latest";
 			break;
 		case "pnpm":
 			base = "pnpm create better-t-stack@latest";

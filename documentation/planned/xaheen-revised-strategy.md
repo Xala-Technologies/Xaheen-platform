@@ -44,12 +44,12 @@ The `@xala-technologies/scaffold-cli` project includes:
 
 ### **New Approach: Extend xala-scaffold Instead of Building from Scratch**
 
-Instead of transforming create-better-t-stack, we should:
+Instead of transforming xaheen, we should:
 1. **Fork and extend xala-scaffold** as our foundation
 2. **Add multi-mode CLI** support (legacy, token, xala, xaheen)
 3. **Build web platform** that interfaces with xala-scaffold services
 4. **Extend templates** for project-level generation (not just components)
-5. **Add create-better-t-stack compatibility** as legacy mode
+5. **Add xaheen compatibility** as legacy mode
 
 ---
 
@@ -83,7 +83,7 @@ Instead of transforming create-better-t-stack, we should:
 - [ ] Test mode switching functionality
 
 #### Week 4: Mode Implementation
-- [ ] **Legacy Mode**: create-better-t-stack compatibility
+- [ ] **Legacy Mode**: xaheen compatibility
 - [ ] **Xala Mode**: Enhanced xala-scaffold (default)
 - [ ] **Token Mode**: API token-based authentication
 - [ ] **Xaheen Mode**: Strict standards + AI-powered
@@ -167,7 +167,7 @@ Instead of transforming create-better-t-stack, we should:
 
 ## 🔄 Integration Strategy
 
-### **xala-scaffold + create-better-t-stack Integration**
+### **xala-scaffold + xaheen Integration**
 
 ```mermaid
 graph TD
@@ -177,7 +177,7 @@ graph TD
     B --> E[Token Mode]
     B --> F[Xaheen Mode]
     
-    C --> G[create-better-t-stack compatibility]
+    C --> G[xaheen compatibility]
     D --> H[Enhanced xala-scaffold]
     E --> I[Token-based generation]
     F --> J[AI + Strict Standards]
@@ -226,7 +226,7 @@ graph TD
 ### **Phase 2 Tasks** (Week 3-4)
 - [ ] Design multi-mode command architecture
 - [ ] Implement mode selector in main CLI entry point
-- [ ] Create legacy mode with create-better-t-stack compatibility
+- [ ] Create legacy mode with xaheen compatibility
 - [ ] Implement xala mode (enhanced default)
 - [ ] Add token mode with authentication
 - [ ] Create xaheen mode with strict standards
@@ -304,7 +304,7 @@ graph TD
 - [ ] Performance meets or exceeds existing benchmarks
 
 ### **User Success**
-- [ ] Smooth migration path from create-better-t-stack
+- [ ] Smooth migration path from xaheen
 - [ ] Intuitive web interface with positive user feedback
 - [ ] Comprehensive documentation and examples
 - [ ] Active community adoption and contribution

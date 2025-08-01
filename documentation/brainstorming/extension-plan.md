@@ -6,8 +6,8 @@
 ```bash
 # Fork the repository to your organization
 # Then clone your fork
-git clone https://github.com/YOUR_ORG/create-better-t-stack.git
-cd create-better-t-stack
+git clone https://github.com/YOUR_ORG/xaheen.git
+cd xaheen
 
 # Install dependencies
 bun install
@@ -18,7 +18,7 @@ git checkout -b custom-implementation
 
 ### Repository Structure
 ```
-create-better-t-stack/
+xaheen/
 ├── apps/
 │   ├── cli/               # CLI tool source
 │   └── web/              # Documentation website
@@ -306,7 +306,7 @@ export const customCommands = (program: Command) => {
    ```bash
    # Test locally
    npm link
-   create-better-t-stack my-test-app
+   xaheen my-test-app
    
    # Run integration tests
    bun test:integration
@@ -366,4 +366,4 @@ npx @your-org/create-custom-stack my-app
 6. **Document**: Create comprehensive documentation for your team
 7. **Deploy**: Publish to your preferred package registry
 
-This approach allows you to maintain the powerful foundation of create-better-t-stack while adding your organization's specific requirements and standards.
+This approach allows you to maintain the powerful foundation of xaheen while adding your organization's specific requirements and standards.

@@ -5,8 +5,8 @@
 ### Step 1: Initial Repository Setup
 
 ```bash
-# 1. Fork create-better-t-stack
-git clone https://github.com/YOUR_ORG/create-better-t-stack.git xala-stack-cli
+# 1. Fork xaheen
+git clone https://github.com/YOUR_ORG/xaheen.git xala-stack-cli
 cd xala-stack-cli
 
 # 2. Create feature branch
@@ -437,7 +437,7 @@ docs/
 
 ## 🚀 Final Checklist
 
-- [ ] Fork and clone create-better-t-stack
+- [ ] Fork and clone xaheen
 - [ ] Configure GitHub Packages access
 - [ ] Set up project structure
 - [ ] Implement Xala extension
@@ -479,4 +479,4 @@ docs/
    }
    ```
 
-This completes the full integration of Xala UI System into your create-better-t-stack CLI!
+This completes the full integration of Xala UI System into your xaheen CLI!

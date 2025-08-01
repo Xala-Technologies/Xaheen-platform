@@ -6,10 +6,10 @@ Build the Xaheen platform incrementally, starting with core transformation and g
 ---
 
 ## 🚀 Phase 1: Core Transformation (Week 1-2)
-**Goal**: Transform create-better-t-stack into basic Xaheen platform with Xala UI System
+**Goal**: Transform xaheen into basic Xaheen platform with Xala UI System
 
 ### Step 1.1: Repository Setup & Rebranding
-- [ ] Fork create-better-t-stack repository to your organization
+- [ ] Fork xaheen repository to your organization
 - [ ] Clone the forked repository locally
 - [ ] Update repository name and description on GitHub
 - [ ] Set up new remote origin for Xaheen
@@ -17,7 +17,7 @@ Build the Xaheen platform incrementally, starting with core transformation and g
 
 ### Step 1.2: Package Rebranding
 - [ ] Update root `package.json` name to "xaheen"
-- [ ] Find and replace "create-better-t-stack" with "xaheen" in all package.json files
+- [ ] Find and replace "xaheen" with "xaheen" in all package.json files
 - [ ] Update all import statements and references in TypeScript/JavaScript files
 - [ ] Update README.md with Xaheen branding
 - [ ] Update CLI help text and descriptions

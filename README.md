@@ -8,13 +8,13 @@ A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with 
 <img src="https://sponsors.amanv.dev/sponsors.png" alt="Sponsors">
 </p>
 
-![demo](https://cdn.jsdelivr.net/gh/amanvarshney01/create-better-t-stack/demo.gif)
+![demo](https://cdn.jsdelivr.net/gh/amanvarshney01/xaheen/demo.gif)
 
 ## Quick Start
 
 ```bash
 # Using npm
-npx create-better-t-stack@latest
+npx xaheen@latest
 
 # Using bun
 bun create better-t-stack@latest
@@ -40,7 +40,7 @@ pnpm create better-t-stack@latest
 
 This repository is organized as a monorepo containing:
 
-- **CLI**: [`create-better-t-stack`](apps/cli) - The scaffolding CLI tool
+- **CLI**: [`xaheen`](apps/cli) - The scaffolding CLI tool
 - **Documentation**: [`web`](apps/web) - Official website and documentation
 
 ## Documentation
@@ -51,7 +51,7 @@ Visit [better-t-stack.dev](https://better-t-stack.dev) for full documentation, g
 
 ```bash
 # Clone the repository
-git clone https://github.com/better-t-stack/create-better-t-stack.git
+git clone https://github.com/better-t-stack/xaheen.git
 
 # Install dependencies
 bun install
@@ -69,10 +69,10 @@ Just fork the repository and submit a pull request!
 
 ## Star History
 
-<a href="https://www.star-history.com/#AmanVarshney01/create-better-t-stack&Date">
+<a href="https://www.star-history.com/#AmanVarshney01/xaheen&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/create-better-t-stack&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/create-better-t-stack&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=AmanVarshney01/create-better-t-stack&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date" />
  </picture>
 </a>

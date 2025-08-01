@@ -54,7 +54,7 @@ export default function Navbar() {
 		},
 		{ href: "/docs", label: "Docs" },
 		{
-			href: "https://www.npmjs.com/package/create-better-t-stack",
+			href: "https://www.npmjs.com/package/xaheen",
 			label: "NPM",
 			icon: <PackageIcon pm="npm" className="h-4 w-4" />,
 			target: "_blank",
@@ -79,13 +79,13 @@ export default function Navbar() {
 		},
 		{ href: "/docs", label: "Docs" },
 		{
-			href: "https://www.npmjs.com/package/create-better-t-stack",
+			href: "https://www.npmjs.com/package/xaheen",
 			label: "NPM",
 			icon: <PackageIcon pm="npm" className="h-4 w-4" />,
 			target: "_blank",
 		},
 		{
-			href: "https://www.github.com/better-t-stack/create-better-t-stack",
+			href: "https://www.github.com/better-t-stack/xaheen",
 			label: "GitHub",
 			icon: <Github className="size-4" />,
 			target: "_blank",

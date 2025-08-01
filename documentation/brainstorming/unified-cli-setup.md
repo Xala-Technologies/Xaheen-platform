@@ -26,7 +26,7 @@ This guide combines the Xala Enterprise UI System with Xaheen's strict developme
 ### Step 1: Clone and Setup
 
 ```bash
-# Clone the extended create-better-t-stack
+# Clone the extended xaheen
 git clone https://github.com/YOUR_ORG/create-xala-xaheen-stack.git
 cd create-xala-xaheen-stack
 

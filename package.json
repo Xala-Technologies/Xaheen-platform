@@ -4,14 +4,14 @@
 	"scripts": {
 		"build": "turbo build",
 		"dev": "turbo dev",
-		"dev:cli": "turbo run dev --filter=create-better-t-stack",
+		"dev:cli": "turbo run dev --filter=xaheen",
 		"cli": "cd apps/cli && node dist/index.js",
 		"dev:web": "turbo run dev --filter=web",
 		"build:web": "turbo run build --filter=web",
-		"build:cli": "turbo run build --filter=create-better-t-stack",
+		"build:cli": "turbo run build --filter=xaheen",
 		"check": "turbo check",
 		"format": "biome check --write .",
-		"publish-packages": "turbo run build --filter=create-better-t-stack && changeset publish",
+		"publish-packages": "turbo run build --filter=xaheen && changeset publish",
 		"deploy:web": "bun run --filter=web generate-analytics && bun run --filter=web generate-schema && turbo run --filter=web deploy"
 	},
 	"devDependencies": {

@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Better-T-Stack! This document pro
 
 This repository is organized as a monorepo containing:
 
-- **CLI**: [`apps/cli`](apps/cli) - The scaffolding CLI tool (`create-better-t-stack`)
+- **CLI**: [`apps/cli`](apps/cli) - The scaffolding CLI tool (`xaheen`)
 - **Documentation**: [`apps/web`](apps/web) - Official website and documentation
 
 ## Development Setup
@@ -21,8 +21,8 @@ This repository is organized as a monorepo containing:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/better-t-stack/create-better-t-stack.git
-   cd create-better-t-stack
+   git clone https://github.com/better-t-stack/xaheen.git
+   cd xaheen
    ```
 
 2. **Install dependencies**
@@ -41,7 +41,7 @@ This repository is organized as a monorepo containing:
    ```bash
    bun link
    ```
-   Now you can use `create-better-t-stack` from anywhere in your system.
+   Now you can use `xaheen` from anywhere in your system.
 
 3. **Start development server**
    ```bash
@@ -101,7 +101,7 @@ This repository is organized as a monorepo containing:
 
 6. **Add changeset** (for CLI-related changes)
    ```bash
-   bunx changeset select create-better-t-stack
+   bunx changeset select xaheen
    # Choose 'patch' for small fixes, 'minor' for features
    # Never choose 'major'
    ```

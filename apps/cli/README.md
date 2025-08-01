@@ -8,7 +8,7 @@ A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with 
 <img src="https://sponsors.amanv.dev/sponsors.png" alt="Sponsors">
 </p>
 
-![demo](https://cdn.jsdelivr.net/gh/amanvarshney01/create-better-t-stack@master/demo.gif)
+![demo](https://cdn.jsdelivr.net/gh/amanvarshney01/xaheen@master/demo.gif)
 
 ## Quick Start
 
@@ -16,7 +16,7 @@ Run without installing globally:
 
 ```bash
 # Using npm
-npx create-better-t-stack@latest
+npx xaheen@latest
 
 # Using bun
 bun create better-t-stack@latest
@@ -48,7 +48,7 @@ Follow the prompts to configure your project or use the `--yes` flag for default
 ## Usage
 
 ```bash
-Usage: create-better-t-stack [project-directory] [options]
+Usage: xaheen [project-directory] [options]
 
 Options:
   -V, --version                   Output the version number
@@ -88,7 +88,7 @@ You can disable telemetry by setting the `BTS_TELEMETRY` environment variable:
 
 ```bash
 # Disable telemetry for a single run
-BTS_TELEMETRY_DISABLED=1 npx create-better-t-stack my-app
+BTS_TELEMETRY_DISABLED=1 npx xaheen my-app
 
 # Disable telemetry globally in your shell profile (.bashrc, .zshrc, etc.)
 export BTS_TELEMETRY_DISABLED=1
@@ -103,85 +103,85 @@ During development, telemetry is automatically disabled when `NODE_ENV=developme
 Create a project with default configuration:
 
 ```bash
-npx create-better-t-stack my-app --yes
+npx xaheen my-app --yes
 ```
 
 Create a project with specific options:
 
 ```bash
-npx create-better-t-stack my-app --database postgres --orm drizzle --auth --addons pwa biome
+npx xaheen my-app --database postgres --orm drizzle --auth --addons pwa biome
 ```
 
 Create a project with Elysia backend and Node.js runtime:
 
 ```bash
-npx create-better-t-stack my-app --backend elysia --runtime node
+npx xaheen my-app --backend elysia --runtime node
 ```
 
 Create a project with multiple frontend options:
 
 ```bash
-npx create-better-t-stack my-app --frontend tanstack-router native
+npx xaheen my-app --frontend tanstack-router native
 ```
 
 Create a project with examples:
 
 ```bash
-npx create-better-t-stack my-app --examples todo ai
+npx xaheen my-app --examples todo ai
 ```
 
 Create a project with Turso database setup:
 
 ```bash
-npx create-better-t-stack my-app --database sqlite --orm drizzle --db-setup turso
+npx xaheen my-app --database sqlite --orm drizzle --db-setup turso
 ```
 
 Create a project with Supabase PostgreSQL setup:
 
 ```bash
-npx create-better-t-stack my-app --database postgres --orm drizzle --db-setup supabase --auth
+npx xaheen my-app --database postgres --orm drizzle --db-setup supabase --auth
 ```
 
 Create a project with Convex backend:
 
 ```bash
-npx create-better-t-stack my-app --backend convex --frontend tanstack-router
+npx xaheen my-app --backend convex --frontend tanstack-router
 ```
 
 Create a project with documentation site:
 
 ```bash
-npx create-better-t-stack my-app --addons starlight
+npx xaheen my-app --addons starlight
 ```
 
 Create a minimal TypeScript project with no backend:
 
 ```bash
-npx create-better-t-stack my-app --backend none --frontend tanstack-router
+npx xaheen my-app --backend none --frontend tanstack-router
 ```
 
 Create a backend-only project with no frontend:
 
 ```bash
-npx create-better-t-stack my-app --frontend none --backend hono --database postgres --orm drizzle
+npx xaheen my-app --frontend none --backend hono --database postgres --orm drizzle
 ```
 
 Create a simple frontend-only project:
 
 ```bash
-npx create-better-t-stack my-app --backend none --frontend next --addons none --examples none
+npx xaheen my-app --backend none --frontend next --addons none --examples none
 ```
 
 Create a Cloudflare Workers project:
 
 ```bash
-npx create-better-t-stack my-app --backend hono --runtime workers --database sqlite --orm drizzle --db-setup d1
+npx xaheen my-app --backend hono --runtime workers --database sqlite --orm drizzle --db-setup d1
 ```
 
 Create a minimal API-only project:
 
 ```bash
-npx create-better-t-stack my-app --frontend none --backend hono --api trpc --database none --addons none
+npx xaheen my-app --frontend none --backend hono --api trpc --database none --addons none
 ```
 
 ## Compatibility Notes

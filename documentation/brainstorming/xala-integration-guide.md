@@ -2,12 +2,12 @@
 
 ## 🚀 Quick Start
 
-### 1. Fork and Setup create-better-t-stack
+### 1. Fork and Setup xaheen
 
 ```bash
-# Fork the create-better-t-stack repository
-git clone https://github.com/YOUR_ORG/create-better-t-stack.git
-cd create-better-t-stack
+# Fork the xaheen repository
+git clone https://github.com/YOUR_ORG/xaheen.git
+cd xaheen
 
 # Install dependencies
 bun install
@@ -217,10 +217,10 @@ export function SecureChat() {
 
 ```bash
 # Using the extended CLI
-npx create-better-t-stack create-xala my-app
+npx xaheen create-xala my-app
 
 # With options
-npx create-better-t-stack create-xala my-app \
+npx xaheen create-xala my-app \
   --template xala-enterprise-app \
   --classification \
   --multi-tenant \
@@ -231,10 +231,10 @@ npx create-better-t-stack create-xala my-app \
 
 ```bash
 # Add a new component using Xala UI System
-npx create-better-t-stack add component MyComponent --xala
+npx xaheen add component MyComponent --xala
 
 # Add a feature module
-npx create-better-t-stack add feature user-management --xala
+npx xaheen add feature user-management --xala
 ```
 
 ## 🎨 Theming & Customization
@@ -489,4 +489,4 @@ import { VirtualList } from '@xala-technologies/ui-system';
 />
 ```
 
-This guide provides everything needed to integrate Xala UI System into your create-better-t-stack CLI and build enterprise-grade Norwegian applications!
+This guide provides everything needed to integrate Xala UI System into your xaheen CLI and build enterprise-grade Norwegian applications!

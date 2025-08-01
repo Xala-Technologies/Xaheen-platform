@@ -10,7 +10,7 @@ const CodeContainer = () => {
 	const [copied, setCopied] = useState(false);
 
 	const commands = {
-		npm: "npx create-better-t-stack@latest",
+		npm: "npx xaheen@latest",
 		pnpm: "pnpm create better-t-stack@latest",
 		bun: "bun create better-t-stack@latest",
 	};
