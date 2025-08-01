@@ -1,0 +1,505 @@
+{{#if typescript}}
+import type { NextApiRequest, NextApiResponse } from 'next';
+import type { 
+  AltinnUser,
+  AltinnForm,
+  AltinnFormSubmission,
+  Organization,
+  Person,
+  AltinnCorrespondence
+} from './altinn.types';
+{{/if}}
+import { AltinnClient } from './altinn-client';
+import crypto from 'crypto';
+
+/**
+ * Altinn Service API Routes for {{projectName}}
+ * Provides server-side endpoints for Altinn integration
+ */
+
+// Initialize Altinn client
+const altinnClient = new AltinnClient({
+  apiKey: process.env.ALTINN_API_KEY || '',
+  organizationNumber: process.env.ALTINN_ORGANIZATION_NUMBER || '',
+  environment: (process.env.ALTINN_ENVIRONMENT || 'test'){{#if typescript}} as 'test' | 'production'{{/if}},
+});
+
+/**
+ * Authentication Endpoints
+ */
+export async function handleAuthInitiate(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { method, organizationNumber, requiredRoles } = req.body;
+    
+    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/altinn/auth/callback`;
+    
+    const { authUrl, sessionId } = await altinnClient.initiateAuthentication(
+      method,
+      redirectUri,
+      requiredRoles
+    );
+
+    // Store session info temporarily
+    // In production, use proper session storage
+    res.setHeader(
+      'Set-Cookie',
+      `altinn_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`
+    );
+
+    res.status(200).json({ authUrl, sessionId });
+  } catch (error) {
+    console.error('Auth initiation error:', error);
+    res.status(500).json({ 
+      error: 'Authentication initiation failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+export async function handleAuthCallback(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  try {
+    const { code, state, error } = req.query;
+
+    if (error) {
+      return res.redirect(`/auth/error?message=${encodeURIComponent(error{{#if typescript}} as string{{/if}})}`);
+    }
+
+    if (!code || !state) {
+      return res.redirect('/auth/error?message=Missing%20authentication%20parameters');
+    }
+
+    // Verify state parameter
+    const sessionCookie = req.cookies.altinn_session;
+    if (!sessionCookie || sessionCookie !== state) {
+      return res.redirect('/auth/error?message=Invalid%20state%20parameter');
+    }
+
+    // Complete authentication
+    const user = await altinnClient.completeAuthentication(
+      code{{#if typescript}} as string{{/if}},
+      state{{#if typescript}} as string{{/if}}
+    );
+
+    // Create session
+    const sessionId = crypto.randomBytes(32).toString('hex');
+    const sessionData = {
+      user,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    // Store session (use proper session storage in production)
+    // For example, Redis or database
+    
+    // Set session cookie
+    res.setHeader(
+      'Set-Cookie',
+      `session_id=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`
+    );
+
+    {{#if gdprCompliant}}
+    // GDPR compliance: Log authentication
+    await logAuthEvent('altinn_login', user.id, {
+      method: 'idporten',
+      organizationNumber: user.organizationNumber,
+    });
+    {{/if}}
+
+    res.redirect('/dashboard');
+  } catch (error) {
+    console.error('Auth callback error:', error);
+    res.redirect(`/auth/error?message=${encodeURIComponent('Authentication%20failed')}`);
+  }
+}
+
+export async function handleBankIDCallback(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { bankIdToken, organizationNumber } = req.body;
+
+    // Exchange BankID token for Altinn session
+    const user = await altinnClient.authenticateWithBankID(bankIdToken);
+
+    // Check organization access if specified
+    if (organizationNumber && user.organizationNumber !== organizationNumber) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        message: 'User does not have access to specified organization' 
+      });
+    }
+
+    {{#if gdprCompliant}}
+    // GDPR compliance: Log authentication
+    await logAuthEvent('altinn_login', user.id, {
+      method: 'bankid',
+      organizationNumber: user.organizationNumber,
+    });
+    {{/if}}
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('BankID callback error:', error);
+    res.status(500).json({ 
+      error: 'BankID authentication failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+/**
+ * Forms Endpoints
+ */
+export async function handleGetForms(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { org } = req.query;
+    const userId = getUserFromSession(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const forms = await altinnClient.getAvailableForms(userId);
+    
+    // Filter by organization if specified
+    const filteredForms = org 
+      ? forms.filter(form => form.organizationNumber === org)
+      : forms;
+
+    res.status(200).json({ forms: filteredForms });
+  } catch (error) {
+    console.error('Get forms error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch forms',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+export async function handleGetForm(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { formId } = req.query;
+    
+    if (!formId) {
+      return res.status(400).json({ error: 'Form ID is required' });
+    }
+
+    const form = await altinnClient.getForm(formId{{#if typescript}} as string{{/if}});
+    
+    res.status(200).json(form);
+  } catch (error) {
+    console.error('Get form error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch form',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+export async function handleSubmitForm(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const userId = getUserFromSession(req);
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const submission{{#if typescript}}: AltinnFormSubmission{{/if}} = req.body;
+    
+    // Validate submission
+    if (!submission.formId || !submission.data) {
+      return res.status(400).json({ error: 'Invalid form submission' });
+    }
+
+    {{#if gdprCompliant}}
+    // GDPR compliance: Log form submission
+    await logDataProcessing('form_submission', userId, {
+      formId: submission.formId,
+      organizationNumber: submission.organizationNumber,
+      timestamp: new Date().toISOString(),
+    });
+    {{/if}}
+
+    // Submit to Altinn
+    const result = await altinnClient.submitForm(
+      submission.formId,
+      submission.data,
+      userId
+    );
+
+    // Send confirmation email if configured
+    if (process.env.SEND_CONFIRMATIONS === 'true') {
+      await sendFormConfirmation(userId, submission, result);
+    }
+
+    res.status(200).json({
+      success: true,
+      instanceId: result.instanceId,
+      receiptId: result.receiptId,
+    });
+  } catch (error) {
+    console.error('Form submission error:', error);
+    res.status(500).json({ 
+      error: 'Form submission failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+/**
+ * Registry Endpoints
+ */
+export async function handleSearchOrganizations(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const organizations = await altinnClient.searchOrganizations(q{{#if typescript}} as string{{/if}});
+    
+    res.status(200).json({ 
+      results: organizations,
+      count: organizations.length 
+    });
+  } catch (error) {
+    console.error('Organization search error:', error);
+    res.status(500).json({ 
+      error: 'Search failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+export async function handleSearchPersons(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const userId = getUserFromSession(req);
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check authorization for person search
+    const authorized = await checkUserAuthorization(userId, 'person-registry', 'search');
+    
+    if (!authorized) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        message: 'You are not authorized to search persons' 
+      });
+    }
+
+    const { q, includeAddress } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const persons = await altinnClient.searchPersons(
+      q{{#if typescript}} as string{{/if}},
+      includeAddress === 'true'
+    );
+
+    {{#if gdprCompliant}}
+    // GDPR compliance: Log person search
+    await logDataProcessing('person_search', userId, {
+      query: q,
+      resultCount: persons.length,
+      includeAddress,
+      timestamp: new Date().toISOString(),
+    });
+    {{/if}}
+    
+    res.status(200).json({ 
+      results: persons,
+      count: persons.length 
+    });
+  } catch (error) {
+    console.error('Person search error:', error);
+    res.status(500).json({ 
+      error: 'Search failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+/**
+ * Authorization Endpoints
+ */
+export async function handleCheckAuthorization(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { userId, organizationNumber, requiredRoles } = req.body;
+    
+    if (!userId || !requiredRoles || requiredRoles.length === 0) {
+      return res.status(400).json({ error: 'Invalid authorization check request' });
+    }
+
+    // Get user roles
+    const userRoles = await altinnClient.getUserRoles(userId);
+    
+    // Check if user has required roles
+    const missingRoles = requiredRoles.filter(
+      (role{{#if typescript}}: string{{/if}}) => !userRoles.includes(role)
+    );
+    
+    const authorized = missingRoles.length === 0;
+    
+    res.status(200).json({
+      authorized,
+      userRoles,
+      missingRoles,
+    });
+  } catch (error) {
+    console.error('Authorization check error:', error);
+    res.status(500).json({ 
+      error: 'Authorization check failed',
+      message: error{{#if typescript}} as Error{{/if}}.message 
+    });
+  }
+}
+
+/**
+ * Helper Functions
+ */
+function getUserFromSession(req{{#if typescript}}: NextApiRequest{{/if}}){{#if typescript}}: string | null{{/if}} {
+  // In production, implement proper session management
+  // This is a simplified example
+  const sessionId = req.cookies.session_id;
+  
+  if (!sessionId) {
+    return null;
+  }
+  
+  // Retrieve user ID from session storage
+  // For now, return a mock user ID
+  return 'mock-user-id';
+}
+
+async function checkUserAuthorization(
+  userId{{#if typescript}}: string{{/if}},
+  resource{{#if typescript}}: string{{/if}},
+  action{{#if typescript}}: string{{/if}}
+){{#if typescript}}: Promise<boolean>{{/if}} {
+  try {
+    return await altinnClient.checkAuthorization(userId, resource, action);
+  } catch {
+    return false;
+  }
+}
+
+async function sendFormConfirmation(
+  userId{{#if typescript}}: string{{/if}},
+  submission{{#if typescript}}: AltinnFormSubmission{{/if}},
+  result{{#if typescript}}: { instanceId: string; receiptId: string }{{/if}}
+){{#if typescript}}: Promise<void>{{/if}} {
+  // Implement email confirmation
+  console.log('Sending form confirmation to user:', userId);
+}
+
+{{#if gdprCompliant}}
+async function logAuthEvent(
+  event{{#if typescript}}: string{{/if}},
+  userId{{#if typescript}}: string{{/if}},
+  metadata{{#if typescript}}: any{{/if}}
+){{#if typescript}}: Promise<void>{{/if}} {
+  try {
+    // Log to audit system
+    console.log('Auth event:', { event, userId, metadata, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Audit logging failed:', error);
+  }
+}
+
+async function logDataProcessing(
+  activity{{#if typescript}}: string{{/if}},
+  userId{{#if typescript}}: string{{/if}},
+  metadata{{#if typescript}}: any{{/if}}
+){{#if typescript}}: Promise<void>{{/if}} {
+  try {
+    // Log to GDPR compliance system
+    console.log('GDPR data processing:', { activity, userId, metadata, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('GDPR logging failed:', error);
+  }
+}
+{{/if}}
+
+/**
+ * Export all handlers
+ */
+export const altinnHandlers = {
+  // Authentication
+  authInitiate: handleAuthInitiate,
+  authCallback: handleAuthCallback,
+  bankIDCallback: handleBankIDCallback,
+  
+  // Forms
+  getForms: handleGetForms,
+  getForm: handleGetForm,
+  submitForm: handleSubmitForm,
+  
+  // Registry
+  searchOrganizations: handleSearchOrganizations,
+  searchPersons: handleSearchPersons,
+  
+  // Authorization
+  checkAuthorization: handleCheckAuthorization,
+};

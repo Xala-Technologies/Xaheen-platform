@@ -155,17 +155,17 @@
 
 ## 🔌 **PHASE 6: THIRD-PARTY INTEGRATIONS**
 
-### **Story 6.1: Altinn Government Services**
-- [ ] Create `apps/cli/src/integrations/services/altinn.ts`
-- [ ] Add Altinn API client configuration
-- [ ] Add `generateAltinnComponent(options: IntegrationOptions): GenerationResult` function
-- [ ] Add `generateAltinnService(options: IntegrationOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/services/altinn-client.ts.hbs` template
-- [ ] Create `apps/cli/templates/integrations/services/altinn-service.ts.hbs` template
-- [ ] Add Norwegian business registry integration
-- [ ] Add government form submission handling
-- [ ] Add Altinn authentication integration with BankID
-- [ ] Add GDPR-compliant data handling for government services
+### **Story 6.1: Altinn Government Services** ✅
+- [x] Create `apps/cli/src/integrations/services/altinn.ts`
+- [x] Add Altinn API client configuration
+- [x] Add `generateAltinnComponent(options: IntegrationOptions): GenerationResult` function
+- [x] Add `generateAltinnService(options: IntegrationOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/services/altinn-client.ts.hbs` template
+- [x] Create `apps/cli/templates/integrations/services/altinn-service.ts.hbs` template
+- [x] Add Norwegian business registry integration
+- [x] Add government form submission handling
+- [x] Add Altinn authentication integration with BankID
+- [x] Add GDPR-compliant data handling for government services
 
 ### **Story 6.2: Slack Integration**
 - [ ] Create `apps/cli/src/integrations/services/slack.ts`
