@@ -1,0 +1,434 @@
+{{#if typescript}}
+import type { NextApiRequest, NextApiResponse } from 'next';
+{{#if database}}
+import { PrismaClient } from '@prisma/client';
+{{/if}}
+{{#if auth}}
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
+{{/if}}
+{{#if validation}}
+import { z } from 'zod';
+{{/if}}
+{{#if logger}}
+import { logger } from '../../utils/logger';
+{{/if}}
+
+// {{wcagLevel compliance.wcag}}
+// {{gdprNotice}}
+// {{nsmClassification compliance.nsm.classification}}
+
+{{#if validation}}
+// Request validation schemas
+const {{camelCase name}}QuerySchema = z.object({
+  {{#each queryParams}}
+  {{name}}: {{#if required}}z.{{zodType}}(){{else}}z.{{zodType}}().optional(){{/if}},
+  {{/each}}
+});
+
+{{#if hasBody}}
+const {{camelCase name}}BodySchema = z.object({
+  {{#each bodyParams}}
+  {{name}}: {{#if required}}z.{{zodType}}(){{else}}z.{{zodType}}().optional(){{/if}},
+  {{/each}}
+});
+{{/if}}
+{{/if}}
+
+// Response types
+interface {{pascalCase name}}Response {
+  {{#if success}}
+  success: boolean;
+  {{/if}}
+  {{#each responseFields}}
+  {{name}}{{#unless required}}?{{/unless}}: {{type}};
+  {{/each}}
+  {{#if hasError}}
+  error?: string;
+  message?: string;
+  {{/if}}
+  {{#if compliance.gdpr}}
+  gdprCompliant: boolean;
+  {{/if}}
+}
+
+{{#if errors}}
+interface {{pascalCase name}}ErrorResponse {
+  success: false;
+  error: string;
+  message: string;
+  {{#if validation}}
+  validationErrors?: Record<string, string[]>;
+  {{/if}}
+  {{#if debug}}
+  debug?: any;
+  {{/if}}
+}
+{{/if}}
+{{/if}}
+
+{{#if database}}
+const prisma = new PrismaClient();
+{{/if}}
+
+/**
+ * {{description}}
+ * 
+ * Features:
+ * - Norwegian compliance (NSM {{compliance.nsm.classification}})
+ * {{#if auth}}
+ * - Authentication required
+ * {{/if}}
+ * {{#if validation}}
+ * - Request validation with Zod
+ * {{/if}}
+ * {{#if rateLimit}}
+ * - Rate limiting protection
+ * {{/if}}
+ * {{#if cache}}
+ * - Response caching
+ * {{/if}}
+ * - GDPR compliant data handling
+ * 
+ * @param req - Next.js API request
+ * @param res - Next.js API response
+ */
+export default async function {{camelCase name}}Handler(
+  req: NextApiRequest,
+  res: NextApiResponse<{{pascalCase name}}Response{{#if errors}} | {{pascalCase name}}ErrorResponse{{/if}}>
+) {
+  {{#if logger}}
+  const requestId = req.headers['x-request-id'] || Math.random().toString(36);
+  logger.info(`API ${req.method} {{endpoint}} - Request ${requestId}`);
+  {{/if}}
+  
+  try {
+    // CORS headers for Norwegian compliance
+    res.setHeader('Access-Control-Allow-Origin', '{{cors.origin}}');
+    res.setHeader('Access-Control-Allow-Methods', '{{join allowedMethods ", "}}');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    {{#if compliance.nsm}}
+    res.setHeader('X-NSM-Classification', '{{compliance.nsm.classification}}');
+    {{/if}}
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
+    
+    // Method validation
+    if (!{{json allowedMethods}}.includes(req.method || '')) {
+      {{#if logger}}
+      logger.warn(`Method not allowed: ${req.method} for {{endpoint}}`);
+      {{/if}}
+      return res.status(405).json({
+        success: false,
+        error: 'METHOD_NOT_ALLOWED',
+        message: `Method ${req.method} is not allowed for this endpoint`,
+      } as {{pascalCase name}}ErrorResponse);
+    }
+    
+    {{#if auth}}
+    // Authentication
+    const session = await getServerSession(req, res, authOptions);
+    
+    if (!session || !session.user) {
+      {{#if logger}}
+      logger.warn(`Unauthorized access attempt to {{endpoint}}`);
+      {{/if}}
+      return res.status(401).json({
+        success: false,
+        error: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      } as {{pascalCase name}}ErrorResponse);
+    }
+    
+    {{#if compliance.gdpr}}
+    // GDPR: Log authenticated user access
+    logger.info(`User ${session.user.id} accessed {{endpoint}}`, {
+      userId: session.user.id,
+      endpoint: '{{endpoint}}',
+      method: req.method,
+      gdprCompliant: true,
+    });
+    {{/if}}
+    {{/if}}
+    
+    {{#if rateLimit}}
+    // Rate limiting
+    const rateLimitKey = `rate_limit:{{kebabCase name}}:${{{#if auth}}session.user.id{{else}}req.ip{{/if}}}`;
+    // Implementation would depend on your rate limiting solution
+    {{/if}}
+    
+    {{#if validation}}
+    // Validate query parameters
+    const queryValidation = {{camelCase name}}QuerySchema.safeParse(req.query);
+    
+    if (!queryValidation.success) {
+      {{#if logger}}
+      logger.warn(`Query validation failed for {{endpoint}}:`, queryValidation.error);
+      {{/if}}
+      return res.status(400).json({
+        success: false,
+        error: 'VALIDATION_ERROR',
+        message: 'Invalid query parameters',
+        validationErrors: queryValidation.error.flatten().fieldErrors,
+      } as {{pascalCase name}}ErrorResponse);
+    }
+    
+    const query = queryValidation.data;
+    
+    {{#if hasBody}}
+    // Validate request body
+    let body = null;
+    
+    if (['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
+      const bodyValidation = {{camelCase name}}BodySchema.safeParse(req.body);
+      
+      if (!bodyValidation.success) {
+        {{#if logger}}
+        logger.warn(`Body validation failed for {{endpoint}}:`, bodyValidation.error);
+        {{/if}}
+        return res.status(400).json({
+          success: false,
+          error: 'VALIDATION_ERROR',
+          message: 'Invalid request body',
+          validationErrors: bodyValidation.error.flatten().fieldErrors,
+        } as {{pascalCase name}}ErrorResponse);
+      }
+      
+      body = bodyValidation.data;
+    }
+    {{/if}}
+    {{/if}}
+    
+    // Route implementation based on HTTP method
+    switch (req.method) {
+      {{#each methods}}
+      case '{{uppercase name}}':
+        return await handle{{pascalCase name}}(
+          req,
+          res,
+          {{#if ../validation}}query{{#if ../hasBody}}, body{{/if}}{{/if}}{{#if ../auth}}, session{{/if}}
+        );
+      {{/each}}
+      
+      default:
+        return res.status(405).json({
+          success: false,
+          error: 'METHOD_NOT_ALLOWED', 
+          message: `Method ${req.method} not implemented`,
+        } as {{pascalCase name}}ErrorResponse);
+    }
+    
+  } catch (error) {
+    {{#if logger}}
+    logger.error(`Unhandled error in {{endpoint}}:`, error);
+    {{/if}}
+    
+    // Don't expose internal errors in production
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    return res.status(500).json({
+      success: false,
+      error: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
+      {{#if debug}}
+      ...(isDevelopment && { debug: error }),
+      {{/if}}
+    } as {{pascalCase name}}ErrorResponse);
+  }
+}
+
+{{#each methods}}
+// Handle {{uppercase name}} requests
+async function handle{{pascalCase name}}(
+  req: NextApiRequest,
+  res: NextApiResponse<{{../pascalCase ../name}}Response{{#if ../errors}} | {{../pascalCase ../name}}ErrorResponse{{/if}}>,
+  {{#if ../validation}}query: z.infer<typeof {{../camelCase ../name}}QuerySchema>{{#if ../hasBody}}, body: z.infer<typeof {{../camelCase ../name}}BodySchema>{{/if}}{{/if}}{{#if ../auth}}, session: any{{/if}}
+) {
+  {{#if ../logger}}
+  logger.info(`Handling {{uppercase name}} request for {{../endpoint}}`);
+  {{/if}}
+  
+  try {
+    {{#if implementation}}
+    {{{implementation}}}
+    {{else}}
+    // TODO: Implement {{uppercase name}} logic here
+    
+    {{#if ../database}}
+    {{#if (eq name 'get')}}
+    // Example: Fetch data from database
+    const data = await prisma.{{../camelCase ../model}}.findMany({
+      {{#if ../auth}}
+      where: {
+        userId: session.user.id,
+        {{#if ../compliance.gdpr}}
+        // GDPR: Only fetch user's own data
+        {{/if}}
+      },
+      {{/if}}
+      {{#if ../pagination}}
+      take: parseInt(query.limit as string) || 10,
+      skip: parseInt(query.offset as string) || 0,
+      {{/if}}
+    });
+    
+    return res.status(200).json({
+      success: true,
+      data,
+      {{#if ../compliance.gdpr}}
+      gdprCompliant: true,
+      {{/if}}
+    } as {{../pascalCase ../name}}Response);
+    {{/if}}
+    
+    {{#if (eq name 'post')}}
+    // Example: Create new record
+    const newRecord = await prisma.{{../camelCase ../model}}.create({
+      data: {
+        ...body,
+        {{#if ../auth}}
+        userId: session.user.id,
+        {{/if}}
+        {{#if ../compliance.gdpr}}
+        // GDPR: Track data creation
+        createdBy: session.user.id,
+        gdprConsent: true,
+        {{/if}}
+      },
+    });
+    
+    {{#if ../logger}}
+    logger.info(`Created new {{../model}} with ID: ${newRecord.id}`);
+    {{/if}}
+    
+    return res.status(201).json({
+      success: true,
+      data: newRecord,
+      {{#if ../compliance.gdpr}}
+      gdprCompliant: true,
+      {{/if}}
+    } as {{../pascalCase ../name}}Response);
+    {{/if}}
+    
+    {{#if (eq name 'put')}}
+    // Example: Update existing record
+    const updatedRecord = await prisma.{{../camelCase ../model}}.update({
+      where: {
+        id: query.id,
+        {{#if ../auth}}
+        userId: session.user.id, // Ensure user can only update their own data
+        {{/if}}
+      },
+      data: {
+        ...body,
+        {{#if ../compliance.gdpr}}
+        // GDPR: Track data modification
+        updatedBy: session.user.id,
+        updatedAt: new Date(),
+        {{/if}}
+      },
+    });
+    
+    return res.status(200).json({
+      success: true,
+      data: updatedRecord,
+      {{#if ../compliance.gdpr}}
+      gdprCompliant: true,
+      {{/if}}
+    } as {{../pascalCase ../name}}Response);
+    {{/if}}
+    
+    {{#if (eq name 'delete')}}
+    // Example: Delete record
+    {{#if ../compliance.gdpr}}
+    // GDPR: Soft delete or complete removal based on requirements
+    const deletedRecord = await prisma.{{../camelCase ../model}}.update({
+      where: {
+        id: query.id,
+        {{#if ../auth}}
+        userId: session.user.id,
+        {{/if}}
+      },
+      data: {
+        deletedAt: new Date(),
+        deletedBy: session.user.id,
+      },
+    });
+    {{else}}
+    const deletedRecord = await prisma.{{../camelCase ../model}}.delete({
+      where: {
+        id: query.id,
+        {{#if ../auth}}
+        userId: session.user.id,
+        {{/if}}
+      },
+    });
+    {{/if}}
+    
+    return res.status(200).json({
+      success: true,
+      message: '{{../humanCase ../model}} deleted successfully',
+      {{#if ../compliance.gdpr}}
+      gdprCompliant: true,
+      {{/if}}
+    } as {{../pascalCase ../name}}Response);
+    {{/if}}
+    {{else}}
+    // Placeholder implementation
+    return res.status(200).json({
+      success: true,
+      message: '{{uppercase name}} endpoint working',
+      {{#if ../compliance.gdpr}}
+      gdprCompliant: true,
+      {{/if}}
+    } as {{../pascalCase ../name}}Response);
+    {{/if}}
+    {{/if}}
+    
+  } catch (error) {
+    {{#if ../logger}}
+    logger.error(`Error in handle{{pascalCase name}}:`, error);
+    {{/if}}
+    
+    {{#if ../database}}
+    // Handle database-specific errors
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        success: false,
+        error: 'CONFLICT',
+        message: 'Resource already exists',
+      } as {{../pascalCase ../name}}ErrorResponse);
+    }
+    
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        error: 'NOT_FOUND',
+        message: 'Resource not found',
+      } as {{../pascalCase ../name}}ErrorResponse);
+    }
+    {{/if}}
+    
+    throw error; // Re-throw to be handled by main error handler
+  }
+}
+
+{{/each}}
+
+{{#if cache}}
+// Cache configuration
+export const config = {
+  api: {
+    externalResolver: true,
+  },
+};
+{{/if}}

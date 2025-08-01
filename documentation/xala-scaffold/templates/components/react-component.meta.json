@@ -1,0 +1,163 @@
+{
+  "name": "react-component",
+  "description": "Enterprise-grade React functional component with Norwegian compliance",
+  "category": "component",
+  "tags": [
+    "react",
+    "typescript",
+    "component",
+    "norwegian-compliance",
+    "accessibility",
+    "wcag",
+    "gdpr",
+    "nsm",
+    "localization",
+    "design-tokens"
+  ],
+  "requiredContext": [
+    "name",
+    "description"
+  ],
+  "optionalContext": [
+    "typescript",
+    "localization",
+    "props",
+    "hasEvents",
+    "hasState",
+    "hasEffects",
+    "hasIcon",
+    "hasContent",
+    "hasLoader",
+    "htmlTag",
+    "stateName",
+    "stateType",
+    "stateInitialValue",
+    "displayName",
+    "styling",
+    "accessibility",
+    "compliance"
+  ],
+  "dependencies": [
+    "react",
+    "@types/react",
+    "@xala-technologies/ui-system"
+  ],
+  "platform": [
+    "react",
+    "nextjs"
+  ],
+  "version": "1.0.0",
+  "author": "Xala Technologies",
+  "examples": [
+    {
+      "name": "Basic Button Component",
+      "context": {
+        "name": "Button",
+        "description": "A reusable button component",
+        "typescript": true,
+        "localization": true,
+        "htmlTag": "button",
+        "hasEvents": true,
+        "hasContent": true,
+        "props": [
+          {
+            "name": "variant",
+            "type": "ButtonVariant",
+            "required": false,
+            "defaultValue": "'primary'"
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false,
+            "defaultValue": "false"
+          }
+        ],
+        "styling": {
+          "tokenBased": true,
+          "tokens": [
+            {
+              "property": "backgroundColor",
+              "tokenPath": "colors.primary.500"
+            },
+            {
+              "property": "color",
+              "tokenPath": "colors.white"
+            },
+            {
+              "property": "padding",
+              "tokenPath": "spacing.md"
+            }
+          ]
+        },
+        "accessibility": {
+          "ariaSupport": true,
+          "keyboardNavigation": true,
+          "role": "button",
+          "announcements": true
+        },
+        "compliance": {
+          "nsm": {
+            "classification": "OPEN"
+          },
+          "gdpr": true,
+          "wcag": "AAA"
+        }
+      }
+    },
+    {
+      "name": "Card Component",
+      "context": {
+        "name": "Card",
+        "description": "A flexible card container component",
+        "typescript": true,
+        "localization": false,
+        "htmlTag": "div",
+        "hasContent": true,
+        "props": [
+          {
+            "name": "variant",
+            "type": "CardVariant",
+            "required": false,
+            "defaultValue": "'default'"
+          },
+          {
+            "name": "elevation",
+            "type": "number",
+            "required": false,
+            "defaultValue": "1"
+          }
+        ],
+        "styling": {
+          "tokenBased": true,
+          "tokens": [
+            {
+              "property": "backgroundColor",
+              "tokenPath": "colors.background.card"
+            },
+            {
+              "property": "borderRadius",
+              "tokenPath": "radius.md"
+            },
+            {
+              "property": "boxShadow",
+              "tokenPath": "shadows.sm"
+            }
+          ]
+        },
+        "accessibility": {
+          "ariaSupport": false,
+          "keyboardNavigation": false,
+          "role": "region"
+        },
+        "compliance": {
+          "nsm": {
+            "classification": "OPEN"
+          },
+          "gdpr": false,
+          "wcag": "AAA"
+        }
+      }
+    }
+  ]
+}

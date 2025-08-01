@@ -1,0 +1,199 @@
+{
+  "name": "base-layout",
+  "description": "Base layout component with header, navigation, sidebar, and footer",
+  "category": "layout",
+  "tags": [
+    "layout",
+    "base",
+    "responsive",
+    "accessibility",
+    "seo",
+    "typescript",
+    "norwegian-compliance",
+    "localization",
+    "theme"
+  ],
+  "requiredContext": [
+    "name",
+    "description"
+  ],    
+  "optionalContext": [
+    "typescript",
+    "localization",
+    "tokens",
+    "theme",
+    "navigation",
+    "header",
+    "sidebar",
+    "footer",
+    "responsive",
+    "hasState",
+    "hasEffects",
+    "hasKeywords",
+    "analytics",
+    "seo",
+    "accessibility",
+    "compliance",
+    "styling",
+    "props",
+    "defaultTitle",
+    "defaultDescription"
+  ],
+  "dependencies": [
+    "next",
+    "react",
+    "@types/react",
+    "@types/next"
+  ],
+  "platform": [
+    "nextjs",
+    "react"
+  ],
+  "version": "1.0.0",
+  "author": "Xala Technologies",
+  "examples": [
+    {
+      "name": "Simple App Layout",
+      "context": {
+        "name": "AppLayout",
+        "description": "Main application layout with header and footer",
+        "typescript": true,
+        "localization": true,
+        "tokens": true,
+        "theme": true,
+        "header": {
+          "props": [
+            {
+              "name": "showLogo",
+              "value": "true"
+            },
+            {
+              "name": "showUserMenu",
+              "value": "true"
+            }
+          ]
+        },
+        "navigation": {
+          "props": [
+            {
+              "name": "items",
+              "value": "navigationItems"
+            }
+          ]
+        },
+        "footer": {
+          "props": [
+            {
+              "name": "showCopyright",
+              "value": "true"
+            }
+          ]
+        },
+        "responsive": true,
+        "seo": true,
+        "defaultTitle": "Xala Application",
+        "defaultDescription": "Norwegian-compliant enterprise application",
+        "accessibility": {
+          "skipLinks": true,
+          "announcements": true,
+          "ariaSupport": true
+        },
+        "compliance": {
+          "nsm": {
+            "classification": "OPEN"
+          },
+          "gdpr": true,
+          "wcag": "AAA"
+        },
+        "styling": {
+          "tokenBased": true,
+          "tokens": [
+            {
+              "property": "backgroundColor",
+              "tokenPath": "colors.background.default"
+            },
+            {
+              "property": "minHeight",
+              "tokenPath": "sizes.screen"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Dashboard Layout",
+      "context": {
+        "name": "DashboardLayout",
+        "description": "Dashboard layout with sidebar navigation",
+        "typescript": true,
+        "localization": true,
+        "tokens": true,
+        "theme": true,
+        "header": {
+          "props": [
+            {
+              "name": "showBreadcrumbs",
+              "value": "true"
+            },
+            {
+              "name": "showNotifications",
+              "value": "true"
+            }
+          ]
+        },
+        "sidebar": {
+          "props": [
+            {
+              "name": "collapsible",
+              "value": "true"
+            },
+            {
+              "name": "items",
+              "value": "sidebarItems"
+            }
+          ]
+        },
+        "footer": {
+          "props": [
+            {
+              "name": "minimal",
+              "value": "true"
+            }
+          ]
+        },
+        "responsive": true,
+        "hasState": true,
+        "hasEffects": true,
+        "analytics": true,
+        "seo": true,
+        "defaultTitle": "Dashboard",
+        "defaultDescription": "User dashboard with analytics and data",
+        "accessibility": {
+          "skipLinks": true,
+          "announcements": true,
+          "ariaSupport": true
+        },
+        "compliance": {
+          "nsm": {
+            "classification": "RESTRICTED"
+          },
+          "gdpr": true,
+          "wcag": "AAA"
+        },
+        "styling": {
+          "tokenBased": true,
+          "tokens": [
+            {
+              "property": "backgroundColor",
+              "tokenPath": "colors.background.dashboard"
+            },
+            {
+              "property": "display",
+              "tokenPath": "layout.grid"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

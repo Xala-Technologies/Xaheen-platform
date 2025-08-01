@@ -1,0 +1,223 @@
+{
+  "name": "nextjs-api-route",
+  "description": "Next.js API route with authentication, validation, and Norwegian compliance",
+  "category": "api", 
+  "tags": [
+    "nextjs",
+    "api",
+    "route",
+    "typescript",
+    "authentication",
+    "validation",
+    "database",
+    "norwegian-compliance",
+    "gdpr",
+    "nsm",
+    "security"
+  ],
+  "requiredContext": [
+    "name",
+    "description",
+    "endpoint",
+    "allowedMethods"
+  ],
+  "optionalContext": [
+    "typescript",
+    "database",
+    "auth",
+    "validation",
+    "logger",
+    "queryParams",
+    "bodyParams", 
+    "hasBody",
+    "responseFields",
+    "success",
+    "hasError",
+    "errors",
+    "debug",
+    "cors",
+    "rateLimit",
+    "cache",
+    "methods",
+    "model",
+    "pagination",
+    "compliance"
+  ],
+  "dependencies": [
+    "next",
+    "@types/node"
+  ],
+  "platform": [
+    "nextjs"
+  ],
+  "version": "1.0.0",
+  "author": "Xala Technologies",
+  "examples": [
+    {
+      "name": "Simple CRUD API",
+      "context": {
+        "name": "users",
+        "description": "User management API with CRUD operations",
+        "endpoint": "/api/users",
+        "allowedMethods": ["GET", "POST", "PUT", "DELETE"],
+        "typescript": true,
+        "database": true,
+        "auth": true,
+        "validation": true,
+        "logger": true,
+        "model": "user",
+        "hasBody": true,
+        "success": true,
+        "hasError": true,
+        "errors": true,
+        "pagination": true,
+        "cors": {
+          "origin": "https://app.example.no"
+        },
+        "queryParams": [
+          {
+            "name": "id",
+            "zodType": "string",
+            "required": false
+          },
+          {
+            "name": "limit", 
+            "zodType": "string",
+            "required": false
+          },
+          {
+            "name": "offset",
+            "zodType": "string", 
+            "required": false
+          }
+        ],
+        "bodyParams": [
+          {
+            "name": "name",
+            "zodType": "string",
+            "required": true
+          },
+          {
+            "name": "email",
+            "zodType": "string().email",
+            "required": true
+          },
+          {
+            "name": "role",
+            "zodType": "enum(['USER', 'ADMIN'])",
+            "required": false
+          }
+        ],
+        "responseFields": [
+          {
+            "name": "data",
+            "type": "User[] | User",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "methods": [
+          {
+            "name": "get"
+          },
+          {
+            "name": "post"
+          },
+          {
+            "name": "put"
+          },
+          {
+            "name": "delete"
+          }
+        ],
+        "compliance": {
+          "nsm": {
+            "classification": "RESTRICTED"
+          },
+          "gdpr": true,
+          "wcag": "AAA"
+        }
+      }
+    },
+    {
+      "name": "Public Data API",
+      "context": {
+        "name": "products",
+        "description": "Public product catalog API",
+        "endpoint": "/api/products",
+        "allowedMethods": ["GET"],
+        "typescript": true,
+        "database": true,
+        "auth": false,
+        "validation": true,
+        "logger": true,
+        "model": "product",
+        "hasBody": false,
+        "success": true,
+        "hasError": true,
+        "errors": true,
+        "cache": true,
+        "pagination": true,
+        "cors": {
+          "origin": "*"
+        },
+        "queryParams": [
+          {
+            "name": "category",
+            "zodType": "string",
+            "required": false
+          },
+          {
+            "name": "search",
+            "zodType": "string",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "zodType": "string",
+            "required": false
+          },
+          {
+            "name": "offset", 
+            "zodType": "string",
+            "required": false
+          }
+        ],
+        "responseFields": [
+          {
+            "name": "products",
+            "type": "Product[]",
+            "required": true
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "hasMore",
+            "type": "boolean",
+            "required": true
+          }
+        ],
+        "methods": [
+          {
+            "name": "get",
+            "implementation": "// Custom product fetching logic\nconst { category, search, limit = '10', offset = '0' } = query;\n\nconst products = await prisma.product.findMany({\n  where: {\n    published: true,\n    ...(category && { category }),\n    ...(search && {\n      OR: [\n        { name: { contains: search, mode: 'insensitive' } },\n        { description: { contains: search, mode: 'insensitive' } }\n      ]\n    })\n  },\n  take: parseInt(limit),\n  skip: parseInt(offset),\n  orderBy: { createdAt: 'desc' }\n});\n\nconst total = await prisma.product.count({\n  where: {\n    published: true,\n    ...(category && { category }),\n    ...(search && {\n      OR: [\n        { name: { contains: search, mode: 'insensitive' } },\n        { description: { contains: search, mode: 'insensitive' } }\n      ]\n    })\n  }\n});\n\nreturn res.status(200).json({\n  success: true,\n  products,\n  total,\n  hasMore: parseInt(offset) + products.length < total,\n  gdprCompliant: true\n});"
+          }
+        ],
+        "compliance": {
+          "nsm": {
+            "classification": "OPEN"
+          },
+          "gdpr": true,
+          "wcag": "AAA"
+        }
+      }
+    }
+  ]
+}

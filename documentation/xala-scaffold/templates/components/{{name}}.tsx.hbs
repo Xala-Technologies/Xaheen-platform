@@ -1,0 +1,87 @@
+{{#each imports}}
+{{{this}}}
+{{/each}}
+
+{{#if props.length}}
+// Component props interface
+export interface {{name}}Props {
+{{#each props}}
+  /**
+   * {{description}}
+   */
+  {{name}}{{#if optional}}?{{/if}}: {{type}};
+{{/each}}
+  /**
+   * Additional CSS classes
+   */
+  className?: string;
+{{#if accessibility.ariaLabel}}
+  /**
+   * Accessible label for screen readers
+   */
+  ariaLabel?: string;
+{{/if}}
+}
+{{/if}}
+
+/**
+ * {{name}} - {{type}} component
+ * 
+ * Generated with Xala Scaffold
+ * {{#if localization.enabled}}
+ * Supports localization: {{localization.namespace}}
+ * {{/if}}
+ * {{#if accessibility.ariaLabel}}
+ * WCAG AAA compliant with full accessibility support
+ * {{/if}}
+ */
+{{#if features.forwardRef}}
+export const {{name}} = {{#if features.memo}}memo({{/if}}forwardRef<HTMLElement, {{name}}Props>(
+  ({{#if props.length}}{
+{{#each props}}
+    {{name}}{{#if defaultValue}} = {{defaultValue}}{{/if}},
+{{/each}}
+    className,
+{{#if accessibility.ariaLabel}}
+    ariaLabel,
+{{/if}}
+  }{{else}}props{{/if}}, ref) => {
+{{else}}
+export const {{name}}{{#if features.memo}} = memo({{/if}}: React.FC<{{#if props.length}}{{name}}Props{{else}}Record<string, never>{{/if}}> = ({{#if props.length}}{
+{{#each props}}
+  {{name}}{{#if defaultValue}} = {{defaultValue}}{{/if}},
+{{/each}}
+  className,
+{{#if accessibility.ariaLabel}}
+  ariaLabel,
+{{/if}}
+}{{else}}props{{/if}}) => {
+{{/if}}
+{{#each hooks}}
+  {{{this}}}
+{{/each}}
+
+{{#each handlers}}
+  {{{this}}}
+{{/each}}
+
+  // Component logic here
+  const componentClassName = `{{kebabCase name}}{{#if styling === 'tailwind'}} {{generateClassName}}{{/if}}${className ? ` ${className}` : ''}`;
+
+{{#if localization.enabled}}
+  // Localization keys
+  const tKey = (key: string) => `{{localization.namespace}}.{{kebabCase name}}.${key}`;
+{{/if}}
+
+  {{{render}}}
+{{#if features.forwardRef}}
+}{{#if features.memo}}){{/fi}});
+{{else}}
+}{{#if features.memo}}){{/if}};
+{{/if}}
+
+{{#if features.forwardRef}}
+{{name}}.displayName = '{{name}}';
+{{/if}}
+
+export default {{name}};

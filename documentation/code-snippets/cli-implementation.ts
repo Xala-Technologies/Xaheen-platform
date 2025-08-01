@@ -6,7 +6,7 @@ import { create } from './commands/create';
 import { add } from './commands/add';
 import { configure } from './commands/configure';
 import { logger } from './utils/logger';
-import { version } from '../package.json';
+import { version } from '../../package.json';
 
 const program = new Command();
 

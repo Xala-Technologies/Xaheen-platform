@@ -1,0 +1,176 @@
+{
+  "locale": "ar-SA",
+  "metadata": {
+    "name": "العربية (السعودية)",
+    "version": "1.0.0",
+    "lastUpdated": "2024-01-01T00:00:00.000Z"
+  },
+  "translations": {
+    "common": {
+      "welcome": "مرحباً",
+      "loading": "جاري التحميل...",
+      "error": "خطأ",
+      "success": "نجح",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "create": "إنشاء",
+      "update": "تحديث",
+      "search": "بحث",
+      "filter": "تصفية",
+      "sort": "ترتيب",
+      "submit": "إرسال",
+      "back": "رجوع",
+      "next": "التالي",
+      "previous": "السابق",
+      "close": "إغلاق",
+      "open": "فتح",
+      "yes": "نعم",
+      "no": "لا",
+      "confirm": "تأكيد",
+      "required": "مطلوب",
+      "optional": "اختياري"
+    },
+    "navigation": {
+      "home": "الرئيسية",
+      "about": "عن الشركة",
+      "contact": "اتصل بنا",
+      "services": "الخدمات",
+      "products": "المنتجات",
+      "dashboard": "لوحة التحكم",
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج",
+      "login": "تسجيل الدخول",
+      "register": "إنشاء حساب"
+    },
+    "forms": {
+      "validation": {
+        "required": "هذا الحقل مطلوب",
+        "email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+        "minLength": "يجب أن يكون على الأقل {{min}} أحرف",
+        "maxLength": "لا يمكن أن يتجاوز {{max}} حرفاً",
+        "pattern": "تنسيق غير صحيح",
+        "number": "يجب أن يكون رقماً",
+        "url": "يجب أن يكون رابطاً صحيحاً",
+        "date": "يجب أن يكون تاريخاً صحيحاً",
+        "passwordMatch": "كلمات المرور غير متطابقة",
+        "unique": "هذه القيمة مستخدمة بالفعل"
+      },
+      "labels": {
+        "email": "عنوان البريد الإلكتروني",
+        "password": "كلمة المرور",
+        "confirmPassword": "تأكيد كلمة المرور",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "phone": "رقم الهاتف",
+        "address": "العنوان",
+        "city": "المدينة",
+        "postalCode": "الرمز البريدي",
+        "country": "البلد",
+        "description": "الوصف",
+        "name": "الاسم",
+        "title": "العنوان"
+      },
+      "placeholders": {
+        "email": "your@email.com",
+        "password": "أدخل كلمة المرور",
+        "search": "بحث...",
+        "select": "اختر...",
+        "description": "أدخل وصفاً..."
+      }
+    },
+    "messages": {
+      "success": {
+        "saved": "تم الحفظ بنجاح",
+        "deleted": "تم الحذف بنجاح",
+        "updated": "تم التحديث بنجاح",
+        "created": "تم الإنشاء بنجاح",
+        "sent": "تم الإرسال بنجاح",
+        "copied": "تم النسخ إلى الحافظة",
+        "uploaded": "تم الرفع بنجاح"
+      },
+      "error": {
+        "general": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+        "notFound": "غير موجود",
+        "unauthorized": "غير مصرح",
+        "forbidden": "ممنوع الوصول",
+        "network": "خطأ في الشبكة",
+        "server": "خطأ في الخادم",
+        "validation": "خطأ في التحقق",
+        "timeout": "انتهت مهلة الطلب"
+      },
+      "confirm": {
+        "delete": "هل أنت متأكد من الحذف؟",
+        "cancel": "هل أنت متأكد من الإلغاء؟",
+        "save": "هل تريد حفظ التغييرات؟",
+        "logout": "هل أنت متأكد من تسجيل الخروج؟"
+      }
+    },
+    "accessibility": {
+      "skipToContent": "الانتقال إلى المحتوى",
+      "menu": "القائمة",
+      "closeMenu": "إغلاق القائمة",
+      "openMenu": "فتح القائمة",
+      "mainNavigation": "التنقل الرئيسي",
+      "breadcrumbs": "مسار التنقل",
+      "pagination": "ترقيم الصفحات",
+      "previousPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية",
+      "currentPage": "الصفحة {{current}} من {{total}}",
+      "loading": "جاري تحميل المحتوى",
+      "sortAscending": "ترتيب تصاعدي",
+      "sortDescending": "ترتيب تنازلي"
+    },
+    "compliance": {
+      "gdpr": {
+        "consent": "الموافقة",
+        "privacyPolicy": "سياسة الخصوصية",
+        "termsOfService": "شروط الخدمة",
+        "dataProcessing": "معالجة البيانات",
+        "rights": "حقوقك",
+        "cookies": "ملفات تعريف الارتباط",
+        "acceptAll": "قبول الكل",
+        "rejectAll": "رفض الكل",
+        "managePreferences": "إدارة التفضيلات"
+      },
+      "nsm": {
+        "classification": {
+          "open": "مفتوح",
+          "restricted": "مقيد",
+          "confidential": "سري",
+          "secret": "سري للغاية"
+        },
+        "handling": "التعامل: {{level}}",
+        "notice": "مستوى الأمان: {{classification}}"
+      }
+    },
+    "datetime": {
+      "formats": {
+        "short": "DD/MM/YYYY",
+        "long": "D MMMM، YYYY",
+        "time": "h:mm A",
+        "datetime": "D MMMM، YYYY h:mm A"
+      },
+      "relative": {
+        "now": "الآن",
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "tomorrow": "غداً",
+        "daysAgo": "منذ {{count}} أيام",
+        "inDays": "خلال {{count}} أيام",
+        "hoursAgo": "منذ {{count}} ساعات",
+        "inHours": "خلال {{count}} ساعات",
+        "minutesAgo": "منذ {{count}} دقائق",
+        "inMinutes": "خلال {{count}} دقائق"
+      }
+    },
+    "numbers": {
+      "currency": "{{amount}} ر.س",
+      "percentage": "{{value}}%",
+      "decimal": ".",
+      "thousand": ","
+    }
+  }
+}

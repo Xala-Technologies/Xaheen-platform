@@ -1,0 +1,387 @@
+{{#if typescript}}
+import React from 'react';
+import type { NextPage, GetServerSideProps, GetStaticProps } from 'next';
+import Head from 'next/head';
+{{#if localization}}
+import { useTranslation } from '../hooks/useTranslation';
+import { I18nProvider } from '../providers/I18nProvider';
+{{/if}}
+{{#if tokens}}
+import { TokenProvider } from '@xala-technologies/ui-system';
+{{/if}}
+{{#if layout}}
+import { {{pascalCase layout.name}} } from '../layouts/{{pascalCase layout.name}}';
+{{/if}}
+{{#each components}}
+import { {{pascalCase name}} } from '../components/{{pascalCase name}}';
+{{/each}}
+
+// {{wcagLevel compliance.wcag}}
+// {{gdprNotice}}
+// {{nsmClassification compliance.nsm.classification}}
+
+interface {{pascalCase name}}Props {
+  readonly locale?: string;
+  {{#each props}}
+  readonly {{name}}{{#unless required}}?{{/unless}}: {{type}};
+  {{/each}}
+  {{#if seo}}
+  readonly seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    ogImage?: string;
+  };
+  {{/if}}
+}
+
+{{#if staticGeneration}}
+interface StaticProps {
+  {{#each staticProps}}
+  {{name}}: {{type}};
+  {{/each}}
+}
+{{/if}}
+{{/if}}
+
+/**
+ * {{description}}
+ * 
+ * Features:
+ * - WCAG {{compliance.wcag}} compliant
+ * - Norwegian localization support
+ * - Server-side rendering optimized
+ * - SEO optimized with meta tags
+ * {{#if compliance.gdpr}}
+ * - GDPR compliant data handling
+ * {{/if}}
+ * 
+ * @param props - The page props
+ * @returns The rendered {{name}} page
+ */
+const {{pascalCase name}}{{#if typescript}}: NextPage<{{pascalCase name}}Props>{{/if}} = ({{#if typescript}}{
+  locale = 'nb-NO',
+  {{#each props}}
+  {{name}}{{#if defaultValue}} = {{defaultValue}}{{/if}},
+  {{/each}}
+  {{#if seo}}
+  seo,
+  {{/if}}
+  ...props
+}{{else}}props{{/if}}) => {
+  {{#if localization}}
+  const { t } = useTranslation();
+  {{/if}}
+  
+  {{#if hasState}}
+  const [{{stateName}}, set{{pascalCase stateName}}] = React.useState{{#if typescript}}<{{stateType}}>{{/if}}({{stateInitialValue}});
+  {{/if}}
+  
+  {{#if hasEffects}}
+  React.useEffect(() => {
+    // Page mount effect
+    {{#if analytics}}
+    // Track page view for analytics
+    {{/if}}
+    {{#if compliance.gdpr}}
+    // GDPR: Track page visit with user consent
+    {{/if}}
+    
+    return () => {
+      // Cleanup effect
+    };
+  }, []);
+  {{/if}}
+  
+  {{#if seo}}
+  const pageTitle = seo?.title || {{#if localization}}t('{{kebabCase name}}.title'){{else}}'{{humanCase name}}'{{/if}};
+  const pageDescription = seo?.description || {{#if localization}}t('{{kebabCase name}}.description'){{else}}'{{description}}'{{/if}};
+  const pageKeywords = seo?.keywords || {{#if localization}}t('{{kebabCase name}}.keywords'){{else}}''{{/if}};
+  {{/if}}
+  
+  const pageContent = (
+    <main className="xala-page xala-page--{{kebabCase name}}">
+      {{#if seo}}
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        {{#if hasKeywords}}
+        <meta name="keywords" content={pageKeywords} />
+        {{/if}}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        {{#if seo.ogImage}}
+        <meta property="og:image" content={seo.ogImage} />
+        {{/if}}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        {{#if compliance.nsm}}
+        <meta name="classification" content="{{compliance.nsm.classification}}" />
+        {{/if}}
+        {{#if localization}}
+        <meta httpEquiv="Content-Language" content={locale} />
+        <link rel="alternate" hrefLang="nb-NO" href="/nb-NO/{{kebabCase name}}" />
+        <link rel="alternate" hrefLang="nn-NO" href="/nn-NO/{{kebabCase name}}" />
+        <link rel="alternate" hrefLang="en-US" href="/en-US/{{kebabCase name}}" />
+        <link rel="alternate" hrefLang="ar-SA" href="/ar-SA/{{kebabCase name}}" />
+        <link rel="alternate" hrefLang="fr-FR" href="/fr-FR/{{kebabCase name}}" />
+        {{/if}}
+      </Head>
+      {{/if}}
+      
+      {{#if accessibility.skipLink}}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md"
+      >
+        {{#if localization}}
+        {t('accessibility.skipToContent')}
+        {{else}}
+        Skip to main content
+        {{/if}}
+      </a>
+      {{/if}}
+      
+      <div id="main-content" className="min-h-screen">
+        {{#if hasHeader}}
+        <header className="xala-page__header">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            {{#if localization}}
+            {t('{{kebabCase name}}.title')}
+            {{else}}
+            {{humanCase name}}
+            {{/if}}
+          </h1>
+          {{#if hasDescription}}
+          <p className="text-lg text-gray-600 mb-8">
+            {{#if localization}}
+            {t('{{kebabCase name}}.description')}
+            {{else}}
+            {{description}}
+            {{/if}}
+          </p>
+          {{/if}}
+        </header>
+        {{/if}}
+        
+        {{#if hasContent}}
+        <section className="xala-page__content">
+          {{#each sections}}
+          <div className="xala-page__section">
+            {{#if title}}
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              {{#if ../localization}}
+              {t('{{../kebabCase ../name}}.{{kebabCase name}}.title')}
+              {{else}}
+              {{title}}
+              {{/if}}
+            </h2>
+            {{/if}}
+            
+            {{#each components}}
+            <{{pascalCase name}}
+              {{#each props}}
+              {{name}}={{{value}}}
+              {{/each}}
+              {{#if ../../localization}}
+              locale={locale}
+              {{/if}}
+            />
+            {{/each}}
+          </div>
+          {{/each}}
+        </section>
+        {{/if}}
+        
+        {{#if hasActions}}
+        <section className="xala-page__actions mt-12">
+          <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+            {{#each actions}}
+            <button
+              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              {{#if onClick}}
+              onClick={{{onClick}}}
+              {{/if}}
+              {{#if accessibility.ariaLabel}}
+              aria-label="{{accessibility.ariaLabel}}"
+              {{/if}}
+            >
+              {{#if ../localization}}
+              {t('{{../kebabCase ../name}}.actions.{{kebabCase label}}')}
+              {{else}}
+              {{label}}
+              {{/if}}
+            </button>
+            {{/each}}
+          </div>
+        </section>
+        {{/if}}
+      </div>
+      
+      {{#if accessibility.announcements}}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        id="page-announcements"
+      >
+        {/* Screen reader announcements */}
+      </div>
+      {{/if}}
+    </main>
+  );
+  
+  {{#if layout}}
+  return (
+    <{{pascalCase layout.name}}
+      {{#each layout.props}}
+      {{name}}={{{value}}}
+      {{/each}}
+      {{#if localization}}
+      locale={locale}
+      {{/if}}
+    >
+      {pageContent}
+    </{{pascalCase layout.name}}>
+  );
+  {{else}}
+  return pageContent;
+  {{/if}}
+};
+
+{{#if staticGeneration}}
+{{#if typescript}}
+export const getStaticProps: GetStaticProps<{{pascalCase name}}Props> = async ({ locale }) => {
+{{else}}
+export const getStaticProps = async ({ locale }) => {
+{{/if}}
+  {{#if compliance.gdpr}}
+  // GDPR: Only collect necessary data for static generation
+  {{/if}}
+  
+  try {
+    {{#each staticDataSources}}
+    // Fetch {{name}} data
+    const {{camelCase name}} = await fetch{{pascalCase name}}();
+    {{/each}}
+    
+    return {
+      props: {
+        locale: locale || 'nb-NO',
+        {{#each staticProps}}
+        {{name}}: {{source}},
+        {{/each}}
+        {{#if seo}}
+        seo: {
+          title: {{#if localization}}`${{{titlePrefix}}} - ${locale}`{{else}}'{{titlePrefix}}'{{/if}},
+          description: '{{seoDescription}}',
+          {{#if keywords}}
+          keywords: '{{keywords}}',
+          {{/if}}
+        },
+        {{/if}}
+      },
+      {{#if revalidate}}
+      revalidate: {{revalidate}}, // Revalidate every {{revalidate}} seconds
+      {{/if}}
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    
+    return {
+      props: {
+        locale: locale || 'nb-NO',
+        {{#each staticProps}}
+        {{name}}: {{fallbackValue}},
+        {{/each}}
+      },
+      {{#if revalidate}}
+      revalidate: 60, // Retry in 60 seconds on error
+      {{/if}}
+    };
+  }
+};
+{{/if}}
+
+{{#if serverSideRendering}}
+{{#if typescript}}
+export const getServerSideProps: GetServerSideProps<{{pascalCase name}}Props> = async ({ 
+  req, 
+  res, 
+  locale,
+  query 
+}) => {
+{{else}}
+export const getServerSideProps = async ({ req, res, locale, query }) => {
+{{/if}}
+  {{#if compliance.gdpr}}
+  // GDPR: Check user consent for data processing
+  const hasConsent = req.cookies.gdprConsent === 'true';
+  {{/if}}
+  
+  {{#if authentication}}
+  // Check authentication
+  const user = await getUser(req);
+  
+  if (!user) {
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    };
+  }
+  {{/if}}
+  
+  try {
+    {{#each serverDataSources}}
+    // Fetch {{name}} data
+    const {{camelCase name}} = await fetch{{pascalCase name}}({{#if ../authentication}}user.id{{/if}});
+    {{/each}}
+    
+    return {
+      props: {
+        locale: locale || 'nb-NO',
+        {{#each serverProps}}
+        {{name}}: {{source}},
+        {{/each}}
+        {{#if authentication}}
+        user: user,
+        {{/if}}
+        {{#if seo}}
+        seo: {
+          title: {{#if localization}}`${{{titlePrefix}}} - ${locale}`{{else}}'{{titlePrefix}}'{{/if}},
+          description: '{{seoDescription}}',
+          {{#if keywords}}
+          keywords: '{{keywords}}',
+          {{/if}}
+        },
+        {{/if}}
+      },
+    };
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error);
+    
+    // Return error page or fallback data
+    return {
+      props: {
+        locale: locale || 'nb-NO',
+        error: 'Failed to load page data',
+        {{#each serverProps}}
+        {{name}}: {{fallbackValue}},
+        {{/each}}
+      },
+    };
+  }
+};
+{{/if}}
+
+{{#if typescript}}
+{{pascalCase name}}.displayName = '{{pascalCase name}}';
+{{/if}}
+
+export default {{pascalCase name}};

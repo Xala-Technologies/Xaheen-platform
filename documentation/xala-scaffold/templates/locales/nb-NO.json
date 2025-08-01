@@ -1,0 +1,176 @@
+{
+  "locale": "nb-NO",
+  "metadata": {
+    "name": "Norwegian Bokmål",
+    "version": "1.0.0",
+    "lastUpdated": "2024-01-01T00:00:00.000Z"
+  },
+  "translations": {
+    "common": {
+      "welcome": "Velkommen",
+      "loading": "Laster...",
+      "error": "Feil",
+      "success": "Suksess",
+      "save": "Lagre",
+      "cancel": "Avbryt",
+      "delete": "Slett",
+      "edit": "Rediger",
+      "create": "Opprett",
+      "update": "Oppdater",
+      "search": "Søk",
+      "filter": "Filtrer",
+      "sort": "Sorter",
+      "submit": "Send inn",
+      "back": "Tilbake",
+      "next": "Neste",
+      "previous": "Forrige",
+      "close": "Lukk",
+      "open": "Åpne",
+      "yes": "Ja",
+      "no": "Nei",
+      "confirm": "Bekreft",
+      "required": "Påkrevd",
+      "optional": "Valgfritt"
+    },
+    "navigation": {
+      "home": "Hjem",
+      "about": "Om oss",
+      "contact": "Kontakt",
+      "services": "Tjenester",
+      "products": "Produkter",
+      "dashboard": "Dashbord",
+      "profile": "Profil",
+      "settings": "Innstillinger",
+      "logout": "Logg ut",
+      "login": "Logg inn",
+      "register": "Registrer"
+    },
+    "forms": {
+      "validation": {
+        "required": "Dette feltet er påkrevd",
+        "email": "Vennligst oppgi en gyldig e-postadresse",
+        "minLength": "Må være minst {{min}} tegn",
+        "maxLength": "Kan ikke overstige {{max}} tegn",
+        "pattern": "Ugyldig format",
+        "number": "Må være et tall",
+        "url": "Må være en gyldig URL",
+        "date": "Må være en gyldig dato",
+        "passwordMatch": "Passordene samsvarer ikke",
+        "unique": "Denne verdien er allerede i bruk"
+      },
+      "labels": {
+        "email": "E-postadresse",
+        "password": "Passord",
+        "confirmPassword": "Bekreft passord",
+        "firstName": "Fornavn",
+        "lastName": "Etternavn",
+        "phone": "Telefonnummer",
+        "address": "Adresse",
+        "city": "By",
+        "postalCode": "Postnummer",
+        "country": "Land",
+        "description": "Beskrivelse",
+        "name": "Navn",
+        "title": "Tittel"
+      },
+      "placeholders": {
+        "email": "din@epost.no",
+        "password": "Skriv inn passord",
+        "search": "Søk...",
+        "select": "Velg...",
+        "description": "Skriv en beskrivelse..."
+      }
+    },
+    "messages": {
+      "success": {
+        "saved": "Lagret",
+        "deleted": "Slettet",
+        "updated": "Oppdatert",
+        "created": "Opprettet",
+        "sent": "Sendt",
+        "copied": "Kopiert",
+        "uploaded": "Lastet opp"
+      },
+      "error": {
+        "general": "Noe gikk galt. Vennligst prøv igjen.",
+        "notFound": "Ikke funnet",
+        "unauthorized": "Ikke autorisert",
+        "forbidden": "Ingen tilgang",
+        "network": "Nettverksfeil",
+        "server": "Serverfeil",
+        "validation": "Valideringsfeil",
+        "timeout": "Forespørselen tok for lang tid"
+      },
+      "confirm": {
+        "delete": "Er du sikker på at du vil slette?",
+        "cancel": "Er du sikker på at du vil avbryte?",
+        "save": "Vil du lagre endringene?",
+        "logout": "Er du sikker på at du vil logge ut?"
+      }
+    },
+    "accessibility": {
+      "skipToContent": "Hopp til innhold",
+      "menu": "Meny",
+      "closeMenu": "Lukk meny",
+      "openMenu": "Åpne meny",
+      "mainNavigation": "Hovednavigasjon",
+      "breadcrumbs": "Brødsmulesti",
+      "pagination": "Paginering",
+      "previousPage": "Forrige side",
+      "nextPage": "Neste side",
+      "currentPage": "Side {{current}} av {{total}}",
+      "loading": "Laster innhold",
+      "sortAscending": "Sorter stigende",
+      "sortDescending": "Sorter synkende"
+    },
+    "compliance": {
+      "gdpr": {
+        "consent": "Samtykke",
+        "privacyPolicy": "Personvernerklæring",
+        "termsOfService": "Vilkår for bruk",
+        "dataProcessing": "Databehandling",
+        "rights": "Dine rettigheter",
+        "cookies": "Informasjonskapsler",
+        "acceptAll": "Godta alle",
+        "rejectAll": "Avvis alle",
+        "managePreferences": "Administrer preferanser"
+      },
+      "nsm": {
+        "classification": {
+          "open": "Åpen",
+          "restricted": "Begrenset",
+          "confidential": "Konfidensiell",
+          "secret": "Hemmelig"
+        },
+        "handling": "Håndtering: {{level}}",
+        "notice": "Sikkerhetsnivå: {{classification}}"
+      }
+    },
+    "datetime": {
+      "formats": {
+        "short": "DD.MM.YYYY",
+        "long": "D. MMMM YYYY",
+        "time": "HH:mm",
+        "datetime": "D. MMMM YYYY HH:mm"
+      },
+      "relative": {
+        "now": "nå",
+        "today": "i dag",
+        "yesterday": "i går",
+        "tomorrow": "i morgen",
+        "daysAgo": "{{count}} dager siden",
+        "inDays": "om {{count}} dager",
+        "hoursAgo": "{{count}} timer siden",
+        "inHours": "om {{count}} timer",
+        "minutesAgo": "{{count}} minutter siden",
+        "inMinutes": "om {{count}} minutter"
+      }
+    },
+    "numbers": {
+      "currency": "{{amount}} kr",
+      "percentage": "{{value}} %",
+      "decimal": ",",
+      "thousand": " "
+    }
+  }
+}

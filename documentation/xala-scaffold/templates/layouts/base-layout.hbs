@@ -1,0 +1,349 @@
+{{#if typescript}}
+import React from 'react';
+import Head from 'next/head';
+{{#if localization}}
+import { I18nProvider } from '../providers/I18nProvider';
+import { useTranslation } from '../hooks/useTranslation';
+{{/if}}
+{{#if tokens}}
+import { TokenProvider, useTokens } from '@xala-technologies/ui-system';
+{{/if}}
+{{#if navigation}}
+import { Navigation } from '../components/Navigation';
+{{/if}}
+{{#if header}}
+import { Header } from '../components/Header';
+{{/if}}
+{{#if sidebar}}
+import { Sidebar } from '../components/Sidebar';
+{{/if}}
+{{#if footer}}
+import { Footer } from '../components/Footer';
+{{/if}}
+
+// {{wcagLevel compliance.wcag}}
+// {{gdprNotice}}
+// {{nsmClassification compliance.nsm.classification}}
+
+interface {{pascalCase name}}Props {
+  readonly children: React.ReactNode;
+  readonly className?: string;
+  {{#if localization}}
+  readonly locale?: string;
+  {{/if}}
+  {{#if theme}}
+  readonly theme?: 'light' | 'dark' | 'system';
+  {{/if}}
+  {{#each props}}
+  readonly {{name}}{{#unless required}}?{{/unless}}: {{type}};
+  {{/each}}
+  {{#if seo}}
+  readonly seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    ogImage?: string;
+    canonical?: string;
+  };
+  {{/if}}
+}
+{{/if}}
+
+/**
+ * {{description}}
+ * 
+ * Features:
+ * - WCAG {{compliance.wcag}} compliant layout structure
+ * - Norwegian localization support
+ * - Responsive design with mobile-first approach
+ * - Server-side rendering optimized
+ * {{#if theme}}
+ * - Dynamic theme switching support
+ * {{/if}}
+ * {{#if navigation}}
+ * - Skip navigation for accessibility
+ * {{/if}}
+ * 
+ * @param props - The layout props
+ * @returns The rendered {{name}} layout
+ */
+export const {{pascalCase name}}{{#if typescript}}: React.FC<{{pascalCase name}}Props>{{/if}} = ({{#if typescript}}{
+  children,
+  className,
+  {{#if localization}}
+  locale = 'nb-NO',
+  {{/if}}
+  {{#if theme}}
+  theme = 'system',
+  {{/if}}
+  {{#each props}}
+  {{name}}{{#if defaultValue}} = {{defaultValue}}{{/if}},
+  {{/each}}
+  {{#if seo}}
+  seo,
+  {{/if}}
+  ...props
+}{{else}}props{{/if}}) => {
+  {{#if localization}}
+  const { t } = useTranslation();
+  {{/if}}
+  {{#if tokens}}
+  const tokens = useTokens();
+  {{/if}}
+  
+  {{#if hasState}}
+  const [{{stateName}}, set{{pascalCase stateName}}] = React.useState{{#if typescript}}<{{stateType}}>{{/if}}({{stateInitialValue}});
+  {{/if}}
+  
+  {{#if theme}}
+  const [currentTheme, setCurrentTheme] = React.useState(theme);
+  
+  React.useEffect(() => {
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      setCurrentTheme(mediaQuery.matches ? 'dark' : 'light');
+      
+      const handleChange = (e: MediaQueryListEvent) => {
+        setCurrentTheme(e.matches ? 'dark' : 'light');
+      };
+      
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    } else {
+      setCurrentTheme(theme);
+    }
+  }, [theme]);
+  {{/if}}
+  
+  {{#if hasEffects}}
+  React.useEffect(() => {
+    // Layout mount effect
+    {{#if analytics}}
+    // Track layout usage for analytics
+    {{/if}}
+    {{#if compliance.gdpr}}
+    // GDPR: Initialize consent management
+    {{/if}}
+    
+    return () => {
+      // Cleanup effect
+    };
+  }, []);
+  {{/if}}
+  
+  {{#if styling.tokenBased}}
+  const styles = React.useMemo(() => ({
+    layout: {
+      {{#each styling.tokens}}
+      {{kebabCase property}}: tokens.{{tokenPath}},
+      {{/each}}
+    },
+  }), [tokens]);
+  {{/if}}
+  
+  {{#if seo}}
+  const layoutTitle = seo?.title || {{#if localization}}t('layout.defaultTitle'){{else}}'{{defaultTitle}}'{{/if}};
+  const layoutDescription = seo?.description || {{#if localization}}t('layout.defaultDescription'){{else}}'{{defaultDescription}}'{{/if}};
+  const layoutKeywords = seo?.keywords || {{#if localization}}t('layout.defaultKeywords'){{else}}''{{/if}};
+  {{/if}}
+  
+  return (
+    {{#if localization}}
+    <I18nProvider locale={locale}>
+    {{/if}}
+    {{#if tokens}}
+      <TokenProvider>
+    {{/if}}
+        <div 
+          className={[
+            'xala-layout',
+            'xala-layout--{{kebabCase name}}',
+            {{#if theme}}
+            `xala-layout--theme-${currentTheme}`,
+            {{/if}}
+            {{#if responsive}}
+            'responsive-layout',
+            {{/if}}
+            className,
+          ].filter(Boolean).join(' ')}
+          {{#if styling.tokenBased}}
+          style={styles.layout}
+          {{/if}}
+          {{#if localization}}
+          lang={locale}
+          dir={locale === 'ar-SA' ? 'rtl' : 'ltr'}
+          {{/if}}
+          {{#if typescript}}
+          {...props}
+          {{/if}}
+        >
+          {{#if seo}}
+          <Head>
+            <title>{layoutTitle}</title>
+            <meta name="description" content={layoutDescription} />
+            {{#if hasKeywords}}
+            <meta name="keywords" content={layoutKeywords} />
+            {{/if}}
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            {{#if seo.canonical}}
+            <link rel="canonical" href={seo.canonical} />
+            {{/if}}
+            {{#if compliance.nsm}}
+            <meta name="classification" content="{{compliance.nsm.classification}}" />
+            {{/if}}
+            {{#if localization}}
+            <meta httpEquiv="Content-Language" content={locale} />
+            {{/if}}
+            {{#if theme}}
+            <meta name="color-scheme" content={currentTheme} />
+            {{/if}}
+          </Head>
+          {{/if}}
+          
+          {{#if accessibility.skipLinks}}
+          <div className="skip-links sr-only focus-within:not-sr-only">
+            <a 
+              href="#main-content" 
+              className="absolute top-4 left-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              {{#if localization}}
+              {t('accessibility.skipToContent')}
+              {{else}}
+              Skip to main content
+              {{/if}}
+            </a>
+            {{#if navigation}}
+            <a 
+              href="#navigation" 
+              className="absolute top-4 left-32 z-50 px-4 py-2 bg-blue-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              {{#if localization}}
+              {t('accessibility.skipToNavigation')}
+              {{else}}
+              Skip to navigation
+              {{/if}}
+            </a>
+            {{/if}}
+          </div>
+          {{/if}}
+          
+          {{#if header}}
+          <header className="xala-layout__header" role="banner">
+            <Header
+              {{#each header.props}}
+              {{name}}={{{value}}}
+              {{/each}}
+              {{#if localization}}
+              locale={locale}
+              {{/if}}
+              {{#if theme}}
+              theme={currentTheme}
+              {{/if}}
+            />
+          </header>
+          {{/if}}
+          
+          {{#if navigation}}
+          <nav 
+            id="navigation" 
+            className="xala-layout__navigation" 
+            role="navigation"
+            {{#if accessibility.ariaSupport}}
+            aria-label={{#if localization}}t('accessibility.mainNavigation'){{else}}"Main navigation"{{/if}}
+            {{/if}}
+          >
+            <Navigation
+              {{#each navigation.props}}
+              {{name}}={{{value}}}
+              {{/each}}
+              {{#if localization}}
+              locale={locale}
+              {{/if}}
+              {{#if theme}}
+              theme={currentTheme}
+              {{/if}}
+            />
+          </nav>
+          {{/if}}
+          
+          <div className="xala-layout__body">
+            {{#if sidebar}}
+            <aside 
+              className="xala-layout__sidebar" 
+              role="complementary"
+              {{#if accessibility.ariaSupport}}
+              aria-label={{#if localization}}t('accessibility.sidebar'){{else}}"Sidebar content"{{/if}}
+              {{/if}}
+            >
+              <Sidebar
+                {{#each sidebar.props}}
+                {{name}}={{{value}}}
+                {{/each}}
+                {{#if localization}}
+                locale={locale}
+                {{/if}}
+                {{#if theme}}
+                theme={currentTheme}
+                {{/if}}
+              />
+            </aside>
+            {{/if}}
+            
+            <main 
+              id="main-content" 
+              className="xala-layout__main" 
+              role="main"
+              {{#if accessibility.ariaSupport}}
+              aria-label={{#if localization}}t('accessibility.mainContent'){{else}}"Main content"{{/if}}
+              {{/if}}
+            >
+              {children}
+            </main>
+          </div>
+          
+          {{#if footer}}
+          <footer className="xala-layout__footer" role="contentinfo">
+            <Footer
+              {{#each footer.props}}
+              {{name}}={{{value}}}
+              {{/each}}
+              {{#if localization}}
+              locale={locale}
+              {{/if}}
+              {{#if theme}}
+              theme={currentTheme}
+              {{/if}}
+            />
+          </footer>
+          {{/if}}
+          
+          {{#if accessibility.announcements}}
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+            id="layout-announcements"
+          >
+            {/* Screen reader announcements */}
+          </div>
+          {{/if}}
+          
+          {{#if compliance.gdpr}}
+          {/* GDPR Cookie consent banner would be rendered here */}
+          {{/if}}
+        </div>
+    {{#if tokens}}
+      </TokenProvider>
+    {{/if}}
+    {{#if localization}}
+    </I18nProvider>
+    {{/if}}
+  );
+};
+
+{{#if typescript}}
+{{pascalCase name}}.displayName = '{{pascalCase name}}';
+{{/if}}
+
+export default {{pascalCase name}};
