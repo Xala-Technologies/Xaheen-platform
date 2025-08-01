@@ -203,17 +203,17 @@
 - [x] Add Norwegian VAT calculation integration
 - [x] Add Vipps refund handling
 
-### **Story 6.5: Stripe Payment Integration**
-- [ ] Create `apps/cli/src/integrations/services/stripe.ts`
-- [ ] Add Stripe SDK configuration and initialization
-- [ ] Add `generateStripeComponent(options: PaymentOptions): GenerationResult` function
-- [ ] Add `generateStripeService(options: PaymentOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/payments/stripe-payment.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/payments/stripe-service.ts.hbs` template
-- [ ] Add Stripe Elements integration
-- [ ] Add Stripe webhook handling
-- [ ] Add multi-currency support
-- [ ] Add Stripe subscription management
+### **Story 6.5: Stripe Payment Integration** ✅
+- [x] Create `apps/cli/src/integrations/services/stripe.ts`
+- [x] Add Stripe SDK configuration and initialization
+- [x] Add `generateStripeComponent(options: PaymentOptions): GenerationResult` function
+- [x] Add `generateStripeService(options: PaymentOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/payments/stripe-checkout.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/payments/stripe-service.ts.hbs` template
+- [x] Add Stripe Elements integration
+- [x] Add Stripe webhook handling
+- [x] Add multi-currency support
+- [x] Add Stripe subscription management
 
 ### **Story 6.6: Webhook Management System**
 - [ ] Create `apps/cli/src/integrations/webhooks/webhook-manager.ts`
