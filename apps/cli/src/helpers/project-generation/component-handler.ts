@@ -5,6 +5,7 @@ import { log, select, multiselect, text, confirm } from "@clack/prompts";
 import { z } from "zod";
 import type { ProjectConfig, UISystem, Compliance, Language } from "../../types";
 import { detectProjectConfig } from "./detect-project-config";
+import { generateComponent, type ComponentGenerationOptions } from "../../generators/component-generator";
 
 // Component types
 export type ComponentType = "display" | "form" | "layout";
@@ -131,14 +132,39 @@ export async function generateComponentHandler(
 		// Generate the component
 		log.info(`Generating ${componentType} component: ${componentName}`);
 		
-		// This will be implemented in the component generator (Story 10.2)
-		// For now, we'll create a placeholder
-		await createComponentFiles(context);
+		// Prepare generation options
+		const generationOptions: ComponentGenerationOptions = {
+			name,
+			componentName,
+			fileName,
+			type: componentType,
+			props,
+			ui: uiSystem,
+			compliance,
+			locales,
+			primaryLocale: locales[0] || "en",
+			projectRoot,
+			targetDir,
+			includeTests: !options.skipTests,
+			includeStories: !options.skipStories,
+			includeStyles: uiSystem === "xala",
+		};
+
+		// Generate component files
+		const result = await generateComponent(generationOptions);
+
+		if (!result.success) {
+			consola.error("Failed to generate component:");
+			result.errors?.forEach(error => consola.error(`  - ${error}`));
+			process.exit(1);
+		}
+
+		result.warnings?.forEach(warning => consola.warn(warning));
 
 		log.success(`Component ${componentName} generated successfully!`);
 		
 		// Display next steps
-		displayNextSteps(context);
+		displayNextSteps(context, result);
 
 	} catch (error) {
 		consola.error("Failed to generate component:", error);
@@ -381,61 +407,19 @@ async function determineTargetDirectory(
 }
 
 /**
- * Create component files (placeholder for now, will be implemented in Story 10.2)
- */
-async function createComponentFiles(context: ComponentContext): Promise<void> {
-	// This is a placeholder implementation
-	// The actual implementation will be done in Story 10.2 with the component generator
-	
-	const componentContent = generateBasicComponent(context);
-	const componentPath = path.join(context.targetDir, `${context.fileName}.tsx`);
-	
-	await fs.ensureDir(context.targetDir);
-	await fs.writeFile(componentPath, componentContent);
-}
-
-/**
- * Generate basic component content (temporary until Story 10.2)
- */
-function generateBasicComponent(context: ComponentContext): string {
-	const { componentName, props, ui, compliance } = context;
-	
-	// Generate props interface
-	let propsInterface = "";
-	if (props.length > 0) {
-		const propLines = props.map(prop => {
-			const optionalMark = prop.optional ? "?" : "";
-			return `  readonly ${prop.name}${optionalMark}: ${prop.type};`;
-		}).join("\n");
-		
-		propsInterface = `interface ${componentName}Props {\n${propLines}\n}\n\n`;
-	}
-
-	// Generate component
-	const propsParam = props.length > 0 ? `props: ${componentName}Props` : "";
-	const componentBody = `export const ${componentName} = (${propsParam}): JSX.Element => {
-  return (
-    <div className="p-4">
-      {/* TODO: Implement ${componentName} */}
-      <p>${componentName} Component</p>
-    </div>
-  );
-};`;
-
-	return `import React from 'react';\n\n${propsInterface}${componentBody}\n`;
-}
-
-/**
  * Display next steps after component generation
  */
-function displayNextSteps(context: ComponentContext): void {
+function displayNextSteps(context: ComponentContext, result: import("../../generators/component-generator").GenerationResult): void {
+	const files = result.files.map(f => path.relative(context.projectRoot, f));
+	
 	consola.box(
 		`Component ${context.componentName} created successfully!\n\n` +
-		`Location: ${path.relative(context.projectRoot, context.targetDir)}/${context.fileName}.tsx\n\n` +
+		`Generated files:\n${files.map(f => `  - ${f}`).join("\n")}\n\n` +
 		`Next steps:\n` +
 		`1. Import and use your component\n` +
 		`2. Implement the component logic\n` +
-		(context.hasTests ? `3. Write tests in ${context.fileName}.test.tsx\n` : "") +
-		(context.hasStories ? `4. Create stories in ${context.fileName}.stories.tsx\n` : "")
+		(context.hasTests ? `3. Run tests with your test runner\n` : "") +
+		(context.hasStories ? `4. View stories in Storybook\n` : "") +
+		(context.locales.length > 1 ? `5. Add translations for all locales\n` : "")
 	);
 }

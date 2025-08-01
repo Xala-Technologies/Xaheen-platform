@@ -215,16 +215,16 @@
 - [x] Add multi-currency support
 - [x] Add Stripe subscription management
 
-### **Story 6.6: Webhook Management System**
-- [ ] Create `apps/cli/src/integrations/webhooks/webhook-manager.ts`
-- [ ] Add webhook registration and management
-- [ ] Add `generateWebhookHandler(service: string, events: string[]): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/webhooks/webhook-handler.ts.hbs` template
-- [ ] Add webhook signature verification
-- [ ] Add webhook retry logic and error handling
-- [ ] Add webhook event logging and monitoring
-- [ ] Add webhook security and rate limiting
-- [ ] Add webhook testing and debugging tools
+### **Story 6.6: Webhook Management System** ✅
+- [x] Create `apps/cli/src/integrations/webhooks/webhook-manager.ts`
+- [x] Add webhook registration and management
+- [x] Add `generateWebhookHandler(service: string, events: string[]): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/webhooks/webhook-handler.ts.hbs` template
+- [x] Add webhook signature verification
+- [x] Add webhook retry logic and error handling
+- [x] Add webhook event logging and monitoring
+- [x] Add webhook security and rate limiting
+- [x] Add webhook testing and debugging tools
 
 ### **Story 6.7: API Key Management**
 - [ ] Create `apps/cli/src/integrations/config/api-key-manager.ts`

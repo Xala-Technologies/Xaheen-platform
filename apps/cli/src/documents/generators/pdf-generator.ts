@@ -1,5 +1,5 @@
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib';
-import * as Handlebars from 'handlebars';
+import Handlebars from 'handlebars';
 import { promises as fs } from 'fs';
 import path from 'path';
 
