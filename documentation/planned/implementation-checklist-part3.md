@@ -84,17 +84,17 @@
 
 ## 🛡️ **PHASE 8: COMPLIANCE AND VALIDATION**
 
-### **Story 8.1: GDPR Compliance Engine**
-- [ ] Create `apps/cli/src/validators/gdpr-validator.ts`
-- [ ] Add data type classification (personal, sensitive, anonymous)
-- [ ] Add `validateGDPRCompliance(code: string): Promise<GDPRResult>` function
-- [ ] Add consent mechanism validation
-- [ ] Add data protection measure validation
-- [ ] Add right to be forgotten implementation
-- [ ] Add data portability validation
-- [ ] Add privacy by design validation
-- [ ] Add data breach notification handling
-- [ ] Add GDPR audit trail generation
+### **Story 8.1: GDPR Compliance Engine** ✅
+- [x] Create `apps/cli/src/validators/gdpr-validator.ts`
+- [x] Add data type classification (personal, sensitive, anonymous)
+- [x] Add `validateGDPRCompliance(code: string): Promise<GDPRResult>` function
+- [x] Add consent mechanism validation
+- [x] Add data protection measure validation
+- [x] Add right to be forgotten implementation
+- [x] Add data portability validation
+- [x] Add privacy by design validation
+- [x] Add data breach notification handling
+- [x] Add GDPR audit trail generation
 
 ### **Story 8.2: Norwegian NSM Security Validation**
 - [ ] Create `apps/cli/src/validators/nsm-validator.ts`
