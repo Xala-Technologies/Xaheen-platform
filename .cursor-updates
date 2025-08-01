@@ -1,0 +1,10 @@
+- Fixed build script for compliance package by switching from tsdown to tsup
+- Added all Week 2 tasks and updated todo lists  
+- Extracted core service infrastructure from xala-scaffold to @xaheen/core package
+- Moved Norwegian compliance services to @xaheen/compliance package
+- Set up TypeScript strict mode across monorepo with pragmatic settings
+- Adjusted Biome configuration to less strict mode as requested by user
+- Implemented service discovery system with dependency management in @xaheen/core
+- Created unified event bus with patterns, interceptors and history in @xaheen/core
+- Set up @xaheen/types package with shared TypeScript types for the monorepo
+- Fixed tsup build performance issues by switching to plain TypeScript compiler

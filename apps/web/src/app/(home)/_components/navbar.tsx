@@ -106,13 +106,13 @@ export default function Navbar() {
 					<Link href="/" className="flex flex-shrink-0 items-center gap-2">
 						<Image
 							src="/logo.svg"
-							alt="Better-T Stack"
+							alt="Xaheen"
 							width={32}
 							height={32}
 							unoptimized
 						/>
 						<span className="hidden font-semibold text-foreground text-md sm:inline-block">
-							Better-T Stack
+							Xaheen
 						</span>
 					</Link>
 

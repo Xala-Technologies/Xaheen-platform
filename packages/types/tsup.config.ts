@@ -6,9 +6,8 @@ export default defineConfig({
 	dts: true,
 	sourcemap: false,
 	clean: true,
-	splitting: false,
 	minify: false,
-	external: ["@xaheen/core", "zod"],
+	splitting: false,
 	target: "es2022",
 	outDir: "dist",
 });
