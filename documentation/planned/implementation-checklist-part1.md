@@ -167,14 +167,14 @@
 - [x] Add `integration.test` subcommand for testing integration connections
 - [x] Add `integration.docs` subcommand for generating integration documentation
 
-### **Story 3.7: Document Commands**
-- [ ] Add `document` procedure group to tRPC router
-- [ ] Add `document.add` subcommand for adding document services to existing project
-- [ ] Add `document.component` subcommand for generating document components
-- [ ] Add `document.template` subcommand for creating document templates
-- [ ] Add `document.service` subcommand for generating document services
-- [ ] Add proper validation for document service configurations
-- [ ] Add support for Norwegian-specific document formats
+### **Story 3.7: Document Commands** ✅
+- [x] Add `document` procedure group to tRPC router
+- [x] Add `document.add` subcommand for adding document services to existing project
+- [x] Add `document.component` subcommand for generating document components
+- [x] Add `document.template` subcommand for creating document templates
+- [x] Add `document.service` subcommand for generating document services
+- [x] Add proper validation for document service configurations
+- [x] Add support for Norwegian-specific document formats
 
 ### **Story 3.8: Compliance Commands**
 - [ ] Add `compliance` procedure group to tRPC router

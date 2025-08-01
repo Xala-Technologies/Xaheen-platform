@@ -812,6 +812,133 @@ const router = t.router({
 			}),
 	}),
 		
+	// Document commands - Story 3.7
+	document: t.router({
+		add: t.procedure
+			.meta({ description: "Add document services to existing project" })
+			.input(
+				z.tuple([
+					z.array(DocumentServiceSchema).min(1).describe("Document services to add"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						generateComponents: z.boolean().optional().default(true)
+							.describe("Generate document components"),
+						generateServices: z.boolean().optional().default(true)
+							.describe("Generate document services"),
+						generateTemplates: z.boolean().optional().default(true)
+							.describe("Generate document templates"),
+						norwegianFormats: z.boolean().optional().default(false)
+							.describe("Include Norwegian-specific formats"),
+						updateConfig: z.boolean().optional().default(true)
+							.describe("Update project configuration"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [services, options] = input;
+				// Implementation will be added in Story 3.7
+				consola.info(`Adding document services: ${services.join(", ")} with options:`, options);
+				consola.warn("Document service addition not yet implemented - coming in Story 3.7");
+			}),
+			
+		component: t.procedure
+			.meta({ description: "Generate document UI components" })
+			.input(
+				z.tuple([
+					z.string().describe("Component name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						service: DocumentServiceSchema.describe("Target document service"),
+						type: z.enum(["viewer", "editor", "preview", "export", "import"])
+							.optional().default("viewer")
+							.describe("Component type"),
+						ui: UISystemSchema.optional().default("default")
+							.describe("UI system to use"),
+						compliance: ComplianceSchema.optional().default("none")
+							.describe("Compliance requirements"),
+						outputPath: z.string().optional()
+							.describe("Output path for component"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.7
+				consola.info(`Generating document component: ${name} with options:`, options);
+				consola.warn("Document component generation not yet implemented - coming in Story 3.7");
+			}),
+			
+		template: t.procedure
+			.meta({ description: "Create document templates" })
+			.input(
+				z.tuple([
+					z.string().describe("Template name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						type: z.enum(["invoice", "report", "contract", "letter", "form", "certificate"])
+							.describe("Template type"),
+						format: z.enum(["pdf", "docx", "html", "markdown"]).optional().default("pdf")
+							.describe("Output format"),
+						language: LanguageSchema.optional().default("en")
+							.describe("Template language"),
+						norwegianStandard: z.boolean().optional().default(false)
+							.describe("Use Norwegian standards"),
+						includeFields: z.array(z.string()).optional()
+							.describe("Fields to include in template"),
+						styling: z.object({
+							logo: z.string().optional(),
+							primaryColor: z.string().optional(),
+							font: z.string().optional(),
+						}).optional()
+							.describe("Template styling options"),
+						outputPath: z.string().optional()
+							.describe("Output path for template"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.7
+				consola.info(`Creating document template: ${name} with options:`, options);
+				consola.warn("Document template creation not yet implemented - coming in Story 3.7");
+			}),
+			
+		service: t.procedure
+			.meta({ description: "Generate document service classes" })
+			.input(
+				z.tuple([
+					z.string().describe("Service name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						service: DocumentServiceSchema.describe("Target document service"),
+						features: z.array(z.enum(["generate", "parse", "validate", "convert", "merge", "sign"]))
+							.optional().default(["generate"])
+							.describe("Service features to include"),
+						outputPath: z.string().optional()
+							.describe("Output path for service"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						testing: z.boolean().optional().default(true)
+							.describe("Generate tests"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.7
+				consola.info(`Generating document service: ${name} with options:`, options);
+				consola.warn("Document service generation not yet implemented - coming in Story 3.7");
+			}),
+	}),
+		
 	sponsors: t.procedure
 		.meta({ description: "Show Xaheen Platform sponsors" })
 		.mutation(async () => {
