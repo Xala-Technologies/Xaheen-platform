@@ -157,15 +157,15 @@
 - [x] Add `auth.session` subcommand for configuring session management
 - [x] Add proper validation for auth provider configurations
 
-### **Story 3.6: Integration Commands**
-- [ ] Add `integration` procedure group to tRPC router
-- [ ] Add `integration.add` subcommand for adding integrations to existing project
-- [ ] Add `integration.component` subcommand for generating integration components
-- [ ] Add `integration.service` subcommand for generating integration services
-- [ ] Add `integration.webhook` subcommand for generating webhook handlers
-- [ ] Add `integration.config` subcommand for configuring API keys and settings
-- [ ] Add `integration.test` subcommand for testing integration connections
-- [ ] Add `integration.docs` subcommand for generating integration documentation
+### **Story 3.6: Integration Commands** ✅
+- [x] Add `integration` procedure group to tRPC router
+- [x] Add `integration.add` subcommand for adding integrations to existing project
+- [x] Add `integration.component` subcommand for generating integration components
+- [x] Add `integration.service` subcommand for generating integration services
+- [x] Add `integration.webhook` subcommand for generating webhook handlers
+- [x] Add `integration.config` subcommand for configuring API keys and settings
+- [x] Add `integration.test` subcommand for testing integration connections
+- [x] Add `integration.docs` subcommand for generating integration documentation
 
 ### **Story 3.7: Document Commands**
 - [ ] Add `document` procedure group to tRPC router

@@ -616,6 +616,202 @@ const router = t.router({
 			}),
 	}),
 		
+	// Integration commands - Story 3.6
+	integration: t.router({
+		add: t.procedure
+			.meta({ description: "Add external integrations to existing project" })
+			.input(
+				z.tuple([
+					z.array(IntegrationSchema).min(1).describe("Integrations to add"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						generateComponents: z.boolean().optional().default(true)
+							.describe("Generate integration components"),
+						generateServices: z.boolean().optional().default(true)
+							.describe("Generate integration services"),
+						generateWebhooks: z.boolean().optional().default(false)
+							.describe("Generate webhook handlers"),
+						updateConfig: z.boolean().optional().default(true)
+							.describe("Update project configuration"),
+						addEnvVars: z.boolean().optional().default(true)
+							.describe("Add environment variables"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [integrations, options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Adding integrations: ${integrations.join(", ")} with options:`, options);
+				consola.warn("Integration addition not yet implemented - coming in Story 3.6");
+			}),
+			
+		component: t.procedure
+			.meta({ description: "Generate integration UI components" })
+			.input(
+				z.tuple([
+					z.string().describe("Component name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integration: IntegrationSchema.describe("Target integration"),
+						type: z.enum(["widget", "dashboard", "settings", "status", "form"])
+							.optional().default("widget")
+							.describe("Component type"),
+						ui: UISystemSchema.optional().default("default")
+							.describe("UI system to use"),
+						outputPath: z.string().optional()
+							.describe("Output path for component"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Generating integration component: ${name} with options:`, options);
+				consola.warn("Integration component generation not yet implemented - coming in Story 3.6");
+			}),
+			
+		service: t.procedure
+			.meta({ description: "Generate integration service classes" })
+			.input(
+				z.tuple([
+					z.string().describe("Service name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integration: IntegrationSchema.describe("Target integration"),
+						features: z.array(z.enum(["api", "webhooks", "events", "sync", "auth"]))
+							.optional().default(["api"])
+							.describe("Service features to include"),
+						outputPath: z.string().optional()
+							.describe("Output path for service"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						testing: z.boolean().optional().default(true)
+							.describe("Generate tests"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Generating integration service: ${name} with options:`, options);
+				consola.warn("Integration service generation not yet implemented - coming in Story 3.6");
+			}),
+			
+		webhook: t.procedure
+			.meta({ description: "Generate webhook handlers for integrations" })
+			.input(
+				z.tuple([
+					z.string().describe("Webhook handler name"),
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integration: IntegrationSchema.describe("Target integration"),
+						events: z.array(z.string()).optional()
+							.describe("Events to handle"),
+						method: z.enum(["POST", "GET", "PUT", "DELETE"]).optional().default("POST")
+							.describe("HTTP method"),
+						authentication: z.enum(["signature", "token", "oauth", "none"]).optional().default("signature")
+							.describe("Authentication method"),
+						outputPath: z.string().optional()
+							.describe("Output path for webhook"),
+						typescript: z.boolean().optional().default(true)
+							.describe("Generate TypeScript"),
+						overwrite: z.boolean().optional().default(false)
+							.describe("Overwrite existing files"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [name, options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Generating webhook handler: ${name} with options:`, options);
+				consola.warn("Webhook generation not yet implemented - coming in Story 3.6");
+			}),
+			
+		config: t.procedure
+			.meta({ description: "Configure integration API keys and settings" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integration: IntegrationSchema.describe("Integration to configure"),
+						apiKey: z.string().optional()
+							.describe("API key or access token"),
+						apiSecret: z.string().optional()
+							.describe("API secret or client secret"),
+						webhookUrl: z.string().optional()
+							.describe("Webhook URL endpoint"),
+						environment: z.enum(["development", "staging", "production"]).optional().default("development")
+							.describe("Environment for configuration"),
+						additionalConfig: z.record(z.string(), z.any()).optional()
+							.describe("Additional configuration options"),
+						updateEnv: z.boolean().optional().default(true)
+							.describe("Update environment variables"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Configuring integration with options:`, options);
+				consola.warn("Integration configuration not yet implemented - coming in Story 3.6");
+			}),
+			
+		test: t.procedure
+			.meta({ description: "Test integration connections and functionality" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integration: IntegrationSchema.describe("Integration to test"),
+						testType: z.enum(["connection", "auth", "api", "webhook", "all"]).optional().default("connection")
+							.describe("Type of test to run"),
+						verbose: z.boolean().optional().default(false)
+							.describe("Show detailed test output"),
+						timeout: z.number().optional().default(30000)
+							.describe("Test timeout in milliseconds"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Testing integration with options:`, options);
+				consola.warn("Integration testing not yet implemented - coming in Story 3.6");
+			}),
+			
+		docs: t.procedure
+			.meta({ description: "Generate integration documentation" })
+			.input(
+				z.tuple([
+					z.object({
+						projectDir: z.string().optional().describe("Project directory"),
+						integrations: z.array(IntegrationSchema).optional()
+							.describe("Integrations to document"),
+						format: z.enum(["markdown", "html", "pdf"]).optional().default("markdown")
+							.describe("Documentation format"),
+						includeExamples: z.boolean().optional().default(true)
+							.describe("Include code examples"),
+						includeApiDocs: z.boolean().optional().default(true)
+							.describe("Include API documentation"),
+						outputPath: z.string().optional()
+							.describe("Output path for documentation"),
+					}),
+				]),
+			)
+			.mutation(async ({ input }) => {
+				const [options] = input;
+				// Implementation will be added in Story 3.6
+				consola.info(`Generating integration documentation with options:`, options);
+				consola.warn("Integration documentation generation not yet implemented - coming in Story 3.6");
+			}),
+	}),
+		
 	sponsors: t.procedure
 		.meta({ description: "Show Xaheen Platform sponsors" })
 		.mutation(async () => {
