@@ -69,16 +69,16 @@
 - [x] Add API endpoint generation for CRUD operations
 
 ### **Story 10.6: Model Generator Implementation**
-- [ ] Create `apps/cli/src/generators/model-generator.ts`
-- [ ] Add `generateModel(options: ModelGenerationOptions): Promise<GenerationResult>` function
-- [ ] Add Prisma schema generation
-- [ ] Add Zod validation schema generation
-- [ ] Add TypeScript interface generation
-- [ ] Add CRUD service generation
-- [ ] Add API route generation (GET, POST, PUT, DELETE)
-- [ ] Add database seeding integration
-- [ ] Add model testing generation
-- [ ] Add GraphQL schema generation (if applicable)
+- [x] Create `apps/cli/src/generators/model-generator.ts`
+- [x] Add `generateModel(options: ModelGenerationOptions): Promise<GenerationResult>` function
+- [x] Add Prisma schema generation
+- [x] Add Zod validation schema generation
+- [x] Add TypeScript interface generation
+- [x] Add CRUD service generation
+- [x] Add API route generation (GET, POST, PUT, DELETE)
+- [x] Add database seeding integration
+- [x] Add model testing generation
+- [x] Add GraphQL schema generation (if applicable)
 
 ### **Story 10.7: Layout Generation Handler**
 - [ ] Create `apps/cli/src/helpers/project-generation/layout-handler.ts`

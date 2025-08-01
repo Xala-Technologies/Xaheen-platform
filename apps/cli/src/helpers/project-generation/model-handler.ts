@@ -187,28 +187,52 @@ export async function generateModelHandler(
 
 		log.info(`Generating ${projectConfig.orm} model: ${modelName}`);
 
-		// Generate model files
-		await generateModelFiles(context);
+		// Use the model generator
+		const { generateModel, type ModelGenerationOptions } = await import("../../generators/model-generator");
+		
+		const generationOptions: ModelGenerationOptions = {
+			name,
+			modelName,
+			tableName,
+			fileName,
+			fields,
+			relations,
+			orm: projectConfig.orm,
+			database: projectConfig.database,
+			api: projectConfig.api,
+			compliance: projectConfig.compliance,
+			withValidation: options.withValidation ?? true,
+			withAudit: options.withAudit ?? projectConfig.compliance !== "none",
+			withSoftDelete: options.withSoftDelete ?? false,
+			gdprCompliant: options.gdprCompliant ?? projectConfig.compliance === "gdpr" || projectConfig.compliance === "norwegian",
+			withSeeding: true,
+			withTests: true,
+			withGraphQL: projectConfig.api === "orpc",
+			projectRoot,
+			modelsDir,
+			apiDir,
+		};
 
-		// Generate validation schemas
-		if (context.withValidation) {
-			await generateValidationSchemas(context);
+		const result = await generateModel(generationOptions);
+
+		if (!result.success) {
+			consola.error("Failed to generate model:");
+			result.errors?.forEach(error => consola.error(`  - ${error}`));
+			process.exit(1);
 		}
 
-		// Generate API endpoints
-		if (context.withApi && apiDir) {
-			await generateApiEndpoints(context);
-		}
+		result.warnings?.forEach(warning => consola.warn(warning));
 
 		// Generate or update migrations
-		if (!options.skipMigration) {
-			await generateMigration(context);
+		if (!options.skipMigration && result.migrations && result.migrations.length > 0) {
+			consola.info("Migration commands:");
+			result.migrations.forEach(cmd => consola.info(`  - ${cmd}`));
 		}
 
 		log.success(`Model ${modelName} generated successfully!`);
 		
 		// Display next steps
-		displayNextSteps(context);
+		displayNextSteps(context, result);
 
 	} catch (error) {
 		consola.error("Failed to generate model:", error);
@@ -699,20 +723,6 @@ function getModelPath(modelsDir: string, fileName: string, orm: ORM): string {
 	}
 }
 
-/**
- * Generate model files
- */
-async function generateModelFiles(context: ModelContext): Promise<void> {
-	const { orm } = context;
-
-	if (orm === "prisma") {
-		await generatePrismaModel(context);
-	} else if (orm === "drizzle") {
-		await generateDrizzleModel(context);
-	} else if (orm === "mongoose") {
-		await generateMongooseModel(context);
-	}
-}
 
 /**
  * Generate Prisma model
@@ -1566,11 +1576,15 @@ async function generateMigration(context: ModelContext): Promise<void> {
 /**
  * Display next steps
  */
-function displayNextSteps(context: ModelContext): void {
-	const { modelName, orm, withApi, withValidation } = context;
+function displayNextSteps(context: ModelContext, result: import("../../generators/model-generator").GenerationResult): void {
+	const { modelName, orm } = context;
+	const files = result.files.map(f => path.relative(context.projectRoot, f));
 
 	const steps = [
 		`Model ${modelName} created successfully!`,
+		"",
+		"Generated files:",
+		...files.map(f => `  - ${f}`),
 		"",
 		"Next steps:",
 	];
@@ -1583,12 +1597,9 @@ function displayNextSteps(context: ModelContext): void {
 		steps.push("2. Run 'npm run db:migrate' to apply the migration");
 	}
 
-	if (withApi) {
-		steps.push(`${steps.length - 2}. API endpoints created at /api/${context.fileName}`);
-	}
-
-	if (withValidation) {
-		steps.push(`${steps.length - 2}. Validation schemas created`);
+	if (result.migrations && result.migrations.length > 0) {
+		steps.push("", "Migration commands:");
+		result.migrations.forEach(cmd => steps.push(`  - ${cmd}`));
 	}
 
 	consola.box(steps.join("\n"));
