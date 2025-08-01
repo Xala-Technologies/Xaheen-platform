@@ -1,0 +1,481 @@
+import React, { useEffect, useState } from 'react';
+{{#if (eq framework 'nextjs')}}
+import { useRouter } from 'next/router';
+{{else}}
+import { useNavigate } from 'react-router-dom';
+{{/if}}
+{{#if typescript}}
+import type { {{capitalize provider}}UserProfile } from './{{provider}}.types';
+{{/if}}
+
+{{#if typescript}}
+interface {{capitalize provider}}CallbackProps {
+  onSuccess?: (user: {{capitalize provider}}UserProfile) => void;
+  onError?: (error: Error) => void;
+  successRedirectUrl?: string;
+  errorRedirectUrl?: string;
+  className?: string;
+}
+
+interface CallbackState {
+  status: 'loading' | 'success' | 'error';
+  user: {{capitalize provider}}UserProfile | null;
+  error: string | null;
+}
+{{/if}}
+
+export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capitalize provider}}CallbackProps>{{/if}} = ({
+  onSuccess,
+  onError,
+  successRedirectUrl = '/dashboard',
+  errorRedirectUrl = '/login',
+  className = '',
+}) => {
+  const [state, setState] = useState{{#if typescript}}<CallbackState>{{/if}}({
+    status: 'loading',
+    user: null,
+    error: null,
+  });
+
+  {{#if (eq framework 'nextjs')}}
+  const router = useRouter();
+  {{else}}
+  const navigate = useNavigate();
+  {{/if}}
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        // Extract parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        // Handle OAuth errors
+        if (error) {
+          const errorMessage = getOAuthErrorMessage(error, errorDescription);
+          throw new Error(errorMessage);
+        }
+
+        // Validate required parameters
+        if (!code) {
+          throw new Error('Authorization code not found in callback URL');
+        }
+
+        if (!state) {
+          throw new Error('State parameter not found in callback URL');
+        }
+
+        // Validate state parameter for CSRF protection
+        const storedState = sessionStorage.getItem('{{provider}}_auth_state');
+        if (state !== storedState) {
+          throw new Error('Invalid state parameter - possible CSRF attack');
+        }
+
+        // Get stored parameters
+        const storedRedirectUrl = sessionStorage.getItem('{{provider}}_redirect_url');
+        {{#if enablePKCE}}
+        const codeVerifier = sessionStorage.getItem('{{provider}}_code_verifier');
+        {{/if}}
+        
+        const redirectUri = storedRedirectUrl || window.location.origin + window.location.pathname;
+
+        // Exchange authorization code for access token
+        const tokenResponse = await fetch('/api/auth/{{provider}}/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code,
+            redirectUri,
+            {{#if enablePKCE}}
+            codeVerifier,
+            {{/if}}
+            state,
+          }),
+        });
+
+        if (!tokenResponse.ok) {
+          const errorData = await tokenResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || `Token exchange failed: ${tokenResponse.statusText}`);
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // Get user profile
+        let user{{#if typescript}}: {{capitalize provider}}UserProfile{{/if}} = tokenData.user;
+        
+        if (!user && tokenData.access_token) {
+          // Fetch user profile if not included in token response
+          const profileResponse = await fetch('/api/auth/{{provider}}/profile', {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+            },
+          });
+
+          if (profileResponse.ok) {
+            user = await profileResponse.json();
+          }
+        }
+
+        if (!user) {
+          throw new Error('Failed to retrieve user profile from {{providerConfig.displayName}}');
+        }
+
+        // Update state with success
+        setState({
+          status: 'success',
+          user,
+          error: null,
+        });
+
+        // Call success callback
+        onSuccess?.(user);
+
+        // Clean up session storage
+        sessionStorage.removeItem('{{provider}}_auth_state');
+        sessionStorage.removeItem('{{provider}}_redirect_url');
+        {{#if enablePKCE}}
+        sessionStorage.removeItem('{{provider}}_code_verifier');
+        {{/if}}
+
+        // Store authentication data for the session
+        if (tokenData.access_token) {
+          sessionStorage.setItem('{{provider}}_access_token', tokenData.access_token);
+          sessionStorage.setItem('{{provider}}_user', JSON.stringify(user));
+          
+          if (tokenData.refresh_token) {
+            sessionStorage.setItem('{{provider}}_refresh_token', tokenData.refresh_token);
+          }
+          
+          if (tokenData.expires_in) {
+            const expiresAt = Date.now() + (tokenData.expires_in * 1000);
+            sessionStorage.setItem('{{provider}}_expires_at', expiresAt.toString());
+          }
+        }
+
+        // Redirect after showing success message
+        setTimeout(() => {
+          {{#if (eq framework 'nextjs')}}
+          router.push(successRedirectUrl);
+          {{else}}
+          navigate(successRedirectUrl);
+          {{/if}}
+        }, 2000);
+
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+        
+        console.error('{{capitalize provider}} callback error:', err);
+        
+        setState({
+          status: 'error',
+          user: null,
+          error: errorMessage,
+        });
+
+        // Call error callback
+        onError?.(new Error(errorMessage));
+
+        // Clean up session storage on error
+        sessionStorage.removeItem('{{provider}}_auth_state');
+        sessionStorage.removeItem('{{provider}}_redirect_url');
+        {{#if enablePKCE}}
+        sessionStorage.removeItem('{{provider}}_code_verifier');
+        {{/if}}
+
+        // Redirect to error page after delay
+        setTimeout(() => {
+          {{#if (eq framework 'nextjs')}}
+          router.push(errorRedirectUrl);
+          {{else}}
+          navigate(errorRedirectUrl);
+          {{/if}}
+        }, 3000);
+      }
+    };
+
+    // Only run callback handling once
+    handleCallback();
+  }, [onSuccess, onError, successRedirectUrl, errorRedirectUrl{{#if (eq framework 'nextjs')}}, router{{else}}, navigate{{/if}}]);
+
+  const getOAuthErrorMessage = (error{{#if typescript}}: string{{/if}}, description{{#if typescript}}?: string | null{{/if}}) => {
+    const errorMessages = {
+      'access_denied': 'You denied access to your {{providerConfig.displayName}} account',
+      'invalid_request': 'Invalid request to {{providerConfig.displayName}}',
+      'invalid_client': 'Invalid client configuration',
+      'invalid_grant': 'Invalid authorization grant',
+      'unauthorized_client': 'Unauthorized client',
+      'unsupported_grant_type': 'Unsupported grant type',
+      'invalid_scope': 'Invalid scope requested',
+      'server_error': '{{providerConfig.displayName}} server error',
+      'temporarily_unavailable': '{{providerConfig.displayName}} is temporarily unavailable',
+    };
+
+    const message = errorMessages[error] || `OAuth error: ${error}`;
+    return description ? `${message} - ${description}` : message;
+  };
+
+  const containerStyles = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    padding: '2rem',
+    textAlign: 'center' as const,
+  };
+
+  const iconStyles = {
+    width: '64px',
+    height: '64px',
+    marginBottom: '1rem',
+  };
+
+  const titleStyles = {
+    fontSize: '1.5rem',
+    fontWeight: '600',
+    marginBottom: '0.5rem',
+    color: '#1f2937',
+  };
+
+  const messageStyles = {
+    color: '#6b7280',
+    marginBottom: '1.5rem',
+    maxWidth: '400px',
+    lineHeight: '1.5',
+  };
+
+  const buttonStyles = {
+    backgroundColor: '{{providerConfig.color}}',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px 24px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    transition: 'background-color 0.2s ease',
+  };
+
+  if (state.status === 'loading') {
+    return (
+      <div className={`{{provider}}-callback-loading ${className}`} style={containerStyles}>
+        <div style={iconStyles}>
+          <LoadingIcon />
+        </div>
+        <h2 style={titleStyles}>Processing {{providerConfig.displayName}} Authentication</h2>
+        <p style={messageStyles}>
+          We're confirming your identity with {{providerConfig.displayName}}. This usually takes just a few seconds.
+        </p>
+      </div>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className={`{{provider}}-callback-error ${className}`} style={containerStyles}>
+        <div style={iconStyles}>
+          <ErrorIcon />
+        </div>
+        <h2 style={{ ...titleStyles, color: '#dc2626' }}>Authentication Failed</h2>
+        <p style={messageStyles}>
+          {state.error || 'An error occurred during authentication with {{providerConfig.displayName}}.'}
+        </p>
+        
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            onClick={() => {
+              {{#if (eq framework 'nextjs')}}
+              router.push(errorRedirectUrl);
+              {{else}}
+              navigate(errorRedirectUrl);
+              {{/if}}
+            }}
+            style={buttonStyles}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '{{providerConfig.color}}dd';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '{{providerConfig.color}}';
+            }}
+          >
+            Try Again
+          </button>
+          
+          <button
+            onClick={() => {
+              {{#if (eq framework 'nextjs')}}
+              router.push('/');
+              {{else}}
+              navigate('/');
+              {{/if}}
+            }}
+            style={{
+              ...buttonStyles,
+              backgroundColor: 'transparent',
+              color: '#6b7280',
+              border: '2px solid #d1d5db',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f9fafb';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+            }}
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`{{provider}}-callback-success ${className}`} style={containerStyles}>
+      <div style={iconStyles}>
+        <SuccessIcon />
+      </div>
+      <h2 style={{ ...titleStyles, color: '#059669' }}>Authentication Successful!</h2>
+      <div style={messageStyles}>
+        <p>
+          You're now signed in with {{providerConfig.displayName}}.
+          {state.user?.name && ` Welcome, ${state.user.name}!`}
+        </p>
+        
+        {state.user && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            backgroundColor: '#f0fdf4',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            color: '#15803d',
+          }}>
+            <p><strong>Email:</strong> {state.user.email}</p>
+            {state.user.username && <p><strong>Username:</strong> {state.user.username}</p>}
+            <p><strong>Provider:</strong> {{providerConfig.displayName}}</p>
+          </div>
+        )}
+        
+        <p style={{ marginTop: '16px' }}>
+          You're being redirected to the dashboard...
+        </p>
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+        <MiniLoadingIcon />
+        <span>Redirecting...</span>
+      </div>
+    </div>
+  );
+};
+
+// Icon components
+const LoadingIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="{{providerConfig.color}}"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 2s linear infinite, dash 1.5s ease-in-out infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 150;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -35;
+        }
+        100% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -124;
+        }
+      }
+    `}</style>
+  </svg>
+);
+
+const SuccessIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#10b981" />
+    <path
+      d="M9 12l2 2 4-4"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ErrorIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#ef4444" />
+    <path
+      d="M15 9l-6 6M9 9l6 6"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const MiniLoadingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="{{providerConfig.color}}"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 1s linear infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </svg>
+);
+
+// Utility function to parse OAuth callback parameters
+export const parse{{capitalize provider}}Callback = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    code: urlParams.get('code'),
+    state: urlParams.get('state'),
+    error: urlParams.get('error'),
+    errorDescription: urlParams.get('error_description'),
+  };
+};

@@ -1,0 +1,293 @@
+import React, { useState } from 'react';
+{{#if typescript}}
+import type { {{capitalize provider}}UserProfile } from './{{provider}}.types';
+{{/if}}
+
+{{#if typescript}}
+interface {{capitalize provider}}LoginProps {
+  onSuccess?: (user: {{capitalize provider}}UserProfile) => void;
+  onError?: (error: Error) => void;
+  redirectUrl?: string;
+  scopes?: string[];
+  className?: string;
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'default' | 'outline' | 'icon';
+}
+{{/if}}
+
+export const {{capitalize provider}}Login{{#if typescript}}: React.FC<{{capitalize provider}}LoginProps>{{/if}} = ({
+  onSuccess,
+  onError,
+  redirectUrl = '{{redirectUrl}}',
+  scopes = {{{json scopes}}},
+  className = '',
+  size = 'medium',
+  variant = 'default',
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handle{{capitalize provider}}Login = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Generate state parameter for CSRF protection
+      const state = generateSecureState();
+      
+      {{#if enablePKCE}}
+      // Generate PKCE parameters for additional security
+      const { codeVerifier, codeChallenge } = await generatePKCE();
+      {{/if}}
+      
+      // Store parameters for callback validation
+      sessionStorage.setItem('{{provider}}_auth_state', state);
+      {{#if enablePKCE}}
+      sessionStorage.setItem('{{provider}}_code_verifier', codeVerifier);
+      {{/if}}
+      sessionStorage.setItem('{{provider}}_redirect_url', redirectUrl);
+      
+      // Construct authorization URL
+      const authUrl = new URL('{{providerConfig.authUrl}}');
+      authUrl.searchParams.set('client_id', process.env.NEXT_PUBLIC_{{uppercase provider}}_CLIENT_ID || '');
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('redirect_uri', redirectUrl);
+      authUrl.searchParams.set('scope', scopes.join(' '));
+      authUrl.searchParams.set('state', state);
+      
+      {{#if enablePKCE}}
+      // Add PKCE parameters
+      authUrl.searchParams.set('code_challenge', codeChallenge);
+      authUrl.searchParams.set('code_challenge_method', 'S256');
+      {{/if}}
+      
+      {{#if (eq provider "google")}}
+      // Google-specific parameters
+      authUrl.searchParams.set('access_type', 'offline');
+      authUrl.searchParams.set('prompt', 'consent');
+      authUrl.searchParams.set('include_granted_scopes', 'true');
+      {{/if}}
+      
+      {{#if (eq provider "microsoft")}}
+      // Microsoft-specific parameters
+      authUrl.searchParams.set('prompt', 'select_account');
+      authUrl.searchParams.set('response_mode', 'query');
+      {{/if}}
+      
+      {{#if (eq provider "github")}}
+      // GitHub-specific parameters
+      authUrl.searchParams.set('allow_signup', 'true');
+      {{/if}}
+      
+      // Redirect to OAuth provider
+      window.location.href = authUrl.toString();
+      
+    } catch (error) {
+      setIsLoading(false);
+      console.error('{{capitalize provider}} login error:', error);
+      onError?.(error as Error);
+    }
+  };
+
+  const generateSecureState = () => {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return btoa(String.fromCharCode.apply(null, Array.from(array)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  };
+
+  {{#if enablePKCE}}
+  const generatePKCE = async () => {
+    // Generate code verifier
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    const codeVerifier = btoa(String.fromCharCode.apply(null, Array.from(array)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
+    // Generate code challenge
+    const encoder = new TextEncoder();
+    const data = encoder.encode(codeVerifier);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const codeChallenge = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
+    return { codeVerifier, codeChallenge };
+  };
+  {{/if}}
+
+  const getSizeStyles = () => {
+    switch (size) {
+      case 'small':
+        return { padding: '8px 16px', fontSize: '14px', height: '36px' };
+      case 'large':
+        return { padding: '16px 32px', fontSize: '18px', height: '56px' };
+      default:
+        return { padding: '12px 24px', fontSize: '16px', height: '48px' };
+    }
+  };
+
+  const getVariantStyles = () => {
+    const sizeStyles = getSizeStyles();
+    const baseStyles = {
+      ...sizeStyles,
+      fontWeight: '600',
+      borderRadius: '8px',
+      cursor: isLoading ? 'not-allowed' : 'pointer',
+      opacity: isLoading ? 0.6 : 1,
+      border: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      transition: 'all 0.2s ease',
+      fontFamily: 'inherit',
+      textDecoration: 'none',
+      outline: 'none',
+    };
+
+    switch (variant) {
+      case 'outline':
+        return {
+          ...baseStyles,
+          backgroundColor: 'transparent',
+          color: '{{providerConfig.color}}',
+          border: '2px solid {{providerConfig.color}}',
+        };
+      case 'icon':
+        return {
+          ...baseStyles,
+          backgroundColor: '{{providerConfig.color}}',
+          color: 'white',
+          width: sizeStyles.height,
+          padding: '0',
+          borderRadius: '50%',
+        };
+      default:
+        return {
+          ...baseStyles,
+          backgroundColor: '{{providerConfig.color}}',
+          color: 'white',
+        };
+    }
+  };
+
+  const handleMouseEnter = (e) => {
+    if (!isLoading) {
+      if (variant === 'outline') {
+        e.target.style.backgroundColor = '{{providerConfig.color}}';
+        e.target.style.color = 'white';
+      } else {
+        e.target.style.transform = 'translateY(-1px)';
+        e.target.style.boxShadow = '0 4px 12px {{providerConfig.color}}40';
+      }
+    }
+  };
+
+  const handleMouseLeave = (e) => {
+    if (!isLoading) {
+      if (variant === 'outline') {
+        e.target.style.backgroundColor = 'transparent';
+        e.target.style.color = '{{providerConfig.color}}';
+      } else {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = 'none';
+      }
+    }
+  };
+
+  return (
+    <button
+      onClick={handle{{capitalize provider}}Login}
+      disabled={isLoading}
+      className={`{{provider}}-login-button ${className}`}
+      style={getVariantStyles()}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      aria-label="Sign in with {{providerConfig.displayName}}"
+      type="button"
+    >
+      {isLoading ? (
+        <>
+          <LoadingSpinner />
+          {variant !== 'icon' && <span>Signing in...</span>}
+        </>
+      ) : (
+        <>
+          <{{capitalize provider}}Icon />
+          {variant !== 'icon' && <span>Continue with {{providerConfig.displayName}}</span>}
+        </>
+      )}
+    </button>
+  );
+};
+
+const LoadingSpinner = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{ animation: 'spin 1s linear infinite' }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </svg>
+);
+
+const {{capitalize provider}}Icon = () => (
+  {{#if (eq provider "google")}}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+  {{else if (eq provider "github")}}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+  </svg>
+  {{else if (eq provider "microsoft")}}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
+  </svg>
+  {{else if (eq provider "discord")}}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.0188 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9554 2.4189-2.1568 2.4189Z"/>
+  </svg>
+  {{else}}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+    <circle cx="9" cy="9" r="1"/>
+    <circle cx="15" cy="9" r="1"/>
+  </svg>
+  {{/if}}
+);
+
+// Export configuration for easy access
+export const {{capitalize provider}}LoginConfig = {
+  provider: '{{provider}}',
+  displayName: '{{providerConfig.displayName}}',
+  color: '{{providerConfig.color}}',
+  defaultScopes: {{{json providerConfig.defaultScopes}}},
+  supportsPKCE: {{providerConfig.supportsPKCE}},
+  supportsRefresh: {{providerConfig.supportsRefresh}},
+};
+
+{{#if typescript}}
+// Re-export types for convenience
+export type { {{capitalize provider}}UserProfile } from './{{provider}}.types';
+{{/if}}
