@@ -1,0 +1,556 @@
+import React, { useEffect, useState } from 'react';
+{{#if (eq framework 'nextjs')}}
+import { useRouter } from 'next/router';
+{{else}}
+import { useNavigate } from 'react-router-dom';
+{{/if}}
+{{#if typescript}}
+import type { BankIDUserProfile } from './bankid.types';
+{{/if}}
+
+{{#if typescript}}
+interface BankIDCallbackProps {
+  onSuccess?: (user: BankIDUserProfile) => void;
+  onError?: (error: Error) => void;
+  successRedirectUrl?: string;
+  errorRedirectUrl?: string;
+  className?: string;
+  country?: 'norway' | 'sweden';
+}
+
+interface CallbackState {
+  status: 'loading' | 'success' | 'error';
+  user: BankIDUserProfile | null;
+  error: string | null;
+  orderRef: string | null;
+  progress: string | null;
+}
+{{/if}}
+
+export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/if}} = ({
+  onSuccess,
+  onError,
+  successRedirectUrl = '/dashboard',
+  errorRedirectUrl = '/login',
+  className = '',
+  country = '{{country}}',
+}) => {
+  const [state, setState] = useState{{#if typescript}}<CallbackState>{{/if}}({
+    status: 'loading',
+    user: null,
+    error: null,
+    orderRef: null,
+    progress: null,
+  });
+
+  {{#if (eq framework 'nextjs')}}
+  const router = useRouter();
+  {{else}}
+  const navigate = useNavigate();
+  {{/if}}
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        // Get order reference from URL parameters or session storage
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderRef = urlParams.get('orderRef') || 
+                        urlParams.get('ref') || 
+                        sessionStorage.getItem('bankid_order_ref');
+
+        if (!orderRef) {
+          throw new Error('{{#if (eq country "sweden")}}Saknar orderreferens för BankID-autentisering{{else}}Mangler ordre-referanse for BankID-autentisering{{/if}}');
+        }
+
+        setState(prev => ({ ...prev, orderRef }));
+
+        // Start polling for completion
+        await pollForCompletion(orderRef);
+
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 
+          '{{#if (eq country "sweden")}}BankID-autentisering misslyckades{{else}}BankID-autentisering feilet{{/if}}';
+        
+        console.error('BankID callback error:', err);
+        
+        setState({
+          status: 'error',
+          user: null,
+          error: errorMessage,
+          orderRef: null,
+          progress: null,
+        });
+
+        onError?.(new Error(errorMessage));
+
+        // Clean up session storage
+        sessionStorage.removeItem('bankid_order_ref');
+
+        // Redirect after delay
+        setTimeout(() => {
+          {{#if (eq framework 'nextjs')}}
+          router.push(errorRedirectUrl);
+          {{else}}
+          navigate(errorRedirectUrl);
+          {{/if}}
+        }, 3000);
+      }
+    };
+
+    const pollForCompletion = async (orderRef{{#if typescript}}: string{{/if}}) => {
+      const maxAttempts = 150; // 5 minutes with 2-second intervals
+      let attempts = 0;
+
+      const poll = async () => {
+        try {
+          const response = await fetch(\`/api/auth/bankid/collect/\${orderRef}\`);
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || \`{{#if (eq country "sweden")}}Insamling misslyckades{{else}}Innhenting feilet{{/if}}: \${response.statusText}\`);
+          }
+
+          const result = await response.json();
+
+          // Update progress status
+          if (result.progressStatus) {
+            setState(prev => ({
+              ...prev,
+              progress: getProgressMessage(result.progressStatus),
+            }));
+          }
+
+          if (result.status === 'complete') {
+            // Authentication successful
+            const user{{#if typescript}}: BankIDUserProfile{{/if}} = result.completionData.user;
+            
+            setState({
+              status: 'success',
+              user,
+              error: null,
+              orderRef,
+              progress: null,
+            });
+
+            onSuccess?.(user);
+
+            // Clean up session storage
+            sessionStorage.removeItem('bankid_order_ref');
+
+            // Store authentication data for the session
+            if (result.completionData) {
+              sessionStorage.setItem('bankid_user', JSON.stringify(user));
+              sessionStorage.setItem('bankid_signature', result.completionData.signature);
+              sessionStorage.setItem('bankid_auth_time', new Date().toISOString());
+            }
+
+            // Redirect after showing success message
+            setTimeout(() => {
+              {{#if (eq framework 'nextjs')}}
+              router.push(successRedirectUrl);
+              {{else}}
+              navigate(successRedirectUrl);
+              {{/if}}
+            }, 2000);
+
+            return;
+          }
+
+          if (result.status === 'failed') {
+            // Authentication failed
+            const errorMessage = getErrorMessage(result.hintCode) || 
+              '{{#if (eq country "sweden")}}BankID-autentisering misslyckades{{else}}BankID-autentisering feilet{{/if}}';
+            throw new Error(errorMessage);
+          }
+
+          // Continue polling if still pending
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(poll, 2000); // Poll every 2 seconds
+          } else {
+            throw new Error('{{#if (eq country "sweden")}}Autentisering tog för lång tid - försök igen{{else}}Autentisering tok for lang tid - prøv igjen{{/if}}');
+          }
+
+        } catch (error) {
+          console.error('BankID polling error:', error);
+          throw error;
+        }
+      };
+
+      await poll();
+    };
+
+    handleCallback();
+  }, [onSuccess, onError, successRedirectUrl, errorRedirectUrl, country{{#if (eq framework 'nextjs')}}, router{{else}}, navigate{{/if}}]);
+
+  const getProgressMessage = (progressStatus{{#if typescript}}: string{{/if}}) => {
+    const messages = {
+      {{#if (eq country "sweden")}}
+      outstandingTransaction: 'Du har redan en pågående BankID-transaktion',
+      noClient: 'BankID-appen kunde inte startas automatiskt',
+      started: 'BankID-appen har startat',
+      userSign: 'Skriv din säkerhetskod i BankID-appen',
+      {{else}}
+      outstandingTransaction: 'Du har allerede en pågående BankID-transaksjon',
+      noClient: 'BankID-appen kunne ikke startes automatisk',
+      started: 'BankID-appen er startet',
+      userSign: 'Skriv din sikkerhetskode i BankID-appen',
+      {{/if}}
+    };
+    
+    return messages[progressStatus] || null;
+  };
+
+  const getErrorMessage = (hintCode{{#if typescript}}: string{{/if}}) => {
+    const messages = {
+      {{#if (eq country "sweden")}}
+      outstandingTransaction: 'Du har redan en pågående BankID-transaktion. Avsluta den först.',
+      noClient: 'BankID-appen kunde inte startas. Kontrollera att appen är installerad.',
+      userCancel: 'Du avbröt autentiseringen',
+      cancelled: 'Autentiseringen avbröts',
+      startFailed: 'Kunde inte starta BankID. Försök igen.',
+      expiredTransaction: 'Transaktionen har gått ut. Försök igen.',
+      certificateErr: 'Problem med ditt BankID-certifikat',
+      userDeclinedCall: 'Du avvisade samtalet från BankID',
+      internalError: 'Ett tekniskt fel uppstod. Försök igen senare.',
+      alreadyInProgress: 'En autentisering pågår redan',
+      requestTimeout: 'Förfrågan tog för lång tid',
+      {{else}}
+      outstandingTransaction: 'Du har allerede en pågående BankID-transaksjon. Avslutt den først.',
+      noClient: 'BankID-appen kunne ikke startes. Sjekk at appen er installert.',
+      userCancel: 'Du avbrøt autentiseringen',
+      cancelled: 'Autentiseringen ble avbrutt',
+      startFailed: 'Kunne ikke starte BankID. Prøv igjen.',
+      expiredTransaction: 'Transaksjonen utløp. Prøv igjen.',
+      certificateErr: 'Problem med ditt BankID-sertifikat',
+      userDeclinedCall: 'Du avviste oppkallet fra BankID',
+      internalError: 'En teknisk feil oppstod. Prøv igjen senere.',
+      alreadyInProgress: 'En autentisering pågår allerede',
+      requestTimeout: 'Forespørselen tok for lang tid',
+      {{/if}}
+    };
+    
+    return messages[hintCode];
+  };
+
+  const primaryColor = country === 'sweden' ? '#1976d2' : '#0066cc';
+
+  const containerStyles = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    padding: '2rem',
+    textAlign: 'center' as const,
+  };
+
+  const iconStyles = {
+    width: '64px',
+    height: '64px',
+    marginBottom: '1rem',
+  };
+
+  const titleStyles = {
+    fontSize: '1.5rem',
+    fontWeight: '600',
+    marginBottom: '0.5rem',
+    color: '#1f2937',
+  };
+
+  const messageStyles = {
+    color: '#6b7280',
+    marginBottom: '1.5rem',
+    maxWidth: '400px',
+    lineHeight: '1.5',
+  };
+
+  const buttonStyles = {
+    backgroundColor: primaryColor,
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px 24px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    transition: 'background-color 0.2s ease',
+  };
+
+  if (state.status === 'loading') {
+    return (
+      <div className={\`bankid-callback-loading \${className}\`} style={containerStyles}>
+        <div style={iconStyles}>
+          <LoadingIcon color={primaryColor} />
+        </div>
+        <h2 style={titleStyles}>
+          {{#if (eq country "sweden")}}Autentiserar med BankID{{else}}Autentiserer med BankID{{/if}}
+        </h2>
+        <div style={messageStyles}>
+          <p>
+            {{#if (eq country "sweden")}}
+            Vänligen slutför autentiseringen i BankID-appen.
+            {{else}}
+            Vennligst fullfør autentiseringen i BankID-appen.
+            {{/if}}
+          </p>
+          
+          {state.progress && (
+            <p style={{
+              marginTop: '12px',
+              fontWeight: '500',
+              color: primaryColor,
+            }}>
+              {state.progress}
+            </p>
+          )}
+        </div>
+        
+        {state.orderRef && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.875rem',
+            color: '#9ca3af',
+          }}>
+            <p>
+              {{#if (eq country "sweden")}}Orderreferens{{else}}Ordre-referanse{{/if}}: {state.orderRef.substring(0, 8)}...
+            </p>
+            <p>
+              {{#if (eq country "sweden")}}Autentiseringen avbryts automatiskt efter 5 minuter{{else}}Autentiseringen avbrytes automatisk etter 5 minutter{{/if}}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className={\`bankid-callback-error \${className}\`} style={containerStyles}>
+        <div style={iconStyles}>
+          <ErrorIcon />
+        </div>
+        <h2 style={{ ...titleStyles, color: '#dc2626' }}>
+          {{#if (eq country "sweden")}}Autentisering misslyckades{{else}}Autentisering feilet{{/if}}
+        </h2>
+        <p style={messageStyles}>
+          {state.error || '{{#if (eq country "sweden")}}Ett fel uppstod under autentiseringen med BankID.{{else}}Det oppstod en feil under autentiseringen med BankID.{{/if}}'}
+        </p>
+        
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            onClick={() => {
+              {{#if (eq framework 'nextjs')}}
+              router.push(errorRedirectUrl);
+              {{else}}
+              navigate(errorRedirectUrl);
+              {{/if}}
+            }}
+            style={buttonStyles}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = country === 'sweden' ? '#1565c0' : '#0052a3';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = primaryColor;
+            }}
+          >
+            {{#if (eq country "sweden")}}Försök igen{{else}}Prøv igjen{{/if}}
+          </button>
+          
+          <button
+            onClick={() => {
+              {{#if (eq framework 'nextjs')}}
+              router.push('/');
+              {{else}}
+              navigate('/');
+              {{/if}}
+            }}
+            style={{
+              ...buttonStyles,
+              backgroundColor: 'transparent',
+              color: '#6b7280',
+              border: '2px solid #d1d5db',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f9fafb';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+            }}
+          >
+            {{#if (eq country "sweden")}}Gå till startsidan{{else}}Gå til forsiden{{/if}}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={\`bankid-callback-success \${className}\`} style={containerStyles}>
+      <div style={iconStyles}>
+        <SuccessIcon />
+      </div>
+      <h2 style={{ ...titleStyles, color: '#059669' }}>
+        {{#if (eq country "sweden")}}Autentisering lyckades!{{else}}Autentisering vellykket!{{/if}}
+      </h2>
+      <div style={messageStyles}>
+        <p>
+          {{#if (eq country "sweden")}}Du är nu inloggad med BankID.{{else}}Du er nå logget inn med BankID.{{/if}}
+          {state.user?.name && \` {{#if (eq country "sweden")}}Välkommen{{else}}Velkommen{{/if}}, \${state.user.name}!\`}
+        </p>
+        
+        {state.user && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            backgroundColor: '#f0f9ff',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            color: '#0c4a6e',
+          }}>
+            <p><strong>{{#if (eq country "sweden")}}Personnummer{{else}}Fødselsnummer{{/if}}:</strong> {state.user.personalNumber?.replace(/(\d{6})(\d{5})/, '$1-$2')}</p>
+            {state.user.name && <p><strong>{{#if (eq country "sweden")}}Namn{{else}}Navn{{/if}}:</strong> {state.user.name}</p>}
+            {{#if (eq country "norway")}}
+            {state.user.age && <p><strong>Alder:</strong> {state.user.age} år</p>}
+            {{/if}}
+          </div>
+        )}
+        
+        <p style={{ marginTop: '16px' }}>
+          {{#if (eq country "sweden")}}Du omdirigeras till instrumentpanelen...{{else}}Du blir videresendt til dashbordet...{{/if}}
+        </p>
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+        <MiniLoadingIcon color={primaryColor} />
+        <span>{{#if (eq country "sweden")}}Omdirigerar...{{else}}Videresender...{{/if}}</span>
+      </div>
+    </div>
+  );
+};
+
+// Icon components
+const LoadingIcon = ({ color = '#0066cc' }) => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 2s linear infinite, dash 1.5s ease-in-out infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 150;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -35;
+        }
+        100% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -124;
+        }
+      }
+    `}</style>
+  </svg>
+);
+
+const SuccessIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#10b981" />
+    <path
+      d="M9 12l2 2 4-4"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ErrorIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+    <circle cx="12" cy="12" r="10" fill="#ef4444" />
+    <path
+      d="M15 9l-6 6M9 9l6 6"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const MiniLoadingIcon = ({ color = '#0066cc' }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke={color}
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 1s linear infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </svg>
+);
+
+// Utility function to parse BankID callback parameters
+export const parseBankIDCallback = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    orderRef: urlParams.get('orderRef') || urlParams.get('ref'),
+    status: urlParams.get('status'),
+    error: urlParams.get('error'),
+  };
+};
+
+// Export country-specific configurations
+export const BankIDCountryConfig = {
+  norway: {
+    name: 'Norge',
+    flag: '🇳🇴',
+    color: '#0066cc',
+    personalNumberLabel: 'Fødselsnummer',
+    personalNumberFormat: (pn{{#if typescript}}: string{{/if}}) => pn.replace(/(\d{6})(\d{5})/, '$1-$2'),
+  },
+  sweden: {
+    name: 'Sverige',
+    flag: '🇸🇪',
+    color: '#1976d2',
+    personalNumberLabel: 'Personnummer',
+    personalNumberFormat: (pn{{#if typescript}}: string{{/if}}) => pn.replace(/(\d{8})(\d{4})/, '$1-$2'),
+  },
+};

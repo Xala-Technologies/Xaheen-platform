@@ -14,4 +14,5 @@
 - Implemented integration commands (Story 3.6) with all integration subcommands in tRPC router
 - Implemented document commands (Story 3.7) with all document subcommands in tRPC router
 - Implemented compliance commands (Story 3.8) with all compliance subcommands in tRPC router
-- Completed Phase 4 Localization System (Stories 4.1-4.5) with language files, RTL support, cultural formatting, currency handling, and translation management
+- Completed Phase 4 Localization System (Stories 4.1-4.6) with language files, RTL support, cultural formatting, currency handling, translation management, and locale-aware generation
+- Implemented Vipps authentication integration (Story 5.1) with comprehensive OAuth 2.0 flow, webhook handling, and Norwegian-compliant authentication components

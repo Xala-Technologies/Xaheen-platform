@@ -87,17 +87,17 @@
 - [x] Add Vipps webhook handling templates
 - [x] Add Vipps user profile integration
 
-### **Story 5.2: BankID Integration**
-- [ ] Create `apps/cli/src/integrations/auth/bankid.ts`
-- [ ] Add BankID SDK configuration and initialization
-- [ ] Add `generateBankIDAuthComponent(options: AuthOptions): GenerationResult` function
-- [ ] Add `generateBankIDAuthService(options: AuthOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/auth/bankid-login.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/bankid-callback.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/auth/bankid-service.ts.hbs` template
-- [ ] Add BankID environment configuration (test/production)
-- [ ] Add BankID certificate handling
-- [ ] Add BankID user verification and data extraction
+### **Story 5.2: BankID Integration** ✅
+- [x] Create `apps/cli/src/integrations/auth/bankid.ts`
+- [x] Add BankID SDK configuration and initialization
+- [x] Add `generateBankIDAuthComponent(options: AuthOptions): GenerationResult` function
+- [x] Add `generateBankIDAuthService(options: AuthOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/auth/bankid-login.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/bankid-callback.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/auth/bankid-service.ts.hbs` template
+- [x] Add BankID environment configuration (test/production)
+- [x] Add BankID certificate handling
+- [x] Add BankID user verification and data extraction
 
 ### **Story 5.3: OAuth Provider Setup**
 - [ ] Create `apps/cli/src/integrations/auth/oauth.ts`
