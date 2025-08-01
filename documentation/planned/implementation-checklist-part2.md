@@ -191,17 +191,17 @@
 - [x] Add Teams OAuth integration with Azure AD
 - [x] Add Teams meeting integration
 
-### **Story 6.4: Vipps Payment Integration**
-- [ ] Create `apps/cli/src/integrations/services/vipps-payment.ts`
-- [ ] Add Vipps Payment API configuration
-- [ ] Add `generateVippsPaymentComponent(options: PaymentOptions): GenerationResult` function
-- [ ] Add `generateVippsPaymentService(options: PaymentOptions): GenerationResult` function
-- [ ] Create `apps/cli/templates/integrations/payments/vipps-payment.tsx.hbs` template
-- [ ] Create `apps/cli/templates/integrations/payments/vipps-service.ts.hbs` template
-- [ ] Add Vipps payment flow handling
-- [ ] Add Vipps webhook processing
-- [ ] Add Norwegian VAT calculation integration
-- [ ] Add Vipps refund handling
+### **Story 6.4: Vipps Payment Integration** ✅
+- [x] Create `apps/cli/src/integrations/services/vipps-payment.ts`
+- [x] Add Vipps Payment API configuration
+- [x] Add `generateVippsPaymentComponent(options: PaymentOptions): GenerationResult` function
+- [x] Add `generateVippsPaymentService(options: PaymentOptions): GenerationResult` function
+- [x] Create `apps/cli/templates/integrations/payments/vipps-payment.tsx.hbs` template
+- [x] Create `apps/cli/templates/integrations/payments/vipps-service.ts.hbs` template
+- [x] Add Vipps payment flow handling
+- [x] Add Vipps webhook processing
+- [x] Add Norwegian VAT calculation integration
+- [x] Add Vipps refund handling
 
 ### **Story 6.5: Stripe Payment Integration**
 - [ ] Create `apps/cli/src/integrations/services/stripe.ts`

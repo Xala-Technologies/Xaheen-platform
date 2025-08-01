@@ -1,0 +1,558 @@
+{{#if typescript}}
+import type { 
+  VippsPaymentRequest,
+  VippsPaymentResponse,
+  VippsPaymentDetails,
+  VippsCaptureRequest,
+  VippsRefundRequest,
+  VippsWebhookEvent,
+  VippsRecurringAgreement,
+  VippsChargeRequest
+} from '../types/vipps';
+{{/if}}
+import crypto from 'crypto';
+
+/**
+ * Vipps Payment Service for {{projectName}}
+ * Complete integration with Norwegian Vipps payment system
+ */
+export class VippsPaymentService {
+  private readonly baseUrl{{#if typescript}}: string{{/if}};
+  private readonly merchantSerialNumber{{#if typescript}}: string{{/if}};
+  private readonly clientId{{#if typescript}}: string{{/if}};
+  private readonly clientSecret{{#if typescript}}: string{{/if}};
+  private readonly subscriptionKey{{#if typescript}}: string{{/if}};
+  private accessToken{{#if typescript}}: string | null{{/if}} = null;
+  private tokenExpiry{{#if typescript}}: Date | null{{/if}} = null;
+
+  constructor() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    this.baseUrl = isProduction 
+      ? 'https://api.vipps.no' 
+      : 'https://apitest.vipps.no';
+    
+    this.merchantSerialNumber = process.env.VIPPS_MERCHANT_SERIAL_NUMBER || '';
+    this.clientId = process.env.VIPPS_CLIENT_ID || '';
+    this.clientSecret = process.env.VIPPS_CLIENT_SECRET || '';
+    this.subscriptionKey = process.env.VIPPS_SUBSCRIPTION_KEY || '';
+
+    if (!this.merchantSerialNumber || !this.clientId || !this.clientSecret || !this.subscriptionKey) {
+      throw new Error('Missing required Vipps configuration');
+    }
+  }
+
+  /**
+   * Get access token for API requests
+   */
+  private async getAccessToken(){{#if typescript}}: Promise<string>{{/if}} {
+    // Check if token is still valid
+    if (this.accessToken && this.tokenExpiry && this.tokenExpiry > new Date()) {
+      return this.accessToken;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/accesstoken/get`, {
+        method: 'POST',
+        headers: {
+          'client_id': this.clientId,
+          'client_secret': this.clientSecret,
+          'Ocp-Apim-Subscription-Key': this.subscriptionKey
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to get access token: ${error}`);
+      }
+
+      const data = await response.json();
+      this.accessToken = data.access_token;
+      // Set expiry with 1 minute buffer
+      this.tokenExpiry = new Date(Date.now() + (data.expires_in - 60) * 1000);
+
+      return this.accessToken;
+    } catch (error) {
+      console.error('Access token error:', error);
+      throw new Error('Failed to authenticate with Vipps');
+    }
+  }
+
+  /**
+   * Create request headers
+   */
+  private async createHeaders(){{#if typescript}}: Promise<Record<string, string>>{{/if}} {
+    const token = await this.getAccessToken();
+    
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+      'Merchant-Serial-Number': this.merchantSerialNumber,
+      'X-Request-Id': this.generateRequestId(),
+      'X-TimeStamp': new Date().toISOString(),
+      'X-Source-Address': process.env.CLIENT_IP || '127.0.0.1'
+    };
+  }
+
+  /**
+   * Generate unique request ID
+   */
+  private generateRequestId(){{#if typescript}}: string{{/if}} {
+    return crypto.randomUUID();
+  }
+
+  /**
+   * Initiate a payment
+   */
+  async initiatePayment(request{{#if typescript}}: VippsPaymentRequest{{/if}}){{#if typescript}}: Promise<VippsPaymentResponse>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+      
+      // Ensure amount is in øre (cents)
+      const paymentRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber,
+          callbackPrefix: `${process.env.APP_URL}/api/vipps/callback`,
+          fallBack: `${process.env.APP_URL}/payment/result?orderId=${request.orderId}`,
+          authToken: crypto.randomBytes(32).toString('hex'),
+          paymentType: 'eComm Regular Payment',
+          isApp: false,
+          staticShippingDetails: request.shippingDetails
+        },
+        customerInfo: {
+          mobileNumber: request.mobileNumber
+        },
+        transaction: {
+          orderId: request.orderId,
+          amount: request.amount,
+          transactionText: request.transactionText,
+          skipLandingPage: request.skipLandingPage || false,
+          scope: request.scope || 'name phoneNumber address birthDate email'
+        }
+      };
+
+      const response = await fetch(`${this.baseUrl}/ecomm/v2/payments`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(paymentRequest)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Payment initiation failed');
+      }
+
+      const data = await response.json();
+      
+      // Store auth token for callback verification
+      await this.storeAuthToken(request.orderId, paymentRequest.merchantInfo.authToken);
+      
+      return data;
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get payment details
+   */
+  async getPaymentDetails(orderId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<VippsPaymentDetails>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const response = await fetch(
+        `${this.baseUrl}/ecomm/v2/payments/${orderId}/details`,
+        {
+          method: 'GET',
+          headers
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to get payment details');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get payment details error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Capture a payment
+   */
+  async capturePayment(
+    orderId{{#if typescript}}: string{{/if}}, 
+    request{{#if typescript}}: VippsCaptureRequest{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const captureRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber
+        },
+        transaction: {
+          amount: request.amount,
+          transactionText: request.transactionText || 'Payment captured'
+        }
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/ecomm/v2/payments/${orderId}/capture`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(captureRequest)
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Payment capture failed');
+      }
+    } catch (error) {
+      console.error('Payment capture error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel a payment
+   */
+  async cancelPayment(orderId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const cancelRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber
+        },
+        transaction: {
+          transactionText: 'Payment cancelled by merchant'
+        }
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/ecomm/v2/payments/${orderId}/cancel`,
+        {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(cancelRequest)
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Payment cancellation failed');
+      }
+    } catch (error) {
+      console.error('Payment cancel error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Refund a payment
+   */
+  async refundPayment(
+    orderId{{#if typescript}}: string{{/if}}, 
+    request{{#if typescript}}: VippsRefundRequest{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const refundRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber
+        },
+        transaction: {
+          amount: request.amount,
+          transactionText: request.transactionText || 'Refund'
+        }
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/ecomm/v2/payments/${orderId}/refund`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(refundRequest)
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Payment refund failed');
+      }
+    } catch (error) {
+      console.error('Payment refund error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create recurring payment agreement
+   */
+  async createRecurringAgreement(
+    agreement{{#if typescript}}: VippsRecurringAgreement{{/if}}
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const agreementRequest = {
+        ...agreement,
+        merchantRedirectUrl: `${process.env.APP_URL}/recurring/redirect`,
+        merchantAgreementUrl: `${process.env.APP_URL}/recurring/agreement`
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/recurring/v3/agreements`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(agreementRequest)
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create recurring agreement');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Create recurring agreement error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Charge recurring payment
+   */
+  async chargeRecurringPayment(
+    agreementId{{#if typescript}}: string{{/if}}, 
+    charge{{#if typescript}}: VippsChargeRequest{{/if}}
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    try {
+      const headers = await this.createHeaders();
+
+      const response = await fetch(
+        `${this.baseUrl}/recurring/v3/agreements/${agreementId}/charges`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(charge)
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to charge recurring payment');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Charge recurring payment error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify webhook signature
+   */
+  verifyWebhookSignature(
+    payload{{#if typescript}}: any{{/if}}, 
+    signature{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: boolean{{/if}} {
+    try {
+      const secret = process.env.VIPPS_WEBHOOK_SECRET || '';
+      const computedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(payload))
+        .digest('hex');
+
+      return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(computedSignature)
+      );
+    } catch (error) {
+      console.error('Webhook signature verification error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Handle callback from Vipps
+   */
+  async handleCallback(
+    orderId{{#if typescript}}: string{{/if}}, 
+    authToken{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<VippsPaymentDetails>{{/if}} {
+    try {
+      // Verify auth token
+      const storedToken = await this.getStoredAuthToken(orderId);
+      if (authToken !== storedToken) {
+        throw new Error('Invalid auth token');
+      }
+
+      // Get payment details
+      const details = await this.getPaymentDetails(orderId);
+
+      // Clear stored auth token
+      await this.clearAuthToken(orderId);
+
+      return details;
+    } catch (error) {
+      console.error('Callback handling error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate Norwegian VAT (MVA)
+   */
+  calculateVAT(
+    amount{{#if typescript}}: number{{/if}}, 
+    vatRate{{#if typescript}}: number{{/if}} = 25
+  ){{#if typescript}}: { total: number; vat: number; net: number }{{/if}} {
+    const vatMultiplier = vatRate / 100;
+    const net = amount / (1 + vatMultiplier);
+    const vat = amount - net;
+
+    return {
+      total: Math.round(amount * 100) / 100,
+      vat: Math.round(vat * 100) / 100,
+      net: Math.round(net * 100) / 100
+    };
+  }
+
+  /**
+   * Format amount for Vipps (convert to øre)
+   */
+  formatAmount(amount{{#if typescript}}: number{{/if}}){{#if typescript}}: number{{/if}} {
+    return Math.round(amount * 100);
+  }
+
+  /**
+   * Store auth token (implement based on your storage solution)
+   */
+  private async storeAuthToken(
+    orderId{{#if typescript}}: string{{/if}}, 
+    token{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    // Implementation depends on your storage solution
+    // Example: Redis, database, or in-memory cache
+    console.log(`Storing auth token for order ${orderId}`);
+  }
+
+  /**
+   * Get stored auth token
+   */
+  private async getStoredAuthToken(
+    orderId{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<string | null>{{/if}} {
+    // Implementation depends on your storage solution
+    console.log(`Retrieving auth token for order ${orderId}`);
+    return null;
+  }
+
+  /**
+   * Clear auth token
+   */
+  private async clearAuthToken(
+    orderId{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    // Implementation depends on your storage solution
+    console.log(`Clearing auth token for order ${orderId}`);
+  }
+}
+
+// Export singleton instance
+export const vippsPayment = new VippsPaymentService();
+
+{{#if typescript}}
+// Type definitions
+export interface VippsPaymentRequest {
+  orderId: string;
+  amount: number;
+  transactionText: string;
+  mobileNumber?: string;
+  skipLandingPage?: boolean;
+  scope?: string;
+  shippingDetails?: any;
+}
+
+export interface VippsPaymentResponse {
+  orderId: string;
+  url: string;
+  expiresAt?: string;
+}
+
+export interface VippsPaymentDetails {
+  orderId: string;
+  status: 'INITIATE' | 'REGISTER' | 'RESERVE' | 'SALE' | 'CANCEL' | 'REFUND' | 'VOID';
+  amount: number;
+  capturedAmount?: number;
+  refundedAmount?: number;
+  remainingCaptureAmount?: number;
+  remainingRefundAmount?: number;
+  transactionSummary?: {
+    capturedAmount: number;
+    refundedAmount: number;
+    remainingCaptureAmount: number;
+    remainingRefundAmount: number;
+  };
+}
+
+export interface VippsCaptureRequest {
+  amount: number;
+  transactionText?: string;
+}
+
+export interface VippsRefundRequest {
+  amount: number;
+  transactionText?: string;
+}
+
+export interface VippsWebhookEvent {
+  msn: string;
+  reference: string;
+  pspReference: string;
+  name: string;
+  currency: string;
+  value: number;
+  timestamp: string;
+}
+
+export interface VippsRecurringAgreement {
+  currency: string;
+  customerPhoneNumber: string;
+  interval: {
+    unit: 'YEAR' | 'MONTH' | 'WEEK' | 'DAY';
+    count: number;
+  };
+  merchantRedirectUrl: string;
+  merchantAgreementUrl: string;
+  pricing: {
+    type: 'LEGACY' | 'VARIABLE' | 'CAMPAIGN';
+    amount: number;
+    suggestedMaxAmount?: number;
+  };
+  productName: string;
+  productDescription?: string;
+  scope?: string;
+}
+
+export interface VippsChargeRequest {
+  amount: number;
+  currency: string;
+  description: string;
+  type: 'INITIAL' | 'RECURRING' | 'MODIFICATION' | 'UNSCHEDULED';
+  transactionId: string;
+  orderId: string;
+}
+{{/if}}
