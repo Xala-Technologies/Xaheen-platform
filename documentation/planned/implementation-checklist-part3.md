@@ -68,17 +68,17 @@
 - [x] Add contract expiration and renewal handling
 - [x] Add contract storage and retrieval system
 
-### **Story 7.6: Document Security and Compliance**
-- [ ] Create `apps/cli/src/documents/security/document-security.ts`
-- [ ] Add document encryption at rest and in transit
-- [ ] Add access control and permission management
-- [ ] Add document audit logging and tracking
-- [ ] Add GDPR-compliant document retention policies
-- [ ] Add document anonymization and pseudonymization
-- [ ] Add secure document sharing and distribution
-- [ ] Add document integrity verification
-- [ ] Add backup and disaster recovery for documents
-- [ ] Add compliance reporting for document handling
+### **Story 7.6: Document Security and Compliance** ✅
+- [x] Create `apps/cli/src/documents/security/document-security.ts`
+- [x] Add document encryption at rest and in transit
+- [x] Add access control and permission management
+- [x] Add document audit logging and tracking
+- [x] Add GDPR-compliant document retention policies
+- [x] Add document anonymization and pseudonymization
+- [x] Add secure document sharing and distribution
+- [x] Add document integrity verification
+- [x] Add backup and disaster recovery for documents
+- [x] Add compliance reporting for document handling
 
 ---
 
