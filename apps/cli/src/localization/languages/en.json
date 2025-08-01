@@ -1,0 +1,158 @@
+{
+  "cli": {
+    "common": {
+      "errors": {
+        "general": "An error occurred",
+        "notFound": "Not found",
+        "invalidInput": "Invalid input",
+        "permissionDenied": "Permission denied",
+        "networkError": "Network error",
+        "timeout": "Operation timed out",
+        "fileNotFound": "File not found",
+        "directoryExists": "Directory already exists",
+        "invalidProject": "Invalid project structure",
+        "missingDependency": "Missing dependency"
+      },
+      "success": {
+        "general": "Success!",
+        "created": "Created",
+        "updated": "Updated",
+        "deleted": "Deleted",
+        "saved": "Saved",
+        "installed": "Installed",
+        "generated": "Generated",
+        "validated": "Validated",
+        "completed": "Completed"
+      },
+      "progress": {
+        "loading": "Loading...",
+        "installing": "Installing...",
+        "generating": "Generating...",
+        "validating": "Validating...",
+        "processing": "Processing...",
+        "configuring": "Configuring...",
+        "initializing": "Initializing...",
+        "building": "Building...",
+        "testing": "Testing..."
+      }
+    },
+    "commands": {
+      "init": {
+        "description": "Create a new Xaheen project",
+        "prompts": {
+          "projectName": "What should the project be called?",
+          "selectDatabase": "Select a database",
+          "selectORM": "Select an ORM",
+          "selectAuth": "Select authentication providers",
+          "selectIntegrations": "Select integrations",
+          "selectUISystem": "Select UI system",
+          "selectCompliance": "Select compliance level",
+          "selectLanguages": "Select supported languages"
+        },
+        "success": "Project {{name}} created successfully!"
+      },
+      "add": {
+        "description": "Add features to existing project",
+        "success": "Features added successfully"
+      },
+      "component": {
+        "description": "Generate a new component",
+        "prompts": {
+          "componentName": "What should the component be called?",
+          "componentType": "Select component type"
+        },
+        "success": "Component {{name}} generated",
+        "messages": {
+          "generating": "Generating component {{name}}...",
+          "writingFile": "Writing file {{path}}",
+          "addingTests": "Adding tests",
+          "completed": "Component generated successfully"
+        }
+      },
+      "page": {
+        "description": "Generate a new page",
+        "prompts": {
+          "pageName": "What should the page be called?",
+          "pageRoute": "What route should the page have?"
+        },
+        "success": "Page {{name}} generated"
+      },
+      "model": {
+        "description": "Generate a data model",
+        "prompts": {
+          "modelName": "What should the model be called?",
+          "modelType": "Select model type"
+        },
+        "success": "Model {{name}} generated"
+      }
+    },
+    "compliance": {
+      "validation": {
+        "starting": "Starting compliance validation...",
+        "checking": "Checking {{standard}} compliance...",
+        "wcag": {
+          "title": "WCAG Accessibility",
+          "violations": "Accessibility violations found",
+          "passed": "All accessibility requirements passed"
+        },
+        "gdpr": {
+          "title": "GDPR Data Protection",
+          "violations": "Data protection issues found",
+          "passed": "GDPR requirements met"
+        },
+        "nsm": {
+          "title": "NSM Security",
+          "violations": "Security issues found",
+          "passed": "NSM requirements met"
+        },
+        "complete": "Compliance validation complete",
+        "score": "Compliance score: {{score}}%",
+        "reportGenerated": "Compliance report generated"
+      }
+    },
+    "auth": {
+      "providers": {
+        "vipps": "Vipps",
+        "bankid": "BankID",
+        "oauth": "OAuth",
+        "email": "Email",
+        "passwordless": "Passwordless"
+      },
+      "messages": {
+        "configuring": "Configuring {{provider}} authentication...",
+        "generating": "Generating authentication components...",
+        "settingUp": "Setting up {{provider}}...",
+        "complete": "Authentication configured"
+      }
+    },
+    "integrations": {
+      "services": {
+        "slack": "Slack",
+        "teams": "Microsoft Teams",
+        "altinn": "Altinn",
+        "vipps": "Vipps Payment",
+        "stripe": "Stripe"
+      },
+      "messages": {
+        "adding": "Adding {{service}} integration...",
+        "configuring": "Configuring {{service}}...",
+        "testing": "Testing {{service}} connection...",
+        "complete": "Integration complete"
+      }
+    },
+    "documents": {
+      "types": {
+        "pdf": "PDF",
+        "invoice": "Invoice",
+        "report": "Report",
+        "contract": "Contract"
+      },
+      "messages": {
+        "generating": "Generating {{type}} document...",
+        "templating": "Creating template...",
+        "formatting": "Formatting document...",
+        "complete": "Document generated"
+      }
+    }
+  }
+}
