@@ -176,11 +176,11 @@
 - [x] Add proper validation for document service configurations
 - [x] Add support for Norwegian-specific document formats
 
-### **Story 3.8: Compliance Commands**
-- [ ] Add `compliance` procedure group to tRPC router
-- [ ] Add `compliance.add` subcommand for adding compliance features to existing project
-- [ ] Add `compliance.validate` subcommand for validating project compliance
-- [ ] Add `compliance.report` subcommand for generating compliance reports
-- [ ] Add support for GDPR, NSM, and WCAG compliance validation
-- [ ] Add proper error handling and remediation suggestions
-- [ ] Add compliance scoring and certification levels
+### **Story 3.8: Compliance Commands** ✅
+- [x] Add `compliance` procedure group to tRPC router
+- [x] Add `compliance.add` subcommand for adding compliance features to existing project
+- [x] Add `compliance.validate` subcommand for validating project compliance
+- [x] Add `compliance.report` subcommand for generating compliance reports
+- [x] Add support for GDPR, NSM, and WCAG compliance validation
+- [x] Add proper error handling and remediation suggestions
+- [x] Add compliance scoring and certification levels
