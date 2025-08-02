@@ -3,17 +3,12 @@
 import { useMemo, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import techOptionsData from "@/data/tech-options.json";
-import projectTypesData from "@/data/project-types.json";
-import quickPresetsData from "@/data/quick-presets.json";
-import type {
-	TechCategory,
-	TechOptions,
-	PresetTemplate,
-	StackState,
-	ProjectType,
-} from "@/lib/types/base";
 import { cn } from "@/lib/utils";
+import {
+	TECH_OPTIONS,
+	PRESET_TEMPLATES,
+	CATEGORY_ORDER,
+} from "@/lib/data";
 
 // Import modular components
 import { TechCategorySection } from "./stack-builder/tech-category-section";
@@ -25,12 +20,6 @@ import { useStackBuilder } from "./stack-builder/use-stack-builder";
 import { getBadgeColors, getCategoryDisplayName } from "./stack-builder/utils";
 import { analyzeStackCompatibility } from "./stack-builder/compatibility-analysis";
 import { generateCommand } from "./stack-builder/command-generator";
-
-const TECH_OPTIONS = techOptionsData as TechOptions;
-const PROJECT_TYPES = projectTypesData as unknown as readonly ProjectType[];
-const PRESET_TEMPLATES = quickPresetsData as unknown as readonly PresetTemplate[];
-
-const CATEGORY_ORDER = Object.keys(TECH_OPTIONS) as TechCategory[];
 
 /**
  * StackBuilder component - Refactored following SOLID principles

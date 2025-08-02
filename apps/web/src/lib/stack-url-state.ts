@@ -4,55 +4,10 @@ import {
 	parseAsStringEnum,
 	type UrlKeys,
 } from "nuqs";
-import techOptionsData from "@/data/tech-options.json";
-import type { StackState, TechOptions } from "@/lib/types/base";
+import { DEFAULT_STACK, getValidOptionIds } from "@/lib/data";
+import type { StackState } from "@/lib/types/base";
 
-const TECH_OPTIONS = techOptionsData as TechOptions;
-
-// Default stack configuration
-const DEFAULT_STACK: StackState = {
-	projectName: "",
-	webFrontend: ["next-app"],
-	nativeFrontend: [],
-	runtime: "node",
-	backend: "hono",
-	database: "postgresql",
-	orm: "prisma",
-	dbSetup: "docker",
-	auth: "better-auth",
-	packageManager: "bun",
-	uiSystem: "xala",
-	compliance: [],
-	addons: [],
-	notifications: "resend",
-	documents: "uploadthing",
-	payments: "stripe",
-	analytics: "vercel-analytics",
-	monitoring: "sentry",
-	messaging: "rabbitmq",
-	testing: "vitest",
-	devops: "github-actions",
-	search: "none",
-	caching: "none",
-	backgroundJobs: "none",
-	i18n: "next-intl",
-	cms: "none",
-	security: "none",
-	saasAdmin: "none",
-	subscriptions: "none",
-	licensing: "none",
-	rbac: "none",
-	multiTenancy: "none",
-	examples: [],
-	git: "github",
-	install: "create-t3-app",
-	api: "trpc",
-	webDeploy: "vercel"
-};
-
-const getValidIds = (category: keyof typeof TECH_OPTIONS): string[] => {
-	return TECH_OPTIONS[category]?.map((opt) => opt.id) ?? [];
-};
+// Default stack configuration is now imported from centralized data library
 
 export const stackParsers = {
 	projectName: parseAsString.withDefault(DEFAULT_STACK.projectName),
@@ -63,90 +18,90 @@ export const stackParsers = {
 		DEFAULT_STACK.nativeFrontend,
 	),
 	runtime: parseAsStringEnum<StackState["runtime"]>(
-		getValidIds("runtime"),
+		getValidOptionIds("runtime"),
 	).withDefault(DEFAULT_STACK.runtime),
 	backend: parseAsStringEnum<StackState["backend"]>(
-		getValidIds("backend"),
+		getValidOptionIds("backend"),
 	).withDefault(DEFAULT_STACK.backend),
-	api: parseAsStringEnum<StackState["api"]>(getValidIds("api")).withDefault(
+	api: parseAsStringEnum<StackState["api"]>(getValidOptionIds("api")).withDefault(
 		DEFAULT_STACK.api,
 	),
 	database: parseAsStringEnum<StackState["database"]>(
-		getValidIds("database"),
+		getValidOptionIds("database"),
 	).withDefault(DEFAULT_STACK.database),
-	orm: parseAsStringEnum<StackState["orm"]>(getValidIds("orm")).withDefault(
+	orm: parseAsStringEnum<StackState["orm"]>(getValidOptionIds("orm")).withDefault(
 		DEFAULT_STACK.orm,
 	),
 	dbSetup: parseAsStringEnum<StackState["dbSetup"]>(
-		getValidIds("dbSetup"),
+		getValidOptionIds("dbSetup"),
 	).withDefault(DEFAULT_STACK.dbSetup),
 	auth: parseAsStringEnum<StackState["auth"]>(
-		getValidIds("auth"),
+		getValidOptionIds("auth"),
 	).withDefault(DEFAULT_STACK.auth),
 	packageManager: parseAsStringEnum<StackState["packageManager"]>(
-		getValidIds("packageManager"),
+		getValidOptionIds("packageManager"),
 	).withDefault(DEFAULT_STACK.packageManager),
 	uiSystem: parseAsStringEnum<StackState["uiSystem"]>(
-		getValidIds("uiSystem"),
+		getValidOptionIds("uiSystem"),
 	).withDefault(DEFAULT_STACK.uiSystem),
 	compliance: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.compliance),
 	addons: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.addons),
 	notifications: parseAsStringEnum<StackState["notifications"]>(
-		getValidIds("notifications"),
+		getValidOptionIds("notifications"),
 	).withDefault(DEFAULT_STACK.notifications),
 	documents: parseAsStringEnum<StackState["documents"]>(
-		getValidIds("documents"),
+		getValidOptionIds("documents"),
 	).withDefault(DEFAULT_STACK.documents),
 	payments: parseAsStringEnum<StackState["payments"]>(
-		getValidIds("payments"),
+		getValidOptionIds("payments"),
 	).withDefault(DEFAULT_STACK.payments),
 	analytics: parseAsStringEnum<StackState["analytics"]>(
-		getValidIds("analytics"),
+		getValidOptionIds("analytics"),
 	).withDefault(DEFAULT_STACK.analytics),
 	monitoring: parseAsStringEnum<StackState["monitoring"]>(
-		getValidIds("monitoring"),
+		getValidOptionIds("monitoring"),
 	).withDefault(DEFAULT_STACK.monitoring),
 	messaging: parseAsStringEnum<StackState["messaging"]>(
-		getValidIds("messaging"),
+		getValidOptionIds("messaging"),
 	).withDefault(DEFAULT_STACK.messaging),
 	testing: parseAsStringEnum<StackState["testing"]>(
-		getValidIds("testing"),
+		getValidOptionIds("testing"),
 	).withDefault(DEFAULT_STACK.testing),
 	devops: parseAsStringEnum<StackState["devops"]>(
-		getValidIds("devops"),
+		getValidOptionIds("devops"),
 	).withDefault(DEFAULT_STACK.devops),
 	search: parseAsStringEnum<StackState["search"]>(
-		getValidIds("search"),
+		getValidOptionIds("search"),
 	).withDefault(DEFAULT_STACK.search),
 	caching: parseAsStringEnum<StackState["caching"]>(
-		getValidIds("caching"),
+		getValidOptionIds("caching"),
 	).withDefault(DEFAULT_STACK.caching),
 	backgroundJobs: parseAsStringEnum<StackState["backgroundJobs"]>(
-		getValidIds("backgroundJobs"),
+		getValidOptionIds("backgroundJobs"),
 	).withDefault(DEFAULT_STACK.backgroundJobs),
 	i18n: parseAsStringEnum<StackState["i18n"]>(
-		getValidIds("i18n"),
+		getValidOptionIds("i18n"),
 	).withDefault(DEFAULT_STACK.i18n),
 	cms: parseAsStringEnum<StackState["cms"]>(
-		getValidIds("cms"),
+		getValidOptionIds("cms"),
 	).withDefault(DEFAULT_STACK.cms),
 	security: parseAsStringEnum<StackState["security"]>(
-		getValidIds("security"),
+		getValidOptionIds("security"),
 	).withDefault(DEFAULT_STACK.security),
 	saasAdmin: parseAsStringEnum<StackState["saasAdmin"]>(
-		getValidIds("saasAdmin"),
+		getValidOptionIds("saasAdmin"),
 	).withDefault(DEFAULT_STACK.saasAdmin),
 	subscriptions: parseAsStringEnum<StackState["subscriptions"]>(
-		getValidIds("subscriptions"),
+		getValidOptionIds("subscriptions"),
 	).withDefault(DEFAULT_STACK.subscriptions),
 	licensing: parseAsStringEnum<StackState["licensing"]>(
-		getValidIds("licensing"),
+		getValidOptionIds("licensing"),
 	).withDefault(DEFAULT_STACK.licensing),
 	rbac: parseAsStringEnum<StackState["rbac"]>(
-		getValidIds("rbac"),
+		getValidOptionIds("rbac"),
 	).withDefault(DEFAULT_STACK.rbac),
 	multiTenancy: parseAsStringEnum<StackState["multiTenancy"]>(
-		getValidIds("multiTenancy"),
+		getValidOptionIds("multiTenancy"),
 	).withDefault(DEFAULT_STACK.multiTenancy),
 	examples: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.examples),
 	git: parseAsStringEnum<StackState["git"]>(["true", "false"]).withDefault(
@@ -157,7 +112,7 @@ export const stackParsers = {
 		"false",
 	]).withDefault(DEFAULT_STACK.install),
 	webDeploy: parseAsStringEnum<StackState["webDeploy"]>(
-		getValidIds("webDeploy"),
+		getValidOptionIds("webDeploy"),
 	).withDefault(DEFAULT_STACK.webDeploy),
 };
 

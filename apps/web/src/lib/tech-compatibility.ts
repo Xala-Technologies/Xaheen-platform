@@ -1,10 +1,5 @@
-import techOptionsData from "@/data/tech-options.json";
-import projectTypesData from "@/data/project-types.json";
-import techCompatibilityData from "@/data/tech-compatibility.json";
-import type { StackState, TechOptions, ProjectType, TechCategory, ProjectTypeId } from "@/lib/types/base";
-
-const TECH_OPTIONS = techOptionsData as TechOptions;
-const PROJECT_TYPES = projectTypesData as unknown as readonly ProjectType[];
+import { TECH_OPTIONS, PROJECT_TYPES, TECH_COMPATIBILITY, getCategoryOptions } from "@/lib/data";
+import type { StackState, TechCategory, ProjectTypeId, ProjectType } from "@/lib/types/base";
 
 /**
  * Base compatibility interface
@@ -75,10 +70,7 @@ export interface TechCompatibility {
 	runtime: Record<string, RuntimeCompatibility>;
 }
 
-/**
- * Comprehensive technology compatibility matrix loaded from JSON
- */
-export const TECH_COMPATIBILITY: TechCompatibility = techCompatibilityData as TechCompatibility;
+// TECH_COMPATIBILITY is now imported from the centralized data library
 
 /**
  * Type guards for compatibility interfaces

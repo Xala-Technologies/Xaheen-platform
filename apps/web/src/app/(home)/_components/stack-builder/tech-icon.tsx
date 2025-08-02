@@ -22,7 +22,12 @@ export const TechIcon: React.FC<TechIconProps> = ({
 	if (!icon) return null;
 
 	const isExternalIcon = icon.startsWith("http");
-	const iconSrc = isExternalIcon ? icon : `/icon/${icon}.svg`;
+	// Handle icon path - if it already starts with /, use as-is, otherwise add /icon/ prefix
+	const iconSrc = isExternalIcon 
+		? icon 
+		: icon.startsWith("/") 
+			? `/icon${icon}` 
+			: `/icon/${icon}.svg`;
 
 	return (
 		<div className={cn("relative flex-shrink-0", className)}>

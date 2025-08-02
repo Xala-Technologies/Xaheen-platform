@@ -1,5 +1,5 @@
 import type { StackState } from "@/lib/types/index";
-import { DEFAULT_STACK, isStackDefault } from "@/lib";
+import { DEFAULT_STACK, isStackDefault } from "@/lib/data";
 
 /**
  * Generates CLI command string from stack state

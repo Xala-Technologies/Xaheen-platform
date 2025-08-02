@@ -1,17 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryStates } from "nuqs";
 import { toast } from "sonner";
 import {
 	DEFAULT_STACK,
-	isStackDefault,
 	PRESET_TEMPLATES,
 	TECH_OPTIONS,
-} from "@/lib";
+} from "@/lib/data";
 import {
-	getProjectTypeDefaults,
 	isOptionCompatible as isCompatible,
 } from "@/lib/tech-compatibility";
-import type { StackState, ProjectType, TechCategory } from "@/lib/types/index";
+import type { StackState, TechCategory } from "@/lib/types/base";
 import { stackParsers, stackQueryStatesOptions } from "@/lib/stack-url-state";
 
 /**
@@ -90,7 +88,7 @@ export const useStackBuilder = () => {
 		}
 	};
 
-	const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string): void => {
+	const handleTechSelect = (category: string, techId: string): void => {
 		const categoryKey = category as keyof StackState;
 		
 		if (categoryKey === "addons" || categoryKey === "examples" || 

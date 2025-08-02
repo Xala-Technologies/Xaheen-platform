@@ -57,60 +57,56 @@
         "sort_order": 14
       },
       {
-        "id": "examples",
+        "id": "git",
         "sort_order": 15
       },
       {
-        "id": "git",
+        "id": "notifications",
         "sort_order": 16
       },
       {
-        "id": "notifications",
+        "id": "documents",
         "sort_order": 17
       },
       {
-        "id": "documents",
+        "id": "payments",
         "sort_order": 18
       },
       {
-        "id": "payments",
+        "id": "analytics",
         "sort_order": 19
       },
       {
-        "id": "analytics",
+        "id": "monitoring",
         "sort_order": 20
       },
       {
-        "id": "monitoring",
+        "id": "messaging",
         "sort_order": 21
       },
       {
-        "id": "messaging",
+        "id": "install",
         "sort_order": 22
       },
       {
-        "id": "install",
+        "id": "testing",
         "sort_order": 23
       },
       {
-        "id": "testing",
+        "id": "devops",
         "sort_order": 24
       },
       {
-        "id": "devops",
+        "id": "search",
         "sort_order": 25
       },
       {
-        "id": "search",
+        "id": "caching",
         "sort_order": 26
       },
       {
-        "id": "caching",
-        "sort_order": 27
-      },
-      {
         "id": "backgroundJobs",
-        "sort_order": 28
+        "sort_order": 27
       },
       {
         "id": "i18n",
@@ -143,6 +139,10 @@
       {
         "id": "multiTenancy",
         "sort_order": 36
+      },
+      {
+        "id": "examples",
+        "sort_order": 37
       }
     ]
-  }
+}
