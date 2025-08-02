@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- shadcn/ui logo inspired design -->
+  <rect x="2" y="2" width="20" height="20" rx="3" fill="#000000"/>
+  
+  <!-- Component blocks -->
+  <rect x="4" y="4" width="6" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="4" y="7" width="8" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="4" y="10" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  
+  <!-- UI elements -->
+  <circle cx="16" cy="6" r="2" fill="#FFFFFF"/>
+  <rect x="14" y="10" width="6" height="8" rx="1" fill="#FFFFFF"/>
+  
+  <!-- Design system dots -->
+  <circle cx="6" cy="15" r="1" fill="#FFFFFF"/>
+  <circle cx="9" cy="15" r="1" fill="#FFFFFF"/>
+  <circle cx="6" cy="18" r="1" fill="#FFFFFF"/>
+  <circle cx="9" cy="18" r="1" fill="#FFFFFF"/>
+</svg>

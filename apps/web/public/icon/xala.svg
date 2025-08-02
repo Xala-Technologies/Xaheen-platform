@@ -1,0 +1,20 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="xalaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- X shape representing Xala -->
+  <path d="M4 4L20 20M20 4L4 20" stroke="url(#xalaGradient)" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Central diamond for UI System -->
+  <rect x="10" y="10" width="4" height="4" rx="1" fill="url(#xalaGradient)" transform="rotate(45 12 12)"/>
+  
+  <!-- Corner dots for v5 -->
+  <circle cx="6" cy="6" r="1.5" fill="url(#xalaGradient)"/>
+  <circle cx="18" cy="6" r="1.5" fill="url(#xalaGradient)"/>
+  <circle cx="6" cy="18" r="1.5" fill="url(#xalaGradient)"/>
+  <circle cx="18" cy="18" r="1.5" fill="url(#xalaGradient)"/>
+</svg>

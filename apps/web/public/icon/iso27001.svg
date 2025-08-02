@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- ISO shield -->
+  <path d="M12 2L20 6V12C20 17 12 22 12 22C12 22 4 17 4 12V6L12 2Z" 
+        fill="#8B5CF6" stroke="#FFFFFF" stroke-width="1"/>
+  
+  <!-- Security lock -->
+  <rect x="10" y="11" width="4" height="4" rx="0.5" fill="#FFFFFF"/>
+  <path d="M10.5 11V9.5C10.5 8.7 11.2 8 12 8C12.8 8 13.5 8.7 13.5 9.5V11" 
+        stroke="#FFFFFF" stroke-width="1" fill="none"/>
+  
+  <!-- ISO 27001 text -->
+  <text x="12" y="18" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="3" font-weight="bold" fill="#FFFFFF">ISO</text>
+  <text x="12" y="20.5" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="2.5" fill="#FFFFFF">27001</text>
+</svg>

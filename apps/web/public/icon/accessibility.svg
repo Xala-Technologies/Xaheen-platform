@@ -1,0 +1,18 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Accessibility person icon -->
+  <circle cx="12" cy="6" r="2" fill="#22C55E"/>
+  
+  <!-- Body -->
+  <path d="M12 10C10 10 8 11 8 13V20H10V16H14V20H16V13C16 11 14 10 12 10Z" fill="#22C55E"/>
+  
+  <!-- Arms spread wide for accessibility -->
+  <path d="M6 12L10 11L14 11L18 12" stroke="#22C55E" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- WCAG AAA indicator circles -->
+  <circle cx="4" cy="4" r="1" fill="#22C55E" opacity="0.8"/>
+  <circle cx="20" cy="4" r="1" fill="#22C55E" opacity="0.8"/>
+  <circle cx="4" cy="20" r="1" fill="#22C55E" opacity="0.8"/>
+  
+  <!-- AAA text indicator -->
+  <text x="18" y="22" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="#22C55E">AAA</text>
+</svg>

@@ -1,0 +1,18 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- BankID Norwegian colors and design -->
+  <rect x="2" y="4" width="20" height="16" rx="2" fill="#E31E24" stroke="#FFFFFF" stroke-width="1"/>
+  
+  <!-- Norwegian flag cross -->
+  <rect x="0" y="10" width="24" height="4" fill="#FFFFFF"/>
+  <rect x="6" y="0" width="4" height="24" fill="#FFFFFF"/>
+  <rect x="0" y="11" width="24" height="2" fill="#002868"/>
+  <rect x="7" y="0" width="2" height="24" fill="#002868"/>
+  
+  <!-- Bank/Security symbol -->
+  <rect x="10" y="8" width="4" height="8" rx="0.5" fill="#002868"/>
+  <path d="M12 6L16 8H8L12 6Z" fill="#002868"/>
+  
+  <!-- ID text -->
+  <text x="12" y="19" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="2.5" font-weight="bold" fill="#FFFFFF">ID</text>
+</svg>
