@@ -2,14 +2,6 @@
 
 A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations
 
-## Sponsors
-
-<p align="center">
-<img src="https://sponsors.amanv.dev/sponsors.png" alt="Sponsors">
-</p>
-
-![demo](https://cdn.jsdelivr.net/gh/amanvarshney01/xaheen/demo.gif)
-
 ## Quick Start
 
 ```bash
@@ -62,17 +54,3 @@ bun dev:cli
 # Start website development
 bun dev:web
 ```
-
-## Want to contribute?
-
-Just fork the repository and submit a pull request!
-
-## Star History
-
-<a href="https://www.star-history.com/#AmanVarshney01/xaheen&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=AmanVarshney01/xaheen&type=Date" />
- </picture>
-</a>
