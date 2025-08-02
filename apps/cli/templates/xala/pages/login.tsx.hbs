@@ -29,17 +29,27 @@ import { useAuth } from '{{relativePath}}/lib/auth';
 {{/if}}
 
 /**
- * {{componentName}} - Professional Login Page
+ * Login Page Template - Xala UI System Compliant
  * Generated with Xaheen CLI
  * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
  * Features:
- * - Responsive design with semantic components
- * - WCAG 2.2 AAA accessibility compliant
- * - Norwegian localization support
- * - Enhanced form validation
  * - Professional authentication patterns
+ * - Type-safe form handling
  * - SSR-compatible architecture
- * {{#if includeAuth}}
+ */ {{#if includeAuth}}
  * - Authentication integration
  * {{/if}}
  * {{#if includeValidation}}

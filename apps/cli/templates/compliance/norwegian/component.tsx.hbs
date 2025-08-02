@@ -53,13 +53,28 @@ interface {{capitalize componentName}}Props {
 {{/if}}
 
 /**
- * {{capitalize componentName}} - Norwegian Compliant Component
+ * {{capitalize componentName}} - Norwegian Compliance Component Template
+ * Generated with Xaheen CLI
  * 
- * This component follows Norwegian compliance standards:
- * - GDPR (Personvernforordningen)
- * - NSM Sikkerhetsveiledning
- * - WCAG 2.2 AAA Tilgjengelighet
- * - Forvaltningsloven § 11 (Documentation requirements)
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Norwegian data protection compliance (GDPR + NSM)
+ * - WCAG 2.2 AAA accessibility standards
+ * - Professional audit logging integration
+ * - Type-safe compliance indicators
+ * - SSR-compatible architecture
  * 
  * @compliance
  * - Data Classification: {{dataClassification}}

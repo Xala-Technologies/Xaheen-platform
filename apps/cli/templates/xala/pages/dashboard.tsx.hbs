@@ -30,16 +30,27 @@ import { useTranslation } from '{{relativePath}}/lib/i18n';
 {{/if}}
 
 /**
- * {{componentName}} - Professional Dashboard Page
+ * {{componentName}} - Professional Dashboard Page Template - Xala UI System Compliant
  * Generated with Xaheen CLI
  * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
  * Features:
- * - Responsive dashboard layout with semantic components
- * - WCAG 2.2 AAA accessibility compliant
- * - Norwegian localization support
- * - Professional data visualization
+ * - Professional dashboard layout patterns
+ * - Type-safe data handling
  * - SSR-compatible architecture
- * {{#if includeCharts}}
+ */ {{#if includeCharts}}
  * - Chart integration ready
  * {{/if}}
  * {{#if includeRealtime}}
