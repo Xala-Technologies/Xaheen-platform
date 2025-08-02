@@ -12,7 +12,7 @@
  * ✅ SOLID principles and component composition
  * ✅ Maximum 200 lines per file, 20 lines per function
  *
- * GENERATE: Business logic pages that USE Xala UI System v5 components
+ * GENERATE: Business logic pages that USE Xala UI System components
  * NOT: UI primitive components or wrappers around Xala components
  */
 

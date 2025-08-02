@@ -528,7 +528,7 @@ export const TECH_OPTIONS: Record<
 	uiSystem: [
 		{
 			id: "xala",
-			name: "Xala UI System v5",
+			name: "Xala UI System",
 			description: "Enterprise-grade design system with Norwegian compliance",
 			icon: "/icon/xala.svg",
 			color: "from-blue-600 to-purple-600",

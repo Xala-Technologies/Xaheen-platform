@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide documents the migration process from shadcn/ui components to Xala UI System v5.0.0.
+This guide documents the migration process from shadcn/ui components to Xala UI System.0.0.
 
 ## Migration Strategy
 
