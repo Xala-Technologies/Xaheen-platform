@@ -1,3 +1,21 @@
+/**
+ * MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ *
+ * GENERATE: Business logic pages that USE Xala UI System v5 components
+ * NOT: UI primitive components or wrappers around Xala components
+ */
+
 import path from "node:path";
 import fs from "fs-extra";
 import { consola } from "consola";
@@ -434,6 +452,7 @@ export const ${pageName} = (): JSX.Element => {
 
 /**
  * Generate page imports based on requirements
+ * COMPLIANCE: Enforces mandatory localization and Xala UI System usage
  */
 function generatePageImports(options: PageGenerationOptions): string[] {
 	const imports: string[] = ["import React from 'react';"];
@@ -441,6 +460,21 @@ function generatePageImports(options: PageGenerationOptions): string[] {
 	// Framework-specific imports
 	if (options.framework === "next" && options.hasAppRouter) {
 		imports.push("import type { Metadata } from 'next';");
+	}
+
+	// MANDATORY: Always include next-intl for localization (no hardcoded text allowed)
+	if (options.framework === "next") {
+		imports.push("import { useTranslations } from 'next-intl';");
+	} else if (options.framework === "nuxt") {
+		imports.push("import { useI18n } from 'vue-i18n';");
+	} else {
+		imports.push("import { useTranslation } from 'react-i18next';");
+	}
+
+	// MANDATORY: Always include Xala UI System components (no raw HTML allowed)
+	if (options.ui === "xala") {
+		// Add page-specific Xala UI System imports
+		imports.push("import { Container, Stack, Text, Heading, Card, Button, Breadcrumbs } from '@xala-technologies/ui-system';");
 	}
 
 	// Auth imports
@@ -462,30 +496,25 @@ function generatePageImports(options: PageGenerationOptions): string[] {
 		}
 	}
 
-	// Localization imports
-	if (options.locales.length > 1) {
-		if (options.framework === "next") {
-			imports.push("import { useTranslations } from 'next-intl';");
-		} else if (options.framework === "nuxt") {
-			imports.push("import { useI18n } from 'vue-i18n';");
-		} else {
-			imports.push("import { useTranslation } from 'react-i18next';");
-		}
+	// Add compliance-specific imports
+	const complianceLevels = options.compliance ? options.compliance.split(',').map(c => c.trim()) : [];
+	
+	if (complianceLevels.includes('gdpr')) {
+		imports.push("import { useGDPRConsent } from '@/hooks/useGDPRConsent';");
 	}
-
-	// UI system imports
-	if (options.ui === "xala") {
-		imports.push("import '@xala-technologies/ui-system/styles';");
+	
+	if (complianceLevels.includes('wcag-aaa')) {
+		imports.push("import { useFocusManagement } from '@/hooks/useFocusManagement';");
+		imports.push("import { SkipLink } from '@xala-technologies/ui-system';");
 	}
-
-	// Compliance imports
-	if (options.compliance === "norwegian") {
-		imports.push("import { useCompliance } from '@xaheen/compliance';");
+	
+	if (complianceLevels.includes('iso27001')) {
+		imports.push("import { useSecurityContext } from '@/hooks/useSecurityContext';");
 	}
-
-	// Accessibility imports
-	if (options.compliance !== "none") {
-		imports.push("import { SkipLink } from '@/components/accessibility';");
+	
+	if (complianceLevels.includes('norwegian')) {
+		imports.push("import { useBankID } from '@/hooks/useBankID';");
+		imports.push("import { useAltinn } from '@/hooks/useAltinn';");
 	}
 
 	return imports;
@@ -561,32 +590,55 @@ function generateLayoutWrapper(options: PageGenerationOptions): { open: string; 
 
 /**
  * Generate page content body
+ * COMPLIANCE: Uses ONLY Xala UI System components, NO raw HTML elements
  */
 function generatePageContentBody(options: PageGenerationOptions): string {
-	const { ui, compliance, seo, locales } = options;
-	
-	const containerClass = ui === "xala" 
-		? "container container--standard" 
-		: "container mx-auto px-4 py-8";
-	
-	const headingClass = ui === "xala"
-		? "heading heading--xl"
-		: "text-4xl font-bold mb-6";
-		
-	const textClass = ui === "xala"
-		? "text text--body"
-		: "text-gray-600";
+	const { pageName, fileName } = options;
 
-	const mainContent = `<main id="main-content" className="${containerClass}"${compliance !== "none" ? ' role="main"' : ''}>
-        <h1 className="${headingClass}">
-          ${locales.length > 1 ? '{t("page.title")}' : seo.title}
-        </h1>
-        <p className="${textClass}">
-          ${locales.length > 1 ? '{t("page.description")}' : seo.description}
-        </p>
-        ${compliance === "norwegian" ? '\n        {/* Norwegian compliance features */}' : ""}
-        ${compliance === "gdpr" ? '\n        {/* GDPR compliance features */}' : ""}
-      </main>`;
+	// COMPLIANCE: Use ONLY Xala UI System components, NO raw HTML
+	const mainContent = `
+  const t = useTranslations("${fileName}");
+
+  return (
+    <Container
+      variant="content"
+      maxWidth="7xl"
+      padding="8"
+      role="main"
+      aria-label={t("main.ariaLabel")}
+    >
+      <Stack direction="vertical" spacing="6">
+        <Heading level={1} variant="page">
+          {t("title")}
+        </Heading>
+        
+        <Text variant="subtitle" color="secondary">
+          {t("description")}
+        </Text>
+        
+        <Card variant="elevated" padding="6">
+          <Stack direction="vertical" spacing="4">
+            <Heading level={2} variant="section">
+              {t("content.title")}
+            </Heading>
+            
+            <Text variant="body">
+              {t("content.description")}
+            </Text>
+            
+            <Stack direction="horizontal" spacing="3">
+              <Button variant="primary">
+                {t("actions.primary")}
+              </Button>
+              <Button variant="secondary">
+                {t("actions.secondary")}
+              </Button>
+            </Stack>
+          </Stack>
+        </Card>
+      </Stack>
+    </Container>
+  );`;
 
 	return mainContent;
 }
@@ -778,32 +830,36 @@ function getLayoutClasses(layout: PageLayout): string {
 
 /**
  * Generate layout structure based on type
+ * COMPLIANCE: Uses ONLY Xala UI System layout components, NO raw HTML elements
  */
 function generateLayoutStructure(layout: PageLayout, ui: UISystem, framework: "react" | "vue"): string {
 	const slot = framework === "vue" ? "<slot />" : "{children}";
 	
+	// COMPLIANCE: Use ONLY Xala UI System components, NO raw HTML
 	switch (layout) {
 		case "dashboard":
 			return `
-      <aside className="${ui === "xala" ? "layout__sidebar" : "w-64 bg-white shadow-sm"}">
-        ${framework === "vue" ? "<!-- Sidebar navigation -->" : "{/* Sidebar navigation */}"}
-      </aside>
-      <div className="${ui === "xala" ? "layout__content" : "flex-1 flex flex-col"}">
-        <header className="${ui === "xala" ? "layout__header" : "bg-white shadow-sm h-16"}">
-          ${framework === "vue" ? "<!-- Header content -->" : "{/* Header content */}"}
-        </header>
-        <main className="${ui === "xala" ? "layout__main" : "flex-1 p-6"}">
-          ${slot}
-        </main>
-      </div>`;
+      <Stack direction="horizontal" spacing="0" minHeight="screen">
+        <Sidebar variant="primary" width="64">
+          <Navigation items={[]} variant="vertical" />
+        </Sidebar>
+        <Stack direction="vertical" spacing="0" flex="1">
+          <Header variant="primary" sticky>
+            <Navigation items={[]} variant="horizontal" />
+          </Header>
+          <Container variant="content" padding="6" flex="1" role="main">
+            ${slot}
+          </Container>
+        </Stack>
+      </Stack>`;
 			
 		case "auth":
 			return `
-      <div className="${ui === "xala" ? "auth__container" : "w-full max-w-md"}">
-        <div className="${ui === "xala" ? "auth__card" : "bg-white rounded-lg shadow-xl p-8"}">
+      <Container variant="centered" minHeight="screen">
+        <Card variant="elevated" maxWidth="md" padding="8">
           ${slot}
-        </div>
-      </div>`;
+        </Card>
+      </Container>`;
 			
 		case "marketing":
 			return `
