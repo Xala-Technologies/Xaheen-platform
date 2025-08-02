@@ -25,6 +25,16 @@ export const DEFAULT_CONFIG: ProjectConfig = {
 	runtime: "bun",
 	api: "trpc",
 	webDeploy: "none",
+	ui: "default",
+	compliance: "none",
+	locales: [],
+	primaryLocale: "en",
+	authProviders: [],
+	integrations: [],
+	documents: [],
+	mfa: false,
+	encryption: false,
+	audit: false
 };
 
 export const dependencyVersionMap = {
