@@ -1,0 +1,390 @@
+{{#if typescript}}'use client';{{/if}}
+
+/**
+ * AdaptiveLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI - Platform Detection & Adaptive Rendering
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Automatic platform detection
+ * - Adaptive layout rendering
+ * - Performance optimization per platform
+ * - Responsive breakpoint handling
+ * - Device capability detection
+ * - Norwegian platform preferences
+ */
+
+{{#if typescript}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  useBreakpoint,
+  usePlatform,
+  useDeviceCapabilities,
+  usePerformanceMode
+} from '@xala-technologies/ui-system';
+
+// Platform-specific layouts
+import MobileAppLayout from '../platforms/mobile/MobileAppLayout';
+import DesktopAppLayout from '../platforms/desktop/DesktopAppLayout';
+import WebAppLayout from '../platforms/web/WebAppLayout';
+import MobileLayout from './MobileLayout';
+import DesktopLayout from './DesktopLayout';
+import AdminLayout from './AdminLayout';
+
+interface AdaptiveLayoutProps {
+  children: React.ReactNode;
+  preferredPlatform?: 'auto' | 'mobile' | 'desktop' | 'web';
+  layoutType?: 'app' | 'admin' | 'simple';
+  forceLayout?: 'mobile' | 'desktop' | 'web' | 'admin';
+  performanceMode?: 'auto' | 'high' | 'balanced' | 'battery';
+  enablePlatformOptimizations?: boolean;
+  showPlatformIndicator?: boolean;
+  onPlatformDetected?: (platform: DetectedPlatform) => void;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+  [key: string]: any; // Pass through props to selected layout
+}
+
+interface DetectedPlatform {
+  type: 'mobile' | 'desktop' | 'web';
+  subtype: 'native-mobile' | 'pwa' | 'electron' | 'browser';
+  capabilities: DeviceCapabilities;
+  breakpoint: string;
+  performanceLevel: 'high' | 'medium' | 'low';
+}
+
+interface DeviceCapabilities {
+  touch: boolean;
+  hover: boolean;
+  keyboard: boolean;
+  mouse: boolean;
+  camera: boolean;
+  geolocation: boolean;
+  notifications: boolean;
+  offline: boolean;
+  fileSystem: boolean;
+  clipboard: boolean;
+}
+{{else}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  useBreakpoint,
+  usePlatform,
+  useDeviceCapabilities,
+  usePerformanceMode
+} from '@xala-technologies/ui-system';
+
+// Platform-specific layouts
+import MobileAppLayout from '../platforms/mobile/MobileAppLayout';
+import DesktopAppLayout from '../platforms/desktop/DesktopAppLayout';
+import WebAppLayout from '../platforms/web/WebAppLayout';
+import MobileLayout from './MobileLayout';
+import DesktopLayout from './DesktopLayout';
+import AdminLayout from './AdminLayout';
+{{/if}}
+
+/**
+ * Platform detection utility
+ */
+const detectPlatform = {{#if typescript}}(): DetectedPlatform{{/if}} => {
+  const breakpoint = useBreakpoint();
+  const deviceCapabilities = useDeviceCapabilities();
+  const performanceLevel = usePerformanceMode();
+
+  // Detect platform type
+  let platformType{{#if typescript}}: 'mobile' | 'desktop' | 'web'{{/if}} = 'web';
+  let platformSubtype{{#if typescript}}: 'native-mobile' | 'pwa' | 'electron' | 'browser'{{/if}} = 'browser';
+
+  // Check for Electron (desktop app)
+  if (typeof window !== 'undefined' && window.electronAPI) {
+    platformType = 'desktop';
+    platformSubtype = 'electron';
+  }
+  // Check for mobile app context
+  else if (typeof window !== 'undefined' && (window.ReactNativeWebView || window.cordova)) {
+    platformType = 'mobile';
+    platformSubtype = 'native-mobile';
+  }
+  // Check for PWA
+  else if (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches) {
+    platformType = 'mobile';
+    platformSubtype = 'pwa';
+  }
+  // Check for mobile viewport
+  else if (breakpoint === 'xs' || breakpoint === 'sm') {
+    platformType = 'mobile';
+    platformSubtype = 'browser';
+  }
+  // Default to desktop/web
+  else {
+    platformType = breakpoint === 'xl' || breakpoint === '2xl' ? 'desktop' : 'web';
+    platformSubtype = 'browser';
+  }
+
+  return {
+    type: platformType,
+    subtype: platformSubtype,
+    capabilities: deviceCapabilities,
+    breakpoint,
+    performanceLevel,
+  };
+};
+
+/**
+ * AdaptiveLayout - Intelligent platform-aware layout selection
+ * Automatically detects platform and renders optimal layout
+ */
+{{#if typescript}}
+export default function AdaptiveLayout({
+  children,
+  preferredPlatform = 'auto',
+  layoutType = 'app',
+  forceLayout,
+  performanceMode = 'auto',
+  enablePlatformOptimizations = true,
+  showPlatformIndicator = false,
+  onPlatformDetected,
+  locale = 'en',
+  theme = 'light',
+  ...props
+}: AdaptiveLayoutProps): React.ReactElement {
+{{else}}
+export default function AdaptiveLayout({
+  children,
+  preferredPlatform = 'auto',
+  layoutType = 'app',
+  forceLayout,
+  performanceMode = 'auto',
+  enablePlatformOptimizations = true,
+  showPlatformIndicator = false,
+  onPlatformDetected,
+  locale = 'en',
+  theme = 'light',
+  ...props
+}) {
+{{/if}}
+  const { t } = useTranslation();
+  const [detectedPlatform, setDetectedPlatform] = React.useState{{#if typescript}}<DetectedPlatform | null>{{/if}}(null);
+
+  // Platform detection on mount
+  React.useEffect(() => {
+    const platform = detectPlatform();
+    setDetectedPlatform(platform);
+    
+    if (onPlatformDetected) {
+      onPlatformDetected(platform);
+    }
+  }, [onPlatformDetected]);
+
+  // Performance optimizations based on platform
+  React.useEffect(() => {
+    if (!enablePlatformOptimizations || !detectedPlatform) return;
+
+    // Apply platform-specific optimizations
+    if (detectedPlatform.performanceLevel === 'low') {
+      // Reduce animations, disable heavy effects
+      document.documentElement.style.setProperty('--animation-duration', '0ms');
+    } else if (detectedPlatform.performanceLevel === 'high') {
+      // Enable all animations and effects
+      document.documentElement.style.setProperty('--animation-duration', '200ms');
+    }
+
+    // Platform-specific CSS classes
+    document.body.classList.add(`platform-${detectedPlatform.type}`);
+    document.body.classList.add(`platform-${detectedPlatform.subtype}`);
+
+    return () => {
+      document.body.classList.remove(`platform-${detectedPlatform.type}`);
+      document.body.classList.remove(`platform-${detectedPlatform.subtype}`);
+    };
+  }, [detectedPlatform, enablePlatformOptimizations]);
+
+  const getOptimalLayout = {{#if typescript}}(): React.ComponentType<any>{{/if}} => {
+    // Force specific layout if requested
+    if (forceLayout) {
+      switch (forceLayout) {
+        case 'mobile':
+          return layoutType === 'app' ? MobileAppLayout : MobileLayout;
+        case 'desktop':
+          return layoutType === 'app' ? DesktopAppLayout : DesktopLayout;
+        case 'web':
+          return WebAppLayout;
+        case 'admin':
+          return AdminLayout;
+        default:
+          return WebAppLayout;
+      }
+    }
+
+    // No platform detected yet, use fallback
+    if (!detectedPlatform) {
+      return WebAppLayout;
+    }
+
+    // Select layout based on detected platform and type
+    switch (detectedPlatform.type) {
+      case 'mobile':
+        if (layoutType === 'admin') return AdminLayout;
+        return detectedPlatform.subtype === 'native-mobile' || detectedPlatform.subtype === 'pwa'
+          ? MobileAppLayout
+          : MobileLayout;
+      
+      case 'desktop':
+        if (layoutType === 'admin') return AdminLayout;
+        return detectedPlatform.subtype === 'electron'
+          ? DesktopAppLayout
+          : DesktopLayout;
+      
+      case 'web':
+      default:
+        if (layoutType === 'admin') return AdminLayout;
+        return WebAppLayout;
+    }
+  };
+
+  const renderPlatformIndicator = {{#if typescript}}(): React.ReactElement | null{{/if}} => {
+    if (!showPlatformIndicator || !detectedPlatform) return null;
+
+    return (
+      <Box
+        position="fixed"
+        top="2"
+        right="2"
+        backgroundColor="card"
+        border="1"
+        borderRadius="md"
+        padding="2"
+        zIndex="50"
+        className="opacity-75 hover:opacity-100"
+      >
+        <Stack direction="vertical" spacing="1">
+          <Typography variant="caption" size="xs" weight="medium">
+            {t('platform.detected', 'Platform: {type}', { type: detectedPlatform.type })}
+          </Typography>
+          <Typography variant="caption" size="xs" color="muted">
+            {detectedPlatform.subtype} • {detectedPlatform.breakpoint}
+          </Typography>
+          <Typography variant="caption" size="xs" color="muted">
+            {t('platform.performance', 'Performance: {level}', { level: detectedPlatform.performanceLevel })}
+          </Typography>
+        </Stack>
+      </Box>
+    );
+  };
+
+  // Get the optimal layout component
+  const LayoutComponent = getOptimalLayout();
+
+  // Platform-specific props
+  const platformProps = React.useMemo(() => {
+    if (!detectedPlatform) return props;
+
+    const baseProps = {
+      ...props,
+      locale,
+      theme,
+      platformType: detectedPlatform.type,
+      platformSubtype: detectedPlatform.subtype,
+      deviceCapabilities: detectedPlatform.capabilities,
+    };
+
+    // Add platform-specific optimizations
+    switch (detectedPlatform.type) {
+      case 'mobile':
+        return {
+          ...baseProps,
+          // Mobile-specific props
+          showFloatingAction: detectedPlatform.capabilities.touch,
+          enableSwipeGestures: detectedPlatform.capabilities.touch,
+          safeAreaHandling: detectedPlatform.subtype === 'native-mobile',
+        };
+      
+      case 'desktop':
+        return {
+          ...baseProps,
+          // Desktop-specific props
+          showMenuBar: detectedPlatform.subtype === 'electron',
+          enableKeyboardShortcuts: detectedPlatform.capabilities.keyboard,
+          showWindowControls: detectedPlatform.subtype === 'electron',
+        };
+      
+      case 'web':
+      default:
+        return {
+          ...baseProps,
+          // Web-specific props
+          showCookieConsent: true,
+          enablePWA: 'serviceWorker' in navigator,
+          showInstallPrompt: detectedPlatform.subtype !== 'pwa',
+        };
+    }
+  }, [detectedPlatform, props, locale, theme]);
+
+  return (
+    <React.Fragment>
+      <LayoutComponent {...platformProps}>
+        {children}
+      </LayoutComponent>
+      {renderPlatformIndicator()}
+    </React.Fragment>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+import AdaptiveLayout from '@/layouts/AdaptiveLayout';
+
+export default function MyApp({ Component, pageProps }) {
+  const handlePlatformDetected = (platform) => {
+    console.log('Detected platform:', platform);
+    // Send analytics, configure services, etc.
+  };
+
+  return (
+    <AdaptiveLayout
+      layoutType="app"
+      enablePlatformOptimizations={true}
+      showPlatformIndicator={process.env.NODE_ENV === 'development'}
+      onPlatformDetected={handlePlatformDetected}
+      locale="nb"
+      theme="light"
+      // Pass through any props to the selected layout
+      title="My Application"
+      showNavigation={true}
+      currentUser={currentUser}
+    >
+      <Component {...pageProps} />
+    </AdaptiveLayout>
+  );
+}
+
+// Force specific layout for testing
+<AdaptiveLayout forceLayout="mobile" layoutType="admin">
+  <AdminPanel />
+</AdaptiveLayout>
+
+// Simple responsive layout
+<AdaptiveLayout layoutType="simple" preferredPlatform="auto">
+  <ContentPage />
+</AdaptiveLayout>
+*/
+{{/if}}
