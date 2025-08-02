@@ -162,7 +162,7 @@ export async function displayPostInstallInstructions(
 		tazeCommand,
 	)}\n\n`;
 	output += `${pc.bold(
-		"Like Better-T Stack?",
+		"Like Xaheen-T Stack?",
 	)} Please consider giving us a star on GitHub:\n`;
 	output += pc.cyan("https://github.com/AmanVarshney01/xaheen");
 

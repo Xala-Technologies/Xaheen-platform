@@ -4,8 +4,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "Better T Stack",
-		short_name: "Better T Stack",
+		name: "Xaheen",
+		short_name: "Xaheen",
 		description:
 			"A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
 		start_url: "/new",

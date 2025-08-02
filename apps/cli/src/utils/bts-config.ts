@@ -1,13 +1,13 @@
 import path from "node:path";
 import fs from "fs-extra";
 import * as JSONC from "jsonc-parser";
-import type { BetterTStackConfig, ProjectConfig } from "../types";
+import type { XaheenTStackConfig, ProjectConfig } from "../types";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
 
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
-	const btsConfig: BetterTStackConfig = {
+	const btsConfig: XaheenTStackConfig = {
 		version: getLatestCLIVersion(),
 		createdAt: new Date().toISOString(),
 		database: projectConfig.database,
@@ -62,7 +62,7 @@ ${configContent}`;
 
 export async function readBtsConfig(
 	projectDir: string,
-): Promise<BetterTStackConfig | null> {
+): Promise<XaheenTStackConfig | null> {
 	try {
 		const configPath = path.join(projectDir, BTS_CONFIG_FILE);
 
@@ -76,7 +76,7 @@ export async function readBtsConfig(
 		const config = JSONC.parse(configContent, errors, {
 			allowTrailingComma: true,
 			disallowComments: false,
-		}) as BetterTStackConfig;
+		}) as XaheenTStackConfig;
 
 		if (errors.length > 0) {
 			console.warn("Warning: Found errors parsing bts.jsonc:", errors);
@@ -91,7 +91,7 @@ export async function readBtsConfig(
 
 export async function updateBtsConfig(
 	projectDir: string,
-	updates: Partial<Pick<BetterTStackConfig, "addons" | "webDeploy">>,
+	updates: Partial<Pick<XaheenTStackConfig, "addons" | "webDeploy">>,
 ) {
 	try {
 		const configPath = path.join(projectDir, BTS_CONFIG_FILE);

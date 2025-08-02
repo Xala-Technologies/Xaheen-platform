@@ -55,7 +55,7 @@ apps/cli/src/
 ```
 
 ### **CLI Commands Available**
-1. **`init`** (default) - Create new Better-T Stack project
+1. **`init`** (default) - Create new Xaheen-T Stack project
 2. **`add`** - Add addons/deployment to existing project
 3. **`sponsors`** - Show project sponsors
 4. **`docs`** - Open documentation (https://Xaheen.dev/docs)
@@ -93,7 +93,7 @@ Based on the keywords and template structure:
 - **Frontend**: React, React Native, Expo
 - **Backend**: Hono, Elysia
 - **Database**: Drizzle, Prisma
-- **Auth**: Better-Auth
+- **Auth**: Xaheen-Auth
 - **Styling**: Tailwind CSS, shadcn/ui
 - **Build**: Turborepo, Biome
 - **Additional**: PWA, Tauri, TanStack

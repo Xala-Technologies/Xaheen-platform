@@ -333,7 +333,7 @@ When implementing features or making changes:
 - **NO inline styles** - Never use `style={{ }}` attribute
 - **NO direct className for styling** - Use semantic components with design tokens
 - **WCAG 2.2 AAA Compliance**: All colors, spacing, and typography meet enhanced accessibility standards
-- **Enhanced 8pt Grid System**: All spacing follows 8px increments for better visual hierarchy
+- **Enhanced 8pt Grid System**: All spacing follows 8px increments for xaheen visual hierarchy
 - **Component Tokens**: Pre-configured styling variants for consistent UI components
 - **Professional sizing standards** (Enhanced 8pt Grid):
   - Button heights: `spacing[11]` (44px), `spacing[12]` (48px), `spacing[14]` (56px), `spacing[16]` (64px)

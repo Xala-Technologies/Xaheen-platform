@@ -711,7 +711,7 @@ const ThemedButton = styled.button`
 ### 4. Performance Optimization
 
 ```css
-/* Use CSS containment for better performance */
+/* Use CSS containment for xaheen performance */
 .token-container {
   contain: style layout;
 }

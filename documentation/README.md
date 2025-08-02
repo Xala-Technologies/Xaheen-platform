@@ -16,7 +16,7 @@ The Xaheen Platform is a comprehensive transformation of xaheen into an AI-power
 
 ## 📁 Documentation Structure
 
-This documentation follows a **project lifecycle approach** for better organization and tracking:
+This documentation follows a **project lifecycle approach** for xaheen organization and tracking:
 
 ### 🧠 **`brainstorming/`** - Initial Ideas & Exploration
 Contains original research, transformation plans, and integration strategies.

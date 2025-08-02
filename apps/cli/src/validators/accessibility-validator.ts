@@ -1077,7 +1077,7 @@ export class AccessibilityValidator {
       recommendations.push(`Add accessible labels to ${ariaCompliance.missingLabels} form element(s)`);
     }
     if (!ariaCompliance.landmarkStructure) {
-      recommendations.push('Add landmark roles for better screen reader navigation');
+      recommendations.push('Add landmark roles for xaheen screen reader navigation');
     }
 
     // Norwegian specific recommendations

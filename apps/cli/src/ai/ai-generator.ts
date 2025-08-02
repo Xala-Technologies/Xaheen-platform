@@ -266,7 +266,7 @@ Provide 3-5 specific, actionable suggestions:`;
 	 * Build prompt for code optimization
 	 */
 	private buildOptimizationPrompt(code: string, context: AIContext): string {
-		return `Optimize this ${context.framework} code for better performance and maintainability:
+		return `Optimize this ${context.framework} code for xaheen performance and maintainability:
 
 ${code}
 
@@ -274,7 +274,7 @@ Optimization goals:
 1. Reduce bundle size
 2. Improve runtime performance
 3. Enhance memory usage
-4. Better code organization
+4. Xaheen code organization
 5. Maintain ${context.compliance} compliance
 
 Return the optimized code:`;

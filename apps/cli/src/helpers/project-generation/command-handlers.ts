@@ -30,7 +30,7 @@ export async function createProjectHandler(
 
 	try {
 		renderTitle();
-		intro(pc.magenta("Creating a new Better-T Stack project"));
+		intro(pc.magenta("Creating a new Xaheen-T Stack project"));
 
 		let currentPathInput: string;
 		if (input.yes && input.projectName) {
@@ -144,7 +144,7 @@ export async function addAddonsHandler(input: AddInput) {
 		if (!detectedConfig) {
 			cancel(
 				pc.red(
-					"Could not detect project configuration. Please ensure this is a valid Better-T Stack project.",
+					"Could not detect project configuration. Please ensure this is a valid Xaheen-T Stack project.",
 				),
 			);
 			process.exit(1);

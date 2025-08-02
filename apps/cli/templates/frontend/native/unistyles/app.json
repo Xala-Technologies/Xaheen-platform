@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "my-better-t-app",
-    "slug": "my-better-t-app",
+    "name": "my-xaheen-t-app",
+    "slug": "my-xaheen-t-app",
     "version": "1.0.0",
     "newArchEnabled": true,
-    "scheme": "my-better-t-app",
+    "scheme": "my-xaheen-t-app",
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -31,14 +31,14 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.amanvarshney01.mybettertapp"
+      "bundleIdentifier": "com.amanvarshney01.myxaheentapp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.amanvarshney01.mybettertapp"
+      "package": "com.amanvarshney01.myxaheentapp"
     }
   }
 }

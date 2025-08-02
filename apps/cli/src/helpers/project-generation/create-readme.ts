@@ -446,7 +446,7 @@ function generateFeaturesList(
 
 	if (auth && !isConvex) {
 		addonsList.push(
-			"- **Authentication** - Email & password authentication with Better Auth",
+			"- **Authentication** - Email & password authentication with Xaheen Auth",
 		);
 	}
 

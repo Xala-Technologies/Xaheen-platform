@@ -325,7 +325,7 @@ function SystemThemeSync() {
 ### 1. Performance Optimization
 
 ```typescript
-// Limit transition properties for better performance
+// Limit transition properties for xaheen performance
 const transitionConfig = {
   properties: [
     'background-color',

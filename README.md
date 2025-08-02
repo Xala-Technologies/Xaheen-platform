@@ -31,7 +31,7 @@ pnpm create Xaheen@latest
 - **Multi-platform** supporting web, mobile (Expo), and desktop applications
 - **Database flexibility** with SQLite (Turso) or PostgreSQL options
 - **ORM choice** between Drizzle or Prisma
-- **Built-in authentication** with Better-Auth
+- **Built-in authentication** with Xaheen-Auth
 - **Optional PWA support** for installable web applications
 - **Desktop app capabilities** with Tauri integration
 - **Monorepo architecture** powered by Turborepo

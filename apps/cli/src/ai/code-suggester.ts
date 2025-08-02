@@ -331,7 +331,7 @@ export class CodeSuggester {
 				title: "Use named imports for tree shaking",
 				description: "Replace wildcard imports with specific named imports",
 				severity: "medium",
-				reasoning: "Named imports enable better tree shaking and smaller bundle size",
+				reasoning: "Named imports enable xaheen tree shaking and smaller bundle size",
 				originalCode: "import * as utils from './utils';",
 				suggestedCode: "import { specificFunction } from './utils';",
 				references: ["https://webpack.js.org/guides/tree-shaking/"]
@@ -549,7 +549,7 @@ export class CodeSuggester {
 				title: "Use semantic HTML elements",
 				description: "Replace div with semantic header element",
 				severity: "low",
-				reasoning: "Semantic elements provide better structure for screen readers",
+				reasoning: "Semantic elements provide xaheen structure for screen readers",
 				originalCode: '<div className="header">',
 				suggestedCode: '<header className="header">',
 				references: ["https://developer.mozilla.org/en-US/docs/Web/HTML/Element/header"]
@@ -595,7 +595,7 @@ export class CodeSuggester {
 				description: "Text color may not meet WCAG contrast requirements",
 				severity: "medium",
 				reasoning: "Insufficient contrast makes text hard to read",
-				suggestedCode: "Use text-gray-600 or darker for better contrast",
+				suggestedCode: "Use text-gray-600 or darker for xaheen contrast",
 				references: ["https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"]
 			});
 		}
@@ -638,7 +638,7 @@ export class CodeSuggester {
 				title: "Optimize images",
 				description: "Consider using next-generation image formats",
 				severity: "low",
-				reasoning: "WebP and AVIF formats provide better compression",
+				reasoning: "WebP and AVIF formats provide xaheen compression",
 				suggestedCode: "Use Next.js Image component for automatic optimization",
 				references: ["https://nextjs.org/docs/api-reference/next/image"]
 			});

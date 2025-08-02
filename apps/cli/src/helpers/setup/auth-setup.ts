@@ -22,7 +22,7 @@ export async function setupAuth(config: ProjectConfig) {
 	try {
 		if (serverDirExists) {
 			await addPackageDependency({
-				dependencies: ["better-auth"],
+				dependencies: ["xaheen-auth"],
 				projectDir: serverDir,
 			});
 		}
@@ -41,7 +41,7 @@ export async function setupAuth(config: ProjectConfig) {
 
 		if (hasWebFrontend && clientDirExists) {
 			await addPackageDependency({
-				dependencies: ["better-auth"],
+				dependencies: ["xaheen-auth"],
 				projectDir: clientDir,
 			});
 		}
@@ -52,12 +52,12 @@ export async function setupAuth(config: ProjectConfig) {
 			nativeDirExists
 		) {
 			await addPackageDependency({
-				dependencies: ["better-auth", "@better-auth/expo"],
+				dependencies: ["xaheen-auth", "@xaheen-auth/expo"],
 				projectDir: nativeDir,
 			});
 			if (serverDirExists) {
 				await addPackageDependency({
-					dependencies: ["@better-auth/expo"],
+					dependencies: ["@xaheen-auth/expo"],
 					projectDir: serverDir,
 				});
 			}

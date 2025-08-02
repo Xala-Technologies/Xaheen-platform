@@ -20,7 +20,7 @@
     "cli",
     "turborepo",
     "trpc",
-    "better-auth",
+    "xaheen-auth",
     "monorepo",
     "fullstack",
     "type-safety",

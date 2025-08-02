@@ -1,4 +1,4 @@
-# Create Better T-Stack Extension Plan
+# Create Xaheen T-Stack Extension Plan
 
 ## 1. Initial Setup & Forking
 

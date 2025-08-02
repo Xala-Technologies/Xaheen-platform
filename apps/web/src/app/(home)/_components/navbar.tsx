@@ -43,7 +43,7 @@ export default function Navbar() {
 			icon: <span className="text-primary">~/</span>,
 		},
 		{
-			href: "https://my-better-t-app-client.pages.dev/",
+			href: "https://my-xaheen-t-app-client.pages.dev/",
 			label: "Demo",
 			target: "_blank",
 		},
@@ -68,7 +68,7 @@ export default function Navbar() {
 			icon: <span className="text-primary">~/</span>,
 		},
 		{
-			href: "https://my-better-t-app-client.pages.dev/",
+			href: "https://my-xaheen-t-app-client.pages.dev/",
 			label: "Demo",
 			target: "_blank",
 		},

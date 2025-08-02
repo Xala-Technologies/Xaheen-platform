@@ -75,7 +75,7 @@ export async function createContext({ context }: CreateContextOptions) {
 {{else if (eq backend 'express')}}
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 {{#if auth}}
-import { fromNodeHeaders } from "better-auth/node";
+import { fromNodeHeaders } from "xaheen-auth/node";
 import { auth } from "./auth";
 {{/if}}
 
@@ -98,7 +98,7 @@ export async function createContext(opts: CreateExpressContextOptions) {
 {{else if (eq backend 'fastify')}}
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 {{#if auth}}
-import { fromNodeHeaders } from "better-auth/node";
+import { fromNodeHeaders } from "xaheen-auth/node";
 import { auth } from "./auth";
 {{/if}}
 

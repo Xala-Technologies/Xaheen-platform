@@ -342,7 +342,7 @@ templates/
 export async function selectTemplate(mode: CLIMode, category: string): Promise<Template> {
   switch (mode) {
     case CLIMode.LEGACY:
-      return getCreateBetterTStackTemplate(category);
+      return getCreateXaheenTStackTemplate(category);
     case CLIMode.XALA:
       return getXalaEnhancedTemplate(category);
     case CLIMode.XAHEEN:
@@ -363,7 +363,7 @@ export async function selectTemplate(mode: CLIMode, category: string): Promise<T
 │   CLI Commands  │───▶│  Service Layer  │───▶│  Core Services  │
 │                 │    │                 │    │                 │
 │ • init          │    │ • AI Service    │    │ • xala-scaffold │
-│ • generate      │    │ • Compliance    │    │ • create-better │
+│ • generate      │    │ • Compliance    │    │ • create-xaheen │
 │ • validate      │    │ • Localization  │    │ • Enhanced      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │

@@ -389,7 +389,7 @@ export interface ProjectConfig {
 	audit: boolean;
 }
 
-export interface BetterTStackConfig {
+export interface XaheenTStackConfig {
 	version: string;
 	createdAt: string;
 	database: Database;

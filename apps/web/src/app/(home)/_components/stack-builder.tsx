@@ -930,7 +930,7 @@ const generateCommand = (stackState: StackState): string => {
 			break;
 	}
 
-	const projectName = stackState.projectName || "my-better-t-app";
+	const projectName = stackState.projectName || "my-xaheen-t-app";
 	const flags: string[] = ["--yes"];
 
 	const checkDefault = <K extends keyof StackState>(
@@ -1182,7 +1182,7 @@ const StackBuilder = () => {
 
 		const stackSummary = getStackSummary();
 		const text = encodeURIComponent(
-			`Check out this cool tech stack I configured with Create Better T Stack!\n\n🚀 ${stackSummary}\n\n`,
+			`Check out this cool tech stack I configured with Create Xaheen!\n\n🚀 ${stackSummary}\n\n`,
 		);
 		if (typeof window !== "undefined") {
 			const url = encodeURIComponent(window.location.href);
@@ -1273,14 +1273,14 @@ const StackBuilder = () => {
 	})();
 
 	useEffect(() => {
-		const savedStack = localStorage.getItem("betterTStackPreference");
+		const savedStack = localStorage.getItem("xaheenTStackPreference");
 		if (savedStack) {
 			try {
 				const parsedStack = JSON.parse(savedStack) as StackState;
 				setLastSavedStack(parsedStack);
 			} catch (e) {
 				console.error("Failed to parse saved stack", e);
-				localStorage.removeItem("betterTStackPreference");
+				localStorage.removeItem("xaheenTStackPreference");
 			}
 		}
 	}, []);
@@ -1424,7 +1424,7 @@ const StackBuilder = () => {
 	};
 
 	const saveCurrentStack = () => {
-		localStorage.setItem("betterTStackPreference", JSON.stringify(stack));
+		localStorage.setItem("xaheenTStackPreference", JSON.stringify(stack));
 		setLastSavedStack(stack);
 		toast.success("Your stack configuration has been saved");
 	};
@@ -1529,7 +1529,7 @@ const StackBuilder = () => {
 												? "border-destructive bg-destructive/10 text-destructive-foreground"
 												: "border-border focus:border-primary",
 										)}
-										placeholder="my-better-t-app"
+										placeholder="my-xaheen-t-app"
 									/>
 									{projectNameError && (
 										<p className="mt-1 text-destructive text-xs">

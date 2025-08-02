@@ -71,7 +71,7 @@ export async function createContext({ context }: CreateContextOptions) {
 
 {{else if (eq backend 'express')}}
 {{#if auth}}
-import { fromNodeHeaders } from "better-auth/node";
+import { fromNodeHeaders } from "xaheen-auth/node";
 import { auth } from "./auth";
 {{/if}}
 
@@ -94,7 +94,7 @@ export async function createContext(opts: any) {
 {{else if (eq backend 'fastify')}}
 import type { IncomingHttpHeaders } from "node:http";
 {{#if auth}}
-import { fromNodeHeaders } from "better-auth/node";
+import { fromNodeHeaders } from "xaheen-auth/node";
 import { auth } from "./auth";
 {{/if}}
 

@@ -144,7 +144,7 @@ const versionManager = new TokenVersionManager();
 
 // Create version with semantic versioning
 const version = await versionManager.createVersion(tokens, {
-  description: 'Updated color palette for better contrast',
+  description: 'Updated color palette for xaheen contrast',
   breaking: false,
   tags: ['accessibility', 'colors']
 });
@@ -285,7 +285,7 @@ const { theme, setTheme } = useTheme();
 
 ## 📊 Performance Improvements
 
-- **Build size**: Reduced by 23% through better tree-shaking
+- **Build size**: Reduced by 23% through xaheen tree-shaking
 - **Initial load**: 15% faster with optimized token loading
 - **Theme switching**: Near-instant with CSS transitions
 - **SSR hydration**: Zero mismatch with proper state management

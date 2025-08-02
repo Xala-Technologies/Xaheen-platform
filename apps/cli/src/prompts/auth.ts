@@ -17,7 +17,7 @@ export async function getAuthChoice(
 	if (auth !== undefined) return auth;
 
 	const response = await confirm({
-		message: "Add authentication with Better-Auth?",
+		message: "Add authentication with Xaheen-Auth?",
 		initialValue: DEFAULT_CONFIG.auth,
 	});
 

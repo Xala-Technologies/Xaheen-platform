@@ -973,7 +973,7 @@ function validateAccessibility(context: PageTemplateContext): string[] {
 	
 	// Check for ARIA landmarks
 	if (context.compliance !== "none" && !context.pageContent.includes('role=')) {
-		issues.push("Consider adding ARIA landmarks for better accessibility");
+		issues.push("Consider adding ARIA landmarks for xaheen accessibility");
 	}
 	
 	// Check for proper form labels (if it's a form page)

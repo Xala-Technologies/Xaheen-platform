@@ -7,7 +7,7 @@ import { updateBtsConfig } from "../../utils/bts-config";
 import { setupAddons } from "../setup/addons-setup";
 import {
 	detectProjectConfig,
-	isBetterTStackProject,
+	isXaheenTStackProject,
 } from "./detect-project-config";
 import { installDependencies } from "./install-dependencies";
 import { setupAddonsTemplate } from "./template-manager";
@@ -23,17 +23,17 @@ export async function addAddonsToProject(
 	try {
 		const projectDir = input.projectDir || process.cwd();
 
-		const isBetterTStack = await isBetterTStackProject(projectDir);
-		if (!isBetterTStack) {
+		const isXaheenTStack = await isXaheenTStackProject(projectDir);
+		if (!isXaheenTStack) {
 			exitWithError(
-				"This doesn't appear to be a Better-T Stack project. Please run this command from the root of a Better-T Stack project.",
+				"This doesn't appear to be a Xaheen-T Stack project. Please run this command from the root of a Xaheen-T Stack project.",
 			);
 		}
 
 		const detectedConfig = await detectProjectConfig(projectDir);
 		if (!detectedConfig) {
 			exitWithError(
-				"Could not detect the project configuration. Please ensure this is a valid Better-T Stack project.",
+				"Could not detect the project configuration. Please ensure this is a valid Xaheen-T Stack project.",
 			);
 		}
 

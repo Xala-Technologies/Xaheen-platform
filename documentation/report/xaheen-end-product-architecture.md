@@ -88,7 +88,7 @@ $ xaheen init my-project
 - Enhanced templates with Xala UI System
 - Norwegian compliance validation built-in
 - Multi-language support (nb, nn, en, ar, fr)
-- Better prompts and user experience
+- Xaheen prompts and user experience
 - WCAG AAA compliance by default
 ```
 

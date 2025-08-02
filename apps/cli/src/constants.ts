@@ -8,9 +8,9 @@ const distPath = path.dirname(__filename);
 export const PKG_ROOT = path.join(distPath, "../");
 
 export const DEFAULT_CONFIG: ProjectConfig = {
-	projectName: "my-better-t-app",
-	projectDir: path.resolve(process.cwd(), "my-better-t-app"),
-	relativePath: "my-better-t-app",
+	projectName: "my-xaheen-t-app",
+	projectDir: path.resolve(process.cwd(), "my-xaheen-t-app"),
+	relativePath: "my-xaheen-t-app",
 	frontend: ["tanstack-router"],
 	database: "sqlite",
 	orm: "drizzle",
@@ -28,8 +28,8 @@ export const DEFAULT_CONFIG: ProjectConfig = {
 };
 
 export const dependencyVersionMap = {
-	"better-auth": "^1.3.4",
-	"@better-auth/expo": "^1.3.4",
+	"xaheen-auth": "^1.3.4",
+	"@xaheen-auth/expo": "^1.3.4",
 
 	"drizzle-orm": "^0.44.2",
 	"drizzle-kit": "^0.31.2",

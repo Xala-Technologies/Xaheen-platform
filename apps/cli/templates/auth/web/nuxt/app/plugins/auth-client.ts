@@ -1,4 +1,4 @@
-import { createAuthClient } from "better-auth/vue";
+import { createAuthClient } from "xaheen-auth/vue";
 
 export default defineNuxtPlugin(nuxtApp => {
   const config = useRuntimeConfig()

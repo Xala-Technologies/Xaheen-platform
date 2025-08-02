@@ -362,9 +362,9 @@ export const TECH_OPTIONS: Record<
 	auth: [
 		{
 			id: "true",
-			name: "Better Auth",
+			name: "Xaheen Auth",
 			description: "Simple authentication",
-			icon: "/icon/better-auth.svg",
+			icon: "/icon/xaheen-auth.svg",
 			color: "from-green-400 to-green-600",
 			default: true,
 		},
@@ -536,7 +536,7 @@ export const PRESET_TEMPLATES = [
 		name: "Default Stack",
 		description: "Standard web app with TanStack Router, Bun, Hono and SQLite",
 		stack: {
-			projectName: "my-better-t-app",
+			projectName: "my-xaheen-t-app",
 			webFrontend: ["tanstack-router"],
 			nativeFrontend: ["none"],
 			runtime: "bun",
@@ -558,7 +558,7 @@ export const PRESET_TEMPLATES = [
 		name: "Convex + React",
 		description: "Reactive full-stack app with Convex and TanStack Router",
 		stack: {
-			projectName: "my-better-t-app",
+			projectName: "my-xaheen-t-app",
 			webFrontend: ["tanstack-router"],
 			nativeFrontend: ["none"],
 			backend: "convex",
@@ -580,7 +580,7 @@ export const PRESET_TEMPLATES = [
 		name: "Mobile App",
 		description: "React Native with Expo and SQLite database",
 		stack: {
-			projectName: "my-better-t-app",
+			projectName: "my-xaheen-t-app",
 			webFrontend: ["none"],
 			nativeFrontend: ["native-nativewind"],
 			runtime: "bun",
@@ -602,7 +602,7 @@ export const PRESET_TEMPLATES = [
 		name: "API Only",
 		description: "Backend API with Hono and Sqlite",
 		stack: {
-			projectName: "my-better-t-app",
+			projectName: "my-xaheen-t-app",
 			webFrontend: ["none"],
 			nativeFrontend: ["none"],
 			runtime: "bun",
@@ -624,7 +624,7 @@ export const PRESET_TEMPLATES = [
 		name: "Full Featured",
 		description: "Complete setup with web, native, Turso, and addons",
 		stack: {
-			projectName: "my-better-t-app",
+			projectName: "my-xaheen-t-app",
 			webFrontend: ["tanstack-router"],
 			nativeFrontend: ["native-nativewind"],
 			runtime: "bun",
@@ -663,7 +663,7 @@ export type StackState = {
 };
 
 export const DEFAULT_STACK: StackState = {
-	projectName: "my-better-t-app",
+	projectName: "my-xaheen-t-app",
 	webFrontend: ["tanstack-router"],
 	nativeFrontend: ["none"],
 	runtime: "bun",

@@ -1,12 +1,12 @@
 {{#if (eq orm "prisma")}}
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { xaheenAuth } from "xaheen-auth";
+import { prismaAdapter } from "xaheen-auth/adapters/prisma";
 {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-import { expo } from "@better-auth/expo";
+import { expo } from "@xaheen-auth/expo";
 {{/if}}
 import prisma from "../../prisma";
 
-export const auth = betterAuth({
+export const auth = xaheenAuth({
   database: prismaAdapter(prisma, {
     {{#if (eq database "postgres")}}provider: "postgresql"{{/if}}
     {{#if (eq database "sqlite")}}provider: "sqlite"{{/if}}
@@ -16,7 +16,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.CORS_ORIGIN || "",
     {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-    "my-better-t-app://",
+    "my-xaheen-t-app://",
     {{/if}}
   ],
   emailAndPassword: {
@@ -30,15 +30,15 @@ export const auth = betterAuth({
 
 {{#if (eq orm "drizzle")}}
 {{#if (or (eq runtime "bun") (eq runtime "node"))}}
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { xaheenAuth } from "xaheen-auth";
+import { drizzleAdapter } from "xaheen-auth/adapters/drizzle";
 {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-import { expo } from "@better-auth/expo";
+import { expo } from "@xaheen-auth/expo";
 {{/if}}
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 
-export const auth = betterAuth({
+export const auth = xaheenAuth({
   database: drizzleAdapter(db, {
     {{#if (eq database "postgres")}}provider: "pg",{{/if}}
     {{#if (eq database "sqlite")}}provider: "sqlite",{{/if}}
@@ -48,7 +48,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.CORS_ORIGIN || "",
     {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-    "my-better-t-app://",
+    "my-xaheen-t-app://",
     {{/if}}
   ],
   emailAndPassword: {
@@ -63,16 +63,16 @@ export const auth = betterAuth({
 {{/if}}
 
 {{#if (eq runtime "workers")}}
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { xaheenAuth } from "xaheen-auth";
+import { drizzleAdapter } from "xaheen-auth/adapters/drizzle";
 {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-import { expo } from "@better-auth/expo";
+import { expo } from "@xaheen-auth/expo";
 {{/if}}
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 import { env } from "cloudflare:workers";
 
-export const auth = betterAuth({
+export const auth = xaheenAuth({
    database: drizzleAdapter(db, {
     {{#if (eq database "postgres")}}provider: "pg",{{/if}}
     {{#if (eq database "sqlite")}}provider: "sqlite",{{/if}}
@@ -93,19 +93,19 @@ export const auth = betterAuth({
 {{/if}}
 
 {{#if (eq orm "mongoose")}}
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { xaheenAuth } from "xaheen-auth";
+import { mongodbAdapter } from "xaheen-auth/adapters/mongodb";
 {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-import { expo } from "@better-auth/expo";
+import { expo } from "@xaheen-auth/expo";
 {{/if}}
 import { client } from "../db";
 
-export const auth = betterAuth({
+export const auth = xaheenAuth({
   database: mongodbAdapter(client),
   trustedOrigins: [
     process.env.CORS_ORIGIN || "",
     {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-    "my-better-t-app://",
+    "my-xaheen-t-app://",
     {{/if}}
   ],
   emailAndPassword: {
@@ -118,17 +118,17 @@ export const auth = betterAuth({
 {{/if}}
 
 {{#if (eq orm "none")}}
-import { betterAuth } from "better-auth";
+import { xaheenAuth } from "xaheen-auth";
 {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-import { expo } from "@better-auth/expo";
+import { expo } from "@xaheen-auth/expo";
 {{/if}}
 
-export const auth = betterAuth({
+export const auth = xaheenAuth({
   database: "", // Invalid configuration
   trustedOrigins: [
     process.env.CORS_ORIGIN || "",
     {{#if (or (includes frontend "native-nativewind") (includes frontend "native-unistyles"))}}
-    "my-better-t-app://",
+    "my-xaheen-t-app://",
     {{/if}}
   ],
   emailAndPassword: {

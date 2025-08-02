@@ -39,7 +39,7 @@ Follow the prompts to configure your project or use the `--yes` flag for default
 | **Database**             | • SQLite<br>• PostgreSQL<br>• MySQL<br>• MongoDB<br>• None                                                                                                                                                                                                 |
 | **ORM**                  | • Drizzle (TypeScript-first)<br>• Prisma (feature-rich)<br>• Mongoose (for MongoDB)<br>• None                                                                                                                                                              |
 | **Database Setup**       | • Turso (SQLite)<br>• Cloudflare D1 (SQLite)<br>• Neon (PostgreSQL)<br>• Supabase (PostgreSQL)<br>• Prisma Postgres (via Prisma Accelerate)<br>• MongoDB Atlas<br>• None (manual setup)                                                                    |
-| **Authentication**       | Better-Auth (email/password, with more options coming soon)                                                                                                                                                                                                |
+| **Authentication**       | Xaheen-Auth (email/password, with more options coming soon)                                                                                                                                                                                                |
 | **Styling**              | Tailwind CSS with shadcn/ui components                                                                                                                                                                                                                     |
 | **Addons**               | • PWA support<br>• Tauri (desktop applications)<br>• Starlight (documentation site)<br>• Biome (linting and formatting)<br>• Husky (Git hooks)<br>• Turborepo (optimized builds)                                                                           |
 | **Examples**             | • Todo app<br>• AI Chat interface (using Vercel AI SDK)                                                                                                                                                                                                    |
@@ -206,7 +206,7 @@ npx xaheen my-app --frontend none --backend hono --api trpc --database none --ad
 The created project follows a clean monorepo structure:
 
 ```
-my-better-t-app/
+my-xaheen-t-app/
 ├── apps/
 │   ├── web/          # Frontend application
 │   ├── server/       # Backend API

@@ -79,7 +79,7 @@
 
 ### Patch Changes
 
-- e2e4504: Bump better-auth packages to v1.3.0
+- e2e4504: Bump xaheen-auth packages to v1.3.0
 
 ## 2.26.1
 
@@ -231,7 +231,7 @@
 
 ### Patch Changes
 
-- e21f6de: generate better readme
+- e21f6de: generate xaheen readme
 
 ## 2.22.5
 
@@ -303,7 +303,7 @@
 
 ### Patch Changes
 
-- 2eacf7b: Add better-auth package in solid frontend
+- 2eacf7b: Add xaheen-auth package in solid frontend
 
 ## 2.18.5
 
@@ -409,7 +409,7 @@
 
 ### Patch Changes
 
-- 314a38c: Remove @better-auth/expo from unistyles template
+- 314a38c: Remove @xaheen-auth/expo from unistyles template
 
 ## 2.15.1
 
@@ -867,7 +867,7 @@
 
 ### Patch Changes
 
-- 1e67949: add consola errors, update to better-auth v1.2.6
+- 1e67949: add consola errors, update to xaheen-auth v1.2.6
 
 ## 1.13.1
 
@@ -981,7 +981,7 @@
 
 ### Minor Changes
 
-- 81dc240: Add Better Auth in Native
+- 81dc240: Add Xaheen Auth in Native
 
 ## 1.6.2
 
