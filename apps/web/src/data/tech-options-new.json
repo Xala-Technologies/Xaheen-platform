@@ -1,0 +1,624 @@
+{
+  "api": [
+    {
+      "id": "trpc",
+      "name": "tRPC",
+      "description": "End-to-end typesafe APIs",
+      "icon": "/icon/trpc.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "orpc",
+      "name": "oRPC",
+      "description": "Typesafe APIs Made Simple",
+      "icon": "/icon/orpc.svg",
+      "color": "from-indigo-400 to-indigo-600",
+      "sort_order": 2
+    },
+    {
+      "id": "none",
+      "name": "No API",
+      "description": "No API layer (API routes disabled)",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "sort_order": 99
+    }
+  ],
+  "webFrontend": [
+    {
+      "id": "tanstack-router",
+      "name": "TanStack Router",
+      "description": "Modern type-safe router for React",
+      "icon": "/icon/tanstack.svg",
+      "color": "from-blue-400 to-blue-600",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "react-router",
+      "name": "React Router",
+      "description": "Declarative routing for React",
+      "icon": "/icon/react-router.svg",
+      "color": "from-cyan-400 to-cyan-600",
+      "sort_order": 2
+    },
+    {
+      "id": "next-app",
+      "name": "Next.js App Router",
+      "description": "Full-stack React framework with App Router",
+      "icon": "/icon/next.svg",
+      "color": "from-gray-800 to-gray-900",
+      "sort_order": 3
+    },
+    {
+      "id": "remix",
+      "name": "Remix",
+      "description": "Full stack web framework focused on web standards",
+      "icon": "/icon/remix.svg",
+      "color": "from-blue-600 to-blue-800",
+      "sort_order": 4
+    },
+    {
+      "id": "astro",
+      "name": "Astro",
+      "description": "Build fast websites with less client-side JavaScript",
+      "icon": "/icon/astro.svg",
+      "color": "from-orange-500 to-orange-700",
+      "sort_order": 5
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "description": "Platform for building mobile and desktop web applications",
+      "icon": "/icon/angular.svg",
+      "color": "from-red-600 to-red-800",
+      "sort_order": 6
+    },
+    {
+      "id": "blazor",
+      "name": "Blazor",
+      "description": "Build interactive web UIs using C# instead of JavaScript",
+      "icon": "/icon/blazor.svg",
+      "color": "from-purple-600 to-blue-600",
+      "sort_order": 7
+    },
+    {
+      "id": "none",
+      "name": "No Web Frontend",
+      "description": "No web-based frontend",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "sort_order": 99
+    }
+  ],
+  "nativeFrontend": [
+    {
+      "id": "react-native",
+      "name": "React Native",
+      "description": "Build native mobile apps with React",
+      "icon": "/icon/react-native.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "expo",
+      "name": "Expo",
+      "description": "React Native with managed workflow",
+      "icon": "/icon/expo.svg",
+      "color": "from-purple-400 to-purple-600",
+      "sort_order": 2
+    },
+    {
+      "id": "tamagui",
+      "name": "Tamagui",
+      "description": "Universal UI system for React Native and Web",
+      "icon": "/icon/tamagui.svg",
+      "color": "from-green-500 to-green-700",
+      "sort_order": 3
+    },
+    {
+      "id": "flutter",
+      "name": "Flutter",
+      "description": "Google's UI toolkit for mobile, web, and desktop",
+      "icon": "/icon/flutter.svg",
+      "color": "from-blue-400 to-blue-600",
+      "sort_order": 4
+    },
+    {
+      "id": "ionic",
+      "name": "Ionic",
+      "description": "Cross-platform mobile app development",
+      "icon": "/icon/ionic.svg",
+      "color": "from-blue-500 to-blue-700",
+      "sort_order": 5
+    },
+    {
+      "id": "capacitor",
+      "name": "Capacitor",
+      "description": "Cross-platform native runtime for web apps",
+      "icon": "/icon/capacitor.svg",
+      "color": "from-blue-600 to-blue-800",
+      "sort_order": 6
+    },
+    {
+      "id": "electron",
+      "name": "Electron",
+      "description": "Build cross-platform desktop apps with web technologies",
+      "icon": "/icon/electron.svg",
+      "color": "from-blue-400 to-blue-600",
+      "sort_order": 7
+    },
+    {
+      "id": "tauri",
+      "name": "Tauri",
+      "description": "Build smaller, faster, and more secure desktop applications",
+      "icon": "/icon/tauri.svg",
+      "color": "from-yellow-500 to-yellow-700",
+      "sort_order": 8
+    },
+    {
+      "id": "none",
+      "name": "No Native Frontend",
+      "description": "No native mobile frontend",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "sort_order": 99
+    }
+  ],
+  "runtime": [
+    {
+      "id": "bun",
+      "name": "Bun",
+      "description": "Fast JavaScript runtime & toolkit",
+      "icon": "/icon/bun.svg",
+      "color": "from-amber-400 to-amber-600",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "node",
+      "name": "Node.js",
+      "description": "JavaScript runtime environment",
+      "icon": "/icon/node.svg",
+      "color": "from-green-400 to-green-600",
+      "sort_order": 2
+    },
+    {
+      "id": "deno",
+      "name": "Deno",
+      "description": "Secure runtime for JavaScript and TypeScript",
+      "icon": "/icon/deno.svg",
+      "color": "from-black to-gray-800",
+      "sort_order": 3
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "description": "Next generation frontend tooling",
+      "icon": "/icon/vite.svg",
+      "color": "from-purple-500 to-purple-700",
+      "sort_order": 4
+    }
+  ],
+  "backend": [
+    {
+      "id": "hono",
+      "name": "Hono",
+      "description": "Ultrafast web framework",
+      "icon": "/icon/hono.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "fastify",
+      "name": "Fastify",
+      "description": "Fast and low overhead web framework",
+      "icon": "/icon/fastify.svg",
+      "color": "from-black to-gray-800",
+      "sort_order": 2
+    },
+    {
+      "id": "express",
+      "name": "Express",
+      "description": "Fast, unopinionated web framework",
+      "icon": "/icon/express.svg",
+      "color": "from-gray-600 to-gray-800",
+      "sort_order": 3
+    },
+    {
+      "id": "nestjs",
+      "name": "NestJS",
+      "description": "Progressive Node.js framework",
+      "icon": "/icon/nestjs.svg",
+      "color": "from-red-500 to-red-700",
+      "sort_order": 4
+    },
+    {
+      "id": "koa",
+      "name": "Koa",
+      "description": "Next generation web framework",
+      "icon": "/icon/koa.svg",
+      "color": "from-gray-500 to-gray-700",
+      "sort_order": 5
+    },
+    {
+      "id": "elysia",
+      "name": "Elysia",
+      "description": "TypeScript web framework",
+      "icon": "/icon/elysia.svg",
+      "color": "from-blue-400 to-blue-600",
+      "sort_order": 6
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "description": "Open source Firebase alternative",
+      "icon": "/icon/supabase.svg",
+      "color": "from-green-500 to-green-700",
+      "sort_order": 7
+    },
+    {
+      "id": "firebase",
+      "name": "Firebase",
+      "description": "Google's mobile and web application development platform",
+      "icon": "/icon/firebase.svg",
+      "color": "from-yellow-500 to-orange-600",
+      "sort_order": 8
+    },
+    {
+      "id": "dotnet",
+      "name": ".NET",
+      "description": "Microsoft .NET framework",
+      "icon": "/icon/dotnet.svg",
+      "color": "from-purple-600 to-blue-600",
+      "sort_order": 9
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "description": "Python web framework",
+      "icon": "/icon/django.svg",
+      "color": "from-green-600 to-green-800",
+      "sort_order": 10
+    },
+    {
+      "id": "flask",
+      "name": "Flask",
+      "description": "Lightweight Python web framework",
+      "icon": "/icon/flask.svg",
+      "color": "from-gray-600 to-gray-800",
+      "sort_order": 11
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "description": "Go programming language",
+      "icon": "/icon/go.svg",
+      "color": "from-blue-400 to-blue-600",
+      "sort_order": 12
+    },
+    {
+      "id": "laravel",
+      "name": "Laravel",
+      "description": "PHP web application framework",
+      "icon": "/icon/laravel.svg",
+      "color": "from-red-500 to-red-700",
+      "sort_order": 13
+    },
+    {
+      "id": "spring",
+      "name": "Spring",
+      "description": "Java application framework",
+      "icon": "/icon/spring.svg",
+      "color": "from-green-500 to-green-700",
+      "sort_order": 14
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "description": "Systems programming language",
+      "icon": "/icon/rust.svg",
+      "color": "from-orange-600 to-orange-800",
+      "sort_order": 15
+    }
+  ],
+  "database": [
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "description": "Advanced open source relational database",
+      "icon": "/icon/postgresql.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "sqlite",
+      "name": "SQLite",
+      "description": "Lightweight embedded database",
+      "icon": "/icon/sqlite.svg",
+      "color": "from-blue-400 to-blue-600",
+      "sort_order": 2
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "description": "Document-oriented NoSQL database",
+      "icon": "/icon/mongodb.svg",
+      "color": "from-green-500 to-green-700",
+      "sort_order": 3
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "description": "In-memory data structure store",
+      "icon": "/icon/redis.svg",
+      "color": "from-red-500 to-red-700",
+      "sort_order": 4
+    },
+    {
+      "id": "mysql",
+      "name": "MySQL",
+      "description": "Popular open source relational database",
+      "icon": "/icon/mysql.svg",
+      "color": "from-blue-600 to-blue-800",
+      "sort_order": 5
+    },
+    {
+      "id": "neon",
+      "name": "Neon",
+      "description": "Serverless PostgreSQL",
+      "icon": "/icon/neon.svg",
+      "color": "from-green-400 to-green-600",
+      "sort_order": 6
+    },
+    {
+      "id": "planetscale",
+      "name": "PlanetScale",
+      "description": "Serverless MySQL platform",
+      "icon": "/icon/planetscale.svg",
+      "color": "from-black to-gray-800",
+      "sort_order": 7
+    },
+    {
+      "id": "mssql",
+      "name": "SQL Server",
+      "description": "Microsoft SQL Server database",
+      "icon": "/icon/mssql.svg",
+      "color": "from-red-600 to-red-800",
+      "sort_order": 8
+    }
+  ],
+  "orm": [
+    {
+      "id": "drizzle",
+      "name": "Drizzle ORM",
+      "description": "TypeScript ORM with SQL-like syntax",
+      "icon": "/icon/drizzle.svg",
+      "color": "from-green-500 to-green-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "prisma",
+      "name": "Prisma",
+      "description": "Next-generation ORM for Node.js and TypeScript",
+      "icon": "/icon/prisma.svg",
+      "color": "from-blue-500 to-blue-700",
+      "sort_order": 2
+    },
+    {
+      "id": "turso",
+      "name": "Turso",
+      "description": "Edge database based on libSQL",
+      "icon": "/icon/turso.svg",
+      "color": "from-teal-500 to-teal-700",
+      "sort_order": 3
+    },
+    {
+      "id": "typeorm",
+      "name": "TypeORM",
+      "description": "ORM for TypeScript and JavaScript",
+      "icon": "/icon/typeorm.svg",
+      "color": "from-orange-500 to-orange-700",
+      "sort_order": 4
+    },
+    {
+      "id": "entity-framework",
+      "name": "Entity Framework",
+      "description": "Microsoft's object-relational mapper for .NET",
+      "icon": "/icon/entity-framework.svg",
+      "color": "from-purple-600 to-blue-600",
+      "sort_order": 5
+    }
+  ],
+  "auth": [
+    {
+      "id": "better-auth",
+      "name": "Better Auth",
+      "description": "Modern authentication with social providers and 2FA",
+      "icon": "/icon/better-auth.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "nextauth",
+      "name": "NextAuth.js",
+      "description": "Complete authentication solution for Next.js",
+      "icon": "/icon/nextauth.svg",
+      "color": "from-black to-gray-800",
+      "sort_order": 2
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "description": "Complete user management with UI components",
+      "icon": "/icon/clerk.svg",
+      "color": "from-purple-500 to-purple-700",
+      "sort_order": 3
+    },
+    {
+      "id": "supabase-auth",
+      "name": "Supabase Auth",
+      "description": "Authentication with Supabase backend",
+      "icon": "/icon/supabase.svg",
+      "color": "from-green-500 to-green-700",
+      "sort_order": 4
+    },
+    {
+      "id": "firebase-auth",
+      "name": "Firebase Auth",
+      "description": "Google Firebase authentication service",
+      "icon": "/icon/firebase.svg",
+      "color": "from-yellow-500 to-orange-600",
+      "sort_order": 5
+    },
+    {
+      "id": "auth0",
+      "name": "Auth0",
+      "description": "Enterprise identity platform",
+      "icon": "/icon/auth0.svg",
+      "color": "from-orange-500 to-orange-700",
+      "sort_order": 6
+    },
+    {
+      "id": "bankid",
+      "name": "BankID",
+      "description": "Norwegian digital identity with highest security level",
+      "icon": "/icon/bankid.svg",
+      "color": "from-red-500 to-blue-700",
+      "sort_order": 7
+    },
+    {
+      "id": "vipps-login",
+      "name": "Vipps Login",
+      "description": "Norwegian mobile payment and authentication",
+      "icon": "/icon/vipps.svg",
+      "color": "from-orange-500 to-orange-700",
+      "sort_order": 8
+    },
+    {
+      "id": "identity-server",
+      "name": "Identity Server",
+      "description": "OpenID Connect and OAuth 2.0 framework for .NET",
+      "icon": "/icon/identity-server.svg",
+      "color": "from-blue-600 to-purple-600",
+      "sort_order": 9
+    },
+    {
+      "id": "custom-auth",
+      "name": "Custom Auth",
+      "description": "Build your own authentication system",
+      "icon": "/icon/custom-auth.svg",
+      "color": "from-gray-500 to-gray-700",
+      "sort_order": 10
+    },
+    {
+      "id": "none",
+      "name": "No Authentication",
+      "description": "Skip authentication setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "sort_order": 99
+    }
+  ],
+  "uiSystem": [
+    {
+      "id": "xala",
+      "name": "Xala UI System",
+      "description": "Enterprise-grade design system with Norwegian compliance",
+      "icon": "/icon/xala.svg",
+      "color": "from-blue-600 to-purple-600",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "tailwind",
+      "name": "Tailwind CSS",
+      "description": "Utility-first CSS framework",
+      "icon": "/icon/tailwind.svg",
+      "color": "from-cyan-400 to-cyan-600",
+      "sort_order": 2
+    },
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "description": "Beautifully designed components built with Radix UI",
+      "icon": "/icon/shadcn.svg",
+      "color": "from-gray-800 to-black",
+      "sort_order": 3
+    },
+    {
+      "id": "chakra",
+      "name": "Chakra UI",
+      "description": "Modular and accessible component library",
+      "icon": "/icon/chakra.svg",
+      "color": "from-teal-400 to-teal-600",
+      "sort_order": 4
+    },
+    {
+      "id": "mantine",
+      "name": "Mantine",
+      "description": "Full-featured React components library",
+      "icon": "/icon/mantine.svg",
+      "color": "from-blue-500 to-blue-700",
+      "sort_order": 5
+    },
+    {
+      "id": "mui",
+      "name": "Material-UI",
+      "description": "React components implementing Google's Material Design",
+      "icon": "/icon/mui.svg",
+      "color": "from-blue-600 to-blue-800",
+      "sort_order": 6
+    },
+    {
+      "id": "antd",
+      "name": "Ant Design",
+      "description": "Enterprise-class UI design language",
+      "icon": "/icon/antd.svg",
+      "color": "from-blue-500 to-blue-700",
+      "sort_order": 7
+    }
+  ],
+  "packageManager": [
+    {
+      "id": "pnpm",
+      "name": "pnpm",
+      "description": "Fast, disk space efficient package manager",
+      "icon": "/icon/pnpm.svg",
+      "color": "from-yellow-400 to-yellow-600",
+      "default": true,
+      "sort_order": 1
+    },
+    {
+      "id": "bun",
+      "name": "Bun",
+      "description": "Fast all-in-one JavaScript runtime and package manager",
+      "icon": "/icon/bun.svg",
+      "color": "from-yellow-400 to-yellow-600",
+      "sort_order": 2
+    },
+    {
+      "id": "npm",
+      "name": "npm",
+      "description": "Node package manager",
+      "icon": "/icon/npm.svg",
+      "color": "from-red-500 to-red-700",
+      "sort_order": 3
+    },
+    {
+      "id": "yarn",
+      "name": "Yarn",
+      "description": "Fast, reliable, and secure dependency management",
+      "icon": "/icon/yarn.svg",
+      "color": "from-blue-500 to-blue-700",
+      "sort_order": 4
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+[
+  {
+    "id": "next-supabase",
+    "name": "Next.js + Supabase",
+    "description": "Full-stack web app with authentication and database",
+    "icon": "/icon/next-supabase.svg",
+    "selections": {
+      "webFrontend": ["next-app"],
+      "backend": ["supabase"],
+      "database": ["postgresql"],
+      "orm": ["prisma"],
+      "auth": ["supabase-auth"],
+      "uiSystem": ["xala"],
+      "webDeploy": ["vercel"]
+    }
+  },
+  {
+    "id": "t3-stack",
+    "name": "T3 Stack",
+    "description": "Next.js, tRPC, Prisma, and NextAuth.js",
+    "icon": "/icon/t3-stack.svg",
+    "selections": {
+      "webFrontend": ["next-app"],
+      "api": ["trpc"],
+      "database": ["postgresql"],
+      "orm": ["prisma"],
+      "auth": ["nextauth"],
+      "uiSystem": ["tailwind"],
+      "webDeploy": ["vercel"]
+    }
+  },
+  {
+    "id": "astro-blog",
+    "name": "Astro Blog",
+    "description": "Static blog with content management",
+    "icon": "/icon/astro-blog.svg",
+    "selections": {
+      "webFrontend": ["astro"],
+      "cms": ["sanity"],
+      "uiSystem": ["tailwind"],
+      "analytics": ["vercel-analytics"],
+      "webDeploy": ["netlify"]
+    }
+  },
+  {
+    "id": "react-native-expo",
+    "name": "React Native + Expo",
+    "description": "Cross-platform mobile app with Expo",
+    "icon": "/icon/react-native-expo.svg",
+    "selections": {
+      "nativeFrontend": ["react-native"],
+      "backend": ["supabase"],
+      "database": ["postgresql"],
+      "auth": ["supabase-auth"],
+      "mobileDeploy": ["expo"]
+    }
+  },
+  {
+    "id": "sveltekit-pocketbase",
+    "name": "SvelteKit + PocketBase",
+    "description": "Modern web app with lightweight backend",
+    "icon": "/icon/sveltekit-pocketbase.svg",
+    "selections": {
+      "webFrontend": ["sveltekit"],
+      "backend": ["pocketbase"],
+      "database": ["sqlite"],
+      "auth": ["pocketbase-auth"],
+      "uiSystem": ["tailwind"],
+      "webDeploy": ["vercel"]
+    }
+  },
+  {
+    "id": "nuxt-strapi",
+    "name": "Nuxt + Strapi",
+    "description": "Vue.js app with headless CMS",
+    "icon": "/icon/nuxt-strapi.svg",
+    "selections": {
+      "webFrontend": ["nuxt"],
+      "cms": ["strapi"],
+      "database": ["postgresql"],
+      "auth": ["strapi-auth"],
+      "uiSystem": ["tailwind"],
+      "webDeploy": ["netlify"]
+    }
+  },
+  {
+    "id": "solid-start",
+    "name": "SolidStart",
+    "description": "High-performance web app with SolidJS",
+    "icon": "/icon/solid-start.svg",
+    "selections": {
+      "webFrontend": ["solid-start"],
+      "backend": ["hono"],
+      "database": ["sqlite"],
+      "orm": ["drizzle"],
+      "uiSystem": ["tailwind"],
+      "webDeploy": ["cloudflare"]
+    }
+  },
+  {
+    "id": "electron-tauri",
+    "name": "Electron + Tauri",
+    "description": "Cross-platform desktop application",
+    "icon": "/icon/electron-tauri.svg",
+    "selections": {
+      "nativeFrontend": ["electron"],
+      "webFrontend": ["react"],
+      "uiSystem": ["tailwind"],
+      "database": ["sqlite"],
+      "orm": ["prisma"]
+    }
+  },
+  {
+    "id": "norwegian-gov-stack",
+    "name": "Norwegian Government",
+    "description": "Compliant with Norwegian government standards",
+    "icon": "/icon/norwegian-gov-stack.svg",
+    "selections": {
+      "webFrontend": ["next-app"],
+      "backend": ["hono"],
+      "database": ["postgresql"],
+      "orm": ["prisma"],
+      "auth": ["bankid"],
+      "uiSystem": ["xala"],
+      "webDeploy": ["azure"]
+    }
+  },
+  {
+    "id": "saas-starter",
+    "name": "SaaS Starter",
+    "description": "Complete SaaS platform with billing",
+    "icon": "/icon/saas-starter.svg",
+    "selections": {
+      "webFrontend": ["next-app"],
+      "backend": ["hono"],
+      "database": ["postgresql"],
+      "orm": ["prisma"],
+      "auth": ["clerk"],
+      "uiSystem": ["xala"],
+      "analytics": ["posthog"],
+      "webDeploy": ["vercel"]
+    }
+  },
+  {
+    "id": "e-commerce-stack",
+    "name": "E-commerce Stack",
+    "description": "Online store with payment processing",
+    "icon": "/icon/e-commerce-stack.svg",
+    "selections": {
+      "webFrontend": ["next-app"],
+      "backend": ["hono"],
+      "database": ["postgresql"],
+      "orm": ["prisma"],
+      "auth": ["clerk"],
+      "uiSystem": ["xala"],
+      "webDeploy": ["vercel"]
+    }
+  },
+  {
+    "id": "minimal-blog",
+    "name": "Minimal Blog",
+    "description": "Simple static blog with markdown",
+    "icon": "/icon/minimal-blog.svg",
+    "selections": {
+      "webFrontend": ["astro"],
+      "uiSystem": ["tailwind"],
+      "analytics": ["vercel-analytics"],
+      "webDeploy": ["netlify"]
+    }
+  }
+]

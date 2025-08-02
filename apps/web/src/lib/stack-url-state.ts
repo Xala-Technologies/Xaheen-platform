@@ -4,7 +4,51 @@ import {
 	parseAsStringEnum,
 	type UrlKeys,
 } from "nuqs";
-import { DEFAULT_STACK, type StackState, TECH_OPTIONS } from "@/lib/constant";
+import techOptionsData from "@/data/tech-options.json";
+import type { StackState, TechOptions } from "@/lib/types/base";
+
+const TECH_OPTIONS = techOptionsData as TechOptions;
+
+// Default stack configuration
+const DEFAULT_STACK: StackState = {
+	projectName: "",
+	webFrontend: ["next-app"],
+	nativeFrontend: [],
+	runtime: "node",
+	backend: "hono",
+	database: "postgresql",
+	orm: "prisma",
+	dbSetup: "docker",
+	auth: "better-auth",
+	packageManager: "bun",
+	uiSystem: "xala",
+	compliance: [],
+	addons: [],
+	notifications: "resend",
+	documents: "uploadthing",
+	payments: "stripe",
+	analytics: "vercel-analytics",
+	monitoring: "sentry",
+	messaging: "rabbitmq",
+	testing: "vitest",
+	devops: "github-actions",
+	search: "none",
+	caching: "none",
+	backgroundJobs: "none",
+	i18n: "next-intl",
+	cms: "none",
+	security: "none",
+	saasAdmin: "none",
+	subscriptions: "none",
+	licensing: "none",
+	rbac: "none",
+	multiTenancy: "none",
+	examples: [],
+	git: "github",
+	install: "create-t3-app",
+	api: "trpc",
+	webDeploy: "vercel"
+};
 
 const getValidIds = (category: keyof typeof TECH_OPTIONS): string[] => {
 	return TECH_OPTIONS[category]?.map((opt) => opt.id) ?? [];

@@ -5,11 +5,13 @@
 
 export type {
 	TechOption,
+	TechOptions,
 	ProjectTypeConfig,
 	PresetTemplate,
 	StackState,
 	TechCategory,
 	ProjectType,
+	ProjectTypeId,
 	CompatibilityResult,
 	ReadonlyStackState
 } from './base';

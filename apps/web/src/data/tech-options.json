@@ -1,0 +1,977 @@
+{
+  "api": [
+    {
+      "id": "trpc",
+      "name": "tRPC",
+      "description": "End-to-end typesafe APIs",
+      "icon": "/icon/trpc.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true
+    },
+    {
+      "id": "orpc",
+      "name": "oRPC",
+      "description": "Typesafe APIs Made Simple",
+      "icon": "/icon/orpc.svg",
+      "color": "from-indigo-400 to-indigo-600"
+    },
+    {
+      "id": "none",
+      "name": "No API",
+      "description": "No API layer (API routes disabled)",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "webFrontend": [
+    {
+      "id": "tanstack-router",
+      "name": "TanStack Router",
+      "description": "Modern type-safe router for React",
+      "icon": "/icon/tanstack.svg",
+      "color": "from-blue-400 to-blue-600",
+      "default": true
+    },
+    {
+      "id": "react-router",
+      "name": "React Router",
+      "description": "Declarative routing for React",
+      "icon": "/icon/react-router.svg",
+      "color": "from-red-400 to-red-600"
+    },
+    {
+      "id": "next-app",
+      "name": "Next.js App Router",
+      "description": "Full-stack React framework with App Router",
+      "icon": "/icon/next.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "remix",
+      "name": "Remix",
+      "description": "Full stack web framework focused on web standards",
+      "icon": "/icon/remix.svg",
+      "color": "from-blue-600 to-blue-800"
+    },
+    {
+      "id": "astro",
+      "name": "Astro",
+      "description": "Modern static site builder",
+      "icon": "/icon/astro.svg",
+      "color": "from-orange-400 to-orange-600"
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "description": "Next generation frontend tooling",
+      "icon": "/icon/vite.svg",
+      "color": "from-purple-400 to-purple-600"
+    }
+  ],
+  "nativeFrontend": [
+    {
+      "id": "react-native",
+      "name": "React Native",
+      "description": "Cross-platform mobile development",
+      "icon": "/icon/react-native.svg",
+      "color": "from-blue-400 to-blue-600"
+    },
+    {
+      "id": "expo",
+      "name": "Expo",
+      "description": "Platform for universal React applications",
+      "icon": "/icon/expo.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "tamagui",
+      "name": "Tamagui",
+      "description": "Universal UI components for React Native and Web",
+      "icon": "/icon/tamagui.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "ionic",
+      "name": "Ionic",
+      "description": "Cross-platform mobile app development",
+      "icon": "/icon/ionic.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "capacitor",
+      "name": "Capacitor",
+      "description": "Cross-platform native runtime",
+      "icon": "/icon/capacitor.svg",
+      "color": "from-blue-400 to-blue-600"
+    },
+    {
+      "id": "flutter",
+      "name": "Flutter",
+      "description": "Google's UI toolkit for mobile, web, and desktop",
+      "icon": "/icon/flutter.svg",
+      "color": "from-blue-400 to-blue-600"
+    },
+    {
+      "id": "electron",
+      "name": "Electron",
+      "description": "Build cross-platform desktop apps",
+      "icon": "/icon/electron.svg",
+      "color": "from-teal-400 to-teal-600"
+    },
+    {
+      "id": "tauri",
+      "name": "Tauri",
+      "description": "Rust-powered desktop applications",
+      "icon": "/icon/tauri.svg",
+      "color": "from-orange-400 to-orange-600"
+    },
+    {
+      "id": "none",
+      "name": "Web Only",
+      "description": "No native frontend (web only)",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "runtime": [
+    {
+      "id": "node",
+      "name": "Node.js",
+      "description": "JavaScript runtime built on Chrome's V8",
+      "icon": "/icon/node.svg",
+      "color": "from-green-500 to-green-700",
+      "default": true
+    },
+    {
+      "id": "bun",
+      "name": "Bun",
+      "description": "Fast all-in-one JavaScript runtime",
+      "icon": "/icon/bun.svg",
+      "color": "from-yellow-400 to-yellow-600"
+    },
+    {
+      "id": "deno",
+      "name": "Deno",
+      "description": "Secure runtime for JavaScript and TypeScript",
+      "icon": "/icon/deno.svg",
+      "color": "from-gray-800 to-gray-900"
+    }
+  ],
+  "backend": [
+    {
+      "id": "hono",
+      "name": "Hono",
+      "description": "Ultrafast web framework",
+      "icon": "/icon/hono.svg",
+      "color": "from-orange-400 to-orange-600",
+      "default": true
+    },
+    {
+      "id": "fastify",
+      "name": "Fastify",
+      "description": "Fast and low overhead web framework",
+      "icon": "/icon/fastify.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "express",
+      "name": "Express",
+      "description": "Fast, unopinionated web framework",
+      "icon": "/icon/express.svg",
+      "color": "from-gray-600 to-gray-800"
+    },
+    {
+      "id": "nestjs",
+      "name": "NestJS",
+      "description": "Progressive Node.js framework",
+      "icon": "/icon/nestjs.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "koa",
+      "name": "Koa",
+      "description": "Expressive middleware for Node.js",
+      "icon": "/icon/koa.svg",
+      "color": "from-gray-600 to-gray-800"
+    },
+    {
+      "id": "elysia",
+      "name": "Elysia",
+      "description": "Ergonomic framework for Bun",
+      "icon": "/icon/elysia.svg",
+      "color": "from-blue-400 to-blue-600"
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "description": "Open source Firebase alternative",
+      "icon": "/icon/supabase.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "firebase",
+      "name": "Firebase",
+      "description": "Google's mobile and web app platform",
+      "icon": "/icon/firebase.svg",
+      "color": "from-yellow-400 to-orange-500"
+    },
+    {
+      "id": "dotnet",
+      "name": ".NET",
+      "description": "Microsoft's development platform",
+      "icon": "/icon/dotnet.svg",
+      "color": "from-purple-500 to-purple-700"
+    },
+    {
+      "id": "laravel",
+      "name": "Laravel",
+      "description": "PHP web application framework",
+      "icon": "/icon/laravel.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "description": "High-level Python web framework",
+      "icon": "/icon/django.svg",
+      "color": "from-green-600 to-green-800"
+    },
+    {
+      "id": "flask",
+      "name": "Flask",
+      "description": "Lightweight Python web framework",
+      "icon": "/icon/flask.svg",
+      "color": "from-gray-600 to-gray-800"
+    },
+    {
+      "id": "spring",
+      "name": "Spring Boot",
+      "description": "Java-based framework",
+      "icon": "/icon/spring.svg",
+      "color": "from-green-500 to-green-700"
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "description": "Go web applications",
+      "icon": "/icon/go.svg",
+      "color": "from-blue-400 to-blue-600"
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "description": "Rust web applications",
+      "icon": "/icon/rust.svg",
+      "color": "from-orange-600 to-orange-800"
+    }
+  ],
+  "database": [
+    {
+      "id": "sqlite",
+      "name": "SQLite",
+      "description": "Lightweight embedded database",
+      "icon": "/icon/sqlite.svg",
+      "color": "from-blue-400 to-blue-600",
+      "default": true
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "description": "Advanced open source database",
+      "icon": "/icon/postgresql.svg",
+      "color": "from-blue-600 to-blue-800"
+    },
+    {
+      "id": "mysql",
+      "name": "MySQL",
+      "description": "Popular open source database",
+      "icon": "/icon/mysql.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "description": "Document-oriented database",
+      "icon": "/icon/mongodb.svg",
+      "color": "from-green-500 to-green-700"
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "description": "In-memory data structure store",
+      "icon": "/icon/redis.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "description": "Hosted PostgreSQL with real-time features",
+      "icon": "/icon/supabase.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "neon",
+      "name": "Neon",
+      "description": "Serverless PostgreSQL",
+      "icon": "/icon/neon.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "planetscale",
+      "name": "PlanetScale",
+      "description": "Serverless MySQL platform",
+      "icon": "/icon/planetscale.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "turso",
+      "name": "Turso",
+      "description": "Edge SQLite database",
+      "icon": "/icon/turso.svg",
+      "color": "from-teal-400 to-teal-600"
+    },
+    {
+      "id": "mssql",
+      "name": "SQL Server",
+      "description": "Microsoft SQL Server",
+      "icon": "/icon/mssql.svg",
+      "color": "from-red-600 to-red-800"
+    }
+  ],
+  "orm": [
+    {
+      "id": "prisma",
+      "name": "Prisma",
+      "description": "Next-generation ORM for Node.js and TypeScript",
+      "icon": "/icon/prisma.svg",
+      "color": "from-gray-800 to-gray-900",
+      "default": true
+    },
+    {
+      "id": "drizzle",
+      "name": "Drizzle ORM",
+      "description": "TypeScript ORM that's production ready",
+      "icon": "/icon/drizzle.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "typeorm",
+      "name": "TypeORM",
+      "description": "ORM for TypeScript and JavaScript",
+      "icon": "/icon/typeorm.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "entity-framework",
+      "name": "Entity Framework",
+      "description": "Microsoft's ORM for .NET",
+      "icon": "/icon/entity-framework.svg",
+      "color": "from-purple-500 to-purple-700"
+    },
+    {
+      "id": "none",
+      "name": "No ORM",
+      "description": "Raw database queries",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "auth": [
+    {
+      "id": "better-auth",
+      "name": "Better Auth",
+      "description": "Modern authentication with social providers and 2FA",
+      "icon": "/icon/better-auth.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true
+    },
+    {
+      "id": "nextauth",
+      "name": "NextAuth.js",
+      "description": "Complete authentication solution for Next.js",
+      "icon": "/icon/nextauth.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "description": "Complete user management with UI components",
+      "icon": "/icon/clerk.svg",
+      "color": "from-purple-500 to-purple-700"
+    },
+    {
+      "id": "supabase-auth",
+      "name": "Supabase Auth",
+      "description": "Authentication with Supabase backend",
+      "icon": "/icon/supabase.svg",
+      "color": "from-green-400 to-green-600"
+    },
+    {
+      "id": "firebase-auth",
+      "name": "Firebase Auth",
+      "description": "Google Firebase authentication service",
+      "icon": "/icon/firebase.svg",
+      "color": "from-yellow-400 to-orange-500"
+    },
+    {
+      "id": "auth0",
+      "name": "Auth0",
+      "description": "Enterprise identity platform",
+      "icon": "/icon/auth0.svg",
+      "color": "from-orange-500 to-orange-700"
+    },
+    {
+      "id": "bankid",
+      "name": "BankID",
+      "description": "Norwegian digital identity with highest security level",
+      "icon": "/icon/bankid.svg",
+      "color": "from-red-600 to-red-800"
+    },
+    {
+      "id": "vipps",
+      "name": "Vipps Login",
+      "description": "Norwegian mobile payment and authentication",
+      "icon": "/icon/vipps.svg",
+      "color": "from-orange-500 to-orange-700"
+    },
+    {
+      "id": "custom-auth",
+      "name": "Custom Auth",
+      "description": "Build your own authentication system",
+      "icon": "/icon/custom-auth.svg",
+      "color": "from-gray-600 to-gray-800"
+    },
+    {
+      "id": "none",
+      "name": "No Authentication",
+      "description": "Skip authentication setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "uiSystem": [
+    {
+      "id": "xala",
+      "name": "Xala UI System",
+      "description": "Professional Norwegian-compliant design system",
+      "icon": "/icon/xala.svg",
+      "color": "from-blue-600 to-blue-800",
+      "default": true
+    },
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "description": "Beautifully designed components",
+      "icon": "/icon/shadcn.svg",
+      "color": "from-gray-800 to-gray-900"
+    },
+    {
+      "id": "tailwind",
+      "name": "Tailwind CSS",
+      "description": "Utility-first CSS framework",
+      "icon": "/icon/tailwind.svg",
+      "color": "from-cyan-400 to-cyan-600"
+    },
+    {
+      "id": "chakra",
+      "name": "Chakra UI",
+      "description": "Modular and accessible component library",
+      "icon": "/icon/chakra.svg",
+      "color": "from-teal-400 to-teal-600"
+    },
+    {
+      "id": "mantine",
+      "name": "Mantine",
+      "description": "Full-featured React components library",
+      "icon": "/icon/mantine.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "mui",
+      "name": "Material-UI",
+      "description": "React components implementing Google's Material Design",
+      "icon": "/icon/mui.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "antd",
+      "name": "Ant Design",
+      "description": "Enterprise-class UI design language",
+      "icon": "/icon/antd.svg",
+      "color": "from-blue-500 to-blue-700"
+    }
+  ],
+  "packageManager": [
+    {
+      "id": "pnpm",
+      "name": "pnpm",
+      "description": "Fast, disk space efficient package manager",
+      "icon": "/icon/pnpm.svg",
+      "color": "from-yellow-400 to-yellow-600",
+      "default": true
+    },
+    {
+      "id": "npm",
+      "name": "npm",
+      "description": "Node package manager",
+      "icon": "/icon/npm.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "yarn",
+      "name": "Yarn",
+      "description": "Fast, reliable, and secure dependency management",
+      "icon": "/icon/yarn.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "bun",
+      "name": "Bun",
+      "description": "Fast all-in-one JavaScript runtime and package manager",
+      "icon": "/icon/bun.svg",
+      "color": "from-yellow-400 to-yellow-600"
+    }
+  ],
+  "dbSetup": [
+    {
+      "id": "docker",
+      "name": "Docker",
+      "description": "Containerized database setup",
+      "icon": "/icon/docker.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true
+    },
+    {
+      "id": "local",
+      "name": "Local",
+      "description": "Local database installation",
+      "icon": "/icon/database.svg",
+      "color": "from-gray-500 to-gray-700"
+    },
+    {
+      "id": "cloud",
+      "name": "Cloud",
+      "description": "Cloud-hosted database",
+      "icon": "/icon/cloud.svg",
+      "color": "from-green-500 to-green-700"
+    }
+  ],
+  "compliance": [
+    {
+      "id": "gdpr",
+      "name": "GDPR",
+      "description": "General Data Protection Regulation compliance",
+      "icon": "/icon/gdpr.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "norwegian",
+      "name": "Norwegian",
+      "description": "Norwegian government compliance",
+      "icon": "/icon/norway.svg",
+      "color": "from-red-500 to-blue-700"
+    },
+    {
+      "id": "wcag-aaa",
+      "name": "WCAG AAA",
+      "description": "Web Content Accessibility Guidelines AAA",
+      "icon": "/icon/accessibility.svg",
+      "color": "from-green-500 to-green-700"
+    },
+    {
+      "id": "iso27001",
+      "name": "ISO 27001",
+      "description": "Information security management",
+      "icon": "/icon/security.svg",
+      "color": "from-purple-500 to-purple-700"
+    }
+  ],
+  "addons": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No additional addons",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "notifications": [
+    {
+      "id": "resend",
+      "name": "Resend",
+      "description": "Email API for developers",
+      "icon": "/icon/resend.svg",
+      "color": "from-black to-gray-800",
+      "default": true
+    },
+    {
+      "id": "nodemailer",
+      "name": "Nodemailer",
+      "description": "Send emails via SMTP",
+      "icon": "/icon/email.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No notification setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "documents": [
+    {
+      "id": "uploadthing",
+      "name": "UploadThing",
+      "description": "File uploads for Next.js",
+      "icon": "/icon/uploadthing.svg",
+      "color": "from-red-500 to-red-700",
+      "default": true
+    },
+    {
+      "id": "cloudinary",
+      "name": "Cloudinary",
+      "description": "Image and video management",
+      "icon": "/icon/cloudinary.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No document management",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "payments": [
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "description": "Complete payment processing",
+      "icon": "/icon/stripe.svg",
+      "color": "from-purple-500 to-purple-700",
+      "default": true
+    },
+    {
+      "id": "vipps",
+      "name": "Vipps",
+      "description": "Norwegian mobile payment",
+      "icon": "/icon/vipps.svg",
+      "color": "from-orange-500 to-orange-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No payment integration",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "analytics": [
+    {
+      "id": "vercel-analytics",
+      "name": "Vercel Analytics",
+      "description": "Privacy-friendly web analytics",
+      "icon": "/icon/vercel.svg",
+      "color": "from-black to-gray-800",
+      "default": true
+    },
+    {
+      "id": "google-analytics",
+      "name": "Google Analytics",
+      "description": "Web analytics platform",
+      "icon": "/icon/google-analytics.svg",
+      "color": "from-orange-500 to-orange-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No analytics setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "monitoring": [
+    {
+      "id": "sentry",
+      "name": "Sentry",
+      "description": "Application monitoring and error tracking",
+      "icon": "/icon/sentry.svg",
+      "color": "from-purple-500 to-purple-700",
+      "default": true
+    },
+    {
+      "id": "datadog",
+      "name": "Datadog",
+      "description": "Infrastructure monitoring",
+      "icon": "/icon/datadog.svg",
+      "color": "from-purple-500 to-purple-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No monitoring setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "messaging": [
+    {
+      "id": "rabbitmq",
+      "name": "RabbitMQ",
+      "description": "Message broker for distributed systems",
+      "icon": "/icon/rabbitmq.svg",
+      "color": "from-orange-500 to-orange-700",
+      "default": true
+    },
+    {
+      "id": "kafka",
+      "name": "Apache Kafka",
+      "description": "Distributed streaming platform",
+      "icon": "/icon/kafka.svg",
+      "color": "from-black to-gray-800"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No messaging setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "testing": [
+    {
+      "id": "vitest",
+      "name": "Vitest",
+      "description": "Fast unit test framework",
+      "icon": "/icon/vitest.svg",
+      "color": "from-green-500 to-green-700",
+      "default": true
+    },
+    {
+      "id": "jest",
+      "name": "Jest",
+      "description": "JavaScript testing framework",
+      "icon": "/icon/jest.svg",
+      "color": "from-red-500 to-red-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No testing setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "devops": [
+    {
+      "id": "github-actions",
+      "name": "GitHub Actions",
+      "description": "CI/CD with GitHub Actions",
+      "icon": "/icon/github.svg",
+      "color": "from-black to-gray-800",
+      "default": true
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "description": "Containerization platform",
+      "icon": "/icon/docker.svg",
+      "color": "from-blue-500 to-blue-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No DevOps setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "search": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No search functionality",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "caching": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No caching setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "backgroundJobs": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No background jobs",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "i18n": [
+    {
+      "id": "next-intl",
+      "name": "next-intl",
+      "description": "Internationalization for Next.js",
+      "icon": "/icon/i18n.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No internationalization",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "cms": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No CMS integration",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "security": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No additional security",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "saasAdmin": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No SaaS admin features",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "subscriptions": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No subscription management",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "licensing": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No licensing system",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "rbac": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No role-based access control",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "multiTenancy": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No multi-tenancy support",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "examples": [
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No example code",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600",
+      "default": true
+    }
+  ],
+  "git": [
+    {
+      "id": "github",
+      "name": "GitHub",
+      "description": "GitHub repository hosting",
+      "icon": "/icon/github.svg",
+      "color": "from-black to-gray-800",
+      "default": true
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab",
+      "description": "GitLab repository hosting",
+      "icon": "/icon/gitlab.svg",
+      "color": "from-orange-500 to-orange-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No git repository",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ],
+  "install": [
+    {
+      "id": "create-t3-app",
+      "name": "create-t3-app",
+      "description": "T3 Stack application installer",
+      "icon": "/icon/t3.svg",
+      "color": "from-blue-500 to-blue-700",
+      "default": true
+    }
+  ],
+  "webDeploy": [
+    {
+      "id": "vercel",
+      "name": "Vercel",
+      "description": "Deploy to Vercel platform",
+      "icon": "/icon/vercel.svg",
+      "color": "from-black to-gray-800",
+      "default": true
+    },
+    {
+      "id": "netlify",
+      "name": "Netlify",
+      "description": "Deploy to Netlify platform",
+      "icon": "/icon/netlify.svg",
+      "color": "from-teal-500 to-teal-700"
+    },
+    {
+      "id": "none",
+      "name": "None",
+      "description": "No deployment setup",
+      "icon": "",
+      "color": "from-gray-400 to-gray-600"
+    }
+  ]
+}

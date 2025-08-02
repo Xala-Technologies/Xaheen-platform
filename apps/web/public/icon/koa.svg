@@ -1,0 +1,11 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="24" rx="4" fill="url(#koa-gradient)"/>
+  <path d="M12 4C8 4 4 8 4 12s4 8 8 8 8-4 8-8-4-8-8-8z" fill="white"/>
+  <path d="M12 8c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4z" fill="url(#koa-gradient)"/>
+  <defs>
+    <linearGradient id="koa-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#33333D"/>
+      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    </linearGradient>
+  </defs>
+</svg>

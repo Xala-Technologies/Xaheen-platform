@@ -11,6 +11,7 @@ export interface TechOption {
 	readonly color: string;
 	readonly default?: boolean;
 	readonly className?: string;
+	readonly sort_order?: number;
 }
 
 export interface ProjectTypeConfig {
@@ -120,7 +121,9 @@ export type TechCategory = keyof Pick<StackState,
 	| 'webDeploy'
 >;
 
-export type ProjectType = 
+export type TechOptions = Record<TechCategory, readonly TechOption[]>;
+
+export type ProjectTypeId = 
 	| "landing-page"
 	| "ecommerce"
 	| "blog"
@@ -133,6 +136,16 @@ export type ProjectType =
 	| "b2b-platform"
 	| "b2c-app"
 	| "marketplace";
+
+export interface ProjectType {
+	readonly id: string;
+	readonly name: string;
+	readonly description: string;
+	readonly icon: string;
+	readonly color: string;
+	readonly relevantCategories: readonly string[];
+	readonly defaultSelections: Record<string, string | string[]>;
+}
 
 export interface CompatibilityResult {
 	adjustedStack: StackState | null;

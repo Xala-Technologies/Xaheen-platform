@@ -1,5 +1,10 @@
-import type { ProjectType, TechCategory } from "@/lib/types";
-import { PROJECT_TYPES, TECH_OPTIONS, type StackState } from "@/lib/constant";
+import techOptionsData from "@/data/tech-options.json";
+import projectTypesData from "@/data/project-types.json";
+import techCompatibilityData from "@/data/tech-compatibility.json";
+import type { StackState, TechOptions, ProjectType, TechCategory, ProjectTypeId } from "@/lib/types/base";
+
+const TECH_OPTIONS = techOptionsData as TechOptions;
+const PROJECT_TYPES = projectTypesData as unknown as readonly ProjectType[];
 
 /**
  * Base compatibility interface
@@ -71,256 +76,9 @@ export interface TechCompatibility {
 }
 
 /**
- * Comprehensive technology compatibility matrix
+ * Comprehensive technology compatibility matrix loaded from JSON
  */
-export const TECH_COMPATIBILITY: TechCompatibility = {
-	backend: {
-		// Node.js backends
-		hono: {
-			supportedOrms: ["drizzle", "prisma", "none"],
-			supportedDatabases: ["sqlite", "postgresql", "mysql", "mongodb", "none"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "custom-auth", "none"],
-			supportedRuntimes: ["node", "bun", "deno"],
-			incompatibleWith: ["entity-framework", "identity-server"],
-		},
-		fastify: {
-			supportedOrms: ["drizzle", "prisma", "none"],
-			supportedDatabases: ["sqlite", "postgresql", "mysql", "mongodb", "none"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "custom-auth", "none"],
-			supportedRuntimes: ["node", "bun"],
-			incompatibleWith: ["entity-framework", "identity-server"],
-		},
-		express: {
-			supportedOrms: ["drizzle", "prisma", "none"],
-			supportedDatabases: ["sqlite", "postgresql", "mysql", "mongodb", "none"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "custom-auth", "none"],
-			supportedRuntimes: ["node", "bun"],
-			incompatibleWith: ["entity-framework", "identity-server"],
-		},
-		nestjs: {
-			supportedOrms: ["drizzle", "prisma", "typeorm", "none"],
-			supportedDatabases: ["sqlite", "postgresql", "mysql", "mongodb", "none"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "custom-auth", "none"],
-			supportedRuntimes: ["node", "bun"],
-			incompatibleWith: ["entity-framework", "identity-server"],
-		},
-		// .NET backends
-		dotnet: {
-			supportedOrms: ["entity-framework", "none"],
-			supportedDatabases: ["mssql", "postgresql", "mysql", "sqlite", "none"],
-			supportedAuth: ["identity-server", "custom-auth", "none"],
-			supportedRuntimes: ["dotnet"],
-			incompatibleWith: ["drizzle", "prisma", "typeorm", "better-auth", "nextauth", "clerk", "supabase-auth"],
-		},
-		// PHP backends
-		laravel: {
-			supportedOrms: ["eloquent", "none"],
-			supportedDatabases: ["mysql", "postgresql", "sqlite", "none"],
-			supportedAuth: ["laravel-auth", "custom-auth", "none"],
-			supportedRuntimes: ["php"],
-			incompatibleWith: ["drizzle", "prisma", "typeorm", "entity-framework", "better-auth", "nextauth", "clerk", "supabase-auth", "identity-server"],
-		},
-		// Python backends
-		django: {
-			supportedOrms: ["django-orm", "none"],
-			supportedDatabases: ["postgresql", "mysql", "sqlite", "none"],
-			supportedAuth: ["django-auth", "custom-auth", "none"],
-			supportedRuntimes: ["python"],
-			incompatibleWith: ["drizzle", "prisma", "typeorm", "entity-framework", "better-auth", "nextauth", "clerk", "supabase-auth", "identity-server"],
-		},
-		// Supabase backend
-		supabase: {
-			supportedOrms: ["none"],
-			supportedDatabases: ["postgresql"],
-			supportedAuth: ["supabase-auth"],
-			supportedRuntimes: ["node", "bun", "deno"],
-			incompatibleWith: ["sqlite", "mysql", "mongodb", "mssql", "drizzle", "prisma", "typeorm", "entity-framework"],
-		},
-		// Firebase backend
-		firebase: {
-			supportedOrms: ["none"],
-			supportedDatabases: ["firestore"],
-			supportedAuth: ["firebase-auth"],
-			supportedRuntimes: ["node", "bun"],
-			incompatibleWith: ["sqlite", "mysql", "postgresql", "mongodb", "mssql", "drizzle", "prisma", "typeorm", "entity-framework"],
-		},
-	},
-	frontend: {
-		// React-based frontends
-		"tanstack-router": {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "supabase", "firebase", "dotnet", "laravel", "django"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth", "custom-auth", "none"],
-			incompatibleWith: [],
-		},
-		"next-app": {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "supabase", "firebase", "dotnet", "laravel", "django"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth", "custom-auth", "none"],
-			incompatibleWith: [],
-		},
-		// Angular frontend
-		angular: {
-			supportedBackends: ["dotnet", "nestjs", "express", "fastify", "hono", "laravel", "django", "supabase", "firebase"],
-			supportedAuth: ["identity-server", "better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth", "custom-auth", "none"],
-			incompatibleWith: [],
-		},
-		// Blazor frontend (Microsoft)
-		blazor: {
-			supportedBackends: ["dotnet"],
-			supportedAuth: ["identity-server", "custom-auth", "none"],
-			incompatibleWith: ["better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth"],
-		},
-		// Vue-based frontends
-		nuxt: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "supabase", "firebase", "dotnet", "laravel", "django"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth", "custom-auth", "none"],
-			incompatibleWith: [],
-		},
-		// Svelte frontend
-		sveltekit: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "supabase", "firebase", "dotnet", "laravel", "django"],
-			supportedAuth: ["better-auth", "nextauth", "clerk", "supabase-auth", "firebase-auth", "custom-auth", "none"],
-			incompatibleWith: [],
-		},
-	},
-	database: {
-		sqlite: {
-			supportedOrms: ["drizzle", "prisma", "none"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel", "django"],
-			incompatibleWith: ["supabase", "firebase"],
-		},
-		postgresql: {
-			supportedOrms: ["drizzle", "prisma", "typeorm", "entity-framework", "django-orm", "none"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel", "django", "supabase"],
-			incompatibleWith: ["firebase"],
-		},
-		mysql: {
-			supportedOrms: ["drizzle", "prisma", "typeorm", "entity-framework", "eloquent", "django-orm", "none"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel", "django"],
-			incompatibleWith: ["supabase", "firebase"],
-		},
-		mongodb: {
-			supportedOrms: ["prisma", "none"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			incompatibleWith: ["drizzle", "typeorm", "entity-framework", "eloquent", "django-orm", "supabase", "firebase", "dotnet", "laravel", "django"],
-		},
-		mssql: {
-			supportedOrms: ["entity-framework", "none"],
-			supportedBackends: ["dotnet"],
-			incompatibleWith: ["drizzle", "prisma", "typeorm", "eloquent", "django-orm", "hono", "fastify", "express", "nestjs", "supabase", "firebase", "laravel", "django"],
-		},
-		firestore: {
-			supportedOrms: ["none"],
-			supportedBackends: ["firebase"],
-			incompatibleWith: ["drizzle", "prisma", "typeorm", "entity-framework", "eloquent", "django-orm"],
-		},
-	},
-	orm: {
-		drizzle: {
-			supportedDatabases: ["sqlite", "postgresql", "mysql"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			incompatibleWith: ["mongodb", "mssql", "firestore", "dotnet", "laravel", "django", "supabase", "firebase"],
-		},
-		prisma: {
-			supportedDatabases: ["sqlite", "postgresql", "mysql", "mongodb"],
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			incompatibleWith: ["mssql", "firestore", "dotnet", "laravel", "django", "supabase", "firebase"],
-		},
-		typeorm: {
-			supportedDatabases: ["postgresql", "mysql"],
-			supportedBackends: ["nestjs"],
-			incompatibleWith: ["sqlite", "mongodb", "mssql", "firestore", "hono", "fastify", "express", "dotnet", "laravel", "django", "supabase", "firebase"],
-		},
-		"entity-framework": {
-			supportedDatabases: ["mssql", "postgresql", "mysql", "sqlite"],
-			supportedBackends: ["dotnet"],
-			incompatibleWith: ["mongodb", "firestore", "hono", "fastify", "express", "nestjs", "laravel", "django", "supabase", "firebase"],
-		},
-		eloquent: {
-			supportedDatabases: ["mysql", "postgresql", "sqlite"],
-			supportedBackends: ["laravel"],
-			incompatibleWith: ["mongodb", "mssql", "firestore", "hono", "fastify", "express", "nestjs", "dotnet", "django", "supabase", "firebase"],
-		},
-		"django-orm": {
-			supportedDatabases: ["postgresql", "mysql", "sqlite"],
-			supportedBackends: ["django"],
-			incompatibleWith: ["mongodb", "mssql", "firestore", "hono", "fastify", "express", "nestjs", "dotnet", "laravel", "supabase", "firebase"],
-		},
-	},
-	auth: {
-		"better-auth": {
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit"],
-			incompatibleWith: ["dotnet", "laravel", "django", "supabase", "firebase", "blazor"],
-		},
-		nextauth: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit"],
-			incompatibleWith: ["dotnet", "laravel", "django", "supabase", "firebase", "blazor"],
-		},
-		clerk: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit"],
-			incompatibleWith: ["dotnet", "laravel", "django", "supabase", "firebase", "blazor"],
-		},
-		"identity-server": {
-			supportedBackends: ["dotnet"],
-			supportedFrontends: ["angular", "blazor"],
-			incompatibleWith: ["hono", "fastify", "express", "nestjs", "laravel", "django", "supabase", "firebase", "tanstack-router", "next-app", "nuxt", "sveltekit"],
-		},
-		"supabase-auth": {
-			supportedBackends: ["supabase"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit"],
-			incompatibleWith: ["dotnet", "laravel", "django", "firebase", "blazor"],
-		},
-		"firebase-auth": {
-			supportedBackends: ["firebase"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit"],
-			incompatibleWith: ["dotnet", "laravel", "django", "supabase", "blazor"],
-		},
-		bankid: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel", "django"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit", "blazor"],
-			incompatibleWith: ["supabase", "firebase"],
-		},
-		vipps: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel", "django"],
-			supportedFrontends: ["tanstack-router", "next-app", "angular", "nuxt", "sveltekit", "blazor"],
-			incompatibleWith: ["supabase", "firebase"],
-		},
-	},
-	runtime: {
-		node: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			supportedPackageManagers: ["npm", "yarn", "pnpm"],
-			incompatibleWith: ["dotnet", "laravel", "django"],
-		},
-		bun: {
-			supportedBackends: ["hono", "fastify", "express", "nestjs"],
-			supportedPackageManagers: ["bun"],
-			incompatibleWith: ["dotnet", "laravel", "django"],
-		},
-		deno: {
-			supportedBackends: ["hono"],
-			supportedPackageManagers: ["deno"],
-			incompatibleWith: ["fastify", "express", "nestjs", "dotnet", "laravel", "django"],
-		},
-		dotnet: {
-			supportedBackends: ["dotnet"],
-			supportedPackageManagers: ["dotnet"],
-			incompatibleWith: ["hono", "fastify", "express", "nestjs", "laravel", "django"],
-		},
-		php: {
-			supportedBackends: ["laravel"],
-			supportedPackageManagers: ["composer"],
-			incompatibleWith: ["hono", "fastify", "express", "nestjs", "dotnet", "django"],
-		},
-		python: {
-			supportedBackends: ["django"],
-			supportedPackageManagers: ["pip"],
-			incompatibleWith: ["hono", "fastify", "express", "nestjs", "dotnet", "laravel"],
-		},
-	},
-};
+export const TECH_COMPATIBILITY: TechCompatibility = techCompatibilityData as TechCompatibility;
 
 /**
  * Type guards for compatibility interfaces
@@ -464,16 +222,16 @@ export const getDisabledOptions = (
 /**
  * Get filtered categories based on project type
  */
-export const getFilteredCategories = (projectType: ProjectType): TechCategory[] => {
-	const projectConfig = PROJECT_TYPES.find((p: any) => p.id === projectType);
+export const getFilteredCategories = (projectType: ProjectTypeId): TechCategory[] => {
+	const projectConfig = PROJECT_TYPES.find((p: ProjectType) => p.id === projectType);
 	return (projectConfig?.relevantCategories as TechCategory[]) || [];
 };
 
 /**
  * Get default stack for a project type
  */
-export const getProjectTypeDefaults = (projectType: ProjectType): Partial<StackState> => {
-	const projectConfig = PROJECT_TYPES.find((p: any) => p.id === projectType);
+export const getProjectTypeDefaults = (projectType: ProjectTypeId): Partial<StackState> => {
+	const projectConfig = PROJECT_TYPES.find((p: ProjectType) => p.id === projectType);
 	return (projectConfig?.defaultSelections as Partial<StackState>) || {};
 };
 
