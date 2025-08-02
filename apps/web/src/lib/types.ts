@@ -13,6 +13,12 @@ export type TechCategory =
 	| "uiSystem"
 	| "compliance"
 	| "addons"
+	| "notifications"
+	| "documents"
+	| "payments"
+	| "analytics"
+	| "monitoring"
+	| "messaging"
 	| "examples"
 	| "git"
 	| "install";

@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stripe purple background -->
+  <rect x="2" y="2" width="20" height="20" rx="3" fill="#635BFF"/>
+  
+  <!-- Stripe logo inspired design -->
+  <path d="M6 12C6 10 8 8 12 8C16 8 18 10 18 12" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+  <path d="M6 12C6 14 8 16 12 16C16 16 18 14 18 12" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+  
+  <!-- Payment card -->
+  <rect x="7" y="10" width="10" height="6" rx="1" fill="none" stroke="#FFFFFF" stroke-width="1"/>
+  <rect x="7" y="12" width="10" height="1" fill="#FFFFFF"/>
+  
+  <!-- Chip -->
+  <rect x="8" y="13" width="2" height="1.5" rx="0.2" fill="#FFFFFF"/>
+</svg>

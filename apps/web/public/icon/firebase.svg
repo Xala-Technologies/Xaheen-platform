@@ -1,0 +1,21 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Firebase flame design -->
+  <defs>
+    <linearGradient id="firebaseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFA000;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FF6F00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF3D00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Firebase flame shape -->
+  <path d="M5.8 21L12 15.5L18.2 21L12 18.5L5.8 21Z" fill="url(#firebaseGradient)"/>
+  <path d="M12 2L8 8L12 15.5L16 8L12 2Z" fill="url(#firebaseGradient)"/>
+  <path d="M8 8L4 12L5.8 21L12 15.5L8 8Z" fill="#FFCA28"/>
+  <path d="M16 8L20 12L18.2 21L12 15.5L16 8Z" fill="#FFCA28"/>
+  
+  <!-- Firebase spark -->
+  <circle cx="12" cy="6" r="1" fill="#FFF3E0"/>
+  <circle cx="10" cy="10" r="0.5" fill="#FFF3E0"/>
+  <circle cx="14" cy="12" r="0.5" fill="#FFF3E0"/>
+</svg>

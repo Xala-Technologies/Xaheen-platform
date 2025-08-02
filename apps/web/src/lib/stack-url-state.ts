@@ -36,9 +36,9 @@ export const stackParsers = {
 	dbSetup: parseAsStringEnum<StackState["dbSetup"]>(
 		getValidIds("dbSetup"),
 	).withDefault(DEFAULT_STACK.dbSetup),
-	auth: parseAsStringEnum<StackState["auth"]>(["true", "false"]).withDefault(
-		DEFAULT_STACK.auth,
-	),
+	auth: parseAsStringEnum<StackState["auth"]>(
+		getValidIds("auth"),
+	).withDefault(DEFAULT_STACK.auth),
 	packageManager: parseAsStringEnum<StackState["packageManager"]>(
 		getValidIds("packageManager"),
 	).withDefault(DEFAULT_STACK.packageManager),
@@ -47,6 +47,24 @@ export const stackParsers = {
 	).withDefault(DEFAULT_STACK.uiSystem),
 	compliance: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.compliance),
 	addons: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.addons),
+	notifications: parseAsStringEnum<StackState["notifications"]>(
+		getValidIds("notifications"),
+	).withDefault(DEFAULT_STACK.notifications),
+	documents: parseAsStringEnum<StackState["documents"]>(
+		getValidIds("documents"),
+	).withDefault(DEFAULT_STACK.documents),
+	payments: parseAsStringEnum<StackState["payments"]>(
+		getValidIds("payments"),
+	).withDefault(DEFAULT_STACK.payments),
+	analytics: parseAsStringEnum<StackState["analytics"]>(
+		getValidIds("analytics"),
+	).withDefault(DEFAULT_STACK.analytics),
+	monitoring: parseAsStringEnum<StackState["monitoring"]>(
+		getValidIds("monitoring"),
+	).withDefault(DEFAULT_STACK.monitoring),
+	messaging: parseAsStringEnum<StackState["messaging"]>(
+		getValidIds("messaging"),
+	).withDefault(DEFAULT_STACK.messaging),
 	examples: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.examples),
 	git: parseAsStringEnum<StackState["git"]>(["true", "false"]).withDefault(
 		DEFAULT_STACK.git,
@@ -75,6 +93,12 @@ export const stackUrlKeys: UrlKeys<typeof stackParsers> = {
 	uiSystem: "ui",
 	compliance: "comp",
 	addons: "add",
+	notifications: "notif",
+	documents: "docs",
+	payments: "pay",
+	analytics: "ana",
+	monitoring: "mon",
+	messaging: "msg",
 	examples: "ex",
 	git: "git",
 	install: "i",
