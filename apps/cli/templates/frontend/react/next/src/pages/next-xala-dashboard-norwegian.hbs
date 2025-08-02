@@ -131,12 +131,12 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
               </Heading>
               <Chart
                 type="doughnut"
-                data={{
+                data={{{{raw}}}}{
                   labels: [t("category1"), t("category2"), t("category3")],
                   datasets: [{
                     data: [300, 50, 100]
                   }]
-                }}
+                }{{{{/raw}}}}
                 height={300}
               />
             </Stack>
@@ -196,7 +196,7 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
                   )
                 }
               ]}
-              data={[
+              data={{{{raw}}}}[
                 {
                   id: 1,
                   name: "John Doe",
@@ -211,12 +211,12 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
                   date: "2024-01-14",
                   avatar: "/avatars/jane.jpg"
                 }
-              ]}
-              pagination={{
+              ]{{{{/raw}}}}
+              pagination={{{{raw}}}}{
                 page: 1,
                 pageSize: 10,
                 total: 100
-              }}
+              }{{{{/raw}}}}
             />
           </Stack>
         </Card>

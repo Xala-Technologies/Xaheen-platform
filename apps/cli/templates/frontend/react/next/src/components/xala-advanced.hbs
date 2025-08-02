@@ -245,7 +245,7 @@ export default function {{componentName}}({{#if includeTypes}}props: {{component
       <Separator />
       <Stack direction="horizontal" justify="{{footerJustify}}" align="center" spacing="{{footerSpacing}}">
         {{#each footerItems}}
-        {{#if type === 'button'}}
+        {{#if (eq type 'button')}}
         <Button 
           variant="{{variant}}" 
           size="{{size}}"
@@ -264,7 +264,7 @@ export default function {{componentName}}({{#if includeTypes}}props: {{component
           {{defaultLabel}}
           {{/if}}
         </Button>
-        {{else if type === 'text'}}
+        {{else if (eq type 'text')}}
         <Typography variant="{{variant}}" size="{{size}}"{{#if color}} color="{{color}}"{{/if}}>
           {{#if ../includeLocalization}}
           {t('{{../componentName}}.{{key}}', '{{text}}')}
