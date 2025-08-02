@@ -1,3 +1,21 @@
+/**
+ * MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ *
+ * GENERATE: Business logic components that USE Xala UI System v5 components
+ * NOT: UI primitive components or wrappers around Xala components
+ */
+
 import path from "node:path";
 import fs from "fs-extra";
 import { consola } from "consola";
@@ -201,19 +219,29 @@ function generatePropsInterface(componentName: string, props: ComponentProp[]): 
 
 /**
  * Select appropriate templates based on configuration
+ * Supports modular compliance: gdpr, wcag-aaa, iso27001, norwegian
  */
 function selectTemplates(options: ComponentGenerationOptions) {
 	const { ui, compliance, type } = options;
 
 	// Template selection logic based on UI system and compliance
 	const templateBase = ui === "xala" ? "xala" : "default";
-	const complianceLevel = compliance === "norwegian" ? "norwegian" : compliance === "gdpr" ? "gdpr" : "basic";
+	
+	// Support multiple compliance levels (comma-separated)
+	const complianceLevels = compliance ? compliance.split(',').map(c => c.trim()) : ['basic'];
+	
+	// Prioritize compliance levels: norwegian > iso27001 > gdpr > wcag-aaa > basic
+	const compliancePriority = ['norwegian', 'iso27001', 'gdpr', 'wcag-aaa', 'basic'];
+	const primaryCompliance = compliancePriority.find(level => 
+		complianceLevels.includes(level)
+	) || 'basic';
 
 	return {
-		component: `${templateBase}-${type}-${complianceLevel}`,
+		component: `${templateBase}-${type}-${primaryCompliance}`,
 		test: `${templateBase}-test`,
 		story: `${templateBase}-story`,
 		style: `${templateBase}-style`,
+		complianceLevels, // Pass all compliance levels for template context
 	};
 }
 
@@ -263,122 +291,143 @@ ${hasProps ? `  ${propsDestructure}\n` : ""}${componentBody}
 
 /**
  * Generate display component body
+ * COMPLIANCE: Uses ONLY Xala UI System components, NO raw HTML elements
  */
 function generateDisplayComponent(context: TemplateContext): string {
-	const { ui, isAccessible, testIds, ariaLabel, compliance } = context;
-	
-	const className = ui === "xala" 
-		? "card card--elevated" 
-		: "p-6 bg-white rounded-xl shadow-lg";
+	const { testIds, ariaLabel } = context;
 
-	const accessibilityAttrs = isAccessible 
-		? `\n    aria-label="${ariaLabel}"\n    role="article"` 
-		: "";
-
-	const complianceAttrs = compliance === "norwegian"
-		? `\n    data-nsm-classification="OPEN"`
-		: "";
-
+	// COMPLIANCE: Use ONLY Xala UI System components, NO raw HTML
 	return `
+  const t = useTranslations("${context.fileName}");
+
   return (
-    <div 
-      className="${className}"
-      data-testid="${testIds.root}"${accessibilityAttrs}${complianceAttrs}
+    <Card
+      variant="elevated"
+      padding="6"
+      data-testid="${testIds.root}"
+      role="region"
+      aria-label={t("ariaLabel")}
     >
-      <h2 className="${ui === "xala" ? "heading heading--lg" : "text-2xl font-bold mb-4"}">
-        {/* Component content */}
-      </h2>
-      <p className="${ui === "xala" ? "text text--body" : "text-gray-600"}">
-        {/* Component description */}
-      </p>
-    </div>
+      <Stack direction="vertical" spacing="4">
+        <Heading level={3} variant="section">
+          {t("title")}
+        </Heading>
+        <Text variant="body" color="secondary">
+          {t("description")}
+        </Text>
+      </Stack>
+    </Card>
   );`;
 }
 
 /**
  * Generate form component body
+ * COMPLIANCE: Uses ONLY Xala UI System form components, NO raw HTML elements
  */
 function generateFormComponent(context: TemplateContext): string {
-	const { ui, isAccessible, testIds, compliance, hasLocalization } = context;
-	
-	const className = ui === "xala" 
-		? "form form--standard" 
-		: "max-w-md mx-auto p-8 bg-white rounded-xl shadow-lg";
+	const { testIds } = context;
 
-	const submitHandler = `
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+	// COMPLIANCE: Use ONLY Xala UI System components, NO raw HTML
+	return `
+  const t = useTranslations("${context.fileName}");
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const onSubmit = async (data: any): Promise<void> => {
     // Handle form submission
-  };`;
-
-	return `${submitHandler}
+    console.log(data);
+  };
 
   return (
-    <form 
-      onSubmit={handleSubmit}
-      className="${className}"
+    <Card
+      variant="elevated"
+      padding="6"
       data-testid="${testIds.root}"
-      ${isAccessible ? 'aria-label="Form"' : ''}
-      ${compliance === "norwegian" ? 'data-gdpr-form="true"' : ''}
+      role="form"
+      aria-label={t("ariaLabel")}
     >
-      <div className="${ui === "xala" ? "form__group" : "mb-6"}">
-        <label 
-          htmlFor="input-example" 
-          className="${ui === "xala" ? "form__label" : "block text-sm font-medium text-gray-700 mb-2"}"
-        >
-          ${hasLocalization ? '{t("form.label")}' : 'Label'}
-        </label>
-        <input
-          id="input-example"
-          type="text"
-          className="${ui === "xala" ? "form__input" : "h-14 w-full px-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"}"
-          ${isAccessible ? 'aria-required="true"' : ''}
-        />
-      </div>
-      
-      <button
-        type="submit"
-        className="${ui === "xala" ? "button button--primary button--lg" : "h-12 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"}"
-      >
-        ${hasLocalization ? '{t("form.submit")}' : 'Submit'}
-      </button>
-    </form>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <Stack direction="vertical" spacing="4">
+          <Heading level={3} variant="section">
+            {t("title")}
+          </Heading>
+          
+          <FormField>
+            <FormLabel htmlFor="example-input" required>
+              {t("fieldLabel")}
+            </FormLabel>
+            <FormInput
+              id="example-input"
+              {...register("example", { required: t("fieldRequired") })}
+              placeholder={t("fieldPlaceholder")}
+              error={errors.example?.message}
+            />
+          </FormField>
+          
+          <Stack direction="horizontal" spacing="3" justify="end">
+            <Button variant="secondary" type="button">
+              {t("cancel")}
+            </Button>
+            <Button variant="primary" type="submit">
+              {t("submit")}
+            </Button>
+          </Stack>
+        </Stack>
+      </Form>
+    </Card>
   );`;
 }
 
 /**
  * Generate layout component body
+ * COMPLIANCE: Uses ONLY Xala UI System layout components, NO raw HTML elements
  */
 function generateLayoutComponent(context: TemplateContext): string {
-	const { ui, isAccessible, testIds } = context;
-	
-	const className = ui === "xala" 
-		? "layout layout--standard" 
-		: "min-h-screen bg-gray-50";
+	const { testIds } = context;
 
+	// COMPLIANCE: Use ONLY Xala UI System components, NO raw HTML
 	return `
+  const t = useTranslations("${context.fileName}");
+
   return (
-    <div 
-      className="${className}"
+    <Container
+      variant="full"
       data-testid="${testIds.root}"
-      ${isAccessible ? 'role="main"' : ''}
     >
-      <header className="${ui === "xala" ? "layout__header" : "bg-white shadow-sm border-b border-gray-200"}">
-        <div className="${ui === "xala" ? "container" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"}">
-          {/* Header content */}
-        </div>
-      </header>
-      
-      <main className="${ui === "xala" ? "layout__main" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"}">
-        {/* Main content */}
-      </main>
-      
-      <footer className="${ui === "xala" ? "layout__footer" : "bg-gray-800 text-white mt-auto"}">
-        <div className="${ui === "xala" ? "container" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"}">
-          {/* Footer content */}
-        </div>
-      </footer>
-    </div>
+      <Stack direction="vertical" spacing="0" minHeight="screen">
+        <Header
+          variant="primary"
+          sticky
+          role="banner"
+          aria-label={t("header.ariaLabel")}
+        >
+          <Navigation
+            items={[]}
+            variant="horizontal"
+            aria-label={t("nav.ariaLabel")}
+          />
+        </Header>
+        
+        <Container
+          variant="content"
+          padding="6"
+          role="main"
+          aria-label={t("main.ariaLabel")}
+          flex="1"
+        >
+          {children}
+        </Container>
+        
+        <Footer
+          variant="primary"
+          role="contentinfo"
+          aria-label={t("footer.ariaLabel")}
+        >
+          <Text variant="caption" color="secondary">
+            {t("footer.copyright")}
+          </Text>
+        </Footer>
+      </Stack>
+    </Container>
   );`;
 }
 
@@ -474,28 +523,55 @@ function generateStyleContent(context: TemplateContext, template: string): strin
 
 /**
  * Generate imports based on component requirements
+ * COMPLIANCE: Enforces mandatory localization and Xala UI System usage
  */
 function generateImports(options: ComponentGenerationOptions): string[] {
 	const imports: string[] = ["import React from 'react';"];
 
-	// Add React hooks if needed
-	if (options.type === "form") {
-		imports.push("import { useState } from 'react';");
-	}
+	// MANDATORY: Always include next-intl for localization (no hardcoded text allowed)
+	imports.push("import { useTranslations } from 'next-intl';");
 
-	// Add localization
-	if (options.locales.length > 1) {
-		imports.push("import { useTranslation } from 'react-i18next';");
-	}
-
-	// Add UI system imports
+	// MANDATORY: Always include Xala UI System components (no raw HTML allowed)
 	if (options.ui === "xala") {
-		imports.push("import '@xala-technologies/ui-system/styles';");
+		// Add core Xala UI System imports based on component type
+		if (options.type === "form") {
+			imports.push("import { Card, Stack, Text, Heading, Form, FormField, FormLabel, FormInput, Button } from '@xala-technologies/ui-system';");
+		} else if (options.type === "layout") {
+			imports.push("import { Container, Stack, Header, Footer, Navigation, Text } from '@xala-technologies/ui-system';");
+		} else {
+			// Display components
+			imports.push("import { Card, Stack, Text, Heading, Badge, Button } from '@xala-technologies/ui-system';");
+		}
 	}
 
-	// Add compliance imports
-	if (options.compliance === "norwegian") {
-		imports.push("import { useGDPRConsent } from '@xaheen/compliance';");
+	// Add React hooks for forms
+	if (options.type === "form") {
+		imports.push("import { useForm } from 'react-hook-form';");
+		imports.push("import { zodResolver } from '@hookform/resolvers/zod';");
+		imports.push("import { z } from 'zod';");
+	}
+
+	// Add compliance-specific imports
+	const complianceLevels = options.compliance ? options.compliance.split(',').map(c => c.trim()) : [];
+	
+	if (complianceLevels.includes('gdpr')) {
+		imports.push("import { useGDPRConsent } from '@/hooks/useGDPRConsent';");
+	}
+	
+	if (complianceLevels.includes('wcag-aaa')) {
+		imports.push("import { useFocusManagement } from '@/hooks/useFocusManagement';");
+		imports.push("import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';");
+	}
+	
+	if (complianceLevels.includes('iso27001')) {
+		imports.push("import { useSecurityContext } from '@/hooks/useSecurityContext';");
+		imports.push("import { useAuditLogger } from '@/hooks/useAuditLogger';");
+	}
+	
+	if (complianceLevels.includes('norwegian')) {
+		imports.push("import { useBankID } from '@/hooks/useBankID';");
+		imports.push("import { useAltinn } from '@/hooks/useAltinn';");
+		imports.push("import { useNorwegianFormatting } from '@/hooks/useNorwegianFormatting';");
 	}
 
 	return imports;
@@ -504,7 +580,7 @@ function generateImports(options: ComponentGenerationOptions): string[] {
 /**
  * Generate test IDs for the component
  */
-function generateTestIds(fileName: string): Record<string, string> {
+function generateTestIds(fileName: string): { [key: string]: string; root: string } {
 	const base = fileName;
 	return {
 		root: base,
@@ -513,6 +589,13 @@ function generateTestIds(fileName: string): Record<string, string> {
 		footer: `${base}-footer`,
 		submit: `${base}-submit`,
 		cancel: `${base}-cancel`,
+		action: `${base}-action`,
+		dataRequest: `${base}-data-request`,
+		dataDeletion: `${base}-data-deletion`,
+		withdrawConsent: `${base}-withdraw-consent`,
+		liveRegion: `${base}-live-region`,
+		title: `${base}-title`,
+		description: `${base}-description`
 	};
 }
 

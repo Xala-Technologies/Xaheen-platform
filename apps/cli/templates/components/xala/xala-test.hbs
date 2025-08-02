@@ -1,0 +1,182 @@
+{{!-- 
+MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
+❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+✅ ONLY semantic components from @xala-technologies/ui-system
+❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+✅ MANDATORY design token usage for all colors, spacing, typography
+✅ Enhanced 8pt Grid System - all spacing in 8px increments
+✅ WCAG 2.2 AAA compliance for accessibility
+❌ NO hardcoded user-facing text - ALL text must use t() function
+✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+✅ Explicit TypeScript return types (no 'any' types)
+✅ SOLID principles and component composition
+✅ Maximum 200 lines per file, 20 lines per function
+--}}
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import { XalaUIProvider } from "@xala-technologies/ui-system";
+import {{componentName}} from "./{{fileName}}";
+
+// Mock translations
+const messages = {
+  "{{fileName}}": {
+    title: "Test Title",
+    description: "Test Description",
+    actionLabel: "Test Action",
+    ariaLabel: "Test Component",
+    status: "Active",
+    {{#each props}}
+    {{name}}Label: "{{name}} Label",
+    {{/each}}
+    yes: "Yes",
+    no: "No"
+  }
+};
+
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <NextIntlClientProvider locale="en" messages={messages}>
+    <XalaUIProvider>
+      {children}
+    </XalaUIProvider>
+  </NextIntlClientProvider>
+);
+
+describe("{{componentName}}", () => {
+  const defaultProps = {
+    {{#each props}}
+    {{#if (eq type "string")}}
+    {{name}}: "test-{{name}}",
+    {{/if}}
+    {{#if (eq type "number")}}
+    {{name}}: 42,
+    {{/if}}
+    {{#if (eq type "boolean")}}
+    {{name}}: true,
+    {{/if}}
+    {{/each}}
+    testId: "{{testIds.root}}"
+  };
+
+  it("renders without crashing", () => {
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByTestId("{{testIds.root}}")).toBeInTheDocument();
+  });
+
+  it("displays the component title", () => {
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText("Test Title")).toBeInTheDocument();
+  });
+
+  it("displays the component description", () => {
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText("Test Description")).toBeInTheDocument();
+  });
+
+  {{#if hasProps}}
+  {{#each props}}
+  it("displays the {{name}} prop", () => {
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} />
+      </TestWrapper>
+    );
+
+    {{#if (eq type "string")}}
+    expect(screen.getByText("test-{{name}}")).toBeInTheDocument();
+    {{/if}}
+    {{#if (eq type "number")}}
+    expect(screen.getByText("42")).toBeInTheDocument();
+    {{/if}}
+    {{#if (eq type "boolean")}}
+    expect(screen.getByText("Yes")).toBeInTheDocument();
+    {{/if}}
+  });
+
+  {{/each}}
+  {{/if}}
+
+  it("handles action button click", async () => {
+    const mockAction = jest.fn();
+    
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} onAction={mockAction} />
+      </TestWrapper>
+    );
+
+    const actionButton = screen.getByTestId("{{testIds.action}}");
+    fireEvent.click(actionButton);
+
+    await waitFor(() => {
+      expect(mockAction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("has proper accessibility attributes", () => {
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} />
+      </TestWrapper>
+    );
+
+    const component = screen.getByTestId("{{testIds.root}}");
+    expect(component).toHaveAttribute("role", "region");
+    expect(component).toHaveAttribute("aria-label", "Test Component");
+  });
+
+  it("applies custom className", () => {
+    const customClass = "custom-test-class";
+    
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} className={customClass} />
+      </TestWrapper>
+    );
+
+    const component = screen.getByTestId("{{testIds.root}}");
+    expect(component).toHaveClass(customClass);
+  });
+
+  it("uses custom testId", () => {
+    const customTestId = "custom-test-id";
+    
+    render(
+      <TestWrapper>
+        <{{componentName}} {...defaultProps} testId={customTestId} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByTestId(customTestId)).toBeInTheDocument();
+  });
+
+  {{#if hasProps}}
+  it("handles missing optional props gracefully", () => {
+    const minimalProps = {
+      testId: "{{testIds.root}}"
+    };
+
+    expect(() => {
+      render(
+        <TestWrapper>
+          <{{componentName}} {...minimalProps} />
+        </TestWrapper>
+      );
+    }).not.toThrow();
+  });
+  {{/if}}
+});

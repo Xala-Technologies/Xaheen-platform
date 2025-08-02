@@ -1,0 +1,288 @@
+/**
+ * Turborepo Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI - Multi-Platform Monorepo Build Configuration
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "build/**",
+        "out/**",
+        "ios/build/**",
+        "android/app/build/**"
+      ],
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_*",
+        "EXPO_PUBLIC_*",
+        "VITE_*",
+        "REACT_APP_*"
+      ]
+    },
+    
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_*",
+        "EXPO_PUBLIC_*",
+        "VITE_*",
+        "REACT_APP_*"
+      ]
+    },
+    
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["build"]
+    },
+    
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "jest.config.*",
+        "vitest.config.*",
+        "playwright.config.*"
+      ],
+      "outputs": [
+        "coverage/**",
+        "test-results/**",
+        "playwright-report/**"
+      ]
+    },
+    
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "jest.config.*",
+        "vitest.config.*"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.e2e.*",
+        "playwright.config.*",
+        "cypress.config.*"
+      ],
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**",
+        "cypress/screenshots/**",
+        "cypress/videos/**"
+      ]
+    },
+    
+    "lint": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc*",
+        ".eslintignore",
+        "eslint.config.*"
+      ]
+    },
+    
+    "lint:fix": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc*",
+        ".eslintignore",
+        "eslint.config.*"
+      ]
+    },
+    
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "tsconfig.json",
+        "**/*.ts",
+        "**/*.tsx"
+      ]
+    },
+    
+    "format": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".prettierrc*",
+        ".prettierignore",
+        "prettier.config.*"
+      ]
+    },
+    
+    "format:check": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".prettierrc*",
+        ".prettierignore",
+        "prettier.config.*"
+      ]
+    },
+    
+    "clean": {
+      "cache": false
+    },
+    
+    "prebuild": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "app.json",
+        "expo.json",
+        "app.config.*"
+      ],
+      "outputs": [
+        "ios/**",
+        "android/**",
+        "!ios/Pods/**",
+        "!android/.gradle/**"
+      ]
+    },
+    
+    "ios": {
+      "dependsOn": ["prebuild"],
+      "cache": false,
+      "persistent": true
+    },
+    
+    "android": {
+      "dependsOn": ["prebuild"],
+      "cache": false,
+      "persistent": true
+    },
+    
+    "web": {
+      "cache": false,
+      "persistent": true
+    },
+    
+    "storybook": {
+      "cache": false,
+      "persistent": true,
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".storybook/**",
+        "**/*.stories.*"
+      ]
+    },
+    
+    "storybook:build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".storybook/**",
+        "**/*.stories.*"
+      ],
+      "outputs": [
+        "storybook-static/**"
+      ]
+    },
+    
+    "deploy": {
+      "dependsOn": ["build", "test", "lint"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "vercel.json",
+        "netlify.toml",
+        "Dockerfile*"
+      ]
+    },
+    
+    "compliance:check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.tsx",
+        "**/*.ts",
+        "**/*.jsx",
+        "**/*.js"
+      ]
+    },
+    
+    "accessibility:check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.tsx",
+        "**/*.ts"
+      ]
+    },
+    
+    "norwegian:validate": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/locales/**",
+        "**/*.json"
+      ]
+    }
+  },
+  
+  "globalDependencies": [
+    "**/.env*",
+    "tsconfig.json",
+    "package.json",
+    ".eslintrc*",
+    ".prettierrc*",
+    "tailwind.config.*",
+    "next.config.*",
+    "vite.config.*",
+    "metro.config.*",
+    "babel.config.*"
+  ],
+  
+  "globalEnv": [
+    "NODE_ENV",
+    "CI",
+    "VERCEL",
+    "NETLIFY",
+    "GITHUB_ACTIONS",
+    "TURBO_TOKEN",
+    "TURBO_TEAM"
+  ],
+  
+  "remoteCache": {
+    "signature": true
+  },
+  
+  "experimentalUI": true,
+  "experimentalSpaces": true
+}
