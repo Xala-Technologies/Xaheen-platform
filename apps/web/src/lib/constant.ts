@@ -2156,7 +2156,7 @@ export type StackState = {
 };
 
 export const DEFAULT_STACK: StackState = {
-	projectName: "my-xaheen-t-app",
+	projectName: "my-xaheen-app",
 	webFrontend: ["tanstack-router"],
 	nativeFrontend: ["none"],
 	runtime: "bun",

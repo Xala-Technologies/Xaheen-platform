@@ -10,7 +10,7 @@ const showcaseProjects = [
 		description:
 			"AI-powered writing platform with smart text suggestions, real-time autocomplete, and document management",
 		imageUrl: "https://docsurf.ai/opengraph.jpg",
-		liveUrl: "https://docsurf.ai/?ref=xaheen-t-etter-t-stack",
+		liveUrl: "https://docsurf.ai/?ref=xaheen-etter-t-stack",
 		tags: [
 			"TanStack Start",
 			"Convex",

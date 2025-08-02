@@ -12,14 +12,14 @@ export const generateCommand = (stackState: StackState): string => {
 			base = "npx xaheen@latest";
 			break;
 		case "pnpm":
-			base = "pnpm create Xaheen@latest";
+			base = "pnpm create xaheen@latest";
 			break;
 		default:
-			base = "bun create Xaheen@latest";
+			base = "bun create xaheen@latest";
 			break;
 	}
 
-	const projectName = stackState.projectName || "my-xaheen-t-app";
+	const projectName = stackState.projectName || "my-xaheen-app";
 	const flags: string[] = ["--yes"];
 
 	const checkDefault = <K extends keyof StackState>(

@@ -131,7 +131,7 @@ const StackBuilder: React.FC = () => {
 									type="text"
 									value={projectName}
 									onChange={(e) => setProjectName(e.target.value)}
-									placeholder="my-xaheen-t-app"
+									placeholder="my-xaheen-app"
 									className="w-full rounded border border-border bg-background px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
 								/>
 							</div>

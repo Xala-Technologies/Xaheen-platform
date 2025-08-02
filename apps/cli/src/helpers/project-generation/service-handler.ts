@@ -208,8 +208,8 @@ async function detectProjectRoot(): Promise<string | null> {
 				const packageJson = await fs.readJson(packageJsonPath);
 				if (packageJson.dependencies?.["@xaheen/cli"] || 
 					packageJson.devDependencies?.["@xaheen/cli"] ||
-					packageJson.dependencies?.["xaheen-tstack"] ||
-					packageJson.devDependencies?.["xaheen-tstack"]) {
+					packageJson.dependencies?.["xaheenstack"] ||
+					packageJson.devDependencies?.["xaheenstack"]) {
 					return currentDir;
 				}
 			} catch (error) {

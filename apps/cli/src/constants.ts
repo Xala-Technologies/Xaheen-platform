@@ -8,9 +8,9 @@ const distPath = path.dirname(__filename);
 export const PKG_ROOT = path.join(distPath, "../");
 
 export const DEFAULT_CONFIG: ProjectConfig = {
-	projectName: "my-xaheen-t-app",
-	projectDir: path.resolve(process.cwd(), "my-xaheen-t-app"),
-	relativePath: "my-xaheen-t-app",
+	projectName: "my-xaheen-app",
+	projectDir: path.resolve(process.cwd(), "my-xaheen-app"),
+	relativePath: "my-xaheen-app",
 	frontend: ["tanstack-router"],
 	database: "sqlite",
 	orm: "drizzle",

@@ -68,7 +68,7 @@ const Footer = () => {
 							<li>
 								<Link
 									target="_blank"
-									href="https://my-xaheen-t-app-client.pages.dev/"
+									href="https://my-xaheen-app-client.pages.dev/"
 									className="inline-block transition-colors hover:text-primary focus:text-primary focus:outline-none"
 								>
 									Demo Application

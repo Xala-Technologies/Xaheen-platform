@@ -389,7 +389,7 @@ export default function RootLayout({
             <HydrationProvider>
               <ThemeProvider
                 defaultTheme="system"
-                storageKey="xaheen-theme"
+                storageKey="xaheenheme"
               >
                 <LocaleProvider defaultLocale="en-GB">
                   {children}

@@ -14,7 +14,7 @@ export class StackConfigurationService {
 	 */
 	public createDefaultStack(): StackState {
 		return {
-			projectName: 'my-xaheen-t-app',
+			projectName: 'my-xaheen-app',
 			webFrontend: ['tanstack-router'],
 			nativeFrontend: ['none'],
 			runtime: 'bun',

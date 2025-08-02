@@ -17,10 +17,10 @@ A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with 
 npx xaheen@latest
 
 # Using bun
-bun create Xaheen@latest
+bun create xaheen@latest
 
 # Using pnpm
-pnpm create Xaheen@latest
+pnpm create xaheen@latest
 ```
 
 ## Features

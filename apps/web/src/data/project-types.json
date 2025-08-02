@@ -7,163 +7,211 @@
     "color": "from-blue-500 to-blue-700",
     "relevantCategories": ["webFrontend", "uiSystem", "analytics", "cms", "webDeploy"],
     "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "uiSystem": ["xala"],
-      "analytics": ["vercel-analytics"],
-      "webDeploy": ["vercel"]
-    }
+      "webFrontend": ["next"],
+      "uiSystem": "xala",
+      "analytics": "vercel-analytics",
+      "webDeploy": "vercel"
+    },
+    "sort_order": 1
   },
   {
-    "id": "web-app",
-    "name": "💻 Web Application",
-    "description": "Interactive web applications with dynamic content",
-    "icon": "/icon/web-app.svg",
-    "color": "from-green-500 to-green-700",
-    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "uiSystem"],
-    "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["better-auth"],
-      "uiSystem": ["xala"]
-    }
-  },
-  {
-    "id": "mobile-app",
-    "name": "📱 Mobile Application",
-    "description": "Cross-platform mobile applications",
-    "icon": "/icon/mobile-app.svg",
-    "color": "from-purple-500 to-purple-700",
-    "relevantCategories": ["nativeFrontend", "backend", "database", "orm", "auth"],
-    "defaultSelections": {
-      "nativeFrontend": ["react-native"],
-      "backend": ["supabase"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["supabase-auth"]
-    }
-  },
-  {
-    "id": "desktop-app",
-    "name": "🖥️ Desktop Application",
-    "description": "Cross-platform desktop applications",
-    "icon": "/icon/desktop-app.svg",
-    "color": "from-indigo-500 to-indigo-700",
-    "relevantCategories": ["nativeFrontend", "backend", "database", "orm"],
-    "defaultSelections": {
-      "nativeFrontend": ["electron"],
-      "backend": ["hono"],
-      "database": ["sqlite"],
-      "orm": ["prisma"]
-    }
-  },
-  {
-    "id": "api-service",
-    "name": "🔌 API Service",
-    "description": "Backend APIs and microservices",
-    "icon": "/icon/api-service.svg",
-    "color": "from-orange-500 to-orange-700",
-    "relevantCategories": ["api", "backend", "database", "orm", "auth"],
-    "defaultSelections": {
-      "api": ["trpc"],
-      "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["better-auth"]
-    }
-  },
-  {
-    "id": "saas",
-    "name": "💼 SaaS Platform",
-    "description": "Software as a Service applications with billing",
-    "icon": "/icon/saas.svg",
-    "color": "from-emerald-500 to-emerald-700",
-    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "uiSystem", "analytics"],
-    "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["clerk"],
-      "uiSystem": ["xala"],
-      "analytics": ["posthog"]
-    }
-  },
-  {
-    "id": "e-commerce",
+    "id": "ecommerce",
     "name": "🛒 E-commerce",
     "description": "Online stores and marketplaces",
-    "icon": "/icon/e-commerce.svg",
-    "color": "from-pink-500 to-pink-700",
-    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "uiSystem"],
+    "icon": "/icon/ecommerce.svg",
+    "color": "from-green-500 to-green-700",
+    "relevantCategories": ["webFrontend", "backend", "database", "auth", "payments", "analytics", "security", "uiSystem"],
     "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["clerk"],
-      "uiSystem": ["xala"]
-    }
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "auth": ["better-auth"],
+      "payments": "stripe",
+      "analytics": "vercel-analytics",
+      "security": ["snyk"]
+    },
+    "sort_order": 2
   },
   {
     "id": "blog",
-    "name": "📝 Blog/CMS",
-    "description": "Content management and blogging platforms",
+    "name": "📝 Blog/Content",
+    "description": "Content management and publishing",
     "icon": "/icon/blog.svg",
-    "color": "from-cyan-500 to-cyan-700",
-    "relevantCategories": ["webFrontend", "cms", "uiSystem", "analytics"],
+    "color": "from-purple-500 to-purple-700",
+    "relevantCategories": ["webFrontend", "cms", "analytics", "uiSystem", "webDeploy"],
     "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "cms": ["sanity"],
-      "uiSystem": ["xala"],
-      "analytics": ["google-analytics"]
-    }
-  },
-  {
-    "id": "dashboard",
-    "name": "📊 Admin Dashboard",
-    "description": "Data visualization and admin interfaces",
-    "icon": "/icon/dashboard.svg",
-    "color": "from-violet-500 to-violet-700",
-    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "uiSystem", "analytics"],
-    "defaultSelections": {
-      "webFrontend": ["next-app"],
-      "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["clerk"],
-      "uiSystem": ["xala"],
-      "analytics": ["posthog"]
-    }
+      "webFrontend": ["next"],
+      "cms": ["strapi"],
+      "analytics": "vercel-analytics",
+      "uiSystem": ["xala"]
+    },
+    "sort_order": 3
   },
   {
     "id": "portfolio",
     "name": "🎨 Portfolio",
-    "description": "Personal or professional portfolios",
+    "description": "Personal and professional showcases",
     "icon": "/icon/portfolio.svg",
-    "color": "from-rose-500 to-rose-700",
-    "relevantCategories": ["webFrontend", "uiSystem", "analytics"],
+    "color": "from-pink-500 to-pink-700",
+    "relevantCategories": ["webFrontend", "uiSystem", "analytics", "webDeploy"],
     "defaultSelections": {
-      "webFrontend": ["astro"],
-      "uiSystem": ["tailwind"],
-      "analytics": ["vercel-analytics"]
-    }
+      "webFrontend": ["next"],
+      "uiSystem": "xala",
+      "analytics": "vercel-analytics"
+    },
+    "sort_order": 4
   },
   {
-    "id": "norwegian-gov",
-    "name": "🇳🇴 Norwegian Government",
-    "description": "Applications compliant with Norwegian government standards",
-    "icon": "/icon/norwegian-gov.svg",
-    "color": "from-red-600 to-red-800",
-    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "uiSystem"],
+    "id": "dashboard",
+    "name": "📊 Dashboard",
+    "description": "Admin panels and analytics dashboards",
+    "icon": "/icon/dashboard.svg",
+    "color": "from-indigo-500 to-indigo-700",
+    "relevantCategories": ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem"],
     "defaultSelections": {
-      "webFrontend": ["next-app"],
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "auth": ["better-auth"],
+      "monitoring": "sentry"
+    },
+    "sort_order": 5
+  },
+  {
+    "id": "api-backend",
+    "name": "🔌 API/Backend",
+    "description": "Microservices and API-first applications",
+    "icon": "/icon/api-backend.svg",
+    "color": "from-gray-500 to-gray-700",
+    "relevantCategories": ["api", "backend", "database", "orm", "auth", "monitoring", "testing", "security"],
+    "defaultSelections": {
+      "api": ["trpc"],
       "backend": ["hono"],
-      "database": ["postgresql"],
-      "orm": ["prisma"],
-      "auth": ["bankid"],
+      "database": ["postgres"],
+      "orm": ["drizzle"],
+      "auth": ["better-auth"],
+      "monitoring": "sentry"
+    },
+    "sort_order": 6
+  },
+  {
+    "id": "saas-multi-tenant",
+    "name": "🏢 SAAS Multi-Tenant",
+    "description": "Shared infrastructure SAAS platform",
+    "icon": "/icon/saas-multi-tenant.svg",
+    "color": "from-blue-600 to-purple-600",
+    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance"],
+    "defaultSelections": {
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "orm": ["drizzle"],
+      "auth": ["auth0"],
+      "saasAdmin": "admin-dashboard",
+      "subscriptions": "stripe-billing",
+      "licensing": "feature-flags",
+      "rbac": "role-permissions",
+      "multiTenancy": ["schema-separation"],
+      "monitoring": "sentry",
+      "security": ["snyk"],
+      "compliance": ["gdpr"]
+    },
+    "sort_order": 7
+  },
+  {
+    "id": "saas-single-tenant",
+    "name": "🏛️ SAAS Single-Tenant",
+    "description": "Dedicated per-customer SAAS",
+    "icon": "/icon/saas-single-tenant.svg",
+    "color": "from-purple-600 to-purple-800",
+    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "analytics", "monitoring", "security", "testing", "compliance", "devops"],
+    "defaultSelections": {
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "orm": ["drizzle"],
+      "auth": ["auth0"],
+      "saasAdmin": "admin-dashboard",
+      "subscriptions": "stripe-billing",
+      "licensing": "feature-flags",
+      "rbac": "role-permissions",
+      "devops": ["docker"]
+    },
+    "sort_order": 8
+  },
+  {
+    "id": "saas-enterprise",
+    "name": "🏭 SAAS Enterprise",
+    "description": "Large organization SAAS platform",
+    "icon": "/icon/saas-enterprise.svg",
+    "color": "from-red-600 to-red-800",
+    "relevantCategories": ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance", "devops", "messaging"],
+    "defaultSelections": {
+      "webFrontend": ["angular"],
+      "backend": ["dotnet"],
+      "database": ["mssql"],
+      "orm": ["entity-framework"],
+      "auth": ["identity-server"],
+      "saasAdmin": "admin-dashboard",
+      "subscriptions": "stripe-billing",
+      "licensing": "feature-flags",
+      "rbac": "role-permissions",
+      "multiTenancy": ["schema-separation"],
+      "messaging": "rabbitmq",
+      "compliance": ["iso27001"]
+    },
+    "sort_order": 9
+  },
+  {
+    "id": "b2b-platform",
+    "name": "🤝 B2B Platform",
+    "description": "Business-to-business applications",
+    "icon": "/icon/b2b-platform.svg",
+    "color": "from-teal-600 to-teal-800",
+    "relevantCategories": ["webFrontend", "backend", "database", "auth", "rbac", "analytics", "monitoring", "security", "compliance", "messaging"],
+    "defaultSelections": {
+      "webFrontend": ["angular"],
+      "backend": ["dotnet"],
+      "database": ["postgres"],
+      "auth": ["auth0"],
+      "rbac": "role-permissions",
+      "messaging": ["rabbitmq"]
+    },
+    "sort_order": 10
+  },
+  {
+    "id": "b2c-app",
+    "name": "👥 B2C App",
+    "description": "Consumer-facing applications",
+    "icon": "/icon/b2c-app.svg",
+    "color": "from-orange-500 to-orange-700",
+    "relevantCategories": ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem", "compliance"],
+    "defaultSelections": {
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "auth": ["better-auth"],
+      "analytics": "vercel-analytics",
       "uiSystem": ["xala"]
-    }
+    },
+    "sort_order": 11
+  },
+  {
+    "id": "marketplace",
+    "name": "🏪 Marketplace",
+    "description": "Multi-vendor platforms",
+    "icon": "/icon/marketplace.svg",
+    "color": "from-yellow-600 to-yellow-800",
+    "relevantCategories": ["webFrontend", "backend", "database", "auth", "payments", "rbac", "analytics", "monitoring", "security", "messaging"],
+    "defaultSelections": {
+      "webFrontend": ["next"],
+      "backend": ["next"],
+      "database": ["postgres"],
+      "auth": ["auth0"],
+      "payments": "stripe",
+      "rbac": "role-permissions",
+      "messaging": ["rabbitmq"]
+    },
+    "sort_order": 12
   }
 ]

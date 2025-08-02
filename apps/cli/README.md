@@ -19,10 +19,10 @@ Run without installing globally:
 npx xaheen@latest
 
 # Using bun
-bun create Xaheen@latest
+bun create xaheen@latest
 
 # Using pnpm
-pnpm create Xaheen@latest
+pnpm create xaheen@latest
 ```
 
 Follow the prompts to configure your project or use the `--yes` flag for defaults.
@@ -206,7 +206,7 @@ npx xaheen my-app --frontend none --backend hono --api trpc --database none --ad
 The created project follows a clean monorepo structure:
 
 ```
-my-xaheen-t-app/
+my-xaheen-app/
 ├── apps/
 │   ├── web/          # Frontend application
 │   ├── server/       # Backend API

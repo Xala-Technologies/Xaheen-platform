@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "my-xaheen-t-app",
-    "slug": "my-xaheen-t-app",
+    "name": "my-xaheen-app",
+    "slug": "my-xaheen-app",
     "version": "1.0.0",
     "newArchEnabled": true,
-    "scheme": "my-xaheen-t-app",
+    "scheme": "my-xaheen-app",
     "web": {
       "bundler": "metro",
       "output": "static",

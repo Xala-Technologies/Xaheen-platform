@@ -35,7 +35,7 @@ This guide explains how to effectively use the Xaheen Platform documentation str
 ### 👨‍💻 **Developer / Implementation Team**
 
 #### **Getting Started**
-1. **Read Foundation**: `brainstorming/xaheen-transformation.md`
+1. **Read Foundation**: `brainstorming/xaheenransformation.md`
 2. **Understand Architecture**: `brainstorming/xaheen-archeticture.md`
 3. **Study Existing Code**: `xala-scaffold/` directory
 4. **Review Standards**: `code-snippets/xaheen-standards-cli.ts`

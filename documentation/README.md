@@ -22,7 +22,7 @@ This documentation follows a **project lifecycle approach** for xaheen organizat
 Contains original research, transformation plans, and integration strategies.
 
 **Key Files:**
-- `xaheen-transformation.md` - Core transformation guide
+- `xaheenransformation.md` - Core transformation guide
 - `xaheen-archeticture.md` - Platform architecture overview
 - `extension-plan.md` - Original extension planning
 - `xala-integration-guide.md` - Xala UI System integration
@@ -82,7 +82,7 @@ Contains the complete xala-scaffold project that serves as our foundation.
 
 ### **For Developers**
 
-1. **Understand scope**: Read `brainstorming/xaheen-transformation.md`
+1. **Understand scope**: Read `brainstorming/xaheenransformation.md`
 2. **Get code examples**: Browse `code-snippets/` for implementation patterns
 3. **Follow architecture**: Study `brainstorming/xaheen-archeticture.md`
 4. **Use existing code**: Leverage `xala-scaffold/` as foundation
@@ -125,7 +125,7 @@ npm run build
 ### **2. Study the Strategy**
 - Read `planned/xaheen-revised-strategy.md`
 - Review `planned/xaheen-phased-implementation.md`
-- Check `brainstorming/xaheen-transformation.md`
+- Check `brainstorming/xaheenransformation.md`
 
 ### **3. Begin Implementation**
 - Move current phase tasks to `in-progress/`

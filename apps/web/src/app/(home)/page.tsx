@@ -26,8 +26,8 @@ export default function HomePage() {
 
 	const commands = {
 		npm: "npx xaheen@latest",
-		pnpm: "pnpm create Xaheen@latest",
-		bun: "bun create Xaheen@latest",
+		pnpm: "pnpm create xaheen@latest",
+		bun: "bun create xaheen@latest",
 	};
 
 	useEffect(() => {
