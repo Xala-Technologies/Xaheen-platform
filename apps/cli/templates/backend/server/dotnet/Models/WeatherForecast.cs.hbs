@@ -1,0 +1,93 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace {{pascalCase projectName}}.Models;
+
+/// <summary>
+/// Weather forecast data model
+/// </summary>
+public class WeatherForecast
+{
+    /// <summary>
+    /// Date of the forecast
+    /// </summary>
+    [Required]
+    public DateOnly Date { get; set; }
+
+    /// <summary>
+    /// Temperature in Celsius
+    /// </summary>
+    [Required]
+    [Range(-100, 100, ErrorMessage = "Temperature must be between -100 and 100 degrees Celsius")]
+    public int TemperatureC { get; set; }
+
+    /// <summary>
+    /// Temperature in Fahrenheit (calculated property)
+    /// </summary>
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+
+    /// <summary>
+    /// Weather summary description
+    /// </summary>
+    [Required]
+    [StringLength(100, ErrorMessage = "Summary cannot exceed 100 characters")]
+    public string Summary { get; set; } = string.Empty;
+
+    /// <summary>
+    /// City name for the forecast
+    /// </summary>
+    [StringLength(50, ErrorMessage = "City name cannot exceed 50 characters")]
+    public string? City { get; set; }
+
+    /// <summary>
+    /// Humidity percentage
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Humidity must be between 0 and 100 percent")]
+    public int? Humidity { get; set; }
+
+    /// <summary>
+    /// Wind speed in km/h
+    /// </summary>
+    [Range(0, 300, ErrorMessage = "Wind speed must be between 0 and 300 km/h")]
+    public double? WindSpeed { get; set; }
+
+    /// <summary>
+    /// Atmospheric pressure in hPa
+    /// </summary>
+    [Range(800, 1200, ErrorMessage = "Pressure must be between 800 and 1200 hPa")]
+    public double? Pressure { get; set; }
+
+    /// <summary>
+    /// UV Index
+    /// </summary>
+    [Range(0, 15, ErrorMessage = "UV Index must be between 0 and 15")]
+    public int? UvIndex { get; set; }
+
+    /// <summary>
+    /// Precipitation probability percentage
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Precipitation probability must be between 0 and 100 percent")]
+    public int? PrecipitationProbability { get; set; }
+
+    /// <summary>
+    /// Cloud coverage percentage
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Cloud coverage must be between 0 and 100 percent")]
+    public int? CloudCoverage { get; set; }
+
+    /// <summary>
+    /// Visibility in kilometers
+    /// </summary>
+    [Range(0, 50, ErrorMessage = "Visibility must be between 0 and 50 kilometers")]
+    public double? Visibility { get; set; }
+
+    /// <summary>
+    /// Timestamp when the forecast was created
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Source of the weather data
+    /// </summary>
+    [StringLength(50, ErrorMessage = "Source cannot exceed 50 characters")]
+    public string Source { get; set; } = "{{pascalCase projectName}} Weather Service";
+}

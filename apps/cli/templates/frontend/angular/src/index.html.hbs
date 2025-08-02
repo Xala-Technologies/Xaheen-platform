@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="{{#if localization}}{{defaultLocale}}{{else}}en{{/if}}">
+<head>
+  <meta charset="utf-8">
+  <title>{{projectName}}</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Meta tags for accessibility and SEO -->
+  <meta name="description" content="{{description}}">
+  <meta name="theme-color" content="#1976d2">
+  
+  <!-- WCAG compliance meta tags -->
+  <meta name="color-scheme" content="light dark">
+  
+  {{#if localization}}
+  <!-- Language alternatives -->
+  <link rel="alternate" hreflang="en" href="{{baseUrl}}/en/">
+  <link rel="alternate" hreflang="nb" href="{{baseUrl}}/nb/">
+  <link rel="alternate" hreflang="fr" href="{{baseUrl}}/fr/">
+  <link rel="alternate" hreflang="ar" href="{{baseUrl}}/ar/">
+  {{/if}}
+</head>
+<body class="mat-typography">
+  <app-root></app-root>
+  
+  <!-- Skip to main content link for accessibility -->
+  <a href="#main-content" class="skip-link" [attr.aria-label]="{{#if localization}}'SKIP_TO_MAIN' | translate{{else}}'Skip to main content'{{/if}}">
+    {{#if localization}}{{ 'SKIP_TO_MAIN' | translate }}{{else}}Skip to main content{{/if}}
+  </a>
+</body>
+</html>

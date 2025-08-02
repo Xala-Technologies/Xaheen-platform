@@ -1,0 +1,82 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    }
+  },
+  "Serilog": {
+    "Using": ["Serilog.Sinks.Console", "Serilog.Sinks.File"],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/{{kebabCase projectName}}-.txt",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 7,
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      }
+    ]
+  },
+  "ConnectionStrings": {
+    {{#if database}}
+    {{#eq database "sqlite"}}
+    "DefaultConnection": "Data Source={{kebabCase projectName}}.db"
+    {{/eq}}
+    {{#eq database "postgresql"}}
+    "DefaultConnection": "Host=localhost;Database={{kebabCase projectName}};Username=postgres;Password=password"
+    {{/eq}}
+    {{#eq database "mysql"}}
+    "DefaultConnection": "Server=localhost;Database={{kebabCase projectName}};Uid=root;Pwd=password;"
+    {{/eq}}
+    {{#eq database "sqlserver"}}
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database={{kebabCase projectName}};Trusted_Connection=true;MultipleActiveResultSets=true"
+    {{/eq}}
+    {{else}}
+    "DefaultConnection": "Data Source={{kebabCase projectName}}.db"
+    {{/if}}
+    {{#if caching}}
+    ,
+    "Redis": "localhost:6379"
+    {{/if}}
+  },
+  {{#if auth}}
+  "Jwt": {
+    "Issuer": "{{projectName}}-api",
+    "Audience": "{{projectName}}-client",
+    "Key": "{{jwtSecret}}"
+  },
+  {{/if}}
+  {{#if cors}}
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "http://localhost:4200",
+      "http://localhost:5173"
+    ]
+  },
+  {{/if}}
+  "AllowedHosts": "*",
+  "ApiSettings": {
+    "Version": "1.0.0",
+    "Title": "{{pascalCase projectName}} API",
+    "Description": "{{description}}",
+    "ContactName": "{{author}}",
+    "ContactEmail": "{{email}}"
+  }
+}

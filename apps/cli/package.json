@@ -1,10 +1,10 @@
 {
   "name": "xaheen",
-  "version": "2.28.5",
+  "version": "0.1.0",
   "description": "A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
   "type": "module",
   "license": "MIT",
-  "author": "Aman Varshney",
+  "author": "Ibrahim Rahmani",
   "bin": {
     "xaheen": "dist/index.js"
   },
@@ -40,10 +40,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AmanVarshney01/xaheen.git",
+    "url": "git+https://github.com/XaheenEnterprise/xaheen.git",
     "directory": "apps/cli"
   },
-  "homepage": "https://Xaheen.dev/",
+  "homepage": "https://xaheen.dev/",
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",

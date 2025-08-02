@@ -1,0 +1,114 @@
+@inherits LayoutView
+@using MudBlazor
+{{#if localization}}
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<MainLayout> Localizer
+{{/if}}
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" 
+                       Color="Color.Inherit" 
+                       Edge="Edge.Start" 
+                       OnClick="@((e) => DrawerToggle())"
+                       aria-label="{{#if localization}}@Localizer["ToggleNavigation"]{{else}}Toggle navigation{{/if}}" />
+        <MudSpacer />
+        <MudText Typo="Typo.h6">{{#if localization}}@Localizer["AppTitle"]{{else}}{{projectName}}{{/if}}</MudText>
+        <MudSpacer />
+        {{#if auth}}
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu>
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Inherit"
+                                   StartIcon="@Icons.Material.Filled.Person"
+                                   aria-label="{{#if localization}}@Localizer["UserMenu"]{{else}}User menu{{/if}}">
+                            @context.User.Identity?.Name
+                        </MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem OnClick="@(() => Logout())">
+                            <MudIcon Icon="@Icons.Material.Filled.Logout" Class="mr-2" />
+                            {{#if localization}}@Localizer["Logout"]{{else}}Logout{{/if}}
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Inherit"
+                           Href="/login"
+                           StartIcon="@Icons.Material.Filled.Login"
+                           aria-label="{{#if localization}}@Localizer["Login"]{{else}}Login{{/if}}">
+                    {{#if localization}}@Localizer["Login"]{{else}}Login{{/if}}
+                </MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+        {{/if}}
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" 
+               Elevation="1" 
+               Variant="@DrawerVariant.Responsive" 
+               Width="280px"
+               ClipMode="DrawerClipMode.Always">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">{{#if localization}}@Localizer["Navigation"]{{else}}Navigation{{/if}}</MudText>
+        </MudDrawerHeader>
+
+        <MudNavMenu>
+            <MudNavLink Href="/" 
+                        Match="NavLinkMatch.All" 
+                        Icon="@Icons.Material.Filled.Home"
+                        aria-label="{{#if localization}}@Localizer["Home"]{{else}}Home{{/if}}">
+                {{#if localization}}@Localizer["Home"]{{else}}Home{{/if}}
+            </MudNavLink>
+            
+            {{#if (includes examples "dashboard")}}
+            <MudNavLink Href="/dashboard" 
+                        Match="NavLinkMatch.Prefix" 
+                        Icon="@Icons.Material.Filled.Dashboard"
+                        aria-label="{{#if localization}}@Localizer["Dashboard"]{{else}}Dashboard{{/if}}">
+                {{#if localization}}@Localizer["Dashboard"]{{else}}Dashboard{{/if}}
+            </MudNavLink>
+            {{/if}}
+            
+            {{#if (includes examples "todo")}}
+            <MudNavLink Href="/todo" 
+                        Match="NavLinkMatch.Prefix" 
+                        Icon="@Icons.Material.Filled.CheckBox"
+                        aria-label="{{#if localization}}@Localizer["Todo"]{{else}}Todo{{/if}}">
+                {{#if localization}}@Localizer["Todo"]{{else}}Todo{{/if}}
+            </MudNavLink>
+            {{/if}}
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent id="main-content" role="main">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="my-8 pt-8">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    {{#if auth}}
+    private async Task Logout()
+    {
+        // Implement logout logic here
+        // NavigationManager.NavigateTo("/logout");
+    }
+    {{/if}}
+}

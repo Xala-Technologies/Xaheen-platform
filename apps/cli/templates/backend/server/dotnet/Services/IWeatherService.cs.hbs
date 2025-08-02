@@ -1,0 +1,31 @@
+using {{pascalCase projectName}}.Models;
+
+namespace {{pascalCase projectName}}.Services;
+
+/// <summary>
+/// Interface for weather service operations
+/// </summary>
+public interface IWeatherService
+{
+    /// <summary>
+    /// Gets weather forecast for the specified number of days
+    /// </summary>
+    /// <param name="days">Number of days to forecast</param>
+    /// <returns>Collection of weather forecasts</returns>
+    Task<IEnumerable<WeatherForecast>> GetForecastAsync(int days);
+
+    /// <summary>
+    /// Gets weather forecast for a specific city
+    /// </summary>
+    /// <param name="city">City name</param>
+    /// <param name="days">Number of days to forecast</param>
+    /// <returns>Collection of weather forecasts for the city</returns>
+    Task<IEnumerable<WeatherForecast>> GetForecastByCityAsync(string city, int days);
+
+    /// <summary>
+    /// Gets current weather for a specific city
+    /// </summary>
+    /// <param name="city">City name</param>
+    /// <returns>Current weather forecast</returns>
+    Task<WeatherForecast?> GetCurrentWeatherAsync(string city);
+}

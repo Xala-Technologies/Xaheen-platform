@@ -1,0 +1,101 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use '@angular/material' as mat;
+
+// Define custom Material Design theme
+$primary-palette: mat.define-palette(mat.$indigo-palette);
+$accent-palette: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$warn-palette: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent: $accent-palette,
+    warn: $warn-palette,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// Include theme styles for core and each component used in your app
+@include mat.all-component-themes($theme);
+
+// Global styles for accessibility
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Enhanced focus indicators for WCAG compliance
+*:focus {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+// Skip link for keyboard navigation
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+// Enhanced 8pt Grid System
+.spacing-1 { margin: 8px !important; }
+.spacing-2 { margin: 16px !important; }
+.spacing-3 { margin: 24px !important; }
+.spacing-4 { margin: 32px !important; }
+.spacing-5 { margin: 40px !important; }
+.spacing-6 { margin: 48px !important; }
+.spacing-8 { margin: 64px !important; }
+
+.padding-1 { padding: 8px !important; }
+.padding-2 { padding: 16px !important; }
+.padding-3 { padding: 24px !important; }
+.padding-4 { padding: 32px !important; }
+.padding-5 { padding: 40px !important; }
+.padding-6 { padding: 48px !important; }
+.padding-8 { padding: 64px !important; }
+
+// Responsive design
+@media (max-width: 768px) {
+  .mat-toolbar {
+    height: 56px;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  * {
+    border: 1px solid !important;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  // Dark theme will be implemented here when needed
+}
+
+{{#if localization}}
+// RTL support for Arabic
+[dir="rtl"] {
+  .mat-sidenav-container {
+    direction: rtl;
+  }
+  
+  .mat-toolbar .toolbar-title {
+    margin-right: 16px;
+    margin-left: 0;
+  }
+}
+{{/if}}

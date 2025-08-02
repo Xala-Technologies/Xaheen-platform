@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>{{pascalCase projectName}}</RootNamespace>
+    <AssemblyName>{{pascalCase projectName}}</AssemblyName>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core ASP.NET packages -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    
+    {{#if database}}
+    <!-- Entity Framework packages -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    {{#eq database "sqlite"}}
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+    {{/eq}}
+    {{#eq database "postgresql"}}
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+    {{/eq}}
+    {{#eq database "mysql"}}
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+    {{/eq}}
+    {{#eq database "sqlserver"}}
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    {{/eq}}
+    {{/if}}
+    
+    {{#if auth}}
+    <!-- Authentication packages -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    {{/if}}
+    
+    {{#if api}}
+    <!-- API packages -->
+    {{#eq api "graphql"}}
+    <PackageReference Include="HotChocolate.AspNetCore" Version="13.5.1" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.5.1" />
+    {{/eq}}
+    {{#eq api "grpc"}}
+    <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    {{/eq}}
+    {{/if}}
+    
+    <!-- Validation and configuration -->
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    
+    <!-- Logging and monitoring -->
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    
+    {{#if caching}}
+    <!-- Caching -->
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
+    {{/if}}
+    
+    {{#if cors}}
+    <!-- CORS -->
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+    {{/if}}
+  </ItemGroup>
+
+  {{#if api}}
+  {{#eq api "grpc"}}
+  <ItemGroup>
+    <Protobuf Include="Protos\*.proto" GrpcServices="Server" />
+  </ItemGroup>
+  {{/eq}}
+  {{/if}}
+
+</Project>

@@ -1,0 +1,356 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+
+/**
+ * Weather controller providing weather forecast endpoints
+ * 
+ * @package App\Http\Controllers
+ */
+class WeatherController extends Controller
+{
+    /**
+     * Weather summaries for random generation
+     */
+    private const SUMMARIES = [
+        'Freezing', 'Bracing', 'Chilly', 'Cool', 'Mild',
+        'Warm', 'Balmy', 'Hot', 'Sweltering', 'Scorching'
+    ];
+
+    /**
+     * Supported Norwegian cities
+     */
+    private const CITIES = [
+        'Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Kristiansand',
+        'Tromsø', 'Drammen', 'Fredrikstad', 'Sandnes', 'Ålesund'
+    ];
+
+    /**
+     * Get weather forecast
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'days' => 'integer|min:1|max:10',
+                'city' => 'string|max:50',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->validationErrorResponse($validator->errors()->toArray());
+            }
+
+            $days = $request->get('days', 5);
+            $city = $request->get('city', 'Default');
+
+            Log::info('Weather forecast requested', ['days' => $days, 'city' => $city]);
+
+            $cacheKey = "weather_forecast_{$city}_{$days}";
+            
+            $forecast = Cache::remember($cacheKey, 600, function () use ($days, $city) {
+                return $this->generateForecast($days, $city);
+            });
+
+            return $this->successResponse($forecast, 'Weather forecast retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->handleException($e, 'Weather forecast retrieval');
+        }
+    }
+
+    /**
+     * Get detailed weather forecast
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function forecast(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'days' => 'integer|min:1|max:10',
+                'detailed' => 'boolean',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->validationErrorResponse($validator->errors()->toArray());
+            }
+
+            $days = $request->get('days', 5);
+            $detailed = $request->boolean('detailed', false);
+
+            Log::info('Detailed weather forecast requested', ['days' => $days, 'detailed' => $detailed]);
+
+            $cacheKey = "weather_detailed_{$days}_{$detailed}";
+            
+            $forecast = Cache::remember($cacheKey, 600, function () use ($days, $detailed) {
+                return $this->generateDetailedForecast($days, $detailed);
+            });
+
+            return $this->successResponse($forecast, 'Detailed weather forecast retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->handleException($e, 'Detailed weather forecast retrieval');
+        }
+    }
+
+    /**
+     * Get current weather for a specific city
+     *
+     * @param string $city
+     * @return JsonResponse
+     */
+    public function currentByCity(string $city): JsonResponse
+    {
+        try {
+            if (empty($city) || strlen($city) > 50) {
+                return $this->errorResponse('Invalid city name', 400);
+            }
+
+            $supportedCity = $this->findSupportedCity($city);
+            
+            if (!$supportedCity) {
+                return $this->notFoundResponse('City');
+            }
+
+            Log::info('Current weather requested for city', ['city' => $supportedCity]);
+
+            $cacheKey = "weather_current_{$supportedCity}";
+            
+            $currentWeather = Cache::remember($cacheKey, 300, function () use ($supportedCity) {
+                return $this->generateCurrentWeather($supportedCity);
+            });
+
+            return $this->successResponse($currentWeather, "Current weather for {$supportedCity} retrieved successfully");
+
+        } catch (\Exception $e) {
+            return $this->handleException($e, 'Current weather retrieval');
+        }
+    }
+
+    /**
+     * Get weather forecast for a specific city
+     *
+     * @param string $city
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function forecastByCity(string $city, Request $request): JsonResponse
+    {
+        try {
+            if (empty($city) || strlen($city) > 50) {
+                return $this->errorResponse('Invalid city name', 400);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'days' => 'integer|min:1|max:10',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->validationErrorResponse($validator->errors()->toArray());
+            }
+
+            $supportedCity = $this->findSupportedCity($city);
+            
+            if (!$supportedCity) {
+                return $this->notFoundResponse('City');
+            }
+
+            $days = $request->get('days', 5);
+
+            Log::info('City weather forecast requested', ['city' => $supportedCity, 'days' => $days]);
+
+            $cacheKey = "weather_city_{$supportedCity}_{$days}";
+            
+            $forecast = Cache::remember($cacheKey, 600, function () use ($supportedCity, $days) {
+                return $this->generateCityForecast($supportedCity, $days);
+            });
+
+            return $this->successResponse($forecast, "Weather forecast for {$supportedCity} retrieved successfully");
+
+        } catch (\Exception $e) {
+            return $this->handleException($e, 'City weather forecast retrieval');
+        }
+    }
+
+    /**
+     * Health check endpoint
+     *
+     * @return JsonResponse
+     */
+    public function health(): JsonResponse
+    {
+        try {
+            Log::info('Weather service health check requested');
+
+            $healthData = [
+                'service' => 'Weather Service',
+                'status' => 'healthy',
+                'timestamp' => now()->toISOString(),
+                'supported_cities' => count(self::CITIES),
+                'cache_enabled' => config('cache.default') !== 'array',
+                'version' => '1.0.0',
+            ];
+
+            return $this->successResponse($healthData, 'Weather service is healthy');
+
+        } catch (\Exception $e) {
+            return $this->handleException($e, 'Weather service health check');
+        }
+    }
+
+    /**
+     * Generate weather forecast data
+     *
+     * @param int $days
+     * @param string $city
+     * @return array
+     */
+    private function generateForecast(int $days, string $city = 'Default'): array
+    {
+        $forecast = [];
+        $baseTemp = $this->getBaseTempForCity($city);
+
+        for ($i = 0; $i < $days; $i++) {
+            $date = now()->addDays($i);
+            $temp = $baseTemp + rand(-10, 15);
+
+            $forecast[] = [
+                'date' => $date->toDateString(),
+                'temperature_c' => $temp,
+                'temperature_f' => round(($temp * 9/5) + 32),
+                'summary' => self::SUMMARIES[array_rand(self::SUMMARIES)],
+                'city' => $city,
+                'humidity' => rand(30, 100),
+                'wind_speed' => round(rand(0, 50) + (rand(0, 100) / 100), 1),
+                'created_at' => now()->toISOString(),
+            ];
+        }
+
+        return $forecast;
+    }
+
+    /**
+     * Generate detailed weather forecast
+     *
+     * @param int $days
+     * @param bool $detailed
+     * @return array
+     */
+    private function generateDetailedForecast(int $days, bool $detailed): array
+    {
+        $forecast = [];
+
+        for ($i = 0; $i < $days; $i++) {
+            $date = now()->addDays($i);
+            $temp = rand(-5, 25);
+
+            $basic = [
+                'date' => $date->toDateString(),
+                'temperature_c' => $temp,
+                'temperature_f' => round(($temp * 9/5) + 32),
+                'summary' => self::SUMMARIES[array_rand(self::SUMMARIES)],
+                'humidity' => rand(30, 100),
+                'wind_speed' => round(rand(0, 50) + (rand(0, 100) / 100), 1),
+            ];
+
+            if ($detailed) {
+                $basic = array_merge($basic, [
+                    'pressure' => round(rand(990, 1030) + (rand(0, 100) / 100), 1),
+                    'uv_index' => rand(0, 12),
+                    'precipitation_probability' => rand(0, 100),
+                    'cloud_coverage' => rand(0, 100),
+                    'visibility' => round(rand(5, 50) + (rand(0, 100) / 100), 1),
+                    'sunrise' => $date->copy()->setTime(6, rand(0, 60))->toTimeString(),
+                    'sunset' => $date->copy()->setTime(18, rand(0, 60))->toTimeString(),
+                ]);
+            }
+
+            $basic['created_at'] = now()->toISOString();
+            $forecast[] = $basic;
+        }
+
+        return $forecast;
+    }
+
+    /**
+     * Generate current weather data
+     *
+     * @param string $city
+     * @return array
+     */
+    private function generateCurrentWeather(string $city): array
+    {
+        $baseTemp = $this->getBaseTempForCity($city);
+        $temp = $baseTemp + rand(-5, 10);
+
+        return [
+            'date' => now()->toDateString(),
+            'time' => now()->toTimeString(),
+            'temperature_c' => $temp,
+            'temperature_f' => round(($temp * 9/5) + 32),
+            'summary' => self::SUMMARIES[array_rand(self::SUMMARIES)],
+            'city' => $city,
+            'humidity' => rand(40, 95),
+            'wind_speed' => round(rand(5, 40) + (rand(0, 100) / 100), 1),
+            'pressure' => round(rand(990, 1030) + (rand(0, 100) / 100), 1),
+            'uv_index' => rand(0, 8),
+            'precipitation_probability' => rand(20, 80),
+            'cloud_coverage' => rand(30, 90),
+            'visibility' => round(rand(10, 35) + (rand(0, 100) / 100), 1),
+            'feels_like_c' => $temp + rand(-3, 3),
+            'created_at' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Generate city-specific forecast
+     *
+     * @param string $city
+     * @param int $days
+     * @return array
+     */
+    private function generateCityForecast(string $city, int $days): array
+    {
+        return $this->generateForecast($days, $city);
+    }
+
+    /**
+     * Find a supported city (case-insensitive)
+     *
+     * @param string $city
+     * @return string|null
+     */
+    private function findSupportedCity(string $city): ?string
+    {
+        return collect(self::CITIES)->first(function ($supportedCity) use ($city) {
+            return strcasecmp($supportedCity, $city) === 0;
+        });
+    }
+
+    /**
+     * Get base temperature for a city
+     *
+     * @param string $city
+     * @return int
+     */
+    private function getBaseTempForCity(string $city): int
+    {
+        return match (strtolower($city)) {
+            'tromsø' => -5,  // Northern city, colder
+            'oslo' => 5,     // Central, moderate
+            'bergen' => 8,   // Western coast, milder
+            'stavanger' => 7, // Western coast
+            default => 5     // Default moderate temperature
+        };
+    }
+}
