@@ -72,6 +72,8 @@ const CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 	"webDeploy",
 	"auth",
 	"packageManager",
+	"uiSystem",
+	"compliance",
 	"addons",
 	"examples",
 	"git",
@@ -175,8 +177,26 @@ function TechIcon({
 }
 
 const getCategoryDisplayName = (categoryKey: string): string => {
-	const result = categoryKey.replace(/([A-Z])/g, " $1");
-	return result.charAt(0).toUpperCase() + result.slice(1);
+	// Handle special cases for better display names
+	switch (categoryKey) {
+		case "uiSystem":
+			return "UI System";
+		case "compliance":
+			return "Compliance";
+		case "webFrontend":
+			return "Web Frontend";
+		case "nativeFrontend":
+			return "Native Frontend";
+		case "webDeploy":
+			return "Web Deploy";
+		case "packageManager":
+			return "Package Manager";
+		case "dbSetup":
+			return "DB Setup";
+		default:
+			const result = categoryKey.replace(/([A-Z])/g, " $1");
+			return result.charAt(0).toUpperCase() + result.slice(1);
+	}
 };
 
 interface CompatibilityResult {
@@ -1334,7 +1354,8 @@ const StackBuilder = () => {
 				catKey === "webFrontend" ||
 				catKey === "nativeFrontend" ||
 				catKey === "addons" ||
-				catKey === "examples"
+				catKey === "examples" ||
+				catKey === "compliance"
 			) {
 				const currentArray = Array.isArray(currentValue)
 					? [...currentValue]
@@ -1362,6 +1383,19 @@ const StackBuilder = () => {
 					} else {
 						nextArray = [techId];
 					}
+				} else if (catKey === "compliance") {
+					// Compliance can have multiple selections
+					if (techId === "none") {
+						nextArray = ["none"];
+					} else if (isSelected) {
+						nextArray = nextArray.filter((id) => id !== techId);
+						if (nextArray.length === 0) {
+							nextArray = ["none"];
+						}
+					} else {
+						nextArray = nextArray.filter((id) => id !== "none");
+						nextArray.push(techId);
+					}
 				} else {
 					if (isSelected) {
 						nextArray = nextArray.filter((id) => id !== techId);
@@ -1373,7 +1407,7 @@ const StackBuilder = () => {
 					}
 					if (
 						nextArray.length === 0 &&
-						(catKey === "addons" || catKey === "examples")
+						(catKey === "addons" || catKey === "examples" || catKey === "compliance")
 					) {
 					} else if (nextArray.length === 0) {
 						nextArray = ["none"];

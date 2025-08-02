@@ -401,6 +401,82 @@ export const TECH_OPTIONS: Record<
 			default: true,
 		},
 	],
+	uiSystem: [
+		{
+			id: "xala",
+			name: "Xala UI System v5",
+			description: "Enterprise-grade design system with Norwegian compliance",
+			icon: "/icon/xala.svg",
+			color: "from-blue-600 to-purple-600",
+			default: true,
+		},
+		{
+			id: "shadcn",
+			name: "shadcn/ui",
+			description: "Beautifully designed components built with Radix UI",
+			icon: "/icon/shadcn.svg",
+			color: "from-gray-700 to-black",
+			default: false,
+		},
+		{
+			id: "tailwind",
+			name: "Tailwind CSS",
+			description: "Utility-first CSS framework",
+			icon: "/icon/tailwind.svg",
+			color: "from-cyan-400 to-cyan-600",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No UI System",
+			description: "Build custom components from scratch",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
+	compliance: [
+		{
+			id: "norwegian",
+			name: "Norwegian Government",
+			description: "BankID, Altinn, Digdir & NSM compliance",
+			icon: "/icon/norway.svg",
+			color: "from-red-600 to-blue-800",
+			default: false,
+		},
+		{
+			id: "gdpr",
+			name: "GDPR Compliance",
+			description: "EU data protection and privacy compliance",
+			icon: "/icon/gdpr.svg",
+			color: "from-blue-500 to-blue-700",
+			default: false,
+		},
+		{
+			id: "wcag-aaa",
+			name: "WCAG 2.2 AAA",
+			description: "Highest level accessibility compliance",
+			icon: "/icon/accessibility.svg",
+			color: "from-green-500 to-green-700",
+			default: false,
+		},
+		{
+			id: "iso27001",
+			name: "ISO 27001",
+			description: "Information security management compliance",
+			icon: "/icon/iso27001.svg",
+			color: "from-purple-500 to-purple-700",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No Compliance",
+			description: "Basic implementation without compliance features",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: true,
+		},
+	],
 	addons: [
 		{
 			id: "pwa",
@@ -654,6 +730,8 @@ export type StackState = {
 	dbSetup: string;
 	auth: string;
 	packageManager: string;
+	uiSystem: string;
+	compliance: string[];
 	addons: string[];
 	examples: string[];
 	git: string;
@@ -673,6 +751,8 @@ export const DEFAULT_STACK: StackState = {
 	dbSetup: "none",
 	auth: "true",
 	packageManager: "bun",
+	uiSystem: "xala",
+	compliance: ["none"],
 	addons: ["turborepo"],
 	examples: [],
 	git: "true",

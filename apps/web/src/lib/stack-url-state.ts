@@ -42,6 +42,10 @@ export const stackParsers = {
 	packageManager: parseAsStringEnum<StackState["packageManager"]>(
 		getValidIds("packageManager"),
 	).withDefault(DEFAULT_STACK.packageManager),
+	uiSystem: parseAsStringEnum<StackState["uiSystem"]>(
+		getValidIds("uiSystem"),
+	).withDefault(DEFAULT_STACK.uiSystem),
+	compliance: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.compliance),
 	addons: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.addons),
 	examples: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.examples),
 	git: parseAsStringEnum<StackState["git"]>(["true", "false"]).withDefault(
@@ -68,6 +72,8 @@ export const stackUrlKeys: UrlKeys<typeof stackParsers> = {
 	dbSetup: "dbs",
 	auth: "au",
 	packageManager: "pm",
+	uiSystem: "ui",
+	compliance: "comp",
 	addons: "add",
 	examples: "ex",
 	git: "git",

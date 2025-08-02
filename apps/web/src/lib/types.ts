@@ -10,6 +10,8 @@ export type TechCategory =
 	| "webDeploy"
 	| "auth"
 	| "packageManager"
+	| "uiSystem"
+	| "compliance"
 	| "addons"
 	| "examples"
 	| "git"
