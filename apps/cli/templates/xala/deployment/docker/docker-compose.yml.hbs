@@ -1,0 +1,253 @@
+# Docker Compose Configuration - Xala UI System Compliant
+# Generated with Xaheen CLI - Multi-Platform Docker Compose Setup
+# 
+# MANDATORY COMPLIANCE RULES:
+# ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+# ✅ ONLY semantic components from @xala-technologies/ui-system
+# ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+# ✅ MANDATORY design token usage for all colors, spacing, typography
+# ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+# ✅ WCAG 2.2 AAA compliance for accessibility
+# ❌ NO hardcoded user-facing text - ALL text must use t() function
+# ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+# ✅ Explicit TypeScript return types (no 'any' types)
+# ✅ SOLID principles and component composition
+# ✅ Maximum 200 lines per file, 20 lines per function
+
+version: '3.8'
+
+services:
+  # Web Application (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: {{projectName}}-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_NAME={{appName}}
+      - NEXT_PUBLIC_APP_VERSION={{version}}
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - DATABASE_URL=postgresql://postgres:password@db:5432/{{projectName}}
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - BANKID_CERTIFICATE_PATH=/app/certificates/bankid.p12
+      - BANKID_CERTIFICATE_PASSWORD=${BANKID_CERTIFICATE_PASSWORD}
+      - VIPPS_CLIENT_ID=${VIPPS_CLIENT_ID}
+      - VIPPS_CLIENT_SECRET=${VIPPS_CLIENT_SECRET}
+      - VIPPS_SUBSCRIPTION_KEY=${VIPPS_SUBSCRIPTION_KEY}
+      - VIPPS_MERCHANT_SERIAL_NUMBER=${VIPPS_MERCHANT_SERIAL_NUMBER}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`{{domain}}`)"
+      - "traefik.http.routers.web.tls=true"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "compliance.gdpr=true"
+      - "compliance.nsm=BEGRENSET"
+      - "compliance.wcag=AAA"
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-db
+    environment:
+      - POSTGRES_DB={{projectName}}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=nb_NO.UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d {{projectName}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "backup.enable=true"
+      - "backup.schedule=0 2 * * *"
+      - "compliance.gdpr=true"
+      - "data.classification=BEGRENSET"
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: {{projectName}}-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "backup.enable=true"
+      - "compliance.gdpr=true"
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: {{projectName}}-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - "traefik.enable=false"
+
+  # Monitoring with Prometheus (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: {{projectName}}-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - "monitoring.type=metrics"
+
+  # Grafana Dashboard (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: {{projectName}}-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN={{domain}}
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=${SMTP_HOST}
+      - GF_SMTP_USER=${SMTP_USER}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - "monitoring.type=dashboard"
+
+  # Log Management with Loki (Optional)
+  loki:
+    image: grafana/loki:latest
+    container_name: {{projectName}}-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/tmp/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - "monitoring.type=logs"
+
+  # Backup Service (Norwegian compliance)
+  backup:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-backup
+    environment:
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    command: /bin/sh -c "chmod +x /backup.sh && crond -f"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - app-network
+    labels:
+      - "backup.service=true"
+      - "compliance.gdpr=true"
+      - "data.retention=7years"
+
+volumes:
+  postgres_data:
+    driver: local
+    labels:
+      - "backup.enable=true"
+      - "compliance.gdpr=true"
+      - "data.classification=BEGRENSET"
+  
+  redis_data:
+    driver: local
+    labels:
+      - "backup.enable=true"
+      - "compliance.gdpr=true"
+  
+  prometheus_data:
+    driver: local
+    labels:
+      - "monitoring.type=metrics"
+  
+  grafana_data:
+    driver: local
+    labels:
+      - "monitoring.type=dashboard"
+  
+  loki_data:
+    driver: local
+    labels:
+      - "monitoring.type=logs"
+
+networks:
+  app-network:
+    driver: bridge
+    labels:
+      - "environment={{environment}}"
+      - "compliance.gdpr=true"

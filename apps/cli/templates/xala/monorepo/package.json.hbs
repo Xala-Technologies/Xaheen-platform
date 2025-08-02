@@ -1,0 +1,197 @@
+/**
+ * Workspace Package.json - Xala UI System Compliant
+ * Generated with Xaheen CLI - Multi-Platform Monorepo Root Configuration
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+{
+  "name": "{{projectName}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "private": true,
+  "packageManager": "{{packageManager}}@{{packageManagerVersion}}",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0",
+    "yarn": ">=1.22.0",
+    "pnpm": ">=8.0.0",
+    "bun": ">=1.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:e2e": "turbo run test:e2e",
+    "test:watch": "turbo run test:watch",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "prebuild": "turbo run prebuild",
+    "ios": "turbo run ios",
+    "android": "turbo run android",
+    "web": "turbo run web",
+    "storybook": "turbo run storybook",
+    "storybook:build": "turbo run storybook:build",
+    "deploy": "turbo run deploy",
+    "compliance:check": "turbo run compliance:check",
+    "accessibility:check": "turbo run accessibility:check",
+    "norwegian:validate": "turbo run norwegian:validate",
+    "prepare": "husky install",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.9",
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@types/node": "^20.17.9",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-native": "^4.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@xala-technologies/ui-system": "^5.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "commitlint": {
+    "extends": ["@commitlint/config-conventional"],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "build",
+          "ci",
+          "chore",
+          "revert",
+          "compliance",
+          "accessibility",
+          "norwegian"
+        ]
+      ],
+      "scope-enum": [
+        2,
+        "always",
+        [
+          "web",
+          "mobile",
+          "desktop",
+          "shared",
+          "ui",
+          "auth",
+          "api",
+          "db",
+          "deploy",
+          "docs",
+          "config",
+          "deps",
+          "release"
+        ]
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "{{repositoryUrl}}"
+  },
+  "author": "{{author}}",
+  "license": "{{license}}",
+  "keywords": [
+    "{{projectName}}",
+    "multi-platform",
+    "react",
+    "react-native",
+    "next.js",
+    "electron",
+    "xala-ui-system",
+    "norwegian-compliance",
+    "accessibility",
+    "wcag-aaa",
+    "gdpr",
+    "bankid",
+    "vipps"
+  ],
+  "bugs": {
+    "url": "{{repositoryUrl}}/issues"
+  },
+  "homepage": "{{repositoryUrl}}#readme",
+  "funding": {
+    "type": "github",
+    "url": "{{fundingUrl}}"
+  },
+  "volta": {
+    "node": "20.18.1",
+    "npm": "10.8.2"
+  },
+  "resolutions": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  },
+  "overrides": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.0.0",
+      "@types/react-dom": "^19.0.0"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "react",
+        "react-dom",
+        "react-native"
+      ]
+    }
+  }
+}

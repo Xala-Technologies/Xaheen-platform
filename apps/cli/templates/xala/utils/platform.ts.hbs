@@ -1,0 +1,525 @@
+/**
+ * Platform Detection and Abstraction Utilities - Xala UI System Compliant
+ * Generated with Xaheen CLI - Multi-Platform Support
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Platforms Supported:
+ * - Web (Next.js/React)
+ * - Mobile (React Native)
+ * - Desktop (Electron)
+ */
+
+{{#if typescript}}
+export type Platform = 'web' | 'mobile' | 'desktop';
+export type PlatformCapabilities = {
+  hasFileSystem: boolean;
+  hasNotifications: boolean;
+  hasCamera: boolean;
+  hasGeolocation: boolean;
+  hasClipboard: boolean;
+  hasWindowControls: boolean;
+  hasSystemTray: boolean;
+  hasTouchSupport: boolean;
+  hasKeyboardShortcuts: boolean;
+  hasNativeMenus: boolean;
+};
+
+export interface PlatformInfo {
+  platform: Platform;
+  isWeb: boolean;
+  isMobile: boolean;
+  isDesktop: boolean;
+  isElectron: boolean;
+  isReactNative: boolean;
+  capabilities: PlatformCapabilities;
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  orientation?: 'portrait' | 'landscape';
+}
+{{/if}}
+
+/**
+ * Detect the current platform
+ */
+{{#if typescript}}
+export function detectPlatform(): Platform {
+{{else}}
+export function detectPlatform() {
+{{/if}}
+  // React Native detection
+  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+    return 'mobile';
+  }
+  
+  // Electron detection
+  if (typeof window !== 'undefined' && window.process && window.process.type) {
+    return 'desktop';
+  }
+  
+  // Check for Electron in different ways
+  if (typeof window !== 'undefined' && window.require) {
+    try {
+      window.require('electron');
+      return 'desktop';
+    } catch {
+      // Not Electron
+    }
+  }
+  
+  // Default to web
+  return 'web';
+}
+
+/**
+ * Get comprehensive platform information
+ */
+{{#if typescript}}
+export function getPlatformInfo(): PlatformInfo {
+{{else}}
+export function getPlatformInfo() {
+{{/if}}
+  const platform = detectPlatform();
+  const isWeb = platform === 'web';
+  const isMobile = platform === 'mobile';
+  const isDesktop = platform === 'desktop';
+  const isElectron = isDesktop;
+  const isReactNative = isMobile;
+
+  // Detect device type for web
+  let deviceType{{#if typescript}}: 'mobile' | 'tablet' | 'desktop'{{/if}} = 'desktop';
+  let orientation{{#if typescript}}: 'portrait' | 'landscape' | undefined{{/if}};
+
+  if (typeof window !== 'undefined' && isWeb) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    deviceType = width < 768 ? 'mobile' : width < 1024 ? 'tablet' : 'desktop';
+    orientation = height > width ? 'portrait' : 'landscape';
+  }
+
+  if (isReactNative) {
+    deviceType = 'mobile';
+    // React Native orientation detection would be handled by react-native-orientation
+  }
+
+  const capabilities{{#if typescript}}: PlatformCapabilities{{/if}} = {
+    hasFileSystem: isDesktop || isReactNative,
+    hasNotifications: true, // All platforms support notifications
+    hasCamera: isMobile || isDesktop,
+    hasGeolocation: true, // All platforms can support geolocation
+    hasClipboard: true, // All platforms support clipboard
+    hasWindowControls: isDesktop,
+    hasSystemTray: isDesktop,
+    hasTouchSupport: isMobile || (isWeb && 'ontouchstart' in window),
+    hasKeyboardShortcuts: isDesktop || isWeb,
+    hasNativeMenus: isDesktop || isMobile,
+  };
+
+  return {
+    platform,
+    isWeb,
+    isMobile,
+    isDesktop,
+    isElectron,
+    isReactNative,
+    capabilities,
+    deviceType,
+    orientation,
+  };
+}
+
+/**
+ * Platform-specific component imports
+ */
+{{#if typescript}}
+export function getPlatformComponents(): Record<string, any> {
+{{else}}
+export function getPlatformComponents() {
+{{/if}}
+  const { platform } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      // React Native components
+      return {
+        View: require('react-native').View,
+        Text: require('react-native').Text,
+        ScrollView: require('react-native').ScrollView,
+        TouchableOpacity: require('react-native').TouchableOpacity,
+        TextInput: require('react-native').TextInput,
+        Image: require('react-native').Image,
+        SafeAreaView: require('react-native').SafeAreaView,
+        StatusBar: require('react-native').StatusBar,
+        Platform: require('react-native').Platform,
+      };
+      
+    case 'desktop':
+      // Electron + Web components with desktop enhancements
+      return {
+        // Standard web components but with electron capabilities
+        electron: typeof window !== 'undefined' && window.require ? window.require('electron') : null,
+      };
+      
+    case 'web':
+    default:
+      // Standard web components
+      return {};
+  }
+}
+
+/**
+ * Platform-specific styling approach
+ */
+{{#if typescript}}
+export function getPlatformStyles(): {
+  useNativeDriver: boolean;
+  styleProperty: 'style' | 'className';
+  supportsCSSVariables: boolean;
+  supportsFlexbox: boolean;
+} {
+{{else}}
+export function getPlatformStyles() {
+{{/if}}
+  const { platform } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      return {
+        useNativeDriver: true,
+        styleProperty: 'style',
+        supportsCSSVariables: false,
+        supportsFlexbox: true,
+      };
+      
+    case 'desktop':
+    case 'web':
+    default:
+      return {
+        useNativeDriver: false,
+        styleProperty: 'className',
+        supportsCSSVariables: true,
+        supportsFlexbox: true,
+      };
+  }
+}
+
+/**
+ * Platform-specific navigation patterns
+ */
+{{#if typescript}}
+export function getNavigationPattern(): {
+  type: 'stack' | 'tab' | 'drawer' | 'web';
+  hasBackButton: boolean;
+  hasTabBar: boolean;
+  hasDrawer: boolean;
+  hasTopBar: boolean;
+} {
+{{else}}
+export function getNavigationPattern() {
+{{/if}}
+  const { platform, deviceType } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      return {
+        type: 'stack',
+        hasBackButton: true,
+        hasTabBar: true,
+        hasDrawer: false,
+        hasTopBar: true,
+      };
+      
+    case 'desktop':
+      return {
+        type: 'web',
+        hasBackButton: false,
+        hasTabBar: false,
+        hasDrawer: true,
+        hasTopBar: true,
+      };
+      
+    case 'web':
+    default:
+      return {
+        type: deviceType === 'mobile' ? 'stack' : 'web',
+        hasBackButton: deviceType === 'mobile',
+        hasTabBar: deviceType === 'mobile',
+        hasDrawer: deviceType !== 'mobile',
+        hasTopBar: true,
+      };
+  }
+}
+
+/**
+ * Platform-specific API access
+ */
+{{#if typescript}}
+export function getPlatformAPIs(): {
+  filesystem?: any;
+  notifications?: any;
+  camera?: any;
+  geolocation?: any;
+  clipboard?: any;
+  windowControls?: any;
+  systemTray?: any;
+} {
+{{else}}
+export function getPlatformAPIs() {
+{{/if}}
+  const { platform, capabilities } = getPlatformInfo();
+  const apis{{#if typescript}}: any{{/if}} = {};
+
+  try {
+    switch (platform) {
+      case 'mobile':
+        // React Native APIs
+        if (capabilities.hasFileSystem) {
+          apis.filesystem = require('react-native-fs');
+        }
+        if (capabilities.hasNotifications) {
+          apis.notifications = require('@react-native-async-storage/async-storage');
+        }
+        if (capabilities.hasCamera) {
+          apis.camera = require('react-native-image-picker');
+        }
+        if (capabilities.hasGeolocation) {
+          apis.geolocation = require('@react-native-community/geolocation');
+        }
+        break;
+        
+      case 'desktop':
+        // Electron APIs
+        if (typeof window !== 'undefined' && window.require) {
+          const electron = window.require('electron');
+          if (capabilities.hasFileSystem) {
+            apis.filesystem = window.require('fs');
+          }
+          if (capabilities.hasWindowControls) {
+            apis.windowControls = electron.remote?.getCurrentWindow();
+          }
+          if (capabilities.hasSystemTray) {
+            apis.systemTray = electron.Tray;
+          }
+        }
+        break;
+        
+      case 'web':
+      default:
+        // Web APIs
+        if (capabilities.hasNotifications && 'Notification' in window) {
+          apis.notifications = window.Notification;
+        }
+        if (capabilities.hasGeolocation && navigator.geolocation) {
+          apis.geolocation = navigator.geolocation;
+        }
+        if (capabilities.hasClipboard && navigator.clipboard) {
+          apis.clipboard = navigator.clipboard;
+        }
+        break;
+    }
+  } catch (error) {
+    console.warn('Platform API not available:', error);
+  }
+
+  return apis;
+}
+
+/**
+ * Platform-specific event handlers
+ */
+{{#if typescript}}
+export function getPlatformEventHandlers(): {
+  onPress?: string;
+  onClick?: string;
+  onLongPress?: string;
+  onDoubleClick?: string;
+  onHover?: string;
+  onFocus?: string;
+  onBlur?: string;
+} {
+{{else}}
+export function getPlatformEventHandlers() {
+{{/if}}
+  const { platform } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      return {
+        onPress: 'onPress',
+        onLongPress: 'onLongPress',
+        onFocus: 'onFocus',
+        onBlur: 'onBlur',
+      };
+      
+    case 'desktop':
+    case 'web':
+    default:
+      return {
+        onClick: 'onClick',
+        onDoubleClick: 'onDoubleClick',
+        onHover: 'onMouseEnter',
+        onFocus: 'onFocus',
+        onBlur: 'onBlur',
+      };
+  }
+}
+
+/**
+ * Platform-specific dimensions and safe areas
+ */
+{{#if typescript}}
+export function getPlatformDimensions(): {
+  width: number;
+  height: number;
+  safeAreaTop: number;
+  safeAreaBottom: number;
+  safeAreaLeft: number;
+  safeAreaRight: number;
+} {
+{{else}}
+export function getPlatformDimensions() {
+{{/if}}
+  const { platform } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      // React Native dimensions
+      try {
+        const { Dimensions } = require('react-native');
+        const screen = Dimensions.get('screen');
+        const window = Dimensions.get('window');
+        
+        return {
+          width: window.width,
+          height: window.height,
+          safeAreaTop: 44, // Default iOS safe area
+          safeAreaBottom: 34, // Default iOS safe area
+          safeAreaLeft: 0,
+          safeAreaRight: 0,
+        };
+      } catch {
+        return {
+          width: 375,
+          height: 667,
+          safeAreaTop: 44,
+          safeAreaBottom: 34,
+          safeAreaLeft: 0,
+          safeAreaRight: 0,
+        };
+      }
+      
+    case 'desktop':
+    case 'web':
+    default:
+      if (typeof window !== 'undefined') {
+        return {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          safeAreaTop: 0,
+          safeAreaBottom: 0,
+          safeAreaLeft: 0,
+          safeAreaRight: 0,
+        };
+      }
+      
+      return {
+        width: 1920,
+        height: 1080,
+        safeAreaTop: 0,
+        safeAreaBottom: 0,
+        safeAreaLeft: 0,
+        safeAreaRight: 0,
+      };
+  }
+}
+
+/**
+ * Platform-specific storage
+ */
+{{#if typescript}}
+export function getPlatformStorage(): {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  removeItem: (key: string) => Promise<void>;
+  clear: () => Promise<void>;
+} {
+{{else}}
+export function getPlatformStorage() {
+{{/if}}
+  const { platform } = getPlatformInfo();
+
+  switch (platform) {
+    case 'mobile':
+      // React Native AsyncStorage
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        return {
+          getItem: AsyncStorage.getItem,
+          setItem: AsyncStorage.setItem,
+          removeItem: AsyncStorage.removeItem,
+          clear: AsyncStorage.clear,
+        };
+      } catch {
+        // Fallback to memory storage
+        const memoryStorage{{#if typescript}}: Record<string, string>{{/if}} = {};
+        return {
+          getItem: async (key{{#if typescript}}: string{{/if}}) => memoryStorage[key] || null,
+          setItem: async (key{{#if typescript}}: string{{/if}}, value{{#if typescript}}: string{{/if}}) => {
+            memoryStorage[key] = value;
+          },
+          removeItem: async (key{{#if typescript}}: string{{/if}}) => {
+            delete memoryStorage[key];
+          },
+          clear: async () => {
+            Object.keys(memoryStorage).forEach(key => delete memoryStorage[key]);
+          },
+        };
+      }
+      
+    case 'desktop':
+    case 'web':
+    default:
+      // Web localStorage with async interface
+      return {
+        getItem: async (key{{#if typescript}}: string{{/if}}) => {
+          try {
+            return localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        },
+        setItem: async (key{{#if typescript}}: string{{/if}}, value{{#if typescript}}: string{{/if}}) => {
+          try {
+            localStorage.setItem(key, value);
+          } catch {
+            // Storage quota exceeded or not available
+          }
+        },
+        removeItem: async (key{{#if typescript}}: string{{/if}}) => {
+          try {
+            localStorage.removeItem(key);
+          } catch {
+            // Not available
+          }
+        },
+        clear: async () => {
+          try {
+            localStorage.clear();
+          } catch {
+            // Not available
+          }
+        },
+      };
+  }
+}

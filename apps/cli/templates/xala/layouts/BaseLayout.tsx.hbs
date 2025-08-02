@@ -2,7 +2,7 @@
 
 /**
  * BaseLayout Component - Xala UI System Compliant
- * Generated with Xaheen CLI
+ * Generated with Xaheen CLI - Multi-Platform Foundation Layout
  * 
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
@@ -17,39 +17,44 @@
  * ✅ SOLID principles and component composition
  * ✅ Maximum 200 lines per file, 20 lines per function
  * 
- * Features:
- * - Foundation layout with all providers
- * - Theme and localization setup
- * - Accessibility infrastructure
- * - Norwegian compliance integration
- * - SSR-compatible architecture
+ * Multi-Platform Features:
+ * - Web (Next.js/React) support
+ * - Mobile (React Native) support
+ * - Desktop (Electron) support
+ * - Platform-specific optimizations
+ * - Unified component API
+ * - Cross-platform theming
+ * - Platform detection and adaptation
  */
 
 {{#if typescript}}
 import React from 'react';
 import { NextIntlClientProvider } from 'next-intl';
-import { 
-  UiProvider,
+import {
+  UISystemProvider,
+  ThemeProvider,
+  AccessibilityProvider,
+  ComplianceProvider,
   Box,
   Stack,
-  SkipLink,
-  AnnouncementRegion,
-  FocusManager
+  Typography,
+  ErrorBoundary
 } from '@xala-technologies/ui-system';
-import { 
-  NorwegianComplianceProvider,
-  useAuditLogging 
-} from '@xala-technologies/ui-system/compliance';
-import { useTheme } from '@xala-technologies/ui-system/hooks';
+import { Toaster } from '@xala-technologies/ui-system/toast';
+import { Analytics } from '@xala-technologies/ui-system/analytics';
+import { usePlatform, usePlatformDimensions } from '../hooks/usePlatform';
+import { PlatformSafeAreaView, PlatformStatusBar } from '../components/platform/PlatformComponents';
+import { getPlatformConfig } from '../config/platform.config';
 
 interface BaseLayoutProps {
   children: React.ReactNode;
   locale?: string;
-  messages?: Record<string, any>;
   theme?: 'light' | 'dark' | 'high-contrast';
-  industryTemplate?: 'enterprise' | 'healthcare' | 'finance' | 'education' | 'ecommerce';
   enableCompliance?: boolean;
+  enableAnalytics?: boolean;
+  messages?: Record<string, any>;
   className?: string;
+  platformOptimized?: boolean;
 }
 
 interface LayoutContextValue {
@@ -60,19 +65,21 @@ interface LayoutContextValue {
 {{else}}
 import React from 'react';
 import { NextIntlClientProvider } from 'next-intl';
-import { 
-  UiProvider,
+import {
+  UISystemProvider,
+  ThemeProvider,
+  AccessibilityProvider,
+  ComplianceProvider,
   Box,
   Stack,
-  SkipLink,
-  AnnouncementRegion,
-  FocusManager
+  Typography,
+  ErrorBoundary
 } from '@xala-technologies/ui-system';
-import { 
-  NorwegianComplianceProvider,
-  useAuditLogging 
-} from '@xala-technologies/ui-system/compliance';
-import { useTheme } from '@xala-technologies/ui-system/hooks';
+import { Toaster } from '@xala-technologies/ui-system/toast';
+import { Analytics } from '@xala-technologies/ui-system/analytics';
+import { usePlatform, usePlatformDimensions } from '../hooks/usePlatform';
+import { PlatformSafeAreaView, PlatformStatusBar } from '../components/platform/PlatformComponents';
+import { getPlatformConfig } from '../config/platform.config';
 {{/if}}
 
 {{#if typescript}}
@@ -97,9 +104,10 @@ export default function BaseLayout({
   locale = 'en',
   messages = {},
   theme = 'light',
-  industryTemplate = 'enterprise',
   enableCompliance = true,
-  className
+  enableAnalytics = false,
+  className,
+  platformOptimized = true
 }: BaseLayoutProps): React.ReactElement {
 {{else}}
 export default function BaseLayout({
@@ -107,152 +115,171 @@ export default function BaseLayout({
   locale = 'en',
   messages = {},
   theme = 'light',
-  industryTemplate = 'enterprise',
   enableCompliance = true,
-  className
+  enableAnalytics = false,
+  className,
+  platformOptimized = true
 }) {
 {{/if}}
-  // Audit logging for compliance
-  const auditLog = useAuditLogging();
+  // Platform detection and configuration
+  const platformInfo = usePlatform();
+  const dimensions = usePlatformDimensions();
+  const platformConfig = getPlatformConfig();
 
-  // Log layout initialization
+  // Log layout initialization with platform info
   React.useEffect(() => {
     if (enableCompliance) {
-      auditLog.logEvent('layout_initialized', {
+      console.log('BaseLayout initialized', {
+        platform: platformInfo.platform,
         locale,
         theme,
-        industryTemplate,
+        dimensions,
         timestamp: new Date().toISOString(),
       });
     }
-  }, [locale, theme, industryTemplate, enableCompliance, auditLog]);
+  }, [locale, theme, platformInfo, dimensions, enableCompliance]);
 
-  // Dynamic theme configuration based on industry template
-  const getThemeConfig = React.useCallback({{#if typescript}}(): any{{/if}} => {
-    const themeConfigs = {
-      enterprise: {
-        colors: { primary: 'blue', secondary: 'gray' },
-        spacing: 'comfortable',
-        typography: 'professional'
-      },
-      healthcare: {
-        colors: { primary: 'teal', secondary: 'blue' },
-        spacing: 'spacious',
-        typography: 'accessible'
-      },
-      finance: {
-        colors: { primary: 'navy', secondary: 'gold' },
-        spacing: 'compact',
-        typography: 'formal'
-      },
-      education: {
-        colors: { primary: 'green', secondary: 'orange' },
-        spacing: 'comfortable',
-        typography: 'friendly'
-      },
-      ecommerce: {
-        colors: { primary: 'purple', secondary: 'pink' },
-        spacing: 'dynamic',
-        typography: 'engaging'
-      }
+  // Platform-specific theme configuration
+  const getPlatformThemeConfig = React.useCallback({{#if typescript}}(): any{{/if}} => {
+    const baseTheme = {
+      colors: { primary: 'blue', secondary: 'gray' },
+      spacing: 'comfortable',
+      typography: 'professional'
     };
-    
-    return themeConfigs[industryTemplate] || themeConfigs.enterprise;
-  }, [industryTemplate]);
+
+    // Platform-specific adjustments
+    if (platformInfo.isMobile) {
+      return {
+        ...baseTheme,
+        spacing: 'touch-friendly',
+        typography: 'mobile-optimized',
+        interactions: 'touch'
+      };
+    }
+
+    if (platformInfo.isDesktop) {
+      return {
+        ...baseTheme,
+        spacing: 'desktop-comfortable',
+        typography: 'desktop-professional',
+        interactions: 'mouse-keyboard'
+      };
+    }
+
+    return baseTheme;
+  }, [platformInfo]);
 
   {{#if typescript}}
   const layoutContextValue: LayoutContextValue = React.useMemo(() => ({
     locale,
     theme,
     isComplianceEnabled: enableCompliance,
-  }), [locale, theme, enableCompliance]);
+    platformInfo,
+    dimensions,
+  }), [locale, theme, enableCompliance, platformInfo, dimensions]);
   {{else}}
   const layoutContextValue = React.useMemo(() => ({
     locale,
     theme,
     isComplianceEnabled: enableCompliance,
-  }), [locale, theme, enableCompliance]);
+    platformInfo,
+    dimensions,
+  }), [locale, theme, enableCompliance, platformInfo, dimensions]);
   {{/if}}
 
-  const renderContent = {{#if typescript}}(): React.ReactElement{{/if}} => (
-    <Box 
-      variant="page" 
-      className={className}
-      role="main"
-      id="main-content"
-    >
-      <SkipLink targetId="main-content">
-        Skip to main content
-      </SkipLink>
-      
-      <AnnouncementRegion aria-live="polite" />
-      
-      <FocusManager>
+  const renderContent = {{#if typescript}}(): React.ReactElement{{/if}} => {
+    if (platformOptimized && platformInfo.isReactNative) {
+      // React Native optimized layout
+      return (
+        <PlatformSafeAreaView>
+          <PlatformStatusBar 
+            barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+            backgroundColor={theme === 'dark' ? '#000000' : '#ffffff'}
+          />
+          <Box 
+            variant="page" 
+            className={className}
+            role="main"
+            flex="1"
+          >
+            <Stack direction="vertical" spacing="0" flex="1">
+              {children}
+            </Stack>
+          </Box>
+        </PlatformSafeAreaView>
+      );
+    }
+
+    // Web/Electron layout
+    return (
+      <Box 
+        variant="page" 
+        className={className}
+        role="main"
+        id="main-content"
+        minHeight="screen"
+      >
         <Stack direction="vertical" spacing="0" minHeight="screen">
           {children}
         </Stack>
-      </FocusManager>
-    </Box>
-  );
-
-  // Wrap with compliance provider if enabled
-  if (enableCompliance) {
-    return (
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <UiProvider
-          theme={theme}
-          whiteLabelConfig={getThemeConfig()}
-          themeTransitionConfig={{
-            duration: 300,
-            easing: 'ease-out',
-            respectMotionPreference: true
-          }}
-          platformConfig={{
-            mobileBreakpoint: 768,
-            enablePlatformDetection: true
-          }}
-          enableAdvancedFeatures={true}
-        >
-          <NorwegianComplianceProvider
-            gdprConfig={{
-              consentRequired: true,
-              auditLogging: true,
-              dataRetentionDays: 365
-            }}
-            nsmClassification="BEGRENSET"
-          >
-            <LayoutContext.Provider value={layoutContextValue}>
-              {renderContent()}
-            </LayoutContext.Provider>
-          </NorwegianComplianceProvider>
-        </UiProvider>
-      </NextIntlClientProvider>
+      </Box>
     );
-  }
+  };
 
-  // Standard layout without compliance
-  return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <UiProvider
-        theme={theme}
-        whiteLabelConfig={getThemeConfig()}
-        themeTransitionConfig={{
-          duration: 300,
-          easing: 'ease-out',
-          respectMotionPreference: true
-        }}
-        platformConfig={{
-          mobileBreakpoint: 768,
-          enablePlatformDetection: true
-        }}
-        enableAdvancedFeatures={true}
-      >
-        <LayoutContext.Provider value={layoutContextValue}>
-          {renderContent()}
-        </LayoutContext.Provider>
-      </UiProvider>
-    </NextIntlClientProvider>
-  );
+  // Platform-optimized provider setup
+  const renderWithProviders = (content{{#if typescript}}: React.ReactElement{{/if}}) => {
+    const providers = [
+      // Internationalization
+      <NextIntlClientProvider key="intl" locale={locale} messages={messages}>
+        {/* UI System with platform config */}
+        <UISystemProvider
+          theme={theme}
+          platformConfig={{
+            platform: platformInfo.platform,
+            capabilities: platformInfo.capabilities,
+            dimensions,
+            ...platformConfig
+          }}
+          themeConfig={getPlatformThemeConfig()}
+        >
+          {/* Theme Provider */}
+          <ThemeProvider theme={theme}>
+            {/* Accessibility Provider */}
+            <AccessibilityProvider
+              enableScreenReader={true}
+              enableKeyboardNavigation={true}
+              enableMotionReduction={true}
+              platform={platformInfo.platform}
+            >
+              {enableCompliance ? (
+                <ComplianceProvider
+                  gdprEnabled={true}
+                  auditLogging={true}
+                  platform={platformInfo.platform}
+                >
+                  <LayoutContext.Provider value={layoutContextValue}>
+                    {content}
+                    <Toaster position={platformInfo.isMobile ? 'top' : 'bottom-right'} />
+                    {enableAnalytics && <Analytics platform={platformInfo.platform} />}
+                  </LayoutContext.Provider>
+                </ComplianceProvider>
+              ) : (
+                <LayoutContext.Provider value={layoutContextValue}>
+                  {content}
+                  <Toaster position={platformInfo.isMobile ? 'top' : 'bottom-right'} />
+                  {enableAnalytics && <Analytics platform={platformInfo.platform} />}
+                </LayoutContext.Provider>
+              )}
+            </AccessibilityProvider>
+          </ThemeProvider>
+        </UISystemProvider>
+      </NextIntlClientProvider>
+    ];
+
+    return providers[0];
+  };
+
+  return renderWithProviders(renderContent());
 }
 
 {{#if includeExamples}}
