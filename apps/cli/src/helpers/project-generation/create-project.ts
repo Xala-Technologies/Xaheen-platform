@@ -13,6 +13,7 @@ import {
 	generateCloudflareWorkerTypes,
 	setupRuntime,
 } from "../setup/runtime-setup";
+import { setupServices } from "../setup/services-setup";
 import { setupWebDeploy } from "../setup/web-deploy-setup";
 import { createReadme } from "./create-readme";
 import { setupEnvironmentVariables } from "./env-setup";
@@ -73,6 +74,9 @@ export async function createProject(options: ProjectConfig) {
 		if (!isConvex && options.auth) {
 			await setupAuth(options);
 		}
+
+		// Setup all service integrations
+		await setupServices(options);
 
 		await handleExtras(projectDir, options);
 

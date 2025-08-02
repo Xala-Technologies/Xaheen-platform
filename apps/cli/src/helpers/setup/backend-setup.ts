@@ -48,6 +48,18 @@ export async function setupBackendDependencies(config: ProjectConfig) {
 		if (runtime === "node") {
 			devDependencies.push("tsx", "@types/node");
 		}
+	} else if (framework === "dotnet") {
+		// .NET dependencies are handled via NuGet, not npm
+		// These will be configured in the template's csproj file
+		return;
+	} else if (framework === "laravel") {
+		// Laravel dependencies are handled via Composer, not npm
+		// These will be configured in the template's composer.json file
+		return;
+	} else if (framework === "django") {
+		// Django dependencies are handled via pip/requirements.txt
+		// These will be configured in the template's requirements.txt file
+		return;
 	}
 
 	if (runtime === "bun") {

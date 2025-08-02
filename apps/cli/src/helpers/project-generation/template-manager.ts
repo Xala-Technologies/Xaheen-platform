@@ -69,12 +69,13 @@ export async function setupFrontendTemplates(
 	const hasNuxtWeb = context.frontend.includes("nuxt");
 	const hasSvelteWeb = context.frontend.includes("svelte");
 	const hasSolidWeb = context.frontend.includes("solid");
+	const hasAngularWeb = context.frontend.includes("angular");
+	const hasBlazorWeb = context.frontend.includes("blazor");
 	const hasNativeWind = context.frontend.includes("native-nativewind");
 	const hasUnistyles = context.frontend.includes("native-unistyles");
-	const _hasNative = hasNativeWind || hasUnistyles;
 	const isConvex = context.backend === "convex";
 
-	if (hasReactWeb || hasNuxtWeb || hasSvelteWeb || hasSolidWeb) {
+	if (hasReactWeb || hasNuxtWeb || hasSvelteWeb || hasSolidWeb || hasAngularWeb || hasBlazorWeb) {
 		const webAppDir = path.join(projectDir, "apps/web");
 		await fs.ensureDir(webAppDir);
 
@@ -177,6 +178,42 @@ export async function setupFrontendTemplates(
 				if (await fs.pathExists(apiWebSolidDir)) {
 					await processAndCopyFiles("**/*", apiWebSolidDir, webAppDir, context);
 				} else {
+				}
+			}
+		} else if (hasAngularWeb) {
+			const angularBaseDir = path.join(PKG_ROOT, "templates/frontend/angular");
+			if (await fs.pathExists(angularBaseDir)) {
+				await processAndCopyFiles("**/*", angularBaseDir, webAppDir, context);
+			} else {
+				// TODO: Create Angular template
+				console.warn("Angular template not yet implemented");
+			}
+
+			if (!isConvex && context.api !== "none") {
+				const apiWebAngularDir = path.join(
+					PKG_ROOT,
+					`templates/api/${context.api}/web/angular`,
+				);
+				if (await fs.pathExists(apiWebAngularDir)) {
+					await processAndCopyFiles("**/*", apiWebAngularDir, webAppDir, context);
+				}
+			}
+		} else if (hasBlazorWeb) {
+			const blazorBaseDir = path.join(PKG_ROOT, "templates/frontend/blazor");
+			if (await fs.pathExists(blazorBaseDir)) {
+				await processAndCopyFiles("**/*", blazorBaseDir, webAppDir, context);
+			} else {
+				// TODO: Create Blazor template
+				console.warn("Blazor template not yet implemented");
+			}
+
+			if (!isConvex && context.api !== "none") {
+				const apiWebBlazorDir = path.join(
+					PKG_ROOT,
+					`templates/api/${context.api}/web/blazor`,
+				);
+				if (await fs.pathExists(apiWebBlazorDir)) {
+					await processAndCopyFiles("**/*", apiWebBlazorDir, webAppDir, context);
 				}
 			}
 		}
@@ -294,9 +331,20 @@ export async function setupBackendFramework(
 			true,
 		);
 	} else {
+		// Handle new backend frameworks
+		if (context.backend === "dotnet") {
+			console.warn(".NET backend template not yet implemented");
+			// TODO: Create .NET template with ASP.NET Core
+		} else if (context.backend === "laravel") {
+			console.warn("Laravel backend template not yet implemented");
+			// TODO: Create Laravel template
+		} else if (context.backend === "django") {
+			console.warn("Django backend template not yet implemented");
+			// TODO: Create Django template
+		}
 	}
 
-	if (context.api !== "none") {
+	if (context.api !== "none" && !["dotnet", "laravel", "django"].includes(context.backend)) {
 		const apiServerBaseDir = path.join(
 			PKG_ROOT,
 			`templates/api/${context.api}/server/base`,
