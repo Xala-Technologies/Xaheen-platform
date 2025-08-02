@@ -1,0 +1,210 @@
+# Netlify Deployment Configuration - Xala UI System Compliant
+# Generated with Xaheen CLI - Web Platform Deployment Configuration
+# 
+# MANDATORY COMPLIANCE RULES:
+# ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+# ✅ ONLY semantic components from @xala-technologies/ui-system
+# ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+# ✅ MANDATORY design token usage for all colors, spacing, typography
+# ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+# ✅ WCAG 2.2 AAA compliance for accessibility
+# ❌ NO hardcoded user-facing text - ALL text must use t() function
+# ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+# ✅ Explicit TypeScript return types (no 'any' types)
+# ✅ SOLID principles and component composition
+# ✅ Maximum 200 lines per file, 20 lines per function
+
+[build]
+  base = "."
+  command = "turbo run build --filter=web"
+  publish = "apps/web/out"
+  ignore = "git diff --quiet HEAD^ HEAD ./apps/web/"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_VERSION = "10"
+  TURBO_TOKEN = ""
+  TURBO_TEAM = ""
+  NODE_ENV = "production"
+  NEXT_TELEMETRY_DISABLED = "1"
+  NEXT_PUBLIC_APP_NAME = "{{appName}}"
+  NEXT_PUBLIC_APP_VERSION = "{{version}}"
+  NEXT_PUBLIC_ENVIRONMENT = "production"
+
+# Norwegian compliance and security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://netlify.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https:;
+      font-src 'self' data:;
+      connect-src 'self' https://api.vipps.no https://apitest.vipps.no https://appapi2.bankid.com https://appapi2.test.bankid.com;
+      frame-ancestors 'none';
+    """
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "{{allowedOrigins}}"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    Access-Control-Max-Age = "86400"
+
+# Cache optimization
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects for Norwegian compliance and UX
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/login"
+  to = "/auth/login"
+  status = 302
+
+[[redirects]]
+  from = "/register"
+  to = "/auth/register"
+  status = 302
+
+[[redirects]]
+  from = "/no/*"
+  to = "/:splat"
+  status = 301
+  force = true
+  conditions = {Language = ["nb", "no"]}
+
+[[redirects]]
+  from = "/en/*"
+  to = "/:splat"
+  status = 301
+  force = true
+  conditions = {Language = ["en"]}
+
+# SPA fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API proxying for Norwegian services
+[[redirects]]
+  from = "/api/bankid/*"
+  to = "https://appapi2.bankid.com/:splat"
+  status = 200
+  force = false
+  conditions = {Environment = ["production"]}
+
+[[redirects]]
+  from = "/api/bankid/*"
+  to = "https://appapi2.test.bankid.com/:splat"
+  status = 200
+  force = false
+  conditions = {Environment = ["development", "staging"]}
+
+[[redirects]]
+  from = "/api/vipps/*"
+  to = "https://api.vipps.no/:splat"
+  status = 200
+  force = false
+  conditions = {Environment = ["production"]}
+
+[[redirects]]
+  from = "/api/vipps/*"
+  to = "https://apitest.vipps.no/:splat"
+  status = 200
+  force = false
+  conditions = {Environment = ["development", "staging"]}
+
+# Edge functions for Norwegian compliance
+[[edge_functions]]
+  function = "gdpr-compliance"
+  path = "/api/gdpr/*"
+
+[[edge_functions]]
+  function = "norwegian-localization"
+  path = "/*"
+
+# Forms for Norwegian contact and GDPR compliance
+[[forms]]
+  name = "contact"
+  action = "/api/contact"
+  method = "POST"
+
+[[forms]]
+  name = "gdpr-request"
+  action = "/api/gdpr/request"
+  method = "POST"
+
+# Functions configuration
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Plugin configuration
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+  package = "netlify-plugin-lighthouse"
+  [plugins.inputs]
+    audits = ["accessibility", "best-practices", "performance", "seo"]
+
+[[plugins]]
+  package = "netlify-plugin-a11y"
+  [plugins.inputs]
+    checkPaths = ["/", "/auth/login", "/dashboard"]
+
+# Context-specific configurations
+[context.production]
+  command = "turbo run build --filter=web"
+  [context.production.environment]
+    NODE_ENV = "production"
+    NEXT_PUBLIC_ENVIRONMENT = "production"
+
+[context.deploy-preview]
+  command = "turbo run build --filter=web"
+  [context.deploy-preview.environment]
+    NODE_ENV = "production"
+    NEXT_PUBLIC_ENVIRONMENT = "preview"
+
+[context.branch-deploy]
+  command = "turbo run build --filter=web"
+  [context.branch-deploy.environment]
+    NODE_ENV = "production"
+    NEXT_PUBLIC_ENVIRONMENT = "staging"
+
+# Split testing for Norwegian market
+[split_testing]
+  [[split_testing.tests]]
+    name = "Norwegian Language Preference"
+    path = "/*"
+    branches = ["nb-primary", "en-fallback"]
+    weights = [80, 20]
+
+# Dev server configuration
+[dev]
+  command = "turbo run dev --filter=web"
+  port = 3000
+  targetPort = 3001
+  framework = "#auto"
+  autoLaunch = false

@@ -2,33 +2,100 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  {{#if (eq ui "xala")}}
+  "description": "{{description}} - Generated with Xaheen CLI using Xala UI System v5",
+  "keywords": ["xala", "ui-system", "norwegian", "compliance", "accessibility"],
+  "author": "{{author}}",
+  "license": "MIT",
+  {{/if}}
   "scripts": {
     "dev": "next dev --turbopack --port=3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint"{{#if (eq ui "xala")}},
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "compliance:check": "npm run lint && npm run type-check && npm run accessibility:check",
+    "accessibility:check": "axe-core --tags wcag22aa,wcag22aaa",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"{{/if}}
   },
   "dependencies": {
+    {{#if (eq ui "xala")}}
+    "@xala-technologies/ui-system": "^5.0.0",
+    "@xala-technologies/design-tokens": "^5.0.0",
+    "@xala-technologies/compliance": "^2.0.0",
+    {{else}}
     "radix-ui": "^1.4.2",
+    "lucide-react": "^0.487.0",
+    "sonner": "^2.0.5",
+    "tw-animate-css": "^1.3.4",
+    {{/if}}
     "@tanstack/react-form": "^1.12.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.487.0",
     "next": "15.3.0",
+    {{#if (eq ui "xala")}}
+    "next-intl": "^3.0.0",
+    {{/if}}
     "next-themes": "^0.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
-    "tw-animate-css": "^1.3.4",
-    "zod": "^4.0.2"
+    "zod": "^4.0.2"{{#if (eq ui "xala")}},
+    "date-fns": "^3.0.0",
+    "react-hook-form": "^7.0.0",
+    "@hookform/resolvers": "^3.0.0"{{/if}}
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    {{#if (eq ui "xala")}}
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.3.0",
+    "eslint-plugin-jsx-a11y": "^6.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.6.0",
+    "@axe-core/cli": "^4.0.0",
+    "jest": "^29.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/nextjs": "^8.0.0",
+    {{/if}}
     "tailwindcss": "^4.1.10",
     "typescript": "^5"
-  }
+  }{{#if (eq ui "xala")}},
+  "xala": {
+    "version": "5.0.0",
+    "compliance": {
+      "norwegian": {{#if (eq compliance "norwegian")}}true{{else}}false{{/if}},
+      "gdpr": true,
+      "wcag": "AAA",
+      "nsm": {{#if (eq compliance "norwegian")}}true{{else}}false{{/if}}
+    },
+    "localization": {
+      "primary": "{{primaryLocale}}",
+      "supported": [{{#each locales}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}]
+    },
+    "platforms": ["web"],
+    "features": {
+      "designTokens": true,
+      "accessibility": true,
+      "darkMode": true,
+      "responsive": true,
+      "rtl": true
+    }
+  }{{/if}}
 }

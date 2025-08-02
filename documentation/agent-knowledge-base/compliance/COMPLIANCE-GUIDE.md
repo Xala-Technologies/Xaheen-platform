@@ -1626,3 +1626,564 @@ export class ComplianceIncidentHandler {
 ---
 
 > **For Agents**: This compliance guide provides comprehensive coverage of GDPR, NSM, and WCAG requirements in the Xaheen platform. Always prioritize compliance when generating code or making architectural decisions. Use the provided implementations and components as templates for compliant development. Remember that compliance is not optional—it's a fundamental requirement for all Norwegian and EU applications.
+
+## Advanced Compliance Patterns
+
+### Multi-Tenant Compliance
+
+```typescript
+// lib/compliance/multi-tenant.ts
+export class MultiTenantCompliance {
+  // Tenant-specific compliance configuration
+  async configureTenantCompliance(
+    tenantId: string,
+    requirements: TenantComplianceRequirements
+  ): Promise<void> {
+    const config = {
+      tenantId,
+      gdpr: {
+        dataResidency: requirements.dataResidency || 'eu-west',
+        retentionPolicies: requirements.customRetention || defaultRetention,
+        consentWorkflow: requirements.consentWorkflow || 'standard',
+      },
+      nsm: {
+        defaultClassification: requirements.securityLevel || NSMClassification.INTERNAL,
+        encryptionLevel: requirements.encryptionRequirements || 'standard',
+        auditRetention: requirements.auditRetention || '3-years',
+      },
+      wcag: {
+        targetLevel: requirements.accessibilityLevel || 'AA',
+        customizations: requirements.accessibilityCustomizations || {},
+      },
+    };
+    
+    await this.saveTenantConfig(tenantId, config);
+    await this.applyTenantPolicies(tenantId, config);
+  }
+  
+  // Tenant data isolation
+  async isolateTenantData(tenantId: string): Promise<void> {
+    // Create isolated database schema
+    await db.$executeRaw`CREATE SCHEMA IF NOT EXISTS tenant_${tenantId}`;
+    
+    // Apply row-level security
+    await db.$executeRaw`
+      ALTER TABLE tenant_${tenantId}.users 
+      ENABLE ROW LEVEL SECURITY;
+    `;
+    
+    // Create tenant-specific encryption keys
+    await this.createTenantEncryptionKeys(tenantId);
+  }
+}
+```
+
+### Cross-Border Compliance
+
+```typescript
+// lib/compliance/cross-border.ts
+export class CrossBorderCompliance {
+  private regulations = {
+    norway: ['GDPR', 'NSM', 'Datatilsynet'],
+    eu: ['GDPR', 'eIDAS', 'NIS2'],
+    uk: ['UK-GDPR', 'DPA-2018'],
+    switzerland: ['nFADP', 'DSG'],
+  };
+  
+  async validateCrossBorderTransfer(
+    fromCountry: string,
+    toCountry: string,
+    dataType: string
+  ): Promise<TransferValidation> {
+    const fromRegs = this.regulations[fromCountry];
+    const toRegs = this.regulations[toCountry];
+    
+    // Check adequacy decisions
+    const hasAdequacy = await this.checkAdequacyDecision(fromCountry, toCountry);
+    
+    if (!hasAdequacy) {
+      // Need additional safeguards
+      return {
+        allowed: false,
+        requirements: [
+          'Standard Contractual Clauses (SCCs)',
+          'Binding Corporate Rules (BCRs)',
+          'Explicit consent for transfer',
+        ],
+        dataLocalisation: this.getLocalisationRequirements(fromCountry, dataType),
+      };
+    }
+    
+    return {
+      allowed: true,
+      requirements: ['Transfer impact assessment'],
+      notifications: this.getNotificationRequirements(fromCountry, toCountry),
+    };
+  }
+}
+```
+
+### Industry-Specific Compliance
+
+```typescript
+// lib/compliance/industry/financial.ts
+export class FinancialServicesCompliance {
+  // PSD2 compliance for payment services
+  async implementPSD2Compliance(): Promise<void> {
+    // Strong Customer Authentication (SCA)
+    const scaImplementation = {
+      authenticationFactors: [
+        'knowledge', // Something the user knows
+        'possession', // Something the user has
+        'inherence', // Something the user is
+      ],
+      dynamicLinking: true,
+      exemptions: ['low-value', 'trusted-beneficiary', 'recurring'],
+    };
+    
+    // Open Banking API compliance
+    const openBankingAPIs = {
+      accountInformation: '/v2/accounts',
+      paymentInitiation: '/v2/payments',
+      fundsConfirmation: '/v2/funds-confirmations',
+      security: {
+        oauth2: true,
+        mtls: true,
+        signedRequests: true,
+      },
+    };
+  }
+  
+  // Anti-Money Laundering (AML) compliance
+  async implementAMLCompliance(): Promise<void> {
+    const amlRequirements = {
+      customerDueDiligence: {
+        identity: ['name', 'dateOfBirth', 'address'],
+        verification: ['bankid', 'passport', 'driverLicense'],
+        ongoing: true,
+      },
+      transactionMonitoring: {
+        thresholds: {
+          single: 15000, // EUR
+          cumulative: 50000, // EUR per month
+        },
+        patterns: ['structuring', 'rapid-movement', 'dormant-active'],
+      },
+      reporting: {
+        suspicious: 'immediate',
+        threshold: 'within-24h',
+        authority: 'Økokrim',
+      },
+    };
+  }
+}
+```
+
+## Compliance Testing Strategies
+
+### Automated Compliance Testing
+
+```typescript
+// test/compliance/automated-tests.ts
+import { test, expect } from '@playwright/test';
+import { ComplianceValidator } from '@/lib/compliance';
+
+describe('Compliance Test Suite', () => {
+  // GDPR Tests
+  test.describe('GDPR Compliance', () => {
+    test('should handle consent properly', async ({ page }) => {
+      await page.goto('/');
+      
+      // Check consent banner appears
+      const consentBanner = page.locator('[role="dialog"][aria-label*="consent"]');
+      await expect(consentBanner).toBeVisible();
+      
+      // Reject all optional cookies
+      await page.click('button:has-text("Reject optional")');
+      
+      // Verify no tracking cookies set
+      const cookies = await page.context().cookies();
+      const trackingCookies = cookies.filter(c => 
+        c.name.includes('analytics') || c.name.includes('marketing')
+      );
+      expect(trackingCookies).toHaveLength(0);
+    });
+    
+    test('should allow data export', async ({ page }) => {
+      await page.goto('/account/privacy');
+      
+      // Request data export
+      await page.click('button:has-text("Export my data")');
+      
+      // Wait for download
+      const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.click('button:has-text("Download JSON")'),
+      ]);
+      
+      // Verify export format
+      const content = await download.path();
+      const data = JSON.parse(await fs.readFile(content, 'utf-8'));
+      
+      expect(data).toHaveProperty('format', 'gdpr-export-v1');
+      expect(data).toHaveProperty('data');
+      expect(data).toHaveProperty('exportDate');
+    });
+  });
+  
+  // WCAG Tests
+  test.describe('WCAG Accessibility', () => {
+    test('should meet color contrast requirements', async ({ page }) => {
+      await page.goto('/');
+      
+      // Run axe accessibility scan
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2aaa'])
+        .analyze();
+      
+      const contrastViolations = results.violations.filter(v => 
+        v.id.includes('color-contrast')
+      );
+      
+      expect(contrastViolations).toHaveLength(0);
+    });
+    
+    test('should be keyboard navigable', async ({ page }) => {
+      await page.goto('/');
+      
+      // Tab through all interactive elements
+      const elements = [];
+      let activeElement = await page.evaluate(() => document.activeElement?.tagName);
+      
+      for (let i = 0; i < 50; i++) {
+        await page.keyboard.press('Tab');
+        const newElement = await page.evaluate(() => ({
+          tag: document.activeElement?.tagName,
+          text: document.activeElement?.textContent,
+          href: document.activeElement?.getAttribute('href'),
+        }));
+        
+        if (elements.some(e => e.tag === newElement.tag && e.text === newElement.text)) {
+          break; // Completed the cycle
+        }
+        
+        elements.push(newElement);
+      }
+      
+      // Verify logical tab order
+      expect(elements.length).toBeGreaterThan(5);
+      expect(elements[0].tag).toBe('A'); // Skip link
+    });
+  });
+  
+  // NSM Security Tests
+  test.describe('NSM Security', () => {
+    test('should classify data correctly', async ({ request }) => {
+      const testData = {
+        publicInfo: 'Company name',
+        internalInfo: 'Employee list',
+        restrictedInfo: 'Financial records',
+        confidentialInfo: '12345678901', // Personal number
+      };
+      
+      const response = await request.post('/api/classify', {
+        data: testData,
+      });
+      
+      const classification = await response.json();
+      expect(classification.level).toBe('CONFIDENTIAL');
+    });
+    
+    test('should enforce access control', async ({ request }) => {
+      // Try to access restricted data without proper clearance
+      const response = await request.get('/api/data/restricted/123', {
+        headers: {
+          'Authorization': 'Bearer low-clearance-token',
+        },
+      });
+      
+      expect(response.status()).toBe(403);
+      const error = await response.json();
+      expect(error.code).toBe('INSUFFICIENT_CLEARANCE');
+    });
+  });
+});
+```
+
+### Compliance Monitoring
+
+```typescript
+// lib/compliance/monitoring.ts
+export class ComplianceMonitor {
+  private metrics = {
+    gdpr: {
+      consentRate: new Gauge('gdpr_consent_rate'),
+      dataRequests: new Counter('gdpr_data_requests_total'),
+      erasureRequests: new Counter('gdpr_erasure_requests_total'),
+      breaches: new Counter('gdpr_breaches_total'),
+    },
+    nsm: {
+      classifiedAccess: new Counter('nsm_classified_access_total'),
+      encryptionFailures: new Counter('nsm_encryption_failures_total'),
+      auditLogSize: new Gauge('nsm_audit_log_size_bytes'),
+    },
+    wcag: {
+      accessibilityScore: new Gauge('wcag_accessibility_score'),
+      failedValidations: new Counter('wcag_failed_validations_total'),
+    },
+  };
+  
+  async startMonitoring(): Promise<void> {
+    // Real-time compliance monitoring
+    setInterval(async () => {
+      await this.collectGDPRMetrics();
+      await this.collectNSMMetrics();
+      await this.collectWCAGMetrics();
+    }, 60000); // Every minute
+    
+    // Daily compliance report
+    schedule.scheduleJob('0 0 * * *', async () => {
+      await this.generateDailyReport();
+    });
+    
+    // Incident detection
+    this.setupIncidentDetection();
+  }
+  
+  private async setupIncidentDetection(): Promise<void> {
+    // GDPR breach detection
+    this.metrics.gdpr.breaches.on('increment', async (labels) => {
+      await this.handleDataBreach(labels);
+    });
+    
+    // NSM security incident detection
+    this.metrics.nsm.encryptionFailures.on('increment', async (labels) => {
+      if (await this.isSecurityIncident(labels)) {
+        await this.handleSecurityIncident(labels);
+      }
+    });
+  }
+}
+```
+
+## Compliance Integration Examples
+
+### 1. Next.js App with Full Compliance
+
+```typescript
+// app/layout.tsx
+import { ComplianceProvider } from '@/providers/compliance';
+import { ConsentManager } from '@/components/compliance/ConsentManager';
+import { AuditLogger } from '@/lib/compliance/audit';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="nb">
+      <body>
+        <ComplianceProvider
+          gdpr={{
+            consentRequired: true,
+            dataController: 'Company AS',
+            privacyOfficer: 'privacy@company.no',
+          }}
+          nsm={{
+            defaultClassification: 'INTERNAL',
+            encryptionRequired: true,
+          }}
+          wcag={{
+            level: 'AAA',
+            languages: ['nb', 'nn', 'en'],
+          }}
+        >
+          <a href="#main" className="sr-only focus:not-sr-only">
+            Hopp til hovedinnhold
+          </a>
+          
+          {children}
+          
+          <ConsentManager />
+          <AuditLogger />
+        </ComplianceProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### 2. API Route with Compliance
+
+```typescript
+// app/api/users/[id]/route.ts
+import { withCompliance } from '@/lib/compliance/middleware';
+import { classifyData, auditLog } from '@/lib/compliance';
+
+export const GET = withCompliance(
+  async (request: Request, { params }: { params: { id: string } }) => {
+    const userId = params.id;
+    const requestingUser = await getAuthenticatedUser(request);
+    
+    // Check data access permission
+    if (!await canAccessUserData(requestingUser, userId)) {
+      await auditLog({
+        action: 'USER_DATA_ACCESS_DENIED',
+        targetUserId: userId,
+        requestingUserId: requestingUser.id,
+        reason: 'Insufficient permissions',
+      });
+      
+      return new Response('Forbidden', { status: 403 });
+    }
+    
+    // Fetch user data
+    const userData = await getUserData(userId);
+    
+    // Classify and protect data
+    const classification = classifyData(userData);
+    const protectedData = await protectData(userData, classification);
+    
+    // Audit successful access
+    await auditLog({
+      action: 'USER_DATA_ACCESS_GRANTED',
+      targetUserId: userId,
+      requestingUserId: requestingUser.id,
+      classification,
+      purpose: request.headers.get('X-Purpose') || 'Not specified',
+    });
+    
+    return Response.json(protectedData);
+  },
+  {
+    requireAuth: true,
+    gdpr: {
+      purpose: 'user-profile-view',
+      lawfulBasis: 'legitimate-interest',
+    },
+    nsm: {
+      minClearance: 'INTERNAL',
+      auditLevel: 'detailed',
+    },
+    wcag: {
+      apiDocumentation: true,
+      errorMessagesAccessible: true,
+    },
+  }
+);
+```
+
+### 3. Database Model with Compliance
+
+```typescript
+// prisma/schema.prisma with compliance extensions
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique @encrypted @gdpr_personal
+  personalNumber  String?   @encrypted @gdpr_sensitive @nsm_confidential
+  name            String    @gdpr_personal
+  
+  // Audit fields
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastActiveAt    DateTime?
+  
+  // Compliance fields
+  consentGiven    DateTime?
+  consentVersion  String?
+  dataExportedAt  DateTime?
+  erasureScheduled DateTime?
+  
+  @@audit_log
+  @@encrypt_at_rest
+  @@data_retention(years: 3)
+}
+
+// Compliance extensions
+generator compliance {
+  provider = "prisma-compliance-generator"
+  gdpr = true
+  nsm = true
+  encryption = "field-level"
+  audit = "comprehensive"
+}
+```
+
+## CLI Commands for Compliance
+
+### Compliance Validation Commands
+
+```bash
+# Full compliance check
+xaheen compliance check --all
+
+# Specific compliance checks
+xaheen compliance check gdpr
+xaheen compliance check nsm --classification CONFIDENTIAL
+xaheen compliance check wcag --level AAA
+
+# Fix compliance issues
+xaheen compliance fix --auto
+
+# Generate compliance report
+xaheen compliance report --format pdf --lang nb
+
+# Monitor compliance in watch mode
+xaheen compliance watch
+```
+
+### Compliance Scaffolding
+
+```bash
+# Generate compliant components
+xaheen generate component UserForm \
+  --compliance gdpr,nsm,wcag \
+  --with-consent \
+  --with-encryption \
+  --with-audit
+
+# Generate compliant API
+xaheen generate api users \
+  --compliance full \
+  --auth bankid \
+  --rate-limit \
+  --audit-log
+
+# Generate compliance documentation
+xaheen generate docs compliance \
+  --languages nb,en \
+  --format html,pdf \
+  --include-checklists
+```
+
+## Compliance Roadmap
+
+### Phase 1: Foundation (Completed)
+- ✅ GDPR implementation
+- ✅ NSM security framework  
+- ✅ WCAG AAA support
+- ✅ Audit logging system
+
+### Phase 2: Advanced Features (In Progress)
+- 🔄 AI-powered compliance suggestions
+- 🔄 Real-time compliance monitoring
+- 🔄 Automated compliance fixes
+- 🔄 Multi-tenant compliance
+
+### Phase 3: Future Enhancements
+- 📋 Compliance certification automation
+- 📋 Cross-border data transfer management
+- 📋 Industry-specific compliance templates
+- 📋 Compliance training integration
+
+---
+
+> **For Agents**: This compliance guide provides comprehensive coverage of GDPR, NSM, and WCAG requirements in the Xaheen platform. Always prioritize compliance when generating code or making architectural decisions. Use the provided implementations and components as templates for compliant development. Remember that compliance is not optional—it's a fundamental requirement for all Norwegian and EU applications.
+
+### Quick Reference for Agents
+
+1. **Always check compliance requirements** before generating any code
+2. **Use the compliance templates** provided in this guide
+3. **Validate all generated code** with the compliance validators
+4. **Include audit logging** for any data access or modification
+5. **Ensure accessibility** meets WCAG AAA standards
+6. **Classify data correctly** according to NSM guidelines
+7. **Implement privacy by design** following GDPR principles
+8. **Test compliance automatically** using the provided test suites

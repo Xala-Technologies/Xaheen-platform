@@ -53,5 +53,27 @@
     "tw-animate-css": "^1.3.5",
     "typescript": "^5.8.3",
     "wrangler": "^4.24.3"
+  },
+  "xala": {
+    "version": "5.0.0",
+    "compliance": {
+      "norwegian": true,
+      "gdpr": true,
+      "wcag": "AAA",
+      "nsm": true
+    },
+    "localization": {
+      "primary": "en",
+      "supported": ["en", "nb", "fr", "ar"]
+    },
+    "platforms": ["web"],
+    "features": {
+      "designTokens": true,
+      "accessibility": true,
+      "darkMode": true,
+      "responsive": true,
+      "rtl": true,
+      "documentation": true
+    }
   }
 }

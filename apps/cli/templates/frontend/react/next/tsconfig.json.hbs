@@ -1,45 +1,136 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_description": "TypeScript Configuration for Xala UI System - Generated with Xaheen CLI",
+  "_compliance_rules": {
+    "mandatory": [
+      "NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)",
+      "ONLY semantic components from @xala-technologies/ui-system",
+      "NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)",
+      "MANDATORY design token usage for all colors, spacing, typography",
+      "Enhanced 8pt Grid System - all spacing in 8px increments",
+      "WCAG 2.2 AAA compliance for accessibility",
+      "NO hardcoded user-facing text - ALL text must use t() function",
+      "MANDATORY localization: English, Norwegian Bokmål, French, Arabic",
+      "Explicit TypeScript return types (no 'any' types)",
+      "SOLID principles and component composition",
+      "Maximum 200 lines per file, 20 lines per function"
+    ]
+  },
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    // Language and Environment
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": true,
     "jsx": "preserve",
     "incremental": true,
+    
+    // Type Checking - Enhanced for Xala UI System
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+    
+    // Emit
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    
+    // Interop Constraints
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Path Mapping for Xala UI System
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/config/*": ["./src/config/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/assets/*": ["./src/assets/*"],
+      "@/locales/*": ["./src/locales/*"],
+      
+      {{! Xala UI System aliases }}
+      "@xala/ui": ["@xala-technologies/ui-system"],
+      "@xala/tokens": ["@xala-technologies/design-tokens"],
+      "@xala/theme": ["@xala-technologies/theme-provider"],
+      
+      {{! Component aliases }}
+      "@ui/*": ["./src/components/ui/*"],
+      "@layouts/*": ["./src/components/layouts/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@templates/*": ["./src/templates/*"]
+    },
+    
+    // Plugin Configuration
     "plugins": [
+      {{#if framework}}
+      {{#eq framework 'next'}}
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+      {{/eq}}
+      {{/if}}
+    ]
   },
+  
+  // Include patterns
   "include": [
-    "./next-env.d.ts",
-    "./**/*.ts",
-    "./**/*.tsx",
-    "./.next/types/**/*.ts",
-    {{#if (eq runtime "workers")}}
-    "../server/worker-configuration.d.ts"
-    {{/if}}
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.ts",
+    "src/**/*",
+    "components/**/*",
+    "pages/**/*",
+    "app/**/*",
+    "lib/**/*",
+    "utils/**/*",
+    "hooks/**/*",
+    "types/**/*",
+    "config/**/*",
+    "styles/**/*",
+    "locales/**/*"
   ],
+  
+  // Exclude patterns
   "exclude": [
-    "./node_modules"
+    "node_modules",
+    ".next",
+    "out",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.stories.ts",
+    "**/*.stories.tsx"
   ],
-  {{#unless (or (eq backend "convex") (eq backend "none"))}}
-  "references": [
-    {
-      "path": "../server"
+  
+  // TypeScript-ESLint specific options
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
     }
-  ]
-  {{/unless}}
+  }
 }

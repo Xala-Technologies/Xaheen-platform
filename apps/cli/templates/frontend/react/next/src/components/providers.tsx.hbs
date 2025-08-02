@@ -14,25 +14,75 @@ import { queryClient } from "@/utils/trpc";
 {{/if}}
 {{/unless}}
 {{/if}}
+{{#if (eq ui "xala")}}
+import { UISystemProvider, AccessibilityProvider, ComplianceProvider } from "@xala-technologies/ui-system";
+import { NextIntlClientProvider } from "next-intl";
+{{/if}}
 import { ThemeProvider } from "./theme-provider";
+{{#if (eq ui "xala")}}
+import { Toaster } from "@xala-technologies/ui-system";
+{{else}}
 import { Toaster } from "./ui/sonner";
+{{/if}}
 
 {{#if (eq backend "convex")}}
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 {{/if}}
 
+{{#if (eq ui "xala")}}
+interface ProvidersProps {
+  children: React.ReactNode;
+  locale?: string;
+  messages?: Record<string, any>;
+}
+
+export default function Providers({
+  children,
+  locale = "en",
+  messages = {}
+}: ProvidersProps): React.ReactElement {
+{{else}}
 export default function Providers({
   children
 }: {
   children: React.ReactNode
 }) {
+{{/if}}
   return (
+    {{#if (eq ui "xala")}}
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <UISystemProvider
+        theme="system"
+        platformConfig={{
+          platform: "web",
+          capabilities: { touch: false, keyboard: true, mouse: true }
+        }}
+      >
+        <AccessibilityProvider
+          enableScreenReader={true}
+          enableKeyboardNavigation={true}
+          enableMotionReduction={true}
+          platform="web"
+        >
+          <ComplianceProvider
+            gdprEnabled={true}
+            auditLogging={true}
+            platform="web"
+          >
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+    {{else}}
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
     >
+    {{/if}}
       {{#if (eq backend "convex")}}
       <ConvexProvider client={convex}>{children}</ConvexProvider>
       {{else}}
@@ -50,7 +100,16 @@ export default function Providers({
       {children}
       {{/unless}}
       {{/if}}
+      {{#if (eq ui "xala")}}
+      <Toaster position="bottom-right" />
+            </ThemeProvider>
+          </ComplianceProvider>
+        </AccessibilityProvider>
+      </UISystemProvider>
+    </NextIntlClientProvider>
+      {{else}}
       <Toaster richColors />
     </ThemeProvider>
+      {{/if}}
   );
 }
