@@ -30,22 +30,14 @@ import { useTranslation } from '{{relativePath}}/lib/i18n';
 {{/if}}
 
 /**
- * {{componentName}} - CLAUDE.md Compliant Dashboard Page
+ * {{componentName}} - Professional Dashboard Page
  * Generated with Xaheen CLI
  * 
- * ✅ CLAUDE.md Compliance:
- * - Enhanced Design Token System (NO hardcoded styling)
- * - WCAG 2.2 AAA accessibility compliant
- * - Enhanced 8pt Grid System (spacing follows 8px increments)
- * - ONLY semantic components from @xala-technologies/ui-system
- * - NO raw HTML elements (div, span, p, h1-h6, etc.)
- * - TypeScript with explicit return types
- * - Norwegian localization support
- * - SOLID principles applied
- * 
  * Features:
- * - Professional sizing standards (Enhanced 8pt Grid)
- * - Component tokens for consistent UI
+ * - Responsive dashboard layout with semantic components
+ * - WCAG 2.2 AAA accessibility compliant
+ * - Norwegian localization support
+ * - Professional data visualization
  * - SSR-compatible architecture
  * {{#if includeCharts}}
  * - Chart integration ready
@@ -470,7 +462,7 @@ export default function {{componentName}}({{#if includeTypes}}props: DashboardPr
 }
 
 {{#if includeExamples}}
-// Example usage - CLAUDE.md Compliant:
+// Example usage:
 /*
 // Basic dashboard
 <{{componentName}} />
@@ -493,43 +485,4 @@ export default function {{componentName}}({{#if includeTypes}}props: DashboardPr
   refreshInterval={60000}
 />
 */
-{{/if}}
-
-{{#if includeNotes}}
-/*
- * Implementation Notes:
- * 
- * ✅ CLAUDE.md Compliance Checklist:
- * - [x] Enhanced Design Token System (NO hardcoded styling)
- * - [x] WCAG 2.2 AAA accessibility compliant
- * - [x] Enhanced 8pt Grid System (spacing follows 8px increments)
- * - [x] ONLY semantic components from @xala-technologies/ui-system
- * - [x] NO raw HTML elements (div, span, p, h1-h6, etc.)
- * - [x] TypeScript with explicit return types
- * - [x] Norwegian localization support
- * - [x] SOLID principles applied
- * - [x] Professional sizing standards
- * - [x] Component tokens for consistent UI
- * - [x] SSR-compatible architecture
- * 
- * Professional Sizing Standards Used:
- * - Button heights: spacing[11] (44px), spacing[12] (48px), spacing[14] (56px)
- * - Input height: spacing[14] (56px) - WCAG compliant
- * - Card padding: spacing[8] (32px) - Enhanced for accessibility
- * - Section spacing: spacing[16] (64px) - Improved visual hierarchy
- * - Gap spacing: spacing[4] (16px), spacing[6] (24px)
- * 
- * Accessibility Features:
- * - Proper ARIA labels for interactive elements
- * - WCAG 2.2 AAA color contrast compliance
- * - Enhanced focus management
- * - Screen reader friendly structure
- * - Keyboard navigation support
- * 
- * Norwegian Localization:
- * - All user-facing text uses translation keys
- * - Norwegian number and currency formatting
- * - Relative time formatting in Norwegian
- * - Cultural considerations for UI patterns
- */
 {{/if}}

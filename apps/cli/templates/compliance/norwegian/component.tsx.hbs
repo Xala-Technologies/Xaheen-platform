@@ -4,10 +4,13 @@ import React{{#if typescript}}, { type FC }{{/if}} from 'react';
 import { 
   Card, 
   Stack, 
-  Text, 
+  Typography,
   Button,
   Icon,
-  Badge
+  Badge,
+  Box,
+  Container,
+  Separator
 } from '@xala-technologies/ui-system';
 {{#if localization}}
 import { useTranslation } from 'next-intl';
@@ -194,22 +197,21 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
   if (consentRequired && !hasValidConsent) {
     return (
       <Card 
-        variant="outlined" 
+        variant="warning" 
         spacing="6"
-        className={`border-orange-200 bg-orange-50 ${className || ''}`}
         role="alert"
         aria-label={ariaLabel || t('consentRequired')}
       >
         <Stack spacing="4" align="center">
-          <Icon name="shield-alert" size="8" className="text-orange-600" />
+          <Icon name="shield-alert" size="lg" color="warning" />
           
           <Stack spacing="2" align="center">
-            <Text variant="heading" size="lg" className="font-semibold text-orange-800">
+            <Typography variant="heading" size="lg" weight="semibold" color="warning">
               {{#if localization}}{{t('gdprConsentRequired')}}{{else}}Samtykke påkrevd{{/if}}
-            </Text>
-            <Text variant="body" size="md" className="text-orange-700 text-center">
+            </Typography>
+            <Typography variant="body" size="md" color="warning" align="center">
               {{#if localization}}{{t('gdprConsentMessage')}}{{else}}Dette innholdet krever ditt samtykke for behandling av personopplysninger i henhold til GDPR.{{/if}}
-            </Text>
+            </Typography>
           </Stack>
           
           <Stack spacing="3" direction="row">
@@ -231,9 +233,9 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
             </Button>
           </Stack>
           
-          <Text variant="body" size="sm" className="text-orange-600">
+          <Typography variant="body" size="sm" color="warning">
             {{#if localization}}{{t('gdprRightsNotice')}}{{else}}Du har rett til innsyn, retting, sletting og portabilitet av dine data.{{/if}}
-          </Text>
+          </Typography>
         </Stack>
       </Card>
     );
@@ -244,7 +246,6 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
     <Card 
       variant="elevated" 
       spacing="6"
-      className={className}
       role="region"
       aria-label={ariaLabel || '{{#if localization}}{{t("componentLabel")}}{{else}}{{capitalize componentName}}{{/if}}'}
       data-testid="{{kebabCase componentName}}-component"
@@ -252,9 +253,9 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
       {/* Compliance Status Indicator */}
       <Stack spacing="4" direction="row" align="center" justify="between">
         <Stack spacing="2" direction="row" align="center">
-          <Text variant="heading" size="xl" className="font-semibold">
+          <Typography variant="heading" size="xl" weight="semibold">
             {{#if localization}}{{t('title')}}{{else}}{{capitalize componentName}}{{/if}}
-          </Text>
+          </Typography>
           
           {/* NSM Classification Badge */}
           <Badge 
@@ -284,8 +285,8 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
           {/* GDPR Compliance */}
           <Icon 
             name="shield-check" 
-            size="5" 
-            className="text-green-600" 
+            size="md" 
+            color="success" 
             aria-label="GDPR-kompatibel"
             title="GDPR-kompatibel"
           />
@@ -293,8 +294,8 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
           {/* WCAG Compliance */}
           <Icon 
             name="eye" 
-            size="5" 
-            className="text-blue-600" 
+            size="md" 
+            color="primary" 
             aria-label="WCAG 2.2 AAA-kompatibel"
             title="WCAG 2.2 AAA-kompatibel"
           />
@@ -302,8 +303,8 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
           {/* NSM Compliance */}
           <Icon 
             name="lock" 
-            size="5" 
-            className="text-purple-600" 
+            size="md" 
+            color="secondary" 
             aria-label="NSM-sikkerhetsgodkjent"
             title="NSM-sikkerhetsgodkjent"
           />
@@ -315,39 +316,41 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
         {{#if componentContent}}
         {{{componentContent}}}
         {{else}}
-        <Text variant="body" size="md" className="text-gray-700">
+        <Typography variant="body" size="md" color="muted">
           {{#if localization}}{{t('content')}}{{else}}Component content goes here. This component follows Norwegian compliance standards.{{/if}}
-        </Text>
+        </Typography>
         
         {{#if showDataFields}}
         {/* Data Fields with Compliance Annotations */}
         <Stack spacing="4">
           {{#each dataFields}}
           <Stack spacing="2">
-            <Text variant="body" size="sm" className="font-medium text-gray-800">
-              {{this.label}}
+            <Stack direction="horizontal" align="center" spacing="2">
+              <Typography variant="body" size="sm" weight="medium">
+                {{this.label}}
+              </Typography>
               {{#if this.required}}
-              <span className="text-red-500 ml-1" aria-label="påkrevd">*</span>
+              <Typography variant="body" size="sm" color="destructive" aria-label="påkrevd">*</Typography>
               {{/if}}
               {{#if this.sensitive}}
               <Icon 
                 name="shield" 
-                size="4" 
-                className="text-orange-500 ml-2" 
+                size="sm" 
+                color="warning" 
                 aria-label="Sensitive data"
                 title="Sensitive personopplysninger"
               />
               {{/if}}
-            </Text>
+            </Stack>
             
             <Stack spacing="1">
-              <Text variant="body" size="sm" className="text-gray-600">
+              <Typography variant="body" size="sm" color="muted">
                 {{this.description}}
-              </Text>
-              <Text variant="body" size="xs" className="text-gray-500">
+              </Typography>
+              <Typography variant="caption" size="xs" color="muted">
                 Klassifisering: {{this.classification}} | Oppbevaring: {{this.retentionDays}} dager
                 {{#if this.legalBasis}} | Rettsgrunnlag: {{this.legalBasis}}{{/if}}
-              </Text>
+              </Typography>
             </Stack>
           </Stack>
           {{/each}}
@@ -398,23 +401,24 @@ export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize com
       </Stack>
       
       {/* Compliance Footer */}
-      <Stack spacing="2" className="pt-4 border-t border-gray-200">
-        <Text variant="body" size="xs" className="text-gray-500">
+      <Stack spacing="2" paddingTop="4">
+        <Separator />
+        <Typography variant="caption" size="xs" color="muted">
           {{#if localization}}{{t('complianceNotice')}}{{else}}Dette innholdet følger norske personvernstandarder og er WCAG 2.2 AAA-kompatibelt.{{/if}}
-        </Text>
+        </Typography>
         
         {{#if retentionPolicy}}
-        <Text variant="body" size="xs" className="text-gray-500">
+        <Typography variant="caption" size="xs" color="muted">
           Dataoppbevaring: {{retentionPolicy.days}} dager. 
           {{#if retentionPolicy.anonymize}}Data anonymiseres etter utløp.{{/if}}
           Begrunnelse: {{retentionPolicy.reason}}
-        </Text>
+        </Typography>
         {{/if}}
         
-        <Stack spacing="2" direction="row" align="center">
-          <Text variant="body" size="xs" className="text-gray-400">
+        <Stack spacing="2" direction="horizontal" align="center">
+          <Typography variant="caption" size="xs" color="subtle">
             Komponent-ID: {id} | Sist oppdatert: {new Date().toLocaleDateString('nb-NO')}
-          </Text>
+          </Typography>
           
           {{#if complianceValidation}}
           <Button 

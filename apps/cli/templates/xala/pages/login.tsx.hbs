@@ -1,16 +1,15 @@
 import React from 'react';
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
+  Card,
   Button,
   Input,
-  Label,
   Checkbox,
   Alert,
-  AlertDescription,
+  Stack,
+  Container,
+  Typography,
+  Box,
+  Separator,
 } from '@xala-technologies/ui-system';
 {{#if includeIcons}}
 import { 
@@ -30,19 +29,21 @@ import { useAuth } from '{{relativePath}}/lib/auth';
 {{/if}}
 
 /**
- * {{componentName}} - Xala UI Login Page
+ * {{componentName}} - Professional Login Page
  * Generated with Xaheen CLI
  * 
  * Features:
- * - Uses @xala-technologies/ui-system components
- * - Responsive login form
+ * - Responsive design with semantic components
+ * - WCAG 2.2 AAA accessibility compliant
  * - Norwegian localization support
- * - Accessibility compliant (WCAG 2.2 AAA)
+ * - Enhanced form validation
+ * - Professional authentication patterns
+ * - SSR-compatible architecture
  * {{#if includeAuth}}
  * - Authentication integration
  * {{/if}}
  * {{#if includeValidation}}
- * - Form validation
+ * - Form validation with accessibility
  * {{/if}}
  */
 
@@ -59,7 +60,7 @@ interface LoginError {
 }
 {{/if}}
 
-export default function {{componentName}}() {
+export default function {{componentName}}({{#if includeTypes}}props: LoginProps{{/if}}): JSX.Element {
   {{#if includeLocalization}}
   const { t } = useTranslation();
   {{/if}}
@@ -149,175 +150,169 @@ export default function {{componentName}}() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground">
+    <Box variant="page" minHeight="screen" justify="center" align="center">
+      <Container maxWidth="sm">
+        {/* Logo/Brand - ONLY semantic components */}
+        <Stack align="center" spacing="8" marginBottom="16">
+          <Typography variant="heading" size="3xl" weight="bold" align="center">
             {{#if includeLocalization}}
             {t('login.title', '{{projectName}}')}
             {{else}}
             {{projectName}}
             {{/if}}
-          </h1>
-          <p className="text-muted-foreground mt-2">
+          </Typography>
+          <Typography variant="body" size="lg" color="muted" align="center">
             {{#if includeLocalization}}
             {t('login.subtitle', 'Logg inn på din konto')}
             {{else}}
             Logg inn på din konto
             {{/if}}
-          </p>
-        </div>
+          </Typography>
+        </Stack>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {{#if includeLocalization}}
-              {t('login.welcome', 'Velkommen tilbake')}
-              {{else}}
-              Velkommen tilbake
-              {{/if}}
-            </CardTitle>
-            <CardDescription>
-              {{#if includeLocalization}}
-              {t('login.description', 'Skriv inn dine påloggingsopplysninger')}
-              {{else}}
-              Skriv inn dine påloggingsopplysninger
-              {{/if}}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Error Alert */}
+        <Card variant="elevated" spacing="10">
+          <Stack spacing="6">
+            <Stack spacing="2">
+              <Typography variant="heading" size="xl">
+                {{#if includeLocalization}}
+                {t('login.welcome', 'Velkommen tilbake')}
+                {{else}}
+                Velkommen tilbake
+                {{/if}}
+              </Typography>
+              <Typography variant="body" size="sm" color="muted">
+                {{#if includeLocalization}}
+                {t('login.description', 'Skriv inn dine påloggingsopplysninger')}
+                {{else}}
+                Skriv inn dine påloggingsopplysninger
+                {{/if}}
+              </Typography>
+            </Stack>
+            
+            <Stack spacing="6">
+              {/* Error Alert - ONLY semantic components */}
               {error && (
-                <Alert variant="destructive">
-                  {{#if includeIcons}}
-                  <AlertCircle className="h-4 w-4" />
-                  {{/if}}
-                  <AlertDescription>{error.message}</AlertDescription>
+                <Alert variant="destructive" spacing="4">
+                  <Stack direction="horizontal" align="center" spacing="3">
+                    {{#if includeIcons}}
+                    <AlertCircle size="sm" />
+                    {{/if}}
+                    <Typography variant="body" size="sm">{error.message}</Typography>
+                  </Stack>
                 </Alert>
               )}
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
+              {/* Email Field - Enhanced 8pt Grid System */}
+              <Stack spacing="3">
+                <Typography variant="label" size="sm" weight="medium">
                   {{#if includeLocalization}}
                   {t('login.email', 'E-post')}
                   {{else}}
                   E-post
                   {{/if}}
-                </Label>
-                <div className="relative">
+                </Typography>
+                <Box variant="input-container">
                   {{#if includeIcons}}
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Mail variant="input-icon" />
                   {{/if}}
                   <Input
-                    id="email"
+                    variant="primary"
+                    size="lg"
                     type="email"
                     placeholder={{#if includeLocalization}}{t('login.emailPlaceholder', 'din@epost.no')}{{else}}"din@epost.no"{{/if}}
                     value={formData.email}
                     onChange={handleInputChange('email')}
-                    {{#if includeIcons}}
-                    className="pl-10"
-                    {{/if}}
                     {{#if includeValidation}}
-                    aria-invalid={!!fieldErrors.email}
+                    error={!!fieldErrors.email}
                     aria-describedby={fieldErrors.email ? "email-error" : undefined}
                     {{/if}}
                     required
+                    aria-label={{#if includeLocalization}}{t('login.emailLabel', 'E-postadresse')}{{else}}"E-postadresse"{{/if}}
                   />
-                </div>
+                </Box>
                 {{#if includeValidation}}
                 {fieldErrors.email && (
-                  <p id="email-error" className="text-sm text-destructive">
+                  <Typography id="email-error" variant="caption" size="sm" color="destructive">
                     {fieldErrors.email}
-                  </p>
+                  </Typography>
                 )}
                 {{/if}}
-              </div>
+              </Stack>
 
               {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password">
+              <Stack spacing="3">
+                <Typography variant="label" size="sm" weight="medium">
                   {{#if includeLocalization}}
                   {t('login.password', 'Passord')}
                   {{else}}
                   Passord
                   {{/if}}
-                </Label>
-                <div className="relative">
+                </Typography>
+                <Box variant="input-container">
                   {{#if includeIcons}}
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Lock variant="input-icon" />
                   {{/if}}
                   <Input
-                    id="password"
+                    variant="primary"
+                    size="lg"
                     type={showPassword ? 'text' : 'password'}
                     placeholder={{#if includeLocalization}}{t('login.passwordPlaceholder', 'Skriv inn passord')}{{else}}"Skriv inn passord"{{/if}}
                     value={formData.password}
                     onChange={handleInputChange('password')}
-                    {{#if includeIcons}}
-                    className="pl-10 pr-10"
-                    {{/if}}
                     {{#if includeValidation}}
-                    aria-invalid={!!fieldErrors.password}
+                    error={!!fieldErrors.password}
                     aria-describedby={fieldErrors.password ? "password-error" : undefined}
                     {{/if}}
                     required
+                    aria-label={{#if includeLocalization}}{t('login.passwordLabel', 'Passord')}{{else}}"Passord"{{/if}}
                   />
                   {{#if includeIcons}}
                   <Button
-                    type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? {{#if includeLocalization}}t('login.hidePassword', 'Skjul passord'){{else}}'Skjul passord'{{/if}} : {{#if includeLocalization}}t('login.showPassword', 'Vis passord'){{else}}'Vis passord'{{/if}}}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
                   {{/if}}
-                </div>
+                </Box>
                 {{#if includeValidation}}
                 {fieldErrors.password && (
-                  <p id="password-error" className="text-sm text-destructive">
+                  <Typography id="password-error" variant="caption" size="sm" color="destructive">
                     {fieldErrors.password}
-                  </p>
+                  </Typography>
                 )}
                 {{/if}}
-              </div>
+              </Stack>
 
               {/* Remember Me */}
-              <div className="flex items-center space-x-2">
+              <Stack direction="horizontal" align="center" spacing="3">
                 <Checkbox
-                  id="rememberMe"
                   checked={formData.rememberMe}
                   onCheckedChange={(checked) => 
                     setFormData(prev => ({ ...prev, rememberMe: !!checked }))
                   }
                 />
-                <Label htmlFor="rememberMe" className="text-sm">
+                <Typography variant="label" size="sm">
                   {{#if includeLocalization}}
                   {t('login.rememberMe', 'Husk meg')}
                   {{else}}
                   Husk meg
                   {{/if}}
-                </Label>
-              </div>
+                </Typography>
+              </Stack>
 
               {/* Submit Button */}
               <Button 
-                type="submit" 
-                className="w-full"
+                variant="primary"
+                size="lg"
+                fullWidth
                 disabled={isSubmitting {{#if includeAuth}}|| isLoading{{/if}}}
               >
                 {{#if includeIcons}}
                 {(isSubmitting {{#if includeAuth}}|| isLoading{{/if}}) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 variant="spinner" />
                 )}
                 {{/if}}
                 {{#if includeLocalization}}
@@ -328,70 +323,65 @@ export default function {{componentName}}() {
               </Button>
 
               {/* Forgot Password */}
-              <div className="text-center">
-                <Button variant="link" className="text-sm">
+              <Stack align="center">
+                <Button variant="link" size="sm">
                   {{#if includeLocalization}}
                   {t('login.forgotPassword', 'Glemt passord?')}
                   {{else}}
                   Glemt passord?
                   {{/if}}
                 </Button>
-              </div>
-            </form>
-          </CardContent>
+              </Stack>
+            </Stack>
+          </Stack>
         </Card>
 
         {{#if includeSignup}}
         {/* Sign Up Link */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
+        <Stack align="center" spacing="2" marginTop="6">
+          <Typography variant="body" size="sm" color="muted" align="center">
             {{#if includeLocalization}}
             {t('login.noAccount', 'Har du ikke konto?')}
             {{else}}
             Har du ikke konto?
             {{/if}}
-            {' '}
-            <Button variant="link" className="p-0 h-auto text-sm">
-              {{#if includeLocalization}}
-              {t('login.signUp', 'Registrer deg')}
-              {{else}}
-              Registrer deg
-              {{/if}}
-            </Button>
-          </p>
-        </div>
+          </Typography>
+          <Button variant="link" size="sm">
+            {{#if includeLocalization}}
+            {t('login.signUp', 'Registrer deg')}
+            {{else}}
+            Registrer deg
+            {{/if}}
+          </Button>
+        </Stack>
         {{/if}}
 
         {{#if includeNorwegianAuth}}
         {/* Norwegian Authentication Options */}
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {{#if includeLocalization}}
-                {t('login.orContinueWith', 'Eller fortsett med')}
-                {{else}}
-                Eller fortsett med
-                {{/if}}
-              </span>
-            </div>
-          </div>
+        <Stack spacing="6" marginTop="8">
+          <Stack align="center" spacing="4">
+            <Separator />
+            <Typography variant="caption" size="xs" color="muted" transform="uppercase">
+              {{#if includeLocalization}}
+              {t('login.orContinueWith', 'Eller fortsett med')}
+              {{else}}
+              Eller fortsett med
+              {{/if}}
+            </Typography>
+          </Stack>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <Button variant="outline">
+          <Grid columns={2} spacing="4">
+            <Button variant="outline" size="lg">
               BankID
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" size="lg">
               Vipps
             </Button>
-          </div>
-        </div>
+          </Grid>
+        </Stack>
         {{/if}}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
 

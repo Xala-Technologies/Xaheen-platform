@@ -1,0 +1,511 @@
+{{#if typescript}}'use client';{{/if}}
+
+{{#if typescript}}
+import { type } from 'os';
+{{/if}}
+
+/**
+ * {{capitalize serviceName}} - Norwegian Compliance Service
+ * Generated with Xaheen CLI
+ * 
+ * Features:
+ * - Norwegian data protection compliance (GDPR)
+ * - NSM security classification support
+ * - Audit logging for all operations
+ * - Data retention policy enforcement
+ * - Professional TypeScript patterns
+ * - Error handling with Norwegian messages
+ */
+
+{{#if typescript}}
+/**
+ * NSM Security Classification Levels
+ * Based on Norwegian National Security Authority guidelines
+ */
+export type NSMClassification = 'UGRADERT' | 'BEGRENSET' | 'KONFIDENSIELT' | 'HEMMELIG';
+
+/**
+ * GDPR Data Categories
+ */
+export type DataCategory = 'PERSONAL' | 'SENSITIVE' | 'SPECIAL' | 'ANONYMOUS';
+
+/**
+ * Norwegian Legal Basis for Data Processing
+ */
+export type LegalBasis = 
+  | 'CONSENT'           // Samtykke (Art. 6(1)(a))
+  | 'CONTRACT'          // Kontrakt (Art. 6(1)(b))
+  | 'LEGAL_OBLIGATION'  // Rettslig forpliktelse (Art. 6(1)(c))
+  | 'VITAL_INTERESTS'   // Vitale interesser (Art. 6(1)(d))
+  | 'PUBLIC_TASK'       // Offentlig oppgave (Art. 6(1)(e))
+  | 'LEGITIMATE_INTEREST'; // Berettiget interesse (Art. 6(1)(f))
+
+/**
+ * Data Processing Record
+ */
+export interface DataProcessingRecord {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'EXPORT';
+  readonly dataCategory: DataCategory;
+  readonly legalBasis: LegalBasis;
+  readonly purpose: string;
+  readonly retentionDays: number;
+  readonly classification: NSMClassification;
+  readonly userId?: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+}
+
+/**
+ * Audit Log Entry
+ */
+export interface AuditLogEntry {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly service: string;
+  readonly operation: string;
+  readonly userId?: string;
+  readonly sessionId?: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly classification: NSMClassification;
+  readonly success: boolean;
+  readonly errorMessage?: string;
+  readonly metadata?: Record<string, unknown>;
+}
+
+/**
+ * Data Retention Policy
+ */
+export interface RetentionPolicy {
+  readonly category: DataCategory;
+  readonly retentionDays: number;
+  readonly anonymizeAfterExpiry: boolean;
+  readonly legalBasis: LegalBasis;
+  readonly purpose: string;
+  readonly reviewDate: string;
+}
+
+/**
+ * Service Configuration
+ */
+export interface {{capitalize serviceName}}Config {
+  readonly classification: NSMClassification;
+  readonly auditEnabled: boolean;
+  readonly encryptionRequired: boolean;
+  readonly retentionPolicies: RetentionPolicy[];
+  readonly allowedOperations: string[];
+  readonly rateLimiting?: {
+    readonly maxRequests: number;
+    readonly windowMs: number;
+  };
+}
+
+/**
+ * Service Response
+ */
+export interface ServiceResponse<T = unknown> {
+  readonly success: boolean;
+  readonly data?: T;
+  readonly error?: {
+    readonly code: string;
+    readonly message: string;
+    readonly details?: Record<string, unknown>;
+  };
+  readonly metadata: {
+    readonly timestamp: string;
+    readonly requestId: string;
+    readonly classification: NSMClassification;
+    readonly auditLogged: boolean;
+  };
+}
+{{/if}}
+
+/**
+ * Norwegian Compliance Service Class
+ */
+export class {{capitalize serviceName}} {
+  private readonly config: {{#if typescript}}{{capitalize serviceName}}Config{{else}}any{{/if}};
+  private readonly auditLog: {{#if typescript}}AuditLogEntry[]{{else}}any[]{{/if}} = [];
+
+  constructor(config: {{#if typescript}}{{capitalize serviceName}}Config{{else}}any{{/if}}) {
+    this.config = config;
+    this.validateConfiguration();
+  }
+
+  /**
+   * Validate service configuration
+   */
+  private validateConfiguration(): void {
+    if (!this.config.classification) {
+      throw new Error('NSM security classification is required');
+    }
+
+    if (!this.config.retentionPolicies || this.config.retentionPolicies.length === 0) {
+      throw new Error('Data retention policies are required for GDPR compliance');
+    }
+
+    // Validate retention policies
+    this.config.retentionPolicies.forEach((policy, index) => {
+      if (!policy.legalBasis) {
+        throw new Error(`Legal basis required for retention policy ${index}`);
+      }
+      if (policy.retentionDays <= 0) {
+        throw new Error(`Invalid retention period for policy ${index}`);
+      }
+    });
+  }
+
+  /**
+   * Process data with Norwegian compliance checks
+   */
+  async processData<T>(
+    operation: string,
+    data: T,
+    options: {
+      readonly dataCategory: {{#if typescript}}DataCategory{{else}}string{{/if}};
+      readonly legalBasis: {{#if typescript}}LegalBasis{{else}}string{{/if}};
+      readonly purpose: string;
+      readonly userId?: string;
+      readonly sessionId?: string;
+    }
+  ): Promise<{{#if typescript}}ServiceResponse<T>{{else}}any{{/if}}> {
+    const requestId = this.generateRequestId();
+    const timestamp = new Date().toISOString();
+
+    try {
+      // Pre-processing compliance checks
+      await this.validateDataProcessing(operation, options);
+      
+      // Log data processing record
+      if (this.config.auditEnabled) {
+        await this.logDataProcessing({
+          id: requestId,
+          timestamp,
+          operation: operation as any,
+          dataCategory: options.dataCategory,
+          legalBasis: options.legalBasis,
+          purpose: options.purpose,
+          retentionDays: this.getRetentionDays(options.dataCategory),
+          classification: this.config.classification,
+          userId: options.userId,
+        });
+      }
+
+      // Process the actual data
+      const result = await this.executeOperation(operation, data, options);
+
+      // Log successful audit entry
+      await this.logAuditEntry({
+        id: this.generateRequestId(),
+        timestamp,
+        service: '{{serviceName}}',
+        operation,
+        userId: options.userId,
+        sessionId: options.sessionId,
+        classification: this.config.classification,
+        success: true,
+        metadata: {
+          dataCategory: options.dataCategory,
+          legalBasis: options.legalBasis,
+          purpose: options.purpose,
+        },
+      });
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          timestamp,
+          requestId,
+          classification: this.config.classification,
+          auditLogged: this.config.auditEnabled,
+        },
+      };
+
+    } catch (error) {
+      // Log failed audit entry
+      await this.logAuditEntry({
+        id: this.generateRequestId(),
+        timestamp,
+        service: '{{serviceName}}',
+        operation,
+        userId: options.userId,
+        sessionId: options.sessionId,
+        classification: this.config.classification,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'PROCESSING_ERROR',
+          message: this.getLocalizedErrorMessage(error),
+          details: { operation, dataCategory: options.dataCategory },
+        },
+        metadata: {
+          timestamp,
+          requestId,
+          classification: this.config.classification,
+          auditLogged: this.config.auditEnabled,
+        },
+      };
+    }
+  }
+
+  /**
+   * Validate data processing against Norwegian regulations
+   */
+  private async validateDataProcessing(
+    operation: string,
+    options: {
+      readonly dataCategory: {{#if typescript}}DataCategory{{else}}string{{/if}};
+      readonly legalBasis: {{#if typescript}}LegalBasis{{else}}string{{/if}};
+      readonly purpose: string;
+    }
+  ): Promise<void> {
+    // Check if operation is allowed
+    if (!this.config.allowedOperations.includes(operation)) {
+      throw new Error(`Operation '${operation}' is not permitted for this service`);
+    }
+
+    // Validate legal basis for data category
+    if (options.dataCategory === 'SENSITIVE' || options.dataCategory === 'SPECIAL') {
+      if (options.legalBasis === 'LEGITIMATE_INTEREST') {
+        throw new Error('Legitimate interest cannot be used for sensitive/special category data');
+      }
+    }
+
+    // Check retention policy exists
+    const retentionPolicy = this.config.retentionPolicies.find(
+      policy => policy.category === options.dataCategory
+    );
+
+    if (!retentionPolicy) {
+      throw new Error(`No retention policy defined for data category: ${options.dataCategory}`);
+    }
+
+    // Validate purpose limitation
+    if (!options.purpose || options.purpose.trim().length < 10) {
+      throw new Error('Data processing purpose must be clearly specified (minimum 10 characters)');
+    }
+  }
+
+  /**
+   * Execute the actual operation
+   */
+  private async executeOperation<T>(
+    operation: string,
+    data: T,
+    options: any
+  ): Promise<T> {
+    // This is where the actual business logic would be implemented
+    // For template purposes, we'll return the data as-is
+    
+    {{#if includeBusinessLogic}}
+    switch (operation.toUpperCase()) {
+      case 'CREATE':
+        return await this.createData(data, options);
+      case 'READ':
+        return await this.readData(data, options);
+      case 'UPDATE':
+        return await this.updateData(data, options);
+      case 'DELETE':
+        return await this.deleteData(data, options);
+      case 'EXPORT':
+        return await this.exportData(data, options);
+      default:
+        throw new Error(`Unsupported operation: ${operation}`);
+    }
+    {{else}}
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return data;
+    {{/if}}
+  }
+
+  {{#if includeBusinessLogic}}
+  /**
+   * Create data operation
+   */
+  private async createData<T>(data: T, options: any): Promise<T> {
+    // Implement create logic here
+    return data;
+  }
+
+  /**
+   * Read data operation
+   */
+  private async readData<T>(data: T, options: any): Promise<T> {
+    // Implement read logic here
+    return data;
+  }
+
+  /**
+   * Update data operation
+   */
+  private async updateData<T>(data: T, options: any): Promise<T> {
+    // Implement update logic here
+    return data;
+  }
+
+  /**
+   * Delete data operation
+   */
+  private async deleteData<T>(data: T, options: any): Promise<T> {
+    // Implement delete logic here
+    return data;
+  }
+
+  /**
+   * Export data operation
+   */
+  private async exportData<T>(data: T, options: any): Promise<T> {
+    // Implement export logic here
+    return data;
+  }
+  {{/if}}
+
+  /**
+   * Log data processing record for GDPR compliance
+   */
+  private async logDataProcessing(record: {{#if typescript}}DataProcessingRecord{{else}}any{{/if}}): Promise<void> {
+    // In a real implementation, this would write to a secure audit database
+    console.log('[GDPR Audit]', JSON.stringify(record, null, 2));
+  }
+
+  /**
+   * Log audit entry for security monitoring
+   */
+  private async logAuditEntry(entry: {{#if typescript}}AuditLogEntry{{else}}any{{/if}}): Promise<void> {
+    this.auditLog.push(entry);
+    
+    // In a real implementation, this would write to a secure audit system
+    console.log('[Security Audit]', JSON.stringify(entry, null, 2));
+  }
+
+  /**
+   * Get retention days for data category
+   */
+  private getRetentionDays(dataCategory: {{#if typescript}}DataCategory{{else}}string{{/if}}): number {
+    const policy = this.config.retentionPolicies.find(p => p.category === dataCategory);
+    return policy?.retentionDays || 365; // Default to 1 year
+  }
+
+  /**
+   * Generate unique request ID
+   */
+  private generateRequestId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Get localized error message in Norwegian
+   */
+  private getLocalizedErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+      // Map common errors to Norwegian
+      const errorMap: Record<string, string> = {
+        'Operation not permitted': 'Operasjon ikke tillatt',
+        'Invalid data category': 'Ugyldig datakategori',
+        'Missing legal basis': 'Mangler rettsgrunnlag',
+        'Retention policy not found': 'Oppbevaringspolicy ikke funnet',
+        'Processing failed': 'Behandling feilet',
+      };
+
+      return errorMap[error.message] || error.message;
+    }
+
+    return 'Ukjent feil oppstod';
+  }
+
+  /**
+   * Get audit log entries
+   */
+  getAuditLog(): {{#if typescript}}AuditLogEntry[]{{else}}any[]{{/if}} {
+    return [...this.auditLog];
+  }
+
+  /**
+   * Clear audit log (for testing purposes only)
+   */
+  clearAuditLog(): void {
+    this.auditLog.length = 0;
+  }
+
+  /**
+   * Get service configuration
+   */
+  getConfiguration(): {{#if typescript}}{{capitalize serviceName}}Config{{else}}any{{/if}} {
+    return { ...this.config };
+  }
+}
+
+{{#if includeFactory}}
+/**
+ * Factory function to create service instance
+ */
+export function create{{capitalize serviceName}}(
+  config: {{#if typescript}}Partial<{{capitalize serviceName}}Config>{{else}}any{{/if}} = {}
+): {{capitalize serviceName}} {
+  const defaultConfig: {{#if typescript}}{{capitalize serviceName}}Config{{else}}any{{/if}} = {
+    classification: 'UGRADERT',
+    auditEnabled: true,
+    encryptionRequired: false,
+    allowedOperations: ['CREATE', 'READ', 'UPDATE', 'DELETE'],
+    retentionPolicies: [
+      {
+        category: 'PERSONAL',
+        retentionDays: 1095, // 3 years
+        anonymizeAfterExpiry: true,
+        legalBasis: 'CONSENT',
+        purpose: 'User account management',
+        reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        category: 'SENSITIVE',
+        retentionDays: 365, // 1 year
+        anonymizeAfterExpiry: true,
+        legalBasis: 'CONSENT',
+        purpose: 'Sensitive data processing',
+        reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ],
+  };
+
+  return new {{capitalize serviceName}}({ ...defaultConfig, ...config });
+}
+{{/if}}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// Create service instance
+const service = create{{capitalize serviceName}}({
+  classification: 'BEGRENSET',
+  auditEnabled: true,
+  encryptionRequired: true,
+});
+
+// Process personal data
+const result = await service.processData('CREATE', userData, {
+  dataCategory: 'PERSONAL',
+  legalBasis: 'CONSENT',
+  purpose: 'User registration and account management',
+  userId: 'user-123',
+  sessionId: 'session-456',
+});
+
+if (result.success) {
+  console.log('Data processed successfully:', result.data);
+} else {
+  console.error('Processing failed:', result.error?.message);
+}
+
+// Get audit log
+const auditEntries = service.getAuditLog();
+console.log('Audit entries:', auditEntries);
+*/
+{{/if}}

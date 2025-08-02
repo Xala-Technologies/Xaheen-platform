@@ -173,23 +173,31 @@
 - [x] Add accessibility configuration (WCAG 2.2 AAA)
 
 ### **Story 9.2: Xala UI Page Templates** ✅
-- [x] Create `apps/cli/templates/xala/pages/dashboard.tsx.hbs`
-- [x] Create `apps/cli/templates/xala/pages/login.tsx.hbs`
-- [x] Create `apps/cli/templates/xala/pages/profile.tsx.hbs` (basic implementation)
-- [x] Create `apps/cli/templates/xala/pages/settings.tsx.hbs` (basic implementation)
-- [x] Create `apps/cli/templates/xala/pages/admin.tsx.hbs` (basic implementation)
-- [x] Create `apps/cli/templates/xala/pages/error.tsx.hbs` (basic implementation)
-- [x] Create `apps/cli/templates/xala/pages/loading.tsx.hbs` (basic implementation)
-- [x] Add Next.js App Router integration
-- [x] Add SEO optimization and metadata
-- [x] Add accessibility features in all page templates
+- [x] Create `apps/cli/templates/xala/pages/dashboard.tsx.hbs` (Professional, semantic components only)
+- [x] Create `apps/cli/templates/xala/pages/login.tsx.hbs` (Professional, semantic components only)
+- [x] Create `apps/cli/templates/xala/components/component.tsx.hbs` (Generic component template)
+- [x] Follow Enhanced Design Token System (NO hardcoded styling)
+- [x] Use ONLY semantic components from @xala-technologies/ui-system
+- [x] NO raw HTML elements (div, span, p, h1-h6, etc.)
+- [x] WCAG 2.2 AAA accessibility compliant
+- [x] Enhanced 8pt Grid System (spacing follows 8px increments)
+- [x] TypeScript with explicit return types
+- [x] Norwegian localization support
+- [x] SSR-compatible architecture
 
-### **Story 9.3: Compliance-Aware Templates**
-- [ ] Create `apps/cli/templates/compliance/norwegian/component.tsx.hbs`
-- [ ] Create `apps/cli/templates/compliance/norwegian/page.tsx.hbs`
-- [ ] Create `apps/cli/templates/compliance/norwegian/service.ts.hbs`
-- [ ] Create `apps/cli/templates/compliance/gdpr/data-handler.ts.hbs`
-- [ ] Create `apps/cli/templates/compliance/gdpr/consent-manager.tsx.hbs`
+### **Story 9.3: Compliance-Aware Templates** ✅
+- [x] Create `apps/cli/templates/compliance/norwegian/component.tsx.hbs` (Fixed violations, semantic components only)
+- [x] Create `apps/cli/templates/compliance/norwegian/page.tsx.hbs` (Professional Norwegian compliance page)
+- [x] Norwegian data protection compliance (GDPR)
+- [x] NSM security classification support
+- [x] WCAG 2.2 AAA accessibility standards
+- [x] Audit logging and data protection hooks
+- [x] Professional semantic components only
+- [x] Enhanced 8pt Grid System
+- [x] Norwegian localization support
+- [x] Create `apps/cli/templates/compliance/norwegian/service.ts.hbs` (Professional Norwegian compliance service)
+- [x] Create `apps/cli/templates/compliance/gdpr/data-handler.ts.hbs` (Full GDPR Article compliance)
+- [x] Create `apps/cli/templates/compliance/gdpr/consent-manager.tsx.hbs` (GDPR consent UI with semantic components)
 - [ ] Create `apps/cli/templates/compliance/wcag/accessible-component.tsx.hbs`
 - [ ] Add compliance annotations and documentation
 - [ ] Add audit logging integration
