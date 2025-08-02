@@ -162,19 +162,28 @@
 
 ### **Story 9.1: Xala UI Integration Setup** ✅
 - [x] ~~Create component templates~~ (Not needed - use @xala-technologies/ui-system directly)
-- [x] Create Xala UI configuration template
-- [x] Create package.json integration for @xala-technologies/ui-system
-- [x] Create TypeScript configuration for Xala UI
-- [x] Create Tailwind CSS configuration with Xala design tokens
-- [x] Create utility functions for Xala UI integration
-- [x] Create documentation for using Xala components
-- [x] Add Norwegian localization setup for Xala UI
-- [x] Add responsive design configuration
-- [x] Add accessibility configuration (WCAG 2.2 AAA)
+- [x] Create Xala UI configuration template (`xala/config/ui-system.config.ts.hbs`)
+- [x] Create package.json integration for @xala-technologies/ui-system (`xala/config/package.json.hbs`)
+- [x] Create TypeScript configuration for Xala UI (`xala/config/tsconfig.json.hbs`)
+- [x] Create Tailwind CSS configuration with Xala design tokens (`xala/config/tailwind.config.ts.hbs`)
+- [x] Create utility functions for Xala UI integration (`xala/utils/ui-utils.ts.hbs`)
+- [x] Create documentation for using Xala components (`xala/docs/README.md.hbs`)
+- [x] Add Norwegian localization setup for Xala UI (`xala/config/localization.config.ts.hbs`)
+- [x] Add responsive design configuration (`xala/config/responsive.config.ts.hbs`)
+- [x] Add accessibility configuration (WCAG 2.2 AAA) (`xala/config/accessibility.config.ts.hbs`)
 
 ### **Story 9.2: Xala UI Page Templates** ✅
 - [x] Create `apps/cli/templates/xala/pages/dashboard.tsx.hbs` (Professional, semantic components only)
 - [x] Create `apps/cli/templates/xala/pages/login.tsx.hbs` (Professional, semantic components only)
+
+### **Story 9.3: Xala UI Layout Templates** ✅
+- [x] Create `apps/cli/templates/xala/layouts/BaseLayout.tsx.hbs` (Foundation layout with providers)
+- [x] Create `apps/cli/templates/xala/layouts/AdminLayout.tsx.hbs` (Desktop-first admin dashboard)
+- [x] Add industry template support (enterprise, healthcare, finance, education, ecommerce)
+- [x] Add dynamic theming with smooth transitions
+- [x] Add Norwegian compliance integration
+- [x] Add responsive layout behavior
+- [x] Add role-based navigation system
 - [x] Create `apps/cli/templates/xala/components/component.tsx.hbs` (Generic component template)
 - [x] Follow Enhanced Design Token System (NO hardcoded styling)
 - [x] Use ONLY semantic components from @xala-technologies/ui-system

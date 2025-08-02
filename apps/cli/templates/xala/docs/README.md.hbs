@@ -1,0 +1,341 @@
+# {{projectName}}
+
+{{#if description}}
+{{description}}
+{{/if}}
+
+> Generated with **Xaheen CLI** using Xala UI System v5 - Professional, accessible, and compliant by design.
+
+/**
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} install
+
+# Start development server
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run dev
+
+# Build for production
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run build
+
+# Run tests
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run test
+
+# Check accessibility compliance
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run test:a11y
+
+# Lint code
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run lint
+
+# Type check
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run type-check
+```
+
+## 🎨 Xala UI System v5 Features
+
+This project leverages the full power of Xala UI System v5:
+
+### 🏗️ Industry Templates
+{{#if industryTemplate}}
+- **{{industryTemplate}} Template**: Optimized for {{industryTemplate}} industry
+{{else}}
+- **Enterprise Template**: Professional business application design
+- **Healthcare Template**: Calming, accessible medical interface
+- **Finance Template**: Trust-building, data-focused design
+- **Education Template**: Learning-optimized interface
+- **E-commerce Template**: Conversion-optimized shopping experience
+{{/if}}
+
+### 🎭 Dynamic Theming
+- **Light/Dark Mode**: Automatic system preference detection
+- **High Contrast**: WCAG AAA accessibility compliance
+- **Custom Themes**: Brand-specific color palettes
+- **Smooth Transitions**: CSS-based theme switching
+
+### 🌍 Localization Support
+- **Primary**: {{#if primaryLanguage}}{{primaryLanguage}}{{else}}English{{/if}}
+- **Secondary**: Norwegian Bokmål, French, Arabic
+- **RTL Support**: Built-in right-to-left text support
+- **Cultural Adaptation**: Norwegian compliance patterns
+
+### 📱 Responsive Layouts
+- **BaseLayout**: Foundation with providers and theming
+- **AdminLayout**: Desktop-first dashboard layout
+- **WebLayout**: Public-facing responsive layout
+- **MobileLayout**: Touch-optimized mobile interface
+
+## 📋 Component Usage Examples
+
+### ✅ CORRECT - Using Semantic Components
+
+```tsx
+import { 
+  Box, 
+  Stack, 
+  Typography, 
+  Button, 
+  Card,
+  Container 
+} from '@xala-technologies/ui-system';
+import { useTranslation } from 'next-intl';
+
+export default function ExamplePage(): React.ReactElement {
+  const { t } = useTranslation();
+
+  return (
+    <Container>
+      <Stack spacing="8" direction="vertical">
+        <Typography variant="heading" size="2xl">
+          {t('page.title', 'Welcome to Dashboard')}
+        </Typography>
+        
+        <Card variant="elevated" padding="8">
+          <Stack spacing="6" direction="vertical">
+            <Typography variant="body" size="lg">
+              {t('page.description', 'This is a compliant component')}
+            </Typography>
+            
+            <Button 
+              variant="primary" 
+              size="lg"
+              onClick={handleAction}
+            >
+              {t('actions.getStarted', 'Get Started')}
+            </Button>
+          </Stack>
+        </Card>
+      </Stack>
+    </Container>
+  );
+}
+```
+
+### ❌ WRONG - Raw HTML and Hardcoded Styling
+
+```tsx
+// DON'T DO THIS - Violates compliance rules
+<div className="min-h-screen bg-gray-100 p-4">
+  <h1 style={{ color: '#333', fontSize: '24px' }}>
+    Welcome to Dashboard
+  </h1>
+  <button className="bg-blue-500 text-white px-4 py-2">
+    Get Started
+  </button>
+</div>
+```
+
+## 🎯 Design Token Usage
+
+### Spacing (Enhanced 8pt Grid)
+```tsx
+// Use design tokens for all spacing
+<Stack spacing="4">  {/* 16px */}
+<Stack spacing="6">  {/* 24px */}
+<Stack spacing="8">  {/* 32px */}
+<Stack spacing="12"> {/* 48px */}
+```
+
+### Colors (WCAG 2.2 AAA Compliant)
+```tsx
+// Colors are automatically applied through variants
+<Button variant="primary">    {/* Uses primary color tokens */}
+<Button variant="secondary">  {/* Uses secondary color tokens */}
+<Alert variant="warning">     {/* Uses warning color tokens */}
+```
+
+### Typography (Professional Scale)
+```tsx
+<Typography variant="heading" size="xs">   {/* 14px/20px */}
+<Typography variant="heading" size="sm">   {/* 16px/24px */}
+<Typography variant="heading" size="md">   {/* 18px/28px */}
+<Typography variant="heading" size="lg">   {/* 20px/28px */}
+<Typography variant="heading" size="xl">   {/* 24px/32px */}
+<Typography variant="heading" size="2xl">  {/* 30px/36px */}
+```
+
+## 🌐 Localization Implementation
+
+### Setting up translations
+```tsx
+// messages/en.json
+{
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  }
+}
+
+// messages/nb.json (Norwegian Bokmål)
+{
+  "navigation": {
+    "home": "Hjem",
+    "dashboard": "Dashbord",
+    "settings": "Innstillinger"
+  },
+  "actions": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "delete": "Slett"
+  }
+}
+```
+
+### Using translations in components
+```tsx
+import { useTranslation } from 'next-intl';
+
+function NavigationComponent(): React.ReactElement {
+  const { t } = useTranslation();
+
+  return (
+    <Stack direction="horizontal" spacing="4">
+      <Button variant="ghost">
+        {t('navigation.home', 'Home')}
+      </Button>
+      <Button variant="ghost">
+        {t('navigation.dashboard', 'Dashboard')}
+      </Button>
+      <Button variant="ghost">
+        {t('navigation.settings', 'Settings')}
+      </Button>
+    </Stack>
+  );
+}
+```
+
+## 🔧 Advanced Configuration
+
+### White Label Theming
+```tsx
+import { UiProvider } from '@xala-technologies/ui-system';
+{{#if industryTemplate}}
+import { {{industryTemplate}}Template } from '@xala-technologies/ui-system/config/white-label-templates';
+{{else}}
+import { enterpriseTemplate } from '@xala-technologies/ui-system/config/white-label-templates';
+{{/if}}
+
+function App(): React.ReactElement {
+  return (
+    <UiProvider
+      {{#if industryTemplate}}
+      whiteLabelConfig={ {{industryTemplate}}Template}
+      {{else}}
+      whiteLabelConfig={enterpriseTemplate}
+      {{/if}}
+      themeTransitionConfig={{
+        duration: 300,
+        easing: 'ease-out',
+        respectMotionPreference: true
+      }}
+      platformConfig={{
+        mobileBreakpoint: 768,
+        enablePlatformDetection: true
+      }}
+      enableAdvancedFeatures={true}
+    >
+      {children}
+    </UiProvider>
+  );
+}
+```
+
+### Norwegian Compliance Features
+```tsx
+import { 
+  NorwegianComplianceProvider,
+  useGDPRCompliance,
+  useAuditLogging 
+} from '@xala-technologies/ui-system/compliance';
+
+function ComplianceWrapper(): React.ReactElement {
+  return (
+    <NorwegianComplianceProvider
+      gdprConfig={{
+        consentRequired: true,
+        auditLogging: true,
+        dataRetentionDays: 365
+      }}
+      nsmClassification="BEGRENSET"
+    >
+      <App />
+    </NorwegianComplianceProvider>
+  );
+}
+```
+
+## 🧪 Testing & Quality Assurance
+
+### Accessibility Testing
+```bash
+# Run accessibility tests
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run test:a11y
+
+# Generate accessibility report
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run a11y:report
+```
+
+### Compliance Validation
+```bash
+# Validate Norwegian compliance
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run compliance:check
+
+# Generate compliance report
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run compliance:report
+```
+
+### Component Testing
+```bash
+# Run component tests
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run test:components
+
+# Visual regression testing
+{{#if packageManager}}{{packageManager}}{{else}}bun{{/if}} run test:visual
+```
+
+## 📚 Documentation & Resources
+
+- [Xala UI System Documentation](https://ui.xala.no)
+- [Component Library](https://storybook.xala.no)
+- [Design Tokens](https://tokens.xala.no)
+- [Accessibility Guidelines](https://a11y.xala.no)
+- [Norwegian Compliance](https://compliance.xala.no)
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+1. **Theme not loading**: Ensure `UiProvider` wraps your app
+2. **Translations missing**: Check language files in `/messages`
+3. **Accessibility errors**: Use semantic components only
+4. **Build errors**: Verify all imports from `@xala-technologies/ui-system`
+
+### Getting Help
+
+- Check the [troubleshooting guide](https://docs.xala.no/troubleshooting)
+- Open an issue on [GitHub](https://github.com/xala-technologies/ui-system)
+- Contact support: support@xala.no
+
+---
+
+**Remember**: This project follows strict compliance rules. Always use semantic components, design tokens, and localization. Never use raw HTML or hardcoded styling.

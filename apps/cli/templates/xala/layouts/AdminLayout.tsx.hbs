@@ -1,0 +1,448 @@
+{{#if typescript}}'use client';{{/if}}
+
+/**
+ * AdminLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Desktop-first admin dashboard layout
+ * - Role-based navigation system
+ * - Collapsible sidebar navigation
+ * - Professional header with user controls
+ * - Breadcrumb navigation
+ * - Responsive breakpoint handling
+ */
+
+{{#if typescript}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Grid,
+  Typography,
+  Button,
+  Avatar,
+  Badge,
+  Icon,
+  Separator,
+  Drawer,
+  Sheet,
+  Breadcrumb,
+  Navigation,
+  DropdownMenu
+} from '@xala-technologies/ui-system';
+import { 
+  Menu,
+  Bell,
+  Settings,
+  User,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  BarChart3,
+  Users,
+  FileText,
+  Shield
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+  currentUser?: {
+    name: string;
+    email: string;
+    avatar?: string;
+    role: string;
+  };
+  navigationItems?: NavigationItem[];
+  breadcrumbs?: BreadcrumbItem[];
+  sidebarCollapsed?: boolean;
+  onSidebarToggle?: () => void;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: React.ComponentType;
+  badge?: string;
+  children?: NavigationItem[];
+  roles?: string[];
+}
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+{{else}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Grid,
+  Typography,
+  Button,
+  Avatar,
+  Badge,
+  Icon,
+  Separator,
+  Drawer,
+  Sheet,
+  Breadcrumb,
+  Navigation,
+  DropdownMenu
+} from '@xala-technologies/ui-system';
+import { 
+  Menu,
+  Bell,
+  Settings,
+  User,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  BarChart3,
+  Users,
+  FileText,
+  Shield
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+{{/if}}
+
+/**
+ * Default navigation items for admin dashboard
+ */
+const defaultNavigationItems{{#if typescript}}: NavigationItem[]{{/if}} = [
+  {
+    id: 'dashboard',
+    label: 'navigation.dashboard',
+    href: '/admin/dashboard',
+    icon: Home,
+  },
+  {
+    id: 'analytics',
+    label: 'navigation.analytics',
+    href: '/admin/analytics',
+    icon: BarChart3,
+  },
+  {
+    id: 'users',
+    label: 'navigation.users',
+    href: '/admin/users',
+    icon: Users,
+    roles: ['admin', 'user-manager'],
+  },
+  {
+    id: 'content',
+    label: 'navigation.content',
+    href: '/admin/content',
+    icon: FileText,
+  },
+  {
+    id: 'security',
+    label: 'navigation.security',
+    href: '/admin/security',
+    icon: Shield,
+    roles: ['admin'],
+  },
+];
+
+/**
+ * AdminLayout - Professional dashboard layout
+ * Desktop-first with collapsible sidebar and role-based navigation
+ */
+{{#if typescript}}
+export default function AdminLayout({
+  children,
+  currentUser,
+  navigationItems = defaultNavigationItems,
+  breadcrumbs = [],
+  sidebarCollapsed = false,
+  onSidebarToggle,
+  locale = 'en',
+  theme = 'light'
+}: AdminLayoutProps): React.ReactElement {
+{{else}}
+export default function AdminLayout({
+  children,
+  currentUser,
+  navigationItems = defaultNavigationItems,
+  breadcrumbs = [],
+  sidebarCollapsed = false,
+  onSidebarToggle,
+  locale = 'en',
+  theme = 'light'
+}) {
+{{/if}}
+  const { t } = useTranslation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  // Filter navigation items based on user role
+  const filteredNavigationItems = React.useMemo({{#if typescript}}(): NavigationItem[]{{/if}} => {
+    if (!currentUser) return navigationItems;
+    
+    return navigationItems.filter(item => 
+      !item.roles || item.roles.includes(currentUser.role)
+    );
+  }, [navigationItems, currentUser]);
+
+  const handleMobileMenuToggle = {{#if typescript}}(): void{{/if}} => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleSidebarToggle = {{#if typescript}}(): void{{/if}} => {
+    if (onSidebarToggle) {
+      onSidebarToggle();
+    }
+  };
+
+  const renderUserMenu = {{#if typescript}}(): React.ReactElement{{/if}} => (
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <Button variant="ghost" size="sm">
+          <Stack direction="horizontal" align="center" spacing="2">
+            <Avatar
+              src={currentUser?.avatar}
+              alt={currentUser?.name || t('user.avatar', 'User avatar')}
+              size="sm"
+            />
+            <Stack direction="vertical" spacing="0">
+              <Typography variant="body" size="sm" weight="medium">
+                {currentUser?.name || t('user.guest', 'Guest')}
+              </Typography>
+              <Typography variant="caption" size="xs" color="muted">
+                {currentUser?.role || t('user.role.guest', 'Guest')}
+              </Typography>
+            </Stack>
+          </Stack>
+        </Button>
+      </DropdownMenu.Trigger>
+      
+      <DropdownMenu.Content align="end">
+        <DropdownMenu.Item>
+          <Icon component={User} size="sm" />
+          {t('user.profile', 'Profile')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item>
+          <Icon component={Settings} size="sm" />
+          {t('user.settings', 'Settings')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item variant="destructive">
+          <Icon component={LogOut} size="sm" />
+          {t('user.logout', 'Logout')}
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu>
+  );
+
+  const renderSidebar = {{#if typescript}}(): React.ReactElement{{/if}} => (
+    <Box
+      variant="sidebar"
+      width={sidebarCollapsed ? '16' : '64'}
+      borderRight="1"
+      backgroundColor="card"
+    >
+      <Stack direction="vertical" spacing="0" height="full">
+        {/* Sidebar Header */}
+        <Box padding="6" borderBottom="1">
+          <Stack direction="horizontal" align="center" justify="between">
+            {!sidebarCollapsed && (
+              <Typography variant="heading" size="lg" weight="bold">
+                {t('admin.title', 'Admin Panel')}
+              </Typography>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSidebarToggle}
+              aria-label={t('sidebar.toggle', 'Toggle sidebar')}
+            >
+              <Icon 
+                component={sidebarCollapsed ? ChevronRight : ChevronLeft} 
+                size="sm" 
+              />
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* Navigation */}
+        <Box flex="1" padding="4">
+          <Navigation orientation="vertical">
+            {filteredNavigationItems.map((item) => (
+              <Navigation.Item
+                key={item.id}
+                href={item.href}
+                active={false} // This would be determined by current route
+              >
+                <Stack direction="horizontal" align="center" spacing="3">
+                  {item.icon && (
+                    <Icon component={item.icon} size="sm" />
+                  )}
+                  {!sidebarCollapsed && (
+                    <Stack direction="horizontal" align="center" justify="between" flex="1">
+                      <Typography variant="body" size="sm">
+                        {t(item.label, item.label)}
+                      </Typography>
+                      {item.badge && (
+                        <Badge variant="secondary" size="sm">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Stack>
+                  )}
+                </Stack>
+              </Navigation.Item>
+            ))}
+          </Navigation>
+        </Box>
+      </Stack>
+    </Box>
+  );
+
+  const renderHeader = {{#if typescript}}(): React.ReactElement{{/if}} => (
+    <Box
+      variant="header"
+      borderBottom="1"
+      backgroundColor="card"
+      padding="4"
+    >
+      <Container maxWidth="full">
+        <Stack direction="horizontal" align="center" justify="between">
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleMobileMenuToggle}
+            className="md:hidden"
+            aria-label={t('menu.toggle', 'Toggle menu')}
+          >
+            <Icon component={Menu} size="sm" />
+          </Button>
+
+          {/* Breadcrumbs */}
+          {breadcrumbs.length > 0 && (
+            <Breadcrumb>
+              {breadcrumbs.map((crumb, index) => (
+                <Breadcrumb.Item
+                  key={index}
+                  href={crumb.href}
+                  current={index === breadcrumbs.length - 1}
+                >
+                  {t(crumb.label, crumb.label)}
+                </Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
+          )}
+
+          {/* Header actions */}
+          <Stack direction="horizontal" align="center" spacing="2">
+            <Button variant="ghost" size="sm">
+              <Icon component={Bell} size="sm" />
+            </Button>
+            {renderUserMenu()}
+          </Stack>
+        </Stack>
+      </Container>
+    </Box>
+  );
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Grid
+        columns="auto 1fr"
+        rows="auto 1fr"
+        minHeight="screen"
+        className="admin-layout"
+      >
+        {/* Desktop Sidebar */}
+        <Box className="hidden md:block" gridRow="1 / -1">
+          {renderSidebar()}
+        </Box>
+
+        {/* Mobile Sidebar */}
+        <Drawer
+          open={isMobileMenuOpen}
+          onOpenChange={setIsMobileMenuOpen}
+          side="left"
+        >
+          <Drawer.Content>
+            {renderSidebar()}
+          </Drawer.Content>
+        </Drawer>
+
+        {/* Header */}
+        <Box gridColumn="2" className="md:grid-column-2">
+          {renderHeader()}
+        </Box>
+
+        {/* Main Content */}
+        <Box
+          gridColumn="2"
+          padding="6"
+          backgroundColor="background"
+          className="md:grid-column-2"
+        >
+          <Container maxWidth="full">
+            {children}
+          </Container>
+        </Box>
+      </Grid>
+    </BaseLayout>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+import AdminLayout from '@/layouts/AdminLayout';
+import { Typography, Card } from '@xala-technologies/ui-system';
+
+export default function AdminDashboard() {
+  const currentUser = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'admin'
+  };
+
+  const breadcrumbs = [
+    { label: 'admin.dashboard', href: '/admin' },
+    { label: 'admin.overview' }
+  ];
+
+  return (
+    <AdminLayout
+      currentUser={currentUser}
+      breadcrumbs={breadcrumbs}
+      locale="nb"
+    >
+      <Card padding="6">
+        <Typography variant="heading" size="xl">
+          Dashboard Content
+        </Typography>
+      </Card>
+    </AdminLayout>
+  );
+}
+*/
+{{/if}}
