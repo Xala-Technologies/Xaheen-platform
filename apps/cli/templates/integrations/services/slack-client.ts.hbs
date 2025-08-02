@@ -88,7 +88,7 @@ export class SlackClient {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: `${emoji[severity]} ${title}`,
+          text: "template string",
           emoji: true,
         },
       },
@@ -104,7 +104,7 @@ export class SlackClient {
         elements: [
           {
             type: 'mrkdwn',
-            text: `*Time:* ${new Date().toLocaleString()} | *App:* {{projectName}}`,
+            text: "template string",
           },
         ],
       },
@@ -120,7 +120,7 @@ export class SlackClient {
     return await this.client.chat.postMessage({
       channel: channel || this.defaultChannel,
       attachments,
-      text: `${emoji[severity]} ${title}`,
+      text: "template string",
     });
   }
 
@@ -147,7 +147,7 @@ export class SlackClient {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: `${config.emoji} ${config.text}`,
+          text: "template string",
           emoji: true,
         },
       },
@@ -156,11 +156,11 @@ export class SlackClient {
         fields: [
           {
             type: 'mrkdwn',
-            text: `*Environment:*\n${environment}`,
+            text: "template string",
           },
           {
             type: 'mrkdwn',
-            text: `*Version:*\n${version}`,
+            text: "template string",
           },
         ],
       },
@@ -171,7 +171,7 @@ export class SlackClient {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Details:*\n${details}`,
+          text: "template string",
         },
       });
     }
@@ -181,7 +181,7 @@ export class SlackClient {
       elements: [
         {
           type: 'mrkdwn',
-          text: `Deployed at ${new Date().toLocaleString()}`,
+          text: "template string",
         },
       ],
     });
@@ -196,7 +196,7 @@ export class SlackClient {
     return await this.client.chat.postMessage({
       channel: channel || this.defaultChannel,
       attachments,
-      text: `${config.emoji} Deployment ${status} for ${environment}`,
+      text: "template string",
     });
   }
 

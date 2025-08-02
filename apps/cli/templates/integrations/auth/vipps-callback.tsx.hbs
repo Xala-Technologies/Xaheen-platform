@@ -55,7 +55,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
 
         // Handle OAuth errors
         if (error) {
-          throw new Error(errorDescription || `OAuth error: ${error}`);
+          throw new Error(errorDescription || "template string");
         }
 
         // Validate required parameters
@@ -92,7 +92,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
 
         if (!tokenResponse.ok) {
           const errorData = await tokenResponse.json().catch(() => ({}));
-          throw new Error(errorData.message || `Token exchange failed: ${tokenResponse.statusText}`);
+          throw new Error(errorData.message || "template string");
         }
 
         const tokenData = await tokenResponse.json();
@@ -103,7 +103,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
         if (!user && tokenData.access_token) {
           const profileResponse = await fetch('/api/auth/vipps/profile', {
             headers: {
-              'Authorization': `Bearer ${tokenData.access_token}`,
+              'Authorization': "template string",
             },
           });
 
@@ -228,7 +228,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
 
   if (state.status === 'loading') {
     return (
-      <div className={`vipps-callback-loading ${className}`} style={containerStyles}>
+      <div className=""`} style={containerStyles}>
         <div style={iconStyles}>
           <LoadingIcon />
         </div>
@@ -242,7 +242,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
 
   if (state.status === 'error') {
     return (
-      <div className={`vipps-callback-error ${className}`} style={containerStyles}>
+      <div className=""`} style={containerStyles}>
         <div style={iconStyles}>
           <ErrorIcon />
         </div>
@@ -273,18 +273,18 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
   }
 
   return (
-    <div className={`vipps-callback-success ${className}`} style={containerStyles}>
+    <div className=""`} style={containerStyles}>
       <div style={iconStyles}>
         <SuccessIcon />
       </div>
       <h2 style={{ ...titleStyles, color: '#059669' }}>Autentisering vellykket!</h2>
       <p style={messageStyles}>
         Du er nå logget inn med Vipps. 
-        {state.user?.name && ` Velkommen, ${state.user.name}!`}
+        {state.user?.name && "template string"}
         <br />
         Du blir videresendt til dashboard...
       </p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+      <div style=config>
         <MiniLoadingIcon />
         <span>Videresender...</span>
       </div>
@@ -294,7 +294,7 @@ export const VippsCallback{{#if typescript}}: React.FC<VippsCallbackProps>{{/if}
 
 // Icon components
 const LoadingIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle
       cx="12"
       cy="12"
@@ -332,7 +332,7 @@ const LoadingIcon = () => (
 );
 
 const SuccessIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#10b981" />
     <path
       d="M9 12l2 2 4-4"
@@ -345,7 +345,7 @@ const SuccessIcon = () => (
 );
 
 const ErrorIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#ef4444" />
     <path
       d="M15 9l-6 6M9 9l6 6"

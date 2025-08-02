@@ -290,7 +290,7 @@ const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentN
                           <Button
                             variant="link"
                             size="sm"
-                            onClick={() => toggleDetails(purpose.id)}
+                            onClick={handleClick}
                             justify="start"
                           >
                             <Stack direction="horizontal" align="center" spacing="2">
@@ -404,7 +404,7 @@ const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentN
                             </Typography>
                             <Badge variant={getCategoryColor(purpose.category)} size="sm">
                               {{#if localization}}
-                              {t(`categories.${purpose.category.toLowerCase()}`, purpose.category)}
+                              {t("template string", purpose.category)}
                               {{else}}
                               {purpose.category}
                               {{/if}}
@@ -415,7 +415,7 @@ const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentN
                         <Switch
                           checked={consents[purpose.id] || false}
                           onCheckedChange={(checked) => handleConsentToggle(purpose.id, checked)}
-                          aria-label={`${{{#if localization}}t('toggle', 'Aktiver/deaktiver'){{else}}'Aktiver/deaktiver'{{/if}}} ${purpose.name}`}
+                          aria-label={"template string"}
                         />
                       </Stack>
 
@@ -443,7 +443,7 @@ const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentN
                           <Button
                             variant="link"
                             size="sm"
-                            onClick={() => toggleDetails(purpose.id)}
+                            onClick={handleClick}
                             justify="start"
                           >
                             <Stack direction="horizontal" align="center" spacing="2">
@@ -533,7 +533,7 @@ const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentN
                   <Button
                     variant="primary"
                     size="lg"
-                    onClick={handleSaveConsents}
+                    onClick={handleClick}
                     disabled={isLoading}
                   >
                     {isLoading && <Icon name="loader" variant="spinner" />}
@@ -645,7 +645,7 @@ const consentPurposes = [
   purposes={consentPurposes}
   currentConsents={existingConsents}
   onConsentChange={(purposeId, granted) => {
-    console.log(`Consent ${granted ? 'granted' : 'withdrawn'} for ${purposeId}`);
+    console.log("template string");
   }}
   onSaveConsents={async (consents) => {
     await saveConsentsToBackend(consents);

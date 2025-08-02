@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -246,7 +246,7 @@ export default function MobileLayout({
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleBackClick}
+              onClick={handleClick}
               aria-label={t('navigation.back', 'Go back')}
               minWidth="11" // 44px - WCAG AAA touch target
               minHeight="11"
@@ -274,7 +274,7 @@ export default function MobileLayout({
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleMenuToggle}
+            onClick={handleClick}
             aria-label={t('navigation.menu', 'Open menu')}
             minWidth="11" // 44px - WCAG AAA touch target
             minHeight="11"
@@ -299,11 +299,11 @@ export default function MobileLayout({
             key={item.id}
             variant="ghost"
             size="sm"
-            onClick={() => handleNavItemClick(item.id)}
+            onClick={handleClick}
             aria-label={t(item.label, item.label)}
             minWidth="12" // 48px - Extra space for thumb navigation
             minHeight="12"
-            className={currentNavItem === item.id ? 'active' : ''}
+            className=""
           >
             <Stack direction="vertical" align="center" spacing="1">
               <Box position="relative">
@@ -360,7 +360,7 @@ export default function MobileLayout({
               key={item.id}
               variant={item.variant || 'secondary'}
               size="md"
-              onClick={item.onClick}
+              onClick={handleClick}
               aria-label={t(item.label, item.label)}
               minWidth="11" // 44px - WCAG AAA touch target
               minHeight="11"

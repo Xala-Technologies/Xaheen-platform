@@ -29,7 +29,7 @@ const TITLE_TEXT = `
 			<h2 class="mb-2 font-medium">API Status</h2>
 			<div class="flex items-center gap-2">
 				<div
-					class={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
+					class={"template string"}
 				></div>
 				<span class="text-muted-foreground text-sm">
 					{healthCheck.isLoading
@@ -75,7 +75,7 @@ const TITLE_TEXT = `
 			<h2 class="mb-2 font-medium">API Status</h2>
 			<div class="flex items-center gap-2">
 				<div
-					class={`h-2 w-2 rounded-full ${$healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
+					class={"template string"}
 				></div>
 				<span class="text-muted-foreground text-sm">
 					{$healthCheck.isLoading

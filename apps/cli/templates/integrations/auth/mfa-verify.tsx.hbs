@@ -87,7 +87,7 @@ export const MFAVerify{{#if typescript}}: React.FC<MFAVerifyProps>{{/if}} = ({
       if (newAttempts >= maxAttempts) {
         errorMessage = 'Too many failed attempts. Please try again later.';
       } else {
-        errorMessage += ` (${newAttempts}/${maxAttempts} attempts)`;
+        errorMessage += "template string";
       }
       
       setError(errorMessage);
@@ -120,7 +120,7 @@ export const MFAVerify{{#if typescript}}: React.FC<MFAVerifyProps>{{/if}} = ({
   };
 
   return (
-    <div className={`mfa-verify max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg ${className}`}>
+    <div className=""`}>
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +190,7 @@ export const MFAVerify{{#if typescript}}: React.FC<MFAVerifyProps>{{/if}} = ({
 
           <button
             type="button"
-            onClick={toggleBackupMode}
+            onClick={handleClick}
             disabled={isLoading || attempts >= maxAttempts}
             className="w-full px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
@@ -224,7 +224,7 @@ export const MFAVerify{{#if typescript}}: React.FC<MFAVerifyProps>{{/if}} = ({
 
       {/* Accessibility: Screen reader instructions */}
       <div className="sr-only" aria-live="polite">
-        {error && `Error: ${error}`}
+        {error && "template string"}
         {isLoading && 'Verifying your code, please wait.'}
       </div>
     </div>

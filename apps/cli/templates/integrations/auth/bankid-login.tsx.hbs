@@ -91,7 +91,7 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || \`Failed to start BankID: \${response.statusText}\`);
+        throw new Error(errorData.message || \"template string");
       }
 
       const authData = await response.json();
@@ -109,7 +109,7 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
 
       // Auto-start mobile BankID app if available
       if (method === 'mobile' && authData.autoStartToken) {
-        const bankidUrl = \`bankid:///?autostarttoken=\${authData.autoStartToken}&redirect=\${encodeURIComponent(returnUrl)}\`;
+        const bankidUrl = \"template string";
         
         // Try to open BankID app
         window.location.href = bankidUrl;
@@ -144,10 +144,10 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
 
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(\`/api/auth/bankid/collect/\${orderRef}\`);
+        const response = await fetch(\"template string");
         
         if (!response.ok) {
-          throw new Error(\`Collection failed: \${response.statusText}\`);
+          throw new Error(\"template string");
         }
 
         const result = await response.json();
@@ -276,8 +276,8 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
 
   const generateQRCodeUrl = (authData{{#if typescript}}: any{{/if}}) => {
     // Generate QR code URL for BankID
-    const qrData = \`bankid.\${authData.qrStartToken}.\${Date.now()}.\${authData.qrStartSecret}\`;
-    return \`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=\${encodeURIComponent(qrData)}\`;
+    const qrData = \"template string";
+    return \"template string";
   };
 
   const getStatusMessage = (status{{#if typescript}}: string{{/if}}, method{{#if typescript}}: string | null{{/if}}) => {
@@ -366,11 +366,11 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
   };
 
   return (
-    <div className={`bankid-login ${className}`}>
+    <div className=""`}>
       {!isActive ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style=config>
           <button
-            onClick={() => handleBankIDLogin('mobile')}
+            onClick={handleClick}
             disabled={isActive}
             style={{
               ...buttonBaseStyles,
@@ -387,7 +387,7 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
                 e.target.style.backgroundColor = primaryColor;
               }
             }}
-            aria-label={`{{#if (eq country "sweden")}}Öppna BankID på mobil{{else}}Åpne BankID på mobil{{/if}}`}
+            aria-label={"template string"}
           >
             <MobileIcon />
             <span>{{#if (eq country "sweden")}}Öppna {countryLabel} på mobil{{else}}Åpne {countryLabel} på mobil{{/if}}</span>
@@ -395,13 +395,13 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
 
           {showQR && (
             <button
-              onClick={() => handleBankIDLogin('qr')}
+              onClick={handleClick}
               disabled={isActive}
               style={{
                 ...buttonBaseStyles,
                 backgroundColor: 'transparent',
                 color: primaryColor,
-                border: `2px solid ${primaryColor}`,
+                border: "template string",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -415,7 +415,7 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
                   e.target.style.color = primaryColor;
                 }
               }}
-              aria-label={`{{#if (eq country "sweden")}}Visa QR-kod för BankID{{else}}Vis QR-kode for BankID{{/if}}`}
+              aria-label={"template string"}
             >
               <QRIcon />
               <span>{{#if (eq country "sweden")}}Visa QR-kod{{else}}Vis QR-kode{{/if}}</span>
@@ -513,7 +513,7 @@ export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = 
           </div>
 
           <button
-            onClick={handleCancel}
+            onClick={handleClick}
             style={{
               ...buttonBaseStyles,
               backgroundColor: 'transparent',

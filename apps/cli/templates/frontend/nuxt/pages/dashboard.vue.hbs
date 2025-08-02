@@ -62,7 +62,7 @@
                 <Avatar :src="activity.user.avatar" :alt="activity.user.name" size="sm" />
                 <Stack direction="vertical" spacing="1" flex="1">
                   <Text variant="body-sm">
-                    {{ activity.user.name }} {{ $t(`dashboard.activities.${activity.type}`) }}
+                    {{ activity.user.name }} {{ $t("template string") }}
                   </Text>
                   <Text variant="caption" color="secondary">
                     {{ formatDate(activity.timestamp) }}

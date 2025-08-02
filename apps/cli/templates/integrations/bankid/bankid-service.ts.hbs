@@ -5,7 +5,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -108,7 +108,7 @@ export class BankIDAuthService {
 
         console.log('[BankID] HTTPS agent initialized with certificates');
       } else {
-        throw new Error(`BankID certificate not found at: ${this.config.certificatePath}`);
+        throw new Error("template string");
       }
     } catch (error) {
       console.error('[BankID] Failed to initialize HTTPS agent:', error);
@@ -126,7 +126,7 @@ export class BankIDAuthService {
   ): Promise<BankIDAuthResponse> {
     try {
       const endpoint = 'auth';
-      const url = `${this.config.apiBaseUrl}/rp/v6.0/${endpoint}`;
+      const url = "template string";
 
       const requestData = {
         ...(personalNumber && { personalNumber }),
@@ -150,7 +150,7 @@ export class BankIDAuthService {
       return response as BankIDAuthResponse;
     } catch (error) {
       console.error('[BankID] Authentication failed:', error);
-      throw new Error(`BankID authentication failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -160,7 +160,7 @@ export class BankIDAuthService {
   public async collect(orderRef: string): Promise<BankIDCollectResponse> {
     try {
       const endpoint = 'collect';
-      const url = `${this.config.apiBaseUrl}/rp/v6.0/${endpoint}`;
+      const url = "template string";
 
       const requestData = { orderRef };
       const response = await this.makeRequest(url, 'POST', requestData);
@@ -177,7 +177,7 @@ export class BankIDAuthService {
       return response as BankIDCollectResponse;
     } catch (error) {
       console.error('[BankID] Collect failed:', error);
-      throw new Error(`BankID collect failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -187,7 +187,7 @@ export class BankIDAuthService {
   public async cancel(orderRef: string): Promise<void> {
     try {
       const endpoint = 'cancel';
-      const url = `${this.config.apiBaseUrl}/rp/v6.0/${endpoint}`;
+      const url = "template string";
 
       const requestData = { orderRef };
       await this.makeRequest(url, 'POST', requestData);
@@ -199,10 +199,10 @@ export class BankIDAuthService {
         this.activeRequests.delete(orderRef);
       }
 
-      console.log(`[BankID] Authentication cancelled for order: ${orderRef}`);
+      console.log("template string");
     } catch (error) {
       console.error('[BankID] Cancel failed:', error);
-      throw new Error(`BankID cancel failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -265,16 +265,16 @@ export class BankIDAuthService {
             if (res.statusCode === 200) {
               resolve(parsedData);
             } else {
-              reject(new Error(`HTTP ${res.statusCode}: ${parsedData.errorCode || 'Unknown error'}`));
+              reject(new Error("template string"));
             }
           } catch (error) {
-            reject(new Error(`Failed to parse response: ${error.message}`));
+            reject(new Error("template string"));
           }
         });
       });
 
       req.on('error', (error) => {
-        reject(new Error(`Request failed: ${error.message}`));
+        reject(new Error("template string"));
       });
 
       req.on('timeout', () => {

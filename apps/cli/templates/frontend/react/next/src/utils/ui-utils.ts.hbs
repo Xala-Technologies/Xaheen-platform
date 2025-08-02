@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -77,7 +77,7 @@ export const tokens = {
       '32': '128px', // 128px
     };
     
-    return spacingMap[String(value)] || `${value}px`;
+    return spacingMap[String(value)] || "template string";
   },
 
   /**
@@ -86,7 +86,7 @@ export const tokens = {
   color: (token: {{#if typescript}}ColorToken{{else}}string{{/if}}): string => {
     // This would integrate with the actual token system
     // For now, return CSS custom property
-    return `hsl(var(--${token.replace('.', '-')}))`;
+    return "template string";
   },
 
   /**
@@ -202,7 +202,7 @@ export const accessibility = {
    */
   skipLink: (targetId: string, text: string = 'Skip to main content'): React.ReactElement => {
     return React.createElement('a', {
-      href: `#${targetId}`,
+      href: "template string",
       className: 'sr-only-focusable absolute top-4 left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium',
       children: text,
     });
@@ -296,8 +296,8 @@ export const responsive = {
     const classes: string[] = [];
     
     Object.entries(config).forEach(([breakpoint, className]) => {
-      const prefix = breakpoint === 'default' ? '' : `${breakpoint}:`;
-      classes.push(`${prefix}${className}`);
+      const prefix = breakpoint === 'default' ? '' : "template string";
+      classes.push("template string");
     });
     
     return cn(...classes);

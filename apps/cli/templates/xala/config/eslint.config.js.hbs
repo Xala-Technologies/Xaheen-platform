@@ -180,7 +180,7 @@ export default [
       // Custom Xala UI Rules (Hypothetical - would be implemented in custom plugin)
       'xala-ui/no-raw-html-elements': 'error', // Prevent div, span, p, h1-h6, etc.
       'xala-ui/require-semantic-components': 'error', // Require Box, Stack, Typography, etc.
-      'xala-ui/no-hardcoded-styles': 'error', // Prevent style={{}} and arbitrary classes
+      'xala-ui/no-hardcoded-styles': 'error', // Prevent style=placeholder and arbitrary classes
       'xala-ui/require-design-tokens': 'error', // Require token usage
       'xala-ui/enforce-8pt-grid': 'error', // Enforce 8pt grid spacing
       'xala-ui/require-accessibility-props': 'warn', // Require ARIA props
@@ -340,7 +340,7 @@ const xalaUiRules = {
           if (bannedElements.includes(elementName)) {
             context.report({
               node,
-              message: `Raw HTML element "${elementName}" is not allowed. Use semantic components from @xala-technologies/ui-system instead.`,
+              message: "template string",
             });
           }
         },
@@ -370,7 +370,7 @@ const xalaUiRules = {
             if (!xalaImports || !xalaImports.specifiers.some(spec => spec.imported.name === elementName)) {
               context.report({
                 node,
-                message: `Component "${elementName}" must be imported from @xala-technologies/ui-system.`,
+                message: "template string",
               });
             }
           }

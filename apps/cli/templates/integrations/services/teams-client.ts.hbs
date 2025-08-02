@@ -74,7 +74,7 @@ export class TeamsClient {
   async getChannels(teamId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<Channel[]>{{/if}} {
     try {
       const channels = await this.graphClient
-        .api(`/teams/${teamId}/channels`)
+        .api("template string")
         .get();
 
       return channels.value || [];
@@ -103,7 +103,7 @@ export class TeamsClient {
       };
 
       const result = await this.graphClient
-        .api(`/teams/${teamId}/channels/${channelId}/messages`)
+        .api("template string")
         .post(chatMessage);
 
       return result;
@@ -137,7 +137,7 @@ export class TeamsClient {
       };
 
       const result = await this.graphClient
-        .api(`/teams/${teamId}/channels/${channelId}/messages`)
+        .api("template string")
         .post(message);
 
       return result;
@@ -191,7 +191,7 @@ export class TeamsClient {
       };
 
       const result = await this.graphClient
-        .api(`/teams/${teamId}/channels`)
+        .api("template string")
         .post(channel);
 
       return result;
@@ -207,7 +207,7 @@ export class TeamsClient {
   async getTeamMembers(teamId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<User[]>{{/if}} {
     try {
       const members = await this.graphClient
-        .api(`/teams/${teamId}/members`)
+        .api("template string")
         .get();
 
       return members.value || [];
@@ -228,12 +228,12 @@ export class TeamsClient {
     try {
       const member = {
         '@odata.type': '#microsoft.graph.aadUserConversationMember',
-        'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userEmail}')`,
+        'user@odata.bind': "template string",
         roles
       };
 
       const result = await this.graphClient
-        .api(`/teams/${teamId}/members`)
+        .api("template string")
         .post(member);
 
       return result;
@@ -289,7 +289,7 @@ export class TeamsClient {
     try {
       const events = await this.graphClient
         .api('/me/events')
-        .filter(`start/dateTime ge '${startDate.toISOString()}' and end/dateTime le '${endDate.toISOString()}'`)
+        .filter("template string")
         .orderby('start/dateTime')
         .get();
 
@@ -314,7 +314,7 @@ export class TeamsClient {
         members: [
           {
             '@odata.type': '#microsoft.graph.aadUserConversationMember',
-            'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
+            'user@odata.bind': "template string"
           }
         ]
       };
@@ -332,7 +332,7 @@ export class TeamsClient {
       };
 
       const messageResult = await this.graphClient
-        .api(`/chats/${chatResult.id}/messages`)
+        .api("template string")
         .post(chatMessage);
 
       return messageResult;
@@ -354,12 +354,12 @@ export class TeamsClient {
     try {
       // Get the channel's files folder
       const driveItem = await this.graphClient
-        .api(`/teams/${teamId}/channels/${channelId}/filesFolder`)
+        .api("template string")
         .get();
 
       // Upload file
       const result = await this.graphClient
-        .api(`/drives/${driveItem.parentReference.driveId}/items/${driveItem.id}:/${fileName}:/content`)
+        .api("template string")
         .put(fileContent);
 
       return result;
@@ -375,7 +375,7 @@ export class TeamsClient {
   async getUserPresence(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<any>{{/if}} {
     try {
       const presence = await this.graphClient
-        .api(`/users/${userId}/presence`)
+        .api("template string")
         .get();
 
       return presence;
@@ -469,7 +469,7 @@ export class TeamsClient {
         {
           type: 'Action.OpenUrl',
           title: 'View Deployment',
-          url: `https://{{projectName}}.com/deployments/${version}`
+          url: "template string"
         }
       ]
     };
@@ -539,7 +539,7 @@ export class TeamsClient {
         },
         {
           type: 'TextBlock',
-          text: `Time: ${new Date().toLocaleString()} | App: {{projectName}}`,
+          text: "template string",
           size: 'Small',
           color: 'Light',
           separator: true

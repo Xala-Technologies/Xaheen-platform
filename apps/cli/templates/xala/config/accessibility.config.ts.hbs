@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -285,9 +285,9 @@ export const a11yUtils = {
     
     switch (variant) {
       case 'offset':
-        return `${baseRing} focus-visible:ring-offset-2`;
+        return "template string";
       case 'inset':
-        return `${baseRing} focus-visible:ring-inset`;
+        return "template string";
       default:
         return baseRing;
     }
@@ -297,7 +297,7 @@ export const a11yUtils = {
    * Generate skip link for keyboard navigation
    */
   skipLink: (targetId{{#if typescript}}: string{{/if}}, text{{#if typescript}}: string{{/if}} = 'Skip to main content'){{#if typescript}}: string{{/if}} => {
-    return `<a href="#${targetId}" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:font-medium">${text}</a>`;
+    return "template string";
   },
 
   /**
@@ -410,7 +410,7 @@ function AccessibleButton({ children, ...props }) {
     <Button
       {...props}
       {...ariaProps}
-      className={a11yUtils.focusRing('offset')}
+      className=""
     >
       {children}
     </Button>

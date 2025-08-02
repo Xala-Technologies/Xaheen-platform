@@ -150,7 +150,7 @@ const Dashboard{{#if typescript}}: Component{{/if}} = () => {
                     <Avatar src={activity.user.avatar} alt={activity.user.name} size="sm" />
                     <Stack direction="vertical" spacing="1" flex="1">
                       <Text variant="body-sm">
-                        {activity.user.name} {{#if includeLocalization}}{t(`dashboard.activities.${activity.type}`)}{{else}}{activity.type}{{/if}}
+                        {activity.user.name} {{#if includeLocalization}}{t("template string")}{{else}}{activity.type}{{/if}}
                       </Text>
                       <Text variant="caption" color="secondary">
                         {formatDate(activity.timestamp)}

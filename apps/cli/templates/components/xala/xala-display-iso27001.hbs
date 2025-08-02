@@ -2,7 +2,7 @@
 MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
 ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 ✅ ONLY semantic components from @xala-technologies/ui-system
-❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 ✅ MANDATORY design token usage for all colors, spacing, typography
 ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 ❌ NO hardcoded user-facing text - ALL text must use t() function
@@ -106,7 +106,7 @@ export default function {{componentName}}({{#if hasProps}}{
       return;
     }
 
-    if (!hasPermission(`{{fileName}}.action`)) {
+    if (!hasPermission("template string")) {
       logSecurityEvent({
         type: "insufficient_permissions",
         component: "{{componentName}}",
@@ -135,7 +135,7 @@ export default function {{componentName}}({{#if hasProps}}{
       <Card
         variant="outlined"
         padding="6"
-        className={className}
+        className=""
         data-testid={testId}
       >
         <Alert variant="error">
@@ -147,12 +147,12 @@ export default function {{componentName}}({{#if hasProps}}{
     );
   }
 
-  if (!hasPermission(`{{fileName}}.view`)) {
+  if (!hasPermission("template string")) {
     return (
       <Card
         variant="outlined"
         padding="6"
-        className={className}
+        className=""
         data-testid={testId}
       >
         <Alert variant="error">
@@ -168,7 +168,7 @@ export default function {{componentName}}({{#if hasProps}}{
     <Card
       variant="elevated"
       padding="6"
-      className={className}
+      className=""
       data-testid={testId}
       role="region"
       aria-label={t("ariaLabel")}
@@ -200,7 +200,7 @@ export default function {{componentName}}({{#if hasProps}}{
         {(securityLevel === "confidential" || securityLevel === "restricted") && (
           <Alert variant="warning">
             <Text variant="body" weight="medium">
-              {t(`security.classification.${securityLevel}`)}
+              {t("template string")}
             </Text>
           </Alert>
         )}
@@ -256,7 +256,7 @@ export default function {{componentName}}({{#if hasProps}}{
               {t("security.accessedBy")}: {user?.name || t("security.anonymous")}
             </Text>
             <Text variant="caption">
-              {t("security.classification")}: {t(`security.levels.${securityLevel}`)}
+              {t("security.classification")}: {t("template string")}
             </Text>
             <Text variant="caption">
               {t("security.timestamp")}: {new Date().toLocaleString()}
@@ -270,8 +270,8 @@ export default function {{componentName}}({{#if hasProps}}{
             <Button
               variant="primary"
               size="md"
-              onClick={handleAction}
-              disabled={!hasPermission(`{{fileName}}.action`)}
+              onClick={handleClick}
+              disabled={!hasPermission("template string")}
               data-testid="{{testIds.action}}"
               data-security-action="true"
             >

@@ -51,7 +51,7 @@ export class VippsPaymentService {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/accesstoken/get`, {
+      const response = await fetch("template string", {
         method: 'POST',
         headers: {
           'client_id': this.clientId,
@@ -62,7 +62,7 @@ export class VippsPaymentService {
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(`Failed to get access token: ${error}`);
+        throw new Error("template string");
       }
 
       const data = await response.json();
@@ -84,7 +84,7 @@ export class VippsPaymentService {
     const token = await this.getAccessToken();
     
     return {
-      'Authorization': `Bearer ${token}`,
+      'Authorization': "template string",
       'Content-Type': 'application/json',
       'Ocp-Apim-Subscription-Key': this.subscriptionKey,
       'Merchant-Serial-Number': this.merchantSerialNumber,
@@ -112,8 +112,8 @@ export class VippsPaymentService {
       const paymentRequest = {
         merchantInfo: {
           merchantSerialNumber: this.merchantSerialNumber,
-          callbackPrefix: `${process.env.APP_URL}/api/vipps/callback`,
-          fallBack: `${process.env.APP_URL}/payment/result?orderId=${request.orderId}`,
+          callbackPrefix: "template string",
+          fallBack: "template string",
           authToken: crypto.randomBytes(32).toString('hex'),
           paymentType: 'eComm Regular Payment',
           isApp: false,
@@ -131,7 +131,7 @@ export class VippsPaymentService {
         }
       };
 
-      const response = await fetch(`${this.baseUrl}/ecomm/v2/payments`, {
+      const response = await fetch("template string", {
         method: 'POST',
         headers,
         body: JSON.stringify(paymentRequest)
@@ -162,7 +162,7 @@ export class VippsPaymentService {
       const headers = await this.createHeaders();
 
       const response = await fetch(
-        `${this.baseUrl}/ecomm/v2/payments/${orderId}/details`,
+        "template string",
         {
           method: 'GET',
           headers
@@ -202,7 +202,7 @@ export class VippsPaymentService {
       };
 
       const response = await fetch(
-        `${this.baseUrl}/ecomm/v2/payments/${orderId}/capture`,
+        "template string",
         {
           method: 'POST',
           headers,
@@ -237,7 +237,7 @@ export class VippsPaymentService {
       };
 
       const response = await fetch(
-        `${this.baseUrl}/ecomm/v2/payments/${orderId}/cancel`,
+        "template string",
         {
           method: 'PUT',
           headers,
@@ -276,7 +276,7 @@ export class VippsPaymentService {
       };
 
       const response = await fetch(
-        `${this.baseUrl}/ecomm/v2/payments/${orderId}/refund`,
+        "template string",
         {
           method: 'POST',
           headers,
@@ -305,12 +305,12 @@ export class VippsPaymentService {
 
       const agreementRequest = {
         ...agreement,
-        merchantRedirectUrl: `${process.env.APP_URL}/recurring/redirect`,
-        merchantAgreementUrl: `${process.env.APP_URL}/recurring/agreement`
+        merchantRedirectUrl: "template string",
+        merchantAgreementUrl: "template string"
       };
 
       const response = await fetch(
-        `${this.baseUrl}/recurring/v3/agreements`,
+        "template string",
         {
           method: 'POST',
           headers,
@@ -341,7 +341,7 @@ export class VippsPaymentService {
       const headers = await this.createHeaders();
 
       const response = await fetch(
-        `${this.baseUrl}/recurring/v3/agreements/${agreementId}/charges`,
+        "template string",
         {
           method: 'POST',
           headers,
@@ -446,7 +446,7 @@ export class VippsPaymentService {
   ){{#if typescript}}: Promise<void>{{/if}} {
     // Implementation depends on your storage solution
     // Example: Redis, database, or in-memory cache
-    console.log(`Storing auth token for order ${orderId}`);
+    console.log("template string");
   }
 
   /**
@@ -456,7 +456,7 @@ export class VippsPaymentService {
     orderId{{#if typescript}}: string{{/if}}
   ){{#if typescript}}: Promise<string | null>{{/if}} {
     // Implementation depends on your storage solution
-    console.log(`Retrieving auth token for order ${orderId}`);
+    console.log("template string");
     return null;
   }
 
@@ -467,7 +467,7 @@ export class VippsPaymentService {
     orderId{{#if typescript}}: string{{/if}}
   ){{#if typescript}}: Promise<void>{{/if}} {
     // Implementation depends on your storage solution
-    console.log(`Clearing auth token for order ${orderId}`);
+    console.log("template string");
   }
 }
 

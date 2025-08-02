@@ -349,7 +349,7 @@ export class {{capitalize handlerName}} {
           responseData = await this.handleConsentWithdrawal(subjectId);
           break;
         default:
-          throw new Error(`Unsupported request type: ${requestType}`);
+          throw new Error("template string");
       }
 
       // Update request status
@@ -374,7 +374,7 @@ export class {{capitalize handlerName}} {
 
       return this.createErrorResponse(
         'REQUEST_FAILED',
-        `Failed to process ${requestType} request: ${request.rejectionReason}`
+        "template string"
       );
     }
   }
@@ -639,12 +639,12 @@ export class {{capitalize handlerName}} {
 
   private async notifySupervisoryAuthority(breach: {{#if typescript}}DataBreachIncident{{else}}any{{/if}}): Promise<void> {
     // In a real implementation, this would send notification to authority
-    console.log(`[GDPR Breach Notification] Notifying ${this.config.supervisoryAuthority.name}`, breach);
+    console.log("template string", breach);
   }
 
   private async notifyAffectedSubjects(breach: {{#if typescript}}DataBreachIncident{{else}}any{{/if}}): Promise<void> {
     // In a real implementation, this would notify affected data subjects
-    console.log(`[GDPR Subject Notification] Notifying ${breach.affectedSubjects} subjects`, breach);
+    console.log("template string", breach);
   }
 
   /**
@@ -684,7 +684,7 @@ export class {{capitalize handlerName}} {
    * Generate unique ID
    */
   private generateId(): string {
-    return `gdpr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return "template string";
   }
 
   /**

@@ -124,13 +124,13 @@ export class {{componentName}} {
       }
       {{/if}}
 
-      console.log(`✓ Successfully imported ${processedData.length} records from ${inputPath}`);
+      console.log("template string");
       
       if (result.metadata) {
-        console.log(`  - Processing time: ${result.metadata.processingTime}ms`);
-        console.log(`  - File size: ${(result.metadata.fileSize / 1024).toFixed(2)} KB`);
+        console.log("template string");
+        console.log("template string");
         if (result.metadata.rowsSkipped > 0) {
-          console.log(`  - Rows skipped: ${result.metadata.rowsSkipped}`);
+          console.log("template string");
         }
       }
 
@@ -168,7 +168,7 @@ export class {{componentName}} {
       // Write to file
       await fs.writeFile(output, csvContent, this.options.encoding || 'utf-8');
       
-      console.log(`✓ Successfully exported ${data.length} records to ${output}`);
+      console.log("template string");
     } catch (error) {
       console.error('✗ Failed to export CSV data:', error);
       throw error;
@@ -253,19 +253,19 @@ export class {{componentName}} {
     if (atIndex > 0) {
       const username = email.substring(0, atIndex);
       const domain = email.substring(atIndex);
-      return `${username.charAt(0)}***${domain}`;
+      return "template string";
     }
     return '***@***.***';
   }
 
   private anonymizePhone(phone: string): string {
     const cleaned = phone.replace(/\D/g, '');
-    return cleaned.length >= 4 ? `***-${cleaned.slice(-4)}` : '***-****';
+    return cleaned.length >= 4 ? "template string" : '***-****';
   }
 
   private anonymizeName(name: string): string {
     const parts = name.trim().split(' ');
-    return parts.map(part => part.length > 0 ? `${part.charAt(0)}***` : '').join(' ');
+    return parts.map(part => part.length > 0 ? "template string" : '').join(' ');
   }
   {{/if}}
 
@@ -281,7 +281,7 @@ export class {{componentName}} {
     chunkProcessor: (chunk: {{componentName}}Data[]) => Promise<void>,
     chunkSize: number = 1000
   ): Promise<void> {
-    console.log(`📊 Processing large file: ${filePath}`);
+    console.log("template string");
     
     await this.processor.processLargeFile(
       filePath,
@@ -377,7 +377,7 @@ const processor = new {{componentName}}({
 const data = await processor.importData('./input.csv');
 
 // Process data
-console.log(`Imported ${data.length} records`);
+console.log("template string");
 
 // Export processed data
 await processor.exportData(data, './output.csv');

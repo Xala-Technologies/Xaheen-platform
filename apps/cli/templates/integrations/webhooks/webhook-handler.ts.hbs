@@ -70,7 +70,7 @@ export class {{projectName}}WebhookHandler {
 
       // Parse event
       const event = JSON.parse(rawBody.toString());
-      console.log(`Webhook received: ${event.type || event.event}`);
+      console.log("template string");
 
       // Process event
       const result = await this.processEvent(event);
@@ -116,7 +116,7 @@ export class {{projectName}}WebhookHandler {
 
       // Parse event if needed
       const event = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
-      console.log(`Webhook received: ${event.type || event.event}`);
+      console.log("template string");
 
       // Process event
       const result = await this.processEvent(event);
@@ -147,7 +147,7 @@ export class {{projectName}}WebhookHandler {
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         // Log processing attempt
-        console.log(`Processing webhook event (attempt ${attempt}/${this.maxRetries})`);
+        console.log("template string");
         
         // Route to specific event handlers
         const result = await this.routeEvent(event);
@@ -156,7 +156,7 @@ export class {{projectName}}WebhookHandler {
         return { success: true, ...result };
       } catch (error) {
         lastError = error;
-        console.warn(`Webhook processing attempt ${attempt} failed:`, error);
+        console.warn("template string", error);
         
         // Wait before retry (except on last attempt)
         if (attempt < this.maxRetries) {
@@ -169,7 +169,7 @@ export class {{projectName}}WebhookHandler {
     return { 
       success: false, 
       error: lastError,
-      message: `Failed after ${this.maxRetries} attempts`
+      message: "template string"
     };
   }
 
@@ -188,7 +188,7 @@ export class {{projectName}}WebhookHandler {
       {{/each}}
       
       default:
-        console.log(`Unhandled webhook event type: ${eventType}`);
+        console.log("template string");
         return { handled: false, eventType };
     }
   }
@@ -273,7 +273,7 @@ export class {{projectName}}WebhookHandler {
       }
       
       // Compute expected signature
-      const signedPayload = `${timestamp}.${payload}`;
+      const signedPayload = "template string";
       const expectedSignature = crypto
         .createHmac('sha256', this.webhookSecret)
         .update(signedPayload)

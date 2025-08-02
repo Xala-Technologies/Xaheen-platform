@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -120,7 +120,7 @@ import {
  * Generate unique error ID for tracking
  */
 const generateErrorId = {{#if typescript}}(): string{{/if}} => {
-  return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return "template string";
 };
 
 /**
@@ -152,7 +152,7 @@ const DefaultErrorFallback = ({
   const [reportSent, setReportSent] = React.useState(false);
 
   const handleCopyError = {{#if typescript}}async (): Promise<void>{{/if}} => {
-    const errorText = `Error: ${error.message}\n\nStack: ${error.stack}\n\nComponent Stack: ${errorInfo.componentStack}`;
+    const errorText = "template string";
     
     try {
       await navigator.clipboard.writeText(errorText);
@@ -177,12 +177,12 @@ const DefaultErrorFallback = ({
       case 'mobile':
         return (
           <Stack direction="vertical" spacing="3" width="full">
-            <Button variant="primary" size="lg" onClick={resetError} fullWidth>
+            <Button variant="primary" size="lg" onClick={handleClick} fullWidth>
               <Icon component={RefreshCw} size="sm" />
               {t('error.retry', 'Try Again')}
             </Button>
             
-            <Button variant="outline" size="md" onClick={() => window.history.back()} fullWidth>
+            <Button variant="outline" size="md" onClick={handleClick} fullWidth>
               <Icon component={Home} size="sm" />
               {t('error.goBack', 'Go Back')}
             </Button>
@@ -192,17 +192,17 @@ const DefaultErrorFallback = ({
       case 'desktop':
         return (
           <Stack direction="horizontal" spacing="3" justify="center">
-            <Button variant="primary" size="md" onClick={resetError}>
+            <Button variant="primary" size="md" onClick={handleClick}>
               <Icon component={RefreshCw} size="sm" />
               {t('error.retry', 'Try Again')}
             </Button>
             
-            <Button variant="outline" size="md" onClick={() => window.location.href = '/'}>
+            <Button variant="outline" size="md" onClick={handleClick}>
               <Icon component={Home} size="sm" />
               {t('error.home', 'Go Home')}
             </Button>
             
-            <Button variant="outline" size="md" onClick={handleCopyError}>
+            <Button variant="outline" size="md" onClick={handleClick}>
               <Icon component={Copy} size="sm" />
               {t('error.copy', 'Copy Details')}
             </Button>
@@ -213,16 +213,16 @@ const DefaultErrorFallback = ({
       default:
         return (
           <Stack direction="horizontal" spacing="3" justify="center" className="flex-col sm:flex-row">
-            <Button variant="primary" size="md" onClick={resetError}>
+            <Button variant="primary" size="md" onClick={handleClick}>
               <Icon component={RefreshCw} size="sm" />
               {t('error.retry', 'Try Again')}
             </Button>
             
-            <Button variant="outline" size="md" onClick={() => window.location.reload()}>
+            <Button variant="outline" size="md" onClick={handleClick}>
               {t('error.refresh', 'Refresh Page')}
             </Button>
             
-            <Button variant="outline" size="md" onClick={() => window.location.href = '/'}>
+            <Button variant="outline" size="md" onClick={handleClick}>
               <Icon component={Home} size="sm" />
               {t('error.home', 'Go Home')}
             </Button>
@@ -285,7 +285,7 @@ const DefaultErrorFallback = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowDetails(!showDetails)}
+                onClick={handleClick}
                 justifyContent="between"
                 fullWidth
               >
@@ -327,7 +327,7 @@ const DefaultErrorFallback = ({
                   )}
 
                   <Stack direction="horizontal" spacing="2" justify="center">
-                    <Button variant="outline" size="sm" onClick={handleCopyError}>
+                    <Button variant="outline" size="sm" onClick={handleClick}>
                       <Icon component={Copy} size="sm" />
                       {t('error.copyDetails', 'Copy Details')}
                     </Button>
@@ -335,7 +335,7 @@ const DefaultErrorFallback = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleReportError}
+                      onClick={handleClick}
                       disabled={reportSent}
                     >
                       <Icon component={Send} size="sm" />

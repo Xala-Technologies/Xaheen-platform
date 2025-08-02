@@ -20,7 +20,7 @@ const generateAPIUrl = (relativePath: string) => {
     throw new Error("EXPO_PUBLIC_SERVER_URL environment variable is not defined");
   }
   
-  const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+  const path = relativePath.startsWith('/') ? relativePath : "template string";
   return serverUrl.concat(path);
 };
 

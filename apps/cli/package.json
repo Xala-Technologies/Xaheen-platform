@@ -1,5 +1,5 @@
 {
-  "name": "xaheen",
+  "name": "@xala-technologies/xaheen",
   "version": "0.1.0",
   "description": "A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
   "type": "module",
@@ -50,7 +50,8 @@
     "check-types": "tsc --noEmit",
     "check": "biome check --write .",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "publish:github": "export $(cat .env | grep -v '^#' | grep -v '^$' | xargs) && npm publish"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",

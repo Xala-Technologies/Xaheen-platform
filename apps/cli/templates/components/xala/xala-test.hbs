@@ -2,7 +2,7 @@
 MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
 ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 ✅ ONLY semantic components from @xala-technologies/ui-system
-❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 ✅ MANDATORY design token usage for all colors, spacing, typography
 ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 ✅ WCAG 2.2 AAA compliance for accessibility
@@ -144,7 +144,7 @@ describe("{{componentName}}", () => {
     
     render(
       <TestWrapper>
-        <{{componentName}} {...defaultProps} className={customClass} />
+        <{{componentName}} {...defaultProps} className="" />
       </TestWrapper>
     );
 

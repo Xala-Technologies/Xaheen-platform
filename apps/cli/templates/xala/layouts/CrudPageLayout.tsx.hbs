@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -312,7 +312,7 @@ export default function CrudPageLayout({
           <Button
             variant="outline"
             size="md"
-            onClick={() => window.location.reload()}
+            onClick={handleClick}
           >
             <Icon component={RefreshCw} size="sm" />
             {t('actions.refresh', 'Refresh')}
@@ -322,7 +322,7 @@ export default function CrudPageLayout({
             <Button
               variant="primary"
               size="md"
-              onClick={onCreate}
+              onClick={handleClick}
             >
               <Icon component={Plus} size="sm" />
               {t(createButtonText || 'actions.create', 'Create')}
@@ -349,7 +349,7 @@ export default function CrudPageLayout({
               <Button
                 variant="outline"
                 size="md"
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={handleClick}
               >
                 <Icon component={Filter} size="sm" />
                 {t('actions.filter', 'Filter')}
@@ -438,7 +438,7 @@ export default function CrudPageLayout({
                 key={action.id}
                 variant={action.variant === 'destructive' ? 'destructive' : 'secondary'}
                 size="sm"
-                onClick={() => handleBulkAction(action.id)}
+                onClick={handleClick}
               >
                 {action.icon && <Icon component={action.icon} size="sm" />}
                 {t(action.label, action.label)}
@@ -448,7 +448,7 @@ export default function CrudPageLayout({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSelectedItems([])}
+              onClick={handleClick}
             >
               {t('actions.cancel', 'Cancel')}
             </Button>
@@ -492,7 +492,7 @@ export default function CrudPageLayout({
               <Button
                 variant="primary"
                 size="md"
-                onClick={onCreate}
+                onClick={handleClick}
                 marginTop="4"
               >
                 <Icon component={Plus} size="sm" />
@@ -537,7 +537,7 @@ export default function CrudPageLayout({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onView(item)}
+                  onClick={handleClick}
                 >
                   <Icon component={Eye} size="sm" />
                 </Button>
@@ -548,7 +548,7 @@ export default function CrudPageLayout({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onEdit(item)}
+                  onClick={handleClick}
                 >
                   <Icon component={Edit} size="sm" />
                 </Button>
@@ -559,7 +559,7 @@ export default function CrudPageLayout({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onDelete(item)}
+                  onClick={handleClick}
                 >
                   <Icon component={Trash2} size="sm" />
                 </Button>

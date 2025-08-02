@@ -170,11 +170,11 @@ export default function Todos() {
                         onCheckedChange={() =>
                           handleToggleTodo(todo._id, todo.completed)
                         }
-                        id={`todo-${todo._id}`}
+                        id={"template string"}
                       />
                       <label
-                        htmlFor={`todo-${todo._id}`}
-                        className={`${todo.completed ? "line-through text-muted-foreground" : ""}`}
+                        htmlFor={"template string"}
+                        className=""`}
                       >
                         {todo.text}
                       </label>
@@ -182,7 +182,7 @@ export default function Todos() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteTodo(todo._id)}
+                      onClick={handleClick}
                       aria-label="Delete todo"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -213,11 +213,11 @@ export default function Todos() {
                         onCheckedChange={() =>
                           handleToggleTodo(todo.id, todo.completed)
                         }
-                        id={`todo-${todo.id}`}
+                        id={"template string"}
                       />
                       <label
-                        htmlFor={`todo-${todo.id}`}
-                        className={`${todo.completed ? "line-through" : ""}`}
+                        htmlFor={"template string"}
+                        className=""`}
                       >
                         {todo.text}
                       </label>
@@ -225,7 +225,7 @@ export default function Todos() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteTodo(todo.id)}
+                      onClick={handleClick}
                       aria-label="Delete todo"
                     >
                       <Trash2 className="h-4 w-4" />

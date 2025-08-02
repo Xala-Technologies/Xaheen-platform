@@ -9,7 +9,7 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.serverURL
 
-  const rpcUrl = `${serverUrl}/rpc`;
+  const rpcUrl = "template string";
 
   const rpcLink = new RPCLink({
     url: rpcUrl,

@@ -2,7 +2,7 @@
 MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
 ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 ✅ ONLY semantic components from @xala-technologies/ui-system
-❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 ✅ MANDATORY design token usage for all colors, spacing, typography
 ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 ✅ WCAG 2.2 AAA compliance for accessibility
@@ -111,7 +111,7 @@ export default function {{pageName}}({
       breadcrumbs={[
         { label: t("breadcrumbs.home"), href: "/" },
         { label: t("breadcrumbs.admin"), href: "/admin" },
-        { label: t("breadcrumbs.current"), href: `/admin/{{fileName}}` }
+        { label: t("breadcrumbs.current"), href: "template string" }
       ]}
     >
       <Container variant="content" maxWidth="full">
@@ -193,7 +193,7 @@ export default function {{pageName}}({
                         "error"
                       }
                     >
-                      {t(`status.${value}`)}
+                      {t("template string")}
                     </Badge>
                   )
                 },
@@ -203,7 +203,7 @@ export default function {{pageName}}({
                   sortable: true,
                   render: (value) => (
                     <Badge variant="info">
-                      {t(`roles.${value}`)}
+                      {t("template string")}
                     </Badge>
                   )
                 },
@@ -225,7 +225,7 @@ export default function {{pageName}}({
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => handleEdit(row.id)}
+                        onClick={handleClick}
                         aria-label={t("actions.edit.ariaLabel", { name: row.name })}
                       >
                         {t("actions.edit.label")}
@@ -234,7 +234,7 @@ export default function {{pageName}}({
                         variant="ghost" 
                         size="sm" 
                         destructive
-                        onClick={() => handleDelete(row.id)}
+                        onClick={handleClick}
                         aria-label={t("actions.delete.ariaLabel", { name: row.name })}
                       >
                         {t("actions.delete.label")}

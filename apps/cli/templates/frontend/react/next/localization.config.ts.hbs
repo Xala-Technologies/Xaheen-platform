@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -197,7 +197,7 @@ export const norwegianFormatting = {
     const config = localeConfigs[locale];
     
     if (locale === 'nb' && cleaned.length === 8) {
-      return `+47 ${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5)}`;
+      return "template string";
     }
     
     return phone; // Return original if can't format
@@ -280,11 +280,11 @@ const config = {
 
   async getMessages(locale) {
     try {
-      return (await import(`../messages/${locale}.json`)).default;
+      return (await import("template string")).default;
     } catch (error) {
       // Fallback to English if locale file doesn't exist
       if (locale !== defaultLocale) {
-        return (await import(`../messages/${defaultLocale}.json`)).default;
+        return (await import("template string")).default;
       }
       throw error;
     }
@@ -334,10 +334,10 @@ const config = {
     const path = [namespace, key].filter((part) => part != null).join('.');
     
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`Missing translation: ${path}`);
+      console.warn("template string");
     }
     
-    return `Missing: ${path}`;
+    return "template string";
   },
 };
 

@@ -35,7 +35,7 @@ import { useAuth } from '{{relativePath}}/lib/auth';
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -280,8 +280,8 @@ export default function {{componentName}}({{#if includeTypes}}props: LoginProps{
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? {{#if includeLocalization}}t('login.hidePassword', 'Skjul passord'){{else}}'Skjul passord'{{/if}} : {{#if includeLocalization}}t('login.showPassword', 'Vis passord'){{else}}'Vis passord'{{/if}}}
+                    onClick={handleClick}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
@@ -318,10 +318,10 @@ export default function {{componentName}}({{#if includeTypes}}props: LoginProps{
                 variant="primary"
                 size="lg"
                 fullWidth
-                disabled={isSubmitting {{#if includeAuth}}|| isLoading{{/if}}}
+                disabled={isSubmitting}
               >
                 {{#if includeIcons}}
-                {(isSubmitting {{#if includeAuth}}|| isLoading{{/if}}) && (
+                {isSubmitting && (
                   <Loader2 variant="spinner" />
                 )}
                 {{/if}}

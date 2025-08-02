@@ -82,7 +82,7 @@ export class BankIDAuthService {
         privateKey: p12Data,
       };
     } catch (error) {
-      throw new Error(\`Failed to extract certificate: \${error.message}\`);
+      throw new Error(\"template string");
     }
   }
 
@@ -99,7 +99,7 @@ export class BankIDAuthService {
             trustedCAs.push(fs.readFileSync(certPath));
           }
         } catch (error) {
-          console.warn(\`Failed to load trusted CA: \${certPath}\`, error);
+          console.warn(\"template string", error);
         }
       }
     }
@@ -123,7 +123,7 @@ export class BankIDAuthService {
   ){{#if typescript}}: Promise<BankIDAuthResponse>{{/if}} {
     try {
       const endpoint = 'auth';
-      const url = \`\${this.config.apiBaseUrl}/rp/v6.0/\${endpoint}\`;
+      const url = \"template string";
       
       // Prepare request data
       const requestData{{#if typescript}}: any{{/if}} = {
@@ -168,7 +168,7 @@ export class BankIDAuthService {
 
     } catch (error) {
       console.error('BankID start auth error:', error);
-      throw new Error(\`Failed to start BankID authentication: \${error.message}\`);
+      throw new Error(\"template string");
     }
   }
 
@@ -179,7 +179,7 @@ export class BankIDAuthService {
    */
   async collect(orderRef{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<BankIDCollectResponse>{{/if}} {
     try {
-      const url = \`\${this.config.apiBaseUrl}/rp/v6.0/collect\`;
+      const url = \"template string";
       
       const requestData = {
         orderRef,
@@ -200,7 +200,7 @@ export class BankIDAuthService {
 
     } catch (error) {
       console.error('BankID collect error:', error);
-      throw new Error(\`Failed to collect BankID result: \${error.message}\`);
+      throw new Error(\"template string");
     }
   }
 
@@ -210,7 +210,7 @@ export class BankIDAuthService {
    */
   async cancel(orderRef{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
     try {
-      const url = \`\${this.config.apiBaseUrl}/rp/v6.0/cancel\`;
+      const url = \"template string";
       
       const requestData = {
         orderRef,
@@ -274,17 +274,17 @@ export class BankIDAuthService {
               }
               
               const errorMessage = this.getBankIDErrorMessage(error.errorCode) || 
-                                 \`BankID API error: \${error.errorCode} - \${error.details}\`;
+                                 \"template string";
               reject(new Error(errorMessage));
             }
           } catch (parseError) {
-            reject(new Error(\`Failed to parse BankID response: \${parseError.message}\`));
+            reject(new Error(\"template string"));
           }
         });
       });
 
       req.on('error', (error) => {
-        reject(new Error(\`BankID request failed: \${error.message}\`));
+        reject(new Error(\"template string"));
       });
 
       req.on('timeout', () => {
@@ -400,7 +400,7 @@ export class BankIDAuthService {
 
     } catch (error) {
       console.error('Failed to extract user profile:', error);
-      throw new Error(\`Invalid completion data: \${error.message}\`);
+      throw new Error(\"template string");
     }
   }
 
@@ -417,7 +417,7 @@ export class BankIDAuthService {
     const month = personalNumber.substring(2, 4);
     const year = this.getFullYear(personalNumber);
     
-    return \`\${year}-\${month.padStart(2, '0')}-\${day.padStart(2, '0')}\`;
+    return \"template string";
   }
 
   /**
@@ -550,7 +550,7 @@ export class BankIDAuthService {
     try {
       // This is a simple connectivity test
       // In production, you might want to implement a proper health check endpoint
-      const url = \`\${this.config.apiBaseUrl}/rp/v6.0/auth\`;
+      const url = \"template string";
       
       // Try to make a request (this will likely fail with invalid parameters, but that's OK)
       try {
@@ -565,7 +565,7 @@ export class BankIDAuthService {
       
       return { healthy: true, message: 'BankID API is healthy' };
     } catch (error) {
-      return { healthy: false, message: \`BankID API health check failed: \${error.message}\` };
+      return { healthy: false, message: \"template string" };
     }
   }
 

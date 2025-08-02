@@ -23,7 +23,7 @@ export default function UserMenu() {
         <button
           type="button"
           class="inline-block border rounded px-4  text-sm"
-          onClick={() => setIsMenuOpen(!isMenuOpen())}
+          onClick={handleClick}
         >
           {session().data?.user.name}
         </button>

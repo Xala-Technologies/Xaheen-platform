@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -278,7 +278,7 @@ export default function AuthLayout({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onBack}
+          onClick={handleClick}
           className="self-start"
         >
           <Icon component={ArrowLeft} size="sm" />
@@ -316,7 +316,7 @@ export default function AuthLayout({
                 
                 <Stack direction="vertical" align="start" spacing="0" flex="1">
                   <Typography variant="body" size="md" weight="medium">
-                    {t(`auth.providers.${provider.id}`, provider.name)}
+                    {t("template string", provider.name)}
                   </Typography>
                   
                   {provider.trustLevel === 'high' && (
@@ -364,7 +364,7 @@ export default function AuthLayout({
               <Stack direction="horizontal" align="center" spacing="2">
                 <Icon component={provider.icon} size="sm" />
                 <Typography variant="body" size="sm">
-                  {t(`auth.providers.${provider.id}`, provider.name)}
+                  {t("template string", provider.name)}
                 </Typography>
               </Stack>
             </Button>

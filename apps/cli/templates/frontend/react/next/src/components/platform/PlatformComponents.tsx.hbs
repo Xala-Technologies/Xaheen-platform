@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -167,7 +167,7 @@ export const PlatformView = ({
 
   return (
     <div
-      className={className}
+      className=""
       style={style}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -248,7 +248,7 @@ export const PlatformText = ({
 
   return (
     <span
-      className={className}
+      className=""
       style={webStyle}
       data-testid={testID}
       aria-label={accessibilityLabel}
@@ -334,7 +334,7 @@ export const PlatformScrollView = ({
 
   return (
     <div
-      className={className}
+      className=""
       style={webStyle}
       onScroll={onScroll}
       data-testid={testID}
@@ -449,7 +449,7 @@ export const PlatformTextInput = ({
         rows={numberOfLines}
         autoFocus={autoFocus}
         disabled={!editable}
-        className={className}
+        className=""
         style={webStyle}
         data-testid={testID}
         aria-label={accessibilityLabel}
@@ -468,7 +468,7 @@ export const PlatformTextInput = ({
       placeholder={placeholder}
       autoFocus={autoFocus}
       disabled={!editable}
-      className={className}
+      className=""
       style={webStyle}
       data-testid={testID}
       aria-label={accessibilityLabel}
@@ -548,7 +548,7 @@ export const PlatformImage = ({
       alt={alt || accessibilityLabel}
       onLoad={onLoad}
       onError={onError}
-      className={className}
+      className=""
       style={webStyle}
       data-testid={testID}
       aria-label={accessibilityLabel}
@@ -611,7 +611,7 @@ export const PlatformSafeAreaView = ({
 
   return (
     <div
-      className={className}
+      className=""
       style={webStyle}
       data-testid={testID}
       aria-label={accessibilityLabel}

@@ -9,13 +9,13 @@ import type { appRouter } from "../../../server/src/routers/index";
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
 		onError: (error) => {
-			console.error(`Error: ${error.message}`);
+			console.error("template string");
 		},
 	}),
 });
 
 export const link = new RPCLink({
-	url: `${PUBLIC_SERVER_URL}/rpc`,
+	url: "template string",
 	{{#if auth}}
 	fetch(url, options) {
 		return fetch(url, {

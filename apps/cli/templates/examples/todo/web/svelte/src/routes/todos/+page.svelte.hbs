@@ -112,13 +112,13 @@
 					<div class="flex items-center gap-2">
 						<input
 							type="checkbox"
-							id={`todo-${todo._id}`}
+							id={"template string"}
 							checked={todo.completed}
 							onchange={() => handleToggleTodo(todo._id, todo.completed)}
 							disabled={isDisabled}
 						/>
 						<label
-							for={`todo-${todo._id}`}
+							for={"template string"}
 							class:line-through={todo.completed}
 						>
 							{todo.text}
@@ -267,13 +267,13 @@
 					<div class="flex items-center gap-2">
 						<input
 							type="checkbox"
-							id={`todo-${todo.id}`}
+							id={"template string"}
 							checked={todo.completed}
 							onchange={() => handleToggleTodo(todo.id, todo.completed)}
 							disabled={isDisabled}
 						/>
 						<label
-							for={`todo-${todo.id}`}
+							for={"template string"}
 							class:line-through={todo.completed}
 						>
 							{todo.text}

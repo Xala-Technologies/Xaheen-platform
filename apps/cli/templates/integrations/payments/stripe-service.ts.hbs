@@ -631,13 +631,13 @@ export class StripeService {
   private handleStripeError(error{{#if typescript}}: any{{/if}}){{#if typescript}}: Error{{/if}} {
     if (error.type === 'StripeCardError') {
       // Card errors (e.g., declined card)
-      return new Error(`Card error: ${error.message}`);
+      return new Error("template string");
     } else if (error.type === 'StripeRateLimitError') {
       // Too many API requests
       return new Error('Too many requests, please try again later');
     } else if (error.type === 'StripeInvalidRequestError') {
       // Invalid request (e.g., missing required param)
-      return new Error(`Invalid request: ${error.message}`);
+      return new Error("template string");
     } else if (error.type === 'StripeAPIError') {
       // Stripe server error
       return new Error('Payment service error, please try again');

@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -258,7 +258,7 @@ export default function MenuLayout({
             variant="ghost"
             size="sm"
             disabled={item.disabled}
-            onClick={() => handleMenuAction(item.action || 'navigate', item)}
+            onClick={handleClick}
             className="justify-start"
           >
             <Stack direction="horizontal" align="center" spacing="2" width="full">
@@ -476,7 +476,7 @@ export default function MenuLayout({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={handleClick}
             >
               <Icon component={X} size="sm" />
             </Button>
@@ -491,7 +491,7 @@ export default function MenuLayout({
     <Button
       variant="outline"
       size="sm"
-      onClick={() => setIsMobileMenuOpen(true)}
+      onClick={handleClick}
       className="md:hidden"
       accessibilityLabel={t('menu.open', 'Open menu')}
     >

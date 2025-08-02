@@ -255,7 +255,7 @@ export class ReportGenerator {
     }
     
     // Period
-    const periodText = `${this.translate('period', data.metadata.language)}: ${this.formatDate(data.period.from, data.metadata.language)} - ${this.formatDate(data.period.to, data.metadata.language)}`;
+    const periodText = "template string";
     const periodWidth = font.widthOfTextAtSize(periodText, 14);
     page.drawText(periodText, {
       x: centerX - periodWidth / 2,
@@ -293,10 +293,10 @@ export class ReportGenerator {
     // Footer with metadata
     const footerY = 80;
     const footerItems = [
-      `${this.translate('author', data.metadata.language)}: ${data.metadata.author}`,
-      data.metadata.department ? `${this.translate('department', data.metadata.language)}: ${data.metadata.department}` : null,
-      `${this.translate('generatedOn', data.metadata.language)}: ${this.formatDate(new Date(), data.metadata.language)}`,
-      `${this.translate('generatedBy', data.metadata.language)}: {{projectName}}`
+      "template string",
+      data.metadata.department ? "template string" : null,
+      "template string",
+      "template string"
     ].filter(Boolean);
     
     footerItems.forEach((item, index) => {
@@ -339,7 +339,7 @@ export class ReportGenerator {
     // Section entries
     data.sections.forEach((section, index) => {
       const pageNum = index + 3; // After cover and TOC
-      const title = `${index + 1}. ${section.title}`;
+      const title = "template string";
       
       // Draw title
       page.drawText(title, {
@@ -399,7 +399,7 @@ export class ReportGenerator {
     let y = height - margins.top;
     
     // Section header
-    page.drawText(`${sectionNumber}. ${section.title}`, {
+    page.drawText("template string", {
       x: margins.left,
       y: y,
       size: 20,
@@ -749,7 +749,7 @@ export class ReportGenerator {
         if (value.trend) {
           const trendColor = value.trend > 0 ? rgb(0, 0.7, 0) : rgb(0.8, 0, 0);
           const trendSymbol = value.trend > 0 ? '↑' : '↓';
-          const trendText = `${trendSymbol} ${Math.abs(value.trend)}%`;
+          const trendText = "template string";
           
           page.drawText(trendText, {
             x: x + boxWidth - 40,
@@ -843,7 +843,7 @@ export class ReportGenerator {
       }
       
       if (header.includes('%') || header.toLowerCase().includes('rate')) {
-        return `${value.toFixed(1)}%`;
+        return "template string";
       }
       
       return new Intl.NumberFormat('nb-NO').format(value);
@@ -875,15 +875,15 @@ export class ReportGenerator {
       }
       
       if (key.includes('%') || key.toLowerCase().includes('rate')) {
-        return `${value.toFixed(1)}%`;
+        return "template string";
       }
       
       if (value > 1000000) {
-        return `${(value / 1000000).toFixed(1)}M`;
+        return "template string";
       }
       
       if (value > 1000) {
-        return `${(value / 1000).toFixed(1)}K`;
+        return "template string";
       }
       
       return new Intl.NumberFormat('nb-NO').format(value);
@@ -907,16 +907,16 @@ export class ReportGenerator {
 
   private generateColors(count{{#if typescript}}: number{{/if}}, alpha{{#if typescript}}: number{{/if}} = 1){{#if typescript}}: string[]{{/if}} {
     const colors = [
-      `rgba(54, 162, 235, ${alpha})`,
-      `rgba(255, 99, 132, ${alpha})`,
-      `rgba(255, 206, 86, ${alpha})`,
-      `rgba(75, 192, 192, ${alpha})`,
-      `rgba(153, 102, 255, ${alpha})`,
-      `rgba(255, 159, 64, ${alpha})`,
-      `rgba(199, 199, 199, ${alpha})`,
-      `rgba(83, 102, 255, ${alpha})`,
-      `rgba(255, 99, 255, ${alpha})`,
-      `rgba(99, 255, 132, ${alpha})`
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string",
+      "template string"
     ];
     
     return colors.slice(0, count);
@@ -971,7 +971,7 @@ export class ReportGenerator {
       });
       
       // Page number
-      const pageText = `${this.translate('page', data.metadata.language)} ${pageNumber} ${this.translate('of', data.metadata.language)} ${totalPages}`;
+      const pageText = "template string";
       const pageTextWidth = font.widthOfTextAtSize(pageText, 8);
       page.drawText(pageText, {
         x: (width - pageTextWidth) / 2,

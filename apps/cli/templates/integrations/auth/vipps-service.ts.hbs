@@ -28,7 +28,7 @@ export class VippsAuthService {
     const required = ['clientId', 'clientSecret', 'apiBaseUrl', 'tokenUrl'];
     for (const field of required) {
       if (!this.config[field]) {
-        throw new Error(`Missing required Vipps configuration: ${field}`);
+        throw new Error("template string");
       }
     }
   }
@@ -59,7 +59,7 @@ export class VippsAuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${this.getBasicAuthHeader()}`,
+          'Authorization': "template string",
           'User-Agent': '{{projectName}}/1.0',
         },
         body: tokenParams.toString(),
@@ -67,7 +67,7 @@ export class VippsAuthService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`Token exchange failed: ${response.status} ${response.statusText} - ${errorData}`);
+        throw new Error("template string");
       }
 
       const tokenData{{#if typescript}}: VippsTokenResponse{{/if}} = await response.json();
@@ -112,14 +112,14 @@ export class VippsAuthService {
     try {
       const response = await fetch(this.config.userInfoUrl, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': "template string",
           'User-Agent': '{{projectName}}/1.0',
           'Accept': 'application/json',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
+        throw new Error("template string");
       }
 
       const profile{{#if typescript}}: VippsUserProfile{{/if}} = await response.json();
@@ -154,7 +154,7 @@ export class VippsAuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${this.getBasicAuthHeader()}`,
+          'Authorization': "template string",
           'User-Agent': '{{projectName}}/1.0',
         },
         body: tokenParams.toString(),
@@ -162,7 +162,7 @@ export class VippsAuthService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`Token refresh failed: ${response.status} ${response.statusText} - ${errorData}`);
+        throw new Error("template string");
       }
 
       const tokenData{{#if typescript}}: VippsTokenResponse{{/if}} = await response.json();
@@ -194,11 +194,11 @@ export class VippsAuthService {
         client_id: this.config.clientId,
       });
 
-      const response = await fetch(`${this.config.apiBaseUrl}/access-management-1.0/access/oauth2/revoke`, {
+      const response = await fetch("template string", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${this.getBasicAuthHeader()}`,
+          'Authorization': "template string",
           'User-Agent': '{{projectName}}/1.0',
         },
         body: revokeParams.toString(),
@@ -208,7 +208,7 @@ export class VippsAuthService {
       this.tokenCache.delete(token);
 
       if (!response.ok) {
-        console.warn(`Token revocation returned ${response.status}: ${response.statusText}`);
+        console.warn("template string");
         // Don't throw error for revocation failures as token might already be expired
       }
 
@@ -342,7 +342,7 @@ export class VippsAuthService {
    * Generate Basic Auth header for client authentication
    */
   private getBasicAuthHeader(){{#if typescript}}: string{{/if}} {
-    return Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString('base64');
+    return Buffer.from("template string").toString('base64');
   }
 
   /**

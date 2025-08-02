@@ -2,7 +2,7 @@
 MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
 ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 ✅ ONLY semantic components from @xala-technologies/ui-system
-❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 ✅ MANDATORY design token usage for all colors, spacing, typography
 ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 ✅ WCAG 2.2 AAA compliance for accessibility
@@ -114,7 +114,7 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
               <Chart
                 type="line"
                 data={{
-                  labels: [t("jan"), t("feb"), t("mar"), t("apr"), t("may"), t("jun")],
+                  labels: monthLabels,
                   datasets: [{
                     label: t("charts.dataset1"),
                     data: [12, 19, 3, 5, 2, 3]
@@ -172,7 +172,7 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
                   label: t("table.columns.status"),
                   render: (value) => (
                     <Badge variant={value === "active" ? "success" : "warning"}>
-                      {t(`status.${value}`)}
+                      {t("template string")}
                     </Badge>
                   )
                 },

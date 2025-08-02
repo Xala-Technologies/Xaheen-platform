@@ -103,11 +103,11 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
 
       const poll = async () => {
         try {
-          const response = await fetch(\`/api/auth/bankid/collect/\${orderRef}\`);
+          const response = await fetch(\"template string");
           
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || \`{{#if (eq country "sweden")}}Insamling misslyckades{{else}}Innhenting feilet{{/if}}: \${response.statusText}\`);
+            throw new Error(errorData.message || \"template string");
           }
 
           const result = await response.json();
@@ -283,7 +283,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
 
   if (state.status === 'loading') {
     return (
-      <div className={\`bankid-callback-loading \${className}\`} style={containerStyles}>
+      <div className=""\`} style={containerStyles}>
         <div style={iconStyles}>
           <LoadingIcon color={primaryColor} />
         </div>
@@ -333,7 +333,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
 
   if (state.status === 'error') {
     return (
-      <div className={\`bankid-callback-error \${className}\`} style={containerStyles}>
+      <div className=""\`} style={containerStyles}>
         <div style={iconStyles}>
           <ErrorIcon />
         </div>
@@ -344,7 +344,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
           {state.error || '{{#if (eq country "sweden")}}Ett fel uppstod under autentiseringen med BankID.{{else}}Det oppstod en feil under autentiseringen med BankID.{{/if}}'}
         </p>
         
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style=config>
           <button
             onClick={() => {
               {{#if (eq framework 'nextjs')}}
@@ -393,7 +393,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
   }
 
   return (
-    <div className={\`bankid-callback-success \${className}\`} style={containerStyles}>
+    <div className=""\`} style={containerStyles}>
       <div style={iconStyles}>
         <SuccessIcon />
       </div>
@@ -403,7 +403,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
       <div style={messageStyles}>
         <p>
           {{#if (eq country "sweden")}}Du är nu inloggad med BankID.{{else}}Du er nå logget inn med BankID.{{/if}}
-          {state.user?.name && \` {{#if (eq country "sweden")}}Välkommen{{else}}Velkommen{{/if}}, \${state.user.name}!\`}
+          {state.user?.name && \"template string"}
         </p>
         
         {state.user && (
@@ -428,7 +428,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
         </p>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+      <div style=config>
         <MiniLoadingIcon color={primaryColor} />
         <span>{{#if (eq country "sweden")}}Omdirigerar...{{else}}Videresender...{{/if}}</span>
       </div>
@@ -438,7 +438,7 @@ export const BankIDCallback{{#if typescript}}: React.FC<BankIDCallbackProps>{{/i
 
 // Icon components
 const LoadingIcon = ({ color = '#0066cc' }) => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle
       cx="12"
       cy="12"
@@ -476,7 +476,7 @@ const LoadingIcon = ({ color = '#0066cc' }) => (
 );
 
 const SuccessIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#10b981" />
     <path
       d="M9 12l2 2 4-4"
@@ -489,7 +489,7 @@ const SuccessIcon = () => (
 );
 
 const ErrorIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#ef4444" />
     <path
       d="M15 9l-6 6M9 9l6 6"

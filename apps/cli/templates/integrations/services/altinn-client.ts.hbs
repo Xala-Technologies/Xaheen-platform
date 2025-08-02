@@ -55,7 +55,7 @@ export class AltinnClient {
     endpoint{{#if typescript}}: string{{/if}}, 
     options{{#if typescript}}?: RequestInit{{/if}} = {}
   ){{#if typescript}}: Promise<any>{{/if}} {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = "template string";
     
     const response = await fetch(url, {
       ...options,
@@ -69,7 +69,7 @@ export class AltinnClient {
 
     if (!response.ok) {
       const errorData = await response.text();
-      throw new Error(`Altinn API error: ${response.status} ${response.statusText} - ${errorData}`);
+      throw new Error("template string");
     }
 
     const contentType = response.headers.get('content-type');
@@ -148,7 +148,7 @@ export class AltinnClient {
     
     return this.makeRequest('/authentication/api/v1/profile', {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': "template string",
       },
     });
   }
@@ -157,7 +157,7 @@ export class AltinnClient {
    * Forms and Storage Methods
    */
   async getAvailableForms(userId{{#if typescript}}?: string{{/if}}){{#if typescript}}: Promise<AltinnForm[]>{{/if}} {
-    const endpoint = `/storage/api/v1/applications/${this.organizationNumber}/forms`;
+    const endpoint = "template string";
     const headers{{#if typescript}}: any{{/if}} = {};
     
     if (userId) {
@@ -169,7 +169,7 @@ export class AltinnClient {
 
   async getForm(formId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<AltinnForm>{{/if}} {
     return this.makeRequest(
-      `/storage/api/v1/applications/${this.organizationNumber}/forms/${formId}`
+      "template string"
     );
   }
 
@@ -188,7 +188,7 @@ export class AltinnClient {
     {{/if}}
 
     const response = await this.makeRequest(
-      `/storage/api/v1/applications/${this.organizationNumber}/instances`,
+      "template string",
       {
         method: 'POST',
         headers: {
@@ -225,7 +225,7 @@ export class AltinnClient {
     }
 
     const response = await fetch(
-      `${this.baseUrl}/storage/api/v1/instances/${instanceId}/data?dataType=${dataType}`,
+      "template string",
       {
         method: 'POST',
         headers: {
@@ -236,7 +236,7 @@ export class AltinnClient {
     );
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
+      throw new Error("template string");
     }
 
     const result = await response.json();
@@ -251,14 +251,14 @@ export class AltinnClient {
    */
   async searchOrganizations(query{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<Organization[]>{{/if}} {
     const response = await this.makeRequest(
-      `/register/api/v1/organizations?query=${encodeURIComponent(query)}`
+      "template string"
     );
     
     return response.organizations || [];
   }
 
   async getOrganization(orgNumber{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<Organization>{{/if}} {
-    return this.makeRequest(`/register/api/v1/organizations/${orgNumber}`);
+    return this.makeRequest("template string");
   }
 
   async searchPersons(
@@ -274,7 +274,7 @@ export class AltinnClient {
     {{/if}}
 
     const response = await this.makeRequest(
-      `/register/api/v1/persons?query=${encodeURIComponent(query)}&includeAddress=${includeAddress}`,
+      "template string",
       {
         headers: {
           'X-GDPR-Purpose': 'legitimate-interest',
@@ -325,7 +325,7 @@ export class AltinnClient {
   async getCorrespondence(
     correspondenceId{{#if typescript}}: string{{/if}}
   ){{#if typescript}}: Promise<AltinnCorrespondence>{{/if}} {
-    return this.makeRequest(`/correspondence/api/v1/correspondence/${correspondenceId}`);
+    return this.makeRequest("template string");
   }
 
   /**
@@ -362,7 +362,7 @@ export class AltinnClient {
 
   async getUserRoles(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<string[]>{{/if}} {
     const response = await this.makeRequest(
-      `/authorization/api/v1/roles?subject=${userId}&org=${this.organizationNumber}`
+      "template string"
     );
     
     return response.map((role{{#if typescript}}: any{{/if}}) => role.code);
@@ -451,12 +451,12 @@ export class AltinnClient {
   }
 
   async exportUserData(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<any>{{/if}} {
-    return this.makeRequest(`/gdpr/api/v1/users/${userId}/export`);
+    return this.makeRequest("template string");
   }
 
   async deleteUserData(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
     try {
-      await this.makeRequest(`/gdpr/api/v1/users/${userId}`, {
+      await this.makeRequest("template string", {
         method: 'DELETE',
       });
       return true;
@@ -491,7 +491,7 @@ export class AltinnClient {
       acr_values: 'Level4',
     });
 
-    return `${baseAuthUrl}?${params.toString()}`;
+    return "template string";
   }
 
   private getAccessToken(){{#if typescript}}: string{{/if}} {

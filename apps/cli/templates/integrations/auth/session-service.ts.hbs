@@ -264,7 +264,7 @@ export class SessionService {
   async getUserSessions(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<SessionData[]>{{/if}} {
     try {
       {{#if (eq storage 'redis')}}
-      const keys = await this.redis.keys(`session:${userId}:*`);
+      const keys = await this.redis.keys("template string");
       const sessions = [];
       
       for (const key of keys) {
@@ -301,13 +301,13 @@ export class SessionService {
   async destroyAllUserSessions(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
     try {
       {{#if (eq storage 'redis')}}
-      const keys = await this.redis.keys(`session:${userId}:*`);
+      const keys = await this.redis.keys("template string");
       if (keys.length > 0) {
         await this.redis.del(...keys);
       }
       
       // Also clear refresh tokens
-      const refreshKeys = await this.redis.keys(`refresh:${userId}:*`);
+      const refreshKeys = await this.redis.keys("template string");
       if (refreshKeys.length > 0) {
         await this.redis.del(...refreshKeys);
       }
@@ -365,13 +365,13 @@ export class SessionService {
 
   {{#if (eq storage 'redis')}}
   private async storeSession(sessionId{{#if typescript}}: string{{/if}}, sessionData{{#if typescript}}: SessionData{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
-    const key = `session:${sessionData.user.id}:${sessionId}`;
+    const key = "template string";
     const ttl = Math.floor((sessionData.expiresAt.getTime() - Date.now()) / 1000);
     await this.redis.setex(key, ttl, JSON.stringify(sessionData));
   }
 
   private async getSession(sessionId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<SessionData | null>{{/if}} {
-    const keys = await this.redis.keys(`session:*:${sessionId}`);
+    const keys = await this.redis.keys("template string");
     if (keys.length === 0) return null;
     
     const sessionData = await this.redis.get(keys[0]);
@@ -379,20 +379,20 @@ export class SessionService {
   }
 
   private async removeSession(sessionId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
-    const keys = await this.redis.keys(`session:*:${sessionId}`);
+    const keys = await this.redis.keys("template string");
     if (keys.length > 0) {
       await this.redis.del(...keys);
     }
   }
 
   private async storeRefreshToken(userId{{#if typescript}}: string{{/if}}, refreshToken{{#if typescript}}: string{{/if}}, expiresAt{{#if typescript}}: Date{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
-    const key = `refresh:${userId}:${refreshToken}`;
+    const key = "template string";
     const ttl = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
     await this.redis.setex(key, ttl, JSON.stringify({ userId, expiresAt }));
   }
 
   private async validateRefreshToken(refreshToken{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<{ userId: string; sessionId: string } | null>{{/if}} {
-    const keys = await this.redis.keys(`refresh:*:${refreshToken}`);
+    const keys = await this.redis.keys("template string");
     if (keys.length === 0) return null;
     
     const data = await this.redis.get(keys[0]);
@@ -405,14 +405,14 @@ export class SessionService {
   }
 
   private async invalidateRefreshToken(refreshToken{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
-    const keys = await this.redis.keys(`refresh:*:${refreshToken}`);
+    const keys = await this.redis.keys("template string");
     if (keys.length > 0) {
       await this.redis.del(...keys);
     }
   }
 
   private async invalidateAllRefreshTokens(userId{{#if typescript}}: string{{/if}}, sessionId{{#if typescript}}?: string{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
-    const pattern = sessionId ? `refresh:${userId}:${sessionId}*` : `refresh:${userId}:*`;
+    const pattern = sessionId ? "template string" : "template string";
     const keys = await this.redis.keys(pattern);
     if (keys.length > 0) {
       await this.redis.del(...keys);

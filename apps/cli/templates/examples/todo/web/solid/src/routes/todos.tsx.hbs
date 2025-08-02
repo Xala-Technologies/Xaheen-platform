@@ -102,11 +102,11 @@ function TodosRoute() {
                         onChange={() =>
                           handleToggleTodo(todo.id, todo.completed)
                         }
-                        id={`todo-${todo.id}`}
+                        id={"template string"}
                         class="h-4 w-4"
                       />
                       <label
-                        for={`todo-${todo.id}`}
+                        for={"template string"}
                         class={todo.completed ? "line-through" : ""}
                       >
                         {todo.text}
@@ -114,7 +114,7 @@ function TodosRoute() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleDeleteTodo(todo.id)}
+                      onClick={handleClick}
                       aria-label="Delete todo"
                       class="ml-2 rounded-md p-1"
                     >

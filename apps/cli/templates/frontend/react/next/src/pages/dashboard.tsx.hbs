@@ -36,7 +36,7 @@ import { useTranslation } from '{{relativePath}}/lib/i18n';
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -203,7 +203,7 @@ export default function {{componentName}}({{#if includeTypes}}props: DashboardPr
       <Box variant="main" spacing="16">
         <Container>
           {/* Stats Grid - Professional sizing standards */}
-          <Grid columns={{ base: 1, md: 2, lg: 4 }} spacing="6" marginBottom="16">
+          <Grid columns="responsive" spacing="6" marginBottom="16">
             {/* Total Users Card */}
             <Card variant="elevated" spacing="8">
               <Stack direction="horizontal" justify="between" align="center" marginBottom="4">
@@ -322,7 +322,7 @@ export default function {{componentName}}({{#if includeTypes}}props: DashboardPr
           </Grid>
 
           {/* Content Grid - Enhanced layout system */}
-          <Grid columns={{ base: 1, lg: 3 }} spacing="6">
+          <Grid columns="responsive" spacing="6">
             {/* Recent Activity */}
             <Box gridColumn={{ lg: "span 2" }}>
               <Card variant="elevated" spacing="8">

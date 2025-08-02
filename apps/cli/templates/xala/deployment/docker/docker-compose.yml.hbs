@@ -4,7 +4,7 @@
 # MANDATORY COMPLIANCE RULES:
 # ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 # ✅ ONLY semantic components from @xala-technologies/ui-system
-# ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+# ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 # ✅ MANDATORY design token usage for all colors, spacing, typography
 # ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 # ✅ WCAG 2.2 AAA compliance for accessibility
@@ -58,7 +58,7 @@ services:
       start_period: 40s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`{{domain}}`)"
+      - "traefik.http.routers.web.rule=Host("template string")"
       - "traefik.http.routers.web.tls=true"
       - "traefik.http.routers.web.tls.certresolver=letsencrypt"
       - "compliance.gdpr=true"

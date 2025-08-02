@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -335,7 +335,7 @@ export const responsiveUtils = {
       if (breakpoint === 'default') {
         classes.push(className);
       } else {
-        classes.push(`${breakpoint}:${className}`);
+        classes.push("template string");
       }
     });
     
@@ -354,7 +354,7 @@ export const responsiveUtils = {
     const slope = (maxSize - minSize) / (maxViewport - minViewport);
     const yIntercept = minSize - slope * minViewport;
     
-    return `clamp(${minSize}px, ${yIntercept}px + ${slope * 100}vw, ${maxSize}px)`;
+    return "template string";
   },
 
   /**
@@ -443,12 +443,12 @@ export const mediaQueries = {
   // Generate media query string
   up: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
     const config = responsiveConfig.breakpoints[breakpoint];
-    return config ? `@media (min-width: ${config.minWidth}px)` : '';
+    return config ? "template string" : '';
   },
 
   down: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
     const config = responsiveConfig.breakpoints[breakpoint];
-    return config && config.maxWidth ? `@media (max-width: ${config.maxWidth}px)` : '';
+    return config && config.maxWidth ? "template string" : '';
   },
 
   between: (minBreakpoint{{#if typescript}}: string{{/if}}, maxBreakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
@@ -457,7 +457,7 @@ export const mediaQueries = {
     
     if (!minConfig || !maxConfig || !maxConfig.maxWidth) return '';
     
-    return `@media (min-width: ${minConfig.minWidth}px) and (max-width: ${maxConfig.maxWidth}px)`;
+    return "template string";
   },
 
   // Special media queries
@@ -494,7 +494,7 @@ function ResponsiveComponent() {
   });
 
   return (
-    <Box className={responsiveClasses}>
+    <Box className="">
       <Typography variant="heading" size={isMobile ? 'lg' : 'xl'}>
         Responsive Content
       </Typography>

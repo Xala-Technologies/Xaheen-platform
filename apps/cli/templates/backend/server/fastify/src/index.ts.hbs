@@ -84,7 +84,7 @@ fastify.route({
   url: "/api/auth/*",
   async handler(request, reply) {
     try {
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      const url = new URL(request.url, "template string");
       const headers = new Headers();
       Object.entries(request.headers).forEach(([key, value]) => {
         if (value) headers.append(key, value.toString());
@@ -116,7 +116,7 @@ fastify.register(fastifyTRPCPlugin, {
     router: appRouter,
     createContext,
     onError({ path, error }) {
-      console.error(`Error in tRPC handler on path '${path}':`, error);
+      console.error("template string", error);
     },
   } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
 });

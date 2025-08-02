@@ -150,7 +150,7 @@ const {{capitalize pageName}}{{#if typescript}}: FC<{{capitalize pageName}}Props
                           accessLevel === 'BEGRENSET' ? 'warning' :
                           'destructive'}
                   size="md"
-                  aria-label={`Sikkerhetsnivå: ${accessLevel}`}
+                  aria-label={"template string"}
                 >
                   {accessLevel}
                 </Badge>
@@ -159,7 +159,7 @@ const {{capitalize pageName}}{{#if typescript}}: FC<{{capitalize pageName}}Props
                 <Badge 
                   variant="primary" 
                   size="md"
-                  aria-label={`Dataklassifisering: ${dataClassification}`}
+                  aria-label={"template string"}
                 >
                   {dataClassification}
                 </Badge>

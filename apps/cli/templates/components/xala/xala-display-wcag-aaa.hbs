@@ -2,7 +2,7 @@
 MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
 ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
 ✅ ONLY semantic components from @xala-technologies/ui-system
-❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
 ✅ MANDATORY design token usage for all colors, spacing, typography
 ✅ Enhanced 8pt Grid System - all spacing in 8px increments
 ❌ NO hardcoded user-facing text - ALL text must use t() function
@@ -117,7 +117,7 @@ export default function {{componentName}}({{#if hasProps}}{
         ref={cardRef}
         variant="elevated"
         padding="6"
-        className={className}
+        className=""
         data-testid={testId}
         role="region"
         aria-label={t("ariaLabel")}
@@ -231,7 +231,7 @@ export default function {{componentName}}({{#if hasProps}}{
               <Button
                 variant="primary"
                 size="md"
-                onClick={handleAction}
+                onClick={handleClick}
                 data-testid="{{testIds.action}}"
                 aria-describedby="{{testIds.description}}"
                 aria-label={t("accessibility.actionAriaLabel")}

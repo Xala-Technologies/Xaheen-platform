@@ -37,7 +37,7 @@ export const RTLButton{{#if typescript}}: React.FC<RTLButtonProps>{{/if}} = ({
   
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${rtlClasses} ${className}`}
+      className="" ${variantClasses[variant]} ${sizeClasses[size]} ${rtlClasses} ${className}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       {...props}
     >

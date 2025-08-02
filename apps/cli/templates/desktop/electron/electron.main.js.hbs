@@ -5,7 +5,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -89,7 +89,7 @@ function createMainWindow() {
   // Load the app
   const startUrl = isDev 
     ? 'http://localhost:3000' 
-    : `file://${path.join(__dirname, '../out/index.html')}`;
+    : "template string";
   
   mainWindow.loadURL(startUrl);
 
@@ -261,7 +261,7 @@ function createMenu() {
               type: 'info',
               title: labels.about,
               message: '{{appName}}',
-              detail: `Version: ${app.getVersion()}\nElectron: ${process.versions.electron}\nNode: ${process.versions.node}`,
+              detail: "template string",
             });
           },
         },

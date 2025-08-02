@@ -9,7 +9,7 @@ import type { RouterClient } from "@orpc/server";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      toast.error(`Error: ${error.message}`, {
+      toast.error("template string", {
         action: {
           label: "retry",
           onClick: () => {
@@ -23,9 +23,9 @@ export const queryClient = new QueryClient({
 
 export const link = new RPCLink({
   {{#if (includes frontend "next")}}
-  url: `${process.env.NEXT_PUBLIC_SERVER_URL}/rpc`,
+  url: "template string",
   {{else}}
-  url: `${import.meta.env.VITE_SERVER_URL}/rpc`,
+  url: "template string",
   {{/if}}
   {{#if auth}}
   fetch(url, options) {

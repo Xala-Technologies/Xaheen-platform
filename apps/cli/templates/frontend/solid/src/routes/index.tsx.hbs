@@ -54,7 +54,7 @@ function App() {
             <Match when={healthCheck.isSuccess}>
               <div class="flex items-center gap-2">
                 <div
-                  class={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
+                  class={"template string"}
                 />
                 <span class="text-sm text-muted-foreground">
                   {healthCheck.data

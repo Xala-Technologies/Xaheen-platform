@@ -149,10 +149,10 @@ export class {{capitalize serviceName}} {
     // Validate retention policies
     this.config.retentionPolicies.forEach((policy, index) => {
       if (!policy.legalBasis) {
-        throw new Error(`Legal basis required for retention policy ${index}`);
+        throw new Error("template string");
       }
       if (policy.retentionDays <= 0) {
-        throw new Error(`Invalid retention period for policy ${index}`);
+        throw new Error("template string");
       }
     });
   }
@@ -268,7 +268,7 @@ export class {{capitalize serviceName}} {
   ): Promise<void> {
     // Check if operation is allowed
     if (!this.config.allowedOperations.includes(operation)) {
-      throw new Error(`Operation '${operation}' is not permitted for this service`);
+      throw new Error("template string");
     }
 
     // Validate legal basis for data category
@@ -284,7 +284,7 @@ export class {{capitalize serviceName}} {
     );
 
     if (!retentionPolicy) {
-      throw new Error(`No retention policy defined for data category: ${options.dataCategory}`);
+      throw new Error("template string");
     }
 
     // Validate purpose limitation
@@ -317,7 +317,7 @@ export class {{capitalize serviceName}} {
       case 'EXPORT':
         return await this.exportData(data, options);
       default:
-        throw new Error(`Unsupported operation: ${operation}`);
+        throw new Error("template string");
     }
     {{else}}
     // Simulate processing delay
@@ -398,7 +398,7 @@ export class {{capitalize serviceName}} {
    * Generate unique request ID
    */
   private generateRequestId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return "template string";
   }
 
   /**

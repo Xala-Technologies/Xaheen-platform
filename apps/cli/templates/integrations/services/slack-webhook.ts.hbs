@@ -36,7 +36,7 @@ function verifySlackSignature(
     return false;
   }
 
-  const sigBasestring = `v0:${timestamp}:${body}`;
+  const sigBasestring = "template string";
   const mySignature = `v0=${crypto
     .createHmac('sha256', SLACK_SIGNING_SECRET)
     .update(sigBasestring)
@@ -194,7 +194,7 @@ async function handleChannelCreated(event{{#if typescript}}: any{{/if}}) {
 async function handleFileShared(event{{#if typescript}}: any{{/if}}) {
   const { file_id, user_id, channel_id } = event;
   
-  console.log(`File ${file_id} shared by ${user_id} in ${channel_id}`);
+  console.log("template string");
   // You can add file processing logic here
 }
 
@@ -206,7 +206,7 @@ async function handleSlashCommand(
 ){{#if typescript}}: Promise<any>{{/if}} {
   const { command: cmd, text, user_id, channel_id } = command;
 
-  console.log(`Slash command: ${cmd} from ${user_id}`);
+  console.log("template string");
 
   switch (cmd) {
     case '/{{projectName}}-help':
@@ -224,7 +224,7 @@ async function handleSlashCommand(
     default:
       return {
         response_type: 'ephemeral',
-        text: `Unknown command: ${cmd}`,
+        text: "template string",
       };
   }
 }
@@ -237,7 +237,7 @@ async function handleInteraction(
 ){{#if typescript}}: Promise<any>{{/if}} {
   const { type, user, actions, callback_id } = payload;
 
-  console.log(`Interaction: ${type} from ${user.id}`);
+  console.log("template string");
 
   switch (type) {
     case 'block_actions':
@@ -292,7 +292,7 @@ async function handleViewSubmission(
   const { view, user } = payload;
   const { callback_id, state } = view;
 
-  console.log(`View submission: ${callback_id} from ${user.id}`);
+  console.log("template string");
 
   // Extract form values from state
   const values = state.values;
@@ -339,19 +339,19 @@ async function sendHelpMessage(channel{{#if typescript}}: string{{/if}}, thread_
       fields: [
         {
           type: 'mrkdwn',
-          text: '*`/{{projectName}}-help`*\nShow this help message',
+          text: '*"template string"*\nShow this help message',
         },
         {
           type: 'mrkdwn',
-          text: '*`/{{projectName}}-status`*\nCheck system status',
+          text: '*"template string"*\nCheck system status',
         },
         {
           type: 'mrkdwn',
-          text: '*`/{{projectName}}-deploy`*\nTrigger a deployment',
+          text: '*"template string"*\nTrigger a deployment',
         },
         {
           type: 'mrkdwn',
-          text: '*`/{{projectName}}-report`*\nGenerate a report',
+          text: '*"template string"*\nGenerate a report',
         },
       ],
     },
@@ -370,7 +370,7 @@ async function sendStatusMessage(channel{{#if typescript}}: string{{/if}}, threa
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `*System Status* ${status.healthy ? ':green_circle:' : ':red_circle:'}`,
+        text: "template string",
       },
     },
     {
@@ -378,19 +378,19 @@ async function sendStatusMessage(channel{{#if typescript}}: string{{/if}}, threa
       fields: [
         {
           type: 'mrkdwn',
-          text: `*API:* ${status.api}`,
+          text: "template string",
         },
         {
           type: 'mrkdwn',
-          text: `*Database:* ${status.database}`,
+          text: "template string",
         },
         {
           type: 'mrkdwn',
-          text: `*Cache:* ${status.cache}`,
+          text: "template string",
         },
         {
           type: 'mrkdwn',
-          text: `*Queue:* ${status.queue}`,
+          text: "template string",
         },
       ],
     },
@@ -404,7 +404,7 @@ async function sendDefaultResponse(
   thread_ts{{#if typescript}}: string{{/if}}, 
   user{{#if typescript}}: string{{/if}}
 ) {
-  const text = `Hi <@${user}>! I'm here to help. Type "help" to see what I can do.`;
+  const text = "template string";
   await sendSlackMessage(channel, text, thread_ts);
 }
 
@@ -414,14 +414,14 @@ async function sendWelcomeMessage(userId{{#if typescript}}: string{{/if}}) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `Welcome to the team! :wave:\n\nI'm the {{projectName}} bot, here to help you get started.`,
+        text: "template string",
       },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '*Getting Started:*\n• Check out our <https://docs.{{projectName}}.com|documentation>\n• Join the #{{projectName}}-help channel\n• Try `/{{projectName}}-help` to see available commands',
+        text: '*Getting Started:*\n• Check out our <https://docs.{{projectName}}.com|documentation>\n• Join the #{{projectName}}-help channel\n• Try "template string" to see available commands',
       },
     },
   ];
@@ -448,7 +448,7 @@ function createHelpResponse() {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '• `/{{projectName}}-help` - Show this help message\n• `/{{projectName}}-status` - Check system status\n• `/{{projectName}}-deploy [env]` - Deploy to environment\n• `/{{projectName}}-report [type]` - Generate report',
+          text: '• "template string" - Show this help message\n• "template string" - Check system status\n• "template string" - Deploy to environment\n• "template string" - Generate report',
         },
       },
     ],
@@ -465,7 +465,7 @@ async function createStatusResponse() {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*System Status:* ${status.healthy ? ':green_circle: All systems operational' : ':red_circle: Issues detected'}`,
+          text: "template string",
         },
       },
     ],
@@ -484,7 +484,7 @@ async function handleDeployCommand(
   
   return {
     response_type: 'in_channel',
-    text: `Deployment to ${environment} initiated by <@${userId}>`,
+    text: "template string",
   };
 }
 
@@ -497,7 +497,7 @@ async function handleReportCommand(
   
   return {
     response_type: 'ephemeral',
-    text: `Generating ${reportType} report... You'll receive it shortly.`,
+    text: "template string",
   };
 }
 
@@ -537,7 +537,7 @@ async function startDeployment(
   userId{{#if typescript}}: string{{/if}}
 ) {
   // Implement deployment logic
-  console.log(`Starting deployment to ${environment} by ${userId}`);
+  console.log("template string");
 }
 
 async function showDetailsModal(
@@ -570,7 +570,7 @@ async function handleApproval(
   message{{#if typescript}}: any{{/if}}
 ) {
   // Handle approval action
-  console.log(`Approval by ${user.id} in ${channel.id}`);
+  console.log("template string");
 }
 
 async function handleRejection(
@@ -579,7 +579,7 @@ async function handleRejection(
   message{{#if typescript}}: any{{/if}}
 ) {
   // Handle rejection action
-  console.log(`Rejection by ${user.id} in ${channel.id}`);
+  console.log("template string");
 }
 
 async function sendProjectInfo(
@@ -587,7 +587,7 @@ async function sendProjectInfo(
   user{{#if typescript}}: string{{/if}}
 ) {
   // Send project information
-  console.log(`Sending project info to ${channel} for ${user}`);
+  console.log("template string");
 }
 
 // Export handlers

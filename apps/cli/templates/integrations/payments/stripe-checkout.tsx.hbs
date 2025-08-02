@@ -98,7 +98,7 @@ const CheckoutForm{{#if typescript}}: React.FC<StripeCheckoutProps>{{/if}} = ({
       const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/payment/complete`,
+          return_url: "template string",
           receipt_email: email,
         },
         redirect: 'if_required'
@@ -167,7 +167,7 @@ const CheckoutForm{{#if typescript}}: React.FC<StripeCheckoutProps>{{/if}} = ({
           </div>
 
           <button
-            onClick={() => window.location.href = '/orders'}
+            onClick={handleClick}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
           >
             View Order Details

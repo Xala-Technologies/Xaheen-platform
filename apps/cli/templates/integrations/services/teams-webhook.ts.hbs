@@ -64,7 +64,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
       const reactions = context.activity.reactionsAdded || [];
       
       for (const reaction of reactions) {
-        console.log(`User added reaction: ${reaction.type}`);
+        console.log("template string");
       }
 
       await next();
@@ -265,7 +265,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
     const userName = context.activity.from.name || 'there';
     
     await context.sendActivity(
-      MessageFactory.text(`Hi ${userName}! I'm the {{projectName}} bot. Type "help" to see what I can do.`)
+      MessageFactory.text("template string")
     );
   }
 
@@ -283,7 +283,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
           items: [
             {
               type: 'TextBlock',
-              text: `Welcome ${member.name}! 👋`,
+              text: "template string",
               size: 'Large',
               weight: 'Bolder'
             },
@@ -415,7 +415,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
     const reportType = text.split('report')[1]?.trim() || 'daily';
     
     await context.sendActivity(
-      MessageFactory.text(`Generating ${reportType} report... You'll receive it shortly.`)
+      MessageFactory.text("template string")
     );
     
     // Generate report asynchronously
@@ -427,7 +427,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
    */
   private async handleApproval(context{{#if typescript}}: TurnContext{{/if}}, invokeValue{{#if typescript}}: any{{/if}}) {
     const user = context.activity.from.name;
-    console.log(`Approval by ${user}:`, invokeValue.action.data);
+    console.log("template string", invokeValue.action.data);
     
     // Update the card to show approval
     const approvedCard = CardFactory.adaptiveCard({
@@ -441,7 +441,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
           items: [
             {
               type: 'TextBlock',
-              text: `✅ Approved by ${user}`,
+              text: "template string",
               size: 'Medium',
               weight: 'Bolder'
             }
@@ -463,7 +463,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
    */
   private async handleRejection(context{{#if typescript}}: TurnContext{{/if}}, invokeValue{{#if typescript}}: any{{/if}}) {
     const user = context.activity.from.name;
-    console.log(`Rejection by ${user}:`, invokeValue.action.data);
+    console.log("template string", invokeValue.action.data);
     
     // Update the card to show rejection
     const rejectedCard = CardFactory.adaptiveCard({
@@ -477,7 +477,7 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
           items: [
             {
               type: 'TextBlock',
-              text: `❌ Rejected by ${user}`,
+              text: "template string",
               size: 'Medium',
               weight: 'Bolder'
             }
@@ -548,12 +548,12 @@ export class {{projectName}}TeamsBot extends TeamsActivityHandler {
 
   private async startDeployment(environment{{#if typescript}}: string{{/if}}, user{{#if typescript}}: string{{/if}}) {
     // Implement deployment logic
-    console.log(`Starting deployment to ${environment} by ${user}`);
+    console.log("template string");
   }
 
   private async generateReport(reportType{{#if typescript}}: string{{/if}}, userId{{#if typescript}}: string{{/if}}) {
     // Implement report generation
-    console.log(`Generating ${reportType} report for ${userId}`);
+    console.log("template string");
   }
 }
 
@@ -621,7 +621,7 @@ export function createNotificationCard(
       },
       {
         type: 'TextBlock',
-        text: `${new Date().toLocaleString()} | {{projectName}}`,
+        text: "template string",
         size: 'Small',
         color: 'Light',
         separator: true

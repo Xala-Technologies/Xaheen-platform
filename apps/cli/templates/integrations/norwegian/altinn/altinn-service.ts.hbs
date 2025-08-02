@@ -5,7 +5,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -110,7 +110,7 @@ export class AltinnService {
     }
 
     try {
-      const tokenUrl = `${this.config.apiBaseUrl}/authentication/api/v1/exchange/maskinporten`;
+      const tokenUrl = "template string";
       
       const response = await fetch(tokenUrl, {
         method: 'POST',
@@ -125,7 +125,7 @@ export class AltinnService {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get access token: ${response.status} ${response.statusText}`);
+        throw new Error("template string");
       }
 
       const data = await response.json();
@@ -136,7 +136,7 @@ export class AltinnService {
       return this.accessToken;
     } catch (error) {
       console.error('[Altinn] Failed to get access token:', error);
-      throw new Error(`Altinn authentication failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -146,28 +146,28 @@ export class AltinnService {
   public async getParties(): Promise<AltinnParty[]> {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `${this.config.apiBaseUrl}/authorization/api/v1/parties`;
+      const url = "template string";
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': "template string",
           'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
           'Accept': 'application/json',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get parties: ${response.status} ${response.statusText}`);
+        throw new Error("template string");
       }
 
       const parties = await response.json();
-      console.log(`[Altinn] Retrieved ${parties.length} parties`);
+      console.log("template string");
       
       return parties as AltinnParty[];
     } catch (error) {
       console.error('[Altinn] Failed to get parties:', error);
-      throw new Error(`Altinn parties retrieval failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -177,28 +177,28 @@ export class AltinnService {
   public async getRights(partyId: number): Promise<AltinnRight[]> {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `${this.config.apiBaseUrl}/authorization/api/v1/parties/${partyId}/rights`;
+      const url = "template string";
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': "template string",
           'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
           'Accept': 'application/json',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get rights: ${response.status} ${response.statusText}`);
+        throw new Error("template string");
       }
 
       const rights = await response.json();
-      console.log(`[Altinn] Retrieved ${rights.length} rights for party ${partyId}`);
+      console.log("template string");
       
       return rights as AltinnRight[];
     } catch (error) {
       console.error('[Altinn] Failed to get rights:', error);
-      throw new Error(`Altinn rights retrieval failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -213,20 +213,20 @@ export class AltinnService {
   ): Promise<{ instanceId: string; status: string }> {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `${this.config.apiBaseUrl}/storage/api/v1/instances`;
+      const url = "template string";
 
       const instanceData = {
         instanceOwner: {
           partyId: partyId.toString(),
         },
-        appId: `${serviceCode}/${serviceEditionCode}`,
+        appId: "template string",
         data: formData,
       };
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': "template string",
           'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
           'Content-Type': 'application/json',
         },
@@ -235,11 +235,11 @@ export class AltinnService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Form submission failed: ${errorData.message || response.statusText}`);
+        throw new Error("template string");
       }
 
       const result = await response.json();
-      console.log(`[Altinn] Form submitted successfully: ${result.id}`);
+      console.log("template string");
       
       return {
         instanceId: result.id,
@@ -247,7 +247,7 @@ export class AltinnService {
       };
     } catch (error) {
       console.error('[Altinn] Form submission failed:', error);
-      throw new Error(`Altinn form submission failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 
@@ -257,28 +257,28 @@ export class AltinnService {
   public async getOrganization(organizationNumber: string): Promise<AltinnOrganization> {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `${this.config.apiBaseUrl}/register/api/v1/organizations/${organizationNumber}`;
+      const url = "template string";
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': "template string",
           'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
           'Accept': 'application/json',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get organization: ${response.status} ${response.statusText}`);
+        throw new Error("template string");
       }
 
       const organization = await response.json();
-      console.log(`[Altinn] Retrieved organization: ${organization.name}`);
+      console.log("template string");
       
       return organization as AltinnOrganization;
     } catch (error) {
       console.error('[Altinn] Failed to get organization:', error);
-      throw new Error(`Altinn organization retrieval failed: ${error.message}`);
+      throw new Error("template string");
     }
   }
 

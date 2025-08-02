@@ -100,7 +100,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
 
         if (!tokenResponse.ok) {
           const errorData = await tokenResponse.json().catch(() => ({}));
-          throw new Error(errorData.message || `Token exchange failed: ${tokenResponse.statusText}`);
+          throw new Error(errorData.message || "template string");
         }
 
         const tokenData = await tokenResponse.json();
@@ -112,7 +112,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
           // Fetch user profile if not included in token response
           const profileResponse = await fetch('/api/auth/{{provider}}/profile', {
             headers: {
-              'Authorization': `Bearer ${tokenData.access_token}`,
+              'Authorization': "template string",
             },
           });
 
@@ -215,8 +215,8 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
       'temporarily_unavailable': '{{providerConfig.displayName}} is temporarily unavailable',
     };
 
-    const message = errorMessages[error] || `OAuth error: ${error}`;
-    return description ? `${message} - ${description}` : message;
+    const message = errorMessages[error] || "template string";
+    return description ? "template string" : message;
   };
 
   const containerStyles = {
@@ -267,7 +267,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
 
   if (state.status === 'loading') {
     return (
-      <div className={`{{provider}}-callback-loading ${className}`} style={containerStyles}>
+      <div className=""}-callback-loading ${className}`} style={containerStyles}>
         <div style={iconStyles}>
           <LoadingIcon />
         </div>
@@ -281,7 +281,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
 
   if (state.status === 'error') {
     return (
-      <div className={`{{provider}}-callback-error ${className}`} style={containerStyles}>
+      <div className=""}-callback-error ${className}`} style={containerStyles}>
         <div style={iconStyles}>
           <ErrorIcon />
         </div>
@@ -290,7 +290,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
           {state.error || 'An error occurred during authentication with {{providerConfig.displayName}}.'}
         </p>
         
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style=config>
           <button
             onClick={() => {
               {{#if (eq framework 'nextjs')}}
@@ -339,7 +339,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
   }
 
   return (
-    <div className={`{{provider}}-callback-success ${className}`} style={containerStyles}>
+    <div className=""}-callback-success ${className}`} style={containerStyles}>
       <div style={iconStyles}>
         <SuccessIcon />
       </div>
@@ -347,7 +347,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
       <div style={messageStyles}>
         <p>
           You're now signed in with {{providerConfig.displayName}}.
-          {state.user?.name && ` Welcome, ${state.user.name}!`}
+          {state.user?.name && "template string"}
         </p>
         
         {state.user && (
@@ -370,7 +370,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
         </p>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+      <div style=config>
         <MiniLoadingIcon />
         <span>Redirecting...</span>
       </div>
@@ -380,7 +380,7 @@ export const {{capitalize provider}}Callback{{#if typescript}}: React.FC<{{capit
 
 // Icon components
 const LoadingIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle
       cx="12"
       cy="12"
@@ -418,7 +418,7 @@ const LoadingIcon = () => (
 );
 
 const SuccessIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#10b981" />
     <path
       d="M9 12l2 2 4-4"
@@ -431,7 +431,7 @@ const SuccessIcon = () => (
 );
 
 const ErrorIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" style={{ width: '100%', height: '100%' }}>
+  <svg viewBox="0 0 24 24" fill="none" style=config>
     <circle cx="12" cy="12" r="10" fill="#ef4444" />
     <path
       d="M15 9l-6 6M9 9l6 6"

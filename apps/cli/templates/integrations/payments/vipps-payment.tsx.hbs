@@ -100,7 +100,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
 
   const checkPaymentStatus = async (checkOrderId{{#if typescript}}: string{{/if}}) => {
     try {
-      const response = await fetch(`/api/payments/vipps/status/${checkOrderId}`);
+      const response = await fetch("template string");
       const data = await response.json();
       
       setPaymentDetails(data);
@@ -129,7 +129,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
 
   if (status === 'success' && paymentDetails) {
     return (
-      <div className={`max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl ${className}`}>
+      <div className=""`}>
         <div className="text-center">
           <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
             <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
           </div>
 
           <button
-            onClick={() => window.location.href = '/orders'}
+            onClick={handleClick}
             className="w-full bg-vipps-orange hover:bg-vipps-orange-dark text-white font-medium py-3 px-6 rounded-lg transition-colors"
           >
             Se ordredetaljer
@@ -163,7 +163,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
   }
 
   return (
-    <div className={`max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl ${className}`}>
+    <div className=""`}>
       {/* Vipps Logo and Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center p-4 bg-vipps-orange bg-opacity-10 rounded-full mb-4">
@@ -199,10 +199,10 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
         </div>
 
         <button
-          onClick={() => setShowVATDetails(!showVATDetails)}
+          onClick={handleClick}
           className="mt-4 text-sm text-vipps-orange hover:text-vipps-orange-dark flex items-center"
         >
-          <svg className={`w-4 h-4 mr-1 transform transition-transform ${showVATDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className=""`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
           {showVATDetails ? 'Skjul MVA-detaljer' : 'Vis MVA-detaljer'}
@@ -218,7 +218,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
 
       {/* Payment Button */}
       <button
-        onClick={initiatePayment}
+        onClick={handleClick}
         disabled={loading || status === 'processing'}
         className="w-full bg-vipps-orange hover:bg-vipps-orange-dark text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
       >
@@ -263,7 +263,7 @@ export const VippsCheckout{{#if typescript}}: React.FC<VippsCheckoutProps>{{/if}
       {/* Cancel Link */}
       <div className="mt-4 text-center">
         <button
-          onClick={onCancel}
+          onClick={handleClick}
           className="text-sm text-gray-500 hover:text-gray-700 underline"
         >
           Avbryt betaling

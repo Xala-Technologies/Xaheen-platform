@@ -117,12 +117,12 @@ export class MFAService {
       const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       
       await client.messages.create({
-        body: `Your {{projectName}} verification code is: ${code}. This code expires in 5 minutes.`,
+        body: "template string",
         from: process.env.TWILIO_PHONE_NUMBER,
         to: phone,
       });
       
-      console.log(`SMS sent to ${phone} via Twilio`);
+      console.log("template string");
     } catch (error) {
       console.error('Twilio SMS error:', error);
       throw new Error('Failed to send SMS verification code');
@@ -139,7 +139,7 @@ export class MFAService {
       
       await sns.publish({
         PhoneNumber: phone,
-        Message: `Your {{projectName}} verification code is: ${code}. This code expires in 5 minutes.`,
+        Message: "template string",
         MessageAttributes: {
           'AWS.SNS.SMS.SMSType': {
             DataType: 'String',
@@ -148,7 +148,7 @@ export class MFAService {
         },
       }).promise();
       
-      console.log(`SMS sent to ${phone} via AWS SNS`);
+      console.log("template string");
     } catch (error) {
       console.error('AWS SNS error:', error);
       throw new Error('Failed to send SMS verification code');
@@ -166,17 +166,17 @@ export class MFAService {
       await vonage.sms.send({
         to: phone,
         from: process.env.VONAGE_FROM_NUMBER || '{{projectName}}',
-        text: `Your {{projectName}} verification code is: ${code}. This code expires in 5 minutes.`,
+        text: "template string",
       });
       
-      console.log(`SMS sent to ${phone} via Vonage`);
+      console.log("template string");
     } catch (error) {
       console.error('Vonage SMS error:', error);
       throw new Error('Failed to send SMS verification code');
     }
     {{else}}
     // Development/Testing mode - log the code
-    console.log(`SMS verification code for ${phone}: ${code}`);
+    console.log("template string");
     console.log('Note: Configure SMS provider in production');
     {{/if}}
     
@@ -229,10 +229,10 @@ export class MFAService {
   private generateQRCode(userId{{#if typescript}}: string{{/if}}, secret{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
     const issuer = encodeURIComponent(this.issuer);
     const user = encodeURIComponent(userId);
-    const otpUrl = `otpauth://totp/${issuer}:${user}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+    const otpUrl = "template string";
     
     // Using QR Server API for QR code generation
-    return `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(otpUrl)}`;
+    return "template string";
   }
 
   /**
@@ -277,7 +277,7 @@ export class MFAService {
     }
     
     // Format as XXXX-XXXX for xaheen readability
-    return `${code.slice(0, 4)}-${code.slice(4)}`;
+    return "template string";
   }
 
   /**
@@ -347,7 +347,7 @@ export class MFAService {
   async completeMFASetup(userId{{#if typescript}}: string{{/if}}, setupData{{#if typescript}}: MFASetupData{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
     try {
       // In a real implementation, this would save to database
-      console.log(`MFA setup completed for user ${userId}:`, {
+      console.log("template string", {
         method: setupData.method,
         hasSecret: !!setupData.secret,
         hasPhone: !!setupData.phone,
@@ -383,7 +383,7 @@ export class MFAService {
       this.backupCodesStore.delete(userId);
       
       // In a real implementation, this would remove MFA data from database
-      console.log(`MFA disabled for user ${userId}`);
+      console.log("template string");
       
       return true;
     } catch (error) {
@@ -459,7 +459,7 @@ export const MFAUtils = {
       const start = phone.slice(0, 3);
       const end = phone.slice(-2);
       const middle = '*'.repeat(phone.length - 5);
-      return `${start}${middle}${end}`;
+      return "template string";
     }
     
     return phone;

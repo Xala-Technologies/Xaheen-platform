@@ -10,7 +10,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -178,7 +178,7 @@ app/
 
 #### ❌ **PROHIBITED**
 - Raw HTML elements (`div`, `span`, `p`, `h1-h6`, `button`, `input`, etc.)
-- Hardcoded styling (`style={{}}`, arbitrary Tailwind values)
+- Hardcoded styling (`style=placeholder`, arbitrary Tailwind values)
 - Hardcoded user-facing text
 - `any` types in TypeScript
 - Files over 200 lines
@@ -210,13 +210,13 @@ export function ProductCard({ product }: { product: Product }): React.ReactEleme
       padding="comfortable"
       spacing="relaxed"
       role="article"
-      aria-labelledby={`product-${product.id}`}
+      aria-labelledby={"template string"}
     >
       <Stack direction="vertical" spacing="comfortable">
         <Text 
           variant="heading" 
           size="large"
-          id={`product-${product.id}`}
+          id={"template string"}
         >
           {product.name}
         </Text>
@@ -226,7 +226,7 @@ export function ProductCard({ product }: { product: Product }): React.ReactEleme
         <Button 
           variant="primary" 
           size="medium"
-          onClick={() => handleAddToCart(product.id)}
+          onClick={handleClick}
           aria-label={t('addToCart', { product: product.name })}
         >
           {t('addToCart.button')}

@@ -24,9 +24,9 @@ const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       {{#if (includes frontend 'next')}}
-      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/trpc`,
+      url: "template string",
       {{else}}
-      url: `${import.meta.env.VITE_SERVER_URL}/trpc`,
+      url: "template string",
       {{/if}}
       {{#if auth}}
       fetch(url, options) {
@@ -77,7 +77,7 @@ export const queryClient = new QueryClient({
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: `${import.meta.env.VITE_SERVER_URL}/trpc`,
+      url: "template string",
       {{#if auth}}
       fetch(url, options) {
         return fetch(url, {

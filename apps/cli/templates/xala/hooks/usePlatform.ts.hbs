@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -186,7 +186,7 @@ export function usePlatformNavigation() {
     } else {
       // Web/Electron navigation
       if (typeof window !== 'undefined') {
-        const url = params ? `${route}?${new URLSearchParams(params).toString()}` : route;
+        const url = params ? "template string" : route;
         window.history.pushState(null, '', url);
       }
     }
@@ -500,14 +500,14 @@ export function usePlatformFileSystem() {
         const RNFS = require('react-native-fs');
         return await RNFS.readFile(path, 'utf8');
       } catch (error) {
-        throw new Error(`Failed to read file: ${error}`);
+        throw new Error("template string");
       }
     } else if (platformInfo.isElectron) {
       try {
         const fs = window.require('fs').promises;
         return await fs.readFile(path, 'utf8');
       } catch (error) {
-        throw new Error(`Failed to read file: ${error}`);
+        throw new Error("template string");
       }
     } else {
       throw new Error('File system access not available on web platform');
@@ -520,14 +520,14 @@ export function usePlatformFileSystem() {
         const RNFS = require('react-native-fs');
         await RNFS.writeFile(path, content, 'utf8');
       } catch (error) {
-        throw new Error(`Failed to write file: ${error}`);
+        throw new Error("template string");
       }
     } else if (platformInfo.isElectron) {
       try {
         const fs = window.require('fs').promises;
         await fs.writeFile(path, content, 'utf8');
       } catch (error) {
-        throw new Error(`Failed to write file: ${error}`);
+        throw new Error("template string");
       }
     } else {
       throw new Error('File system access not available on web platform');
@@ -540,14 +540,14 @@ export function usePlatformFileSystem() {
         const RNFS = require('react-native-fs');
         await RNFS.unlink(path);
       } catch (error) {
-        throw new Error(`Failed to delete file: ${error}`);
+        throw new Error("template string");
       }
     } else if (platformInfo.isElectron) {
       try {
         const fs = window.require('fs').promises;
         await fs.unlink(path);
       } catch (error) {
-        throw new Error(`Failed to delete file: ${error}`);
+        throw new Error("template string");
       }
     } else {
       throw new Error('File system access not available on web platform');
@@ -561,14 +561,14 @@ export function usePlatformFileSystem() {
         const files = await RNFS.readDir(directory);
         return files.map((file{{#if typescript}}: any{{/if}}) => file.name);
       } catch (error) {
-        throw new Error(`Failed to list files: ${error}`);
+        throw new Error("template string");
       }
     } else if (platformInfo.isElectron) {
       try {
         const fs = window.require('fs').promises;
         return await fs.readdir(directory);
       } catch (error) {
-        throw new Error(`Failed to list files: ${error}`);
+        throw new Error("template string");
       }
     } else {
       throw new Error('File system access not available on web platform');
@@ -587,7 +587,7 @@ export function usePlatformFileSystem() {
         if (DocumentPicker.isCancel(error)) {
           return null;
         }
-        throw new Error(`Failed to pick file: ${error}`);
+        throw new Error("template string");
       }
     } else if (platformInfo.isElectron) {
       try {
@@ -607,7 +607,7 @@ export function usePlatformFileSystem() {
         }
         return null;
       } catch (error) {
-        throw new Error(`Failed to pick file: ${error}`);
+        throw new Error("template string");
       }
     } else {
       // Web file picker

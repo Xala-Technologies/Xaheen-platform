@@ -7,7 +7,7 @@
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
- * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
  * ✅ WCAG 2.2 AAA compliance for accessibility
@@ -330,7 +330,7 @@ export default function FormLayout({
           <Button
             variant="outline"
             size="md"
-            onClick={() => onStepChange(currentStep - 1)}
+            onClick={handleClick}
             disabled={loading}
           >
             <Icon component={ChevronLeft} size="sm" />
@@ -340,7 +340,7 @@ export default function FormLayout({
           <Button
             variant="outline"
             size="md"
-            onClick={onCancel}
+            onClick={handleClick}
             disabled={loading}
           >
             <Icon component={X} size="sm" />
@@ -362,7 +362,7 @@ export default function FormLayout({
           <Button
             variant="outline"
             size="md"
-            onClick={() => onSave({})}
+            onClick={handleClick})}
             disabled={loading}
           >
             <Icon component={Save} size="sm" />
@@ -374,7 +374,7 @@ export default function FormLayout({
           <Button
             variant="primary"
             size="md"
-            onClick={() => onStepChange(currentStep + 1)}
+            onClick={handleClick}
             disabled={loading}
           >
             {t('form.next', 'Next')}
@@ -384,7 +384,7 @@ export default function FormLayout({
           <Button
             variant="primary"
             size="md"
-            onClick={() => onSubmit({})}
+            onClick={handleClick})}
             disabled={loading}
             loading={loading}
           >
