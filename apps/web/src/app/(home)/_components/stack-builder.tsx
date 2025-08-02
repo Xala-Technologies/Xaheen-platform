@@ -77,6 +77,14 @@ const CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 	"analytics",
 	"monitoring",
 	"messaging",
+	"testing",
+	"devops",
+	"search",
+	"caching",
+	"backgroundJobs",
+	"i18n",
+	"cms",
+	"security",
 	"packageManager",
 	"uiSystem",
 	"compliance",
@@ -140,6 +148,22 @@ const getBadgeColors = (category: string): string => {
 			return "border-red-300 bg-red-100 text-red-800 dark:border-red-700/30 dark:bg-red-900/30 dark:text-red-300";
 		case "messaging":
 			return "border-indigo-300 bg-indigo-100 text-indigo-800 dark:border-indigo-700/30 dark:bg-indigo-900/30 dark:text-indigo-300";
+		case "testing":
+			return "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700/30 dark:bg-emerald-900/30 dark:text-emerald-300";
+		case "devops":
+			return "border-slate-300 bg-slate-100 text-slate-800 dark:border-slate-700/30 dark:bg-slate-900/30 dark:text-slate-300";
+		case "search":
+			return "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-700/30 dark:bg-amber-900/30 dark:text-amber-300";
+		case "caching":
+			return "border-rose-300 bg-rose-100 text-rose-800 dark:border-rose-700/30 dark:bg-rose-900/30 dark:text-rose-300";
+		case "backgroundJobs":
+			return "border-fuchsia-300 bg-fuchsia-100 text-fuchsia-800 dark:border-fuchsia-700/30 dark:bg-fuchsia-900/30 dark:text-fuchsia-300";
+		case "i18n":
+			return "border-lime-300 bg-lime-100 text-lime-800 dark:border-lime-700/30 dark:bg-lime-900/30 dark:text-lime-300";
+		case "cms":
+			return "border-stone-300 bg-stone-100 text-stone-800 dark:border-stone-700/30 dark:bg-stone-900/30 dark:text-stone-300";
+		case "security":
+			return "border-red-300 bg-red-100 text-red-800 dark:border-red-700/30 dark:bg-red-900/30 dark:text-red-300";
 		case "git":
 		case "webDeploy":
 		case "install":
@@ -223,6 +247,22 @@ const getCategoryDisplayName = (categoryKey: string): string => {
 			return "🔍 Monitoring";
 		case "messaging":
 			return "📨 Messaging";
+		case "testing":
+			return "🧪 Testing";
+		case "devops":
+			return "🚀 DevOps";
+		case "search":
+			return "🔍 Search";
+		case "caching":
+			return "⚡ Caching";
+		case "backgroundJobs":
+			return "⚙️ Background Jobs";
+		case "i18n":
+			return "🌍 Internationalization";
+		case "cms":
+			return "📝 Content Management";
+		case "security":
+			return "🔒 Security";
 		default:
 			const result = categoryKey.replace(/([A-Z])/g, " $1");
 			return result.charAt(0).toUpperCase() + result.slice(1);

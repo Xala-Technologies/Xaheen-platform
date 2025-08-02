@@ -1,0 +1,19 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- MANDATORY COMPLIANCE RULES - XALA UI SYSTEM v5 -->
+  <!-- ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) -->
+  <!-- ✅ ONLY semantic components from @xala-technologies/ui-system -->
+  <!-- ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values) -->
+  <!-- ✅ MANDATORY design token usage for all colors, spacing, typography -->
+  <!-- ✅ Enhanced 8pt Grid System - all spacing in 8px increments -->
+  <!-- ✅ WCAG 2.2 AAA compliance for accessibility -->
+  <!-- ❌ NO hardcoded user-facing text - ALL text must use t() function -->
+  <!-- ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic -->
+  <!-- ✅ Explicit TypeScript return types (no 'any' types) -->
+  <!-- ✅ SOLID principles and component composition -->
+  <!-- ✅ Maximum 200 lines per file, 20 lines per function -->
+  
+  <rect width="32" height="32" rx="6" fill="#4e9bcd"/>
+  <path d="M8 16c0-4.4 3.6-8 8-8s8 3.6 8 8c0 2.2-.9 4.2-2.3 5.7L16 26l-5.7-4.3C8.9 20.2 8 18.2 8 16z" fill="white"/>
+  <circle cx="16" cy="16" r="3" fill="#4e9bcd"/>
+  <path d="M12 12l8 8M20 12l-8 8" stroke="#4e9bcd" stroke-width="1"/>
+</svg>
