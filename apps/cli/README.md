@@ -1,4 +1,4 @@
-# Create Better-T-Stack CLI
+# Create Xaheen CLI
 
 A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations
 
@@ -19,10 +19,10 @@ Run without installing globally:
 npx xaheen@latest
 
 # Using bun
-bun create better-t-stack@latest
+bun create Xaheen@latest
 
 # Using pnpm
-pnpm create better-t-stack@latest
+pnpm create Xaheen@latest
 ```
 
 Follow the prompts to configure your project or use the `--yes` flag for defaults.

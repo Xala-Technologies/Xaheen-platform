@@ -377,7 +377,7 @@ export const environments = {
 
 ## 📚 Resources
 
-- [Original xaheen docs](https://better-t-stack.dev)
+- [Original xaheen docs](https://Xaheen.dev)
 - [Turborepo documentation](https://turbo.build/repo/docs)
 - [Commander.js CLI framework](https://github.com/tj/commander.js)
 - [Clack prompts](https://github.com/natemoo-re/clack)

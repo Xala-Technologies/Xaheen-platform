@@ -923,10 +923,10 @@ const generateCommand = (stackState: StackState): string => {
 			base = "npx xaheen@latest";
 			break;
 		case "pnpm":
-			base = "pnpm create better-t-stack@latest";
+			base = "pnpm create Xaheen@latest";
 			break;
 		default:
-			base = "bun create better-t-stack@latest";
+			base = "bun create Xaheen@latest";
 			break;
 	}
 

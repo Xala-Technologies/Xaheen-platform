@@ -85,7 +85,7 @@ export default function Navbar() {
 			target: "_blank",
 		},
 		{
-			href: "https://www.github.com/better-t-stack/xaheen",
+			href: "https://www.github.com/Xaheen/xaheen",
 			label: "GitHub",
 			icon: <Github className="size-4" />,
 			target: "_blank",

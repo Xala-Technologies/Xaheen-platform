@@ -40,7 +40,7 @@ xaheen/
 - **Version**: `2.28.5`
 - **Type**: ESM module
 - **Binary**: `dist/index.js`
-- **Homepage**: https://better-t-stack.dev/
+- **Homepage**: https://Xaheen.dev/
 
 ### **CLI Architecture**
 ```
@@ -58,8 +58,8 @@ apps/cli/src/
 1. **`init`** (default) - Create new Better-T Stack project
 2. **`add`** - Add addons/deployment to existing project
 3. **`sponsors`** - Show project sponsors
-4. **`docs`** - Open documentation (https://better-t-stack.dev/docs)
-5. **`builder`** - Open web builder (https://better-t-stack.dev/new)
+4. **`docs`** - Open documentation (https://Xaheen.dev/docs)
+5. **`builder`** - Open web builder (https://Xaheen.dev/new)
 
 ### **CLI Technology Stack**
 - **CLI Framework**: `trpc-cli` (tRPC-based commands)

@@ -24,7 +24,7 @@ echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> .npmrc
 ```bash
 # Update package.json files
 find . -name "package.json" -exec sed -i 's/xaheen/xaheen/g' {} +
-find . -name "package.json" -exec sed -i 's/better-t-stack/xaheen/g' {} +
+find . -name "package.json" -exec sed -i 's/Xaheen/xaheen/g' {} +
 
 # Update TypeScript/JavaScript files
 find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | \

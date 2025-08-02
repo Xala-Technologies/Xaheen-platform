@@ -25,7 +25,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 	};
 
 	const baseContent = {
-		$schema: "https://better-t-stack.dev/schema.json",
+		$schema: "https://Xaheen.dev/schema.json",
 		version: btsConfig.version,
 		createdAt: btsConfig.createdAt,
 		database: btsConfig.database,
@@ -52,7 +52,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
 	configContent = JSONC.applyEdits(configContent, formatResult);
 
-	const finalContent = `// Better-T-Stack configuration file
+	const finalContent = `// Xaheen configuration file
 // safe to delete
 
 ${configContent}`;

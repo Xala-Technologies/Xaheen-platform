@@ -10,7 +10,7 @@ const YOUTUBE_VIDEOS = [
 	{
 		id: "VIDEO_001",
 		embedId: "CWwkWJmT_zU",
-		title: "The BEST Way To Start a Project (Better-T-Stack)",
+		title: "The BEST Way To Start a Project (Xaheen)",
 	},
 	{
 		id: "VIDEO_002",

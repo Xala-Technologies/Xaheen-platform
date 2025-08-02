@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://better-t-stack.dev/schema.json",
-  "title": "Better-T-Stack Configuration",
-  "description": "Configuration file for Better-T-Stack projects",
+  "$id": "https://Xaheen.dev/schema.json",
+  "title": "Xaheen Configuration",
+  "description": "Configuration file for Xaheen projects",
   "type": "object",
   "properties": {
     "$schema": {

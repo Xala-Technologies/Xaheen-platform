@@ -7,7 +7,7 @@ Transform xaheen into the Xaheen platform with multiple CLI modes while maintain
 
 ```bash
 # 1. Fork and rename
-git clone https://github.com/better-t-stack/xaheen.git xaheen
+git clone https://github.com/Xaheen/xaheen.git xaheen
 cd xaheen
 git remote set-url origin https://github.com/YOUR_ORG/xaheen.git
 

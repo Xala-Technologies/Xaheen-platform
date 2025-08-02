@@ -13,7 +13,7 @@
     "dist"
   ],
   "keywords": [
-    "better-t-stack",
+    "Xaheen",
     "typescript",
     "boilerplate",
     "starter",
@@ -43,7 +43,7 @@
     "url": "git+https://github.com/AmanVarshney01/xaheen.git",
     "directory": "apps/cli"
   },
-  "homepage": "https://better-t-stack.dev/",
+  "homepage": "https://Xaheen.dev/",
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",

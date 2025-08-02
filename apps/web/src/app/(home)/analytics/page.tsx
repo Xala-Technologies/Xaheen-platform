@@ -967,7 +967,7 @@ export default function AnalyticsPage() {
 						<div className="flex items-center gap-2 text-sm">
 							<span className="text-primary">$</span>
 							<span className=" text-foreground">
-								Analytics from Better-T-Stack CLI usage data
+								Analytics from Xaheen CLI usage data
 							</span>
 						</div>
 						<div className="mt-2 flex items-center gap-2 text-sm">

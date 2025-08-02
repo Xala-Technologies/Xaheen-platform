@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
 			allow: "/",
 			disallow: "/private/",
 		},
-		sitemap: "https://better-t-stack.dev/sitemap.xml",
+		sitemap: "https://Xaheen.dev/sitemap.xml",
 	};
 }

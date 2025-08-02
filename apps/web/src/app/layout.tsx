@@ -14,7 +14,7 @@ const poppins = Poppins({
 });
 
 const ogImage =
-	"https://api.screenshothis.com/v1/screenshots/take?api_key=ss_live_NQJgRXqHcKPwnoMTuQmgiwLIGbVfihjpMyQhgsaMyNBHTyesvrxpYNXmdgcnxipc&url=https%3A%2F%2Fbetter-t-stack.dev%2F&width=1200&height=630&block_ads=true&block_cookie_banners=true&block_trackers=true&device_scale_factor=0.75&prefers_color_scheme=dark&is_cached=true";
+	"https://api.screenshothis.com/v1/screenshots/take?api_key=ss_live_NQJgRXqHcKPwnoMTuQmgiwLIGbVfihjpMyQhgsaMyNBHTyesvrxpYNXmdgcnxipc&url=https%3A%2F%2FXaheen.dev%2F&width=1200&height=630&block_ads=true&block_cookie_banners=true&block_trackers=true&device_scale_factor=0.75&prefers_color_scheme=dark&is_cached=true";
 
 export const metadata: Metadata = {
 	title: "Better-T Stack",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 		email: false,
 		telephone: false,
 	},
-	metadataBase: new URL("https://better-t-stack.dev"),
+	metadataBase: new URL("https://Xaheen.dev"),
 	alternates: {
 		canonical: "/",
 	},
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 		title: "Better-T Stack",
 		description:
 			"A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
-		url: "https://better-t-stack.dev",
+		url: "https://Xaheen.dev",
 		siteName: "Better-T Stack",
 		images: [
 			{

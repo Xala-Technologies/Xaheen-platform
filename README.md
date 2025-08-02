@@ -1,4 +1,4 @@
-# Better-T-Stack
+# Xaheen
 
 A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations
 
@@ -17,10 +17,10 @@ A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with 
 npx xaheen@latest
 
 # Using bun
-bun create better-t-stack@latest
+bun create Xaheen@latest
 
 # Using pnpm
-pnpm create better-t-stack@latest
+pnpm create Xaheen@latest
 ```
 
 ## Features
@@ -45,13 +45,13 @@ This repository is organized as a monorepo containing:
 
 ## Documentation
 
-Visit [better-t-stack.dev](https://better-t-stack.dev) for full documentation, guides, and examples.
+Visit [Xaheen.dev](https://Xaheen.dev) for full documentation, guides, and examples.
 
 ## Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/better-t-stack/xaheen.git
+git clone https://github.com/Xaheen/xaheen.git
 
 # Install dependencies
 bun install

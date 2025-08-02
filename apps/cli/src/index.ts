@@ -1052,7 +1052,7 @@ const router = t.router({
 	docs: t.procedure
 		.meta({ description: "Open Xaheen Platform documentation" })
 		.mutation(async () => {
-			const DOCS_URL = "https://better-t-stack.dev/docs";
+			const DOCS_URL = "https://Xaheen.dev/docs";
 			try {
 				await openUrl(DOCS_URL);
 				log.success(pc.blue("Opened docs in your default browser."));
@@ -1064,7 +1064,7 @@ const router = t.router({
 	builder: t.procedure
 		.meta({ description: "Open the web-based Xaheen project builder" })
 		.mutation(async () => {
-			const BUILDER_URL = "https://better-t-stack.dev/new";
+			const BUILDER_URL = "https://Xaheen.dev/new";
 			try {
 				await openUrl(BUILDER_URL);
 				log.success(pc.blue("Opened builder in your default browser."));

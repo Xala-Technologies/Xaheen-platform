@@ -8,10 +8,10 @@ import mainLogo from "@/public/logo.svg";
 export const logo = (
 	<>
 		<Image
-			alt="better-t-stack"
+			alt="Xaheen"
 			src={mainLogo}
 			className="w-8"
-			aria-label="better-t-stack"
+			aria-label="Xaheen"
 		/>
 	</>
 );

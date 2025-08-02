@@ -40,9 +40,9 @@ export function generateReproducibleCommand(config: ProjectConfig): string {
 	if (pkgManager === "npm") {
 		baseCommand = "npx xaheen@latest";
 	} else if (pkgManager === "pnpm") {
-		baseCommand = "pnpm create better-t-stack@latest";
+		baseCommand = "pnpm create Xaheen@latest";
 	} else if (pkgManager === "bun") {
-		baseCommand = "bun create better-t-stack@latest";
+		baseCommand = "bun create Xaheen@latest";
 	}
 
 	const projectPathArg = config.relativePath ? ` ${config.relativePath}` : "";

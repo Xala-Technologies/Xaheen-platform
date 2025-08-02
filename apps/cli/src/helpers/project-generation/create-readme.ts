@@ -61,7 +61,7 @@ function generateReadmeContent(options: ProjectConfig): string {
 
 	return `# ${projectName}
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/xaheen), a modern TypeScript stack${
+This project was created with [Xaheen](https://github.com/AmanVarshney01/xaheen), a modern TypeScript stack${
 		stackDescription ? ` that combines ${stackDescription}` : ""
 	}.
 

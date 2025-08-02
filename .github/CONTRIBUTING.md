@@ -1,6 +1,6 @@
-# Contributing to Better-T-Stack
+# Contributing to Xaheen
 
-Thank you for your interest in contributing to Better-T-Stack! This document provides guidelines and setup instructions for contributors.
+Thank you for your interest in contributing to Xaheen! This document provides guidelines and setup instructions for contributors.
 
 ## Project Structure
 
@@ -21,7 +21,7 @@ This repository is organized as a monorepo containing:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/better-t-stack/xaheen.git
+   git clone https://github.com/Xaheen/xaheen.git
    cd xaheen
    ```
 
@@ -138,4 +138,4 @@ This repository is organized as a monorepo containing:
 
 ## License
 
-By contributing to Better-T-Stack, you agree that your contributions will be licensed under the MIT License. 
+By contributing to Xaheen, you agree that your contributions will be licensed under the MIT License. 
