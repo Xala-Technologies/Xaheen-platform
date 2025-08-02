@@ -40,7 +40,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/XaheenEnterprise/xaheen.git",
+    "url": "git+https://github.com/Xala-Technologies/Xaheen-platform.git",
     "directory": "apps/cli"
   },
   "homepage": "https://xaheen.dev/",
