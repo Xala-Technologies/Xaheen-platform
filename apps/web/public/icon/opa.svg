@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Open Policy Agent - policy decision engine -->
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+  <!-- Policy decision tree -->
+  <circle cx="12" cy="8" r="2" fill="currentColor"/>
+  <line x1="12" y1="10" x2="12" y2="14" stroke="currentColor" stroke-width="2"/>
+  <!-- Decision branches -->
+  <line x1="12" y1="14" x2="8" y2="16" stroke="currentColor" stroke-width="2"/>
+  <line x1="12" y1="14" x2="16" y2="16" stroke="currentColor" stroke-width="2"/>
+  <!-- Decision nodes -->
+  <circle cx="8" cy="16" r="1.5" fill="currentColor"/>
+  <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+  <!-- Policy rules indicators -->
+  <path d="M6 6L8 8M6 8L8 6" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M16 6L18 8L16 10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  <!-- OPA logo elements -->
+  <rect x="10" y="4" width="4" height="1" rx="0.5" fill="currentColor" opacity="0.7"/>
+  <rect x="9" y="19" width="6" height="1" rx="0.5" fill="currentColor" opacity="0.7"/>
+</svg>

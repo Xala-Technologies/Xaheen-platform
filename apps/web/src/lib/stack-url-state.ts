@@ -65,6 +65,45 @@ export const stackParsers = {
 	messaging: parseAsStringEnum<StackState["messaging"]>(
 		getValidIds("messaging"),
 	).withDefault(DEFAULT_STACK.messaging),
+	testing: parseAsStringEnum<StackState["testing"]>(
+		getValidIds("testing"),
+	).withDefault(DEFAULT_STACK.testing),
+	devops: parseAsStringEnum<StackState["devops"]>(
+		getValidIds("devops"),
+	).withDefault(DEFAULT_STACK.devops),
+	search: parseAsStringEnum<StackState["search"]>(
+		getValidIds("search"),
+	).withDefault(DEFAULT_STACK.search),
+	caching: parseAsStringEnum<StackState["caching"]>(
+		getValidIds("caching"),
+	).withDefault(DEFAULT_STACK.caching),
+	backgroundJobs: parseAsStringEnum<StackState["backgroundJobs"]>(
+		getValidIds("backgroundJobs"),
+	).withDefault(DEFAULT_STACK.backgroundJobs),
+	i18n: parseAsStringEnum<StackState["i18n"]>(
+		getValidIds("i18n"),
+	).withDefault(DEFAULT_STACK.i18n),
+	cms: parseAsStringEnum<StackState["cms"]>(
+		getValidIds("cms"),
+	).withDefault(DEFAULT_STACK.cms),
+	security: parseAsStringEnum<StackState["security"]>(
+		getValidIds("security"),
+	).withDefault(DEFAULT_STACK.security),
+	saasAdmin: parseAsStringEnum<StackState["saasAdmin"]>(
+		getValidIds("saasAdmin"),
+	).withDefault(DEFAULT_STACK.saasAdmin),
+	subscriptions: parseAsStringEnum<StackState["subscriptions"]>(
+		getValidIds("subscriptions"),
+	).withDefault(DEFAULT_STACK.subscriptions),
+	licensing: parseAsStringEnum<StackState["licensing"]>(
+		getValidIds("licensing"),
+	).withDefault(DEFAULT_STACK.licensing),
+	rbac: parseAsStringEnum<StackState["rbac"]>(
+		getValidIds("rbac"),
+	).withDefault(DEFAULT_STACK.rbac),
+	multiTenancy: parseAsStringEnum<StackState["multiTenancy"]>(
+		getValidIds("multiTenancy"),
+	).withDefault(DEFAULT_STACK.multiTenancy),
 	examples: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.examples),
 	git: parseAsStringEnum<StackState["git"]>(["true", "false"]).withDefault(
 		DEFAULT_STACK.git,
@@ -99,6 +138,19 @@ export const stackUrlKeys: UrlKeys<typeof stackParsers> = {
 	analytics: "ana",
 	monitoring: "mon",
 	messaging: "msg",
+	testing: "test",
+	devops: "dev",
+	search: "search",
+	caching: "cache",
+	backgroundJobs: "bg",
+	i18n: "i18n",
+	cms: "cms",
+	security: "sec",
+	saasAdmin: "admin",
+	subscriptions: "sub",
+	licensing: "lic",
+	rbac: "rbac",
+	multiTenancy: "mt",
 	examples: "ex",
 	git: "git",
 	install: "i",

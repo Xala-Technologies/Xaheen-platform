@@ -1,3 +1,17 @@
+export type ProjectType = 
+	| "landing-page"
+	| "ecommerce"
+	| "blog"
+	| "portfolio"
+	| "dashboard"
+	| "api-backend"
+	| "saas-multi-tenant"
+	| "saas-single-tenant"
+	| "saas-enterprise"
+	| "b2b-platform"
+	| "b2c-app"
+	| "marketplace";
+
 export type TechCategory =
 	| "api"
 	| "webFrontend"
@@ -27,6 +41,11 @@ export type TechCategory =
 	| "i18n"
 	| "cms"
 	| "security"
+	| "saasAdmin"
+	| "subscriptions"
+	| "licensing"
+	| "rbac"
+	| "multiTenancy"
 	| "examples"
 	| "git"
 	| "install";

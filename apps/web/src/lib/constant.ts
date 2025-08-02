@@ -95,6 +95,22 @@ export const TECH_OPTIONS: Record<
 			default: false,
 		},
 		{
+			id: "angular",
+			name: "Angular",
+			description: "Platform for building mobile and desktop web applications",
+			icon: "/icon/angular.svg",
+			color: "from-red-600 to-red-800",
+			default: false,
+		},
+		{
+			id: "blazor",
+			name: "Blazor",
+			description: "Build interactive web UIs using C# instead of JavaScript",
+			icon: "/icon/blazor.svg",
+			color: "from-purple-600 to-blue-600",
+			default: false,
+		},
+		{
 			id: "none",
 			name: "No Web Frontend",
 			description: "No web-based frontend",
@@ -207,6 +223,27 @@ export const TECH_OPTIONS: Record<
 			color: "from-pink-500 to-pink-700",
 		},
 		{
+			id: "laravel",
+			name: "Laravel",
+			description: "PHP web application framework",
+			icon: "/icon/laravel.svg",
+			color: "from-red-500 to-red-700",
+		},
+		{
+			id: "django",
+			name: "Django",
+			description: "Python web framework",
+			icon: "/icon/django.svg",
+			color: "from-green-600 to-green-800",
+		},
+		{
+			id: "dotnet",
+			name: ".NET",
+			description: "Microsoft .NET framework",
+			icon: "/icon/dotnet.svg",
+			color: "from-purple-600 to-blue-600",
+		},
+		{
 			id: "none",
 			name: "No Backend",
 			description: "Skip backend integration (frontend only)",
@@ -245,6 +282,13 @@ export const TECH_OPTIONS: Record<
 			color: "from-green-400 to-green-600",
 		},
 		{
+			id: "mssql",
+			name: "SQL Server",
+			description: "Microsoft SQL Server database",
+			icon: "/icon/mssql.svg",
+			color: "from-red-600 to-red-800",
+		},
+		{
 			id: "none",
 			name: "No Database",
 			description: "Skip database integration",
@@ -274,6 +318,13 @@ export const TECH_OPTIONS: Record<
 			description: "Elegant object modeling tool",
 			icon: "/icon/mongoose.svg",
 			color: "from-blue-400 to-blue-600",
+		},
+		{
+			id: "entity-framework",
+			name: "Entity Framework",
+			description: "Microsoft's object-relational mapper for .NET",
+			icon: "/icon/entity-framework.svg",
+			color: "from-purple-600 to-blue-600",
 		},
 		{
 			id: "none",
@@ -422,6 +473,14 @@ export const TECH_OPTIONS: Record<
 			description: "Enterprise identity platform",
 			icon: "/icon/auth0.svg",
 			color: "from-orange-600 to-red-600",
+			default: false,
+		},
+		{
+			id: "identity-server",
+			name: "Identity Server",
+			description: "OpenID Connect and OAuth 2.0 framework for .NET",
+			icon: "/icon/identity-server.svg",
+			color: "from-blue-600 to-purple-600",
 			default: false,
 		},
 		{
@@ -1409,7 +1468,391 @@ export const TECH_OPTIONS: Record<
 			default: false,
 		},
 	],
+	saasAdmin: [
+		{
+			id: "admin-dashboard",
+			name: "Admin Dashboard",
+			description: "Complete SAAS administration dashboard",
+			icon: "/icon/admin-dashboard.svg",
+			color: "from-blue-600 to-blue-800",
+			default: true,
+		},
+		{
+			id: "tenant-management",
+			name: "Tenant Management",
+			description: "Multi-tenant organization management",
+			icon: "/icon/tenant-management.svg",
+			color: "from-purple-600 to-purple-800",
+			default: false,
+		},
+		{
+			id: "user-management",
+			name: "User Management",
+			description: "Advanced user administration tools",
+			icon: "/icon/user-management.svg",
+			color: "from-green-600 to-green-800",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No SAAS Admin",
+			description: "Skip SAAS administration setup",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
+	subscriptions: [
+		{
+			id: "stripe-billing",
+			name: "Stripe Billing",
+			description: "Complete subscription management with Stripe",
+			icon: "/icon/stripe.svg",
+			color: "from-purple-600 to-purple-800",
+			default: true,
+		},
+		{
+			id: "paddle",
+			name: "Paddle",
+			description: "All-in-one subscription billing platform",
+			icon: "/icon/paddle.svg",
+			color: "from-blue-600 to-blue-800",
+			default: false,
+		},
+		{
+			id: "chargebee",
+			name: "Chargebee",
+			description: "Subscription billing and revenue operations",
+			icon: "/icon/chargebee.svg",
+			color: "from-orange-600 to-orange-800",
+			default: false,
+		},
+		{
+			id: "custom-billing",
+			name: "Custom Billing",
+			description: "Build your own subscription system",
+			icon: "/icon/custom-billing.svg",
+			color: "from-gray-600 to-gray-800",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No Subscriptions",
+			description: "Skip subscription management",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
+	licensing: [
+		{
+			id: "feature-flags",
+			name: "Feature Flags",
+			description: "Dynamic feature toggling and licensing",
+			icon: "/icon/feature-flags.svg",
+			color: "from-green-600 to-green-800",
+			default: true,
+		},
+		{
+			id: "usage-limits",
+			name: "Usage Limits",
+			description: "API rate limiting and usage tracking",
+			icon: "/icon/usage-limits.svg",
+			color: "from-yellow-600 to-yellow-800",
+			default: false,
+		},
+		{
+			id: "license-validation",
+			name: "License Validation",
+			description: "Software license verification system",
+			icon: "/icon/license-validation.svg",
+			color: "from-blue-600 to-blue-800",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No Licensing",
+			description: "Skip license management",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
+	rbac: [
+		{
+			id: "role-permissions",
+			name: "Role & Permissions",
+			description: "Complete role-based access control system",
+			icon: "/icon/rbac.svg",
+			color: "from-indigo-600 to-indigo-800",
+			default: true,
+		},
+		{
+			id: "casbin",
+			name: "Casbin",
+			description: "Authorization library with access control models",
+			icon: "/icon/casbin.svg",
+			color: "from-red-600 to-red-800",
+			default: false,
+		},
+		{
+			id: "opa",
+			name: "Open Policy Agent",
+			description: "Policy-based control for cloud native environments",
+			icon: "/icon/opa.svg",
+			color: "from-cyan-600 to-cyan-800",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No RBAC",
+			description: "Skip role-based access control",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
+	multiTenancy: [
+		{
+			id: "schema-separation",
+			name: "Schema Separation",
+			description: "Database schema per tenant isolation",
+			icon: "/icon/schema-separation.svg",
+			color: "from-purple-600 to-purple-800",
+			default: true,
+		},
+		{
+			id: "row-level-security",
+			name: "Row Level Security",
+			description: "Database row-level tenant isolation",
+			icon: "/icon/rls.svg",
+			color: "from-green-600 to-green-800",
+			default: false,
+		},
+		{
+			id: "tenant-routing",
+			name: "Tenant Routing",
+			description: "Subdomain and path-based tenant routing",
+			icon: "/icon/tenant-routing.svg",
+			color: "from-blue-600 to-blue-800",
+			default: false,
+		},
+		{
+			id: "none",
+			name: "No Multi-Tenancy",
+			description: "Skip multi-tenant setup",
+			icon: "",
+			color: "from-gray-400 to-gray-600",
+			default: false,
+		},
+	],
 };
+
+export const PROJECT_TYPES = [
+	{
+		id: "landing-page",
+		name: "🌐 Landing Page",
+		description: "Marketing sites and product showcases",
+		icon: "/icon/landing-page.svg",
+		color: "from-blue-500 to-blue-700",
+		relevantCategories: ["webFrontend", "uiSystem", "analytics", "cms", "webDeploy"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			uiSystem: ["xala"],
+			analytics: ["vercel-analytics"],
+			webDeploy: ["vercel"]
+		}
+	},
+	{
+		id: "ecommerce",
+		name: "🛒 E-commerce",
+		description: "Online stores and marketplaces",
+		icon: "/icon/ecommerce.svg",
+		color: "from-green-500 to-green-700",
+		relevantCategories: ["webFrontend", "backend", "database", "auth", "payments", "analytics", "security", "uiSystem"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			auth: ["better-auth"],
+			payments: ["stripe"],
+			analytics: ["vercel-analytics"],
+			security: ["snyk"]
+		}
+	},
+	{
+		id: "blog",
+		name: "📝 Blog/Content",
+		description: "Content management and publishing",
+		icon: "/icon/blog.svg",
+		color: "from-purple-500 to-purple-700",
+		relevantCategories: ["webFrontend", "cms", "analytics", "uiSystem", "webDeploy"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			cms: ["strapi"],
+			analytics: ["vercel-analytics"],
+			uiSystem: ["xala"]
+		}
+	},
+	{
+		id: "portfolio",
+		name: "🎨 Portfolio",
+		description: "Personal and professional showcases",
+		icon: "/icon/portfolio.svg",
+		color: "from-pink-500 to-pink-700",
+		relevantCategories: ["webFrontend", "uiSystem", "analytics", "webDeploy"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			uiSystem: ["xala"],
+			analytics: ["vercel-analytics"]
+		}
+	},
+	{
+		id: "dashboard",
+		name: "📊 Dashboard",
+		description: "Admin panels and analytics dashboards",
+		icon: "/icon/dashboard.svg",
+		color: "from-indigo-500 to-indigo-700",
+		relevantCategories: ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			auth: ["better-auth"],
+			monitoring: ["sentry"]
+		}
+	},
+	{
+		id: "api-backend",
+		name: "🔌 API/Backend",
+		description: "Microservices and API-first applications",
+		icon: "/icon/api-backend.svg",
+		color: "from-gray-500 to-gray-700",
+		relevantCategories: ["api", "backend", "database", "orm", "auth", "monitoring", "testing", "security"],
+		defaultSelections: {
+			api: ["trpc"],
+			backend: ["hono"],
+			database: ["postgres"],
+			orm: ["drizzle"],
+			auth: ["better-auth"],
+			monitoring: ["sentry"]
+		}
+	},
+	{
+		id: "saas-multi-tenant",
+		name: "🏢 SAAS Multi-Tenant",
+		description: "Shared infrastructure SAAS platform",
+		icon: "/icon/saas-multi-tenant.svg",
+		color: "from-blue-600 to-purple-600",
+		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			orm: ["drizzle"],
+			auth: ["auth0"],
+			saasAdmin: ["admin-dashboard"],
+			subscriptions: ["stripe-billing"],
+			licensing: ["feature-flags"],
+			rbac: ["role-permissions"],
+			multiTenancy: ["schema-separation"],
+			monitoring: ["sentry"],
+			security: ["snyk"],
+			compliance: ["gdpr"]
+		}
+	},
+	{
+		id: "saas-single-tenant",
+		name: "🏛️ SAAS Single-Tenant",
+		description: "Dedicated per-customer SAAS",
+		icon: "/icon/saas-single-tenant.svg",
+		color: "from-purple-600 to-purple-800",
+		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "analytics", "monitoring", "security", "testing", "compliance", "devops"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			orm: ["drizzle"],
+			auth: ["auth0"],
+			saasAdmin: ["admin-dashboard"],
+			subscriptions: ["stripe-billing"],
+			licensing: ["feature-flags"],
+			rbac: ["role-permissions"],
+			devops: ["docker"]
+		}
+	},
+	{
+		id: "saas-enterprise",
+		name: "🏭 SAAS Enterprise",
+		description: "Large organization SAAS platform",
+		icon: "/icon/saas-enterprise.svg",
+		color: "from-red-600 to-red-800",
+		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance", "devops", "messaging"],
+		defaultSelections: {
+			webFrontend: ["angular"],
+			backend: ["dotnet"],
+			database: ["mssql"],
+			orm: ["entity-framework"],
+			auth: ["identity-server"],
+			saasAdmin: ["admin-dashboard"],
+			subscriptions: ["stripe-billing"],
+			licensing: ["feature-flags"],
+			rbac: ["role-permissions"],
+			multiTenancy: ["schema-separation"],
+			messaging: ["rabbitmq"],
+			compliance: ["iso27001"]
+		}
+	},
+	{
+		id: "b2b-platform",
+		name: "🤝 B2B Platform",
+		description: "Business-to-business applications",
+		icon: "/icon/b2b-platform.svg",
+		color: "from-teal-600 to-teal-800",
+		relevantCategories: ["webFrontend", "backend", "database", "auth", "rbac", "analytics", "monitoring", "security", "compliance", "messaging"],
+		defaultSelections: {
+			webFrontend: ["angular"],
+			backend: ["dotnet"],
+			database: ["postgres"],
+			auth: ["auth0"],
+			rbac: ["role-permissions"],
+			messaging: ["rabbitmq"]
+		}
+	},
+	{
+		id: "b2c-app",
+		name: "👥 B2C App",
+		description: "Consumer-facing applications",
+		icon: "/icon/b2c-app.svg",
+		color: "from-orange-500 to-orange-700",
+		relevantCategories: ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem", "compliance"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			auth: ["better-auth"],
+			analytics: ["vercel-analytics"],
+			uiSystem: ["xala"]
+		}
+	},
+	{
+		id: "marketplace",
+		name: "🏪 Marketplace",
+		description: "Multi-vendor platforms",
+		icon: "/icon/marketplace.svg",
+		color: "from-yellow-600 to-yellow-800",
+		relevantCategories: ["webFrontend", "backend", "database", "auth", "payments", "rbac", "analytics", "monitoring", "security", "messaging"],
+		defaultSelections: {
+			webFrontend: ["next"],
+			backend: ["next"],
+			database: ["postgres"],
+			auth: ["auth0"],
+			payments: ["stripe"],
+			rbac: ["role-permissions"],
+			messaging: ["rabbitmq"]
+		}
+	}
+];
 
 export const PRESET_TEMPLATES = [
 	{
@@ -1544,6 +1987,19 @@ export type StackState = {
 	analytics: string;
 	monitoring: string;
 	messaging: string;
+	testing: string;
+	devops: string;
+	search: string;
+	caching: string;
+	backgroundJobs: string;
+	i18n: string;
+	cms: string;
+	security: string;
+	saasAdmin: string;
+	subscriptions: string;
+	licensing: string;
+	rbac: string;
+	multiTenancy: string;
 	examples: string[];
 	git: string;
 	install: string;
@@ -1571,6 +2027,19 @@ export const DEFAULT_STACK: StackState = {
 	analytics: "vercel-analytics",
 	monitoring: "sentry",
 	messaging: "rabbitmq",
+	testing: "vitest",
+	devops: "github-actions",
+	search: "none",
+	caching: "none",
+	backgroundJobs: "none",
+	i18n: "none",
+	cms: "none",
+	security: "none",
+	saasAdmin: "none",
+	subscriptions: "none",
+	licensing: "none",
+	rbac: "none",
+	multiTenancy: "none",
 	examples: [],
 	git: "true",
 	install: "true",

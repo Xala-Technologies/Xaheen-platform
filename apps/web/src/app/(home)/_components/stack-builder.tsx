@@ -29,9 +29,18 @@ import {
 	DEFAULT_STACK,
 	isStackDefault,
 	PRESET_TEMPLATES,
+	PROJECT_TYPES,
 	type StackState,
 	TECH_OPTIONS,
 } from "@/lib/constant";
+import {
+	getDisabledOptions,
+	getFilteredCategories,
+	getProjectTypeDefaults,
+	isOptionCompatible as isCompatible,
+	validateStackCompatibility,
+} from "@/lib/tech-compatibility";
+import type { ProjectType, TechCategory } from "@/lib/types";
 import { stackParsers, stackQueryStatesOptions } from "@/lib/stack-url-state";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +94,11 @@ const CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 	"i18n",
 	"cms",
 	"security",
+	"saasAdmin",
+	"subscriptions",
+	"licensing",
+	"rbac",
+	"multiTenancy",
 	"packageManager",
 	"uiSystem",
 	"compliance",
@@ -1165,6 +1179,7 @@ const StackBuilder = () => {
 		undefined,
 	);
 	const [lastSavedStack, setLastSavedStack] = useState<StackState | null>(null);
+	const [selectedProjectType, setSelectedProjectType] = useState<ProjectType>("dashboard");
 	const [, setLastChanges] = useState<
 		Array<{ category: string; message: string }>
 	>([]);
@@ -1552,61 +1567,13 @@ const StackBuilder = () => {
 		}
 	};
 
+	// Use the comprehensive compatibility system
 	const isOptionCompatible = (
 		currentStack: StackState,
 		category: keyof typeof TECH_OPTIONS,
 		optionId: string,
 	): boolean => {
-		const simulatedStack: StackState = JSON.parse(JSON.stringify(currentStack));
-
-		const updateArrayCategory = (arr: string[], cat: string): string[] => {
-			const isAlreadySelected = arr.includes(optionId);
-
-			if (cat === "webFrontend" || cat === "nativeFrontend") {
-				if (isAlreadySelected) {
-					return optionId === "none" ? arr : ["none"];
-				}
-				if (optionId === "none") return ["none"];
-				return [optionId];
-			}
-
-			const next: string[] = isAlreadySelected
-				? arr.filter((id) => id !== optionId)
-				: [...arr.filter((id) => id !== "none"), optionId];
-
-			if (next.length === 0) return ["none"];
-			return [...new Set(next)];
-		};
-
-		if (
-			category === "webFrontend" ||
-			category === "nativeFrontend" ||
-			category === "addons" ||
-			category === "examples"
-		) {
-			const currentArr = Array.isArray(simulatedStack[category])
-				? [...(simulatedStack[category] as string[])]
-				: [];
-			(simulatedStack[category] as string[]) = updateArrayCategory(
-				currentArr,
-				category,
-			);
-		} else {
-			(simulatedStack[category] as string) = optionId;
-		}
-
-		const { adjustedStack } = analyzeStackCompatibility(simulatedStack);
-		const finalStack = adjustedStack ?? simulatedStack;
-
-		if (
-			category === "webFrontend" ||
-			category === "nativeFrontend" ||
-			category === "addons" ||
-			category === "examples"
-		) {
-			return (finalStack[category] as string[]).includes(optionId);
-		}
-		return finalStack[category] === optionId;
+		return isCompatible(category as TechCategory, optionId, currentStack);
 	};
 
 	return (
@@ -1616,6 +1583,36 @@ const StackBuilder = () => {
 					<ScrollArea className="flex-1">
 						<div className="grid h-full grid-rows-[auto_1fr] justify-between p-3 sm:p-4 md:h-[calc(100vh-64px)]">
 							<div className="flex flex-col space-y-3 sm:space-y-4">
+								{/* Project Type Selector */}
+								<label className="flex flex-col">
+									<span className="mb-1 text-muted-foreground text-xs">
+										Project Type:
+									</span>
+									<select
+										value={selectedProjectType}
+										onChange={(e) => {
+											const newProjectType = e.target.value as ProjectType;
+											setSelectedProjectType(newProjectType);
+											
+											// Apply project type defaults
+											const defaults = getProjectTypeDefaults(newProjectType);
+											if (Object.keys(defaults).length > 0) {
+												setStack(prev => ({ ...prev, ...defaults }));
+											}
+										}}
+										className="w-full rounded border border-border px-2 py-1 text-sm focus:outline-none focus:border-primary"
+									>
+										{PROJECT_TYPES.map((config) => (
+										<option key={config.id} value={config.id}>
+											{config.name}
+										</option>
+									))}
+								</select>
+								<p className="mt-1 text-muted-foreground text-xs">
+									{PROJECT_TYPES.find(p => p.id === selectedProjectType)?.description}
+								</p>
+								</label>
+
 								<label className="flex flex-col">
 									<span className="mb-1 text-muted-foreground text-xs">
 										Project Name:
