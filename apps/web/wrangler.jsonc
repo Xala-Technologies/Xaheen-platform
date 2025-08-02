@@ -1,7 +1,7 @@
 {
 	"$schema": "../../node_modules/wrangler/config-schema.json",
 	"main": ".open-next/worker.js",
-	"name": "Xaheen",
+	"name": "xaheen",
 	"compatibility_date": "2025-07-13",
 	"compatibility_flags": ["nodejs_compat"],
 	"keep_names": false,
