@@ -1,0 +1,166 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { 
+    Container, 
+    Stack, 
+    Heading, 
+    Text, 
+    Card, 
+    Grid,
+    Avatar
+  } from '@xala-technologies/ui-system/svelte';
+  {{#if includeLocalization}}
+  import { t } from '$lib/i18n';
+  {{/if}}
+  {{#if hasNorwegian}}
+  import { useNorwegianFormatting } from '$lib/hooks/useNorwegianFormatting';
+  {{/if}}
+  {{#if hasGDPR}}
+  import { useGDPRConsent } from '$lib/hooks/useGDPRConsent';
+  {{/if}}
+
+  {{#if typescript}}
+  interface Stats {
+    users: number;
+    revenue: number;
+    orders: number;
+  }
+
+  interface Activity {
+    id: string;
+    type: string;
+    user: {
+      name: string;
+      avatar: string;
+    };
+    timestamp: Date;
+  }
+  {{/if}}
+
+  // COMPLIANCE: Always include localization
+  {{#if hasNorwegian}}
+  const { formatCurrency } = useNorwegianFormatting();
+  {{/if}}
+
+  {{#if hasGDPR}}
+  const { trackPageView } = useGDPRConsent();
+  {{/if}}
+
+  // Mock data - replace with real API calls
+  let stats{{#if typescript}}: Stats{{/if}} = {
+    users: 1234,
+    revenue: 45678,
+    orders: 89
+  };
+
+  let recentActivity{{#if typescript}}: Activity[]{{/if}} = [
+    {
+      id: '1',
+      type: 'login',
+      user: { name: 'John Doe', avatar: '/avatars/john.jpg' },
+      timestamp: new Date()
+    }
+  ];
+
+  const formatDate = (date{{#if typescript}}: Date{{/if}}){{#if typescript}}: string{{/if}} => {
+    return new Intl.DateTimeFormat('{{primaryLocale}}').format(date);
+  };
+
+  {{#unless hasNorwegian}}
+  const formatCurrency = (amount{{#if typescript}}: number{{/if}}){{#if typescript}}: string{{/if}} => {
+    return new Intl.NumberFormat('{{primaryLocale}}', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+  {{/unless}}
+
+  onMount(() => {
+    {{#if hasGDPR}}
+    trackPageView('dashboard');
+    {{/if}}
+    // Load dashboard data
+  });
+</script>
+
+<svelte:head>
+  <title>{{#if includeLocalization}}{$t('dashboard.meta.title')}{{else}}Dashboard{{/if}}</title>
+  <meta name="description" content="{{#if includeLocalization}}{$t('dashboard.meta.description')}{{else}}Dashboard overview{{/if}}" />
+</svelte:head>
+
+<Container
+  variant="content"
+  maxWidth="7xl"
+  padding="8"
+  role="main"
+  aria-label="{{#if includeLocalization}}{$t('main.ariaLabel')}{{else}}Main content{{/if}}"
+>
+  <Stack direction="vertical" spacing="6">
+    <Heading level={1} variant="page">
+      {{#if includeLocalization}}{$t('dashboard.title')}{{else}}Dashboard{{/if}}
+    </Heading>
+    
+    <Text variant="subtitle" color="secondary">
+      {{#if includeLocalization}}{$t('dashboard.description')}{{else}}Welcome to your dashboard{{/if}}
+    </Text>
+    
+    <Grid cols="3" gap="6" responsive>
+      <Card variant="elevated" padding="6">
+        <Stack direction="vertical" spacing="4">
+          <Heading level={3} variant="section">
+            {{#if includeLocalization}}{$t('dashboard.stats.users')}{{else}}Users{{/if}}
+          </Heading>
+          <Text variant="display" color="primary">
+            {stats.users}
+          </Text>
+        </Stack>
+      </Card>
+      
+      <Card variant="elevated" padding="6">
+        <Stack direction="vertical" spacing="4">
+          <Heading level={3} variant="section">
+            {{#if includeLocalization}}{$t('dashboard.stats.revenue')}{{else}}Revenue{{/if}}
+          </Heading>
+          <Text variant="display" color="success">
+            {formatCurrency(stats.revenue)}
+          </Text>
+        </Stack>
+      </Card>
+      
+      <Card variant="elevated" padding="6">
+        <Stack direction="vertical" spacing="4">
+          <Heading level={3} variant="section">
+            {{#if includeLocalization}}{$t('dashboard.stats.orders')}{{else}}Orders{{/if}}
+          </Heading>
+          <Text variant="display" color="info">
+            {stats.orders}
+          </Text>
+        </Stack>
+      </Card>
+    </Grid>
+    
+    <Card variant="elevated" padding="6">
+      <Stack direction="vertical" spacing="4">
+        <Heading level={2} variant="section">
+          {{#if includeLocalization}}{$t('dashboard.recentActivity.title')}{{else}}Recent Activity{{/if}}
+        </Heading>
+        
+        <Stack direction="vertical" spacing="3">
+          {#each recentActivity as activity (activity.id)}
+            <Stack direction="horizontal" spacing="3" align="center">
+              <Avatar src={activity.user.avatar} alt={activity.user.name} size="sm" />
+              <Stack direction="vertical" spacing="1" flex="1">
+                <Text variant="body-sm">
+                  {activity.user.name} {{#if includeLocalization}}{$t(`dashboard.activities.${activity.type}`)}{{else}}{activity.type}{{/if}}
+                </Text>
+                <Text variant="caption" color="secondary">
+                  {formatDate(activity.timestamp)}
+                </Text>
+              </Stack>
+            </Stack>
+          {/each}
+        </Stack>
+      </Stack>
+    </Card>
+  </Stack>
+</Container>

@@ -46,6 +46,7 @@ export interface ComponentGenerationOptions {
 	includeTests: boolean;
 	includeStories: boolean;
 	includeStyles: boolean;
+	advanced?: 'error-boundary' | 'advanced' | 'platform-specific'; // Advanced template types
 }
 
 // Component prop interface
@@ -220,9 +221,10 @@ function generatePropsInterface(componentName: string, props: ComponentProp[]): 
 /**
  * Select appropriate templates based on configuration
  * Supports modular compliance: gdpr, wcag-aaa, iso27001, norwegian
+ * Enhanced with advanced templates: error-boundary, advanced components
  */
 function selectTemplates(options: ComponentGenerationOptions) {
-	const { ui, compliance, type } = options;
+	const { ui, compliance, type, advanced } = options;
 
 	// Template selection logic based on UI system and compliance
 	const templateBase = ui === "xala" ? "xala" : "default";
@@ -236,12 +238,24 @@ function selectTemplates(options: ComponentGenerationOptions) {
 		complianceLevels.includes(level)
 	) || 'basic';
 
+	// Advanced template selection
+	let componentTemplate: string;
+	
+	if (advanced === 'error-boundary') {
+		componentTemplate = `${templateBase}-error-boundary`;
+	} else if (advanced === 'advanced') {
+		componentTemplate = `${templateBase}-advanced`;
+	} else {
+		componentTemplate = `${templateBase}-${type}-${primaryCompliance}`;
+	}
+
 	return {
-		component: `${templateBase}-${type}-${primaryCompliance}`,
+		component: componentTemplate,
 		test: `${templateBase}-test`,
 		story: `${templateBase}-story`,
 		style: `${templateBase}-style`,
 		complianceLevels, // Pass all compliance levels for template context
+		advanced, // Pass advanced template type
 	};
 }
 
