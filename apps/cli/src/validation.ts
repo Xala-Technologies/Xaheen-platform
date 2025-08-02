@@ -4,17 +4,23 @@ import { WEB_FRAMEWORKS } from "./constants";
 import {
 	type Addons,
 	type API,
+	type AuthProvider,
 	type Backend,
 	type CLIInput,
+	type Compliance,
 	type Database,
 	type DatabaseSetup,
+	type DocumentService,
 	type Examples,
 	type Frontend,
+	type Integration,
+	type Language,
 	type ORM,
 	type PackageManager,
 	type ProjectConfig,
 	ProjectNameSchema,
 	type Runtime,
+	type UISystem,
 	type WebDeploy,
 } from "./types";
 
@@ -86,6 +92,38 @@ export function processAndValidateFlags(
 
 	if (options.webDeploy) {
 		config.webDeploy = options.webDeploy as WebDeploy;
+	}
+
+	// Enhanced configuration options
+	if (options.ui) {
+		config.ui = options.ui as UISystem;
+	}
+	if (options.compliance) {
+		config.compliance = options.compliance as Compliance;
+	}
+	if (options.locales && options.locales.length > 0) {
+		config.locales = options.locales as Language[];
+	}
+	if (options.primaryLocale) {
+		config.primaryLocale = options.primaryLocale as Language;
+	}
+	if (options.authProviders && options.authProviders.length > 0) {
+		config.authProviders = options.authProviders as AuthProvider[];
+	}
+	if (options.integrations && options.integrations.length > 0) {
+		config.integrations = options.integrations as Integration[];
+	}
+	if (options.documents && options.documents.length > 0) {
+		config.documents = options.documents as DocumentService[];
+	}
+	if (options.mfa !== undefined) {
+		config.mfa = options.mfa;
+	}
+	if (options.encryption !== undefined) {
+		config.encryption = options.encryption;
+	}
+	if (options.audit !== undefined) {
+		config.audit = options.audit;
 	}
 
 	if (projectName) {
