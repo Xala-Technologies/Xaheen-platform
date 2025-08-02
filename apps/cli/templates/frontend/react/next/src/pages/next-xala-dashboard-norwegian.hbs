@@ -113,13 +113,13 @@ export default function {{pageName}}({ params }: {{pageName}}Props): React.React
               </Heading>
               <Chart
                 type="line"
-                data={{
+                data={{{{raw}}}}{
                   labels: monthLabels,
                   datasets: [{
                     label: t("charts.dataset1"),
                     data: [12, 19, 3, 5, 2, 3]
                   }]
-                }}
+                }{{{{/raw}}}}
                 height={300}
               />
             </Stack>

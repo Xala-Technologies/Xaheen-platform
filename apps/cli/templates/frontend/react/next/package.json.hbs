@@ -58,17 +58,38 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     
-    {{! Xala UI System - Main dependency }}
-    "@xala-technologies/ui-system": "^5.0.0",
+    {{! Xala UI System - Main dependency (GitHub packages) }}
+    {{#if (eq ui "xala")}}
+    "@xala-technologies/ui-system": "github:Xala-Technologies/ui-system#v5.0.0",
+    "@xala-technologies/design-tokens": "github:Xala-Technologies/design-tokens#v2.0.0",
+    "@xala-technologies/theme-provider": "github:Xala-Technologies/theme-provider#v1.0.0",
+    {{/if}}
     
-    {{! Design tokens and theming }}
-    "@xala-technologies/design-tokens": "^2.0.0",
-    "@xala-technologies/theme-provider": "^1.0.0",
+    {{! Authentication }}
+    {{#if auth}}
+    "@xaheen/auth": "github:Xala-Technologies/xaheen-auth#v1.3.4",
+    "@xaheen/auth-drizzle-adapter": "github:Xala-Technologies/xaheen-auth#v1.3.4",
+    {{/if}}
+    
+    {{! API Integration }}
+    {{#if (eq api "trpc")}}
+    "@trpc/client": "^10.0.0",
+    "@trpc/server": "^10.0.0",
+    "@trpc/react-query": "^10.0.0",
+    "@trpc/next": "^10.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-query-devtools": "^5.0.0",
+    {{/if}}
+    {{#if (eq api "orpc")}}
+    "@orpc/client": "^0.0.1",
+    "@orpc/server": "^0.0.1",
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-query-devtools": "^5.0.0",
+    {{/if}}
     
     {{! Norwegian localization }}
-    {{#if localization}}
+    {{#if (eq ui "xala")}}
     "next-intl": "^3.0.0",
-    "react-intl": "^6.0.0",
     {{/if}}
     
     {{! Accessibility utilities }}

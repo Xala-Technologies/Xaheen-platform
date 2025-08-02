@@ -1,9 +1,26 @@
+/*
+ * XALA UI SYSTEM v5 COMPLIANCE RULES - MANDATORY
+ * 
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style={{}}, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
 "use client";
 
 {{#if (eq backend "convex")}}
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-{{else}}
+{{/if}}
 {{#unless (eq api "none")}}
+{{#unless (eq backend "convex")}}
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 {{#if (eq api "orpc")}}
@@ -13,17 +30,15 @@ import { queryClient } from "@/utils/orpc";
 import { queryClient } from "@/utils/trpc";
 {{/if}}
 {{/unless}}
-{{/if}}
+{{/unless}}
 {{#if (eq ui "xala")}}
 import { UISystemProvider, AccessibilityProvider, ComplianceProvider } from "@xala-technologies/ui-system";
 import { NextIntlClientProvider } from "next-intl";
-{{/if}}
-import { ThemeProvider } from "./theme-provider";
-{{#if (eq ui "xala")}}
 import { Toaster } from "@xala-technologies/ui-system";
 {{else}}
 import { Toaster } from "./ui/sonner";
 {{/if}}
+import { ThemeProvider } from "./theme-provider";
 
 {{#if (eq backend "convex")}}
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -42,14 +57,14 @@ export default function Providers({
   messages = {}
 }: ProvidersProps): React.ReactElement {
 {{else}}
-export default function Providers({
-  children
-}: {
-  children: React.ReactNode
-}) {
+interface ProvidersProps {
+  children: React.ReactNode;
+}
+
+export default function Providers({ children }: ProvidersProps): React.ReactElement {
 {{/if}}
   return (
-    {{#if (eq ui "xala")}}
+{{#if (eq ui "xala")}}
     <NextIntlClientProvider locale={locale} messages={messages}>
       <UISystemProvider
         theme="system"
@@ -75,41 +90,53 @@ export default function Providers({
               enableSystem
               disableTransitionOnChange
             >
-    {{else}}
+{{#if (eq backend "convex")}}
+              <ConvexProvider client={convex}>
+                {children}
+                <Toaster position="bottom-right" />
+              </ConvexProvider>
+{{else}}
+{{#unless (eq api "none")}}
+              <QueryClientProvider client={queryClient}>
+                {children}
+                <ReactQueryDevtools />
+                <Toaster position="bottom-right" />
+              </QueryClientProvider>
+{{else}}
+              {children}
+              <Toaster position="bottom-right" />
+{{/unless}}
+{{/if}}
+            </ThemeProvider>
+          </ComplianceProvider>
+        </AccessibilityProvider>
+      </UISystemProvider>
+    </NextIntlClientProvider>
+{{else}}
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
     >
-    {{/if}}
-      {{#if (eq backend "convex")}}
-      <ConvexProvider client={convex}>{children}</ConvexProvider>
-      {{else}}
-      {{#unless (eq api "none")}}
+{{#if (eq backend "convex")}}
+      <ConvexProvider client={convex}>
+        {children}
+        <Toaster richColors />
+      </ConvexProvider>
+{{else}}
+{{#unless (eq api "none")}}
       <QueryClientProvider client={queryClient}>
-        {{#if (eq api "orpc")}}
         {children}
-        {{/if}}
-        {{#if (eq api "trpc")}}
-        {children}
-        {{/if}}
         <ReactQueryDevtools />
+        <Toaster richColors />
       </QueryClientProvider>
-      {{else}}
+{{else}}
       {children}
-      {{/unless}}
-      {{/if}}
-      {{#if (eq ui "xala")}}
-      <Toaster position="bottom-right" />
-            </ThemeProvider>
-          </ComplianceProvider>
-        </AccessibilityProvider>
-      </UISystemProvider>
-    </NextIntlClientProvider>
-      {{else}}
       <Toaster richColors />
+{{/unless}}
+{{/if}}
     </ThemeProvider>
-      {{/if}}
+{{/if}}
   );
 }

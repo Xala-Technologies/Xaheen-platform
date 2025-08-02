@@ -324,7 +324,7 @@ export default function {{componentName}}({{#if includeTypes}}props: DashboardPr
           {/* Content Grid - Enhanced layout system */}
           <Grid columns="responsive" spacing="6">
             {/* Recent Activity */}
-            <Box gridColumn={{ lg: "span 2" }}>
+            <Box gridColumn={{{{raw}}}}{{ lg: "span 2" }}{{{{/raw}}}}>
               <Card variant="elevated" spacing="8">
                 <Stack direction="horizontal" justify="between" align="center" marginBottom="6">
                   <Stack spacing="2">

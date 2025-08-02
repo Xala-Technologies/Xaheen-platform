@@ -234,12 +234,12 @@ export default function BaseLayout({
         {/* UI System with platform config */}
         <UISystemProvider
           theme={theme}
-          platformConfig={{
+          platformConfig={{{{raw}}}}{
             platform: platformInfo || 'web',
             capabilities: platformInfo || {},
             dimensions,
             ...platformConfig
-          }}
+          }{{{{/raw}}}}
           themeConfig={getPlatformThemeConfig()}
         >
           {/* Theme Provider */}
