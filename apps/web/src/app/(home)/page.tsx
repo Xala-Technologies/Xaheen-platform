@@ -178,7 +178,7 @@ export default function HomePage() {
 					</Link>
 
 					<Link
-						href="https://github.com/amanvarshney01/xaheen"
+						href="https://github.com/Xala-Technologies/Xaheen-platform"
 						target="_blank"
 						rel="noopener noreferrer"
 					>

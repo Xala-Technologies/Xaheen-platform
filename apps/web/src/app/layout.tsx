@@ -17,7 +17,7 @@ const ogImage =
 	"https://api.screenshothis.com/v1/screenshots/take?api_key=ss_live_NQJgRXqHcKPwnoMTuQmgiwLIGbVfihjpMyQhgsaMyNBHTyesvrxpYNXmdgcnxipc&url=https%3A%2F%2FXaheen.dev%2F&width=1200&height=630&block_ads=true&block_cookie_banners=true&block_trackers=true&device_scale_factor=0.75&prefers_color_scheme=dark&is_cached=true";
 
 export const metadata: Metadata = {
-	title: "Xaheen-T Stack",
+	title: "Xaheen-Builder",
 	description:
 		"A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
 	keywords: [
@@ -37,12 +37,12 @@ export const metadata: Metadata = {
 		"Xaheen-Auth",
 		"convex",
 		"monorepo",
-		"Xaheen-T Stack",
+		"Xaheen-Builder",
 		"xaheen",
 	],
-	authors: [{ name: "Xaheen-T Stack Team" }],
-	creator: "Xaheen-T Stack",
-	publisher: "Xaheen-T Stack",
+	authors: [{ name: "Xaheen-Builder Team" }],
+	creator: "Xaheen-Builder",
+	publisher: "Xaheen-Builder",
 	formatDetection: {
 		email: false,
 		telephone: false,
@@ -52,17 +52,17 @@ export const metadata: Metadata = {
 		canonical: "/",
 	},
 	openGraph: {
-		title: "Xaheen-T Stack",
+		title: "Xaheen-Builder",
 		description:
 			"A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
 		url: "https://Xaheen.dev",
-		siteName: "Xaheen-T Stack",
+		siteName: "Xaheen-Builder",
 		images: [
 			{
 				url: ogImage,
 				width: 1200,
 				height: 630,
-				alt: "Xaheen-T Stack",
+				alt: "Xaheen-Builder",
 			},
 		],
 		locale: "en_US",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Xaheen-T Stack",
+		title: "Xaheen-Builder",
 		description:
 			"A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
 		images: [ogImage],

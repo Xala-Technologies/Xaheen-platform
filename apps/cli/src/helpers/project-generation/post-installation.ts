@@ -162,9 +162,9 @@ export async function displayPostInstallInstructions(
 		tazeCommand,
 	)}\n\n`;
 	output += `${pc.bold(
-		"Like Xaheen-T Stack?",
+		"Like Xaheen-Builder?",
 	)} Please consider giving us a star on GitHub:\n`;
-	output += pc.cyan("https://github.com/AmanVarshney01/xaheen");
+	output += pc.cyan("https://github.com/Xala-Technologies/Xaheen-platform");
 
 	consola.box(output);
 }

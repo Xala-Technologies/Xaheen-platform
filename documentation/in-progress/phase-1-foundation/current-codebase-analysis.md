@@ -55,7 +55,7 @@ apps/cli/src/
 ```
 
 ### **CLI Commands Available**
-1. **`init`** (default) - Create new Xaheen-T Stack project
+1. **`init`** (default) - Create new Xaheen-Builder project
 2. **`add`** - Add addons/deployment to existing project
 3. **`sponsors`** - Show project sponsors
 4. **`docs`** - Open documentation (https://Xaheen.dev/docs)

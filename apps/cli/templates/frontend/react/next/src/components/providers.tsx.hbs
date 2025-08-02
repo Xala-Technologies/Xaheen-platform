@@ -68,10 +68,10 @@ export default function Providers({ children }: ProvidersProps): React.ReactElem
     <NextIntlClientProvider locale={locale} messages={messages}>
       <UISystemProvider
         theme="system"
-        platformConfig={{
+        platformConfig={{{{raw}}}}{
           platform: "web",
           capabilities: { touch: false, keyboard: true, mouse: true }
-        }}
+        }{{{{/raw}}}}
       >
         <AccessibilityProvider
           enableScreenReader={true}

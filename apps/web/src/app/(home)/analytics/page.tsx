@@ -982,7 +982,7 @@ export default function AnalyticsPage() {
 							<span className=" text-muted-foreground">
 								Source:{" "}
 								<Link
-									href="https://github.com/amanvarshney01/xaheen/blob/main/apps/cli/src/utils/analytics.ts"
+									href="https://github.com/Xala-Technologies/Xaheen-platform/blob/main/apps/cli/src/utils/analytics.ts"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-accent underline hover:text-primary"

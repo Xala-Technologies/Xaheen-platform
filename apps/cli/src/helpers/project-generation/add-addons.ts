@@ -26,14 +26,14 @@ export async function addAddonsToProject(
 		const isXaheenTStack = await isXaheenTStackProject(projectDir);
 		if (!isXaheenTStack) {
 			exitWithError(
-				"This doesn't appear to be a Xaheen-T Stack project. Please run this command from the root of a Xaheen-T Stack project.",
+				"This doesn't appear to be a Xaheen-Builder project. Please run this command from the root of a Xaheen-Builder project.",
 			);
 		}
 
 		const detectedConfig = await detectProjectConfig(projectDir);
 		if (!detectedConfig) {
 			exitWithError(
-				"Could not detect the project configuration. Please ensure this is a valid Xaheen-T Stack project.",
+				"Could not detect the project configuration. Please ensure this is a valid Xaheen-Builder project.",
 			);
 		}
 

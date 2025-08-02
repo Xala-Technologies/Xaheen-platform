@@ -83,5 +83,5 @@ export const baseOptions: BaseLayoutProps = {
 		),
 	},
 	links: links,
-	githubUrl: "https://github.com/AmanVarshney01/xaheen",
+	githubUrl: "https://github.com/Xala-Technologies/Xaheen-platform",
 };
