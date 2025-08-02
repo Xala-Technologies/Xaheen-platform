@@ -5,17 +5,17 @@ import z from "zod";
 // ============================================================================
 
 export const DatabaseSchema = z
-	.enum(["none", "sqlite", "postgres", "mysql", "mongodb"])
+	.enum(["none", "sqlite", "postgres", "mysql", "mongodb", "mssql"])
 	.describe("Database type");
 export type Database = z.infer<typeof DatabaseSchema>;
 
 export const ORMSchema = z
-	.enum(["drizzle", "prisma", "mongoose", "none"])
+	.enum(["drizzle", "prisma", "mongoose", "entity-framework", "none"])
 	.describe("ORM type");
 export type ORM = z.infer<typeof ORMSchema>;
 
 export const BackendSchema = z
-	.enum(["hono", "express", "fastify", "next", "elysia", "convex", "none"])
+	.enum(["hono", "express", "fastify", "next", "elysia", "convex", "dotnet", "laravel", "django", "none"])
 	.describe("Backend framework");
 export type Backend = z.infer<typeof BackendSchema>;
 
@@ -37,6 +37,8 @@ export const FrontendSchema = z
 		"native-unistyles",
 		"svelte",
 		"solid",
+		"angular",
+		"blazor",
 		"none",
 	])
 	.describe("Frontend framework");
@@ -112,6 +114,154 @@ export const ProjectNameSchema = z
 	)
 	.describe("Project name or path");
 export type ProjectName = z.infer<typeof ProjectNameSchema>;
+
+// ============================================================================
+// NEW SERVICE SCHEMAS - Phase 2 & 3 Integration
+// ============================================================================
+
+/**
+ * Testing framework schema
+ */
+export const TestingSchema = z
+	.enum(["vitest", "jest", "playwright", "cypress", "storybook", "chromatic", "msw", "k6", "none"])
+	.describe("Testing framework and tools");
+export type Testing = z.infer<typeof TestingSchema>;
+
+/**
+ * Notification service schema
+ */
+export const NotificationsSchema = z
+	.enum(["resend", "nodemailer", "sendgrid", "mailgun", "ses", "postmark", "brevo", "pusher", "twilio", "none"])
+	.describe("Email and notification services");
+export type Notifications = z.infer<typeof NotificationsSchema>;
+
+/**
+ * Payment service schema
+ */
+export const PaymentsSchema = z
+	.enum(["stripe", "paddle", "lemonsqueezy", "paypal", "square", "vipps-pay", "klarna", "adyen", "razorpay", "none"])
+	.describe("Payment processing services");
+export type Payments = z.infer<typeof PaymentsSchema>;
+
+/**
+ * Monitoring service schema
+ */
+export const MonitoringSchema = z
+	.enum(["sentry", "datadog", "newrelic", "bugsnag", "rollbar", "honeybadger", "logflare", "grafana", "app-insights", "prometheus", "elastic", "none"])
+	.describe("Application monitoring and error tracking");
+export type Monitoring = z.infer<typeof MonitoringSchema>;
+
+/**
+ * Analytics service schema
+ */
+export const AnalyticsSchema = z
+	.enum(["vercel-analytics", "google-analytics", "posthog", "mixpanel", "amplitude", "hotjar", "none"])
+	.describe("Analytics and user tracking services");
+export type Analytics = z.infer<typeof AnalyticsSchema>;
+
+/**
+ * Caching service schema
+ */
+export const CachingSchema = z
+	.enum(["redis", "memcached", "cloudflare", "aws-cloudfront", "none"])
+	.describe("Caching and CDN services");
+export type Caching = z.infer<typeof CachingSchema>;
+
+/**
+ * DevOps tools schema
+ */
+export const DevOpsSchema = z
+	.enum(["github-actions", "docker", "terraform", "kubernetes", "jenkins", "none"])
+	.describe("CI/CD and infrastructure tools");
+export type DevOps = z.infer<typeof DevOpsSchema>;
+
+/**
+ * Security tools schema
+ */
+export const SecuritySchema = z
+	.enum(["snyk", "sonarqube", "owasp-zap", "semgrep", "none"])
+	.describe("Security scanning and analysis tools");
+export type Security = z.infer<typeof SecuritySchema>;
+
+/**
+ * Internationalization schema
+ */
+export const I18nSchema = z
+	.enum(["next-intl", "react-i18next", "formatjs", "crowdin", "none"])
+	.describe("Internationalization and localization tools");
+export type I18n = z.infer<typeof I18nSchema>;
+
+/**
+ * Messaging service schema
+ */
+export const MessagingSchema = z
+	.enum(["rabbitmq", "kafka", "azure-service-bus", "aws-sqs", "redis-pub-sub", "google-pub-sub", "nats", "none"])
+	.describe("Message queue and pub/sub services");
+export type Messaging = z.infer<typeof MessagingSchema>;
+
+/**
+ * Search service schema
+ */
+export const SearchSchema = z
+	.enum(["elasticsearch", "algolia", "meilisearch", "typesense", "none"])
+	.describe("Search engine services");
+export type Search = z.infer<typeof SearchSchema>;
+
+/**
+ * CMS schema
+ */
+export const CMSSchema = z
+	.enum(["strapi", "contentful", "sanity", "payload", "ghost", "none"])
+	.describe("Content management systems");
+export type CMS = z.infer<typeof CMSSchema>;
+
+/**
+ * SaaS admin schema
+ */
+export const SaaSAdminSchema = z
+	.enum(["admin-dashboard", "tenant-management", "user-management", "none"])
+	.describe("SaaS administration tools");
+export type SaaSAdmin = z.infer<typeof SaaSAdminSchema>;
+
+/**
+ * Subscription management schema
+ */
+export const SubscriptionsSchema = z
+	.enum(["stripe-billing", "paddle", "chargebee", "custom-billing", "none"])
+	.describe("Subscription billing and management");
+export type Subscriptions = z.infer<typeof SubscriptionsSchema>;
+
+/**
+ * Background jobs schema
+ */
+export const BackgroundJobsSchema = z
+	.enum(["bullmq", "agenda", "inngest", "temporal", "none"])
+	.describe("Background job processing");
+export type BackgroundJobs = z.infer<typeof BackgroundJobsSchema>;
+
+/**
+ * RBAC schema
+ */
+export const RBACSchema = z
+	.enum(["role-permissions", "casbin", "opa", "none"])
+	.describe("Role-based access control");
+export type RBAC = z.infer<typeof RBACSchema>;
+
+/**
+ * Licensing schema
+ */
+export const LicensingSchema = z
+	.enum(["feature-flags", "usage-limits", "license-validation", "none"])
+	.describe("Software licensing and feature management");
+export type Licensing = z.infer<typeof LicensingSchema>;
+
+/**
+ * Multi-tenancy schema
+ */
+export const MultiTenancySchema = z
+	.enum(["schema-separation", "row-level-security", "tenant-routing", "none"])
+	.describe("Multi-tenant architecture patterns");
+export type MultiTenancy = z.infer<typeof MultiTenancySchema>;
 
 // ============================================================================
 // NEW ENHANCED SCHEMAS - Story 3.1
@@ -331,6 +481,26 @@ export type CreateInput = {
 	mfa?: boolean;
 	encryption?: boolean;
 	audit?: boolean;
+	
+	// New service options - Phase 2 & 3
+	testing?: Testing;
+	notifications?: Notifications;
+	payments?: Payments;
+	monitoring?: Monitoring;
+	analytics?: Analytics;
+	caching?: Caching;
+	devops?: DevOps;
+	security?: Security;
+	i18n?: I18n;
+	messaging?: Messaging;
+	search?: Search;
+	cms?: CMS;
+	saasAdmin?: SaaSAdmin;
+	subscriptions?: Subscriptions;
+	backgroundJobs?: BackgroundJobs;
+	rbac?: RBAC;
+	licensing?: Licensing;
+	multiTenancy?: MultiTenancy;
 };
 
 export type AddInput = {
@@ -347,6 +517,26 @@ export type AddInput = {
 	authProviders?: AuthProvider[];
 	integrations?: Integration[];
 	documents?: DocumentService[];
+	
+	// New service options - Phase 2 & 3
+	testing?: Testing;
+	notifications?: Notifications;
+	payments?: Payments;
+	monitoring?: Monitoring;
+	analytics?: Analytics;
+	caching?: Caching;
+	devops?: DevOps;
+	security?: Security;
+	i18n?: I18n;
+	messaging?: Messaging;
+	search?: Search;
+	cms?: CMS;
+	saasAdmin?: SaaSAdmin;
+	subscriptions?: Subscriptions;
+	backgroundJobs?: BackgroundJobs;
+	rbac?: RBAC;
+	licensing?: Licensing;
+	multiTenancy?: MultiTenancy;
 };
 
 export type CLIInput = CreateInput & {
@@ -387,6 +577,26 @@ export interface ProjectConfig {
 	mfa: boolean;
 	encryption: boolean;
 	audit: boolean;
+	
+	// New service configuration - Phase 2 & 3
+	testing: Testing;
+	notifications: Notifications;
+	payments: Payments;
+	monitoring: Monitoring;
+	analytics: Analytics;
+	caching: Caching;
+	devops: DevOps;
+	security: Security;
+	i18n: I18n;
+	messaging: Messaging;
+	search: Search;
+	cms: CMS;
+	saasAdmin: SaaSAdmin;
+	subscriptions: Subscriptions;
+	backgroundJobs: BackgroundJobs;
+	rbac: RBAC;
+	licensing: Licensing;
+	multiTenancy: MultiTenancy;
 }
 
 export interface XaheenTStackConfig {
@@ -416,6 +626,26 @@ export interface XaheenTStackConfig {
 	mfa: boolean;
 	encryption: boolean;
 	audit: boolean;
+	
+	// New service configuration - Phase 2 & 3
+	testing: Testing;
+	notifications: Notifications;
+	payments: Payments;
+	monitoring: Monitoring;
+	analytics: Analytics;
+	caching: Caching;
+	devops: DevOps;
+	security: Security;
+	i18n: I18n;
+	messaging: Messaging;
+	search: Search;
+	cms: CMS;
+	saasAdmin: SaaSAdmin;
+	subscriptions: Subscriptions;
+	backgroundJobs: BackgroundJobs;
+	rbac: RBAC;
+	licensing: Licensing;
+	multiTenancy: MultiTenancy;
 }
 
 export type AvailablePackageManagers = "npm" | "pnpm" | "bun";

@@ -27,6 +27,25 @@ import {
 	AuthProviderSchema,
 	IntegrationSchema,
 	DocumentServiceSchema,
+	// New service schemas - Phase 2 & 3
+	TestingSchema,
+	NotificationsSchema,
+	PaymentsSchema,
+	MonitoringSchema,
+	AnalyticsSchema,
+	CachingSchema,
+	DevOpsSchema,
+	SecuritySchema,
+	I18nSchema,
+	MessagingSchema,
+	SearchSchema,
+	CMSSchema,
+	SaaSAdminSchema,
+	SubscriptionsSchema,
+	BackgroundJobsSchema,
+	RBACSchema,
+	LicensingSchema,
+	MultiTenancySchema,
 } from "./types";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { openUrl } from "./utils/open-url";
@@ -90,6 +109,44 @@ const router = t.router({
 						.describe("Enable data encryption features"),
 					audit: z.boolean().optional().default(false)
 						.describe("Enable audit logging"),
+					
+					// New service options - Phase 2 & 3
+					testing: TestingSchema.optional()
+						.describe("Testing framework and tools"),
+					notifications: NotificationsSchema.optional()
+						.describe("Email and notification services"),
+					payments: PaymentsSchema.optional()
+						.describe("Payment processing services"),
+					monitoring: MonitoringSchema.optional()
+						.describe("Application monitoring and error tracking"),
+					analytics: AnalyticsSchema.optional()
+						.describe("Analytics and user tracking services"),
+					caching: CachingSchema.optional()
+						.describe("Caching and CDN services"),
+					devops: DevOpsSchema.optional()
+						.describe("CI/CD and infrastructure tools"),
+					security: SecuritySchema.optional()
+						.describe("Security scanning and analysis tools"),
+					i18n: I18nSchema.optional()
+						.describe("Internationalization and localization tools"),
+					messaging: MessagingSchema.optional()
+						.describe("Message queue and pub/sub services"),
+					search: SearchSchema.optional()
+						.describe("Search engine services"),
+					cms: CMSSchema.optional()
+						.describe("Content management systems"),
+					saasAdmin: SaaSAdminSchema.optional()
+						.describe("SaaS administration tools"),
+					subscriptions: SubscriptionsSchema.optional()
+						.describe("Subscription billing and management"),
+					backgroundJobs: BackgroundJobsSchema.optional()
+						.describe("Background job processing"),
+					rbac: RBACSchema.optional()
+						.describe("Role-based access control"),
+					licensing: LicensingSchema.optional()
+						.describe("Software licensing and feature management"),
+					multiTenancy: MultiTenancySchema.optional()
+						.describe("Multi-tenant architecture patterns"),
 				}),
 			]),
 		)
@@ -134,6 +191,44 @@ const router = t.router({
 						.describe("Add external integrations"),
 					documents: z.array(DocumentServiceSchema).optional()
 						.describe("Add document services"),
+					
+					// New service options - Phase 2 & 3
+					testing: TestingSchema.optional()
+						.describe("Add testing framework"),
+					notifications: NotificationsSchema.optional()
+						.describe("Add notification services"),
+					payments: PaymentsSchema.optional()
+						.describe("Add payment processing"),
+					monitoring: MonitoringSchema.optional()
+						.describe("Add monitoring services"),
+					analytics: AnalyticsSchema.optional()
+						.describe("Add analytics services"),
+					caching: CachingSchema.optional()
+						.describe("Add caching services"),
+					devops: DevOpsSchema.optional()
+						.describe("Add DevOps tools"),
+					security: SecuritySchema.optional()
+						.describe("Add security tools"),
+					i18n: I18nSchema.optional()
+						.describe("Add internationalization"),
+					messaging: MessagingSchema.optional()
+						.describe("Add messaging services"),
+					search: SearchSchema.optional()
+						.describe("Add search services"),
+					cms: CMSSchema.optional()
+						.describe("Add content management"),
+					saasAdmin: SaaSAdminSchema.optional()
+						.describe("Add SaaS admin tools"),
+					subscriptions: SubscriptionsSchema.optional()
+						.describe("Add subscription management"),
+					backgroundJobs: BackgroundJobsSchema.optional()
+						.describe("Add background job processing"),
+					rbac: RBACSchema.optional()
+						.describe("Add role-based access control"),
+					licensing: LicensingSchema.optional()
+						.describe("Add licensing features"),
+					multiTenancy: MultiTenancySchema.optional()
+						.describe("Add multi-tenancy support"),
 				}),
 			]),
 		)
