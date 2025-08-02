@@ -104,7 +104,7 @@ const StackBuilder: React.FC = () => {
 		<TooltipProvider>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden lg:flex-row">
 				{/* Sidebar */}
-				<div className="flex w-full flex-col border-border border-r bg-muted/20 lg:w-80">
+				<div className="flex w-full flex-col border-border border-r bg-muted/20 lg:w-120 overflow-scroll">
 					<ScrollArea className="flex-1">
 						<div className="flex flex-col gap-4 p-3 sm:p-4">
 							{/* Project Name Input */}

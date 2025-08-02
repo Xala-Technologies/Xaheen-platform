@@ -22,7 +22,7 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
 			<h3 className="mb-2 font-medium text-foreground text-sm">
 				Quick Presets
 			</h3>
-			<div className="grid grid-cols-2 gap-2">
+			<div className="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-border">
 				{presets.map((preset) => (
 					<button
 						type="button"

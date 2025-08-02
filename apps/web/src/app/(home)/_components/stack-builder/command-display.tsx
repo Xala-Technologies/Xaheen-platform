@@ -29,7 +29,7 @@ export const CommandDisplay: React.FC<CommandDisplayProps> = ({
 	};
 
 	return (
-		<div className="relative rounded border border-border p-2">
+		<div className="relative rounded border border-border p-2 bg-white">
 			<div className="flex">
 				<span className="mr-2 select-none text-chart-4">$</span>
 				<code className="block break-all text-muted-foreground text-xs sm:text-sm">

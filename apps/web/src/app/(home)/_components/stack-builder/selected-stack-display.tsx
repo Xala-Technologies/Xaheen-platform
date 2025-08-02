@@ -16,7 +16,7 @@ export const SelectedStackDisplay: React.FC<SelectedStackDisplayProps> = ({
 			<h3 className="mb-2 font-medium text-foreground text-sm">
 				Selected Stack
 			</h3>
-			<div className="flex flex-wrap gap-1.5">{selectedBadges}</div>
+			<div className="flex flex-wrap gap-1.5 bg-white p-2 rounded border border-border">{selectedBadges}</div>
 		</div>
 	);
 };
