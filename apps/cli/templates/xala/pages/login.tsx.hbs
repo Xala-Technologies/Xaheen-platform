@@ -1,0 +1,416 @@
+import React from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  Button,
+  Input,
+  Label,
+  Checkbox,
+  Alert,
+  AlertDescription,
+} from '@xala-technologies/ui-system';
+{{#if includeIcons}}
+import { 
+  Eye, 
+  EyeOff, 
+  AlertCircle,
+  Loader2,
+  Mail,
+  Lock,
+} from 'lucide-react';
+{{/if}}
+{{#if includeLocalization}}
+import { useTranslation } from '{{relativePath}}/lib/i18n';
+{{/if}}
+{{#if includeAuth}}
+import { useAuth } from '{{relativePath}}/lib/auth';
+{{/if}}
+
+/**
+ * {{componentName}} - Xala UI Login Page
+ * Generated with Xaheen CLI
+ * 
+ * Features:
+ * - Uses @xala-technologies/ui-system components
+ * - Responsive login form
+ * - Norwegian localization support
+ * - Accessibility compliant (WCAG 2.2 AAA)
+ * {{#if includeAuth}}
+ * - Authentication integration
+ * {{/if}}
+ * {{#if includeValidation}}
+ * - Form validation
+ * {{/if}}
+ */
+
+{{#if includeTypes}}
+interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+interface LoginError {
+  message: string;
+  field?: string;
+}
+{{/if}}
+
+export default function {{componentName}}() {
+  {{#if includeLocalization}}
+  const { t } = useTranslation();
+  {{/if}}
+  {{#if includeAuth}}
+  const { login, isLoading } = useAuth();
+  {{/if}}
+
+  // Form state
+  const [formData, setFormData] = React.useState<LoginFormData>({
+    email: '',
+    password: '',
+    rememberMe: false,
+  });
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [error, setError] = React.useState<LoginError | null>(null);
+  {{#if includeValidation}}
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
+  {{/if}}
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  {{#if includeValidation}}
+  // Validation
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.email) {
+      errors.email = {{#if includeLocalization}}t('login.emailRequired', 'E-post er påkrevd'){{else}}'E-post er påkrevd'{{/if}};
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = {{#if includeLocalization}}t('login.emailInvalid', 'Ugyldig e-postadresse'){{else}}'Ugyldig e-postadresse'{{/if}};
+    }
+
+    if (!formData.password) {
+      errors.password = {{#if includeLocalization}}t('login.passwordRequired', 'Passord er påkrevd'){{else}}'Passord er påkrevd'{{/if}};
+    } else if (formData.password.length < 6) {
+      errors.password = {{#if includeLocalization}}t('login.passwordTooShort', 'Passord må være minst 6 tegn'){{else}}'Passord må være minst 6 tegn'{{/if}};
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  {{/if}}
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    {{#if includeValidation}}
+    if (!validateForm()) {
+      return;
+    }
+    {{/if}}
+
+    setIsSubmitting(true);
+
+    try {
+      {{#if includeAuth}}
+      await login(formData.email, formData.password, formData.rememberMe);
+      {{else}}
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Login attempt:', formData);
+      {{/if}}
+    } catch (err) {
+      setError({
+        message: err instanceof Error ? err.message : {{#if includeLocalization}}t('login.genericError', 'Innlogging feilet'){{else}}'Innlogging feilet'{{/if}},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle input changes
+  const handleInputChange = (field: keyof LoginFormData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = field === 'rememberMe' ? e.target.checked : e.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    {{#if includeValidation}}
+    // Clear field error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    {{/if}}
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        {/* Logo/Brand */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground">
+            {{#if includeLocalization}}
+            {t('login.title', '{{projectName}}')}
+            {{else}}
+            {{projectName}}
+            {{/if}}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {{#if includeLocalization}}
+            {t('login.subtitle', 'Logg inn på din konto')}
+            {{else}}
+            Logg inn på din konto
+            {{/if}}
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {{#if includeLocalization}}
+              {t('login.welcome', 'Velkommen tilbake')}
+              {{else}}
+              Velkommen tilbake
+              {{/if}}
+            </CardTitle>
+            <CardDescription>
+              {{#if includeLocalization}}
+              {t('login.description', 'Skriv inn dine påloggingsopplysninger')}
+              {{else}}
+              Skriv inn dine påloggingsopplysninger
+              {{/if}}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive">
+                  {{#if includeIcons}}
+                  <AlertCircle className="h-4 w-4" />
+                  {{/if}}
+                  <AlertDescription>{error.message}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  {{#if includeLocalization}}
+                  {t('login.email', 'E-post')}
+                  {{else}}
+                  E-post
+                  {{/if}}
+                </Label>
+                <div className="relative">
+                  {{#if includeIcons}}
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  {{/if}}
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={{#if includeLocalization}}{t('login.emailPlaceholder', 'din@epost.no')}{{else}}"din@epost.no"{{/if}}
+                    value={formData.email}
+                    onChange={handleInputChange('email')}
+                    {{#if includeIcons}}
+                    className="pl-10"
+                    {{/if}}
+                    {{#if includeValidation}}
+                    aria-invalid={!!fieldErrors.email}
+                    aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                    {{/if}}
+                    required
+                  />
+                </div>
+                {{#if includeValidation}}
+                {fieldErrors.email && (
+                  <p id="email-error" className="text-sm text-destructive">
+                    {fieldErrors.email}
+                  </p>
+                )}
+                {{/if}}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password">
+                  {{#if includeLocalization}}
+                  {t('login.password', 'Passord')}
+                  {{else}}
+                  Passord
+                  {{/if}}
+                </Label>
+                <div className="relative">
+                  {{#if includeIcons}}
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  {{/if}}
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={{#if includeLocalization}}{t('login.passwordPlaceholder', 'Skriv inn passord')}{{else}}"Skriv inn passord"{{/if}}
+                    value={formData.password}
+                    onChange={handleInputChange('password')}
+                    {{#if includeIcons}}
+                    className="pl-10 pr-10"
+                    {{/if}}
+                    {{#if includeValidation}}
+                    aria-invalid={!!fieldErrors.password}
+                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                    {{/if}}
+                    required
+                  />
+                  {{#if includeIcons}}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? {{#if includeLocalization}}t('login.hidePassword', 'Skjul passord'){{else}}'Skjul passord'{{/if}} : {{#if includeLocalization}}t('login.showPassword', 'Vis passord'){{else}}'Vis passord'{{/if}}}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                  {{/if}}
+                </div>
+                {{#if includeValidation}}
+                {fieldErrors.password && (
+                  <p id="password-error" className="text-sm text-destructive">
+                    {fieldErrors.password}
+                  </p>
+                )}
+                {{/if}}
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="rememberMe"
+                  checked={formData.rememberMe}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, rememberMe: !!checked }))
+                  }
+                />
+                <Label htmlFor="rememberMe" className="text-sm">
+                  {{#if includeLocalization}}
+                  {t('login.rememberMe', 'Husk meg')}
+                  {{else}}
+                  Husk meg
+                  {{/if}}
+                </Label>
+              </div>
+
+              {/* Submit Button */}
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isSubmitting {{#if includeAuth}}|| isLoading{{/if}}}
+              >
+                {{#if includeIcons}}
+                {(isSubmitting {{#if includeAuth}}|| isLoading{{/if}}) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {{/if}}
+                {{#if includeLocalization}}
+                {t('login.submit', 'Logg inn')}
+                {{else}}
+                Logg inn
+                {{/if}}
+              </Button>
+
+              {/* Forgot Password */}
+              <div className="text-center">
+                <Button variant="link" className="text-sm">
+                  {{#if includeLocalization}}
+                  {t('login.forgotPassword', 'Glemt passord?')}
+                  {{else}}
+                  Glemt passord?
+                  {{/if}}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {{#if includeSignup}}
+        {/* Sign Up Link */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-muted-foreground">
+            {{#if includeLocalization}}
+            {t('login.noAccount', 'Har du ikke konto?')}
+            {{else}}
+            Har du ikke konto?
+            {{/if}}
+            {' '}
+            <Button variant="link" className="p-0 h-auto text-sm">
+              {{#if includeLocalization}}
+              {t('login.signUp', 'Registrer deg')}
+              {{else}}
+              Registrer deg
+              {{/if}}
+            </Button>
+          </p>
+        </div>
+        {{/if}}
+
+        {{#if includeNorwegianAuth}}
+        {/* Norwegian Authentication Options */}
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                {{#if includeLocalization}}
+                {t('login.orContinueWith', 'Eller fortsett med')}
+                {{else}}
+                Eller fortsett med
+                {{/if}}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <Button variant="outline">
+              BankID
+            </Button>
+            <Button variant="outline">
+              Vipps
+            </Button>
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// Basic login page
+<{{componentName}} />
+
+// Login with Norwegian authentication
+<{{componentName}} 
+  includeNorwegianAuth={true}
+  locale="nb"
+/>
+
+// Login with custom authentication
+<{{componentName}} 
+  onLogin={(email, password) => customLogin(email, password)}
+  enableValidation={true}
+/>
+*/
+{{/if}}

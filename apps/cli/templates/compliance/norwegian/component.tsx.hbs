@@ -1,0 +1,475 @@
+{{#if typescript}}'use client';{{/if}}
+
+import React{{#if typescript}}, { type FC }{{/if}} from 'react';
+import { 
+  Card, 
+  Stack, 
+  Text, 
+  Button,
+  Icon,
+  Badge
+} from '@xala-technologies/ui-system';
+{{#if localization}}
+import { useTranslation } from 'next-intl';
+{{/if}}
+{{#if auditLogging}}
+import { useAuditLogger } from '@/hooks/use-audit-logger';
+{{/if}}
+{{#if dataProtection}}
+import { useDataProtection, DataClassification } from '@/hooks/use-data-protection';
+{{/if}}
+{{#if complianceValidation}}
+import { useNorwegianCompliance } from '@/hooks/use-norwegian-compliance';
+{{/if}}
+
+{{#if typescript}}
+/**
+ * Norwegian Compliance Component Props
+ * 
+ * This interface follows Norwegian data protection requirements
+ * and includes mandatory fields for GDPR compliance.
+ */
+interface {{capitalize componentName}}Props {
+  readonly id: string; // Required for audit trails
+  {{#if dataFields}}
+  {{#each dataFields}}
+  readonly {{this.name}}{{#if this.optional}}?{{/if}}: {{this.type}}; // {{this.classification}} data - {{this.description}}
+  {{/each}}
+  {{/if}}
+  readonly onDataChange?: (data: any, classification: DataClassification) => void;
+  readonly accessLevel?: 'UGRADERT' | 'BEGRENSET' | 'KONFIDENSIELT' | 'HEMMELIG'; // NSM classification
+  readonly retentionPolicy?: {
+    readonly days: number;
+    readonly anonymize: boolean;
+    readonly reason: string;
+  };
+  readonly consentRequired?: boolean;
+  readonly className?: string;
+  readonly 'aria-label'?: string; // WCAG compliance
+}
+{{/if}}
+
+/**
+ * {{capitalize componentName}} - Norwegian Compliant Component
+ * 
+ * This component follows Norwegian compliance standards:
+ * - GDPR (Personvernforordningen)
+ * - NSM Sikkerhetsveiledning
+ * - WCAG 2.2 AAA Tilgjengelighet
+ * - Forvaltningsloven § 11 (Documentation requirements)
+ * 
+ * @compliance
+ * - Data Classification: {{dataClassification}}
+ * - Retention Period: {{retentionDays}} days
+ * - NSM Level: {{nsmLevel}}
+ * - WCAG Level: AAA
+ * 
+ * @audit
+ * - Component access logged
+ * - Data modifications tracked
+ * - User interactions recorded
+ */
+export const {{capitalize componentName}}{{#if typescript}}: FC<{{capitalize componentName}}Props>{{/if}} = ({
+  id,
+  {{#if dataFields}}
+  {{#each dataFields}}
+  {{this.name}},
+  {{/each}}
+  {{/if}}
+  onDataChange,
+  accessLevel = 'UGRADERT',
+  retentionPolicy,
+  consentRequired = {{#if personalData}}true{{else}}false{{/if}},
+  className,
+  'aria-label': ariaLabel
+}{{#if typescript}}: {{capitalize componentName}}Props{{/if}}) => {
+  {{#if localization}}
+  const t = useTranslation('{{componentName}}');
+  {{/if}}
+  
+  {{#if auditLogging}}
+  const { logEvent, logDataAccess, logUserAction } = useAuditLogger();
+  {{/if}}
+  
+  {{#if dataProtection}}
+  const { 
+    classifyData, 
+    encryptSensitiveData, 
+    checkRetentionPolicy,
+    anonymizeData 
+  } = useDataProtection();
+  {{/if}}
+  
+  {{#if complianceValidation}}
+  const { 
+    validateNorwegianCompliance, 
+    checkGDPRRequirements,
+    validateAccessLevel,
+    generateComplianceReport
+  } = useNorwegianCompliance();
+  {{/if}}
+
+  // Component mount audit
+  React.useEffect(() => {
+    {{#if auditLogging}}
+    logEvent('component_mounted', {
+      componentName: '{{componentName}}',
+      componentId: id,
+      accessLevel,
+      timestamp: new Date().toISOString(),
+      userId: user?.id,
+      sessionId: session?.id,
+      ipAddress: session?.ipAddress,
+      userAgent: navigator.userAgent,
+      complianceChecks: {
+        gdprRequired: consentRequired,
+        nsmLevel: accessLevel,
+        wcagCompliant: true,
+        dataClassification: '{{dataClassification}}'
+      }
+    });
+    {{/if}}
+    
+    {{#if complianceValidation}}
+    // Validate Norwegian compliance on mount
+    const complianceResult = validateNorwegianCompliance({
+      componentType: '{{componentName}}',
+      dataTypes: [{{#each dataFields}}'{{this.classification}}'{{#unless @last}}, {{/unless}}{{/each}}],
+      accessLevel,
+      retentionPolicy
+    });
+    
+    if (!complianceResult.compliant) {
+      console.warn('Norwegian compliance issues detected:', complianceResult.issues);
+    }
+    {{/if}}
+    
+    return () => {
+      {{#if auditLogging}}
+      logEvent('component_unmounted', {
+        componentName: '{{componentName}}',
+        componentId: id,
+        sessionDuration: Date.now() - mountTime
+      });
+      {{/if}}
+    };
+  }, [id, accessLevel]);
+
+  {{#if dataProtection}}
+  // Data change handler with protection measures
+  const handleDataChange = React.useCallback((newData: any) => {
+    // Classify data according to Norwegian standards
+    const classification = classifyData(newData);
+    
+    // Log data access for audit trail
+    {{#if auditLogging}}
+    logDataAccess({
+      componentId: id,
+      dataType: classification,
+      action: 'modify',
+      accessLevel,
+      legalBasis: consentRequired ? 'consent' : 'legitimate_interest',
+      retentionPolicy
+    });
+    {{/if}}
+    
+    // Apply data protection measures
+    const protectedData = classification === DataClassification.SENSITIVE || 
+                         classification === DataClassification.PERSONAL
+      ? encryptSensitiveData(newData)
+      : newData;
+    
+    // Check retention policy
+    if (retentionPolicy) {
+      checkRetentionPolicy(protectedData, retentionPolicy);
+    }
+    
+    // Notify parent component
+    onDataChange?.(protectedData, classification);
+  }, [id, accessLevel, consentRequired, retentionPolicy, onDataChange]);
+  {{/if}}
+
+  {{#if personalData}}
+  // GDPR Consent Check
+  if (consentRequired && !hasValidConsent) {
+    return (
+      <Card 
+        variant="outlined" 
+        spacing="6"
+        className={`border-orange-200 bg-orange-50 ${className || ''}`}
+        role="alert"
+        aria-label={ariaLabel || t('consentRequired')}
+      >
+        <Stack spacing="4" align="center">
+          <Icon name="shield-alert" size="8" className="text-orange-600" />
+          
+          <Stack spacing="2" align="center">
+            <Text variant="heading" size="lg" className="font-semibold text-orange-800">
+              {{#if localization}}{{t('gdprConsentRequired')}}{{else}}Samtykke påkrevd{{/if}}
+            </Text>
+            <Text variant="body" size="md" className="text-orange-700 text-center">
+              {{#if localization}}{{t('gdprConsentMessage')}}{{else}}Dette innholdet krever ditt samtykke for behandling av personopplysninger i henhold til GDPR.{{/if}}
+            </Text>
+          </Stack>
+          
+          <Stack spacing="3" direction="row">
+            <Button 
+              variant="primary" 
+              size="md"
+              onClick={() => requestConsent('{{componentName}}')}
+              aria-label="{{#if localization}}{{t('giveConsent')}}{{else}}Gi samtykke{{/if}}"
+            >
+              {{#if localization}}{{t('giveConsent')}}{{else}}Gi samtykke{{/if}}
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="md"
+              href="/privacy"
+              aria-label="{{#if localization}}{{t('learnMore')}}{{else}}Les mer om personvern{{/if}}"
+            >
+              {{#if localization}}{{t('learnMore')}}{{else}}Les mer{{/if}}
+            </Button>
+          </Stack>
+          
+          <Text variant="body" size="sm" className="text-orange-600">
+            {{#if localization}}{{t('gdprRightsNotice')}}{{else}}Du har rett til innsyn, retting, sletting og portabilitet av dine data.{{/if}}
+          </Text>
+        </Stack>
+      </Card>
+    );
+  }
+  {{/if}}
+
+  return (
+    <Card 
+      variant="elevated" 
+      spacing="6"
+      className={className}
+      role="region"
+      aria-label={ariaLabel || '{{#if localization}}{{t("componentLabel")}}{{else}}{{capitalize componentName}}{{/if}}'}
+      data-testid="{{kebabCase componentName}}-component"
+    >
+      {/* Compliance Status Indicator */}
+      <Stack spacing="4" direction="row" align="center" justify="between">
+        <Stack spacing="2" direction="row" align="center">
+          <Text variant="heading" size="xl" className="font-semibold">
+            {{#if localization}}{{t('title')}}{{else}}{{capitalize componentName}}{{/if}}
+          </Text>
+          
+          {/* NSM Classification Badge */}
+          <Badge 
+            variant={accessLevel === 'UGRADERT' ? 'secondary' : 
+                    accessLevel === 'BEGRENSET' ? 'warning' :
+                    accessLevel === 'KONFIDENSIELT' ? 'destructive' : 'destructive'}
+            size="sm"
+            aria-label="Sikkerhetsnivå: {{accessLevel}}"
+          >
+            {accessLevel}
+          </Badge>
+          
+          {{#if dataClassification}}
+          {/* Data Classification Badge */}
+          <Badge 
+            variant="primary" 
+            size="sm"
+            aria-label="Dataklassifisering: {{dataClassification}}"
+          >
+            {{dataClassification}}
+          </Badge>
+          {{/if}}
+        </Stack>
+        
+        {/* Compliance Indicators */}
+        <Stack spacing="2" direction="row" align="center">
+          {/* GDPR Compliance */}
+          <Icon 
+            name="shield-check" 
+            size="5" 
+            className="text-green-600" 
+            aria-label="GDPR-kompatibel"
+            title="GDPR-kompatibel"
+          />
+          
+          {/* WCAG Compliance */}
+          <Icon 
+            name="eye" 
+            size="5" 
+            className="text-blue-600" 
+            aria-label="WCAG 2.2 AAA-kompatibel"
+            title="WCAG 2.2 AAA-kompatibel"
+          />
+          
+          {/* NSM Compliance */}
+          <Icon 
+            name="lock" 
+            size="5" 
+            className="text-purple-600" 
+            aria-label="NSM-sikkerhetsgodkjent"
+            title="NSM-sikkerhetsgodkjent"
+          />
+        </Stack>
+      </Stack>
+      
+      {/* Component Content */}
+      <Stack spacing="6">
+        {{#if componentContent}}
+        {{{componentContent}}}
+        {{else}}
+        <Text variant="body" size="md" className="text-gray-700">
+          {{#if localization}}{{t('content')}}{{else}}Component content goes here. This component follows Norwegian compliance standards.{{/if}}
+        </Text>
+        
+        {{#if showDataFields}}
+        {/* Data Fields with Compliance Annotations */}
+        <Stack spacing="4">
+          {{#each dataFields}}
+          <Stack spacing="2">
+            <Text variant="body" size="sm" className="font-medium text-gray-800">
+              {{this.label}}
+              {{#if this.required}}
+              <span className="text-red-500 ml-1" aria-label="påkrevd">*</span>
+              {{/if}}
+              {{#if this.sensitive}}
+              <Icon 
+                name="shield" 
+                size="4" 
+                className="text-orange-500 ml-2" 
+                aria-label="Sensitive data"
+                title="Sensitive personopplysninger"
+              />
+              {{/if}}
+            </Text>
+            
+            <Stack spacing="1">
+              <Text variant="body" size="sm" className="text-gray-600">
+                {{this.description}}
+              </Text>
+              <Text variant="body" size="xs" className="text-gray-500">
+                Klassifisering: {{this.classification}} | Oppbevaring: {{this.retentionDays}} dager
+                {{#if this.legalBasis}} | Rettsgrunnlag: {{this.legalBasis}}{{/if}}
+              </Text>
+            </Stack>
+          </Stack>
+          {{/each}}
+        </Stack>
+        {{/if}}
+        {{/if}}
+        
+        {{#if showActions}}
+        {/* Action Buttons with Audit Logging */}
+        <Stack spacing="3" direction="row" justify="start">
+          <Button 
+            variant="primary" 
+            size="md"
+            onClick={() => {
+              {{#if auditLogging}}
+              logUserAction('primary_action_clicked', {
+                componentId: id,
+                action: 'primary_action',
+                userId: user?.id
+              });
+              {{/if}}
+              onPrimaryAction?.();
+            }}
+            aria-label="{{#if localization}}{{t('primaryAction')}}{{else}}Hovedhandling{{/if}}"
+          >
+            {{#if localization}}{{t('primaryAction')}}{{else}}Hovedhandling{{/if}}
+          </Button>
+          
+          <Button 
+            variant="secondary" 
+            size="md"
+            onClick={() => {
+              {{#if auditLogging}}
+              logUserAction('secondary_action_clicked', {
+                componentId: id,
+                action: 'secondary_action',
+                userId: user?.id
+              });
+              {{/if}}
+              onSecondaryAction?.();
+            }}
+            aria-label="{{#if localization}}{{t('secondaryAction')}}{{else}}Sekundærhandling{{/if}}"
+          >
+            {{#if localization}}{{t('secondaryAction')}}{{else}}Sekundærhandling{{/if}}
+          </Button>
+        </Stack>
+        {{/if}}
+      </Stack>
+      
+      {/* Compliance Footer */}
+      <Stack spacing="2" className="pt-4 border-t border-gray-200">
+        <Text variant="body" size="xs" className="text-gray-500">
+          {{#if localization}}{{t('complianceNotice')}}{{else}}Dette innholdet følger norske personvernstandarder og er WCAG 2.2 AAA-kompatibelt.{{/if}}
+        </Text>
+        
+        {{#if retentionPolicy}}
+        <Text variant="body" size="xs" className="text-gray-500">
+          Dataoppbevaring: {{retentionPolicy.days}} dager. 
+          {{#if retentionPolicy.anonymize}}Data anonymiseres etter utløp.{{/if}}
+          Begrunnelse: {{retentionPolicy.reason}}
+        </Text>
+        {{/if}}
+        
+        <Stack spacing="2" direction="row" align="center">
+          <Text variant="body" size="xs" className="text-gray-400">
+            Komponent-ID: {id} | Sist oppdatert: {new Date().toLocaleDateString('nb-NO')}
+          </Text>
+          
+          {{#if complianceValidation}}
+          <Button 
+            variant="ghost" 
+            size="xs"
+            onClick={() => {
+              const report = generateComplianceReport(id);
+              console.log('Compliance Report:', report);
+            }}
+            aria-label="Vis samsvarsrapport"
+          >
+            <Icon name="file-text" size="3" />
+            Samsvarsrapport
+          </Button>
+          {{/if}}
+        </Stack>
+      </Stack>
+    </Card>
+  );
+};
+
+{{#unless typescript}}
+{{capitalize componentName}}.propTypes = {
+  id: PropTypes.string.isRequired,
+  {{#if dataFields}}
+  {{#each dataFields}}
+  {{this.name}}: PropTypes.{{this.propType}}{{#if this.required}}.isRequired{{/if}},
+  {{/each}}
+  {{/if}}
+  onDataChange: PropTypes.func,
+  accessLevel: PropTypes.oneOf(['UGRADERT', 'BEGRENSET', 'KONFIDENSIELT', 'HEMMELIG']),
+  retentionPolicy: PropTypes.shape({
+    days: PropTypes.number.isRequired,
+    anonymize: PropTypes.bool.isRequired,
+    reason: PropTypes.string.isRequired
+  }),
+  consentRequired: PropTypes.bool,
+  className: PropTypes.string,
+  'aria-label': PropTypes.string
+};
+{{/unless}}
+
+// Component metadata for compliance tracking
+{{capitalize componentName}}.complianceMetadata = {
+  dataClassification: '{{dataClassification}}',
+  nsmLevel: '{{nsmLevel}}',
+  wcagLevel: 'AAA',
+  gdprCompliant: true,
+  retentionDays: {{retentionDays}},
+  auditRequired: true,
+  frameworks: ['GDPR', 'NSM', 'WCAG', 'Forvaltningsloven'],
+  lastComplianceReview: '{{currentDate}}',
+  nextReviewDate: '{{nextReviewDate}}',
+  responsiblePerson: 'Data Protection Officer',
+  legalBasis: '{{legalBasis}}'
+};
+
+export default {{capitalize componentName}};

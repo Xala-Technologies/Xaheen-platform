@@ -1,0 +1,458 @@
+import React from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  Button,
+  Input,
+  Badge,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Stack,
+  Grid,
+  Container,
+  Header,
+  Main,
+  Text,
+  Flex,
+  Box,
+} from '@xala-technologies/ui-system';
+{{#if includeIcons}}
+import { 
+  BarChart3, 
+  Users, 
+  TrendingUp, 
+  Activity,
+  Search,
+  Bell,
+  Settings,
+  Plus,
+} from 'lucide-react';
+{{/if}}
+{{#if includeLocalization}}
+import { useTranslation } from '{{relativePath}}/lib/i18n';
+{{/if}}
+
+/**
+ * {{componentName}} - Xala UI Dashboard Page
+ * Generated with Xaheen CLI
+ * 
+ * Features:
+ * - Uses @xala-technologies/ui-system components
+ * - Responsive dashboard layout
+ * - Norwegian localization support
+ * - Accessibility compliant (WCAG 2.2 AAA)
+ * {{#if includeCharts}}
+ * - Chart integration ready
+ * {{/if}}
+ * {{#if includeRealtime}}
+ * - Real-time data support
+ * {{/if}}
+ */
+
+{{#if includeTypes}}
+interface DashboardStats {
+  totalUsers: number;
+  revenue: number;
+  growth: number;
+  activity: number;
+}
+
+interface RecentActivity {
+  id: string;
+  user: string;
+  action: string;
+  timestamp: Date;
+  avatar?: string;
+}
+{{/if}}
+
+export default function {{componentName}}() {
+  {{#if includeLocalization}}
+  const { t } = useTranslation();
+  {{/if}}
+
+  {{#if includeData}}
+  // Sample data - replace with your data fetching logic
+  const stats: DashboardStats = {
+    totalUsers: 2847,
+    revenue: 125430,
+    growth: 12.5,
+    activity: 89,
+  };
+
+  const recentActivity: RecentActivity[] = [
+    {
+      id: '1',
+      user: 'Ola Nordmann',
+      action: 'opprettet ny bruker',
+      timestamp: new Date(Date.now() - 5 * 60 * 1000),
+      avatar: '/avatars/ola.jpg',
+    },
+    {
+      id: '2',
+      user: 'Kari Hansen',
+      action: 'oppdaterte profil',
+      timestamp: new Date(Date.now() - 15 * 60 * 1000),
+      avatar: '/avatars/kari.jpg',
+    },
+    {
+      id: '3',
+      user: 'Erik Johansen',
+      action: 'lastet opp dokument',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000),
+    },
+  ];
+  {{/if}}
+
+  {{#if includeLocalization}}
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: 'NOK',
+    }).format(amount);
+  };
+
+  const formatRelativeTime = (date: Date) => {
+    const rtf = new Intl.RelativeTimeFormat('nb-NO', { numeric: 'auto' });
+    const diffInMinutes = Math.floor((date.getTime() - Date.now()) / (1000 * 60));
+    return rtf.format(diffInMinutes, 'minute');
+  };
+  {{/if}}
+
+  return (
+    <Box variant="page">
+      {/* Header */}
+      <Header variant="primary" spacing="6">
+        <Container>
+          <Flex justify="between" align="center">
+            <Flex align="center" spacing="4">
+              <Text variant="heading" size="2xl" weight="bold">
+                {{#if includeLocalization}}
+                {t('dashboard.title', 'Dashboard')}
+                {{else}}
+                Dashboard
+                {{/if}}
+              </Text>
+            </Flex>
+            
+            <Flex align="center" spacing="4">
+              {/* Search */}
+              <Box variant="search-container">
+                {{#if includeIcons}}
+                <Search className="search-icon" />
+                {{/if}}
+                <Input
+                  variant="search"
+                  size="lg"
+                  placeholder={{#if includeLocalization}}{t('dashboard.search', 'Søk...')}{{else}}"Søk..."{{/if}}
+                />
+              </Box>
+              
+              {/* Notifications */}
+              <Button variant="ghost" size="icon" spacing="3">
+                {{#if includeIcons}}
+                <Bell />
+                {{/if}}
+              </Button>
+              
+              {/* Settings */}
+              <Button variant="ghost" size="icon" spacing="3">
+                {{#if includeIcons}}
+                <Settings />
+                {{/if}}
+              </Button>
+              
+              {/* User Avatar */}
+              <Avatar size="md">
+                <AvatarImage src="/avatars/user.jpg" alt="User" />
+                <AvatarFallback>{{#if includeLocalization}}{t('dashboard.user', 'BN')}{{else}}BN{{/if}}</AvatarFallback>
+              </Avatar>
+            </Flex>
+          </Flex>
+        </Container>
+      </Header>
+
+      {/* Main Content */}
+      <Main spacing="16">
+        <Container>
+          {/* Stats Grid */}
+          <Grid columns={{ base: 1, md: 2, lg: 4 }} spacing="6" marginBottom="16">
+          <Card variant="elevated" spacing="8">
+            <CardHeader>
+              <Flex justify="between" align="center">
+                <Text variant="label" size="sm" weight="medium">
+                  {{#if includeLocalization}}
+                  {t('dashboard.totalUsers', 'Totale Brukere')}
+                  {{else}}
+                  Totale Brukere
+                  {{/if}}
+                </Text>
+                {{#if includeIcons}}
+                <Users variant="muted" size="sm" />
+                {{/if}}
+              </Flex>
+            </CardHeader>
+            <CardContent spacing="4">
+              <Text variant="display" size="2xl" weight="bold">
+                {{#if includeData}}{stats.totalUsers.toLocaleString('nb-NO')}{{else}}2,847{{/if}}
+              </Text>
+              <Text variant="caption" size="xs" color="muted">
+                {{#if includeLocalization}}
+                {t('dashboard.fromLastMonth', '+12% fra forrige måned')}
+                {{else}}
+                +12% fra forrige måned
+                {{/if}}
+              </Text>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {{#if includeLocalization}}
+                {t('dashboard.revenue', 'Inntekt')}
+                {{else}}
+                Inntekt
+                {{/if}}
+              </CardTitle>
+              {{#if includeIcons}}
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              {{/if}}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {{#if includeData}}
+                {formatCurrency(stats.revenue)}
+                {{else}}
+                kr 125,430
+                {{/if}}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {{#if includeLocalization}}
+                {t('dashboard.fromLastMonth', '+8% fra forrige måned')}
+                {{else}}
+                +8% fra forrige måned
+                {{/if}}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {{#if includeLocalization}}
+                {t('dashboard.growth', 'Vekst')}
+                {{else}}
+                Vekst
+                {{/if}}
+              </CardTitle>
+              {{#if includeIcons}}
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              {{/if}}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{{#if includeData}}{stats.growth}%{{else}}12.5%{{/if}}</div>
+              <p className="text-xs text-muted-foreground">
+                {{#if includeLocalization}}
+                {t('dashboard.fromLastMonth', '+2% fra forrige måned')}
+                {{else}}
+                +2% fra forrige måned
+                {{/if}}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {{#if includeLocalization}}
+                {t('dashboard.activity', 'Aktivitet')}
+                {{else}}
+                Aktivitet
+                {{/if}}
+              </CardTitle>
+              {{#if includeIcons}}
+              <Activity className="h-4 w-4 text-muted-foreground" />
+              {{/if}}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{{#if includeData}}{stats.activity}%{{else}}89%{{/if}}</div>
+              <p className="text-xs text-muted-foreground">
+                {{#if includeLocalization}}
+                {t('dashboard.fromLastMonth', '+5% fra forrige måned')}
+                {{else}}
+                +5% fra forrige måned
+                {{/if}}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Recent Activity */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>
+                    {{#if includeLocalization}}
+                    {t('dashboard.recentActivity', 'Nylig Aktivitet')}
+                    {{else}}
+                    Nylig Aktivitet
+                    {{/if}}
+                  </CardTitle>
+                  <CardDescription>
+                    {{#if includeLocalization}}
+                    {t('dashboard.activityDescription', 'Siste handlinger i systemet')}
+                    {{else}}
+                    Siste handlinger i systemet
+                    {{/if}}
+                  </CardDescription>
+                </div>
+                <Button size="sm">
+                  {{#if includeIcons}}
+                  <Plus className="h-4 w-4 mr-2" />
+                  {{/if}}
+                  {{#if includeLocalization}}
+                  {t('dashboard.viewAll', 'Se alle')}
+                  {{else}}
+                  Se alle
+                  {{/if}}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {{#if includeData}}
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-4">
+                    <Avatar className="h-8 w-8">
+                      {activity.avatar ? (
+                        <AvatarImage src={activity.avatar} alt={activity.user} />
+                      ) : (
+                        <AvatarFallback>
+                          {activity.user.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {activity.user}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {activity.action}
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatRelativeTime(activity.timestamp)}
+                    </div>
+                  </div>
+                ))}
+                {{else}}
+                {/* Sample activity items */}
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>ON</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium leading-none">Ola Nordmann</p>
+                    <p className="text-sm text-muted-foreground">opprettet ny bruker</p>
+                  </div>
+                  <div className="text-sm text-muted-foreground">5 min siden</div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>KH</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium leading-none">Kari Hansen</p>
+                    <p className="text-sm text-muted-foreground">oppdaterte profil</p>
+                  </div>
+                  <div className="text-sm text-muted-foreground">15 min siden</div>
+                </div>
+                {{/if}}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {{#if includeLocalization}}
+                {t('dashboard.quickActions', 'Hurtighandlinger')}
+                {{else}}
+                Hurtighandlinger
+                {{/if}}
+              </CardTitle>
+              <CardDescription>
+                {{#if includeLocalization}}
+                {t('dashboard.quickActionsDescription', 'Vanlige oppgaver')}
+                {{else}}
+                Vanlige oppgaver
+                {{/if}}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button className="w-full justify-start">
+                {{#if includeIcons}}
+                <Plus className="h-4 w-4 mr-2" />
+                {{/if}}
+                {{#if includeLocalization}}
+                {t('dashboard.addUser', 'Legg til bruker')}
+                {{else}}
+                Legg til bruker
+                {{/if}}
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start">
+                {{#if includeIcons}}
+                <BarChart3 className="h-4 w-4 mr-2" />
+                {{/if}}
+                {{#if includeLocalization}}
+                {t('dashboard.viewReports', 'Se rapporter')}
+                {{else}}
+                Se rapporter
+                {{/if}}
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start">
+                {{#if includeIcons}}
+                <Settings className="h-4 w-4 mr-2" />
+                {{/if}}
+                {{#if includeLocalization}}
+                {t('dashboard.settings', 'Innstillinger')}
+                {{else}}
+                Innstillinger
+                {{/if}}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// Basic dashboard
+<{{componentName}} />
+
+// Dashboard with localization
+<{{componentName}} locale="nb" />
+
+// Dashboard with real-time data
+<{{componentName}} 
+  enableRealtime={true}
+  refreshInterval={30000}
+/>
+*/
+{{/if}}
