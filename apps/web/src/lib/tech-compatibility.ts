@@ -361,9 +361,9 @@ export const isOptionCompatible = (
 	if (optionId === "none") return true;
 
 	const compatibility = TECH_COMPATIBILITY[category as keyof TechCompatibility];
-	if (!compatibility || !compatibility[optionId]) return true;
+	if (!compatibility || !compatibility[optionId as keyof typeof compatibility]) return true;
 
-	const option = compatibility[optionId];
+	const option = compatibility[optionId as keyof typeof compatibility];
 
 	// Check incompatibilities based on current selections
 	switch (category) {
@@ -436,7 +436,7 @@ export const isOptionCompatible = (
 
 		case "packageManager":
 			// Check runtime compatibility
-			const runtimeCompat = TECH_COMPATIBILITY.runtime[currentStack.runtime];
+			const runtimeCompat = TECH_COMPATIBILITY.runtime[currentStack.runtime as keyof typeof TECH_COMPATIBILITY.runtime];
 			if (isRuntimeCompatibility(runtimeCompat) && runtimeCompat.supportedPackageManagers && !runtimeCompat.supportedPackageManagers.includes(optionId)) {
 				return false;
 			}
@@ -453,7 +453,7 @@ export const getDisabledOptions = (
 	category: TechCategory,
 	currentStack: StackState,
 ): string[] => {
-	const categoryOptions = TECH_OPTIONS[category as keyof typeof TECH_OPTIONS];
+	const categoryOptions = TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] as any[];
 	if (!categoryOptions) return [];
 
 	return categoryOptions
@@ -465,16 +465,16 @@ export const getDisabledOptions = (
  * Get filtered categories based on project type
  */
 export const getFilteredCategories = (projectType: ProjectType): TechCategory[] => {
-	const projectConfig = PROJECT_TYPES[projectType];
-	return projectConfig?.relevantCategories || [];
+	const projectConfig = PROJECT_TYPES.find((p: any) => p.id === projectType);
+	return (projectConfig?.relevantCategories as TechCategory[]) || [];
 };
 
 /**
  * Get default stack for a project type
  */
 export const getProjectTypeDefaults = (projectType: ProjectType): Partial<StackState> => {
-	const projectConfig = PROJECT_TYPES[projectType];
-	return projectConfig?.defaultSelections || {};
+	const projectConfig = PROJECT_TYPES.find((p: any) => p.id === projectType);
+	return (projectConfig?.defaultSelections as Partial<StackState>) || {};
 };
 
 /**

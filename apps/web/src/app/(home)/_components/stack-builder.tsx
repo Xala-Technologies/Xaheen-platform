@@ -25,22 +25,19 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+// New modular imports with legacy compatibility
 import {
 	DEFAULT_STACK,
 	isStackDefault,
 	PRESET_TEMPLATES,
 	PROJECT_TYPES,
-	type StackState,
 	TECH_OPTIONS,
-} from "@/lib/constant";
+} from "@/lib";
 import {
-	getDisabledOptions,
-	getFilteredCategories,
 	getProjectTypeDefaults,
 	isOptionCompatible as isCompatible,
-	validateStackCompatibility,
 } from "@/lib/tech-compatibility";
-import type { ProjectType, TechCategory } from "@/lib/types";
+import type { StackState, ProjectType, TechCategory } from "@/lib/types/index";
 import { stackParsers, stackQueryStatesOptions } from "@/lib/stack-url-state";
 import { cn } from "@/lib/utils";
 
@@ -1258,13 +1255,13 @@ const StackBuilder = () => {
 
 					for (const id of selectedValue) {
 						if (id === "none") continue;
-						const tech = options.find((opt) => opt.id === id);
+						const tech = options.find((opt: any) => opt.id === id);
 						if (tech) {
 							selectedTechs.push(tech.name);
 						}
 					}
 				} else {
-					const tech = options.find((opt) => opt.id === selectedValue);
+					const tech = options.find((opt: any) => opt.id === selectedValue);
 					if (
 						!tech ||
 						tech.id === "none" ||
@@ -1319,7 +1316,7 @@ const StackBuilder = () => {
 
 				for (const id of selectedValue) {
 					if (id === "none") continue;
-					const tech = options.find((opt) => opt.id === id);
+					const tech = options.find((opt: any) => opt.id === id);
 					if (tech) {
 						badges.push(
 							<span
@@ -1346,7 +1343,7 @@ const StackBuilder = () => {
 					}
 				}
 			} else {
-				const tech = options.find((opt) => opt.id === selectedValue);
+				const tech = options.find((opt: any) => opt.id === selectedValue);
 				if (
 					!tech ||
 					tech.id === "none" ||
@@ -1580,8 +1577,8 @@ const StackBuilder = () => {
 		<TooltipProvider>
 			<div className="grid w-full grid-cols-1 overflow-hidden border-border text-foreground sm:grid-cols-[auto_1fr]">
 				<div className="flex w-full flex-col border-border border-r sm:max-w-3xs md:max-w-xs lg:max-w-sm">
-					<ScrollArea className="flex-1">
-						<div className="grid h-full grid-rows-[auto_1fr] justify-between p-3 sm:p-4 md:h-[calc(100vh-64px)]">
+					<ScrollArea className="flex-1 max-h-[calc(100vh-64px)]">
+						<div className="flex flex-col justify-between p-3 sm:p-4 space-y-4">
 							<div className="flex flex-col space-y-3 sm:space-y-4">
 								{/* Project Type Selector */}
 								<label className="flex flex-col">
@@ -1808,7 +1805,7 @@ const StackBuilder = () => {
 										</div>
 
 										<div className="grid grid-cols-1 xs:grid-cols-2 gap-2 sm:gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-											{filteredOptions.map((tech) => {
+											{filteredOptions.map((tech: any) => {
 												let isSelected = false;
 												const category = categoryKey as keyof StackState;
 												const currentValue = stack[category];
