@@ -1,5 +1,30 @@
 # xaheen
 
+## 0.3.1
+
+### Patch Changes
+
+- **🔧 CRITICAL FIX**: Fixed `--ui` flag not being passed to template context
+  - Root cause: Incorrect argument order in `processAndValidateFlags` function call
+  - Fixed argument order: `projectName`, `options`, `providedFlags`
+  - Template conditional logic `{{#if (eq ui "xala")}}` now works correctly
+  - `--ui=xala` properly generates Xala UI System components
+  - `--ui=default` generates standard HTML elements as expected
+
+- **🔧 TypeScript Compilation Fixes**: Resolved all implicit `any` parameter errors
+  - Added explicit type annotations to filter function parameters
+  - Fixed `ProjectConfig` interface compliance issues
+  - Fixed property names: `gitInit` → `git`, `installDeps` → `install`
+  - Fixed `frontend` property type: string → array `["next"]`
+  - Added missing required properties to default config
+
+- **✅ Verification**: All template conditional rendering now working
+  - Xala UI System imports: `Container`, `Card`, `Text`, `CodeBlock`, etc.
+  - Localization with `useTranslation` and `t()` function calls
+  - Explicit TypeScript return types: `JSX.Element`
+  - Zero raw HTML elements when using `--ui=xala`
+  - Design tokens through semantic component props
+
 ## 0.3.0
 
 ### Minor Changes

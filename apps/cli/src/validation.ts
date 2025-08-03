@@ -31,7 +31,9 @@ export function processAndValidateFlags(
 ): ProjectConfig {
 	const config: ProjectConfig = {
 		projectName: "",
-		frontend: "next",
+		projectDir: "",
+		relativePath: "",
+		frontend: ["next"],
 		backend: "hono",
 		runtime: "bun",
 		database: "postgres",
@@ -43,8 +45,8 @@ export function processAndValidateFlags(
 		dbSetup: "none",
 		webDeploy: "none",
 		packageManager: "bun",
-		gitInit: true,
-		installDeps: true,
+		git: true,
+		install: true,
 		ui: "default",
 		compliance: "none",
 		locales: ["en"],
@@ -55,6 +57,25 @@ export function processAndValidateFlags(
 		mfa: false,
 		encryption: false,
 		audit: false,
+		// Service configuration defaults
+		testing: "none",
+		notifications: "none",
+		payments: "none",
+		monitoring: "none",
+		analytics: "none",
+		caching: "none",
+		devops: "none",
+		security: "none",
+		i18n: "none",
+		messaging: "none",
+		search: "none",
+		cms: "none",
+		saasAdmin: "none",
+		subscriptions: "none",
+		backgroundJobs: "none",
+		rbac: "none",
+		licensing: "none",
+		multiTenancy: "none",
 	};
 
 	if (options.api) {
@@ -188,13 +209,13 @@ export function processAndValidateFlags(
 			config.frontend = [];
 		} else {
 			const validOptions = options.frontend.filter(
-				(f): f is Frontend => f !== "none",
+				(f: any): f is Frontend => f !== "none",
 			);
-			const webFrontends = validOptions.filter((f) =>
+			const webFrontends = validOptions.filter((f: Frontend) =>
 				WEB_FRAMEWORKS.includes(f),
 			);
 			const nativeFrontends = validOptions.filter(
-				(f) => f === "native-nativewind" || f === "native-unistyles",
+				(f: Frontend) => f === "native-nativewind" || f === "native-unistyles",
 			);
 
 			if (webFrontends.length > 1) {
@@ -221,7 +242,7 @@ export function processAndValidateFlags(
 			config.addons = [];
 		} else {
 			config.addons = options.addons.filter(
-				(addon): addon is Addons => addon !== "none",
+				(addon: any): addon is Addons => addon !== "none",
 			);
 		}
 	}
@@ -234,7 +255,7 @@ export function processAndValidateFlags(
 			config.examples = [];
 		} else {
 			config.examples = options.examples.filter(
-				(ex): ex is Examples => ex !== "none",
+				(ex: any): ex is Examples => ex !== "none",
 			);
 			if (options.examples.includes("none") && config.backend !== "convex") {
 				config.examples = [];
@@ -269,7 +290,7 @@ export function processAndValidateFlags(
 
 		if (providedFlags.has("frontend") && options.frontend) {
 			const incompatibleFrontends = options.frontend.filter(
-				(f) => f === "nuxt" || f === "solid",
+				(f: any) => f === "nuxt" || f === "solid",
 			);
 			if (incompatibleFrontends.length > 0) {
 				consola.fatal(
@@ -304,7 +325,7 @@ export function processAndValidateFlags(
 		if (providedFlags.has("dbSetup") && options.dbSetup !== "none")
 			incompatibleFlags.push(`--db-setup ${options.dbSetup}`);
 		if (providedFlags.has("examples") && options.examples) {
-			const hasNonNoneExamples = options.examples.some((ex) => ex !== "none");
+			const hasNonNoneExamples = options.examples.some((ex: any) => ex !== "none");
 			if (hasNonNoneExamples) {
 				incompatibleFlags.push("--examples");
 			}
