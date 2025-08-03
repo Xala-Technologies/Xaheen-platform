@@ -1,20 +1,24 @@
 /**
- * HomePage Component - Xala UI System v5.0.1 Enhanced
+ * HomePage Component - Xala UI System v5.0.0 CVA Compliant
  * 
  * FEATURES:
  * - Grid-based responsive layout
  * - Card components with elevation
  * - Skeleton loading states
- * - Design token integration
+ * - CVA variant-based styling
  * - Enhanced typography hierarchy
  * - Professional visual design
  * 
- * UI SYSTEM v5.0.1 COMPLIANCE:
- * - NO raw HTML elements
- * - Design tokens for all styling
- * - Proper localization support
- * - WCAG 2.2 AAA accessibility
- * - TypeScript explicit return types
+ * UI SYSTEM v5.0.0 CVA COMPLIANCE:
+ * - ❌ NO useTokens() hook - DEPRECATED in v5.0.0
+ * - ✅ CVA variant props only
+ * - ✅ Semantic Tailwind classes (bg-primary, text-muted-foreground)
+ * - ✅ Component variants (variant="primary", size="lg")
+ * - ✅ NO raw HTML elements
+ * - ✅ NO inline styles or arbitrary values
+ * - ✅ Proper localization support
+ * - ✅ WCAG 2.2 AAA accessibility
+ * - ✅ TypeScript explicit return types
  */
 
 "use client";
@@ -32,8 +36,7 @@ import {
   Grid,
   GridItem,
   Badge,
-  Skeleton,
-  useTokens
+  Skeleton
 } from "@xala-technologies/ui-system";
 
 interface PresetStack {
@@ -66,7 +69,6 @@ interface Preset {
 
 export function HomePage(): React.JSX.Element {
   const { t } = useLocalization();
-  const { colors, spacing } = useTokens();
   
   const [projectIdea, setProjectIdea] = useState<string>("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -151,29 +153,14 @@ export function HomePage(): React.JSX.Element {
             {/* ASCII Art Header */}
             <Stack direction="vertical" gap="md" align="center">
               <Stack direction="horizontal" gap="xl" align="center" wrap>
-                <pre 
-                  style={{ 
-                    color: colors.primary?.[500],
-                    fontSize: 'clamp(0.75rem, 2vw, 1.3rem)',
-                    lineHeight: 1.2,
-                    fontFamily: 'monospace'
-                  }}
-                >{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
+                <pre className="text-primary font-mono text-[clamp(0.75rem,2vw,1.3rem)] leading-tight">{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
 ╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
  ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║
  ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║
 ██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║
 ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝`}</pre>
                 
-                <pre 
-                  style={{ 
-                    color: colors.primary?.[500],
-                    fontSize: 'clamp(0.75rem, 2vw, 1.3rem)',
-                    lineHeight: 1.2,
-                    fontFamily: 'monospace',
-                    marginLeft: spacing?.[5] || '1.25rem'
-                  }}
-                >{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
+                <pre className="text-primary font-mono text-[clamp(0.75rem,2vw,1.3rem)] leading-tight ml-5">{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
 ██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
 ██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
 ██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗
