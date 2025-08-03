@@ -41,7 +41,7 @@ export function ProjectIdeaSection({
   };
 
   return (
-    <Card variant="elevated" padding="lg">
+    <Card variant="elevated" padding="lg" suppressHydrationWarning>
       <Stack direction="vertical" style={{ gap: tokens.spacing[6], alignItems: 'center' }}>
         <Stack direction="vertical" style={{ gap: tokens.spacing[3], alignItems: 'center', textAlign: 'center' }}>
           <Typography variant="h2">

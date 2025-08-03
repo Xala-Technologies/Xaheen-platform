@@ -108,10 +108,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 							type: "static",
 						},
 					}}
-					theme={{
-						enableSystem: true,
-						defaultTheme: "system",
-					}}
 				>
 					<ThemeIntegratedProvider>
 						<NuqsAdapter>{children}</NuqsAdapter>

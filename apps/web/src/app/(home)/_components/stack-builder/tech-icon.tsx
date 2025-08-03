@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useTheme } from "next-themes";
+import { useTheme } from "@xala-technologies/ui-system/hooks";
 import { cn } from "@/lib/utils";
 
 interface TechIconProps {

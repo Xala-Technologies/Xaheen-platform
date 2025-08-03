@@ -1,28 +1,20 @@
 "use client";
 
-import React from "react";
-import { useTheme } from "next-themes";
-import { UISystemProvider } from "@xala-technologies/ui-system";
+import React from 'react';
 
 interface ThemeIntegratedProviderProps {
   children: React.ReactNode;
 }
 
 /**
- * Theme-integrated provider that connects next-themes with UI system
- * Ensures UI system components respond to theme changes
+ * ThemeIntegratedProvider provides a simple wrapper for children.
+ * The UI System v5.0.0 components handle theming internally without needing external providers.
+ * This maintains compatibility while letting components manage their own theme state.
  */
 export function ThemeIntegratedProvider({ children }: ThemeIntegratedProviderProps): React.JSX.Element {
-  const { theme, systemTheme } = useTheme();
-  
-  // Resolve the actual theme being used
-  const resolvedTheme = theme === 'system' ? systemTheme : theme;
-  
   return (
-    <UISystemProvider>
-      <div data-theme={resolvedTheme} className="theme-provider">
-        {children}
-      </div>
-    </UISystemProvider>
+    <React.Fragment>
+      {children}
+    </React.Fragment>
   );
 }

@@ -8,8 +8,7 @@ import { QuickStartTemplates } from "./QuickStartTemplates";
 import { 
   Container, 
   Stack, 
-  Typography,
-  useTokens 
+  Typography
 } from "@xala-technologies/ui-system";
 
 interface PresetStack {
@@ -42,7 +41,6 @@ interface Preset {
 
 export function HomePage(): React.JSX.Element {
   const { t } = useLocalization();
-  const { spacing, colors } = useTokens();
   
   const [projectIdea, setProjectIdea] = useState<string>("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -120,20 +118,14 @@ export function HomePage(): React.JSX.Element {
 
   return (
     <Container maxWidth="xl" padding="xl">
-      <Stack direction="vertical" style={{ gap: spacing[8] }}>
+      <Stack direction="vertical" gap="xl">
         {/* ASCII Art Header */}
-        <Stack direction="vertical" style={{ gap: spacing[6], alignItems: 'center' }}>
-          <Stack direction="horizontal" style={{ gap: spacing[6], alignItems: 'center', flexWrap: 'wrap' }}>
+        <Stack direction="vertical" gap="lg" align="center">
+          <Stack direction="horizontal" gap="lg" align="center" wrap>
             <Typography 
-              variant="body"
-              style={{ 
-                fontFamily: 'monospace',
-                lineHeight: 1.2,
-                whiteSpace: 'pre',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                color: colors.primary?.[500]
-              }}
+              variant="code"
+              color="primary"
+              size="sm"
             >
               {`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
 ╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
@@ -144,15 +136,9 @@ export function HomePage(): React.JSX.Element {
             </Typography>
             
             <Typography 
-              variant="body"
-              style={{ 
-                fontFamily: 'monospace',
-                lineHeight: 1.2,
-                whiteSpace: 'pre',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                color: colors.primary?.[500]
-              }}
+              variant="code"
+              color="primary"
+              size="sm"
             >
               {`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
 ██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
@@ -163,7 +149,7 @@ export function HomePage(): React.JSX.Element {
             </Typography>
           </Stack>
           
-          <Typography variant="body" style={{ textAlign: 'center', color: colors.text?.muted }}>
+          <Typography variant="body" color="muted" align="center">
             {t('homepage.subtitle')}
           </Typography>
         </Stack>

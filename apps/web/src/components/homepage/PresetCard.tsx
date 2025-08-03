@@ -70,8 +70,6 @@ export function PresetCard({
       onClick={handleClick}
       style={{
         cursor: "pointer",
-        borderColor: isSelected ? colors.primary[500] : undefined,
-        backgroundColor: isSelected ? colors.primary[50] : undefined,
       }}
     >
       <Stack 
@@ -82,7 +80,10 @@ export function PresetCard({
           direction="horizontal" 
           style={{ gap: spacing[2], alignItems: 'center' }}
         >
-          <Typography variant="h4">
+          <Typography 
+            variant="h4"
+            style={{ color: isSelected ? colors.primary[500] : undefined }}
+          >
             {preset.name}
           </Typography>
           {isSelected && (
