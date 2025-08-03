@@ -1,0 +1,189 @@
+---
+title: "CLI v2: Service-Based Architecture"
+description: "Introducing Xaheen CLI v2 with intelligent service bundling and SOLID principles"
+---
+
+# CLI v2: Service-Based Architecture
+
+Xaheen CLI v2 introduces a revolutionary service-based architecture that makes building enterprise applications faster and more maintainable.
+
+## What's New in v2
+
+### Service-Based Architecture
+- **Modular services** following SOLID principles
+- **Template providers** for different frameworks
+- **Intelligent bundling** system
+- **Repository pattern** for template management
+
+### Key Improvements
+
+#### Performance
+- **328KB bundle size** (significantly reduced)
+- **Faster initialization** with cached templates
+- **Parallel service injection** for better performance
+
+#### Developer Experience
+- **Better error messages** with actionable feedback
+- **Interactive prompts** using Clack
+- **Comprehensive validation** before project creation
+- **Dry-run mode** for testing configurations
+
+## Service Categories
+
+### Frontend Services
+- **Next.js** - Full-stack React framework
+- **Nuxt** - Vue.js framework
+- **Remix** - Web standards-focused React framework
+- **SvelteKit** - Svelte framework
+- **Angular** - Google's web framework
+
+### Backend Services
+- **Hono** - Ultrafast web framework
+- **Express** - Node.js web framework
+- **Fastify** - Fast and low overhead framework
+- **NestJS** - Progressive Node.js framework
+
+### Database Services
+- **PostgreSQL** with Drizzle/Prisma
+- **MySQL** with Drizzle/Prisma
+- **MongoDB** with Mongoose
+- **Redis** for caching and sessions
+
+### Authentication Services
+- **Clerk** - Complete authentication solution
+- **Auth0** - Identity platform
+- **Better Auth** - Open-source auth
+- **BankID** - Norwegian identity verification
+
+### Norwegian Compliance
+- **Vipps** - Norwegian payment system
+- **Altinn** - Government services integration
+- **Norwegian localization** with proper date/time formats
+
+## Intelligent Bundling
+
+### Presets
+CLI v2 introduces smart presets that bundle related services:
+
+```bash
+# SaaS Starter Bundle
+bunx xaheen@latest create my-saas --preset saas-starter
+
+# Enterprise App Bundle  
+bunx xaheen@latest create my-enterprise --preset enterprise-app
+
+# Norwegian Government App
+bunx xaheen@latest create my-gov-app --preset norwegian-gov
+```
+
+### Available Bundles
+
+#### SaaS Starter
+- Authentication (Clerk/Better Auth)
+- Database (PostgreSQL)
+- Payments (Stripe)
+- Email notifications
+- Analytics integration
+
+#### Enterprise App
+- Frontend framework
+- Backend API
+- Database with migrations
+- Authentication & authorization
+- Monitoring and logging
+
+#### Norwegian Government
+- BankID integration
+- Vipps payments
+- Altinn services
+- Norwegian compliance features
+
+## Migration from v1
+
+### Command Differences
+
+**CLI v1:**
+```bash
+bunx xaheen@latest my-app --frontend next --backend hono --database postgres
+```
+
+**CLI v2:**
+```bash
+bunx xaheen@latest create my-app --framework next --backend hono --database postgresql
+```
+
+### New Features in v2
+
+1. **Service validation** - Ensures compatibility between services
+2. **Template injection** - Smart code generation based on selections
+3. **Post-installation steps** - Automated setup and configuration
+4. **Environment management** - Automatic .env file generation
+
+## Advanced Usage
+
+### Custom Service Configuration
+
+```bash
+# Add specific services to existing project
+bunx xaheen@latest add auth --provider clerk
+
+# Validate project health
+bunx xaheen@latest validate --fix
+
+# List available bundles
+bunx xaheen@latest bundle list
+```
+
+### Debug Mode
+
+```bash
+# Enable debug logging
+bunx xaheen@latest create my-app --debug
+
+# Dry run to see what would be generated
+bunx xaheen@latest create my-app --dry-run
+```
+
+## Architecture Details
+
+### SOLID Principles Implementation
+
+1. **Single Responsibility** - Each service provider handles one concern
+2. **Open/Closed** - Easy to add new services without modifying existing code
+3. **Liskov Substitution** - Service providers are interchangeable
+4. **Interface Segregation** - Clean, focused interfaces
+5. **Dependency Inversion** - Depends on abstractions, not implementations
+
+### Template System
+
+- **Handlebars templates** for dynamic content generation
+- **File injection points** for precise code placement
+- **JSON merging** for configuration files
+- **Environment variable management**
+- **Dependency resolution** with conflict detection
+
+## Getting Started
+
+1. **Install the CLI:**
+   ```bash
+   npm install -g xaheen@latest
+   ```
+
+2. **Create a new project:**
+   ```bash
+   bunx xaheen@latest create my-app --preset saas-starter
+   ```
+
+3. **Add services to existing project:**
+   ```bash
+   cd my-app
+   bunx xaheen@latest add payments --provider stripe
+   ```
+
+## Roadmap
+
+- **AI-powered service recommendations**
+- **Custom bundle creation**
+- **Visual service configuration**
+- **Advanced Norwegian compliance features**
+- **Enterprise SSO integrations**

@@ -41,7 +41,15 @@
       "Bash(bun build:*)",
       "Bash(bun test:*)",
       "Bash(cd:*)",
-      "Bash(bun src/test-plans/run-template-tests.ts health)"
+      "Bash(bun src/test-plans/run-template-tests.ts health)",
+      "mcp__ide__getDiagnostics",
+      "Bash(bun tsc:*)",
+      "Bash(node:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx biome check:*)",
+      "Bash(grep:*)",
+      "Bash(chmod:*)",
+      "Bash(./test-cli.sh:*)"
     ],
     "deny": []
   }

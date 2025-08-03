@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -13,13 +13,15 @@ import {
 // Import modular components
 import { TechCategorySection } from "./stack-builder/tech-category-section";
 import { StackActions } from "./stack-builder/stack-actions";
-import { CommandDisplay } from "./stack-builder/command-display";
+import { CommandDisplayV2 } from "./stack-builder/command-display-v2";
 import { SelectedStackDisplay } from "./stack-builder/selected-stack-display";
 import { QuickPresets } from "./stack-builder/quick-presets";
+import { StackBuilderTabs } from "./stack-builder/stack-builder-tabs";
 import { useStackBuilder } from "./stack-builder/use-stack-builder";
 import { getBadgeColors, getCategoryDisplayName } from "./stack-builder/utils";
 import { analyzeStackCompatibility } from "./stack-builder/compatibility-analysis";
 import { generateCommand } from "./stack-builder/command-generator";
+import { generateCommandFromStack, mapStackToServices } from "@/lib/services/cli-v2-command-generator";
 
 /**
  * StackBuilder component - Refactored following SOLID principles
@@ -54,15 +56,27 @@ const StackBuilder: React.FC = () => {
 		isOptionCompatible,
 	} = useStackBuilder();
 
+	// Bundle selection state
+	const [selectedBundle, setSelectedBundle] = useState<string>("");
+
 	// Analyze stack compatibility
 	const compatibilityAnalysis = useMemo(() => 
 		analyzeStackCompatibility(stack), [stack]
 	);
 
-	// Generate CLI command
+	// Generate CLI commands (v1 and v2)
 	const command = useMemo(() => 
 		generateCommand({ ...stack, projectName }), [stack, projectName]
 	);
+	
+	const commandV2 = useMemo(() => {
+		if (selectedBundle) {
+			// Use bundle-based command
+			return `bunx xaheen@latest create ${projectName || "my-app"} --preset ${selectedBundle}`;
+		}
+		// Use stack-based command
+		return generateCommandFromStack({ ...stack, projectName });
+	}, [stack, projectName, selectedBundle]);
 
 	// Generate selected badges
 	const selectedBadges = useMemo(() => {
@@ -100,6 +114,49 @@ const StackBuilder: React.FC = () => {
 		};
 	}, []);
 
+	// Handle bundle selection
+	const handleBundleSelect = useCallback((bundleId: string) => {
+		setSelectedBundle(bundleId);
+		// You could also apply the bundle as a preset to the stack if desired
+		// const bundleOptions = mapStackToServices({ /* bundle config */ });
+	}, []);
+
+	// Tech Stack Content (for the tabs)
+	const techStackContent = (
+		<ScrollArea
+			ref={contentRef}
+			className="flex-1 overflow-hidden scroll-smooth"
+		>
+			<main className="p-3 sm:p-4">
+				{CATEGORY_ORDER.map((categoryKey) => {
+					const categoryOptions =
+						TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
+					const categoryDisplayName = getCategoryDisplayName(categoryKey);
+
+					// Filter options (currently no filtering, but can be extended)
+					const filteredOptions = categoryOptions.filter(() => true);
+
+					if (filteredOptions.length === 0) return null;
+
+					return (
+						<TechCategorySection
+							key={categoryKey}
+							ref={setSectionRef(categoryKey)}
+							categoryKey={categoryKey}
+							categoryDisplayName={categoryDisplayName}
+							options={filteredOptions}
+							stack={stack}
+							compatibilityNotes={compatibilityAnalysis.notes[categoryKey]}
+							onTechSelect={handleTechSelect}
+							isOptionCompatible={isOptionCompatible}
+						/>
+					);
+				})}
+				<div className="h-10" />
+			</main>
+		</ScrollArea>
+	);
+
 	return (
 		<TooltipProvider>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden lg:flex-row">
@@ -136,9 +193,11 @@ const StackBuilder: React.FC = () => {
 							/>
 
 							{/* Command Display */}
-							<CommandDisplay
+							<CommandDisplayV2
 								command={command}
+								commandV2={commandV2}
 								onCopy={copyToClipboard}
+								defaultToCLIv2={true}
 							/>
 
 							{/* Selected Stack Display */}
@@ -153,40 +212,16 @@ const StackBuilder: React.FC = () => {
 					</ScrollArea>
 				</div>
 
-				{/* Main Content */}
+				{/* Main Content with Tabs */}
 				<div className="flex flex-1 flex-col overflow-hidden">
-					<ScrollArea
-						ref={contentRef}
-						className="flex-1 overflow-hidden scroll-smooth"
+					<StackBuilderTabs
+						stack={stack}
+						onStackChange={setStack}
+						onBundleSelect={handleBundleSelect}
+						selectedBundle={selectedBundle}
 					>
-						<main className="p-3 sm:p-4">
-							{CATEGORY_ORDER.map((categoryKey) => {
-								const categoryOptions =
-									TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
-								const categoryDisplayName = getCategoryDisplayName(categoryKey);
-
-								// Filter options (currently no filtering, but can be extended)
-								const filteredOptions = categoryOptions.filter(() => true);
-
-								if (filteredOptions.length === 0) return null;
-
-								return (
-									<TechCategorySection
-										key={categoryKey}
-										ref={setSectionRef(categoryKey)}
-										categoryKey={categoryKey}
-										categoryDisplayName={categoryDisplayName}
-										options={filteredOptions}
-										stack={stack}
-										compatibilityNotes={compatibilityAnalysis.notes[categoryKey]}
-										onTechSelect={handleTechSelect}
-										isOptionCompatible={isOptionCompatible}
-									/>
-								);
-							})}
-							<div className="h-10" />
-						</main>
-					</ScrollArea>
+						{techStackContent}
+					</StackBuilderTabs>
 				</div>
 			</div>
 		</TooltipProvider>

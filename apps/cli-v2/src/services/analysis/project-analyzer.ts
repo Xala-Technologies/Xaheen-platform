@@ -1,399 +1,461 @@
 /**
  * Project Analyzer Service
- * 
+ *
  * Analyzes existing projects to detect framework, services,
  * and configuration for intelligent service addition.
- * 
+ *
  * @author DevOps Expert Agent
  * @since 2025-01-03
  */
 
-import { consola } from 'consola';
-import fs from 'fs-extra';
-import path from 'node:path';
+import path from "node:path";
+import { consola } from "consola";
+import fs from "fs-extra";
 
 export interface ProjectInfo {
-  isValid: boolean;
-  name: string;
-  framework?: string;
-  backend?: string;
-  database?: string;
-  platform?: string;
-  packageManager?: 'npm' | 'pnpm' | 'yarn' | 'bun';
-  typescript: boolean;
-  git?: boolean;
-  services: string[];
-  features?: string[];
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  scripts?: Record<string, string>;
+	isValid: boolean;
+	name: string;
+	framework?: string;
+	backend?: string;
+	database?: string;
+	platform?: string;
+	packageManager?: "npm" | "pnpm" | "yarn" | "bun";
+	typescript: boolean;
+	git?: boolean;
+	services: string[];
+	features?: string[];
+	dependencies?: Record<string, string>;
+	devDependencies?: Record<string, string>;
+	scripts?: Record<string, string>;
 }
 
 export class ProjectAnalyzer {
-  async analyzeProject(projectPath: string): Promise<ProjectInfo> {
-    try {
-      // Check if directory exists
-      if (!(await fs.pathExists(projectPath))) {
-        return this.invalidProject();
-      }
+	async analyzeProject(projectPath: string): Promise<ProjectInfo> {
+		try {
+			// Check if directory exists
+			if (!(await fs.pathExists(projectPath))) {
+				return this.invalidProject();
+			}
 
-      // Check for package.json
-      const packageJsonPath = path.join(projectPath, 'package.json');
-      if (!(await fs.pathExists(packageJsonPath))) {
-        return this.invalidProject();
-      }
+			// Check for package.json
+			const packageJsonPath = path.join(projectPath, "package.json");
+			if (!(await fs.pathExists(packageJsonPath))) {
+				return this.invalidProject();
+			}
 
-      const packageJson = await fs.readJson(packageJsonPath);
-      
-      // Basic project info
-      const projectInfo: ProjectInfo = {
-        isValid: true,
-        name: packageJson.name || path.basename(projectPath),
-        typescript: await this.detectTypeScript(projectPath),
-        git: await this.detectGit(projectPath),
-        services: [],
-        dependencies: packageJson.dependencies || {},
-        devDependencies: packageJson.devDependencies || {},
-        scripts: packageJson.scripts || {}
-      };
+			const packageJson = await fs.readJson(packageJsonPath);
 
-      // Detect package manager
-      projectInfo.packageManager = await this.detectPackageManager(projectPath);
+			// Basic project info
+			const projectInfo: ProjectInfo = {
+				isValid: true,
+				name: packageJson.name || path.basename(projectPath),
+				typescript: await this.detectTypeScript(projectPath),
+				git: await this.detectGit(projectPath),
+				services: [],
+				dependencies: packageJson.dependencies || {},
+				devDependencies: packageJson.devDependencies || {},
+				scripts: packageJson.scripts || {},
+			};
 
-      // Detect framework
-      projectInfo.framework = await this.detectFramework(projectInfo);
+			// Detect package manager
+			projectInfo.packageManager = await this.detectPackageManager(projectPath);
 
-      // Detect backend
-      projectInfo.backend = await this.detectBackend(projectInfo);
+			// Detect framework
+			projectInfo.framework = await this.detectFramework(projectInfo);
 
-      // Detect database
-      projectInfo.database = await this.detectDatabase(projectInfo);
+			// Detect backend
+			projectInfo.backend = await this.detectBackend(projectInfo);
 
-      // Detect existing services
-      projectInfo.services = await this.detectServices(projectPath, projectInfo);
+			// Detect database
+			projectInfo.database = await this.detectDatabase(projectInfo);
 
-      // Detect platform
-      projectInfo.platform = await this.detectPlatform(projectInfo);
+			// Detect existing services
+			projectInfo.services = await this.detectServices(
+				projectPath,
+				projectInfo,
+			);
 
-      return projectInfo;
+			// Detect platform
+			projectInfo.platform = await this.detectPlatform(projectInfo);
 
-    } catch (error) {
-      consola.debug('Project analysis error:', error);
-      return this.invalidProject();
-    }
-  }
+			return projectInfo;
+		} catch (error) {
+			consola.debug("Project analysis error:", error);
+			return this.invalidProject();
+		}
+	}
 
-  private invalidProject(): ProjectInfo {
-    return {
-      isValid: false,
-      name: '',
-      typescript: false,
-      services: []
-    };
-  }
+	private invalidProject(): ProjectInfo {
+		return {
+			isValid: false,
+			name: "",
+			typescript: false,
+			services: [],
+		};
+	}
 
-  private async detectTypeScript(projectPath: string): Promise<boolean> {
-    return fs.pathExists(path.join(projectPath, 'tsconfig.json'));
-  }
+	private async detectTypeScript(projectPath: string): Promise<boolean> {
+		return fs.pathExists(path.join(projectPath, "tsconfig.json"));
+	}
 
-  private async detectGit(projectPath: string): Promise<boolean> {
-    return fs.pathExists(path.join(projectPath, '.git'));
-  }
+	private async detectGit(projectPath: string): Promise<boolean> {
+		return fs.pathExists(path.join(projectPath, ".git"));
+	}
 
-  private async detectPackageManager(projectPath: string): Promise<'npm' | 'pnpm' | 'yarn' | 'bun'> {
-    if (await fs.pathExists(path.join(projectPath, 'bun.lockb'))) return 'bun';
-    if (await fs.pathExists(path.join(projectPath, 'yarn.lock'))) return 'yarn';
-    if (await fs.pathExists(path.join(projectPath, 'pnpm-lock.yaml'))) return 'pnpm';
-    return 'npm';
-  }
+	private async detectPackageManager(
+		projectPath: string,
+	): Promise<"npm" | "pnpm" | "yarn" | "bun"> {
+		if (await fs.pathExists(path.join(projectPath, "bun.lockb"))) return "bun";
+		if (await fs.pathExists(path.join(projectPath, "yarn.lock"))) return "yarn";
+		if (await fs.pathExists(path.join(projectPath, "pnpm-lock.yaml")))
+			return "pnpm";
+		return "npm";
+	}
 
-  private async detectFramework(projectInfo: ProjectInfo): Promise<string | undefined> {
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+	private async detectFramework(
+		projectInfo: ProjectInfo,
+	): Promise<string | undefined> {
+		const deps = {
+			...projectInfo.dependencies,
+			...projectInfo.devDependencies,
+		};
 
-    // Next.js
-    if (deps['next']) return 'next';
-    
-    // Nuxt
-    if (deps['nuxt'] || deps['@nuxt/kit']) return 'nuxt';
-    
-    // Remix
-    if (deps['@remix-run/react'] || deps['@remix-run/node']) return 'remix';
-    
-    // SvelteKit
-    if (deps['@sveltejs/kit']) return 'sveltekit';
-    
-    // SolidStart
-    if (deps['solid-start'] || deps['@solidjs/start']) return 'solid-start';
-    
-    // Qwik City
-    if (deps['@builder.io/qwik-city']) return 'qwik-city';
-    
-    // Angular
-    if (deps['@angular/core']) return 'angular';
-    
-    // React (without framework)
-    if (deps['react'] && !deps['next'] && !deps['@remix-run/react']) return 'react';
-    
-    // Vue (without framework)
-    if (deps['vue'] && !deps['nuxt']) return 'vue';
-    
-    // Svelte (without framework)
-    if (deps['svelte'] && !deps['@sveltejs/kit']) return 'svelte';
+		// Next.js
+		if (deps["next"]) return "next";
 
-    return undefined;
-  }
+		// Nuxt
+		if (deps["nuxt"] || deps["@nuxt/kit"]) return "nuxt";
 
-  private async detectBackend(projectInfo: ProjectInfo): Promise<string | undefined> {
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+		// Remix
+		if (deps["@remix-run/react"] || deps["@remix-run/node"]) return "remix";
 
-    // Hono
-    if (deps['hono']) return 'hono';
-    
-    // Express
-    if (deps['express']) return 'express';
-    
-    // Fastify
-    if (deps['fastify']) return 'fastify';
-    
-    // NestJS
-    if (deps['@nestjs/core']) return 'nest';
-    
-    // AdonisJS
-    if (deps['@adonisjs/core']) return 'adonis';
-    
-    // Next.js API routes (if Next.js is detected)
-    if (projectInfo.framework === 'next') {
-      const apiDir = path.join(process.cwd(), 'pages/api');
-      const appApiDir = path.join(process.cwd(), 'app/api');
-      if (await fs.pathExists(apiDir) || await fs.pathExists(appApiDir)) {
-        return 'next-api';
-      }
-    }
-    
-    // Nuxt server routes
-    if (projectInfo.framework === 'nuxt') {
-      const serverDir = path.join(process.cwd(), 'server');
-      if (await fs.pathExists(serverDir)) {
-        return 'nuxt-api';
-      }
-    }
+		// SvelteKit
+		if (deps["@sveltejs/kit"]) return "sveltekit";
 
-    return undefined;
-  }
+		// SolidStart
+		if (deps["solid-start"] || deps["@solidjs/start"]) return "solid-start";
 
-  private async detectDatabase(projectInfo: ProjectInfo): Promise<string | undefined> {
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+		// Qwik City
+		if (deps["@builder.io/qwik-city"]) return "qwik-city";
 
-    // Check for ORMs first
-    if (deps['@prisma/client'] || deps['prisma']) {
-      // Check Prisma schema for provider
-      const schemaPath = path.join(process.cwd(), 'prisma/schema.prisma');
-      if (await fs.pathExists(schemaPath)) {
-        const schema = await fs.readFile(schemaPath, 'utf-8');
-        if (schema.includes('provider = "postgresql"')) return 'postgresql';
-        if (schema.includes('provider = "mysql"')) return 'mysql';
-        if (schema.includes('provider = "sqlite"')) return 'sqlite';
-        if (schema.includes('provider = "mongodb"')) return 'mongodb';
-      }
-    }
+		// Angular
+		if (deps["@angular/core"]) return "angular";
 
-    // Direct database clients
-    if (deps['pg'] || deps['postgres']) return 'postgresql';
-    if (deps['mysql'] || deps['mysql2']) return 'mysql';
-    if (deps['sqlite3'] || deps['better-sqlite3']) return 'sqlite';
-    if (deps['mongodb']) return 'mongodb';
-    if (deps['redis'] || deps['ioredis']) return 'redis';
-    
-    // Database services
-    if (deps['@supabase/supabase-js']) return 'supabase';
-    if (deps['@planetscale/database']) return 'planetscale';
-    if (deps['@neondatabase/serverless']) return 'neon';
+		// React (without framework)
+		if (deps["react"] && !deps["next"] && !deps["@remix-run/react"])
+			return "react";
 
-    return undefined;
-  }
+		// Vue (without framework)
+		if (deps["vue"] && !deps["nuxt"]) return "vue";
 
-  private async detectServices(projectPath: string, projectInfo: ProjectInfo): Promise<string[]> {
-    const services: string[] = [];
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+		// Svelte (without framework)
+		if (deps["svelte"] && !deps["@sveltejs/kit"]) return "svelte";
 
-    // Check for service files in src/lib directory
-    const libPath = path.join(projectPath, 'src/lib');
-    if (await fs.pathExists(libPath)) {
-      const files = await fs.readdir(libPath);
-      
-      for (const file of files) {
-        const serviceName = this.detectServiceFromFileName(file);
-        if (serviceName && !services.includes(serviceName)) {
-          services.push(serviceName);
-        }
-      }
-    }
+		return undefined;
+	}
 
-    // Check for Prisma schema
-    const prismaSchemaPath = path.join(projectPath, 'prisma/schema.prisma');
-    if (await fs.pathExists(prismaSchemaPath)) {
-      if (!services.includes('database')) {
-        services.push('database');
-      }
-    }
+	private async detectBackend(
+		projectInfo: ProjectInfo,
+	): Promise<string | undefined> {
+		const deps = {
+			...projectInfo.dependencies,
+			...projectInfo.devDependencies,
+		};
 
-    // Check dependencies as fallback
-    // Auth
-    if (deps['better-auth'] || deps['@clerk/nextjs'] || deps['@auth/core'] || 
-        deps['next-auth'] || deps['@supabase/auth-helpers-nextjs']) {
-      if (!services.includes('auth')) {
-        services.push('auth');
-      }
-    }
+		// Hono
+		if (deps["hono"]) return "hono";
 
-    // Database (already detected from file system)
-    if (projectInfo.database && !services.includes('database')) {
-      services.push('database');
-    }
+		// Express
+		if (deps["express"]) return "express";
 
-    // Payments
-    if (deps['stripe'] || deps['@stripe/stripe-js']) {
-      if (!services.includes('payments')) {
-        services.push('payments');
-      }
-    }
+		// Fastify
+		if (deps["fastify"]) return "fastify";
 
-    // Email
-    if (deps['@sendgrid/mail'] || deps['resend'] || deps['nodemailer'] || 
-        deps['@react-email/components']) {
-      if (!services.includes('email')) {
-        services.push('email');
-      }
-    }
+		// NestJS
+		if (deps["@nestjs/core"]) return "nest";
 
-    // SMS
-    if (deps['twilio']) {
-      if (!services.includes('sms')) {
-        services.push('sms');
-      }
-    }
+		// AdonisJS
+		if (deps["@adonisjs/core"]) return "adonis";
 
-    // Storage
-    if (deps['@aws-sdk/client-s3'] || deps['@uploadthing/react'] || 
-        deps['@vercel/blob'] || deps['cloudinary']) {
-      services.push('storage');
-    }
+		// Next.js API routes (if Next.js is detected)
+		if (projectInfo.framework === "next") {
+			const apiDir = path.join(process.cwd(), "pages/api");
+			const appApiDir = path.join(process.cwd(), "app/api");
+			if ((await fs.pathExists(apiDir)) || (await fs.pathExists(appApiDir))) {
+				return "next-api";
+			}
+		}
 
-    // Cache
-    if (deps['redis'] || deps['ioredis'] || deps['@upstash/redis']) {
-      services.push('cache');
-    }
+		// Nuxt server routes
+		if (projectInfo.framework === "nuxt") {
+			const serverDir = path.join(process.cwd(), "server");
+			if (await fs.pathExists(serverDir)) {
+				return "nuxt-api";
+			}
+		}
 
-    // Queue
-    if (deps['bull'] || deps['bullmq'] || deps['bee-queue']) {
-      services.push('queue');
-    }
+		return undefined;
+	}
 
-    // Search
-    if (deps['@algolia/client-search'] || deps['@elastic/elasticsearch'] || 
-        deps['meilisearch']) {
-      services.push('search');
-    }
+	private async detectDatabase(
+		projectInfo: ProjectInfo,
+	): Promise<string | undefined> {
+		const deps = {
+			...projectInfo.dependencies,
+			...projectInfo.devDependencies,
+		};
 
-    // Analytics
-    if (deps['@vercel/analytics'] || deps['posthog-js'] || deps['mixpanel-browser']) {
-      services.push('analytics');
-    }
+		// Check for ORMs first
+		if (deps["@prisma/client"] || deps["prisma"]) {
+			// Check Prisma schema for provider
+			const schemaPath = path.join(process.cwd(), "prisma/schema.prisma");
+			if (await fs.pathExists(schemaPath)) {
+				const schema = await fs.readFile(schemaPath, "utf-8");
+				if (schema.includes('provider = "postgresql"')) return "postgresql";
+				if (schema.includes('provider = "mysql"')) return "mysql";
+				if (schema.includes('provider = "sqlite"')) return "sqlite";
+				if (schema.includes('provider = "mongodb"')) return "mongodb";
+			}
+		}
 
-    // Monitoring
-    if (deps['@sentry/nextjs'] || deps['@sentry/node']) {
-      services.push('monitoring');
-    }
+		// Direct database clients
+		if (deps["pg"] || deps["postgres"]) return "postgresql";
+		if (deps["mysql"] || deps["mysql2"]) return "mysql";
+		if (deps["sqlite3"] || deps["better-sqlite3"]) return "sqlite";
+		if (deps["mongodb"]) return "mongodb";
+		if (deps["redis"] || deps["ioredis"]) return "redis";
 
-    // Real-time
-    if (deps['pusher-js'] || deps['socket.io-client'] || deps['@supabase/realtime-js']) {
-      services.push('realtime');
-    }
+		// Database services
+		if (deps["@supabase/supabase-js"]) return "supabase";
+		if (deps["@planetscale/database"]) return "planetscale";
+		if (deps["@neondatabase/serverless"]) return "neon";
 
-    // AI
-    if (deps['openai'] || deps['@anthropic-ai/sdk'] || deps['@google/generative-ai']) {
-      services.push('ai');
-    }
+		return undefined;
+	}
 
-    // CMS
-    if (deps['@sanity/client'] || deps['contentful'] || deps['@strapi/strapi']) {
-      services.push('cms');
-    }
+	private async detectServices(
+		projectPath: string,
+		projectInfo: ProjectInfo,
+	): Promise<string[]> {
+		const services: string[] = [];
+		const deps = {
+			...projectInfo.dependencies,
+			...projectInfo.devDependencies,
+		};
 
-    // i18n
-    if (deps['next-i18next'] || deps['react-i18next'] || deps['vue-i18n']) {
-      services.push('i18n');
-    }
+		// Check for service files in src/lib directory
+		const libPath = path.join(projectPath, "src/lib");
+		if (await fs.pathExists(libPath)) {
+			const files = await fs.readdir(libPath);
 
-    return services;
-  }
+			for (const file of files) {
+				const serviceName = this.detectServiceFromFileName(file);
+				if (serviceName && !services.includes(serviceName)) {
+					services.push(serviceName);
+				}
+			}
+		}
 
-  private async detectPlatform(projectInfo: ProjectInfo): Promise<string> {
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+		// Check for Prisma schema
+		const prismaSchemaPath = path.join(projectPath, "prisma/schema.prisma");
+		if (await fs.pathExists(prismaSchemaPath)) {
+			if (!services.includes("database")) {
+				services.push("database");
+			}
+		}
 
-    // React Native
-    if (deps['react-native']) return 'mobile';
-    
-    // Electron
-    if (deps['electron']) return 'desktop';
-    
-    // Tauri
-    if (deps['@tauri-apps/api']) return 'desktop';
+		// Check dependencies as fallback
+		// Auth
+		if (
+			deps["better-auth"] ||
+			deps["@clerk/nextjs"] ||
+			deps["@auth/core"] ||
+			deps["next-auth"] ||
+			deps["@supabase/auth-helpers-nextjs"]
+		) {
+			if (!services.includes("auth")) {
+				services.push("auth");
+			}
+		}
 
-    // Default to web
-    return 'web';
-  }
+		// Database (already detected from file system)
+		if (projectInfo.database && !services.includes("database")) {
+			services.push("database");
+		}
 
-  private detectServiceFromFileName(fileName: string): string | null {
-    const baseName = fileName.toLowerCase().replace(/\.(ts|js|tsx|jsx)$/, '');
-    
-    // Map file names to services
-    const serviceMap: Record<string, string> = {
-      'auth': 'auth',
-      'authentication': 'auth',
-      'session': 'auth',
-      'user': 'auth',
-      'database': 'database',
-      'db': 'database',
-      'prisma': 'database',
-      'supabase': 'database',
-      'mongo': 'database',
-      'mongoose': 'database',
-      'stripe': 'payments',
-      'payment': 'payments',
-      'payments': 'payments',
-      'billing': 'payments',
-      'checkout': 'payments',
-      'email': 'email',
-      'mail': 'email',
-      'resend': 'email',
-      'sendgrid': 'email',
-      'nodemailer': 'email',
-      'sms': 'sms',
-      'twilio': 'sms',
-      'storage': 'storage',
-      's3': 'storage',
-      'upload': 'storage',
-      'uploadthing': 'storage',
-      'cloudinary': 'storage',
-      'queue': 'queue',
-      'bull': 'queue',
-      'bullmq': 'queue',
-      'redis': 'cache',
-      'cache': 'cache',
-      'analytics': 'analytics',
-      'tracking': 'analytics',
-      'posthog': 'analytics',
-      'mixpanel': 'analytics',
-      'monitoring': 'monitoring',
-      'sentry': 'monitoring',
-      'error': 'monitoring',
-      'logging': 'logging',
-      'logger': 'logging',
-      'winston': 'logging',
-      'pino': 'logging'
-    };
+		// Payments
+		if (deps["stripe"] || deps["@stripe/stripe-js"]) {
+			if (!services.includes("payments")) {
+				services.push("payments");
+			}
+		}
 
-    return serviceMap[baseName] || null;
-  }
+		// Email
+		if (
+			deps["@sendgrid/mail"] ||
+			deps["resend"] ||
+			deps["nodemailer"] ||
+			deps["@react-email/components"]
+		) {
+			if (!services.includes("email")) {
+				services.push("email");
+			}
+		}
+
+		// SMS
+		if (deps["twilio"]) {
+			if (!services.includes("sms")) {
+				services.push("sms");
+			}
+		}
+
+		// Storage
+		if (
+			deps["@aws-sdk/client-s3"] ||
+			deps["@uploadthing/react"] ||
+			deps["@vercel/blob"] ||
+			deps["cloudinary"]
+		) {
+			services.push("storage");
+		}
+
+		// Cache
+		if (deps["redis"] || deps["ioredis"] || deps["@upstash/redis"]) {
+			services.push("cache");
+		}
+
+		// Queue
+		if (deps["bull"] || deps["bullmq"] || deps["bee-queue"]) {
+			services.push("queue");
+		}
+
+		// Search
+		if (
+			deps["@algolia/client-search"] ||
+			deps["@elastic/elasticsearch"] ||
+			deps["meilisearch"]
+		) {
+			services.push("search");
+		}
+
+		// Analytics
+		if (
+			deps["@vercel/analytics"] ||
+			deps["posthog-js"] ||
+			deps["mixpanel-browser"]
+		) {
+			services.push("analytics");
+		}
+
+		// Monitoring
+		if (deps["@sentry/nextjs"] || deps["@sentry/node"]) {
+			services.push("monitoring");
+		}
+
+		// Real-time
+		if (
+			deps["pusher-js"] ||
+			deps["socket.io-client"] ||
+			deps["@supabase/realtime-js"]
+		) {
+			services.push("realtime");
+		}
+
+		// AI
+		if (
+			deps["openai"] ||
+			deps["@anthropic-ai/sdk"] ||
+			deps["@google/generative-ai"]
+		) {
+			services.push("ai");
+		}
+
+		// CMS
+		if (
+			deps["@sanity/client"] ||
+			deps["contentful"] ||
+			deps["@strapi/strapi"]
+		) {
+			services.push("cms");
+		}
+
+		// i18n
+		if (deps["next-i18next"] || deps["react-i18next"] || deps["vue-i18n"]) {
+			services.push("i18n");
+		}
+
+		return services;
+	}
+
+	private async detectPlatform(projectInfo: ProjectInfo): Promise<string> {
+		const deps = {
+			...projectInfo.dependencies,
+			...projectInfo.devDependencies,
+		};
+
+		// React Native
+		if (deps["react-native"]) return "mobile";
+
+		// Electron
+		if (deps["electron"]) return "desktop";
+
+		// Tauri
+		if (deps["@tauri-apps/api"]) return "desktop";
+
+		// Default to web
+		return "web";
+	}
+
+	private detectServiceFromFileName(fileName: string): string | null {
+		const baseName = fileName.toLowerCase().replace(/\.(ts|js|tsx|jsx)$/, "");
+
+		// Map file names to services
+		const serviceMap: Record<string, string> = {
+			auth: "auth",
+			authentication: "auth",
+			session: "auth",
+			user: "auth",
+			database: "database",
+			db: "database",
+			prisma: "database",
+			supabase: "database",
+			mongo: "database",
+			mongoose: "database",
+			stripe: "payments",
+			payment: "payments",
+			payments: "payments",
+			billing: "payments",
+			checkout: "payments",
+			email: "email",
+			mail: "email",
+			resend: "email",
+			sendgrid: "email",
+			nodemailer: "email",
+			sms: "sms",
+			twilio: "sms",
+			storage: "storage",
+			s3: "storage",
+			upload: "storage",
+			uploadthing: "storage",
+			cloudinary: "storage",
+			queue: "queue",
+			bull: "queue",
+			bullmq: "queue",
+			redis: "cache",
+			cache: "cache",
+			analytics: "analytics",
+			tracking: "analytics",
+			posthog: "analytics",
+			mixpanel: "analytics",
+			monitoring: "monitoring",
+			sentry: "monitoring",
+			error: "monitoring",
+			logging: "logging",
+			logger: "logging",
+			winston: "logging",
+			pino: "logging",
+		};
+
+		return serviceMap[baseName] || null;
+	}
 }
