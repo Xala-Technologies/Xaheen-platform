@@ -65,9 +65,9 @@ export async function createProjectHandler(
 
 		const providedFlags = getProvidedFlags(cliInput);
 		const flagConfig = processAndValidateFlags(
+			finalBaseName,
 			cliInput,
 			providedFlags,
-			finalBaseName,
 		);
 		const { projectName: _projectNameFromFlags, ...otherFlags } = flagConfig;
 

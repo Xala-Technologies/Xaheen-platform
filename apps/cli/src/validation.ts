@@ -25,11 +25,37 @@ import {
 } from "./types";
 
 export function processAndValidateFlags(
-	options: CLIInput,
+	projectName: string | undefined,
+	options: any,
 	providedFlags: Set<string>,
-	projectName?: string,
-): Partial<ProjectConfig> {
-	const config: Partial<ProjectConfig> = {};
+): ProjectConfig {
+	const config: ProjectConfig = {
+		projectName: "",
+		frontend: "next",
+		backend: "hono",
+		runtime: "bun",
+		database: "postgres",
+		orm: "prisma",
+		api: "trpc",
+		auth: false,
+		addons: [],
+		examples: [],
+		dbSetup: "none",
+		webDeploy: "none",
+		packageManager: "bun",
+		gitInit: true,
+		installDeps: true,
+		ui: "default",
+		compliance: "none",
+		locales: ["en"],
+		primaryLocale: "en",
+		authProviders: [],
+		integrations: [],
+		documents: [],
+		mfa: false,
+		encryption: false,
+		audit: false,
+	};
 
 	if (options.api) {
 		config.api = options.api as API;
