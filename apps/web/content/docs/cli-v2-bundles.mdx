@@ -1,0 +1,612 @@
+---
+title: "CLI v2 Service Bundles"
+description: "Complete guide to all 13 intelligent service bundles in Xaheen CLI v2"
+---
+
+# CLI v2 Service Bundles
+
+Xaheen CLI v2 features 13 intelligent service bundles that combine related services for common development scenarios. Each bundle is carefully crafted for specific use cases with optimal service combinations.
+
+## Bundle Overview
+
+| Bundle | Category | Use Case | Services | Deployment |
+|--------|----------|----------|----------|------------|
+| [SaaS Starter](#saas-starter) | SaaS | MVPs, startups | 5 core services | Vercel, Netlify |
+| [SaaS Professional](#saas-professional) | SaaS | Growing businesses | 11 advanced services | Vercel, AWS, GCP |
+| [SaaS Complete](#saas-complete) | SaaS | Enterprise SaaS | 10 enterprise services | Multi-cloud |
+| [Marketing Site](#marketing-site) | Landing | Marketing teams | 3 essential services | Vercel |
+| [Portfolio Site](#portfolio-site) | Landing | Designers, agencies | 3 creative services | Netlify |
+| [Dashboard App](#dashboard-app) | Web App | Internal tools | 6 dashboard services | Vercel |
+| [Full-Stack App](#full-stack-app) | Web App | Complete applications | 9 full-stack services | Vercel |
+| [Mobile App](#mobile-app) | Mobile | Mobile development | 7 mobile services | Expo |
+| [REST API](#rest-api) | API | API-first projects | 6 backend services | Docker |
+| [Enterprise App](#enterprise-app) | Enterprise | Microsoft environments | 7 enterprise services | Azure |
+| [Norwegian Government](#norwegian-government) | Government | Public sector | 6 compliance services | Azure |
+| [Municipality Portal](#municipality-portal) | Government | Municipal services | 7 citizen services | Azure |
+| [Healthcare Management](#healthcare-management) | Healthcare | Medical systems | 7 healthcare services | Azure |
+
+---
+
+## SaaS Starter
+
+**Perfect for:** MVPs, side projects, startup applications  
+**Development Time:** 1-2 days  
+**Monthly Cost:** $0 (with free tiers)
+
+### Services Included
+
+| Service | Provider | Purpose | Configuration |
+|---------|----------|---------|---------------|
+| **Authentication** | Better Auth | User management | Email/password, OAuth |
+| **Database** | PostgreSQL | Data persistence | Hosted or self-managed |
+| **Payments** | Stripe | Subscription billing | Test mode included |
+| **Email** | Resend | Transactional emails | 3,000 emails/month free |
+| **Analytics** | PostHog | User behavior tracking | 1M events/month free |
+
+### What You Get
+
+```bash
+my-saas/
+├── src/
+│   ├── auth/                 # Better Auth setup
+│   │   ├── config.ts         # Auth configuration
+│   │   ├── providers.ts      # OAuth providers
+│   │   └── middleware.ts     # Route protection
+│   ├── database/             # PostgreSQL setup
+│   │   ├── schema.sql        # Database schema
+│   │   ├── migrations/       # Schema migrations
+│   │   └── seed.ts          # Development data
+│   ├── payments/             # Stripe integration
+│   │   ├── webhooks.ts       # Payment webhooks
+│   │   ├── plans.ts          # Subscription plans
+│   │   └── checkout.ts       # Checkout flow
+│   ├── email/                # Email templates
+│   │   ├── welcome.tsx       # Welcome email
+│   │   ├── reset.tsx         # Password reset
+│   │   └── invoice.tsx       # Payment receipts
+│   └── analytics/            # PostHog setup
+│       ├── events.ts         # Event tracking
+│       └── identify.ts       # User identification
+├── components/
+│   ├── auth/                 # Auth components
+│   ├── billing/              # Billing components
+│   └── dashboard/            # User dashboard
+└── pages/
+    ├── auth/                 # Login/signup pages
+    ├── dashboard/            # User dashboard
+    └── billing/              # Billing pages
+```
+
+### Environment Variables
+
+```bash
+# Authentication
+AUTH_SECRET=your-auth-secret
+GITHUB_CLIENT_ID=your-github-id
+GITHUB_CLIENT_SECRET=your-github-secret
+
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/db
+
+# Payments
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# Email
+RESEND_API_KEY=re_...
+
+# Analytics
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+```
+
+### Usage Example
+
+```bash
+# Create SaaS Starter project
+npx --registry=https://npm.pkg.github.com @xala-technologies/xaheen-cli create my-saas --preset saas-starter
+
+# Navigate to project
+cd my-saas
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your keys
+
+# Run development server
+npm run dev
+```
+
+### Customization Options
+
+```bash
+# Add additional services
+xaheen add monitoring --provider sentry
+xaheen add storage --provider uploadthing
+xaheen add search --provider algolia
+
+# Upgrade authentication
+xaheen upgrade auth --provider clerk
+
+# Add Norwegian features
+xaheen add i18n --provider next-intl
+```
+
+---
+
+## SaaS Professional
+
+**Perfect for:** Growing businesses, professional applications  
+**Development Time:** 3-5 days  
+**Monthly Cost:** ~$100-300 (production scale)
+
+### Services Included
+
+| Service | Provider | Purpose | Tier |
+|---------|----------|---------|------|
+| **Authentication** | Clerk | Advanced user management | Pro |
+| **Database** | PostgreSQL | Enterprise data persistence | Managed |
+| **Cache** | Redis | Performance optimization | Managed |
+| **Payments** | Stripe | Advanced billing | Professional |
+| **Email** | Resend | Transactional emails | Pro |
+| **SMS** | Twilio | Multi-channel communication | Optional |
+| **Storage** | UploadThing | File uploads | Pro |
+| **Analytics** | PostHog | Advanced analytics | Pro |
+| **Monitoring** | Sentry | Error tracking | Pro |
+| **Search** | Algolia | Full-text search | Optional |
+| **Queue** | BullMQ | Background job processing | Redis-based |
+
+### Advanced Features
+
+- **Multi-tenant architecture** with organization support
+- **Role-based access control** (RBAC) with Clerk
+- **Advanced caching strategies** with Redis
+- **File upload with CDN** via UploadThing
+- **Background job processing** with queues
+- **Advanced analytics** and user segmentation
+- **Error monitoring** with source maps
+- **Full-text search** across all content
+
+### Architecture
+
+```bash
+my-saas-pro/
+├── src/
+│   ├── auth/
+│   │   ├── organizations.ts  # Multi-tenant support
+│   │   ├── roles.ts         # RBAC implementation
+│   │   └── webhooks.ts      # Clerk webhooks
+│   ├── cache/
+│   │   ├── redis.ts         # Redis configuration
+│   │   ├── strategies.ts    # Caching strategies
+│   │   └── invalidation.ts  # Cache invalidation
+│   ├── jobs/
+│   │   ├── queue.ts         # BullMQ setup
+│   │   ├── processors/      # Job processors
+│   │   └── scheduler.ts     # Cron jobs
+│   ├── search/
+│   │   ├── algolia.ts       # Search configuration
+│   │   ├── indexing.ts      # Content indexing
+│   │   └── queries.ts       # Search queries
+│   └── monitoring/
+│       ├── sentry.ts        # Error tracking
+│       ├── performance.ts   # Performance monitoring
+│       └── alerts.ts        # Custom alerts
+├── components/
+│   ├── organizations/       # Multi-tenant UI
+│   ├── search/             # Search components
+│   └── uploads/            # File upload UI
+└── api/
+    ├── webhooks/           # Service webhooks
+    ├── jobs/               # Job endpoints
+    └── search/             # Search API
+```
+
+### Usage Example
+
+```bash
+# Create professional SaaS project
+npx --registry=https://npm.pkg.github.com @xala-technologies/xaheen-cli create my-saas-pro --preset saas-professional
+
+# Set up multi-tenancy
+xaheen add rbac --provider casbin
+xaheen add multitenancy --provider schema-separation
+
+# Add advanced features
+xaheen add ai --provider openai
+xaheen add realtime --provider pusher
+```
+
+---
+
+## Norwegian Government
+
+**Perfect for:** Public sector, municipal services, government applications  
+**Development Time:** 5-7 days  
+**Compliance:** GDPR, Norwegian Privacy Law, Accessibility (WCAG 2.2 AA)
+
+### Services Included
+
+| Service | Provider | Purpose | Compliance |
+|---------|----------|---------|------------|
+| **Authentication** | BankID | National digital identity | NSM approved |
+| **Payments** | Vipps | Norwegian mobile payments | FSA regulated |
+| **Database** | PostgreSQL | Secure data persistence | GDPR compliant |
+| **ORM** | Prisma | Type-safe database access | Audit logging |
+| **Monitoring** | Grafana | Operational monitoring | Data residency |
+| **Internationalization** | next-intl | Norwegian localization | nb-NO support |
+
+### Norwegian Compliance Features
+
+- **BankID Integration** - National identity verification
+- **Vipps Payments** - Regulated payment processing
+- **Norwegian Localization** - Complete nb-NO support
+- **GDPR Templates** - Privacy compliance out of the box
+- **Accessibility** - WCAG 2.2 AA compliant components
+- **Data Residency** - Norway-based hosting options
+- **Audit Logging** - Complete action tracking
+- **Security Headers** - NSM security guidelines
+
+### Government-Specific Components
+
+```bash
+norwegian-gov-app/
+├── src/
+│   ├── auth/
+│   │   ├── bankid/
+│   │   │   ├── config.ts     # BankID configuration
+│   │   │   ├── callback.ts   # Authentication callback
+│   │   │   └── verify.ts     # Identity verification
+│   │   └── session.ts        # Secure session management
+│   ├── payments/
+│   │   ├── vipps/
+│   │   │   ├── config.ts     # Vipps configuration
+│   │   │   ├── checkout.ts   # Payment checkout
+│   │   │   └── webhooks.ts   # Payment webhooks
+│   │   └── invoicing.ts      # Norwegian invoice format
+│   ├── compliance/
+│   │   ├── gdpr/
+│   │   │   ├── consent.ts    # Consent management
+│   │   │   ├── data-export.ts # Data portability
+│   │   │   └── deletion.ts   # Right to erasure
+│   │   ├── accessibility/
+│   │   │   ├── wcag.ts       # WCAG compliance
+│   │   │   └── keyboard.ts   # Keyboard navigation
+│   │   └── audit/
+│   │       ├── logger.ts     # Audit logging
+│   │       └── reports.ts    # Compliance reports
+│   ├── localization/
+│   │   ├── nb-NO/           # Norwegian translations
+│   │   ├── dates.ts         # Date formatting
+│   │   ├── currency.ts      # NOK formatting
+│   │   └── addresses.ts     # Norwegian addresses
+│   └── services/
+│       ├── altinn/          # Altinn integration
+│       ├── folkeregister/   # Population register
+│       └── skatteetaten/    # Tax authority
+├── components/
+│   ├── auth/
+│   │   ├── BankIDLogin.tsx  # BankID login component
+│   │   └── SecureForm.tsx   # Security-compliant forms
+│   ├── payments/
+│   │   ├── VippsCheckout.tsx # Vipps payment component
+│   │   └── InvoiceView.tsx   # Norwegian invoice display
+│   └── compliance/
+│       ├── ConsentBanner.tsx # GDPR consent banner
+│       ├── AccessibleTable.tsx # WCAG table
+│       └── AuditTrail.tsx    # Audit log display
+└── pages/
+    ├── citizen/             # Citizen-facing pages
+    ├── employee/            # Employee portal
+    └── admin/               # Administrative interface
+```
+
+### Environment Variables
+
+```bash
+# BankID Authentication
+BANKID_CLIENT_ID=your-bankid-client
+BANKID_CLIENT_SECRET=your-bankid-secret
+BANKID_ENVIRONMENT=test # or production
+BANKID_REDIRECT_URI=https://your-app.no/auth/bankid
+
+# Vipps Payments
+VIPPS_CLIENT_ID=your-vipps-client
+VIPPS_CLIENT_SECRET=your-vipps-secret
+VIPPS_SUBSCRIPTION_KEY=your-vipps-key
+VIPPS_MERCHANT_SERIAL_NUMBER=123456
+
+# Government Services
+ALTINN_API_KEY=your-altinn-key
+ALTINN_ENVIRONMENT=test
+FOLKEREGISTER_API_KEY=your-register-key
+
+# Compliance
+GDPR_DPO_EMAIL=dpo@your-organization.no
+AUDIT_LOG_RETENTION_DAYS=2555 # 7 years
+DATA_RESIDENCY=norway
+```
+
+### Usage Example
+
+```bash
+# Create Norwegian government app
+npx --registry=https://npm.pkg.github.com @xala-technologies/xaheen-cli create my-gov-app --preset norwegian-gov
+
+# Add municipality-specific features
+xaheen add services --provider altinn
+xaheen add compliance --provider gdpr
+
+# Set up for production
+xaheen add monitoring --provider grafana
+xaheen add deployment --target azure-norway
+```
+
+---
+
+## SaaS Complete
+
+**Perfect for:** Enterprise SaaS, large-scale applications  
+**Development Time:** 7-10 days  
+**Monthly Cost:** $500-2000+ (enterprise scale)
+
+### Enterprise Features
+
+- **Multi-tenancy** with schema separation
+- **Role-based access control** (RBAC)
+- **Advanced billing** with usage-based pricing
+- **AI integration** with OpenAI/Anthropic
+- **Enterprise SSO** support
+- **Advanced monitoring** and alerting
+- **Custom domains** per tenant
+- **White-label** capabilities
+
+### Services Included
+
+| Service | Provider | Purpose | Enterprise Features |
+|---------|----------|---------|-------------------|
+| **Frontend** | Next.js | React framework | App Router, RSC |
+| **Database** | PostgreSQL | Multi-tenant data | Row-level security |
+| **ORM** | Prisma | Type-safe queries | Schema per tenant |
+| **Authentication** | Clerk | Enterprise auth | SSO, SAML, SCIM |
+| **Payments** | Stripe | Advanced billing | Usage-based, seats |
+| **Email** | Resend | Transactional | Custom domains |
+| **Analytics** | PostHog | Product analytics | Feature flags |
+| **Monitoring** | DataDog | Enterprise monitoring | APM, logs, traces |
+| **RBAC** | Casbin | Permission system | Policies, hierarchies |
+| **Multi-tenancy** | Schema Separation | Tenant isolation | Data separation |
+
+---
+
+## Mobile App
+
+**Perfect for:** React Native applications, mobile-first products  
+**Development Time:** 4-6 days  
+**Deployment:** Expo, App Store, Google Play
+
+### Services Included
+
+| Service | Provider | Purpose | Mobile Optimization |
+|---------|----------|---------|-------------------|
+| **Backend** | Hono | Edge API | Fast global responses |
+| **Database** | SQLite | Local-first | Offline support |
+| **ORM** | Drizzle | Type-safe queries | SQLite optimized |
+| **Authentication** | Better Auth | Mobile auth | Biometric support |
+| **Real-time** | Pusher | Live updates | WebSocket fallback |
+| **Analytics** | Amplitude | Mobile analytics | Event tracking |
+| **Monitoring** | Sentry | Error tracking | Crash reporting |
+
+### Mobile-Specific Features
+
+- **Offline-first architecture** with SQLite
+- **Push notifications** via Expo
+- **Biometric authentication** support
+- **Real-time synchronization** with backend
+- **Crash reporting** and error tracking
+- **App store deployment** automation
+
+---
+
+## Enterprise App
+
+**Perfect for:** Microsoft environments, .NET applications  
+**Development Time:** 5-7 days  
+**Deployment:** Azure, on-premises
+
+### Microsoft Stack
+
+| Service | Provider | Purpose | Enterprise Integration |
+|---------|----------|---------|----------------------|
+| **Frontend** | Blazor | C# web framework | SharePoint integration |
+| **Backend** | .NET | Enterprise backend | Active Directory |
+| **Database** | SQL Server | Enterprise database | Always Encrypted |
+| **ORM** | Entity Framework | .NET ORM | Code-first migrations |
+| **Authentication** | Identity Server | Enterprise SSO | SAML, WS-Federation |
+| **Monitoring** | Azure App Insights | Application monitoring | Azure integration |
+| **Queue** | Azure Service Bus | Messaging | Enterprise messaging |
+
+---
+
+## Bundle Comparison
+
+### By Use Case
+
+| Use Case | Recommended Bundle | Alternative |
+|----------|-------------------|-------------|
+| **MVP/Startup** | SaaS Starter | SaaS Professional |
+| **Growing Business** | SaaS Professional | SaaS Complete |
+| **Enterprise SaaS** | SaaS Complete | Enterprise App |
+| **Landing Page** | Marketing Site | Portfolio Site |
+| **Internal Tool** | Dashboard App | Full-Stack App |
+| **Mobile App** | Mobile App | Full-Stack App |
+| **API Service** | REST API | Mobile App |
+| **Government** | Norwegian Government | Municipality Portal |
+| **Healthcare** | Healthcare Management | Norwegian Government |
+| **Microsoft Shop** | Enterprise App | Dashboard App |
+
+### By Development Time
+
+| Bundle | Setup Time | Development Time | Total |
+|--------|------------|------------------|-------|
+| Marketing Site | 1 hour | 1-2 days | 2 days |
+| Portfolio Site | 1 hour | 2-3 days | 3 days |
+| SaaS Starter | 2 hours | 1-2 days | 3 days |
+| Dashboard App | 2 hours | 2-3 days | 4 days |
+| Mobile App | 3 hours | 3-5 days | 6 days |
+| Full-Stack App | 3 hours | 4-6 days | 7 days |
+| REST API | 2 hours | 3-4 days | 5 days |
+| SaaS Professional | 4 hours | 5-8 days | 10 days |
+| Enterprise App | 4 hours | 6-9 days | 12 days |
+| Norwegian Government | 5 hours | 7-10 days | 12 days |
+| Municipality Portal | 5 hours | 8-12 days | 15 days |
+| Healthcare Management | 6 hours | 10-15 days | 18 days |
+| SaaS Complete | 6 hours | 12-20 days | 25 days |
+
+### By Monthly Cost (Production)
+
+| Bundle | Free Tier | Starter | Professional | Enterprise |
+|--------|-----------|---------|--------------|------------|
+| Marketing Site | $0 | $10 | $25 | $100 |
+| Portfolio Site | $0 | $15 | $30 | $120 |
+| SaaS Starter | $0 | $50 | $150 | $500 |
+| Dashboard App | $0 | $75 | $200 | $600 |
+| Mobile App | $0 | $100 | $250 | $800 |
+| Full-Stack App | $0 | $125 | $300 | $1000 |
+| REST API | $0 | $60 | $180 | $550 |
+| SaaS Professional | $100 | $300 | $800 | $2500 |
+| Enterprise App | $200 | $500 | $1500 | $5000 |
+| Norwegian Government | $150 | $400 | $1200 | $4000 |
+| Municipality Portal | $200 | $500 | $1500 | $5000 |
+| Healthcare Management | $250 | $600 | $1800 | $6000 |
+| SaaS Complete | $500 | $1500 | $4000 | $12000 |
+
+---
+
+## Custom Bundles
+
+### Creating Custom Bundles
+
+```bash
+# Create bundle from services
+xaheen bundle create my-stack \
+  --services auth,database,payments,email \
+  --description "My custom development stack"
+
+# Create bundle interactively
+xaheen bundle create my-bundle --interactive
+
+# Export existing project as bundle
+xaheen bundle export my-existing-project --output my-bundle.json
+```
+
+### Bundle Configuration Format
+
+```json
+{
+  "id": "my-custom-bundle",
+  "name": "my-custom-bundle",
+  "displayName": "My Custom Bundle",
+  "description": "Custom bundle for my specific needs",
+  "version": "1.0.0",  
+  "type": "custom",
+  "services": [
+    {
+      "serviceType": "auth",
+      "provider": "clerk",
+      "required": true,
+      "priority": 100,
+      "config": {
+        "features": ["organizations", "saml"]
+      }
+    },
+    {
+      "serviceType": "database", 
+      "provider": "postgresql",
+      "required": true,
+      "priority": 90,
+      "config": {
+        "version": "15",
+        "extensions": ["uuid-ossp", "pgcrypto"]
+      }
+    }
+  ],
+  "optionalServices": [
+    {
+      "serviceType": "ai",
+      "provider": "openai",
+      "condition": "feature:ai"
+    }
+  ],
+  "deploymentTargets": ["vercel", "aws"],
+  "compliance": ["gdpr"],
+  "tags": ["custom", "saas"],
+  "pricing": {
+    "tier": "custom",
+    "monthlyPrice": "Variable"
+  }
+}
+```
+
+---
+
+## Bundle Best Practices
+
+### Choosing the Right Bundle
+
+1. **Start with your use case** - Government, SaaS, landing page, etc.
+2. **Consider your timeline** - Some bundles take longer to set up
+3. **Evaluate your budget** - Production costs vary significantly
+4. **Think about scaling** - Some bundles handle growth better
+5. **Check compliance needs** - Norwegian projects need specific bundles
+
+### Bundle Optimization
+
+1. **Remove unused services** after generation
+2. **Upgrade services** as your needs grow
+3. **Add monitoring** early in development
+4. **Configure caching** for better performance
+5. **Set up proper deployment** pipelines
+
+### Common Pitfalls
+
+1. **Over-engineering early** - Start simple, add complexity later
+2. **Ignoring compliance** - Norwegian projects need specific setup
+3. **Skipping monitoring** - Add observability from day one
+4. **Wrong database choice** - Consider scaling and query patterns
+5. **Missing backup strategy** - Plan for disaster recovery
+
+---
+
+## Next Steps
+
+Ready to use service bundles? Here's what to do:
+
+1. **Choose your bundle** from the comparison above
+2. **Review the services** included in your chosen bundle
+3. **Create your project** with the bundle preset
+4. **Customize as needed** by adding or removing services
+5. **Deploy and monitor** your application
+
+### Quick Start Commands
+
+```bash
+# List all available bundles
+xaheen bundle list
+
+# Show detailed bundle information
+xaheen bundle show saas-starter
+
+# Create project with bundle
+xaheen create my-app --preset saas-starter
+
+# Customize after creation
+xaheen add monitoring --provider sentry
+xaheen remove analytics --provider posthog
+```
+
+### Related Documentation
+
+- **[Commands Reference](/docs/cli-v2-commands)** - Detailed command documentation
+- **[Migration Guide](/docs/cli-v2-migration)** - Moving from v1 to v2
+- **[Norwegian Compliance](/docs/norwegian-compliance)** - Government and compliance features

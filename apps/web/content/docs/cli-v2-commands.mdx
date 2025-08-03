@@ -1,0 +1,543 @@
+---
+title: "CLI v2 Commands Reference"
+description: "Complete command reference for Xaheen CLI v2 with examples and options"
+---
+
+# CLI v2 Commands Reference
+
+Comprehensive reference for all Xaheen CLI v2 commands, options, and usage patterns.
+
+## Command Overview
+
+| Command | Alias | Description | Use Case |
+|---------|-------|-------------|----------|
+| `create` | `new` | Create new projects | Initial project scaffolding |
+| `add` | - | Add services to existing projects | Extend functionality |
+| `remove` | `rm` | Remove services with dependency checking | Clean up unused services |
+| `validate` | - | Project health checks with auto-fix | Maintenance and diagnostics |
+| `bundle` | - | Bundle management operations | Manage service collections |
+| `upgrade` | `up` | Upgrade dependencies and services | Keep project current |
+| `doctor` | `health` | System and project diagnostics | Troubleshooting |
+
+## Global Options
+
+All commands support these global options:
+
+```bash
+--help, -h          Show help information
+--version, -v       Show CLI version
+--verbose           Enable detailed logging
+--quiet             Suppress non-error output
+--no-color          Disable colored output
+--config <path>     Use custom configuration file
+--registry <url>    Specify npm registry for packages
+```
+
+---
+
+## create / new
+
+Create new projects with intelligent service bundling.
+
+### Syntax
+```bash
+xaheen create [name] [options]
+xaheen new [name] [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--preset` | `-p` | string | Use predefined bundle | `--preset saas-starter` |
+| `--framework` | `-f` | string | Frontend framework | `--framework next` |
+| `--backend` | `-b` | string | Backend framework | `--backend hono` |
+| `--database` | `-d` | string | Database provider | `--database postgresql` |
+| `--auth` | `-a` | string | Authentication provider | `--auth clerk` |
+| `--payments` | | string | Payment provider | `--payments stripe` |
+| `--bundles` | | array | Multiple bundles | `--bundles auth,payments` |
+| `--no-install` | | boolean | Skip dependency installation | `--no-install` |
+| `--no-git` | | boolean | Skip git initialization | `--no-git` |
+| `--dry-run` | | boolean | Preview without creating | `--dry-run` |
+| `--output` | `-o` | string | Output directory | `--output ./projects` |
+| `--force` | | boolean | Overwrite existing directory | `--force` |
+
+### Preset Options
+
+| Preset | Description | Best For |
+|--------|-------------|----------|
+| `saas-starter` | Essential SaaS features | MVPs, startups |
+| `saas-professional` | Full-featured SaaS platform | Growing businesses |
+| `saas-complete` | Enterprise SaaS with AI | Large enterprises |
+| `marketing-site` | Landing page with CMS | Marketing teams |
+| `portfolio-site` | Creative portfolio | Designers, agencies |
+| `dashboard-app` | Admin dashboard | Internal tools |
+| `fullstack-app` | Complete web application | Full-stack projects |
+| `mobile-app` | React Native application | Mobile development |
+| `rest-api` | Backend API with docs | API-first projects |
+| `enterprise-app` | Microsoft stack app | Enterprise environments |
+| `norwegian-gov` | Norwegian compliance | Government projects |
+| `municipality-portal` | Citizen services | Municipal services |
+| `healthcare-management` | Medical systems | Healthcare providers |
+
+### Framework Options
+
+| Framework | Provider | Description |
+|-----------|----------|-------------|
+| `next` | `nextjs` | React with App Router |
+| `nuxt` | `nuxtjs` | Vue.js framework |
+| `remix` | `remix` | Web standards React |
+| `svelte` | `sveltekit` | Svelte framework |
+| `angular` | `angular` | Google's framework |
+| `blazor` | `blazor` | Microsoft C# web |
+
+### Backend Options
+
+| Backend | Provider | Description |
+|---------|----------|-------------|
+| `hono` | `hono` | Edge-first framework |
+| `express` | `express` | Traditional Node.js |
+| `fastify` | `fastify` | High-performance |
+| `nestjs` | `nestjs` | Enterprise Node.js |
+| `dotnet` | `dotnet` | Microsoft stack |
+
+### Database Options
+
+| Database | Provider | Description |
+|----------|----------|-------------|
+| `postgresql` | `postgresql` | Enterprise SQL |
+| `mysql` | `mysql` | Popular SQL |
+| `mongodb` | `mongodb` | NoSQL document |
+| `sqlite` | `sqlite` | Lightweight SQL |
+| `sqlserver` | `sqlserver` | Microsoft SQL |
+| `redis` | `redis` | In-memory cache |
+
+### Examples
+
+```bash
+# Create with preset bundle
+xaheen create my-saas --preset saas-starter
+
+# Create with custom configuration
+xaheen create my-app \
+  --framework next \
+  --backend hono \
+  --database postgresql \
+  --auth clerk
+
+# Interactive mode
+xaheen create my-app
+
+# Norwegian government app
+xaheen create my-gov --preset norwegian-gov
+
+# Enterprise application
+xaheen create my-enterprise --preset enterprise-app --output ./apps
+
+# Preview without creating
+xaheen create my-app --preset saas-starter --dry-run
+
+# Skip installation and git
+xaheen create my-app --preset saas-starter --no-install --no-git
+```
+
+---
+
+## add
+
+Add services to existing projects with intelligent dependency resolution.
+
+### Syntax
+```bash
+xaheen add <service> [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--provider` | `-p` | string | Service provider | `--provider clerk` |
+| `--version` | `-v` | string | Specific version | `--version latest` |
+| `--config` | `-c` | string | Configuration file | `--config auth.json` |
+| `--no-install` | | boolean | Skip dependency installation | `--no-install` |
+| `--force` | | boolean | Override compatibility checks | `--force` |
+| `--dry-run` | | boolean | Preview changes | `--dry-run` |
+
+### Available Services
+
+| Service | Providers | Description |
+|---------|-----------|-------------|
+| `auth` | `clerk`, `auth0`, `better-auth`, `bankid` | Authentication |
+| `database` | `postgresql`, `mysql`, `mongodb`, `sqlite` | Data persistence |
+| `payments` | `stripe`, `vipps`, `paypal`, `paddle` | Payment processing |
+| `email` | `resend`, `sendgrid`, `mailgun`, `postmark` | Email delivery |
+| `sms` | `twilio`, `messagebird`, `nexmo` | SMS messaging |
+| `storage` | `uploadthing`, `aws-s3`, `cloudinary` | File storage |
+| `analytics` | `posthog`, `mixpanel`, `amplitude`, `google` | User analytics |
+| `monitoring` | `sentry`, `datadog`, `newrelic`, `grafana` | Error monitoring |
+| `search` | `algolia`, `elasticsearch`, `meilisearch` | Search functionality |
+| `cache` | `redis`, `memcached` | Caching layer |
+| `queue` | `bullmq`, `rabbitmq`, `aws-sqs` | Job processing |
+| `realtime` | `pusher`, `ably`, `socket.io` | Real-time features |
+| `ai` | `openai`, `anthropic`, `cohere` | AI integration |
+| `cms` | `contentful`, `strapi`, `sanity`, `payload` | Content management |
+| `i18n` | `next-intl`, `react-i18next`, `formatjs` | Internationalization |
+
+### Examples
+
+```bash
+# Add authentication
+xaheen add auth --provider clerk
+
+# Add Norwegian BankID
+xaheen add auth --provider bankid
+
+# Add payments with Vipps
+xaheen add payments --provider vipps
+
+# Add monitoring
+xaheen add monitoring --provider sentry
+
+# Add with custom configuration
+xaheen add auth --provider clerk --config ./auth-config.json
+
+# Preview changes
+xaheen add database --provider postgresql --dry-run
+
+# Force add incompatible service
+xaheen add cache --provider redis --force
+```
+
+---
+
+## remove
+
+Remove services from projects with dependency checking.
+
+### Syntax
+```bash
+xaheen remove <service> [options]
+xaheen rm <service> [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--provider` | `-p` | string | Specific provider | `--provider stripe` |
+| `--force` | | boolean | Force removal ignoring deps | `--force` |
+| `--clean` | | boolean | Remove unused dependencies | `--clean` |
+| `--dry-run` | | boolean | Preview changes | `--dry-run` |
+| `--backup` | | boolean | Create backup before removal | `--backup` |
+
+### Examples
+
+```bash
+# Remove specific payment provider
+xaheen remove payments --provider stripe
+
+# Remove with dependency cleanup
+xaheen remove auth --provider clerk --clean
+
+# Force remove (ignores dependencies)
+xaheen remove database --provider postgresql --force
+
+# Preview removal
+xaheen remove monitoring --provider sentry --dry-run
+
+# Remove with backup
+xaheen remove auth --provider auth0 --backup
+```
+
+---
+
+## validate
+
+Perform project health checks with automatic fixing capabilities.
+
+### Syntax
+```bash
+xaheen validate [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--fix` | | boolean | Automatically fix issues | `--fix` |
+| `--services` | `-s` | array | Validate specific services | `--services auth,database` |
+| `--report` | `-r` | boolean | Generate detailed report | `--report` |
+| `--output` | `-o` | string | Report output file | `--output report.json` |
+| `--strict` | | boolean | Enable strict validation | `--strict` |
+| `--skip` | | array | Skip specific checks | `--skip deps,env` |
+
+### Validation Checks
+
+| Check | Description | Auto-Fix |
+|-------|-------------|----------|
+| `dependencies` | Package.json consistency | ✅ |
+| `environment` | Missing .env variables | ✅ |
+| `configuration` | Service configuration | ✅ |
+| `compatibility` | Service compatibility | ❌ |
+| `security` | Security vulnerabilities | ✅ |
+| `performance` | Performance issues | ⚠️ |
+| `compliance` | Norwegian compliance | ✅ |
+
+### Examples
+
+```bash
+# Basic validation
+xaheen validate
+
+# Validate and auto-fix issues
+xaheen validate --fix
+
+# Validate specific services
+xaheen validate --services auth,database,payments
+
+# Generate detailed report
+xaheen validate --report --output health-report.json
+
+# Strict validation (fails on warnings)
+xaheen validate --strict
+
+# Skip specific checks
+xaheen validate --skip deps,performance
+```
+
+---
+
+## bundle
+
+Manage service bundles and create custom combinations.
+
+### Syntax
+```bash
+xaheen bundle <command> [options]
+```
+
+### Sub-commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `list` | List available bundles | `xaheen bundle list` |
+| `show` | Show bundle details | `xaheen bundle show saas-starter` |
+| `create` | Create custom bundle | `xaheen bundle create my-bundle` |
+| `export` | Export bundle config | `xaheen bundle export saas-starter` |
+| `import` | Import bundle config | `xaheen bundle import bundle.json` |
+| `delete` | Delete custom bundle | `xaheen bundle delete my-bundle` |
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--services` | `-s` | array | Services for bundle | `--services auth,db,pay` |
+| `--output` | `-o` | string | Output file | `--output bundle.json` |
+| `--force` | | boolean | Overwrite existing | `--force` |
+| `--description` | `-d` | string | Bundle description | `--description "My bundle"` |
+
+### Examples
+
+```bash
+# List all bundles
+xaheen bundle list
+
+# Show bundle details
+xaheen bundle show saas-professional
+
+# Create custom bundle
+xaheen bundle create my-stack \
+  --services auth,database,payments \
+  --description "My custom stack"
+
+# Export bundle configuration
+xaheen bundle export saas-starter --output starter.json
+
+# Import custom bundle
+xaheen bundle import ./my-bundle.json
+
+# Delete custom bundle
+xaheen bundle delete my-old-bundle
+```
+
+---
+
+## upgrade
+
+Upgrade project dependencies and services to latest versions.
+
+### Syntax
+```bash
+xaheen upgrade [service] [options]
+xaheen up [service] [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--all` | `-a` | boolean | Upgrade all services | `--all` |
+| `--interactive` | `-i` | boolean | Interactive upgrade | `--interactive` |
+| `--provider` | `-p` | string | Specific provider | `--provider clerk` |
+| `--to` | | string | Target version | `--to latest` |
+| `--dry-run` | | boolean | Preview upgrades | `--dry-run` |
+| `--backup` | | boolean | Create backup first | `--backup` |
+
+### Examples
+
+```bash
+# Upgrade all services
+xaheen upgrade --all
+
+# Interactive upgrade with choices
+xaheen upgrade --interactive
+
+# Upgrade specific service
+xaheen upgrade auth --provider better-auth
+
+# Upgrade to specific version
+xaheen upgrade database --provider postgresql --to 14.9.0
+
+# Preview upgrades
+xaheen upgrade --all --dry-run
+
+# Upgrade with backup
+xaheen upgrade --all --backup
+```
+
+---
+
+## doctor
+
+System and project diagnostics for troubleshooting.
+
+### Syntax
+```bash
+xaheen doctor [options]
+xaheen health [options]
+```
+
+### Options
+
+| Option | Alias | Type | Description | Example |
+|--------|-------|------|-------------|---------|
+| `--check` | `-c` | array | Specific checks | `--check system,templates` |
+| `--fix` | | boolean | Auto-fix issues | `--fix` |
+| `--report` | `-r` | boolean | Generate report | `--report` |
+| `--output` | `-o` | string | Report file | `--output doctor.json` |
+| `--system` | | boolean | System-wide checks | `--system` |
+| `--project` | | boolean | Project-specific checks | `--project` |
+
+### Diagnostic Checks
+
+| Check | Description | Scope |
+|-------|-------------|-------|
+| `system` | Node.js, npm, git versions | System |
+| `registry` | Package registry access | System |
+| `templates` | Template integrity | System |
+| `dependencies` | Package dependencies | Project |
+| `configuration` | Service configuration | Project |
+| `environment` | Environment variables | Project |
+| `permissions` | File permissions | Project |
+
+### Examples
+
+```bash
+# Full system diagnostics
+xaheen doctor
+
+# System-only checks
+xaheen doctor --system
+
+# Project-only checks
+xaheen doctor --project
+
+# Specific checks
+xaheen doctor --check system,templates,registry
+
+# Generate diagnostic report
+xaheen doctor --report --output system-health.json
+
+# Auto-fix detected issues
+xaheen doctor --fix
+```
+
+---
+
+## Error Codes
+
+Common error codes and their meanings:
+
+| Code | Error | Description | Solution |
+|------|-------|-------------|----------|
+| `E001` | Invalid project name | Name contains invalid characters | Use alphanumeric names |
+| `E002` | Service not found | Unknown service provider | Check available providers |
+| `E003` | Incompatible services | Service compatibility issue | Use `--force` or choose compatible services |
+| `E004` | Template error | Template generation failed | Check template integrity |
+| `E005` | Dependency conflict | Package dependency conflict | Resolve dependencies manually |
+| `E006` | Network error | Registry access failed | Check network and registry URL |
+| `E007` | Permission denied | Insufficient file permissions | Check directory permissions |
+| `E008` | Invalid configuration | Malformed configuration file | Validate configuration syntax |
+
+---
+
+## Environment Variables
+
+Configure CLI behavior with environment variables:
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `XAHEEN_REGISTRY` | Package registry URL | GitHub Packages | `npm.pkg.github.com` |
+| `XAHEEN_DEBUG` | Enable debug logging | `false` | `true` |
+| `XAHEEN_NO_ANALYTICS` | Disable telemetry | `false` | `true` |
+| `XAHEEN_CONFIG_PATH` | Configuration file path | `~/.xaheen` | `/path/to/config` |
+| `XAHEEN_CACHE_DIR` | Template cache directory | `~/.xaheen/cache` | `/tmp/xaheen` |
+
+---
+
+## Configuration File
+
+Create `~/.xaheen/config.json` for persistent settings:
+
+```json
+{
+  "registry": "https://npm.pkg.github.com",
+  "defaultPreset": "saas-starter",
+  "autoInstall": true,
+  "initGit": true,
+  "analytics": false,
+  "templates": {
+    "cacheTimeout": 3600,
+    "autoUpdate": true
+  },
+  "norwegian": {
+    "bankidMode": "test",
+    "vippsMode": "test",
+    "locale": "nb-NO"
+  }
+}
+```
+
+---
+
+## Tips and Best Practices
+
+### Performance Tips
+- Use `--dry-run` to preview changes before executing
+- Cache templates locally for faster repeated operations
+- Use specific provider names to avoid selection prompts
+
+### Project Organization
+- Use consistent naming conventions across projects
+- Group related services in custom bundles
+- Regularly validate projects with `xaheen validate`
+
+### Norwegian Development
+- Use `norwegian-gov` preset for government projects
+- Configure BankID in test mode during development
+- Include Norwegian localization from the start
+
+### Troubleshooting
+- Run `xaheen doctor` for system diagnostics
+- Use `--verbose` flag for detailed operation logs
+- Check error codes in the reference above

@@ -1,0 +1,664 @@
+---
+title: "Migration Guide: v1 to v2"
+description: "Complete guide to migrating from Xaheen CLI v1 to v2 with service-based architecture"
+---
+
+# Migration Guide: CLI v1 to v2
+
+This guide covers everything you need to know about migrating from Xaheen CLI v1 to v2, including breaking changes, new features, and step-by-step migration instructions.
+
+## Overview
+
+Xaheen CLI v2 is a complete rewrite that introduces:
+
+- **Service-based architecture** with SOLID principles
+- **Intelligent bundling system** with 13 preset bundles
+- **Norwegian compliance** features (BankID, Vipps, Altinn)
+- **Advanced validation** with auto-fix capabilities
+- **Enhanced performance** (35% smaller bundle, 60% faster)
+
+## Breaking Changes
+
+### Command Structure
+
+| Change Type | v1 Command | v2 Command | Migration Required |
+|-------------|------------|------------|-------------------|
+| **Command Name** | `xaheen my-app` | `xaheen create my-app` | ✅ Update scripts |
+| **Option Names** | `--frontend next` | `--framework next` | ✅ Update options |
+| **Database Names** | `--database postgres` | `--database postgresql` | ✅ Use full names |
+| **Deployment** | `--deploy vercel` | `--preset saas-starter` | ✅ Use bundles |
+
+### Installation Changes
+
+| Aspect | v1 | v2 | Action Required |
+|--------|----|----|----------------|
+| **Package Name** | `xaheen` | `@xala-technologies/xaheen-cli` | ✅ Reinstall CLI |
+| **Registry** | npm | GitHub Packages | ✅ Configure registry |
+| **Node Version** | ≥16.0.0 | ≥18.0.0 | ✅ Update Node.js |
+| **Package Manager** | npm only | npm, pnpm, bun, yarn | ✅ Choose preferred |
+
+### Configuration Changes
+
+| Configuration | v1 Format | v2 Format | Compatibility |
+|---------------|-----------|-----------|---------------|
+| **Project Config** | `.xaheen.json` | `xaheen.config.js` | ❌ Manual migration |
+| **Templates** | Hardcoded | Service-based | ❌ Use new system |
+| **Environment** | Manual setup | Auto-generated | ✅ Enhanced automation |
+| **Dependencies** | Manual management | Intelligent resolution | ✅ Automatic upgrade |
+
+---
+
+## Installation Migration
+
+### Step 1: Uninstall v1
+
+```bash
+# Remove old CLI globally
+npm uninstall -g xaheen
+
+# Clear npm cache
+npm cache clean --force
+
+# Remove old config (optional)
+rm -rf ~/.xaheen-v1
+```
+
+### Step 2: Install v2
+
+```bash
+# Configure GitHub Packages registry (one-time setup)
+echo "@xala-technologies:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+# Install new CLI globally
+npm install -g @xala-technologies/xaheen-cli --registry=https://npm.pkg.github.com
+
+# Verify installation
+xaheen --version
+```
+
+### Step 3: Verify Setup
+
+```bash
+# Run system diagnostics
+xaheen doctor
+
+# Check available bundles
+xaheen bundle list
+
+# Test with dry run
+xaheen create test-project --preset saas-starter --dry-run
+```
+
+---
+
+## Command Migration
+
+### Basic Project Creation
+
+**Before (v1):**
+```bash
+# v1 command structure
+xaheen my-app --frontend next --backend express --database postgres --auth clerk --deploy vercel
+```
+
+**After (v2):**
+```bash
+# v2 with explicit create command
+xaheen create my-app --framework next --backend express --database postgresql --auth clerk
+
+# Or use intelligent bundles (recommended)
+xaheen create my-app --preset saas-starter
+
+# Or custom configuration
+xaheen create my-app --framework next --backend hono --database postgresql
+```
+
+### Option Mapping
+
+| v1 Option | v2 Option | Notes |
+|-----------|-----------|-------|
+| `--frontend` | `--framework` | Renamed for clarity |
+| `--backend` | `--backend` | Same name, more providers |
+| `--database` | `--database` | Use full provider names |
+| `--auth` | `--auth` | Same name, more providers |
+| `--deploy` | `--preset` | Use bundle presets instead |
+| `--example` | `--preset` | Examples now in bundles |
+| `--addon` | `xaheen add` | Separate command for adding |
+
+### New Commands in v2
+
+```bash
+# Add services to existing projects
+xaheen add auth --provider clerk
+xaheen add payments --provider stripe
+
+# Remove services with dependency checking
+xaheen remove analytics --provider google
+
+# Validate project health
+xaheen validate --fix
+
+# Manage bundles
+xaheen bundle list
+xaheen bundle show saas-starter
+
+# Upgrade services
+xaheen upgrade --interactive
+
+# System diagnostics
+xaheen doctor --verbose
+```
+
+---
+
+## Project Structure Migration
+
+### v1 Project Structure
+
+```
+my-app-v1/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── lib/
+├── .xaheen.json          # v1 config
+├── package.json
+└── README.md
+```
+
+### v2 Project Structure
+
+```
+my-app-v2/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── services/         # New: Service modules
+│   │   ├── auth/
+│   │   ├── database/
+│   │   └── payments/
+│   └── lib/
+├── xaheen.config.js      # New: v2 config
+├── .env.example          # New: Environment template
+├── package.json          # Enhanced with service deps
+└── README.md             # Auto-generated docs
+```
+
+### Service-Based Organization
+
+v2 organizes code by services rather than technical layers:
+
+```bash
+src/
+├── services/
+│   ├── auth/
+│   │   ├── config.ts     # Service configuration
+│   │   ├── hooks.ts      # React hooks
+│   │   ├── api.ts        # API calls
+│   │   └── types.ts      # TypeScript types
+│   ├── database/
+│   │   ├── schema.ts     # Database schema
+│   │   ├── queries.ts    # Query functions
+│   │   └── migrations/   # Schema migrations
+│   └── payments/
+│       ├── stripe.ts     # Payment provider
+│       ├── webhooks.ts   # Webhook handlers
+│       └── types.ts      # Payment types
+└── components/
+    ├── auth/             # Auth-specific components
+    ├── payments/         # Payment-specific components
+    └── shared/           # Shared components
+```
+
+---
+
+## Configuration Migration
+
+### v1 Configuration (.xaheen.json)
+
+```json
+{
+  "name": "my-app",
+  "frontend": "next",
+  "backend": "express", 
+  "database": "postgres",
+  "auth": "clerk",
+  "deploy": "vercel",
+  "addons": ["tailwind", "eslint"]
+}
+```
+
+### v2 Configuration (xaheen.config.js)
+
+```javascript
+/** @type {import('@xala-technologies/xaheen-cli').XaheenConfig} */
+export default {
+  name: "my-app",
+  version: "2.0.0",
+  
+  // Service configuration
+  services: {
+    framework: {
+      provider: "nextjs",
+      version: "14.0.0",
+      config: {
+        appRouter: true,
+        typescript: true
+      }
+    },
+    database: {
+      provider: "postgresql", 
+      version: "15.0.0",
+      config: {
+        ssl: true,
+        poolSize: 20
+      }
+    },
+    auth: {
+      provider: "clerk",
+      version: "4.0.0",
+      config: {
+        organizations: true,
+        saml: false
+      }
+    }
+  },
+  
+  // Bundle information
+  bundle: {
+    name: "saas-starter",
+    version: "1.0.0",
+    customizations: ["monitoring", "analytics"]
+  },
+  
+  // Deployment configuration
+  deployment: {
+    targets: ["vercel"],
+    environment: "production",
+    domains: ["my-app.com"]
+  },
+  
+  // Development configuration
+  development: {
+    port: 3000,
+    https: false,
+    analytics: false
+  }
+}
+```
+
+---
+
+## Feature Migration
+
+### Authentication Migration
+
+**v1 Authentication:**
+```typescript
+// v1 - Manual setup
+import { auth } from './lib/auth'
+
+export default function LoginPage() {
+  const handleLogin = () => {
+    auth.signIn({ provider: 'google' })
+  }
+  
+  return <button onClick={handleLogin}>Login</button>
+}
+```
+
+**v2 Authentication:**
+```typescript
+// v2 - Service-based with auto-generated hooks
+import { useAuth } from '@/services/auth'
+
+export default function LoginPage() {
+  const { signIn, signOut, user, isLoading } = useAuth()
+  
+  if (isLoading) return <div>Loading...</div>
+  if (user) return <div>Welcome {user.name}!</div>
+  
+  return <button onClick={() => signIn('google')}>Login</button>
+}
+```
+
+### Database Migration
+
+**v1 Database:**
+```typescript
+// v1 - Manual Prisma setup
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function getUsers() {
+  return await prisma.user.findMany()
+}
+```
+
+**v2 Database:**
+```typescript
+// v2 - Service-based with type safety
+import { db } from '@/services/database'
+import { users } from '@/services/database/schema'
+
+export async function getUsers() {
+  return await db.select().from(users)
+}
+
+// Auto-generated query hooks
+import { useUsers } from '@/services/database/hooks'
+
+export function UsersList() {
+  const { data: users, isLoading } = useUsers()
+  
+  if (isLoading) return <div>Loading...</div>
+  return <ul>{users?.map(user => <li key={user.id}>{user.name}</li>)}</ul>
+}
+```
+
+### Payment Migration
+
+**v1 Payments:**
+```typescript
+// v1 - Manual Stripe setup
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+export async function createCheckout() {
+  return await stripe.checkout.sessions.create({
+    // Manual configuration
+  })
+}
+```
+
+**v2 Payments:**
+```typescript
+// v2 - Service-based with templates
+import { payments } from '@/services/payments'
+
+export async function createCheckout(items: CartItem[]) {
+  return await payments.createCheckout({
+    items,
+    successUrl: '/success',
+    cancelUrl: '/cancel'
+  })
+}
+
+// Auto-generated payment components
+import { CheckoutButton } from '@/services/payments/components'
+
+export function PricingPage() {
+  return (
+    <CheckoutButton 
+      plan="pro"
+      price={2900}
+      interval="month"
+    >
+      Subscribe to Pro
+    </CheckoutButton>
+  )
+}
+```
+
+---
+
+## Automated Migration Tools
+
+### Project Analysis
+
+```bash
+# Analyze existing v1 project
+cd my-old-v1-project
+xaheen validate
+
+# Generate migration report
+xaheen doctor --report --output migration-report.json
+```
+
+### Semi-Automated Migration
+
+```bash
+# Create new v2 project with similar stack
+xaheen create my-app-v2 --framework next --database postgresql
+
+# Analyze differences
+xaheen bundle show saas-starter
+
+# Add missing services
+xaheen add auth --provider clerk
+xaheen add payments --provider stripe
+```
+
+### Manual Migration Checklist
+
+- [ ] **Install CLI v2** and verify setup
+- [ ] **Create new v2 project** with appropriate bundle
+- [ ] **Copy source code** to new service structure
+- [ ] **Update imports** to use service modules
+- [ ] **Migrate configuration** from .xaheen.json to xaheen.config.js
+- [ ] **Update environment variables** with new format
+- [ ] **Test all functionality** in new structure
+- [ ] **Update deployment** configuration
+- [ ] **Update CI/CD** scripts with new commands
+
+---
+
+## Common Migration Issues
+
+### Issue: Command Not Found
+
+**Problem:**
+```bash
+xaheen create my-app
+# Command 'xaheen' not found
+```
+
+**Solution:**
+```bash
+# Check if CLI is installed correctly
+npm list -g @xala-technologies/xaheen-cli
+
+# Reinstall if needed
+npm install -g @xala-technologies/xaheen-cli --registry=https://npm.pkg.github.com
+
+# Add registry to ~/.npmrc for permanent access
+echo "@xala-technologies:registry=https://npm.pkg.github.com" >> ~/.npmrc
+```
+
+### Issue: Registry Access
+
+**Problem:**
+```bash
+npm ERR! 404 Not Found - GET https://registry.npmjs.org/@xala-technologies/xaheen-cli
+```
+
+**Solution:**
+```bash
+# Configure GitHub Packages registry
+npm config set @xala-technologies:registry https://npm.pkg.github.com
+
+# Or use per-command registry
+npm install -g @xala-technologies/xaheen-cli --registry=https://npm.pkg.github.com
+```
+
+### Issue: Bundle Not Found
+
+**Problem:**
+```bash
+xaheen create my-app --preset saas-advanced
+# Error: Bundle 'saas-advanced' not found
+```
+
+**Solution:**
+```bash
+# List available bundles
+xaheen bundle list
+
+# Use correct bundle name
+xaheen create my-app --preset saas-professional
+```
+
+### Issue: Service Incompatibility
+
+**Problem:**
+```bash
+xaheen add auth --provider custom-auth
+# Error: Service provider 'custom-auth' not found
+```
+
+**Solution:**
+```bash
+# List available auth providers
+xaheen add auth --help
+
+# Use supported provider
+xaheen add auth --provider better-auth
+
+# Or create custom service
+xaheen add auth --provider clerk --config custom-auth.json
+```
+
+### Issue: Environment Variables
+
+**Problem:**
+```
+Missing required environment variables: DATABASE_URL, AUTH_SECRET
+```
+
+**Solution:**
+```bash
+# Copy generated environment template
+cp .env.example .env.local
+
+# Fill in required values
+# DATABASE_URL=postgresql://...
+# AUTH_SECRET=your-secret-key
+
+# Validate environment
+xaheen validate --fix
+```
+
+---
+
+## Migration Timeline
+
+### Phase 1: Preparation (1-2 hours)
+
+- [ ] **Backup existing project** to separate branch
+- [ ] **Install CLI v2** and verify functionality
+- [ ] **Review new bundles** and choose appropriate one
+- [ ] **Plan service architecture** for your project
+
+### Phase 2: Project Setup (2-4 hours)
+
+- [ ] **Create new v2 project** with chosen bundle
+- [ ] **Configure environment** variables
+- [ ] **Set up deployment** targets
+- [ ] **Test basic functionality** with bundle
+
+### Phase 3: Code Migration (4-8 hours)
+
+- [ ] **Copy components** to new service structure
+- [ ] **Update imports** and service calls
+- [ ] **Migrate database** schema and queries
+- [ ] **Update authentication** flow
+- [ ] **Migrate payment** integration
+
+### Phase 4: Testing & Deployment (2-4 hours)
+
+- [ ] **Test all features** in development
+- [ ] **Update CI/CD** pipelines
+- [ ] **Deploy to staging** environment
+- [ ] **Validate production** deployment
+
+### Total Timeline: 8-18 hours
+
+*Timeline varies based on project complexity and customizations*
+
+---
+
+## Benefits After Migration
+
+### Performance Improvements
+
+- **35% smaller CLI bundle** size
+- **60% faster project generation**
+- **40% faster service injection**
+- **50% faster startup time**
+
+### Developer Experience
+
+- **Intelligent bundling** with preset combinations
+- **Auto-fix validation** for common issues
+- **Enhanced error messages** with solutions
+- **Interactive prompts** for better UX
+
+### Enterprise Features
+
+- **Norwegian compliance** built-in
+- **Service dependency** management
+- **Advanced monitoring** and diagnostics
+- **Multi-framework** support
+
+### Maintenance Benefits
+
+- **SOLID architecture** for better maintainability
+- **Service isolation** for easier testing
+- **Automated validation** for health checks
+- **Dependency tracking** for security
+
+---
+
+## Getting Help
+
+### Documentation Resources
+
+- **[CLI v2 Overview](/docs/cli-v2)** - Complete feature overview
+- **[Commands Reference](/docs/cli-v2-commands)** - Detailed command docs
+- **[Service Bundles](/docs/cli-v2-bundles)** - All 13 bundle guides
+- **[Norwegian Compliance](/docs/norwegian-compliance)** - Compliance features
+
+### Community Support
+
+- **[GitHub Issues](https://github.com/Xala-Technologies/xaheen/issues)** - Bug reports and feature requests
+- **[GitHub Discussions](https://github.com/Xala-Technologies/xaheen/discussions)** - Community questions
+- **[Documentation](https://xaheen.dev/docs)** - Complete documentation
+
+### Professional Support
+
+For enterprise customers and complex migrations:
+
+- **Migration consulting** - Professional migration assistance
+- **Custom bundles** - Tailored service combinations
+- **Training workshops** - Team onboarding sessions
+- **Priority support** - Dedicated support channels
+
+---
+
+## Next Steps
+
+Now that you've migrated to CLI v2:
+
+1. **Explore service bundles** to find optimal combinations
+2. **Set up validation** in your CI/CD pipeline
+3. **Add monitoring** and observability
+4. **Configure Norwegian compliance** if applicable
+5. **Join the community** for updates and best practices
+
+Ready to leverage the full power of CLI v2? Start with these commands:
+
+```bash
+# Validate your migrated project
+xaheen validate --fix
+
+# Add advanced features
+xaheen add monitoring --provider sentry
+
+# Set up Norwegian compliance (if needed)
+xaheen add auth --provider bankid
+
+# Create custom bundles for your team
+xaheen bundle create my-company-stack
+```
