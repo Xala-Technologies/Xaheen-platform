@@ -1,5 +1,5 @@
 "use client";
-import { Github, Heart, Maximize2, Menu, X } from "lucide-react";
+import { Github, Maximize2, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";

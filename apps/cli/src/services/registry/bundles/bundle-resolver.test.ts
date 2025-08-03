@@ -50,7 +50,7 @@ describe('BundleResolver', () => {
 
   describe('bundle resolution', () => {
     const mockBundle: ServiceBundle = {
-      id: 'test-bundle-uuid',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'test-bundle',
       displayName: 'Test Bundle',
       description: 'A test bundle',
@@ -100,14 +100,32 @@ describe('BundleResolver', () => {
           name: 'AUTH_SECRET',
           description: 'Authentication secret key',
           required: true,
-          type: 'secret'
+          defaultValue: undefined,
+          type: 'secret',
+          sensitive: true
         }
       ],
       dependencies: [],
       postInjectionSteps: [],
       frameworks: ['next', 'react'],
       databases: [],
-      platforms: ['web']
+      platforms: ['web'],
+      orms: [],
+      styling: [],
+      testing: [],
+      minNodeVersion: undefined,
+      compatibility: undefined,
+      defaultConfiguration: {},
+      configurationSchema: undefined,
+      verificationSteps: [],
+      tags: [],
+      exampleRepositories: [],
+      documentation: undefined,
+      featureFlags: [],
+      maturity: 'stable',
+      supportLevel: 'community',
+      lastUpdated: new Date(),
+      statistics: undefined
     };
 
     const mockDatabaseTemplate: ServiceTemplate = {
@@ -122,14 +140,32 @@ describe('BundleResolver', () => {
           name: 'DATABASE_URL',
           description: 'Database connection URL',
           required: true,
-          type: 'url'
+          defaultValue: undefined,
+          type: 'url',
+          sensitive: true
         }
       ],
       dependencies: [],
       postInjectionSteps: [],
       frameworks: ['next', 'react'],
       databases: [],
-      platforms: ['web']
+      platforms: ['web'],
+      orms: [],
+      styling: [],
+      testing: [],
+      minNodeVersion: undefined,
+      compatibility: undefined,
+      defaultConfiguration: {},
+      configurationSchema: undefined,
+      verificationSteps: [],
+      tags: [],
+      exampleRepositories: [],
+      documentation: undefined,
+      featureFlags: [],
+      maturity: 'stable',
+      supportLevel: 'community',
+      lastUpdated: new Date(),
+      statistics: undefined
     };
 
     beforeEach(() => {
@@ -240,7 +276,7 @@ describe('BundleResolver', () => {
       mockServiceRegistry.initialize.mockResolvedValue(undefined);
       
       // Mock loadBundleDefinition for recommendations
-      jest.spyOn(resolver as any, 'loadBundleDefinition')
+      vi.spyOn(resolver as any, 'loadBundleDefinition')
         .mockImplementation((bundleName: string) => {
           const mockBundles = {
             'saas-starter': {
@@ -310,7 +346,7 @@ describe('BundleResolver', () => {
       });
 
       const bundle: ServiceBundle = {
-        id: 'test-id',
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'test-bundle',
         displayName: 'Test Bundle',
         description: 'Test',
@@ -352,7 +388,7 @@ describe('BundleResolver', () => {
       mockServiceRegistry.getTemplate.mockResolvedValue(null); // No services found
 
       const bundle: ServiceBundle = {
-        id: 'test-id',
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'test-bundle',
         displayName: 'Test Bundle',
         description: 'Test',
@@ -381,7 +417,7 @@ describe('BundleResolver', () => {
 
     it('should detect framework incompatibilities', async () => {
       const bundle: ServiceBundle = {
-        id: 'test-id',
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'test-bundle',
         displayName: 'Test Bundle',
         description: 'Test',

@@ -1,23 +1,34 @@
 "use client";
 
-import React from 'react';
+/**
+ * Theme Provider Integration - Xala UI System v5.0.0 Compliant
+ * Provides a simple wrapper that works with UI System's internal theme management
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * Let UI System v5.0.0 handle theming internally
+ * No external theme libraries or bridging
+ * SSR-safe implementation
+ * Explicit TypeScript return types
+ * 
+ * Note: This component is now deprecated in favor of the new locale-based
+ * UISystemProvider. It's kept for backward compatibility.
+ */
+
+import * as React from "react";
+import { UISystemProvider } from '@/app/providers/UISystemProvider';
 
 interface ThemeIntegratedProviderProps {
   children: React.ReactNode;
 }
 
 /**
- * ThemeIntegratedProvider provides the UI System context.
- * Based on console logs, the UI System has a DesignSystemProvider that initializes automatically.
- * This wrapper ensures components have access to theme tokens and context.
+ * Legacy theme provider wrapper - now uses the enhanced UISystemProvider
+ * @deprecated Use UISystemProvider directly in new implementations
  */
 export function ThemeIntegratedProvider({ children }: ThemeIntegratedProviderProps): React.JSX.Element {
-  // The UI System v5.0.0 appears to auto-initialize its DesignSystemProvider
-  // based on the console logs showing "SSR-safe DesignSystemProvider initialized"
-  // We just need to provide a wrapper that doesn't interfere with this process
   return (
-    <div data-ui-system-root>
+    <UISystemProvider>
       {children}
-    </div>
+    </UISystemProvider>
   );
 }

@@ -1,0 +1,59 @@
+{
+  "homepage": {
+    "title": "Bienvenue sur Xaheen Builder",
+    "subtitle": "Un outil CLI moderne pour échafauder des projets TypeScript type-safe de bout en bout avec les meilleures pratiques et des configurations personnalisables",
+    "hero": {
+      "title": "Construisez des Projets TypeScript Modernes",
+      "subtitle": "Créez des applications prêtes pour la production avec les meilleures pratiques, la sécurité des types et une architecture de niveau entreprise",
+      "cta": "Commencer"
+    },
+    "build_title": "Décrivez Votre Idée de Projet",
+    "build_description": "Parlez-nous de votre projet et nous générerons la configuration de stack parfaite pour vous.",
+    "textarea_placeholder": "Décrivez votre idée de projet ici... (par ex. 'Une application de médias sociaux avec chat en temps réel, authentification utilisateur et téléchargement de fichiers')",
+    "generate_button": "Générer le Projet",
+    "generated_command_title": "Commande Générée",
+    "copy_button": "Copier",
+    "copied_button": "Copié!",
+    "quick_templates_title": "Modèles de Démarrage Rapide",
+    "quick_templates_description": "Choisissez parmi nos modèles sélectionnés pour commencer rapidement"
+  },
+  "features": {
+    "title": "Pourquoi Choisir Xaheen Builder?",
+    "fast": {
+      "title": "Ultra Rapide",
+      "description": "Générez des projets en quelques secondes avec des modèles et configurations optimisés"
+    },
+    "secure": {
+      "title": "Sécurisé Entreprise",
+      "description": "Meilleures pratiques de sécurité intégrées et conformité aux standards de l'industrie"
+    },
+    "scalable": {
+      "title": "Hautement Évolutif",
+      "description": "Modèles d'architecture qui évoluent avec les besoins de votre application"
+    },
+    "deploy": {
+      "title": "Prêt au Déploiement",
+      "description": "Configurations prêtes pour la production avec CI/CD et scripts de déploiement"
+    }
+  },
+  "navigation": {
+    "home": "Accueil",
+    "docs": "Documentation",
+    "templates": "Modèles",
+    "about": "À propos"
+  },
+  "actions": {
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus",
+    "viewDocs": "Voir la documentation",
+    "tryNow": "Essayer maintenant"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "success": "Succès!",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer"
+  }
+}

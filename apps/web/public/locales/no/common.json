@@ -1,0 +1,59 @@
+{
+  "homepage": {
+    "title": "Velkommen til Xaheen Builder",
+    "subtitle": "Et moderne CLI-verktøy for å bygge ende-til-ende typesikre TypeScript-prosjekter med beste praksis og tilpassbare konfigurasjoner",
+    "hero": {
+      "title": "Bygg Moderne TypeScript-Prosjekter",
+      "subtitle": "Skap produksjonsklare applikasjoner med beste praksis, typesikkerhet og arkitektur i bedriftsklasse",
+      "cta": "Kom i gang"
+    },
+    "build_title": "Beskriv Prosjektideen Din",
+    "build_description": "Fortell oss om prosjektet ditt, så genererer vi den perfekte stack-konfigurasjonen for deg.",
+    "textarea_placeholder": "Beskriv prosjektideen din her... (f.eks. 'En sosial media-app med sanntidschat, brukerautentisering og filopplasting')",
+    "generate_button": "Generer Prosjekt",
+    "generated_command_title": "Generert Kommando",
+    "copy_button": "Kopier",
+    "copied_button": "Kopiert!",
+    "quick_templates_title": "Hurtigstart Maler",
+    "quick_templates_description": "Velg fra våre kuraterte maler for å komme raskt i gang"
+  },
+  "features": {
+    "title": "Hvorfor Velge Xaheen Builder?",
+    "fast": {
+      "title": "Lynrask",
+      "description": "Generer prosjekter på sekunder med optimaliserte maler og konfigurasjoner"
+    },
+    "secure": {
+      "title": "Bedriftssikker",
+      "description": "Innebygde sikkerhetspraksis og samsvar med industristandarder"
+    },
+    "scalable": {
+      "title": "Høyt Skalerbar",
+      "description": "Arkitekturmønstre som vokser med applikasjonens behov"
+    },
+    "deploy": {
+      "title": "Distribusjonsklar",
+      "description": "Produksjonsklare konfigurasjoner med CI/CD og distribusjonsskript"
+    }
+  },
+  "navigation": {
+    "home": "Hjem",
+    "docs": "Dokumentasjon",
+    "templates": "Maler",
+    "about": "Om"
+  },
+  "actions": {
+    "getStarted": "Kom i gang",
+    "learnMore": "Lær mer",
+    "viewDocs": "Se dokumentasjon",
+    "tryNow": "Prøv nå"
+  },
+  "common": {
+    "loading": "Laster...",
+    "error": "En feil oppstod",
+    "success": "Suksess!",
+    "cancel": "Avbryt",
+    "confirm": "Bekreft",
+    "close": "Lukk"
+  }
+}

@@ -24,6 +24,8 @@
     "fumadocs-core": "15.6.3",
     "fumadocs-mdx": "11.6.11",
     "fumadocs-ui": "15.6.3",
+    "i18next": "^25.3.2",
+    "i18next-resources-to-backend": "^1.2.1",
     "lucide-react": "^0.525.0",
     "motion": "^12.23.3",
     "next": "15.3.5",
@@ -34,6 +36,7 @@
     "radix-ui": "^1.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^15.6.1",
     "react-tweet": "^3.2.2",
     "recharts": "2.15.4",
     "sonner": "^2.0.6",
@@ -64,9 +67,16 @@
     },
     "localization": {
       "primary": "en",
-      "supported": ["en", "nb", "fr", "ar"]
+      "supported": [
+        "en",
+        "nb",
+        "fr",
+        "ar"
+      ]
     },
-    "platforms": ["web"],
+    "platforms": [
+      "web"
+    ],
     "features": {
       "designTokens": true,
       "accessibility": true,

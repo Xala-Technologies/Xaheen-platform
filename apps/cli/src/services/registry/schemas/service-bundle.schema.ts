@@ -55,7 +55,7 @@ export const BundleServiceReferenceSchema = z.object({
   version: z.string().optional(),
   required: z.boolean().default(true),
   priority: z.number().min(1).max(100).default(50),
-  config: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.any()).default({}),
   environment: z.array(ServiceEnvironmentSchema).optional(),
   conditionalInclusion: z.string().optional(), // Handlebars condition
   alternatives: z.array(z.object({
@@ -354,7 +354,7 @@ export const BundleResolutionOptionsSchema = z.object({
   targetPlatform: z.string().optional(),
   environment: z.enum(['development', 'staging', 'production']).optional(),
   region: z.string().optional(),
-  userConfig: z.record(z.unknown()).optional(),
+  userConfig: z.record(z.string(), z.any()).optional(),
   enableOptionalServices: z.boolean().default(true),
   validateCompatibility: z.boolean().default(true),
   resolveAllDependencies: z.boolean().default(true)
@@ -370,7 +370,7 @@ export const ServiceConfigurationSchema = z.object({
   version: z.string(),
   required: z.boolean(),
   priority: z.number(),
-  configuration: z.record(z.unknown()),
+  configuration: z.record(z.string(), z.any()),
   environmentVariables: z.array(z.object({
     name: z.string(),
     description: z.string(),
@@ -421,7 +421,7 @@ export const EnhancedBundleResolutionResultSchema = z.object({
   status: z.enum(['success', 'warning', 'failed']),
   resolvedServices: z.array(ServiceConfigurationSchema),
   dependencies: z.array(ServiceDependencySchema),
-  configuration: z.record(z.unknown()),
+  configuration: z.record(z.string(), z.any()),
   deploymentInstructions: z.array(z.string()),
   postInstallSteps: z.array(z.object({
     name: z.string(),

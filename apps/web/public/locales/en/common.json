@@ -1,0 +1,59 @@
+{
+  "homepage": {
+    "title": "Welcome to Xaheen Builder",
+    "subtitle": "A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
+    "hero": {
+      "title": "Build Modern TypeScript Projects",
+      "subtitle": "Scaffold production-ready applications with best practices, type safety, and enterprise-grade architecture",
+      "cta": "Get Started"
+    },
+    "build_title": "Describe Your Project Idea",
+    "build_description": "Tell us about your project and we'll generate the perfect stack configuration for you.",
+    "textarea_placeholder": "Describe your project idea here... (e.g., 'A social media app with real-time chat, user authentication, and file uploads')",
+    "generate_button": "Generate Project",
+    "generated_command_title": "Generated Command",
+    "copy_button": "Copy",
+    "copied_button": "Copied!",
+    "quick_templates_title": "Quick Start Templates",
+    "quick_templates_description": "Choose from our curated templates to get started quickly"
+  },
+  "features": {
+    "title": "Why Choose Xaheen Builder?",
+    "fast": {
+      "title": "Lightning Fast",
+      "description": "Generate projects in seconds with optimized templates and configurations"
+    },
+    "secure": {
+      "title": "Enterprise Secure",
+      "description": "Built-in security best practices and compliance with industry standards"
+    },
+    "scalable": {
+      "title": "Highly Scalable",
+      "description": "Architecture patterns that grow with your application needs"
+    },
+    "deploy": {
+      "title": "Deploy Ready",
+      "description": "Production-ready configurations with CI/CD and deployment scripts"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "docs": "Documentation",
+    "templates": "Templates",
+    "about": "About"
+  },
+  "actions": {
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "viewDocs": "View Documentation",
+    "tryNow": "Try Now"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success!",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
+  }
+}

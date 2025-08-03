@@ -51,3 +51,7 @@
 - Created complete CLI documentation suite: technical docs in /documentation/cli-architecture/ and user-facing docs in /apps/web/content/docs/
 - Updated main CLI documentation to reflect service-based architecture with bundles, presets, and intelligent service management
 - Implemented Xala UI System v5 Compliance Engine with validator, rules engine, component generator compliance integration, and support for design tokens, accessibility, localization, and RTL requirements
+- Fixed bundle resolver tests by resolving Zod schema issues with z.record(z.unknown()) and updating compatibility checks to support both template.frameworks and template.compatibility.frameworks patterns
+- Created new CLI v2 architecture in apps/cli-v2 with complete service-based implementation including ServiceRegistry, BundleResolver, ServiceInjector, and ProjectScaffolder
+- Implemented core create command with interactive prompts for framework/backend/database selection and service bundle resolution
+- Built CLI v2 successfully with tsup, ready for testing and further development

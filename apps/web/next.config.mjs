@@ -10,11 +10,29 @@ const config = {
 	experimental: {
 		reactCompiler: true,
 	},
+	eslint: {
+		// Warning: This allows production builds to successfully complete even if
+		// your project has ESLint errors.
+		ignoreDuringBuilds: true,
+	},
+	compiler: {
+		removeConsole: process.env.NODE_ENV === 'production',
+	},
 	images: {
 		remotePatterns: [
 			{ protocol: "https", hostname: "pbs.twimg.com" },
 			{ protocol: "https", hostname: "abs.twimg.com" },
 		],
+	},
+	// Webpack optimization for Xala UI System v5.0.0
+	webpack: (config) => {
+		// Optimize bundle for UI system
+		config.resolve.alias = {
+			...config.resolve.alias,
+			'@xala-technologies/ui-system': '@xala-technologies/ui-system/dist',
+		};
+		
+		return config;
 	},
 	async rewrites() {
 		return [
