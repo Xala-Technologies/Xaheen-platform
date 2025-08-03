@@ -1,6 +1,6 @@
 {
   "name": "@xala-technologies/xaheen-cli",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Next-generation CLI for Xaheen - AI-powered enterprise development platform",
   "type": "module",
   "main": "./dist/index.js",

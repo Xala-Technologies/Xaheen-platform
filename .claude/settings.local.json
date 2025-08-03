@@ -52,6 +52,10 @@
       "Bash(./test-cli.sh:*)",
       "Bash(cd:*)",
       "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(npm view:*)",
+      "Bash(cd:*)",
       "Bash(cd:*)"
     ],
     "deny": []
