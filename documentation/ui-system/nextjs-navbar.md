@@ -32,19 +32,22 @@ import {
   DesktopLayout, DesktopHeader,
   
   // Navigation Components
-  Navigation, NavigationItem, NavigationGroup, NavigationLink,
   GlobalSearch, CommandPalette,
   
   // UI Components
   Container, Stack, Grid, Typography, Button, IconButton,
-  Avatar, Badge, Card, Dropdown, DropdownTrigger, DropdownContent, DropdownItem,
+  Avatar, Badge, Card, 
+  ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
   
-  // Theme & Customization
-  ThemeManager, CompactThemeSwitcher,
+  // Theme & Customization - Note: Import from specific path
+  // ThemeManager and CompactThemeSwitcher need to be imported separately
   
   // Hooks
   useTokens, useTheme, useResponsive
 } from '@xala-technologies/ui-system';
+
+// Theme components (import separately as they're not in main exports)
+import { ThemeManager, CompactThemeSwitcher } from '@xala-technologies/ui-system/components/ThemeManager';
 ```
 
 ## 📱 Responsive Navbar Patterns
@@ -61,16 +64,16 @@ import {
   Stack,
   Typography,
   GlobalSearch,
-  CompactThemeSwitcher,
   Avatar,
-  Dropdown,
-  DropdownTrigger,
-  DropdownContent,
-  DropdownItem,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
   Button,
   Badge,
   useTokens
 } from '@xala-technologies/ui-system';
+import { CompactThemeSwitcher } from '@xala-technologies/ui-system/components/ThemeManager';
 import { Bell, Settings, LogOut, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useResponsive } from '@/hooks/useResponsive';
@@ -184,17 +187,17 @@ export function SaaSNavbar({
           </Button>
           
           {/* User Menu */}
-          <Dropdown>
-            <DropdownTrigger>
+          <ContextMenu>
+            <ContextMenuTrigger>
               <Avatar
                 src={userAvatar}
                 alt={t('user.avatar', { name: userName })}
                 size="sm"
                 fallback={userName?.charAt(0) || 'U'}
               />
-            </DropdownTrigger>
-            <DropdownContent>
-              <DropdownItem
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
                 onClick={(): void => handleProfileAction('profile')}
               >
                 <Stack direction="horizontal" align="center" gap="sm">
@@ -203,8 +206,8 @@ export function SaaSNavbar({
                     {t('user.profile')}
                   </Typography>
                 </Stack>
-              </DropdownItem>
-              <DropdownItem
+              </ContextMenuItem>
+              <ContextMenuItem
                 onClick={(): void => handleProfileAction('settings')}
               >
                 <Stack direction="horizontal" align="center" gap="sm">
@@ -213,9 +216,8 @@ export function SaaSNavbar({
                     {t('user.settings')}
                   </Typography>
                 </Stack>
-              </DropdownItem>
-              <DropdownItem
-                variant="destructive"
+              </ContextMenuItem>
+              <ContextMenuItem
                 onClick={(): void => handleProfileAction('logout')}
               >
                 <Stack direction="horizontal" align="center" gap="sm">
@@ -224,9 +226,9 @@ export function SaaSNavbar({
                     {t('user.logout')}
                   </Typography>
                 </Stack>
-              </DropdownItem>
-            </DropdownContent>
-          </Dropdown>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         </Stack>
       }
       variant="elevated"
@@ -248,18 +250,16 @@ import {
   Stack,
   Typography,
   GlobalSearch,
-  Navigation,
-  NavigationItem,
-  CompactThemeSwitcher,
   Avatar,
-  Dropdown,
-  DropdownTrigger,
-  DropdownContent,
-  DropdownItem,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
   Button,
   Badge,
   useTokens
 } from '@xala-technologies/ui-system';
+import { CompactThemeSwitcher } from '@xala-technologies/ui-system/components/ThemeManager';
 import { 
   Home, 
   Users, 
@@ -346,13 +346,31 @@ export function AdminNavbar({
       title={title || t('admin.dashboard')}
       breadcrumbs={breadcrumbs}
       navigation={
-        <Navigation
-          items={navigationItems}
-          variant="horizontal"
-          orientation="horizontal"
-          onItemSelect={handleNavigationSelect}
-          showSeparator={false}
-        />
+        <Stack direction="horizontal" gap="md">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.key}
+              variant={item.active ? "default" : "ghost"}
+              size="sm"
+              onClick={(): void => handleNavigationSelect(item.key, item)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs
+              }}
+            >
+              {item.icon}
+              <Typography variant="body">
+                {item.label}
+              </Typography>
+              {item.badge && (
+                <Badge size="sm" variant="secondary">
+                  {item.badge}
+                </Badge>
+              )}
+            </Button>
+          ))}
+        </Stack>
       }
       searchComponent={
         <Container size="md" padding="none" style={{ maxWidth: '300px' }}>
@@ -400,33 +418,33 @@ export function AdminNavbar({
             <Bell size={18} />
           </Button>
           
-          <Dropdown>
-            <DropdownTrigger>
+          <ContextMenu>
+            <ContextMenuTrigger>
               <Avatar
                 src={userAvatar}
                 alt={t('admin.user.avatar', { name: userName })}
                 size="sm"
                 fallback={userName?.charAt(0) || 'A'}
               />
-            </DropdownTrigger>
-            <DropdownContent>
-              <DropdownItem>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem>
                 <Typography variant="body">
                   {t('admin.user.profile')}
                 </Typography>
-              </DropdownItem>
-              <DropdownItem>
+              </ContextMenuItem>
+              <ContextMenuItem>
                 <Typography variant="body">
                   {t('admin.user.preferences')}
                 </Typography>
-              </DropdownItem>
-              <DropdownItem variant="destructive">
+              </ContextMenuItem>
+              <ContextMenuItem>
                 <Typography variant="body">
                   {t('admin.user.logout')}
                 </Typography>
-              </DropdownItem>
-            </DropdownContent>
-          </Dropdown>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         </Stack>
       }
       variant="elevated"
@@ -446,12 +464,10 @@ import {
   Container,
   Stack,
   Typography,
-  Navigation,
-  NavigationLink,
   Button,
-  CompactThemeSwitcher,
   useTokens
 } from '@xala-technologies/ui-system';
+import { CompactThemeSwitcher } from '@xala-technologies/ui-system/components/ThemeManager';
 import { useTranslation } from 'react-i18next';
 import { useResponsive } from '@/hooks/useResponsive';
 
@@ -515,12 +531,20 @@ export function MarketingNavbar({
         </Typography>
       }
       navigation={
-        <Navigation
-          items={navigationItems}
-          variant="horizontal"
-          orientation="horizontal"
-          showSeparator={false}
-        />
+        <Stack direction="horizontal" gap="lg">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.key}
+              variant="ghost"
+              size="sm"
+              onClick={(): void => { window.location.href = item.href; }}
+            >
+              <Typography variant="body">
+                {item.label}
+              </Typography>
+            </Button>
+          ))}
+        </Stack>
       }
       actions={
         <Stack direction="horizontal" align="center" gap="sm">
@@ -556,17 +580,16 @@ export function MarketingNavbar({
 // components/navigation/AdaptiveNavbar.tsx
 import {
   WebNavbar,
-  MobileDrawer,
+  Drawer,
   Container,
   Stack,
   Typography,
-  Navigation,
   Button,
   IconButton,
   GlobalSearch,
-  CompactThemeSwitcher,
   useTokens
 } from '@xala-technologies/ui-system';
+import { CompactThemeSwitcher } from '@xala-technologies/ui-system/components/ThemeManager';
 import { Menu, X, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -679,11 +702,9 @@ export function AdaptiveNavbar({
         )}
 
         {/* Mobile Menu Drawer */}
-        <MobileDrawer
-          isOpen={isMobileMenuOpen}
-          onClose={(): void => setIsMobileMenuOpen(false)}
-          side="right"
-          size="md"
+        <Drawer
+          open={isMobileMenuOpen}
+          onOpenChange={setIsMobileMenuOpen}
         >
           <Stack
             direction="vertical"
@@ -706,13 +727,28 @@ export function AdaptiveNavbar({
             </Stack>
 
             {/* Mobile Navigation */}
-            <Navigation
-              items={navigationItems}
-              variant="drawer"
-              orientation="vertical"
-              onItemSelect={handleNavigationSelect}
-              showSeparator
-            />
+            <Stack direction="vertical" gap="sm">
+              {navigationItems.map((item) => (
+                <Button
+                  key={item.key}
+                  variant="ghost"
+                  size="md"
+                  onClick={(): void => handleNavigationSelect(item.key, item)}
+                  style={{
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.sm
+                  }}
+                >
+                  {item.icon}
+                  <Typography variant="body">
+                    {item.label}
+                  </Typography>
+                </Button>
+              ))}
+            </Stack>
 
             {/* Mobile Actions */}
             <Stack direction="vertical" gap="md" style={{ marginTop: 'auto' }}>
@@ -720,7 +756,7 @@ export function AdaptiveNavbar({
               {actions}
             </Stack>
           </Stack>
-        </MobileDrawer>
+        </Drawer>
       </>
     );
   }
@@ -734,12 +770,26 @@ export function AdaptiveNavbar({
         </Typography>
       }
       navigation={
-        <Navigation
-          items={navigationItems}
-          variant="horizontal"
-          orientation="horizontal"
-          onItemSelect={handleNavigationSelect}
-        />
+        <Stack direction="horizontal" gap="lg">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.key}
+              variant="ghost"
+              size="sm"
+              onClick={(): void => handleNavigationSelect(item.key, item)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs
+              }}
+            >
+              {item.icon}
+              <Typography variant="body">
+                {item.label}
+              </Typography>
+            </Button>
+          ))}
+        </Stack>
       }
       searchComponent={
         <Container size="md" padding="none" style={{ maxWidth: '400px' }}>

@@ -215,11 +215,273 @@ export class BundleResolver implements IBundleResolver {
       updatedAt: new Date()
     });
 
-    // Add more bundles as needed...
+    // Marketing Site Bundle
+    this.bundles.set('marketing-site', {
+      id: uuidv4(),
+      name: 'marketing-site',
+      displayName: '🌐 Marketing Site',
+      description: 'Modern landing page with Next.js and Xala UI',
+      version: '1.0.0',
+      type: 'landing-page',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'analytics', provider: 'vercel', required: true, priority: 90, config: {} },
+        { serviceType: 'cms', provider: 'contentful', required: true, priority: 80, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['vercel'],
+      tags: ['landing-page', 'marketing', 'cms'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Portfolio Site Bundle
+    this.bundles.set('portfolio-site', {
+      id: uuidv4(),
+      name: 'portfolio-site',
+      displayName: '🎨 Portfolio Site',
+      description: 'Creative portfolio with animations and CMS',
+      version: '1.0.0',
+      type: 'landing-page',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'analytics', provider: 'google', required: true, priority: 90, config: {} },
+        { serviceType: 'cms', provider: 'sanity', required: true, priority: 80, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['netlify'],
+      tags: ['landing-page', 'portfolio', 'creative'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Dashboard App Bundle
+    this.bundles.set('dashboard-app', {
+      id: uuidv4(),
+      name: 'dashboard-app',
+      displayName: '📊 Dashboard App',
+      description: 'Admin dashboard with authentication and database',
+      version: '1.0.0',
+      type: 'web-app',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'prisma', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'better-auth', required: true, priority: 85, config: {} },
+        { serviceType: 'analytics', provider: 'posthog', required: true, priority: 80, config: {} },
+        { serviceType: 'monitoring', provider: 'sentry', required: true, priority: 75, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['vercel'],
+      tags: ['web-app', 'dashboard', 'admin'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Full-Stack App Bundle
+    this.bundles.set('fullstack-app', {
+      id: uuidv4(),
+      name: 'fullstack-app',
+      displayName: '🚀 Full-Stack App',
+      description: 'Complete web application with payments and notifications',
+      version: '1.0.0',
+      type: 'web-app',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'drizzle', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'clerk', required: true, priority: 85, config: {} },
+        { serviceType: 'payments', provider: 'stripe', required: true, priority: 80, config: {} },
+        { serviceType: 'email', provider: 'resend', required: true, priority: 75, config: {} },
+        { serviceType: 'storage', provider: 'uploadthing', required: true, priority: 70, config: {} },
+        { serviceType: 'analytics', provider: 'mixpanel', required: true, priority: 65, config: {} },
+        { serviceType: 'monitoring', provider: 'datadog', required: true, priority: 60, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['vercel'],
+      tags: ['web-app', 'fullstack', 'saas'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Mobile App Bundle
+    this.bundles.set('mobile-app', {
+      id: uuidv4(),
+      name: 'mobile-app',
+      displayName: '📱 Mobile App',
+      description: 'React Native app with backend API',
+      version: '1.0.0',
+      type: 'mobile-app',
+      services: [
+        { serviceType: 'backend', provider: 'hono', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'sqlite', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'drizzle', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'better-auth', required: true, priority: 85, config: {} },
+        { serviceType: 'realtime', provider: 'pusher', required: true, priority: 80, config: {} },
+        { serviceType: 'analytics', provider: 'amplitude', required: true, priority: 75, config: {} },
+        { serviceType: 'monitoring', provider: 'sentry', required: true, priority: 70, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['expo'],
+      tags: ['mobile-app', 'react-native', 'api'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // REST API Bundle
+    this.bundles.set('rest-api', {
+      id: uuidv4(),
+      name: 'rest-api',
+      displayName: '🔌 REST API',
+      description: 'Backend API with authentication and documentation',
+      version: '1.0.0',
+      type: 'api',
+      services: [
+        { serviceType: 'backend', provider: 'hono', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'drizzle', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'better-auth', required: true, priority: 85, config: {} },
+        { serviceType: 'monitoring', provider: 'prometheus', required: true, priority: 80, config: {} },
+        { serviceType: 'queue', provider: 'rabbitmq', required: true, priority: 75, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['docker'],
+      tags: ['api', 'rest', 'backend'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Enterprise App Bundle
+    this.bundles.set('enterprise-app', {
+      id: uuidv4(),
+      name: 'enterprise-app',
+      displayName: '🏢 Enterprise App',
+      description: 'Enterprise web application with Microsoft stack',
+      version: '1.0.0',
+      type: 'enterprise',
+      services: [
+        { serviceType: 'frontend', provider: 'blazor', required: true, priority: 100, config: {} },
+        { serviceType: 'backend', provider: 'dotnet', required: true, priority: 95, config: {} },
+        { serviceType: 'database', provider: 'sqlserver', required: true, priority: 90, config: {} },
+        { serviceType: 'orm', provider: 'entity-framework', required: true, priority: 85, config: {} },
+        { serviceType: 'auth', provider: 'identity-server', required: true, priority: 80, config: {} },
+        { serviceType: 'monitoring', provider: 'azure-app-insights', required: true, priority: 75, config: {} },
+        { serviceType: 'queue', provider: 'azure-service-bus', required: true, priority: 70, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['azure'],
+      tags: ['enterprise', 'microsoft', 'dotnet'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // SaaS Starter (Complete) Bundle
+    this.bundles.set('saas-complete', {
+      id: uuidv4(),
+      name: 'saas-complete',
+      displayName: '💼 SaaS Starter',
+      description: 'Complete SaaS application with multi-tenancy and billing',
+      version: '1.0.0',
+      type: 'saas',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'prisma', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'clerk', required: true, priority: 85, config: {} },
+        { serviceType: 'payments', provider: 'stripe', required: true, priority: 80, config: {} },
+        { serviceType: 'email', provider: 'resend', required: true, priority: 75, config: {} },
+        { serviceType: 'analytics', provider: 'posthog', required: true, priority: 70, config: {} },
+        { serviceType: 'monitoring', provider: 'datadog', required: true, priority: 65, config: {} },
+        { serviceType: 'rbac', provider: 'casbin', required: true, priority: 60, config: {} },
+        { serviceType: 'multitenancy', provider: 'schema-separation', required: true, priority: 55, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['vercel'],
+      tags: ['saas', 'multi-tenant', 'billing'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Norwegian Government Bundle
+    this.bundles.set('norwegian-gov', {
+      id: uuidv4(),
+      name: 'norwegian-gov',
+      displayName: '🇳🇴 Norwegian Gov',
+      description: 'Norwegian government compliant application',
+      version: '1.0.0',
+      type: 'government',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'prisma', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'bankid', required: true, priority: 85, config: {} },
+        { serviceType: 'payments', provider: 'vipps', required: true, priority: 80, config: {} },
+        { serviceType: 'monitoring', provider: 'grafana', required: true, priority: 75, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['azure'],
+      compliance: ['gdpr', 'norwegian-privacy'],
+      tags: ['government', 'norwegian', 'compliant'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // More specialized bundles...
+    
+    // Municipality Portal Bundle
+    this.bundles.set('municipality-portal', {
+      id: uuidv4(),
+      name: 'municipality-portal',
+      displayName: '🏛️ Municipality Portal',
+      description: 'Norwegian municipality citizen services portal',
+      version: '1.0.0',
+      type: 'government',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'prisma', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'bankid', required: true, priority: 85, config: {} },
+        { serviceType: 'payments', provider: 'vipps', required: true, priority: 80, config: {} },
+        { serviceType: 'i18n', provider: 'next-intl', required: true, priority: 75, config: {} },
+        { serviceType: 'monitoring', provider: 'grafana', required: true, priority: 70, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['azure'],
+      compliance: ['gdpr', 'wcag-aaa', 'norwegian-privacy'],
+      tags: ['government', 'municipality', 'citizen-services'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Healthcare Management Bundle
+    this.bundles.set('healthcare-management', {
+      id: uuidv4(),
+      name: 'healthcare-management',
+      displayName: '🏥 Healthcare Management',
+      description: 'Norwegian healthcare management system with GDPR compliance',
+      version: '1.0.0',
+      type: 'healthcare',
+      services: [
+        { serviceType: 'frontend', provider: 'nextjs', required: true, priority: 100, config: {} },
+        { serviceType: 'database', provider: 'postgresql', required: true, priority: 95, config: {} },
+        { serviceType: 'orm', provider: 'prisma', required: true, priority: 90, config: {} },
+        { serviceType: 'auth', provider: 'bankid', required: true, priority: 85, config: {} },
+        { serviceType: 'rbac', provider: 'casbin', required: true, priority: 80, config: {} },
+        { serviceType: 'i18n', provider: 'next-intl', required: true, priority: 75, config: {} },
+        { serviceType: 'monitoring', provider: 'grafana', required: true, priority: 70, config: {} }
+      ],
+      optionalServices: [],
+      deploymentTargets: ['azure'],
+      compliance: ['gdpr', 'hipaa', 'norwegian-health-privacy'],
+      tags: ['healthcare', 'medical', 'patient-management'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
   }
 
   private getDefaultProvider(serviceType: string): string {
     const defaults: Record<string, string> = {
+      // Core services
       auth: 'better-auth',
       payments: 'stripe',
       database: 'postgresql',
@@ -232,7 +494,26 @@ export class BundleResolver implements IBundleResolver {
       search: 'algolia',
       queue: 'bullmq',
       realtime: 'pusher',
-      ai: 'openai'
+      ai: 'openai',
+      
+      // Frameworks
+      frontend: 'nextjs',
+      backend: 'hono',
+      orm: 'prisma',
+      
+      // CMS
+      cms: 'contentful',
+      
+      // Testing
+      testing: 'vitest',
+      
+      // DevOps
+      devops: 'docker',
+      
+      // Enterprise
+      rbac: 'casbin',
+      multitenancy: 'schema-separation',
+      i18n: 'next-intl'
     };
 
     return defaults[serviceType] || 'default';

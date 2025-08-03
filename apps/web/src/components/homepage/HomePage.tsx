@@ -8,7 +8,13 @@ import { QuickStartTemplates } from "./QuickStartTemplates";
 import { 
   Container, 
   Stack, 
-  Typography
+  Typography,
+  Card,
+  Grid,
+  GridItem,
+  Badge,
+  Skeleton,
+  useTokens
 } from "@xala-technologies/ui-system";
 
 interface PresetStack {
@@ -41,6 +47,7 @@ interface Preset {
 
 export function HomePage(): React.JSX.Element {
   const { t } = useLocalization();
+  const { colors, spacing } = useTokens();
   
   const [projectIdea, setProjectIdea] = useState<string>("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -117,48 +124,113 @@ export function HomePage(): React.JSX.Element {
   };
 
   return (
-    <Container maxWidth="xl" padding="xl" className="mt-16">
+    <Container maxWidth="xl" padding="xl">
       <Stack direction="vertical" gap="xl">
-        {/* ASCII Art Header */}
-        <Stack direction="vertical" gap="lg" align="center">
-          <Stack direction="horizontal" gap="xl" align="center" wrap>
-            <pre className="ascii-art text-primary text-sm leading-tight sm:text-base lg:text-2xl">{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
+        {/* Hero Section */}
+        <Card variant="elevated" padding="xl">
+          <Stack direction="vertical" gap="lg" align="center">
+            {/* ASCII Art Header */}
+            <Stack direction="vertical" gap="md" align="center">
+              <Stack direction="horizontal" gap="xl" align="center" wrap>
+                <pre 
+                  style={{ 
+                    color: colors.primary?.[500],
+                    fontSize: 'clamp(0.75rem, 2vw, 1.3rem)',
+                    lineHeight: 1.2,
+                    fontFamily: 'monospace'
+                  }}
+                >{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
 ╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
  ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║
  ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║
 ██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║
 ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝`}</pre>
-            
-            <pre className="ascii-art text-primary text-sm leading-tight sm:text-base md:text-lg ml-5">{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
+                
+                <pre 
+                  style={{ 
+                    color: colors.primary?.[500],
+                    fontSize: 'clamp(0.75rem, 2vw, 1.3rem)',
+                    lineHeight: 1.2,
+                    fontFamily: 'monospace',
+                    marginLeft: spacing?.[5] || '1.25rem'
+                  }}
+                >{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
 ██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
 ██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
 ██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗
 ██████╔╝╚██████╔╝██║███████╗██████╔╝███████╗██║  ██║
 ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝`}</pre>
+              </Stack>
+              
+              <Stack direction="vertical" gap="sm" align="center">
+                <Typography variant="h4" color="muted" align="center">
+                  {t('homepage.subtitle')}
+                </Typography>
+                <Stack direction="horizontal" gap="sm" align="center">
+                  <Badge variant="secondary" size="sm">CLI Tool</Badge>
+                  <Badge variant="secondary" size="sm">Full-Stack</Badge>
+                  <Badge variant="secondary" size="sm">TypeScript</Badge>
+                </Stack>
+              </Stack>
+            </Stack>
           </Stack>
-          
-          <Typography variant="body" color="muted" align="center">
-            {t('homepage.subtitle')}
-          </Typography>
-        </Stack>
+        </Card>
 
-        {/* Project Idea Section */}
-        <ProjectIdeaSection
-          projectIdea={projectIdea}
-          onProjectIdeaChange={handleProjectIdeaChange}
-          onGenerate={handleGenerate}
-        />
+        {/* Main Content Grid */}
+        <Grid columns={12} gap="xl">
+          {/* Project Idea Section */}
+          <GridItem span={12}>
+            <ProjectIdeaSection
+              projectIdea={projectIdea}
+              onProjectIdeaChange={handleProjectIdeaChange}
+              onGenerate={handleGenerate}
+            />
+          </GridItem>
 
-        {/* Generated Command Display */}
-        <CommandDisplay command={generatedCommand} />
+          {/* Generated Command Display */}
+          <GridItem span={12}>
+            <CommandDisplay command={generatedCommand} />
+          </GridItem>
 
-        {/* Quick Start Templates */}
-        <QuickStartTemplates
-          presets={quickPresets}
-          selectedPresetId={selectedPreset}
-          onPresetSelect={handlePresetSelect}
-          isLoading={isLoading}
-        />
+          {/* Quick Start Templates */}
+          <GridItem span={12}>
+            <Card variant="outlined" padding="lg">
+              <Stack direction="vertical" gap="lg">
+                <Stack direction="vertical" gap="sm">
+                  <Typography variant="h3">
+                    {t('homepage.templates_title') || 'Quick Start Templates'}
+                  </Typography>
+                  <Typography variant="body" color="muted">
+                    {t('homepage.templates_description') || 'Choose from pre-configured project templates to get started quickly.'}
+                  </Typography>
+                </Stack>
+                
+                {isLoading ? (
+                  <Grid columns={3} gap="md">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <GridItem key={index}>
+                        <Card variant="outlined" padding="md">
+                          <Stack direction="vertical" gap="sm">
+                            <Skeleton width="100%" height={20} variant="text" />
+                            <Skeleton width="80%" height={16} variant="text" />
+                            <Skeleton width="60%" height={14} variant="text" />
+                          </Stack>
+                        </Card>
+                      </GridItem>
+                    ))}
+                  </Grid>
+                ) : (
+                  <QuickStartTemplates
+                    presets={quickPresets}
+                    selectedPresetId={selectedPreset}
+                    onPresetSelect={handlePresetSelect}
+                    isLoading={isLoading}
+                  />
+                )}
+              </Stack>
+            </Card>
+          </GridItem>
+        </Grid>
       </Stack>
     </Container>
   );
