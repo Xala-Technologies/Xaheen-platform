@@ -122,14 +122,14 @@ export function HomePage(): React.JSX.Element {
         {/* ASCII Art Header */}
         <Stack direction="vertical" gap="lg" align="center">
           <Stack direction="horizontal" gap="xl" align="center" wrap>
-            <pre>{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
+            <pre className="ascii-art text-primary text-sm leading-tight sm:text-base lg:text-2xl">{`██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
 ╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
  ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║
  ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║
 ██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║
 ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝`}</pre>
             
-            <pre>{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
+            <pre className="ascii-art text-primary text-sm leading-tight sm:text-base md:text-lg ml-5">{`██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
 ██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
 ██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
 ██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗

@@ -130,6 +130,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             >
               <NuqsAdapter>
                 <NavigationHeader locale={locale} />
+                <div style={{ height: '64px' }} />
                 {children}
                 <Toaster />
               </NuqsAdapter>

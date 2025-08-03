@@ -98,30 +98,25 @@ export function NavigationHeader({ locale }: NavigationHeaderProps): React.JSX.E
               height={32}
               unoptimized
             />
-            <Typography
-              variant="h4"
-              color="primary"
-              style={{
-                fontWeight: 600,
-                display: 'none',
-                '@media (min-width: 640px)': {
-                  display: 'inline-block',
-                },
-              }}
-            >
-              Xaheen
-            </Typography>
+<span className="hidden sm:inline-block">
+              <Typography
+                variant="h4"
+                color="primary"
+                style={{
+                  fontWeight: 600,
+                }}
+              >
+                Xaheen
+              </Typography>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div
+            className="hidden lg:flex"
             style={{
-              display: 'none',
               alignItems: 'center',
               gap: spacing[4],
-              '@media (min-width: 1024px)': {
-                display: 'flex',
-              },
             }}
           >
             <Stack direction="horizontal" gap="xs">

@@ -393,93 +393,84 @@ async function getServerTemplate(templateId: string) {
   // Load from your database, API, or CDN
   const template = await fetch(`/api/templates/${templateId}`).then(r => r.json());
   return template;
-}
+};
+```
 
-export default async function Layout({ children }) {
-  const template = await getServerTemplate('my-brand-light');
+### 2. Responsive Props
 
+```tsx
+import { Container, Text, VStack } from '@xala-technologies/ui-system';
+
+function ResponsiveLayout(): JSX.Element {
   return (
-    <html>
-      <body>
-        <DesignSystemProvider
-          templateId="my-brand-light"
-          ssrTemplate={template} // Pre-loaded for optimal SSR
-          enableSSRFallback={true}
+    <Container
+      maxWidth={{ xs: 'sm', md: 'lg', xl: '2xl' }}
+      padding={{ xs: '4', md: '8', lg: '12' }}
+    >
+      <VStack spacing={{ xs: '4', md: '6', lg: '8' }}>
+        <Text
+          variant={{ xs: 'h3', md: 'h2', lg: 'h1' }}
+          textAlign={{ xs: 'center', md: 'left' }}
         >
-          {children}
-        </DesignSystemProvider>
-      </body>
-    </html>
+          Responsive Typography
+        </Text>
+      </VStack>
+    </Container>
   );
 }
 ```
 
-### **Dynamic Theme Switching**
+## ♿ Accessibility (WCAG 2.2 AAA)
 
-```typescript
-// components/ThemeSwitcher.tsx
-'use client'; // Only needed for interactive features
+### 1. Built-in Accessibility Features
 
-import { useDesignSystem } from '@xala-technologies/ui-system';
+- **Keyboard Navigation**: Full keyboard support
+- **Screen Reader**: ARIA labels and descriptions
+- **Focus Management**: Proper focus indicators
+- **Color Contrast**: AAA compliant color ratios
+- **Motion**: Respects `prefers-reduced-motion`
 
-export function ThemeSwitcher() {
-  const {
-    currentTemplate,
-    setTemplate,
-    toggleDarkMode,
-    isDarkMode
-  } = useDesignSystem();
+### 2. Accessibility Hooks
+
+```tsx
+import { 
+  Button, 
+  useAccessibility, 
+  useFocusManagement 
+} from '@xala-technologies/ui-system';
+
+function AccessibleForm(): JSX.Element {
+  const { announceToScreenReader } = useAccessibility();
+  const { focusElement } = useFocusManagement();
+
+  const handleSubmit = (): void => {
+    // Process form
+    announceToScreenReader('Form submitted successfully');
+    focusElement('confirmation-message');
+  };
 
   return (
-    <div>
-      <select
-        value={currentTemplate}
-        onChange={(e) => setTemplate(e.target.value)}
-      >
-        <option value="base-light">Base Light</option>
-        <option value="base-dark">Base Dark</option>
-        <option value="enterprise-light">Enterprise Light</option>
-        <option value="productivity-dark">Productivity Dark</option>
-      </select>
-
-      <button onClick={toggleDarkMode}>
-        {isDarkMode ? '☀️ Light' : '🌙 Dark'} Mode
-      </button>
-    </div>
+    <Button
+      onClick={handleSubmit}
+      aria-label="Submit form with validation"
+      aria-describedby="form-help-text"
+    >
+      Submit Form
+    </Button>
   );
 }
 ```
 
-### **Bundle Optimization**
+## 📝 TypeScript Configuration (Mandatory)
 
-```typescript
-// ✅ Tree-shake friendly - import only what you need
-import { Button, Card } from '@xala-technologies/ui-system';
-
-// ✅ Lazy load platform components when needed
-const loadDesktopComponents = async () => {
-  const { Desktop } = await import('@xala-technologies/ui-system');
-  return Desktop;
-};
-
-// ✅ Dynamic feature loading
-const loadAdvancedFeatures = async () => {
-  const { Advanced } = await import('@xala-technologies/ui-system');
-  const GlobalSearch = await Advanced.GlobalSearch();
-  return GlobalSearch;
-};
-```
-
-## 🔧 **TypeScript Configuration**
-
-### **Required tsconfig.json Settings**
+### 1. Strict TypeScript Setup
 
 ```json
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES6"],
-    "allowJs": true,
+    "lib": ["dom", "dom.iterable", "ES6"],
+    "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -490,87 +481,106 @@ const loadAdvancedFeatures = async () => {
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "allowSyntheticDefaultImports": true
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
 ```
 
-## 🧪 **Testing Your Setup**
+### 2. Type-Safe Component Usage
 
-### **Basic Test Component**
+```tsx
+import type { 
+  ButtonProps, 
+  TextProps, 
+  ContainerProps 
+} from '@xala-technologies/ui-system';
 
-```typescript
-// components/TestComponent.tsx
-import { Button, Card, useTokens } from '@xala-technologies/ui-system';
+interface WelcomeCardProps {
+  title: string;
+  description: string;
+  onAction: () => void;
+  buttonProps?: Partial<ButtonProps>;
+  containerProps?: Partial<ContainerProps>;
+}
 
-export function TestComponent() {
-  const { colors, spacing } = useTokens();
-
-  console.log('Colors available:', Object.keys(colors));
-  console.log('Spacing available:', Object.keys(spacing));
-
+function WelcomeCard({ 
+  title, 
+  description, 
+  onAction, 
+  buttonProps, 
+  containerProps 
+}: WelcomeCardProps): JSX.Element {
   return (
-    <Card variant="default" padding="md">
-      <h2 style={{ color: colors.text.primary }}>UI System Test</h2>
-      <p style={{ color: colors.text.secondary }}>
-        If you can see this styled correctly, the UI System is working!
-      </p>
-      <Button
-        variant="primary"
-        onClick={() => alert('UI System is working!')}
+    <Container {...containerProps}>
+      <Text variant="h2">{title}</Text>
+      <Text variant="body1">{description}</Text>
+      <Button 
+        variant="primary" 
+        onClick={onAction}
+        {...buttonProps}
       >
-        Test Button
+        Get Started
       </Button>
-    </Card>
+    </Container>
   );
 }
 ```
 
-### **SSR Compatibility Test**
+## 🛠️ Development Tools
 
-```typescript
-// __tests__/ssr.test.tsx
-import { render } from '@testing-library/react';
-import { DesignSystemProvider, Button } from '@xala-technologies/ui-system';
+### 1. ESLint Configuration
 
-test('UI System works in SSR environment', () => {
-  const { getByText } = render(
-    <DesignSystemProvider templateId="base-light">
-      <Button>Test Button</Button>
-    </DesignSystemProvider>
-  );
-
-  expect(getByText('Test Button')).toBeInTheDocument();
-});
+```json
+{
+  "extends": [
+    "next/core-web-vitals",
+    "@typescript-eslint/recommended",
+    "@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "react-hooks/exhaustive-deps": "error"
+  }
+}
 ```
 
-## 📚 **Next Steps**
+### 2. Testing Setup
 
-### **Learn More**
+```tsx
+// test-utils.tsx
+import { render, RenderOptions } from '@testing-library/react';
+import { UISystemProvider } from '@xala-technologies/ui-system';
+import { ReactElement, ReactNode } from 'react';
 
-- **[SSR Best Practices](./ssr-best-practices.md)** - Production deployment guide
-- **[Architecture Overview](./architecture.md)** - System design and patterns
-- **[Component Documentation](./components/)** - Detailed component guides
-- **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
+interface AllTheProvidersProps {
+  children: ReactNode;
+}
 
-### **Advanced Topics**
+function AllTheProviders({ children }: AllTheProvidersProps): JSX.Element {
+  return (
+    <UISystemProvider theme="light" locale="en">
+      {children}
+    </UISystemProvider>
+  );
+}
 
-- **Custom Template Creation**: Build your own brand templates
-- **Performance Optimization**: Bundle size and runtime optimization
-- **Accessibility Features**: WCAG compliance and accessibility best practices
-- **Enterprise Integration**: Large-scale deployment patterns
+const customRender = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) => render(ui, { wrapper: AllTheProviders, ...options });
 
-## 🆘 **Need Help?**
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/xala-technologies/ui-system/issues)
-- **Discussions**: [Community support and questions](https://github.com/xala-technologies/ui-system/discussions)
-- **Documentation**: [Complete documentation site](https://ui-system.xala.dev)
-
----
-
-**Version**: 4.0.0  
-**Status**: Production Ready ✅  
+export * from '@testing-library/react';
+export { customRender as render };
 **SSR Compatibility**: Complete ✅  
 **Bundle Size**: 3.2M (optimized) 📦

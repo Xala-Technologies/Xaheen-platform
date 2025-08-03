@@ -637,7 +637,7 @@ module.exports = nextConfig;
 ### Performance Optimization
 
 ```tsx
-// Lazy load components for xaheen performance
+// Lazy load components for better performance
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@xala-technologies/ui-system';
 

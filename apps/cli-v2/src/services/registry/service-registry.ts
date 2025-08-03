@@ -386,6 +386,455 @@ export async function createCustomer(params: {
         databases: [],
         platforms: ['web'],
         tags: ['payments', 'billing', 'subscriptions', 'stripe']
+      },
+
+      // Email - Resend
+      {
+        name: 'resend',
+        type: 'email',
+        provider: 'resend',
+        version: '3.0.0',
+        description: 'Modern email API for developers',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/email.ts',
+            template: `import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY!);
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+  from = process.env.EMAIL_FROM || 'noreply@example.com'
+}: {
+  to: string | string[];
+  subject: string;
+  html?: string;
+  text?: string;
+  from?: string;
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html,
+      text
+    });
+
+    if (error) {
+      console.error('Email send error:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw error;
+  }
+}
+
+export async function sendWelcomeEmail(email: string, name: string) {
+  return sendEmail({
+    to: email,
+    subject: 'Welcome to {{name}}!',
+    html: \`
+      <h1>Welcome, \${name}!</h1>
+      <p>Thanks for signing up. We're excited to have you on board.</p>
+    \`
+  });
+}`,
+            priority: 70
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "resend": "^3.0.0"
+  }
+}`
+          }
+        ],
+        envVariables: [
+          {
+            name: 'RESEND_API_KEY',
+            description: 'Resend API key',
+            required: true,
+            type: 'secret',
+            sensitive: true
+          },
+          {
+            name: 'EMAIL_FROM',
+            description: 'Default from email address',
+            required: false,
+            type: 'string',
+            defaultValue: 'noreply@example.com'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Sign up for Resend and get your API key'
+          },
+          {
+            type: 'manual',
+            description: 'Verify your domain in Resend dashboard'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express', 'hono'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['email', 'transactional', 'notifications']
+      },
+
+      // Analytics - PostHog
+      {
+        name: 'posthog',
+        type: 'analytics',
+        provider: 'posthog',
+        version: '1.0.0',
+        description: 'Open-source product analytics',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/analytics.ts',
+            template: `import posthog from 'posthog-js';
+
+let posthogClient: ReturnType<typeof posthog.init> | null = null;
+
+export function initAnalytics() {
+  if (typeof window === 'undefined') return;
+  if (posthogClient) return posthogClient;
+
+  posthogClient = posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    loaded: (posthog) => {
+      if (process.env.NODE_ENV === 'development') posthog.debug();
+    }
+  });
+
+  return posthogClient;
+}
+
+export function trackEvent(event: string, properties?: Record<string, any>) {
+  if (!posthogClient) initAnalytics();
+  posthogClient?.capture(event, properties);
+}
+
+export function identifyUser(userId: string, properties?: Record<string, any>) {
+  if (!posthogClient) initAnalytics();
+  posthogClient?.identify(userId, properties);
+}
+
+export function resetUser() {
+  if (!posthogClient) initAnalytics();
+  posthogClient?.reset();
+}`,
+            priority: 60
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "posthog-js": "^1.0.0"
+  }
+}`
+          }
+        ],
+        envVariables: [
+          {
+            name: 'NEXT_PUBLIC_POSTHOG_KEY',
+            description: 'PostHog project API key',
+            required: true,
+            type: 'string',
+            sensitive: false
+          },
+          {
+            name: 'NEXT_PUBLIC_POSTHOG_HOST',
+            description: 'PostHog API host',
+            required: false,
+            type: 'url',
+            defaultValue: 'https://app.posthog.com'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Create a PostHog account and get your project API key'
+          },
+          {
+            type: 'manual',
+            description: 'Initialize analytics in your app entry point'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'react', 'vue'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['analytics', 'tracking', 'product-analytics']
+      },
+
+      // Monitoring - Sentry
+      {
+        name: 'sentry',
+        type: 'monitoring',
+        provider: 'sentry',
+        version: '7.0.0',
+        description: 'Error tracking and performance monitoring',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/monitoring.ts',
+            template: `import * as Sentry from '@sentry/nextjs';
+
+export function initSentry() {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    debug: process.env.NODE_ENV === 'development',
+    integrations: [
+      new Sentry.BrowserTracing(),
+      new Sentry.Replay({
+        maskAllText: false,
+        blockAllMedia: false
+      })
+    ],
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0
+  });
+}
+
+export function captureError(error: Error, context?: Record<string, any>) {
+  Sentry.captureException(error, {
+    extra: context
+  });
+}
+
+export function captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
+  Sentry.captureMessage(message, level);
+}
+
+export function setUser(user: { id: string; email?: string; username?: string }) {
+  Sentry.setUser(user);
+}
+
+export function clearUser() {
+  Sentry.setUser(null);
+}`,
+            priority: 50
+          },
+          {
+            type: 'file-create',
+            target: 'sentry.client.config.ts',
+            template: `import * as Sentry from '@sentry/nextjs';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  debug: false,
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  integrations: [
+    new Sentry.Replay({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
+});`,
+            priority: 50
+          },
+          {
+            type: 'file-create',
+            target: 'sentry.server.config.ts',
+            template: `import * as Sentry from '@sentry/nextjs';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  debug: false,
+});`,
+            priority: 50
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "@sentry/nextjs": "^7.0.0"
+  }
+}`
+          }
+        ],
+        envVariables: [
+          {
+            name: 'SENTRY_DSN',
+            description: 'Sentry Data Source Name',
+            required: true,
+            type: 'url',
+            sensitive: true
+          },
+          {
+            name: 'SENTRY_ORG',
+            description: 'Sentry organization slug',
+            required: false,
+            type: 'string'
+          },
+          {
+            name: 'SENTRY_PROJECT',
+            description: 'Sentry project slug',
+            required: false,
+            type: 'string'
+          },
+          {
+            name: 'SENTRY_AUTH_TOKEN',
+            description: 'Sentry authentication token for source maps',
+            required: false,
+            type: 'secret',
+            sensitive: true
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Create a Sentry account and project'
+          },
+          {
+            type: 'manual',
+            description: 'Configure Sentry in your next.config.js'
+          },
+          {
+            type: 'command',
+            description: 'Install Sentry wizard',
+            command: 'npx @sentry/wizard@latest -i nextjs'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['monitoring', 'error-tracking', 'performance', 'observability']
+      },
+
+      // Cache - Redis
+      {
+        name: 'redis',
+        type: 'cache',
+        provider: 'redis',
+        version: '4.0.0',
+        description: 'In-memory data structure store',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/cache.ts',
+            template: `import { createClient } from 'redis';
+
+let redisClient: ReturnType<typeof createClient> | null = null;
+
+export async function getRedisClient() {
+  if (redisClient) return redisClient;
+
+  redisClient = createClient({
+    url: process.env.REDIS_URL
+  });
+
+  redisClient.on('error', (err) => console.error('Redis Client Error', err));
+  
+  await redisClient.connect();
+  
+  return redisClient;
+}
+
+export async function cacheGet<T>(key: string): Promise<T | null> {
+  try {
+    const client = await getRedisClient();
+    const value = await client.get(key);
+    return value ? JSON.parse(value) : null;
+  } catch (error) {
+    console.error('Cache get error:', error);
+    return null;
+  }
+}
+
+export async function cacheSet(
+  key: string, 
+  value: any, 
+  expirationSeconds?: number
+): Promise<void> {
+  try {
+    const client = await getRedisClient();
+    const stringValue = JSON.stringify(value);
+    
+    if (expirationSeconds) {
+      await client.setEx(key, expirationSeconds, stringValue);
+    } else {
+      await client.set(key, stringValue);
+    }
+  } catch (error) {
+    console.error('Cache set error:', error);
+  }
+}
+
+export async function cacheDelete(key: string): Promise<void> {
+  try {
+    const client = await getRedisClient();
+    await client.del(key);
+  } catch (error) {
+    console.error('Cache delete error:', error);
+  }
+}
+
+export async function cacheFlush(): Promise<void> {
+  try {
+    const client = await getRedisClient();
+    await client.flushAll();
+  } catch (error) {
+    console.error('Cache flush error:', error);
+  }
+}`,
+            priority: 85
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "redis": "^4.0.0"
+  }
+}`
+          }
+        ],
+        envVariables: [
+          {
+            name: 'REDIS_URL',
+            description: 'Redis connection URL',
+            required: true,
+            type: 'url',
+            sensitive: true,
+            defaultValue: 'redis://localhost:6379'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Set up Redis server locally or use a cloud service'
+          },
+          {
+            type: 'manual',
+            description: 'Update REDIS_URL with your connection string'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express', 'hono'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['cache', 'redis', 'performance', 'session-store']
       }
     ];
 

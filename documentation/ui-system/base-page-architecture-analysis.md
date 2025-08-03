@@ -291,7 +291,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
    - Predictable prop interfaces
    - Reduced learning curve for developers
 
-4. **⚡ Xaheen Maintainability**
+4. **⚡ Better Maintainability**
    - Centralized Norwegian compliance logic
    - Reduced code duplication
    - Easier testing and validation

@@ -27,8 +27,8 @@ interface UISystemProviderProps {
  * Enhanced UI System Provider with Xala UI System v5.0.0 configuration
  * Provides proper SSR support, accessibility, and localization features
  * 
- * Note: The UI System v5.0.0 handles theming internally through its own context
- * and doesn't expose theme props directly on the provider level
+ * Note: Based on the actual UI System API, we use the provider without
+ * additional props as the system handles configuration internally
  */
 export function UISystemProvider({ 
   children, 

@@ -1,6 +1,6 @@
 /**
  * MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
- * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
  * ✅ ONLY semantic components from @xala-technologies/ui-system
  * ❌ NO hardcoded styling (no style prop, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography

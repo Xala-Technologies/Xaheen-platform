@@ -3,7 +3,7 @@
  * Generated with Xaheen CLI
  * 
  * MANDATORY COMPLIANCE RULES:
- * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
  * ✅ ONLY semantic components from @xala-technologies/ui-system
  * ❌ NO hardcoded styling (no style={}, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
@@ -33,19 +33,6 @@ export default async function LocalizedHomePage({ params }: PageProps): Promise<
   return (
     <Container size="full" padding="none">
       <Stack direction="vertical" gap="xl">
-        {/* Page Header with Localized Content */}
-        <Container size="lg" padding="xl">
-          <Stack direction="vertical" gap="lg" align="center">
-            <Typography variant="h1" size="xl" align="center">
-              {t('homepage.title')}
-            </Typography>
-            <Typography variant="body" size="lg" color="muted" align="center">
-              {t('homepage.subtitle')}
-            </Typography>
-          </Stack>
-        </Container>
-
-        {/* Main Homepage Content */}
         <HomePage />
       </Stack>
     </Container>

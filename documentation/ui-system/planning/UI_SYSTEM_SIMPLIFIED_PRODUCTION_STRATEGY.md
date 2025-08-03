@@ -831,7 +831,7 @@ export default function DashboardPage() {
    - ✅ Reorganized exports into logical groups (Core, Components, Advanced)
    - ✅ Lazy-loading for platform-specific components (Desktop, Mobile)
    - ✅ Dynamic imports for advanced features (GlobalSearch, FilterBar)
-   - ✅ Separated essential vs optional components for xaheen bundling
+   - ✅ Separated essential vs optional components for better bundling
 
 2. **Production Package Configuration (v4.0.0)**
    - ✅ ES Module support with proper `"type": "module"` configuration

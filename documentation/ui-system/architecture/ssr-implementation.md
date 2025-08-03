@@ -840,7 +840,7 @@ function generateComponentCSS(
 
 ### Streaming SSR
 
-Implement streaming SSR for xaheen performance:
+Implement streaming SSR for better performance:
 
 ```typescript
 export interface StreamingSSROptions {

@@ -276,3 +276,52 @@ export interface IServiceInjector {
     options?: any
   ): Promise<ServiceInjectionResult[]>;
 }
+
+// Validation types
+export const ValidationIssueSchema = z.object({
+  id: z.string(),
+  category: z.string(),
+  severity: z.enum(['error', 'warning', 'info']),
+  message: z.string(),
+  file: z.string().optional(),
+  line: z.number().optional(),
+  column: z.number().optional(),
+  suggestion: z.string().optional(),
+  fixable: z.boolean().default(false),
+  rule: z.string().optional()
+});
+
+export type ValidationIssue = z.infer<typeof ValidationIssueSchema>;
+
+export const ValidationResultSchema = z.object({
+  isValid: z.boolean(),
+  errors: z.array(ValidationIssueSchema),
+  warnings: z.array(ValidationIssueSchema),
+  fixableIssues: z.number().default(0),
+  validatedAt: z.date().default(() => new Date()),
+  metrics: z.object({
+    dependencies: z.object({
+      total: z.number(),
+      outdated: z.number(),
+      vulnerable: z.number()
+    }).optional(),
+    bundleSize: z.number().optional(),
+    typesCoverage: z.number().optional(),
+    lintIssues: z.number().optional(),
+    testCoverage: z.number().optional()
+  }).optional()
+});
+
+export type ValidationResult = z.infer<typeof ValidationResultSchema>;
+
+export const FixResultSchema = z.object({
+  fixedCount: z.number(),
+  errors: z.array(z.string()),
+  appliedFixes: z.array(z.object({
+    issueId: z.string(),
+    description: z.string(),
+    success: z.boolean()
+  }))
+});
+
+export type FixResult = z.infer<typeof FixResultSchema>;

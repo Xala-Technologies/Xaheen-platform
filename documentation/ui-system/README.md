@@ -1,37 +1,155 @@
-# 📚 UI System Documentation
+/**
+ * Responsive Design Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Professional breakpoint system
+ * - Container max-widths
+ * - Typography scaling
+ * - Spacing adjustments
+ * - Component behavior per device
+ * - Norwegian mobile patterns
+ * - Accessibility-first responsive design
+ */
 
-Complete documentation for the @xala-technologies/ui-system - A Norwegian-compliant UI component library with WCAG 2.2 AA, NSM, and GDPR compliance.
+# Xala UI System Documentation
+
+Welcome to the **Xala UI System** - a production-ready, SSR-safe, and fully accessible design system built for enterprise applications. This comprehensive guide will help you understand and implement our design system in your applications.
+
+## 🚀 Quick Navigation
+
+### Getting Started
+- [Installation & Setup](./getting-started.md)
+- [Next.js Integration Guide](./nextjs-integration.md)
+- [Architecture Overview](./architecture.md)
+
+### Core Concepts
+- [Design Tokens](./tokens.md)
+- [Theme System](./themes.md)
+- [Providers](./providers.md)
+- [Localization](./localization.md)
+
+### Components
+- [UI Components](./components/)
+- [Layout System](./layouts.md)
+- [Hooks](./hooks/)
+
+### Implementation
+- [Next.js Examples](./examples/nextjs/)
+- [Best Practices](./best-practices.md)
+- [SSR Implementation](./ssr-best-practices.md)
+
+### Advanced
+- [White-Label Theming](./white-label.md)
+- [Token Transformers](./token-transformers.md)
+- [Testing](./testing/)
+- [Troubleshooting](./troubleshooting.md)
+
+## 📋 System Requirements
+
+- **React**: 18.0.0 or higher
+- **TypeScript**: 4.9.0 or higher
+- **Node.js**: 18.0.0 or higher
+- **Next.js**: 13.0.0 or higher (for Next.js applications)
+- **Package Manager**: pnpm (recommended)
+
+## ✨ Key Features
+
+### 🔒 **Enterprise-Ready**
+- **SSR-Safe**: Full server-side rendering support with hydration safety
+- **Type-Safe**: Complete TypeScript coverage with strict mode
+- **Production-Tested**: Battle-tested in enterprise applications
+- **Tree-Shakeable**: Optimized bundle sizes with selective imports
+
+### ♿ **Accessibility First**
+- **WCAG 2.2 AAA**: Full compliance with accessibility standards
+- **Screen Reader**: Complete ARIA support
+- **Keyboard Navigation**: Full keyboard accessibility
+- **Focus Management**: Proper focus handling and indicators
+
+### 🎨 **Design System**
+- **Design Tokens**: Systematic approach to design decisions
+- **White-Label Ready**: Complete theming and branding support
+- **Responsive**: Mobile-first design with Norwegian mobile patterns
+- **8pt Grid System**: Consistent spacing and layout system
+
+### 🌍 **Internationalization**
+- **Multi-Language**: English, Norwegian Bokmål, French, Arabic
+- **RTL Support**: Right-to-left language support
+- **Localization Hooks**: Easy integration with translation systems
+- **Cultural Adaptation**: Norwegian-specific patterns and behaviors
+
+### 🏗️ **Architecture**
+- **SOLID Principles**: Clean, maintainable, and extensible code
+- **Component Composition**: Flexible and reusable components
+- **Provider Pattern**: Centralized state and configuration management
+- **Hook-Based**: Modern React patterns with custom hooks
+
+## 📦 Installation
+
+```bash
+# Using pnpm (recommended)
+pnpm add @xala-technologies/ui-system
+
+# Using npm
+npm install @xala-technologies/ui-system
+
+# Using yarn
+yarn add @xala-technologies/ui-system
+```
 
 ## 🚀 Quick Start
 
-### New Users
+```tsx
+import { UISystemProvider, Button, Text } from '@xala-technologies/ui-system';
+import { useTranslation } from 'next-i18next';
 
-- **[Getting Started Guide](./getting-started.md)** - Installation, basic setup, and first components
-- **[Architecture Overview](./architecture.md)** - System design and architectural patterns
-- **[v5 Architecture](./v5-architecture.md)** 🆕 - v5.0.0 improvements and migration guide
-- **[SSR Best Practices](./ssr-best-practices.md)** - Server-side rendering guidelines
+function App(): JSX.Element {
+  const { t } = useTranslation();
+  
+  return (
+    <UISystemProvider>
+      <Text variant="h1">{t('welcome.title')}</Text>
+      <Button variant="primary" onClick={() => console.log('clicked')}>
+        {t('actions.getStarted')}
+      </Button>
+    </UISystemProvider>
+  );
+}
+```
 
-### Developers
+## 📚 Documentation Structure
 
-- **[Component Documentation](./components/README.md)** - Individual component guides
-- **[Token Transformers](./token-transformers.md)** 🆕 - Token transformation pipeline and generators
-- **[AI Integration](./ai-integration.md)** - AI development patterns and tools
-- **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
+This documentation is organized into the following sections:
 
-### What's New in v5.0.0
+1. **Getting Started**: Installation, setup, and basic usage
+2. **Core Concepts**: Understanding tokens, themes, and providers
+3. **Components**: Detailed component documentation with examples
+4. **Implementation**: Real-world usage patterns and best practices
+5. **Advanced**: White-labeling, customization, and advanced features
 
-- ✅ **Unified UiProvider** - Single context provider for all UI features
-- ✅ **Token Transformation Pipeline** - TypeScript, CSS, Tailwind, and JSON Schema generators
-- ✅ **Advanced Token Features** - Variant maps, state-based tokens, responsive adjustments
-- ✅ **Theme Management** - Smooth transitions, white labeling, and versioning
-- ✅ **Token Operations** - Serialization, versioning, and diffing
-- ✅ **81.3% Component Migration** - Most components now use the token system
+## 🆘 Support
 
-## 📖 Documentation Structure
+For questions and support:
 
-### 📋 Planning & Strategy
+- Check our [Troubleshooting Guide](./troubleshooting.md)
+- Review [Best Practices](./best-practices.md)
+- Contact the development team
 
-**[docs/planning/](./planning/README.md)**
+## 📄 License
 - Architecture roadmap and future planning
 - Production strategy and design decisions
 - Long-term technical vision
