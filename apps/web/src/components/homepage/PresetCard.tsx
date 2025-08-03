@@ -56,7 +56,6 @@ export function PresetCard({
   onSelect,
 }: PresetCardProps): React.JSX.Element {
   const { t } = useLocalization();
-  const { colors, spacing } = useTokens();
 
   const handleClick = (): void => {
     onSelect(preset);

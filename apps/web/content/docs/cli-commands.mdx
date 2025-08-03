@@ -7,456 +7,502 @@ description: Complete reference for all Xaheen CLI commands and options
 
 | Command | Description |
 |---------|-------------|
-| `init` (default) | Create a new Xaheen project |
-| `add` | Add addons or deployment configurations to existing projects |
-| `sponsors` | Display project sponsors |
+| `create` | Create a new Xaheen project with intelligent service bundles |
+| `add` | Add services or features to existing projects |
+| `remove` | Remove services from projects |
+| `validate` | Check UI compliance and project health |
+| `bundle` | Manage service bundles |
+| `service` | Manage individual services |
+| `deploy` | Deploy your application |
 | `docs` | Open documentation in browser |
-| `builder` | Open web-based stack builder |
+| `sponsors` | Display project sponsors |
 
 ---
 
-## `init` - Create Project (Default)
+## `create` - Create Project
 
-The primary command for creating new Xaheen projects.
+The primary command for creating new Xaheen projects with pre-configured service bundles.
 
 ### Basic Usage
 
 ```bash
-# Interactive setup
-npx xaheen@latest
+# Interactive setup (recommended)
+xaheen create
 
 # With project name
-npx xaheen@latest my-project
+xaheen create my-project
 
-# With specific directory
-npx xaheen@latest ./path/to/project
+# Use specific preset
+xaheen create my-saas --preset saas-professional
 
-# Use current directory
-npx xaheen@latest .
+# Custom bundles
+xaheen create my-app --bundles auth:enterprise,billing:marketplace
 ```
 
-### Flags Reference
+### Service-Based Options
 
-#### General Options
+#### Preset Selection
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--yes, -y` | boolean | `false` | Skip prompts, use defaults |
-| `--help, -h` | boolean | - | Show help information |
-| `--version, -V` | boolean | - | Show CLI version |
+| Flag | Values | Description |
+|------|--------|-------------|
+| `--preset` | `saas-starter`, `saas-professional`, `saas-enterprise`, `landing-page`, `marketplace`, `fintech`, `healthcare` | Pre-configured service bundles |
 
-#### Frontend Options
+**Examples:**
+```bash
+# SaaS Starter (MVP, $0-10k MRR)
+xaheen create my-mvp --preset saas-starter
+
+# SaaS Professional (Scaling, $10k-100k MRR)
+xaheen create my-saas --preset saas-professional
+
+# Enterprise SaaS ($100k+ MRR)
+xaheen create my-enterprise --preset saas-enterprise
+```
+
+#### Bundle Selection
+
+| Flag | Values | Description |
+|------|--------|-------------|
+| `--bundles` | Service bundle combinations | Mix and match service bundles |
+
+**Bundle Format:** `category:level` or bundle names
+
+**Examples:**
+```bash
+# Enterprise auth with marketplace billing
+xaheen create my-app --bundles auth:enterprise,billing:marketplace
+
+# Norwegian compliance bundle
+xaheen create my-gov-app --bundles norwegian-compliance
+
+# Multiple bundles
+xaheen create my-platform --bundles saas-essentials,gdpr-compliance,analytics-pro
+```
+
+### Core Service Options
+
+#### Authentication
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--frontend` | Multiple values | `tanstack-router` | Frontend frameworks to include |
-
-**Available Frontend Values:**
-- `tanstack-router` - React with TanStack Router
-- `react-router` - React with React Router
-- `tanstack-start` - React with TanStack Start (SSR)
-- `next` - Next.js framework
-- `nuxt` - Vue.js with Nuxt
-- `svelte` - SvelteKit
-- `solid` - SolidJS
-- `native-nativewind` - React Native with NativeWind
-- `native-unistyles` - React Native with Unistyles
-- `none` - No frontend
+| `--auth` | `better-auth`, `clerk`, `auth0`, `bankid`, `vipps`, `none` | Based on preset | Authentication provider |
 
 **Examples:**
 ```bash
-# Single web frontend
---frontend tanstack-router
-
-# Web + Mobile
---frontend tanstack-router native-nativewind
-
-# Multiple frontends
---frontend next solid
-
-# No frontend (API-only)
---frontend none
+--auth clerk              # Clerk with enterprise features
+--auth bankid            # Norwegian BankID
+--auth auth0             # Auth0 with SSO/SAML
 ```
 
-#### Backend Options
+#### Database
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--backend` | Single value | `hono` | Backend framework |
-
-**Available Backend Values:**
-- `hono` - Hono web framework
-- `express` - Express.js
-- `fastify` - Fastify framework
-- `elysia` - Elysia framework
-- `next` - Next.js API routes
-- `convex` - Convex backend-as-a-service
-- `none` - No backend
+| `--database` | `postgres`, `mysql`, `mongodb`, `sqlite` | `postgres` | Database system |
+| `--orm` | `drizzle`, `prisma`, `mongoose` | `drizzle` | ORM/Database toolkit |
 
 **Examples:**
 ```bash
---backend hono
---backend convex
---backend none
+--database postgres --orm drizzle
+--database mongodb --orm mongoose
 ```
 
-#### Runtime Options
+#### Payments
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--runtime` | Single value | `bun` | Runtime environment |
-
-**Available Runtime Values:**
-- `bun` - Bun runtime
-- `node` - Node.js runtime
-- `workers` - Cloudflare Workers (Hono only)
-- `none` - No runtime (Convex/none backend)
+| `--payments` | `stripe`, `vipps-pay`, `paddle`, `lemonsqueezy`, `none` | Based on preset | Payment provider |
 
 **Examples:**
 ```bash
---runtime bun
---runtime workers  # Only with --backend hono
+--payments stripe        # Stripe with subscriptions
+--payments vipps-pay    # Norwegian Vipps payments
 ```
 
-#### Database Options
+### Infrastructure Options
+
+#### Deployment
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--database` | Single value | `sqlite` | Database type |
+| `--deploy` | `vercel`, `aws`, `azure`, `cloudflare`, `docker` | `vercel` | Deployment target |
 
-**Available Database Values:**
-- `sqlite` - SQLite database
-- `postgres` - PostgreSQL
-- `mysql` - MySQL
-- `mongodb` - MongoDB
-- `none` - No database
-
-**Examples:**
-```bash
---database postgres
---database none
-```
-
-#### ORM Options
+#### Monitoring & Analytics
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--orm` | Single value | `drizzle` | ORM/Database toolkit |
+| `--monitoring` | `sentry`, `datadog`, `newrelic` | `sentry` | Error tracking |
+| `--analytics` | `posthog`, `mixpanel`, `google-analytics` | `posthog` | Product analytics |
 
-**Available ORM Values:**
-- `drizzle` - Drizzle ORM (TypeScript-first)
-- `prisma` - Prisma ORM (feature-rich)
-- `mongoose` - Mongoose (MongoDB only)
-- `none` - No ORM
+### Compliance Options
 
-**Examples:**
-```bash
---orm drizzle
---orm prisma
---orm none
-```
-
-#### API Layer Options
-
-| Flag | Values | Default | Description |
-|------|--------|---------|-------------|
-| `--api` | Single value | `trpc` | API layer type |
-
-**Available API Values:**
-- `trpc` - tRPC (end-to-end type safety)
-- `orpc` - oRPC (OpenAPI compatible)
-- `none` - No API layer
+| Flag | Values | Description |
+|------|--------|-------------|
+| `--compliance` | `gdpr`, `hipaa`, `pci-dss`, `soc2`, `iso27001`, `nsm` | Compliance standards |
 
 **Examples:**
 ```bash
---api trpc
---api orpc
---api none
+# GDPR compliant
+xaheen create my-app --compliance gdpr
+
+# Multiple compliance standards
+xaheen create my-healthtech --compliance gdpr,hipaa
+
+# Norwegian security
+xaheen create my-gov-app --compliance nsm,gdpr
 ```
 
-#### Authentication Options
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--auth` | boolean | `true` | Enable authentication |
-| `--no-auth` | boolean | - | Disable authentication |
-
-**Examples:**
-```bash
---auth        # Enable auth
---no-auth     # Disable auth
-```
-
-#### Addons Options
-
-| Flag | Values | Default | Description |
-|------|--------|---------|-------------|
-| `--addons` | Multiple values | `turborepo` | Additional features |
-
-**Available Addon Values:**
-- `turborepo` - Turborepo build system
-- `pwa` - Progressive Web App support
-- `tauri` - Desktop app with Tauri
-- `biome` - Biome linter/formatter
-- `husky` - Git hooks with Husky
-- `starlight` - Documentation site
-- `none` - No addons
-
-**Examples:**
-```bash
---addons turborepo pwa
---addons biome husky
---addons none
-```
-
-#### Examples Options
-
-| Flag | Values | Default | Description |
-|------|--------|---------|-------------|
-| `--examples` | Multiple values | `[]` | Example applications |
-
-**Available Example Values:**
-- `todo` - Todo CRUD application
-- `ai` - AI chat interface
-- `none` - No examples
-
-**Examples:**
-```bash
---examples todo
---examples todo ai
---examples none
-```
-
-#### Database Setup Options
-
-| Flag | Values | Default | Description |
-|------|--------|---------|-------------|
-| `--db-setup` | Single value | `none` | Database hosting setup |
-
-**Available Database Setup Values:**
-- `turso` - Turso SQLite hosting
-- `neon` - Neon PostgreSQL
-- `supabase` - Supabase PostgreSQL
-- `prisma-postgres` - Prisma PostgreSQL
-- `mongodb-atlas` - MongoDB Atlas
-- `d1` - Cloudflare D1 (Workers only)
-- `docker` - Local Docker setup
-- `none` - Manual setup
-
-**Examples:**
-```bash
---db-setup neon
---db-setup docker
---db-setup none
-```
-
-#### Deployment Options
-
-| Flag | Values | Default | Description |
-|------|--------|---------|-------------|
-| `--web-deploy` | Single value | `none` | Web deployment setup |
-
-**Available Deployment Values:**
-- `workers` - Cloudflare Workers
-- `none` - No deployment setup
-
-**Examples:**
-```bash
---web-deploy workers
---web-deploy none
-```
-
-#### Project Management Options
+### Project Management Options
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--git` | boolean | `true` | Initialize git repository |
-| `--no-git` | boolean | - | Skip git initialization |
 | `--install` | boolean | `true` | Install dependencies |
-| `--no-install` | boolean | - | Skip dependency installation |
-| `--package-manager` | string | auto-detect | Package manager to use |
-
-**Package Manager Values:**
-- `npm` - Use npm
-- `pnpm` - Use pnpm
-- `bun` - Use bun
-
-**Examples:**
-```bash
---git --install --package-manager pnpm
---no-git --no-install
-```
+| `--package-manager` | string | auto-detect | Package manager (npm, pnpm, bun) |
 
 ---
 
-## `add` - Add to Existing Project
+## `add` - Add Services
 
-Add addons or deployment configurations to existing Xaheen projects.
+Add new services or features to existing Xaheen projects.
 
 ### Usage
 
 ```bash
-# Interactive addon selection
-npx xaheen@latest add
+# Add service interactively
+xaheen add
 
-# Add specific addons
-npx xaheen@latest add --addons pwa tauri
+# Add specific service with configuration
+xaheen add billing --level enterprise
 
-# Add deployment
-npx xaheen@latest add --web-deploy workers
+# Add compliance features
+xaheen add compliance --profile gdpr
 
-# Add both
-npx xaheen@latest add --addons biome --web-deploy workers
+# Add authentication provider
+xaheen add auth --provider bankid
 ```
 
-### Flags
+### Service Categories
 
-| Flag | Values | Description |
-|------|--------|-------------|
-| `--addons` | Multiple values | Addons to add (same as init) |
-| `--web-deploy` | Single value | Deployment to add |
-| `--project-dir` | string | Target project directory (default: current) |
-| `--install` | boolean | Install dependencies after adding |
-| `--no-install` | boolean | Skip dependency installation |
-| `--package-manager` | string | Package manager to use |
-
-### Examples
-
+#### Authentication
 ```bash
-# Add PWA support to current project
-npx xaheen@latest add --addons pwa
+xaheen add auth --provider clerk
+xaheen add auth --provider bankid --features mfa,biometric
+```
 
-# Add multiple addons with dependency installation
-npx xaheen@latest add --addons biome husky --install
+#### Billing & Payments
+```bash
+xaheen add billing --level starter      # Basic Stripe
+xaheen add billing --level professional # Subscriptions + Portal
+xaheen add billing --level enterprise   # Connect + Invoicing
+```
 
-# Add to specific project directory
-npx xaheen@latest add --project-dir ./my-project --addons tauri
+#### Compliance
+```bash
+xaheen add compliance --profile gdpr
+xaheen add compliance --profile hipaa
+xaheen add compliance --profile norwegian
+```
+
+#### Infrastructure
+```bash
+xaheen add cache --provider redis
+xaheen add queue --provider bullmq
+xaheen add search --provider algolia
+xaheen add storage --provider s3
+```
+
+#### Communication
+```bash
+xaheen add email --provider resend
+xaheen add sms --provider twilio
+xaheen add push --provider pusher
 ```
 
 ---
 
-## `sponsors` - View Sponsors
+## `remove` - Remove Services
 
-Display Xaheen project sponsors.
+Remove services from your project safely.
 
 ### Usage
 
 ```bash
-npx xaheen@latest sponsors
+# Remove service interactively
+xaheen remove
+
+# Remove specific service
+xaheen remove auth
+
+# Remove with cleanup
+xaheen remove billing --cleanup
 ```
 
-Shows a list of project sponsors with their GitHub profiles and websites.
+### Options
+
+| Flag | Type | Description |
+|------|------|-------------|
+| `--cleanup` | boolean | Remove all related code and configs |
+| `--dry-run` | boolean | Preview changes without applying |
 
 ---
 
-## `docs` - Open Documentation
+## `validate` - Validate Project
 
-Open Xaheen documentation in your default browser.
+Check UI compliance, service configuration, and project health.
 
 ### Usage
 
 ```bash
-npx xaheen@latest docs
+# Validate entire project
+xaheen validate
+
+# Validate specific directory
+xaheen validate src/components
+
+# Generate compliance report
+xaheen validate --report
+
+# Auto-fix violations
+xaheen validate --fix
 ```
 
-Opens: https://Xaheen.dev/docs
+### Options
+
+| Flag | Type | Description |
+|------|------|-------------|
+| `--profile` | string | Compliance profile (minimal, standard, strict, enterprise) |
+| `--fix` | boolean | Auto-fix violations where possible |
+| `--report` | boolean | Generate detailed report |
+| `--format` | string | Report format (markdown, html, json) |
+
+### Validation Rules
+
+- **UI Compliance**: Xala UI System v5 rules
+- **Accessibility**: WCAG 2.2 AAA standards
+- **Security**: OWASP best practices
+- **Performance**: Bundle size, load time
+- **Dependencies**: Version conflicts, vulnerabilities
 
 ---
 
-## `builder` - Open Stack Builder
+## `bundle` - Bundle Management
 
-Open the web-based interactive stack builder.
+Manage and explore service bundles.
 
 ### Usage
 
 ```bash
-npx xaheen@latest builder
+# List available bundles
+xaheen bundle list
+
+# Show bundle details
+xaheen bundle info saas-professional
+
+# Create custom bundle
+xaheen bundle create my-bundle
+
+# Extend existing bundle
+xaheen bundle extend saas-starter --add ai:openai
+
+# Compare bundles
+xaheen bundle compare saas-starter saas-professional
 ```
 
-Opens: https://Xaheen.dev/new
+### Subcommands
 
-The web builder provides a visual interface for configuring your stack and generates the corresponding CLI command.
+| Command | Description |
+|---------|-------------|
+| `list` | List all available bundles |
+| `info <bundle>` | Show detailed bundle information |
+| `create` | Create custom bundle interactively |
+| `extend <bundle>` | Extend existing bundle |
+| `compare <b1> <b2>` | Compare two bundles |
+| `validate <file>` | Validate bundle configuration |
+
+---
+
+## `service` - Service Management
+
+Explore and manage individual services.
+
+### Usage
+
+```bash
+# List all services
+xaheen service list
+
+# List by category
+xaheen service list --category auth
+
+# Show service details
+xaheen service info stripe
+
+# Search services
+xaheen service search "norwegian"
+```
+
+### Subcommands
+
+| Command | Description |
+|---------|-------------|
+| `list` | List available services |
+| `info <service>` | Show service details |
+| `search <query>` | Search services |
+| `compatibility <service>` | Check service compatibility |
+
+---
+
+## `deploy` - Deploy Application
+
+Deploy your application to various platforms.
+
+### Usage
+
+```bash
+# Deploy interactively
+xaheen deploy
+
+# Deploy to specific platform
+xaheen deploy vercel
+xaheen deploy aws
+xaheen deploy docker
+```
+
+### Platforms
+
+| Platform | Description |
+|----------|-------------|
+| `vercel` | Deploy to Vercel |
+| `aws` | Deploy to AWS (EC2, ECS, Lambda) |
+| `azure` | Deploy to Azure |
+| `cloudflare` | Deploy to Cloudflare Workers |
+| `docker` | Generate Docker configuration |
+| `kubernetes` | Generate K8s manifests |
 
 ---
 
 ## Complete Examples
 
-### Full-Stack Web Application
+### SaaS Application with All Features
 
 ```bash
-npx xaheen@latest my-webapp \
-  --frontend tanstack-router \
-  --backend hono \
-  --runtime bun \
+xaheen create my-saas \
+  --preset saas-professional \
+  --auth clerk \
+  --payments stripe \
   --database postgres \
-  --orm drizzle \
-  --api trpc \
-  --auth \
-  --db-setup neon \
-  --addons pwa turborepo \
-  --examples todo ai
+  --monitoring datadog \
+  --compliance gdpr,soc2 \
+  --deploy vercel
 ```
 
-### Mobile + Web Application
+### Norwegian Government Application
 
 ```bash
-npx xaheen@latest my-mobile-app \
-  --frontend tanstack-router native-nativewind \
-  --backend hono \
-  --database sqlite \
-  --orm drizzle \
-  --auth \
-  --db-setup turso \
-  --addons turborepo
+xaheen create kommune-portal \
+  --bundles norwegian-compliance,saas-essentials \
+  --auth bankid \
+  --payments vipps-pay \
+  --compliance nsm,gdpr \
+  --deploy azure
 ```
 
-### Cloudflare Workers Project
+### Marketplace Platform
 
 ```bash
-npx xaheen@latest my-workers-app \
-  --frontend tanstack-router \
-  --backend hono \
-  --runtime workers \
-  --database sqlite \
-  --orm drizzle \
-  --db-setup d1 \
-  --web-deploy workers
-```
-
-### API-Only Project
-
-```bash
-npx xaheen@latest my-api \
-  --frontend none \
-  --backend fastify \
-  --runtime node \
+xaheen create my-marketplace \
+  --preset marketplace \
+  --bundles multi-vendor,stripe-connect \
+  --auth auth0 \
   --database postgres \
-  --orm prisma \
-  --api trpc \
-  --db-setup docker
+  --cache redis \
+  --queue rabbitmq
 ```
 
-### Quick Defaults
+### Healthcare Application
 
 ```bash
-# Use all defaults with immediate setup
-npx xaheen@latest my-project --yes
-
-# Convex full-stack (automatically configures compatible options)
-npx xaheen@latest my-convex-app --backend convex
+xaheen create health-platform \
+  --preset healthcare \
+  --compliance hipaa,gdpr \
+  --auth auth0 \
+  --database postgres \
+  --monitoring sentry \
+  --deploy aws
 ```
 
 ---
 
-## Compatibility Notes
+## Environment Variables
 
-Some options have compatibility requirements:
+Each service comes with required environment variables. After project creation:
 
-- **Cloudflare Workers**: Only with `--backend hono`, `--orm drizzle`, `--runtime workers`
-- **MongoDB**: Requires `--orm mongoose` or `--orm prisma`
-- **Convex**: Incompatible with custom database/ORM/API options
-- **PWA**: Requires compatible web frontend
-- **Tauri**: Requires compatible web frontend
-- **AI Examples**: Not compatible with `--backend elysia` or `--frontend solid`
+```bash
+# Copy environment template
+cp .env.example .env.local
 
-The CLI will validate compatibility and show helpful error messages for invalid combinations.
+# Required variables will be documented in .env.example
+```
+
+Common environment variables:
+- `DATABASE_URL` - Database connection string
+- `AUTH_SECRET` - Authentication secret key
+- `STRIPE_SECRET_KEY` - Stripe API key
+- `RESEND_API_KEY` - Email service key
+
+---
+
+## Troubleshooting
+
+### Service Conflicts
+
+If services conflict:
+```bash
+# Check compatibility
+xaheen service compatibility clerk better-auth
+
+# Force specific service
+xaheen create my-app --auth clerk --force
+```
+
+### Bundle Issues
+
+```bash
+# Validate custom bundle
+xaheen bundle validate my-bundle.json
+
+# Reset to default bundle
+xaheen create my-app --preset saas-starter --reset
+```
+
+### Validation Errors
+
+```bash
+# Get detailed error report
+xaheen validate --verbose
+
+# Fix specific rule violations
+xaheen validate --fix --rule no-raw-html
+```
+
+---
+
+## Getting Help
+
+```bash
+# Show command help
+xaheen --help
+xaheen create --help
+
+# Open documentation
+xaheen docs
+
+# Check version
+xaheen --version
+```
+
+For more help:
+- 📚 [Documentation](https://xaheen.dev/docs)
+- 💬 [Discord Community](https://discord.gg/xaheen)
+- 🐛 [GitHub Issues](https://github.com/xala-technologies/xaheen/issues)

@@ -8,27 +8,27 @@
  * @since 2025-01-03
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BundleResolver } from './bundle-resolver';
 import { EnhancedServiceRegistry } from '../core/enhanced-service-registry';
 import type { ServiceBundle, ServiceTemplate, BundleResolutionOptions } from '../schemas';
 
 // Mock service registry
 const mockServiceRegistry = {
-  initialize: jest.fn(),
-  getTemplate: jest.fn(),
-  hasTemplate: jest.fn(),
-  listTemplates: jest.fn(),
-  registerTemplate: jest.fn(),
-  updateTemplate: jest.fn(),
-  removeTemplate: jest.fn()
+  initialize: vi.fn(),
+  getTemplate: vi.fn(),
+  hasTemplate: vi.fn(),
+  listTemplates: vi.fn(),
+  registerTemplate: vi.fn(),
+  updateTemplate: vi.fn(),
+  removeTemplate: vi.fn()
 } as any;
 
 describe('BundleResolver', () => {
   let resolver: BundleResolver;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     resolver = new BundleResolver(mockServiceRegistry);
   });
 

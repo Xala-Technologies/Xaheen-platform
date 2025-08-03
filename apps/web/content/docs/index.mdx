@@ -1,118 +1,216 @@
 ---
 title: Getting Started
-description: A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations
+description: Build production-ready SaaS applications with Xaheen's intelligent service architecture
 ---
-
-> ⚠️ **Warning:** Documentation is a work in progress.
 
 ## What is Xaheen?
 
-Xaheen is designed to eliminate the complexity of setting up modern TypeScript projects. Instead of spending hours configuring build tools, type systems, databases, and deployment pipelines, you can get a production-ready project structure in minutes.
-
-### Key Features
-
-- **🏗️ Full-Stack Ready**: Choose from multiple frontend and backend frameworks
-- **🔒 End-to-End Type Safety**: TypeScript across your entire application stack
-- **🗄️ Database Integration**: Support for SQLite, PostgreSQL, MySQL, and MongoDB
-- **🔐 Built-in Authentication**: Email/password auth with Xaheen-Auth
-- **📱 Multi-Platform**: Web, mobile (React Native), and desktop (Tauri) support
-- **☁️ Deployment Ready**: Configured for modern hosting platforms
-- **⚡ Modern Tooling**: Latest versions of your favorite tools and frameworks
-
-### Supported Technologies
-
-#### Frontend Frameworks
-- **React** with TanStack Router or React Router
-- **Next.js** - Full-stack React framework
-- **SvelteKit** - Web framework for Svelte
-- **Nuxt** - Vue.js framework
-- **SolidJS** - Performant reactive framework
-- **TanStack Start** - SSR with TanStack Router
-- **React Native** - Mobile development with Expo
-
-#### Backend Frameworks
-- **Hono** - Lightweight, ultrafast web framework
-- **Express** - Popular Node.js framework
-- **Fastify** - Fast, low-overhead framework
-- **Elysia** - Type-safe, high-performance framework
-- **Convex** - Reactive backend-as-a-service
-- **Next.js API Routes** - Full-stack React
-
-#### Databases & ORMs
-- **Databases**: SQLite/Turso, PostgreSQL, MySQL, MongoDB
-- **ORMs**: Drizzle (TypeScript-first), Prisma (feature-rich), Mongoose
-- **Hosting**: Neon, Supabase, MongoDB Atlas, Cloudflare D1
-
-#### API Layers
-- **tRPC** - End-to-end type-safe APIs
-- **oRPC** - OpenAPI-compatible type-safe APIs
+Xaheen is a modern CLI tool that helps you create production-ready SaaS applications with pre-configured service bundles, enterprise-grade security, and built-in compliance. Instead of spending weeks setting up authentication, payments, and infrastructure, Xaheen gives you a complete SaaS foundation in minutes.
 
 ### Why Choose Xaheen?
 
-#### Traditional Setup Problems
-- ⏰ Hours of configuration and setup
-- 🔧 Complex toolchain integration
-- 📚 Overwhelming technology choices
-- 🐛 Configuration bugs and compatibility issues
-- 🏗️ Inconsistent project structures
+#### 🚀 Service-Based Architecture
+Choose business capabilities, not individual technologies. Our intelligent bundles include:
+- **Authentication**: Better Auth, Clerk, Auth0, BankID
+- **Payments**: Stripe, Vipps, Paddle
+- **Database**: PostgreSQL, MySQL, MongoDB
+- **Infrastructure**: Redis, RabbitMQ, Docker
+- **Monitoring**: Sentry, DataDog, PostHog
 
-#### Xaheen Solutions
-- ⚡ **Quick Setup**: Get started in under 2 minutes
-- 🎯 **Curated Choices**: Pre-selected, compatible technology combinations
-- 📋 **Best Practices**: Industry-standard configurations out of the box
-- 🔄 **Consistent Structure**: Standardized monorepo organization
-- 🧪 **Battle-Tested**: Configurations used in production applications
+#### 🎯 SaaS-First Design
+Built specifically for SaaS applications:
+- Multi-tenancy support
+- Subscription billing & customer portals
+- Team management & RBAC
+- Admin dashboards
+- Usage analytics & reporting
 
-## Quick Example
+#### 🛡️ Enterprise Ready
+Production-grade from day one:
+- GDPR, HIPAA, SOC2 compliance
+- SSO/SAML authentication
+- Audit logging & security scanning
+- Multi-region deployment
+- 24/7 monitoring templates
+
+#### 🎨 Xala UI System v5
+Strict UI compliance ensures:
+- WCAG AAA accessibility
+- Consistent design tokens
+- Built-in localization (EN, NO, FR, AR)
+- RTL support
+- No raw HTML elements
+
+### Quick Example
 
 ```bash
-# Create a new project
-npx xaheen@latest my-app
+# Install Xaheen CLI
+npm install -g @xala-technologies/xaheen
 
-# Choose your stack interactively or use flags
-npx xaheen@latest my-app \
-  --frontend tanstack-router \
-  --backend hono \
-  --database postgres \
-  --orm drizzle \
-  --auth \
-  --addons pwa turborepo
+# Create a new SaaS application
+xaheen create my-saas --preset saas-professional
+
+# Or use interactive mode for guided setup
+xaheen create
 ```
 
-## Project Types
+## Service Bundles
 
-Xaheen supports various project configurations:
+### SaaS Starter ($0-10k MRR)
+Perfect for MVPs and early-stage startups:
+- PostgreSQL database
+- Better Auth authentication  
+- Stripe subscriptions
+- Email notifications (Resend)
+- Analytics & monitoring
 
-### Full-Stack Web Applications
-Perfect for modern web apps with React, Vue, or Svelte frontends backed by type-safe APIs.
+### SaaS Professional ($10k-100k MRR)
+For growing SaaS companies:
+- All Starter features
+- Redis caching
+- Message queuing (RabbitMQ)
+- Search capabilities
+- GDPR compliance
+- Team management
 
-### Mobile Applications
-Build React Native apps with Expo, sharing type definitions with your backend.
+### SaaS Enterprise ($100k+ MRR)
+For large-scale applications:
+- All Professional features
+- SSO/SAML authentication
+- Advanced monitoring (DataDog)
+- Multi-region support
+- Dedicated support templates
+- Custom SLAs
 
-### Desktop Applications
-Create cross-platform desktop apps using Tauri with your web frontend.
+## Key Features
 
-### API-Only Projects
-Build standalone APIs and microservices with your preferred backend framework.
+### ✅ Complete Authentication
+- Multiple providers (OAuth, magic links, passkeys)
+- Multi-factor authentication
+- Session management
+- Role-based access control
+- Norwegian BankID support
 
-### Monorepo Projects
-Organize multiple applications (web, mobile, API) in a single repository with shared packages.
+### 💳 Billing & Subscriptions
+- Subscription management
+- Usage-based billing
+- Customer portal
+- Invoice generation
+- Multiple payment providers
+
+### 🏗️ Production Infrastructure
+- Auto-scaling architecture
+- Database clustering
+- Caching layers
+- Message queuing
+- Background jobs
+
+### 🔒 Security & Compliance
+- GDPR data protection
+- WCAG AAA accessibility
+- Security scanning
+- Audit logging
+- End-to-end encryption
+
+## Project Structure
+
+```
+my-saas/
+├── apps/
+│   ├── web/          # Next.js frontend with Xala UI
+│   └── api/          # Backend API server
+├── packages/
+│   ├── ui/           # Shared UI components
+│   ├── auth/         # Authentication logic
+│   └── db/           # Database schemas
+├── services/
+│   ├── billing/      # Payment integration
+│   ├── email/        # Notification templates
+│   └── analytics/    # Usage tracking
+└── config/
+    ├── env/          # Environment configs
+    └── deploy/       # Deployment scripts
+```
+
+## Quick Start
+
+### 1. Install Xaheen
+
+```bash
+npm install -g @xala-technologies/xaheen
+# or
+bun add -g @xala-technologies/xaheen
+```
+
+### 2. Create Your Project
+
+```bash
+# Interactive mode (recommended)
+xaheen create
+
+# Or use a preset
+xaheen create my-saas --preset saas-professional
+```
+
+### 3. Configure Services
+
+```bash
+# Copy environment template
+cd my-saas
+cp .env.example .env.local
+
+# Add your service keys:
+# - DATABASE_URL
+# - AUTH_SECRET
+# - STRIPE_SECRET_KEY
+# - RESEND_API_KEY
+```
+
+### 4. Start Development
+
+```bash
+# Install dependencies
+bun install
+
+# Start development server
+bun dev
+```
+
+Your application will be available at:
+- Frontend: http://localhost:3000
+- API: http://localhost:3001
 
 ## Who Should Use Xaheen?
 
-- **Indie Developers**: Quickly prototype and build full-stack applications
-- **Startups**: Get to market faster with production-ready project structure
-- **Teams**: Standardize project setup across your organization
-- **Students**: Learn modern full-stack development with best practices
-- **Agencies**: Rapidly scaffold client projects with consistent quality
+- **SaaS Founders**: Launch your MVP faster with production-ready infrastructure
+- **Enterprises**: Build compliant applications with security built-in
+- **Agencies**: Deliver client projects with consistent quality
+- **Developers**: Focus on features, not configuration
+- **Teams**: Standardize your tech stack across projects
 
 ## What's Next?
 
-Ready to get started? Check out our [Quick Start Guide](/docs/quick-start) to create your first Xaheen project, or explore the [Configuration Options](/docs/frontend) to learn about all available technologies and features.
+Ready to dive deeper? Explore our comprehensive documentation:
+
+- 📖 [CLI Commands](/docs/cli-commands) - Learn all available commands
+- 🏗️ [Service Architecture](/docs/services) - Understand the service system
+- 🚀 [Deployment Guide](/docs/deployment) - Deploy to production
+- 🛡️ [Security & Compliance](/docs/security) - Enterprise features
+- 🎨 [UI System Guide](/docs/ui-system) - Component library
 
 ### Need Help?
 
-- 📖 **Documentation**: Comprehensive guides and references
-- 🐛 **Issues**: Report bugs on [GitHub](https://github.com/Xala-Technologies/Xaheen-platform/issues)
-- 💬 **Discussions**: Community support and questions
-- 🌟 **Star us**: Show support on [GitHub](https://github.com/Xala-Technologies/Xaheen-platform)
+- 💬 [Discord Community](https://discord.gg/xaheen) - Get help from the community
+- 🐛 [GitHub Issues](https://github.com/xala-technologies/xaheen/issues) - Report bugs
+- 📧 [Enterprise Support](mailto:support@xaheen.dev) - Premium support
+- 🌟 [Star us on GitHub](https://github.com/xala-technologies/xaheen) - Show your support
+
+## Start Building Today
+
+Create your production-ready SaaS application in minutes:
+
+```bash
+xaheen create my-awesome-saas
+```
+
+Welcome to the future of SaaS development! 🚀

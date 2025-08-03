@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@xala-technologies/ui-system/hooks";
-import { Button, useTokens } from "@xala-technologies/ui-system";
+import { Button } from "@xala-technologies/ui-system";
 import * as React from "react";
 
 interface ThemeToggleProps {
@@ -16,7 +16,6 @@ interface ThemeToggleProps {
  */
 export function ThemeToggle({ className }: ThemeToggleProps): React.JSX.Element {
   const { theme, setTheme } = useTheme();
-  const { colors, spacing } = useTokens();
 
   const isDark = theme === "dark";
 

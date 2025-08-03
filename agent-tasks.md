@@ -1,4 +1,4 @@
-# Xaheen CLI Restructuring: Agent Task Distribution
+# Xaheen CLI Architecture: Agent Task Distribution
 
 ## Agent Overview & Responsibilities
 

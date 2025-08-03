@@ -5,7 +5,6 @@ import {
   Stack,
   Typography,
   Button,
-  useTokens,
 } from "@xala-technologies/ui-system";
 import { useLocalization } from "@/hooks/useLocalization";
 
@@ -21,7 +20,6 @@ interface CommandDisplayProps {
  */
 export function CommandDisplay({ command }: CommandDisplayProps): React.JSX.Element {
   const { t } = useLocalization();
-  const { colors, spacing, typography } = useTokens();
   const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopy = (): void => {
@@ -41,38 +39,29 @@ export function CommandDisplay({ command }: CommandDisplayProps): React.JSX.Elem
     >
       <Stack 
         direction="vertical" 
-        style={{ gap: spacing[3] }}
+        gap="md"
       >
         <Stack 
           direction="horizontal" 
-          style={{ gap: spacing[2], alignItems: 'center' }}
+          gap="sm"
+          align="center"
         >
-          <Terminal
-            style={{
-              width: spacing[5],
-              height: spacing[5],
-              color: colors.primary[500],
-            }}
-          />
+          <Terminal size={20} />
           <Typography variant="h4">
             {t("homepage.generated_command_title")}
           </Typography>
         </Stack>
-
         <Card variant="outlined" padding="sm">
           <Stack 
             direction="horizontal" 
-            style={{ gap: spacing[2], alignItems: 'center' }}
+            gap="sm"
+            align="center"
           >
             <Typography
-              variant="body"
-              style={{
-                flex: 1,
-                color: colors.text?.primary,
-                fontFamily: typography?.fontFamily?.mono,
-              }}
+              variant="code"
+              style={{ flex: 1 }}
             >
-              <span style={{ color: colors.primary[500] }}>$</span>{" "}
+              <span>$</span>{" "}
               {command}
             </Typography>
 
@@ -83,25 +72,12 @@ export function CommandDisplay({ command }: CommandDisplayProps): React.JSX.Elem
             >
               {copied ? (
                 <>
-                  <Check
-                    style={{
-                      width: spacing[4],
-                      height: spacing[4],
-                      color: colors.success?.[500],
-                      marginRight: spacing[1],
-                    }}
-                  />
+                  <Check size={16} />
                   {t("homepage.copied_button")}
                 </>
               ) : (
                 <>
-                  <Copy
-                    style={{
-                      width: spacing[4],
-                      height: spacing[4],
-                      marginRight: spacing[1],
-                    }}
-                  />
+                  <Copy size={16} />
                   {t("homepage.copy_button")}
                 </>
               )}
