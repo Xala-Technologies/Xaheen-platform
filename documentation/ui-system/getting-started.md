@@ -49,7 +49,7 @@ yarn add @xala-technologies/ui-system@^5.0.0
 
 ```typescript
 // app/layout.tsx
-import { UiProvider } from '@xala-technologies/ui-system';
+import { UISystemProvider } from '@xala-technologies/ui-system';
 
 export default function RootLayout({
   children,
@@ -59,18 +59,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UiProvider
-          defaultTheme="light"
-          platformConfig={{
-            mobileBreakpoint: 768,
-            tabletBreakpoint: 1024,
-            desktopBreakpoint: 1440
-          }}
-          enableSSR={true}
-          enableHydration={true}
-        >
+        <UISystemProvider>
           {children}
-        </UiProvider>
+        </UISystemProvider>
       </body>
     </html>
   );
@@ -81,17 +72,17 @@ export default function RootLayout({
 
 ```typescript
 // app/page.tsx - NO 'use client' needed!
-import { Button, Card, CardContent, Container } from '@xala-technologies/ui-system';
+import { Button, Card, Container, Typography, Stack } from '@xala-technologies/ui-system';
 
 export default function HomePage() {
   return (
-    <Container maxWidth="lg" padding="md">
-      <Card variant="default">
-        <CardContent>
-          <h1>Welcome to UI System v4.0.0</h1>
-          <p>This component works perfectly in SSR!</p>
+    <Container size="lg" padding="md">
+      <Card variant="default" padding="lg">
+        <Stack direction="vertical" gap="md">
+          <Typography variant="h1">Welcome to UI System v5.0.0</Typography>
+          <Typography variant="body">This component works perfectly in SSR!</Typography>
           <Button variant="primary">Get Started</Button>
-        </CardContent>
+        </Stack>
       </Card>
     </Container>
   );
@@ -359,9 +350,9 @@ export default function App() {
   return (
     <html>
       <body>
-        <DesignSystemProvider templateId="base-light">
+        <UISystemProvider>
           <Outlet />
-        </DesignSystemProvider>
+        </UISystemProvider>
       </body>
     </html>
   );
@@ -372,13 +363,13 @@ export default function App() {
 
 ```typescript
 // src/main.tsx
-import { DesignSystemProvider } from '@xala-technologies/ui-system';
+import { UISystemProvider } from '@xala-technologies/ui-system';
 
 function App() {
   return (
-    <DesignSystemProvider templateId="base-light">
+    <UISystemProvider>
       <YourApp />
-    </DesignSystemProvider>
+    </UISystemProvider>
   );
 }
 ```
@@ -399,22 +390,22 @@ async function getServerTemplate(templateId: string) {
 ### 2. Responsive Props
 
 ```tsx
-import { Container, Text, VStack } from '@xala-technologies/ui-system';
+import { Container, Typography, Stack } from '@xala-technologies/ui-system';
 
 function ResponsiveLayout(): JSX.Element {
   return (
     <Container
-      maxWidth={{ xs: 'sm', md: 'lg', xl: '2xl' }}
-      padding={{ xs: '4', md: '8', lg: '12' }}
+      size={{ xs: 'sm', md: 'lg', xl: '2xl' }}
+      padding={{ xs: 'sm', md: 'md', lg: 'lg' }}
     >
-      <VStack spacing={{ xs: '4', md: '6', lg: '8' }}>
-        <Text
+      <Stack direction="vertical" gap={{ xs: 'sm', md: 'md', lg: 'lg' }}>
+        <Typography
           variant={{ xs: 'h3', md: 'h2', lg: 'h1' }}
-          textAlign={{ xs: 'center', md: 'left' }}
+          align={{ xs: 'center', md: 'left' }}
         >
           Responsive Typography
-        </Text>
-      </VStack>
+        </Typography>
+      </Stack>
     </Container>
   );
 }

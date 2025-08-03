@@ -117,7 +117,7 @@ export function HomePage(): React.JSX.Element {
   };
 
   return (
-    <Container maxWidth="xl" padding="xl">
+    <Container maxWidth="xl" padding="xl" className="mt-16">
       <Stack direction="vertical" gap="xl">
         {/* ASCII Art Header */}
         <Stack direction="vertical" gap="lg" align="center">

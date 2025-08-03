@@ -18,8 +18,8 @@ import { supportedLocales, isRtlLocale, SupportedLocale, localeNames } from '@/l
 import { UISystemProvider } from '@/app/providers/UISystemProvider';
 import { LocalizationProvider } from '@/app/providers/LocalizationProvider';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
-import { RootProvider } from "fumadocs-ui/provider";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { RootProvider } from 'fumadocs-ui/provider';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { Toaster } from "@/components/ui/sonner";
 import { Poppins } from "next/font/google";
 

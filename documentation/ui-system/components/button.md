@@ -50,11 +50,17 @@ interface ButtonProps {
 ```typescript
 import { useTokens, Button } from '@xala-technologies/ui-system';
 
-const ThemedButton = () => {
+const ThemedButton = (): JSX.Element => {
   const { colors, spacing } = useTokens();
   return (
-    <Button style={{ backgroundColor: colors.primary[500], padding: spacing.md }}>
-      Themed
+    <Button 
+      variant="primary"
+      style={{ 
+        backgroundColor: colors.primary[600],
+        padding: spacing.md 
+      }}
+    >
+      Themed Button
     </Button>
   );
 };

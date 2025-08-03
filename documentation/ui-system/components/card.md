@@ -5,12 +5,14 @@ The `Card` component is a flexible, composable container for grouping related co
 
 ## Usage
 ```typescript
-import { Card, CardHeader, CardContent, CardFooter } from '@xala-technologies/ui-system';
+import { Card, Typography, Stack } from '@xala-technologies/ui-system';
 
 <Card variant="elevated" padding="lg">
-  <CardHeader>Title</CardHeader>
-  <CardContent>Content</CardContent>
-  <CardFooter>Footer</CardFooter>
+  <Stack direction="vertical" gap="md">
+    <Typography variant="h3">Title</Typography>
+    <Typography variant="body">Content</Typography>
+    <Typography variant="caption">Footer</Typography>
+  </Stack>
 </Card>
 ```
 
@@ -39,11 +41,22 @@ interface CardProps {
 
 ## Example: Themed Card
 ```typescript
-import { useTokens, Card } from '@xala-technologies/ui-system';
+import { useTokens, Card, Typography } from '@xala-technologies/ui-system';
 
-const ThemedCard = () => {
-  const { colors } = useTokens();
-  return <Card style={{ background: colors.card.background }} />;
+const ThemedCard = (): JSX.Element => {
+  const { colors, spacing } = useTokens();
+  return (
+    <Card 
+      variant="elevated" 
+      padding="lg"
+      style={{ 
+        backgroundColor: colors.background.secondary,
+        border: `1px solid ${colors.border.primary}`
+      }}
+    >
+      <Typography variant="body">Themed card content</Typography>
+    </Card>
+  );
 };
 ```
 

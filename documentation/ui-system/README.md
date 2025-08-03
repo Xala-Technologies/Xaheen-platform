@@ -3,7 +3,7 @@
  * Generated with Xaheen CLI
  * 
  * MANDATORY COMPLIANCE RULES:
- * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
  * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
@@ -114,18 +114,20 @@ yarn add @xala-technologies/ui-system
 ## 🚀 Quick Start
 
 ```tsx
-import { UISystemProvider, Button, Text } from '@xala-technologies/ui-system';
-import { useTranslation } from 'next-i18next';
+import { UISystemProvider, Button, Typography, Stack } from '@xala-technologies/ui-system';
+import { useTranslation } from 'react-i18next';
 
 function App(): JSX.Element {
   const { t } = useTranslation();
   
   return (
     <UISystemProvider>
-      <Text variant="h1">{t('welcome.title')}</Text>
-      <Button variant="primary" onClick={() => console.log('clicked')}>
-        {t('actions.getStarted')}
-      </Button>
+      <Stack direction="vertical" gap="md">
+        <Typography variant="h1">{t('welcome.title')}</Typography>
+        <Button variant="primary" onClick={() => console.log('clicked')}>
+          {t('actions.getStarted')}
+        </Button>
+      </Stack>
     </UISystemProvider>
   );
 }

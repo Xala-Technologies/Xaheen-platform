@@ -21,10 +21,12 @@ export interface ProjectInfo {
   platform?: string;
   packageManager?: 'npm' | 'pnpm' | 'yarn' | 'bun';
   typescript: boolean;
+  git?: boolean;
   services: string[];
   features?: string[];
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
 }
 
 export class ProjectAnalyzer {
@@ -48,9 +50,11 @@ export class ProjectAnalyzer {
         isValid: true,
         name: packageJson.name || path.basename(projectPath),
         typescript: await this.detectTypeScript(projectPath),
+        git: await this.detectGit(projectPath),
         services: [],
         dependencies: packageJson.dependencies || {},
-        devDependencies: packageJson.devDependencies || {}
+        devDependencies: packageJson.devDependencies || {},
+        scripts: packageJson.scripts || {}
       };
 
       // Detect package manager
@@ -90,6 +94,10 @@ export class ProjectAnalyzer {
 
   private async detectTypeScript(projectPath: string): Promise<boolean> {
     return fs.pathExists(path.join(projectPath, 'tsconfig.json'));
+  }
+
+  private async detectGit(projectPath: string): Promise<boolean> {
+    return fs.pathExists(path.join(projectPath, '.git'));
   }
 
   private async detectPackageManager(projectPath: string): Promise<'npm' | 'pnpm' | 'yarn' | 'bun'> {
@@ -208,31 +216,61 @@ export class ProjectAnalyzer {
     const services: string[] = [];
     const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
 
+    // Check for service files in src/lib directory
+    const libPath = path.join(projectPath, 'src/lib');
+    if (await fs.pathExists(libPath)) {
+      const files = await fs.readdir(libPath);
+      
+      for (const file of files) {
+        const serviceName = this.detectServiceFromFileName(file);
+        if (serviceName && !services.includes(serviceName)) {
+          services.push(serviceName);
+        }
+      }
+    }
+
+    // Check for Prisma schema
+    const prismaSchemaPath = path.join(projectPath, 'prisma/schema.prisma');
+    if (await fs.pathExists(prismaSchemaPath)) {
+      if (!services.includes('database')) {
+        services.push('database');
+      }
+    }
+
+    // Check dependencies as fallback
     // Auth
     if (deps['better-auth'] || deps['@clerk/nextjs'] || deps['@auth/core'] || 
         deps['next-auth'] || deps['@supabase/auth-helpers-nextjs']) {
-      services.push('auth');
+      if (!services.includes('auth')) {
+        services.push('auth');
+      }
     }
 
-    // Database (already detected)
-    if (projectInfo.database) {
+    // Database (already detected from file system)
+    if (projectInfo.database && !services.includes('database')) {
       services.push('database');
     }
 
     // Payments
     if (deps['stripe'] || deps['@stripe/stripe-js']) {
-      services.push('payments');
+      if (!services.includes('payments')) {
+        services.push('payments');
+      }
     }
 
     // Email
     if (deps['@sendgrid/mail'] || deps['resend'] || deps['nodemailer'] || 
         deps['@react-email/components']) {
-      services.push('email');
+      if (!services.includes('email')) {
+        services.push('email');
+      }
     }
 
     // SMS
     if (deps['twilio']) {
-      services.push('sms');
+      if (!services.includes('sms')) {
+        services.push('sms');
+      }
     }
 
     // Storage
@@ -304,5 +342,58 @@ export class ProjectAnalyzer {
 
     // Default to web
     return 'web';
+  }
+
+  private detectServiceFromFileName(fileName: string): string | null {
+    const baseName = fileName.toLowerCase().replace(/\.(ts|js|tsx|jsx)$/, '');
+    
+    // Map file names to services
+    const serviceMap: Record<string, string> = {
+      'auth': 'auth',
+      'authentication': 'auth',
+      'session': 'auth',
+      'user': 'auth',
+      'database': 'database',
+      'db': 'database',
+      'prisma': 'database',
+      'supabase': 'database',
+      'mongo': 'database',
+      'mongoose': 'database',
+      'stripe': 'payments',
+      'payment': 'payments',
+      'payments': 'payments',
+      'billing': 'payments',
+      'checkout': 'payments',
+      'email': 'email',
+      'mail': 'email',
+      'resend': 'email',
+      'sendgrid': 'email',
+      'nodemailer': 'email',
+      'sms': 'sms',
+      'twilio': 'sms',
+      'storage': 'storage',
+      's3': 'storage',
+      'upload': 'storage',
+      'uploadthing': 'storage',
+      'cloudinary': 'storage',
+      'queue': 'queue',
+      'bull': 'queue',
+      'bullmq': 'queue',
+      'redis': 'cache',
+      'cache': 'cache',
+      'analytics': 'analytics',
+      'tracking': 'analytics',
+      'posthog': 'analytics',
+      'mixpanel': 'analytics',
+      'monitoring': 'monitoring',
+      'sentry': 'monitoring',
+      'error': 'monitoring',
+      'logging': 'logging',
+      'logger': 'logging',
+      'winston': 'logging',
+      'pino': 'logging'
+    };
+
+    return serviceMap[baseName] || null;
   }
 }

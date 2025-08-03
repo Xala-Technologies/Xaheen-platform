@@ -9,7 +9,7 @@ This guide explains how to use, extend, and customize themes in the Xala UI Syst
  * Generated with Xaheen CLI
  * 
  * MANDATORY COMPLIANCE RULES:
- * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
  * ✅ ONLY semantic components from @xala-technologies/ui-system
  * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
@@ -176,76 +176,72 @@ const brandTheme = createTheme({
 });
 ```
 
-### 2. Advanced Theme with Component Overrides
+### 2. Using Design Tokens for Custom Styling
 
 ```typescript
-import { createTheme } from '@xala-technologies/ui-system';
+import { useTokens, Button, Card } from '@xala-technologies/ui-system';
 
-const enterpriseTheme = createTheme({
-  name: 'enterprise-theme',
-  // Base token overrides
-  colors: {
-    primary: {
-      500: '#1e40af' // Enterprise blue
-    }
-  },
-  // Component-specific overrides
-  components: {
-    Button: {
-      variants: {
-        primary: {
-          backgroundColor: 'var(--color-primary-500)',
-          color: 'var(--color-text-inverse)',
-          borderRadius: 'var(--border-radius-md)',
-          padding: 'var(--spacing-3) var(--spacing-6)',
-          fontSize: 'var(--font-size-base)',
-          fontWeight: 'var(--font-weight-semibold)',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            backgroundColor: 'var(--color-primary-600)',
-            transform: 'translateY(-1px)',
-            boxShadow: 'var(--shadow-md)'
-          },
-          '&:focus': {
-            outline: '2px solid var(--color-focus-ring)',
-            outlineOffset: '2px'
-          }
-        }
-      }
-    },
-    Card: {
-      base: {
-        backgroundColor: 'var(--color-background-primary)',
-        border: '1px solid var(--color-border-secondary)',
-        borderRadius: 'var(--border-radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
-        padding: 'var(--spacing-6)'
-      }
-    }
-  }
-});
+function CustomStyledComponents(): JSX.Element {
+  const { colors, spacing, typography, borderRadius } = useTokens();
+  
+  return (
+    <>
+      {/* Use tokens for custom styling when needed */}
+      <Button 
+        variant="primary" 
+        style={{
+          backgroundColor: colors.primary[600],
+          padding: `${spacing.sm} ${spacing.lg}`,
+          borderRadius: borderRadius.md
+        }}
+      >
+        Custom Button
+      </Button>
+      
+      <Card 
+        variant="elevated" 
+        padding="lg"
+        style={{
+          backgroundColor: colors.background.secondary,
+          border: `1px solid ${colors.border.primary}`
+        }}
+      >
+        Custom Card Content
+      </Card>
+    </>
+  );
+}
 ```
 
 ## 📋 Theme Usage
 
-### 1. Basic Theme Application
+### 1. Basic Theme Usage
 
 ```tsx
-import { UISystemProvider, lightTheme, darkTheme } from '@xala-technologies/ui-system';
-import { useState } from 'react';
+import { UISystemProvider, useTheme } from '@xala-technologies/ui-system';
 
 function App(): JSX.Element {
-  const [isDark, setIsDark] = useState<boolean>(false);
-  const currentTheme = isDark ? darkTheme : lightTheme;
-
   return (
-    <UISystemProvider
-      theme={currentTheme}
-      locale="en"
-      enableSSR={true}
-    >
-      {/* Your app content */}
+    <UISystemProvider>
+      <ThemeAwareContent />
     </UISystemProvider>
+  );
+}
+
+function ThemeAwareContent(): JSX.Element {
+  const { theme, setTheme } = useTheme();
+  
+  const toggleTheme = (): void => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+  
+  return (
+    <div>
+      <button onClick={toggleTheme}>
+        Switch to {theme === 'light' ? 'dark' : 'light'} theme
+      </button>
+      {/* Your app content */}
+    </div>
   );
 }
 ```

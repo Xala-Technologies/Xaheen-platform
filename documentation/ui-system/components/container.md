@@ -5,22 +5,20 @@ The `Container` component provides a responsive, padded wrapper for page content
 
 ## Usage
 ```typescript
-import { Container } from '@xala-technologies/ui-system';
+import { Container, Typography } from '@xala-technologies/ui-system';
 
-<Container maxWidth="lg" padding="md" centered>
-  <div>Your content here</div>
+<Container size="lg" padding="md">
+  <Typography variant="body">Your content here</Typography>
 </Container>
 ```
 
 ## Props
 ```typescript
 interface ContainerProps {
-  /** Maximum width */
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'none';
+  /** Container size */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   /** Padding */
   padding?: 'none' | 'sm' | 'md' | 'lg';
-  /** Center content */
-  centered?: boolean;
   /** Children */
   children: React.ReactNode;
 }
@@ -41,9 +39,24 @@ interface ContainerProps {
 ```typescript
 import { useTokens, Container } from '@xala-technologies/ui-system';
 
-const ThemedContainer = ({ children }) => {
-  const { spacing } = useTokens();
-  return <Container padding="lg" style={{ padding: spacing.lg }}>{children}</Container>;
+interface ThemedContainerProps {
+  children: React.ReactNode;
+}
+
+const ThemedContainer = ({ children }: ThemedContainerProps): JSX.Element => {
+  const { spacing, colors } = useTokens();
+  return (
+    <Container 
+      size="lg" 
+      padding="lg" 
+      style={{ 
+        backgroundColor: colors.background.secondary,
+        margin: spacing.md 
+      }}
+    >
+      {children}
+    </Container>
+  );
 };
 ```
 

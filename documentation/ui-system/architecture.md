@@ -1,8 +1,8 @@
-# UI System Architecture - v4.0.0
+# UI System Architecture - v5.0.0
 
 ## 🏗 **Production-Ready SSR-Safe Architecture**
 
-The UI System v4.0.0 implements a **production-ready, SSR-compatible architecture** with JSON template integration, designed for enterprise-scale React applications.
+The UI System v5.0.0 implements a **production-ready, SSR-compatible architecture** with design token integration, designed for enterprise-scale React applications.
 
 ## 🎯 **Core Design Principles**
 
@@ -10,10 +10,10 @@ The UI System v4.0.0 implements a **production-ready, SSR-compatible architectur
 
 ```typescript
 // ✅ CORRECT: Provider isolation for SSR safety
-'use client';  // Only in DesignSystemProvider
-export const DesignSystemProvider = ({ children }) => {
+'use client';  // Only in UISystemProvider
+export const UISystemProvider = ({ children }) => {
   // All context logic contained here
-  return <DesignSystemContext.Provider>{children}</DesignSystemContext.Provider>;
+  return <UISystemContext.Provider>{children}</UISystemContext.Provider>;
 };
 
 // ✅ CORRECT: Components work in SSR (no 'use client')
@@ -44,8 +44,8 @@ const template = await templateLoader.loadTemplate(templateId);
 
 ```mermaid
 graph TD
-    A[DesignSystemProvider] --> B[TemplateLoader v4.0.0]
-    B --> C[JSON Template System]
+    A[UISystemProvider] --> B[TokenSystem v5.0.0]
+    B --> C[Design Token System]
     C --> D[useTokens Hook]
     D --> E[UI Components]
     E --> F[SSR-Safe Rendering]
@@ -62,28 +62,25 @@ graph TD
 ### **Provider Architecture**
 
 ```typescript
-// DesignSystemProvider v4.0.0 - SSR-Safe Implementation
+// UISystemProvider v5.0.0 - SSR-Safe Implementation
 'use client';
 
-interface DesignSystemProviderProps {
-  templateId: string;
-  ssrTemplate?: ThemeTemplate; // Pre-loaded for SSR optimization
-  enableSSRFallback?: boolean; // Emergency fallback enabled
-  autoDetectDarkMode?: boolean; // Browser dark mode detection
+interface UISystemProviderProps {
   children: React.ReactNode;
 }
 
-export const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({
-  templateId,
-  ssrTemplate,
-  enableSSRFallback = true,
-  autoDetectDarkMode = false,
+export const UISystemProvider: React.FC<UISystemProviderProps> = ({
   children,
 }) => {
   // ✅ All client-side logic isolated here
   // ✅ SSR-safe initialization
-  // ✅ Emergency fallback handling
-  // ✅ Template loading and caching
+  // ✅ Design token management
+  // ✅ Theme switching capabilities
+  return (
+    <UISystemContext.Provider value={contextValue}>
+      {children}
+    </UISystemContext.Provider>
+  );
 };
 ```
 

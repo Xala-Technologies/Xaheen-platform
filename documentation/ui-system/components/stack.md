@@ -5,12 +5,12 @@ The `Stack` component provides vertical or horizontal spacing between elements u
 
 ## Usage
 ```typescript
-import { Stack, VStack, HStack } from '@xala-technologies/ui-system';
+import { Stack, Card } from '@xala-technologies/ui-system';
 
-<VStack spacing="md">
+<Stack direction="vertical" gap="md">
   <Card>Item 1</Card>
   <Card>Item 2</Card>
-</VStack>
+</Stack>
 ```
 
 ## Props
@@ -18,8 +18,10 @@ import { Stack, VStack, HStack } from '@xala-technologies/ui-system';
 interface StackProps {
   /** Direction */
   direction?: 'vertical' | 'horizontal';
-  /** Spacing */
-  spacing?: 'none' | 'sm' | 'md' | 'lg';
+  /** Gap between items */
+  gap?: 'none' | 'sm' | 'md' | 'lg';
+  /** Alignment */
+  align?: 'start' | 'center' | 'end';
   /** Children */
   children: React.ReactNode;
 }
@@ -38,15 +40,19 @@ interface StackProps {
 
 ## Example: Themed Stack
 ```typescript
-import { useTokens, VStack } from '@xala-technologies/ui-system';
+import { useTokens, Stack, Card } from '@xala-technologies/ui-system';
 
-const ThemedStack = () => {
+const ThemedStack = (): JSX.Element => {
   const { spacing } = useTokens();
   return (
-    <VStack spacing="lg" style={{ gap: spacing.lg }}>
+    <Stack 
+      direction="vertical" 
+      gap="lg" 
+      style={{ padding: spacing.md }}
+    >
       <Card>Item 1</Card>
       <Card>Item 2</Card>
-    </VStack>
+    </Stack>
   );
 };
 ```

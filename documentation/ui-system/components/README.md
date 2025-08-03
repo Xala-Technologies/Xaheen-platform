@@ -1,8 +1,8 @@
-# Component Documentation - v4.0.0
+# Component Documentation - v5.0.0
 
 ## 🎯 **SSR-Safe Component Library**
 
-All components in the UI System v4.0.0 are **production-ready and SSR-compatible**, using the `useTokens` hook for styling and avoiding any 'use client' directives.
+All components in the UI System v5.0.0 are **production-ready and SSR-compatible**, using the `useTokens` hook for styling and avoiding any 'use client' directives.
 
 ## 🏗 **Component Architecture**
 
@@ -47,21 +47,17 @@ import { Button } from '@xala-technologies/ui-system';
 **Sizes**: `sm` | `md` | `lg`  
 **States**: `loading` | `disabled`
 
-#### **[Card Component Family](./card.md)**
+#### **[Card Component](./card.md)**
 
 ```typescript
-import { Card, CardHeader, CardContent, CardFooter } from '@xala-technologies/ui-system';
+import { Card, Typography, Stack, Button } from '@xala-technologies/ui-system';
 
 <Card variant="elevated" padding="lg">
-  <CardHeader>
-    <h2>Card Title</h2>
-  </CardHeader>
-  <CardContent>
-    <p>Card content here</p>
-  </CardContent>
-  <CardFooter>
-    <Button>Action</Button>
-  </CardFooter>
+  <Stack direction="vertical" gap="md">
+    <Typography variant="h2">Card Title</Typography>
+    <Typography variant="body">Card content here</Typography>
+    <Button variant="primary">Action</Button>
+  </Stack>
 </Card>
 ```
 
@@ -88,14 +84,14 @@ import { Input } from '@xala-technologies/ui-system';
 #### **[Container Component](./container.md)**
 
 ```typescript
-import { Container } from '@xala-technologies/ui-system';
+import { Container, Typography } from '@xala-technologies/ui-system';
 
-<Container maxWidth="lg" padding="md" centered>
-  <div>Your content here</div>
+<Container size="lg" padding="md">
+  <Typography variant="body">Your content here</Typography>
 </Container>
 ```
 
-**Max Widths**: `sm` | `md` | `lg` | `xl` | `2xl` | `full` | `none`  
+**Sizes**: `sm` | `md` | `lg` | `xl` | `2xl` | `full`  
 **Padding**: `none` | `sm` | `md` | `lg`
 
 ### **Layout Components**

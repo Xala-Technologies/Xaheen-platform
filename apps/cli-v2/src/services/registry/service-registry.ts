@@ -154,7 +154,8 @@ export type Auth = typeof auth;`,
     "better-auth": "^1.0.0",
     "@better-auth/prisma-adapter": "^1.0.0"
   }
-}`
+}`,
+            priority: 90
           }
         ],
         envVariables: [
@@ -243,6 +244,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;`,
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "@prisma/client": "^5.0.0"
   },
@@ -255,7 +257,8 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;`,
     "db:push": "prisma db push",
     "db:studio": "prisma studio"
   }
-}`
+}`,
+            priority: 80
           }
         ],
         envVariables: [
@@ -343,10 +346,12 @@ export async function createCustomer(params: {
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "stripe": "^16.0.0"
   }
-}`
+}`,
+            priority: 75
           }
         ],
         envVariables: [
@@ -447,12 +452,13 @@ export async function sendWelcomeEmail(email: string, name: string) {
     \`
   });
 }`,
-            priority: 70
+            priority: 70,
           },
           {
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "resend": "^3.0.0"
   }
@@ -541,6 +547,7 @@ export function resetUser() {
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "posthog-js": "^1.0.0"
   }
@@ -666,6 +673,7 @@ Sentry.init({
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "@sentry/nextjs": "^7.0.0"
   }
@@ -804,6 +812,7 @@ export async function cacheFlush(): Promise<void> {
             type: 'json-merge',
             target: 'package.json',
             template: `{
+            priority: 70,
   "dependencies": {
     "redis": "^4.0.0"
   }
@@ -835,6 +844,1000 @@ export async function cacheFlush(): Promise<void> {
         databases: [],
         platforms: ['web'],
         tags: ['cache', 'redis', 'performance', 'session-store']
+      },
+
+      // Storage - AWS S3
+      {
+        name: 'aws-s3',
+        type: 'storage',
+        provider: 's3',
+        version: '3.0.0',
+        description: 'AWS S3 object storage',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/storage.ts',
+            template: `import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+  }
+});
+
+const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
+
+export async function uploadFile(
+  key: string,
+  body: Buffer | Uint8Array | string,
+  contentType?: string
+) {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType
+  });
+
+  return s3Client.send(command);
+}
+
+export async function getFile(key: string) {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key
+  });
+
+  return s3Client.send(command);
+}
+
+export async function deleteFile(key: string) {
+  const command = new DeleteObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key
+  });
+
+  return s3Client.send(command);
+}
+
+export async function getSignedUploadUrl(
+  key: string,
+  expiresIn: number = 3600
+) {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key
+  });
+
+  return getSignedUrl(s3Client, command, { expiresIn });
+}
+
+export async function getSignedDownloadUrl(
+  key: string,
+  expiresIn: number = 3600
+) {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key
+  });
+
+  return getSignedUrl(s3Client, command, { expiresIn });
+}`,
+            priority: 75
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0"
+  }
+}`,
+            priority: 70
+          }
+        ],
+        envVariables: [
+          {
+            name: 'AWS_ACCESS_KEY_ID',
+            description: 'AWS Access Key ID',
+            required: true,
+            type: 'secret',
+            sensitive: true
+          },
+          {
+            name: 'AWS_SECRET_ACCESS_KEY',
+            description: 'AWS Secret Access Key',
+            required: true,
+            type: 'secret',
+            sensitive: true
+          },
+          {
+            name: 'AWS_REGION',
+            description: 'AWS Region',
+            required: false,
+            type: 'string',
+            defaultValue: 'us-east-1'
+          },
+          {
+            name: 'S3_BUCKET_NAME',
+            description: 'S3 Bucket Name',
+            required: true,
+            type: 'string'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Create an S3 bucket in AWS Console'
+          },
+          {
+            type: 'manual',
+            description: 'Create IAM user with S3 access and get credentials'
+          },
+          {
+            type: 'manual',
+            description: 'Configure CORS settings for your S3 bucket if needed'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express', 'hono'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['storage', 's3', 'aws', 'files', 'uploads']
+      },
+
+      // Storage - Cloudinary
+      {
+        name: 'cloudinary',
+        type: 'storage',
+        provider: 'cloudinary',
+        version: '2.0.0',
+        description: 'Cloudinary image and video management',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/cloudinary.ts',
+            template: `import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+export async function uploadImage(
+  filePath: string,
+  options?: {
+    folder?: string;
+    publicId?: string;
+    transformation?: any[];
+  }
+) {
+  return cloudinary.uploader.upload(filePath, {
+    folder: options?.folder || 'uploads',
+    public_id: options?.publicId,
+    transformation: options?.transformation
+  });
+}
+
+export async function uploadVideo(
+  filePath: string,
+  options?: {
+    folder?: string;
+    publicId?: string;
+    transformation?: any[];
+  }
+) {
+  return cloudinary.uploader.upload(filePath, {
+    resource_type: 'video',
+    folder: options?.folder || 'videos',
+    public_id: options?.publicId,
+    transformation: options?.transformation
+  });
+}
+
+export async function deleteAsset(publicId: string, resourceType: 'image' | 'video' = 'image') {
+  return cloudinary.uploader.destroy(publicId, {
+    resource_type: resourceType
+  });
+}
+
+export function getOptimizedUrl(
+  publicId: string,
+  options?: {
+    width?: number;
+    height?: number;
+    quality?: number | 'auto';
+    format?: string | 'auto';
+    crop?: string;
+  }
+) {
+  return cloudinary.url(publicId, {
+    width: options?.width,
+    height: options?.height,
+    quality: options?.quality || 'auto',
+    format: options?.format || 'auto',
+    crop: options?.crop || 'limit',
+    secure: true
+  });
+}
+
+export function getVideoThumbnail(publicId: string, options?: any) {
+  return cloudinary.url(publicId, {
+    resource_type: 'video',
+    transformation: [
+      { width: options?.width || 400, crop: 'limit' },
+      { start_offset: options?.offset || '0' }
+    ]
+  });
+}`,
+            priority: 75
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "cloudinary": "^2.0.0"
+  }
+}`,
+            priority: 70
+          }
+        ],
+        envVariables: [
+          {
+            name: 'CLOUDINARY_CLOUD_NAME',
+            description: 'Cloudinary Cloud Name',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'CLOUDINARY_API_KEY',
+            description: 'Cloudinary API Key',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'CLOUDINARY_API_SECRET',
+            description: 'Cloudinary API Secret',
+            required: true,
+            type: 'secret',
+            sensitive: true
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Sign up for Cloudinary and get your credentials'
+          },
+          {
+            type: 'manual',
+            description: 'Configure upload presets in Cloudinary dashboard'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express', 'hono'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['storage', 'cloudinary', 'images', 'video', 'media']
+      },
+
+      // Queue - BullMQ
+      {
+        name: 'bullmq',
+        type: 'queue',
+        provider: 'bullmq',
+        version: '5.0.0',
+        description: 'BullMQ job queue with Redis backend',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/queue.ts',
+            template: `import { Queue, Worker, QueueEvents } from 'bullmq';
+import { Redis } from 'ioredis';
+
+const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: null
+});
+
+// Define queue names
+export const QUEUE_NAMES = {
+  EMAIL: 'email',
+  IMAGE_PROCESSING: 'image-processing',
+  DATA_IMPORT: 'data-import',
+  NOTIFICATIONS: 'notifications'
+} as const;
+
+// Create queues
+export const emailQueue = new Queue(QUEUE_NAMES.EMAIL, { connection });
+export const imageQueue = new Queue(QUEUE_NAMES.IMAGE_PROCESSING, { connection });
+export const dataQueue = new Queue(QUEUE_NAMES.DATA_IMPORT, { connection });
+export const notificationQueue = new Queue(QUEUE_NAMES.NOTIFICATIONS, { connection });
+
+// Queue events for monitoring
+export const emailQueueEvents = new QueueEvents(QUEUE_NAMES.EMAIL, { connection });
+export const imageQueueEvents = new QueueEvents(QUEUE_NAMES.IMAGE_PROCESSING, { connection });
+
+// Helper function to add job with defaults
+export async function addJob<T>(
+  queue: Queue,
+  name: string,
+  data: T,
+  options?: {
+    delay?: number;
+    attempts?: number;
+    backoff?: { type: 'exponential' | 'fixed'; delay: number };
+    removeOnComplete?: boolean | number;
+    removeOnFail?: boolean | number;
+  }
+) {
+  return queue.add(name, data, {
+    attempts: options?.attempts || 3,
+    backoff: options?.backoff || { type: 'exponential', delay: 2000 },
+    removeOnComplete: options?.removeOnComplete ?? 100,
+    removeOnFail: options?.removeOnFail ?? 50,
+    delay: options?.delay
+  });
+}
+
+// Get queue metrics
+export async function getQueueMetrics(queue: Queue) {
+  const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+    queue.getWaitingCount(),
+    queue.getActiveCount(),
+    queue.getCompletedCount(),
+    queue.getFailedCount(),
+    queue.getDelayedCount(),
+    queue.getPausedCount()
+  ]);
+
+  return {
+    waiting,
+    active,
+    completed,
+    failed,
+    delayed,
+    paused,
+    total: waiting + active + delayed + paused
+  };
+}
+
+// Clean old jobs
+export async function cleanQueue(queue: Queue, grace: number = 3600000) {
+  await queue.clean(grace, 100, 'completed');
+  await queue.clean(grace, 100, 'failed');
+}`,
+            priority: 80
+          },
+          {
+            type: 'file-create',
+            target: 'src/workers/email.worker.ts',
+            template: `import { Worker, Job } from 'bullmq';
+import { Redis } from 'ioredis';
+import { QUEUE_NAMES } from '../lib/queue.js';
+// Import your email service
+// import { sendEmail } from '../lib/email.js';
+
+const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: null
+});
+
+export const emailWorker = new Worker(
+  QUEUE_NAMES.EMAIL,
+  async (job: Job) => {
+    const { to, subject, html, text } = job.data;
+    
+    console.log(\`Processing email job \${job.id}: \${subject} to \${to}\`);
+    
+    // Send email using your email service
+    // await sendEmail({ to, subject, html, text });
+    
+    // Simulate email sending
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return { sent: true, timestamp: new Date() };
+  },
+  {
+    connection,
+    concurrency: 5,
+    limiter: {
+      max: 10,
+      duration: 1000 // Max 10 jobs per second
+    }
+  }
+);
+
+emailWorker.on('completed', (job) => {
+  console.log(\`Email job \${job.id} completed\`);
+});
+
+emailWorker.on('failed', (job, err) => {
+  console.error(\`Email job \${job?.id} failed:\`, err);
+});
+
+console.log('Email worker started');`,
+            priority: 75
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.0.0"
+  },
+  "scripts": {
+    "worker:email": "tsx src/workers/email.worker.ts",
+    "workers": "concurrently \\"npm:worker:*\\""
+  }
+}`,
+            priority: 70
+          }
+        ],
+        envVariables: [
+          {
+            name: 'REDIS_URL',
+            description: 'Redis connection URL for BullMQ',
+            required: true,
+            type: 'url',
+            sensitive: true,
+            defaultValue: 'redis://localhost:6379'
+          }
+        ],
+        dependencies: [
+          {
+            serviceType: 'cache',
+            provider: 'redis',
+            required: true
+          }
+        ],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Ensure Redis is running for BullMQ'
+          },
+          {
+            type: 'manual',
+            description: 'Create additional workers for other queues as needed'
+          },
+          {
+            type: 'command',
+            description: 'Install concurrently for running multiple workers',
+            command: 'npm install -D concurrently'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express', 'hono'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['queue', 'jobs', 'background', 'bullmq', 'redis']
+      },
+
+      // Realtime - Socket.io
+      {
+        name: 'socket.io',
+        type: 'realtime',
+        provider: 'socket.io',
+        version: '4.0.0',
+        description: 'Socket.io for real-time bidirectional communication',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/socket-server.ts',
+            template: `import { Server } from 'socket.io';
+import { createServer } from 'http';
+import type { Server as HTTPServer } from 'http';
+import type { Express } from 'express';
+
+let io: Server | null = null;
+
+export function initializeSocketServer(
+  app?: Express,
+  httpServer?: HTTPServer
+) {
+  const server = httpServer || createServer(app);
+  
+  io = new Server(server, {
+    cors: {
+      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      credentials: true
+    },
+    transports: ['websocket', 'polling']
+  });
+
+  io.on('connection', (socket) => {
+    console.log(\`Client connected: \${socket.id}\`);
+
+    // Join user to their personal room
+    socket.on('join-room', (roomId: string) => {
+      socket.join(roomId);
+      console.log(\`Socket \${socket.id} joined room \${roomId}\`);
+    });
+
+    // Leave room
+    socket.on('leave-room', (roomId: string) => {
+      socket.leave(roomId);
+      console.log(\`Socket \${socket.id} left room \${roomId}\`);
+    });
+
+    // Handle messages
+    socket.on('message', async (data: {
+      room: string;
+      message: string;
+      userId: string;
+    }) => {
+      // Broadcast to room
+      io?.to(data.room).emit('new-message', {
+        id: Date.now().toString(),
+        message: data.message,
+        userId: data.userId,
+        timestamp: new Date()
+      });
+    });
+
+    // Handle typing indicators
+    socket.on('typing', (data: { room: string; userId: string }) => {
+      socket.to(data.room).emit('user-typing', {
+        userId: data.userId,
+        typing: true
+      });
+    });
+
+    socket.on('stop-typing', (data: { room: string; userId: string }) => {
+      socket.to(data.room).emit('user-typing', {
+        userId: data.userId,
+        typing: false
+      });
+    });
+
+    // Handle presence
+    socket.on('user-online', (userId: string) => {
+      socket.broadcast.emit('user-status', {
+        userId,
+        status: 'online'
+      });
+    });
+
+    socket.on('disconnect', () => {
+      console.log(\`Client disconnected: \${socket.id}\`);
+    });
+  });
+
+  return { server, io };
+}
+
+// Helper functions for server-side emissions
+export function emitToRoom(room: string, event: string, data: any) {
+  if (!io) {
+    console.error('Socket.io not initialized');
+    return;
+  }
+  io.to(room).emit(event, data);
+}
+
+export function emitToUser(userId: string, event: string, data: any) {
+  if (!io) {
+    console.error('Socket.io not initialized');
+    return;
+  }
+  io.to(\`user:\${userId}\`).emit(event, data);
+}
+
+export function broadcastToAll(event: string, data: any) {
+  if (!io) {
+    console.error('Socket.io not initialized');
+    return;
+  }
+  io.emit(event, data);
+}
+
+export { io };`,
+            priority: 85
+          },
+          {
+            type: 'file-create',
+            target: 'src/lib/socket-client.ts',
+            template: `import { io, Socket } from 'socket.io-client';
+
+let socket: Socket | null = null;
+
+export function initializeSocket(userId?: string) {
+  if (socket?.connected) {
+    return socket;
+  }
+
+  socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
+    transports: ['websocket', 'polling'],
+    autoConnect: true
+  });
+
+  socket.on('connect', () => {
+    console.log('Connected to socket server');
+    
+    if (userId) {
+      socket?.emit('user-online', userId);
+      socket?.emit('join-room', \`user:\${userId}\`);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Disconnected from socket server');
+  });
+
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
+  });
+
+  return socket;
+}
+
+export function joinRoom(roomId: string) {
+  if (!socket?.connected) {
+    console.error('Socket not connected');
+    return;
+  }
+  socket.emit('join-room', roomId);
+}
+
+export function leaveRoom(roomId: string) {
+  if (!socket?.connected) {
+    console.error('Socket not connected');
+    return;
+  }
+  socket.emit('leave-room', roomId);
+}
+
+export function sendMessage(room: string, message: string, userId: string) {
+  if (!socket?.connected) {
+    console.error('Socket not connected');
+    return;
+  }
+  socket.emit('message', { room, message, userId });
+}
+
+export function startTyping(room: string, userId: string) {
+  if (!socket?.connected) return;
+  socket.emit('typing', { room, userId });
+}
+
+export function stopTyping(room: string, userId: string) {
+  if (!socket?.connected) return;
+  socket.emit('stop-typing', { room, userId });
+}
+
+export function onMessage(callback: (data: any) => void) {
+  if (!socket) return;
+  socket.on('new-message', callback);
+}
+
+export function onUserTyping(callback: (data: any) => void) {
+  if (!socket) return;
+  socket.on('user-typing', callback);
+}
+
+export function onUserStatus(callback: (data: any) => void) {
+  if (!socket) return;
+  socket.on('user-status', callback);
+}
+
+export function disconnectSocket() {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+}
+
+export { socket };`,
+            priority: 80
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "socket.io": "^4.0.0",
+    "socket.io-client": "^4.0.0"
+  }
+}`,
+            priority: 70
+          }
+        ],
+        envVariables: [
+          {
+            name: 'SOCKET_PORT',
+            description: 'Port for Socket.io server',
+            required: false,
+            type: 'number',
+            defaultValue: '3001'
+          },
+          {
+            name: 'CLIENT_URL',
+            description: 'Client URL for CORS',
+            required: false,
+            type: 'url',
+            defaultValue: 'http://localhost:3000'
+          },
+          {
+            name: 'NEXT_PUBLIC_SOCKET_URL',
+            description: 'Socket server URL for client',
+            required: true,
+            type: 'url',
+            defaultValue: 'http://localhost:3001'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Set up Socket.io server (standalone or with your HTTP server)'
+          },
+          {
+            type: 'manual',
+            description: 'Configure authentication middleware for Socket.io'
+          },
+          {
+            type: 'manual',
+            description: 'Implement room-based logic for your use case'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit', 'express'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['realtime', 'websocket', 'socket.io', 'chat', 'notifications']
+      },
+
+      // Realtime - Pusher
+      {
+        name: 'pusher',
+        type: 'realtime',
+        provider: 'pusher',
+        version: '5.0.0',
+        description: 'Pusher Channels for real-time features',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/pusher-server.ts',
+            template: `import Pusher from 'pusher';
+
+export const pusherServer = new Pusher({
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
+  secret: process.env.PUSHER_SECRET!,
+  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+  useTLS: true
+});
+
+// Trigger an event to a channel
+export async function triggerEvent(
+  channel: string,
+  event: string,
+  data: any
+) {
+  return pusherServer.trigger(channel, event, data);
+}
+
+// Trigger to multiple channels
+export async function triggerBatch(
+  channels: string[],
+  event: string,
+  data: any
+) {
+  return pusherServer.trigger(channels, event, data);
+}
+
+// Trigger to a private channel
+export async function triggerPrivate(
+  userId: string,
+  event: string,
+  data: any
+) {
+  return pusherServer.trigger(\`private-user-\${userId}\`, event, data);
+}
+
+// Trigger to a presence channel
+export async function triggerPresence(
+  channelName: string,
+  event: string,
+  data: any
+) {
+  return pusherServer.trigger(\`presence-\${channelName}\`, event, data);
+}
+
+// Authenticate private/presence channels
+export function authenticateChannel(
+  socketId: string,
+  channel: string,
+  presenceData?: {
+    user_id: string;
+    user_info?: Record<string, any>;
+  }
+) {
+  if (channel.startsWith('presence-') && presenceData) {
+    return pusherServer.authorizeChannel(socketId, channel, presenceData);
+  }
+  
+  return pusherServer.authorizeChannel(socketId, channel);
+}
+
+// Get channel info
+export async function getChannelInfo(channel: string) {
+  return pusherServer.get({
+    path: \`/channels/\${channel}\`,
+    params: { info: 'subscription_count,user_count' }
+  });
+}
+
+// Get all channels
+export async function getChannels() {
+  return pusherServer.get({
+    path: '/channels',
+    params: {}
+  });
+}`,
+            priority: 85
+          },
+          {
+            type: 'file-create',
+            target: 'src/lib/pusher-client.ts',
+            template: `import Pusher from 'pusher-js';
+
+let pusherClient: Pusher | null = null;
+
+export function initializePusher(userId?: string) {
+  if (pusherClient) {
+    return pusherClient;
+  }
+
+  pusherClient = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    authEndpoint: '/api/pusher/auth',
+    auth: {
+      params: { user_id: userId }
+    }
+  });
+
+  // Enable logging in development
+  if (process.env.NODE_ENV === 'development') {
+    Pusher.logToConsole = true;
+  }
+
+  return pusherClient;
+}
+
+export function subscribeToChannel(channelName: string) {
+  if (!pusherClient) {
+    throw new Error('Pusher not initialized');
+  }
+  
+  return pusherClient.subscribe(channelName);
+}
+
+export function subscribeToPrivateChannel(channelName: string) {
+  if (!pusherClient) {
+    throw new Error('Pusher not initialized');
+  }
+  
+  return pusherClient.subscribe(\`private-\${channelName}\`);
+}
+
+export function subscribeToPresenceChannel(channelName: string) {
+  if (!pusherClient) {
+    throw new Error('Pusher not initialized');
+  }
+  
+  return pusherClient.subscribe(\`presence-\${channelName}\`);
+}
+
+export function unsubscribe(channelName: string) {
+  if (!pusherClient) return;
+  
+  pusherClient.unsubscribe(channelName);
+}
+
+export function bind(channel: any, event: string, callback: (data: any) => void) {
+  channel.bind(event, callback);
+}
+
+export function unbind(channel: any, event: string, callback?: (data: any) => void) {
+  if (callback) {
+    channel.unbind(event, callback);
+  } else {
+    channel.unbind(event);
+  }
+}
+
+export function disconnect() {
+  if (pusherClient) {
+    pusherClient.disconnect();
+    pusherClient = null;
+  }
+}
+
+// Hook for React
+export function usePusherEvent(
+  channelName: string,
+  eventName: string,
+  callback: (data: any) => void
+) {
+  if (typeof window === 'undefined') return;
+  
+  const channel = subscribeToChannel(channelName);
+  
+  // Subscribe to event
+  bind(channel, eventName, callback);
+  
+  // Cleanup
+  return () => {
+    unbind(channel, eventName, callback);
+    unsubscribe(channelName);
+  };
+}
+
+export { pusherClient };`,
+            priority: 80
+          },
+          {
+            type: 'json-merge',
+            target: 'package.json',
+            template: `{
+  "dependencies": {
+    "pusher": "^5.0.0",
+    "pusher-js": "^8.0.0"
+  }
+}`,
+            priority: 70
+          }
+        ],
+        envVariables: [
+          {
+            name: 'PUSHER_APP_ID',
+            description: 'Pusher App ID',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'PUSHER_SECRET',
+            description: 'Pusher Secret',
+            required: true,
+            type: 'secret',
+            sensitive: true
+          },
+          {
+            name: 'NEXT_PUBLIC_PUSHER_KEY',
+            description: 'Pusher Key (public)',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'NEXT_PUBLIC_PUSHER_CLUSTER',
+            description: 'Pusher Cluster',
+            required: true,
+            type: 'string',
+            defaultValue: 'eu'
+          }
+        ],
+        dependencies: [],
+        postInjectionSteps: [
+          {
+            type: 'manual',
+            description: 'Create Pusher account and app at pusher.com'
+          },
+          {
+            type: 'manual',
+            description: 'Create API endpoint for channel authentication (/api/pusher/auth)'
+          },
+          {
+            type: 'manual',
+            description: 'Implement presence channel logic if needed'
+          }
+        ],
+        frameworks: ['next', 'remix', 'nuxt', 'sveltekit'],
+        databases: [],
+        platforms: ['web'],
+        tags: ['realtime', 'pusher', 'websocket', 'channels', 'presence']
       }
     ];
 

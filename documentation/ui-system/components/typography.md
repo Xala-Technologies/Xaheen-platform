@@ -35,9 +35,20 @@ interface TypographyProps {
 ```typescript
 import { useTokens, Typography } from '@xala-technologies/ui-system';
 
-const ThemedTypography = ({ children }) => {
+interface ThemedTypographyProps {
+  children: React.ReactNode;
+}
+
+const ThemedTypography = ({ children }: ThemedTypographyProps): JSX.Element => {
   const { colors } = useTokens();
-  return <Typography variant="body" color={colors.typography.default}>{children}</Typography>;
+  return (
+    <Typography 
+      variant="body" 
+      style={{ color: colors.text.primary }}
+    >
+      {children}
+    </Typography>
+  );
 };
 ```
 
