@@ -1,0 +1,210 @@
+{
+  "id": "bundle-saas-starter-2025-01-03",
+  "name": "saas-starter",
+  "displayName": "SaaS Starter Bundle",
+  "description": "Essential services bundle for launching a basic SaaS application with authentication, database, and basic monitoring.",
+  "version": "1.0.0",
+  "type": "saas-starter",
+  "category": "saas",
+  "subcategory": "starter",
+  
+  "author": "Xaheen Platform",
+  "license": "MIT",
+  "keywords": ["saas", "starter", "mvp", "authentication", "database"],
+  "tags": ["starter", "mvp", "essential"],
+  
+  "services": [
+    {
+      "serviceType": "auth",
+      "provider": "better-auth",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 100,
+      "config": {
+        "enableEmailVerification": true,
+        "enableOAuth": false,
+        "sessionTimeout": 604800
+      }
+    },
+    {
+      "serviceType": "database",
+      "provider": "postgresql",
+      "version": "^2.0.0",
+      "required": true,
+      "priority": 90,
+      "config": {
+        "orm": "prisma",
+        "enableDocker": true,
+        "enableMigrations": true
+      }
+    },
+    {
+      "serviceType": "notification",
+      "provider": "resend",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 80,
+      "config": {
+        "enableReactEmails": true,
+        "enableQueue": false,
+        "defaultTemplate": "basic"
+      }
+    }
+  ],
+  
+  "optionalServices": [
+    {
+      "serviceType": "analytics",
+      "provider": "posthog",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 70,
+      "config": {
+        "enableServerSide": true,
+        "enableFeatureFlags": true,
+        "capturePageViews": true
+      }
+    },
+    {
+      "serviceType": "monitoring",
+      "provider": "sentry",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 60,
+      "config": {
+        "enablePerformanceMonitoring": true,
+        "tracesSampleRate": 0.1
+      }
+    }
+  ],
+  
+  "deploymentTargets": ["cloud-native", "serverless"],
+  
+  "resourceRequirements": {
+    "minimum": {
+      "cpu": "0.5",
+      "memory": "1Gi",
+      "storage": "5Gi"
+    },
+    "recommended": {
+      "cpu": "1",
+      "memory": "2Gi",
+      "storage": "20Gi"
+    },
+    "scaling": {
+      "horizontal": {
+        "enabled": true,
+        "minReplicas": 1,
+        "maxReplicas": 5,
+        "targetCPU": 70
+      }
+    }
+  },
+  
+  "complianceRequirements": {
+    "standards": ["gdpr"],
+    "encryption": {
+      "atRest": true,
+      "inTransit": true,
+      "keyManagement": "platform"
+    }
+  },
+  
+  "configurationTemplate": [
+    {
+      "name": "projectName",
+      "description": "Name of your SaaS project",
+      "type": "string",
+      "required": true,
+      "defaultValue": "my-saas-app"
+    },
+    {
+      "name": "domainName",
+      "description": "Domain name for your application",
+      "type": "string",
+      "required": false,
+      "validation": {
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,}$"
+      }
+    },
+    {
+      "name": "enableAnalytics",
+      "description": "Include analytics and tracking",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "enableMonitoring",
+      "description": "Include error monitoring and performance tracking",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    }
+  ],
+  
+  "prerequisites": {
+    "frameworks": ["next", "react"],
+    "platforms": ["web"],
+    "minNodeVersion": "18.0.0"
+  },
+  
+  "postInstallation": {
+    "steps": [
+      {
+        "name": "setup-environment",
+        "description": "Copy environment variables from .env.local.example to .env.local",
+        "manual": true,
+        "order": 1
+      },
+      {
+        "name": "start-database",
+        "description": "Start PostgreSQL database container",
+        "command": "docker-compose up -d postgres",
+        "order": 2
+      },
+      {
+        "name": "run-migrations",
+        "description": "Run database migrations",
+        "command": "npx prisma migrate dev --name init",
+        "order": 3
+      },
+      {
+        "name": "generate-auth-secret",
+        "description": "Generate authentication secret",
+        "command": "node -e \"console.log('AUTH_SECRET=' + require('crypto').randomBytes(32).toString('base64'))\"",
+        "order": 4
+      }
+    ],
+    "verification": [
+      {
+        "name": "database-connection",
+        "command": "npx prisma db seed",
+        "timeout": 30000
+      },
+      {
+        "name": "application-start",
+        "command": "npm run dev",
+        "timeout": 60000
+      }
+    ]
+  },
+  
+  "documentation": {
+    "quickStart": "# SaaS Starter Bundle\n\nThis bundle provides essential services for a basic SaaS application:\n\n- **Authentication**: Better Auth with email/password\n- **Database**: PostgreSQL with Prisma ORM\n- **Notifications**: Resend for transactional emails\n- **Analytics**: PostHog (optional)\n- **Monitoring**: Sentry (optional)\n\n## Quick Start\n\n1. Install dependencies: `npm install`\n2. Setup environment: Copy `.env.local.example` to `.env.local`\n3. Start database: `docker-compose up -d postgres`\n4. Run migrations: `npx prisma migrate dev`\n5. Start application: `npm run dev`\n\n## Features\n\n- User registration and authentication\n- Email verification\n- Database with user management\n- Transactional email capabilities\n- Optional analytics and monitoring\n\n## Next Steps\n\n- Configure your domain and email settings\n- Customize the authentication flow\n- Add your business logic\n- Deploy to your preferred platform",
+    "examples": [
+      {
+        "name": "basic-setup",
+        "description": "Minimal SaaS setup with just essential services",
+        "path": "examples/basic-setup"
+      }
+    ]
+  },
+  
+  "maturity": "stable",
+  "supportLevel": "community",
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

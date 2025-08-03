@@ -1,0 +1,462 @@
+{
+  "id": "payment-stripe-2025-01-03",
+  "name": "stripe",
+  "displayName": "Stripe Payment Processing",
+  "description": "Complete payment processing solution with support for one-time payments, subscriptions, marketplaces, and comprehensive financial operations.",
+  "type": "payment",
+  "provider": "stripe",
+  "version": "2.0.0",
+  "author": "Stripe",
+  "license": "Commercial",
+  "homepage": "https://stripe.com",
+  "repository": "https://github.com/stripe/stripe-node",
+  "keywords": ["payment", "subscriptions", "billing", "marketplace", "financial"],
+  "tags": ["enterprise", "saas", "fintech", "commercial"],
+  
+  "frameworks": [
+    {
+      "name": "next",
+      "versions": ["13.x", "14.x", "15.x"],
+      "priority": 100
+    },
+    {
+      "name": "react",
+      "versions": ["17.x", "18.x", "19.x"],
+      "priority": 90
+    },
+    {
+      "name": "svelte",
+      "versions": ["4.x", "5.x"],
+      "priority": 80
+    },
+    {
+      "name": "node",
+      "versions": ["18.x", "20.x", "22.x"],
+      "priority": 100
+    }
+  ],
+  
+  "platforms": [
+    {
+      "name": "web",
+      "architecture": ["x86_64", "arm64"],
+      "os": ["linux", "darwin", "windows"]
+    },
+    {
+      "name": "serverless",
+      "cloud": {
+        "providers": ["vercel", "netlify", "cloudflare", "aws", "gcp"],
+        "services": ["functions", "edge-runtime", "lambda"]
+      }
+    }
+  ],
+  
+  "databases": ["postgresql", "mysql", "mongodb", "redis"],
+  "runtimes": ["node", "bun", "deno"],
+  
+  "injectionPoints": [
+    {
+      "path": "lib/stripe.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 100,
+      "templatePath": "payment/stripe/server/stripe.ts.hbs"
+    },
+    {
+      "path": "lib/stripe-client.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 90,
+      "templatePath": "payment/stripe/client/stripe-client.ts.hbs"
+    },
+    {
+      "path": "app/api/stripe/checkout/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 80,
+      "condition": "eq framework 'next'",
+      "templatePath": "payment/stripe/next/checkout-route.ts.hbs"
+    },
+    {
+      "path": "app/api/stripe/subscription/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 75,
+      "condition": "and (eq framework 'next') config.enableSubscriptions",
+      "templatePath": "payment/stripe/next/subscription-route.ts.hbs"
+    },
+    {
+      "path": "app/api/stripe/portal/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 70,
+      "condition": "and (eq framework 'next') config.enableCustomerPortal",
+      "templatePath": "payment/stripe/next/portal-route.ts.hbs"
+    },
+    {
+      "path": "app/api/webhooks/stripe/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 65,
+      "condition": "and (eq framework 'next') config.enableWebhooks",
+      "templatePath": "payment/stripe/next/webhook-route.ts.hbs"
+    },
+    {
+      "path": "components/payment/checkout-form.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 60,
+      "templatePath": "payment/stripe/components/checkout-form.tsx.hbs"
+    },
+    {
+      "path": "components/payment/pricing-table.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 55,
+      "condition": "config.enableSubscriptions",
+      "templatePath": "payment/stripe/components/pricing-table.tsx.hbs"
+    },
+    {
+      "path": "components/payment/payment-method-form.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 50,
+      "templatePath": "payment/stripe/components/payment-method-form.tsx.hbs"
+    },
+    {
+      "path": "lib/billing.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 45,
+      "condition": "config.enableSubscriptions",
+      "templatePath": "payment/stripe/server/billing.ts.hbs"
+    },
+    {
+      "path": ".env.local.example",
+      "type": "env-file",
+      "strategy": "append",
+      "priority": 10,
+      "templatePath": "payment/stripe/env.hbs"
+    }
+  ],
+  
+  "envVariables": [
+    {
+      "name": "STRIPE_SECRET_KEY",
+      "description": "Stripe secret key for server-side operations",
+      "required": true,
+      "type": "secret",
+      "validation": {
+        "pattern": "^sk_(test_|live_)[a-zA-Z0-9]{99}$"
+      },
+      "sensitive": true
+    },
+    {
+      "name": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+      "description": "Stripe publishable key for client-side operations",
+      "required": true,
+      "type": "string",
+      "validation": {
+        "pattern": "^pk_(test_|live_)[a-zA-Z0-9]{99}$"
+      }
+    },
+    {
+      "name": "STRIPE_WEBHOOK_SECRET",
+      "description": "Stripe webhook secret for verifying webhook signatures",
+      "required": false,
+      "type": "secret",
+      "validation": {
+        "pattern": "^whsec_[a-zA-Z0-9]+$"
+      },
+      "sensitive": true
+    },
+    {
+      "name": "STRIPE_CONNECT_WEBHOOK_SECRET",
+      "description": "Stripe Connect webhook secret for marketplace operations",
+      "required": false,
+      "type": "secret",
+      "sensitive": true,
+      "environments": ["production", "staging"]
+    }
+  ],
+  
+  "dependencies": [
+    {
+      "name": "stripe",
+      "version": "^14.21.0",
+      "type": "runtime",
+      "reason": "Core Stripe SDK for server-side operations"
+    },
+    {
+      "name": "@stripe/stripe-js",
+      "version": "^2.4.0",
+      "type": "runtime",
+      "reason": "Stripe.js for client-side payment processing"
+    },
+    {
+      "name": "@stripe/react-stripe-js",
+      "version": "^2.4.0",
+      "type": "runtime",
+      "condition": "includes frameworks 'next' 'react'",
+      "reason": "React components for Stripe payment forms"
+    },
+    {
+      "name": "micro",
+      "version": "^10.0.1",
+      "type": "runtime",
+      "condition": "config.enableWebhooks",
+      "reason": "Lightweight server for webhook handling"
+    }
+  ],
+  
+  "postInjectionSteps": [
+    {
+      "name": "install-dependencies",
+      "command": "npm install",
+      "description": "Install Stripe SDK and related dependencies",
+      "timeout": 120000
+    },
+    {
+      "name": "setup-stripe-config",
+      "command": "echo 'Configure your Stripe account at https://dashboard.stripe.com'",
+      "description": "Configure Stripe account settings"
+    },
+    {
+      "name": "setup-webhook-endpoints",
+      "command": "echo 'Configure webhook endpoints in Stripe Dashboard'",
+      "description": "Setup webhook endpoints for payment events",
+      "condition": "config.enableWebhooks"
+    },
+    {
+      "name": "validate-stripe-keys",
+      "command": "node -e \"const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); stripe.accounts.retrieve().then(() => console.log('Stripe keys validated successfully')).catch(e => { console.error('Invalid Stripe keys:', e.message); process.exit(1); })\"",
+      "description": "Validate Stripe API keys",
+      "condition": "env.STRIPE_SECRET_KEY",
+      "timeout": 30000
+    }
+  ],
+  
+  "requirements": {
+    "node": {
+      "min": "18.0.0",
+      "lts": true
+    },
+    "memory": {
+      "min": "256MB",
+      "recommended": "512MB"
+    },
+    "network": {
+      "internet": true,
+      "ports": [443]
+    }
+  },
+  
+  "multiTenant": true,
+  "compliance": ["pci-dss", "gdpr", "ccpa"],
+  
+  "scalingRequirements": {
+    "horizontal": true,
+    "vertical": true,
+    "stateless": true
+  },
+  
+  "category": "payment",
+  "subcategory": "payment-processor",
+  "maturity": "stable",
+  "supportLevel": "commercial",
+  
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "currency": {
+        "type": "string",
+        "default": "usd",
+        "enum": ["usd", "eur", "gbp", "cad", "aud", "jpy"],
+        "description": "Default currency for payments"
+      },
+      "enableSubscriptions": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable subscription billing features"
+      },
+      "enableOneTimePayments": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable one-time payment processing"
+      },
+      "enableCustomerPortal": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Stripe Customer Portal for subscription management"
+      },
+      "enableWebhooks": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable webhook handling for payment events"
+      },
+      "enableConnect": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Stripe Connect for marketplace functionality"
+      },
+      "theme": {
+        "type": "string",
+        "default": "stripe",
+        "enum": ["stripe", "night", "flat"],
+        "description": "Theme for Stripe Elements"
+      },
+      "primaryColor": {
+        "type": "string",
+        "default": "#0570de",
+        "description": "Primary color for payment forms"
+      },
+      "successUrl": {
+        "type": "string",
+        "default": "/payment/success",
+        "description": "URL to redirect after successful payment"
+      },
+      "cancelUrl": {
+        "type": "string",
+        "default": "/payment/cancel",
+        "description": "URL to redirect after cancelled payment"
+      },
+      "subscriptionPlans": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "priceId": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "default": [],
+        "description": "Subscription plans configuration"
+      },
+      "webhookEvents": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [
+          "checkout.session.completed",
+          "customer.subscription.created",
+          "customer.subscription.updated",
+          "customer.subscription.deleted",
+          "invoice.payment_succeeded",
+          "invoice.payment_failed"
+        ],
+        "description": "Webhook events to handle"
+      }
+    }
+  },
+  
+  "defaultConfig": {
+    "currency": "usd",
+    "enableSubscriptions": false,
+    "enableOneTimePayments": true,
+    "enableCustomerPortal": false,
+    "enableWebhooks": true,
+    "enableConnect": false,
+    "theme": "stripe",
+    "primaryColor": "#0570de",
+    "successUrl": "/payment/success",
+    "cancelUrl": "/payment/cancel",
+    "subscriptionPlans": [],
+    "webhookEvents": [
+      "checkout.session.completed",
+      "customer.subscription.created",
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "invoice.payment_succeeded",
+      "invoice.payment_failed"
+    ]
+  },
+  
+  "examples": [
+    {
+      "name": "one-time-payments",
+      "description": "Simple one-time payment processing",
+      "config": {
+        "enableOneTimePayments": true,
+        "enableSubscriptions": false
+      }
+    },
+    {
+      "name": "subscription-saas",
+      "description": "SaaS subscription billing setup",
+      "config": {
+        "enableSubscriptions": true,
+        "enableCustomerPortal": true,
+        "subscriptionPlans": [
+          {
+            "name": "starter",
+            "priceId": "price_starter",
+            "description": "Starter plan for small teams"
+          },
+          {
+            "name": "pro",
+            "priceId": "price_pro",
+            "description": "Professional plan for growing businesses"
+          }
+        ]
+      }
+    },
+    {
+      "name": "marketplace",
+      "description": "Marketplace with Stripe Connect",
+      "config": {
+        "enableConnect": true,
+        "enableOneTimePayments": true,
+        "enableWebhooks": true
+      }
+    }
+  ],
+  
+  "testing": {
+    "unit": {
+      "framework": "jest",
+      "testPaths": ["__tests__/payment"]
+    },
+    "integration": {
+      "framework": "playwright",
+      "services": ["stripe-test-mode"]
+    }
+  },
+  
+  "security": {
+    "vulnerabilityScanning": {
+      "enabled": true,
+      "tools": ["npm-audit", "snyk"]
+    },
+    "secretScanning": {
+      "enabled": true,
+      "patterns": ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]
+    }
+  },
+  
+  "compliance": {
+    "standards": ["pci-dss", "gdpr", "ccpa"],
+    "dataHandling": {
+      "personalData": true,
+      "encryption": true,
+      "audit": true
+    }
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

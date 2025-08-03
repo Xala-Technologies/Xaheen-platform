@@ -1,0 +1,74 @@
+{
+  "name": "resend-notifications",
+  "version": "1.0.0",
+  "description": "Email notifications using Resend with template support",
+  "type": "notification",
+  "context": ["server"],
+  "frameworks": ["next", "express", "fastify", "hono", "elysia"],
+  "dependencies": [
+    {
+      "name": "resend",
+      "version": "^3.0.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@types/react-email",
+      "version": "^2.0.0",
+      "type": "dev",
+      "optional": true
+    },
+    {
+      "name": "react-email",
+      "version": "^2.0.0",
+      "type": "runtime",
+      "optional": true,
+      "condition": "variables.useReactEmail"
+    }
+  ],
+  "files": [
+    {
+      "path": "lib/email/resend-client.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "lib/email/email-service.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "lib/email/templates/welcome.tsx.hbs",
+      "type": "template",
+      "condition": "variables.useReactEmail"
+    },
+    {
+      "path": "lib/email/templates/password-reset.tsx.hbs",
+      "type": "template",
+      "condition": "variables.useReactEmail"
+    },
+    {
+      "path": "lib/email/templates/notification.tsx.hbs",
+      "type": "template",
+      "condition": "variables.useReactEmail"
+    },
+    {
+      "path": "lib/email/templates/index.ts.hbs",
+      "type": "template",
+      "condition": "variables.useReactEmail"
+    },
+    {
+      "path": "utils/email-helpers.ts.hbs",
+      "type": "template"
+    }
+  ],
+  "variables": {
+    "emailProvider": "resend",
+    "useReactEmail": true,
+    "hasTemplates": true,
+    "supportsAttachments": true,
+    "supportsBatch": true
+  },
+  "compatibility": {
+    "requires": [],
+    "suggests": ["notification-toast", "user-management"],
+    "conflicts": ["sendgrid-notifications", "mailgun-notifications"]
+  }
+}

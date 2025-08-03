@@ -1,0 +1,101 @@
+{
+  "name": "ui-base",
+  "version": "1.0.0",
+  "description": "Base UI components following Xala UI System v5 with design tokens",
+  "type": "shared",
+  "context": ["web"],
+  "frameworks": ["react", "next", "svelte", "solid"],
+  "dependencies": [
+    {
+      "name": "@xala-technologies/ui-system",
+      "version": "^5.0.0",
+      "type": "runtime"
+    },
+    {
+      "name": "class-variance-authority",
+      "version": "^0.7.0",
+      "type": "runtime"
+    },
+    {
+      "name": "clsx",
+      "version": "^2.0.0",
+      "type": "runtime"
+    },
+    {
+      "name": "tailwind-merge",
+      "version": "^2.0.0",
+      "type": "runtime"
+    }
+  ],
+  "files": [
+    {
+      "path": "components/ui/button.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/input.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/card.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/dialog.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/form.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/Button.svelte.hbs",
+      "type": "template",
+      "condition": "eq framework 'svelte'"
+    },
+    {
+      "path": "components/ui/Input.svelte.hbs",
+      "type": "template",
+      "condition": "eq framework 'svelte'"
+    },
+    {
+      "path": "components/ui/Card.svelte.hbs",
+      "type": "template",
+      "condition": "eq framework 'svelte'"
+    },
+    {
+      "path": "lib/utils.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "lib/design-tokens.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "styles/globals.css.hbs",
+      "type": "template"
+    },
+    {
+      "path": "tailwind.config.ts.hbs",
+      "type": "config",
+      "merge": true
+    }
+  ],
+  "variables": {
+    "uiSystem": "xala-v5",
+    "hasDesignTokens": true,
+    "hasAccessibility": true,
+    "supportsRTL": true,
+    "hasResponsive": true,
+    "usesCVA": true
+  },
+  "compatibility": {
+    "suggests": ["theme-provider", "accessibility-base"],
+    "conflicts": ["chakra-ui", "mantine-ui", "material-ui"]
+  }
+}

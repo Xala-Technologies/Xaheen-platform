@@ -1,0 +1,439 @@
+{
+  "id": "database-postgresql-2025-01-03",
+  "name": "postgresql",
+  "displayName": "PostgreSQL Database",
+  "description": "Advanced open-source relational database with comprehensive SQL support, JSON capabilities, and enterprise-grade features for modern applications.",
+  "type": "database",
+  "provider": "postgresql",
+  "version": "2.0.0",
+  "author": "PostgreSQL Global Development Group",
+  "license": "PostgreSQL License",
+  "homepage": "https://www.postgresql.org",
+  "repository": "https://github.com/postgres/postgres",
+  "keywords": ["database", "sql", "relational", "json", "acid"],
+  "tags": ["enterprise", "saas", "open-source", "sql"],
+  
+  "frameworks": [
+    {
+      "name": "next",
+      "versions": ["13.x", "14.x", "15.x"],
+      "priority": 100
+    },
+    {
+      "name": "node",
+      "versions": ["18.x", "20.x", "22.x"],
+      "priority": 100
+    },
+    {
+      "name": "prisma",
+      "versions": ["5.x"],
+      "priority": 90
+    },
+    {
+      "name": "drizzle",
+      "versions": ["0.29.x"],
+      "priority": 85
+    }
+  ],
+  
+  "platforms": [
+    {
+      "name": "cloud-native",
+      "cloud": {
+        "providers": ["aws", "gcp", "azure", "digitalocean"],
+        "services": ["rds", "cloud-sql", "managed-postgresql"]
+      }
+    },
+    {
+      "name": "containerized",
+      "container": {
+        "supported": true,
+        "baseImages": ["postgres:16", "postgres:15", "postgres:14"],
+        "requirements": ["persistent-storage"]
+      }
+    }
+  ],
+  
+  "runtimes": ["node", "bun", "deno"],
+  
+  "injectionPoints": [
+    {
+      "path": "lib/database.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 100,
+      "templatePath": "database/postgresql/connection.ts.hbs"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 90,
+      "condition": "eq orm 'prisma'",
+      "templatePath": "database/postgresql/prisma/schema.prisma.hbs"
+    },
+    {
+      "path": "drizzle.config.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 85,
+      "condition": "eq orm 'drizzle'",
+      "templatePath": "database/postgresql/drizzle/config.ts.hbs"
+    },
+    {
+      "path": "src/db/schema.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 80,
+      "condition": "eq orm 'drizzle'",
+      "templatePath": "database/postgresql/drizzle/schema.ts.hbs"
+    },
+    {
+      "path": "migrations/001_initial.sql",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 75,
+      "condition": "config.enableMigrations",
+      "templatePath": "database/postgresql/migrations/initial.sql.hbs"
+    },
+    {
+      "path": "docker-compose.yml",
+      "type": "docker-compose",
+      "strategy": "merge",
+      "priority": 70,
+      "condition": "config.enableDocker",
+      "templatePath": "database/postgresql/docker/docker-compose.yml.hbs"
+    },
+    {
+      "path": ".env.local.example",
+      "type": "env-file",
+      "strategy": "append",
+      "priority": 10,
+      "templatePath": "database/postgresql/env.hbs"
+    }
+  ],
+  
+  "envVariables": [
+    {
+      "name": "DATABASE_URL",
+      "description": "PostgreSQL connection URL",
+      "required": true,
+      "type": "url",
+      "validation": {
+        "pattern": "^postgresql://.*$"
+      },
+      "sensitive": true
+    },
+    {
+      "name": "POSTGRES_HOST",
+      "description": "PostgreSQL server host",
+      "required": false,
+      "defaultValue": "localhost",
+      "type": "string"
+    },
+    {
+      "name": "POSTGRES_PORT",
+      "description": "PostgreSQL server port",
+      "required": false,
+      "defaultValue": "5432",
+      "type": "number",
+      "validation": {
+        "min": 1,
+        "max": 65535
+      }
+    },
+    {
+      "name": "POSTGRES_DB",
+      "description": "PostgreSQL database name",
+      "required": false,
+      "defaultValue": "myapp",
+      "type": "string"
+    },
+    {
+      "name": "POSTGRES_USER",
+      "description": "PostgreSQL username",
+      "required": false,
+      "defaultValue": "postgres",
+      "type": "string"
+    },
+    {
+      "name": "POSTGRES_PASSWORD",
+      "description": "PostgreSQL password",
+      "required": false,
+      "type": "secret",
+      "sensitive": true
+    },
+    {
+      "name": "POSTGRES_SSL",
+      "description": "Enable SSL connection",
+      "required": false,
+      "defaultValue": "false",
+      "type": "boolean",
+      "environments": ["production", "staging"]
+    }
+  ],
+  
+  "dependencies": [
+    {
+      "name": "pg",
+      "version": "^8.11.3",
+      "type": "runtime",
+      "reason": "PostgreSQL client for Node.js"
+    },
+    {
+      "name": "@types/pg",
+      "version": "^8.10.9",
+      "type": "dev",
+      "reason": "TypeScript types for pg"
+    },
+    {
+      "name": "prisma",
+      "version": "^5.9.1",
+      "type": "dev",
+      "condition": "eq orm 'prisma'",
+      "reason": "Prisma database toolkit"
+    },
+    {
+      "name": "@prisma/client",
+      "version": "^5.9.1",
+      "type": "runtime",
+      "condition": "eq orm 'prisma'",
+      "reason": "Prisma client for database operations"
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "^0.29.3",
+      "type": "runtime",
+      "condition": "eq orm 'drizzle'",
+      "reason": "Drizzle ORM for type-safe database operations"
+    },
+    {
+      "name": "drizzle-kit",
+      "version": "^0.20.13",
+      "type": "dev",
+      "condition": "eq orm 'drizzle'",
+      "reason": "Drizzle Kit for migrations and introspection"
+    },
+    {
+      "name": "postgres",
+      "version": "^3.4.3",
+      "type": "runtime",
+      "condition": "config.enableModernClient",
+      "reason": "Modern PostgreSQL client with better performance"
+    }
+  ],
+  
+  "postInjectionSteps": [
+    {
+      "name": "install-dependencies",
+      "command": "npm install",
+      "description": "Install PostgreSQL client and ORM dependencies",
+      "timeout": 120000
+    },
+    {
+      "name": "setup-docker-postgres",
+      "command": "docker-compose up -d postgres",
+      "description": "Start PostgreSQL container",
+      "condition": "config.enableDocker",
+      "timeout": 60000
+    },
+    {
+      "name": "wait-for-postgres",
+      "command": "timeout 30 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'",
+      "description": "Wait for PostgreSQL to be ready",
+      "condition": "config.enableDocker",
+      "timeout": 35000
+    },
+    {
+      "name": "run-migrations-prisma",
+      "command": "npx prisma migrate dev --name init",
+      "description": "Run Prisma database migrations",
+      "condition": "eq orm 'prisma'",
+      "timeout": 60000
+    },
+    {
+      "name": "generate-prisma-client",
+      "command": "npx prisma generate",
+      "description": "Generate Prisma client",
+      "condition": "eq orm 'prisma'",
+      "timeout": 30000
+    },
+    {
+      "name": "run-migrations-drizzle",
+      "command": "npx drizzle-kit push:pg",
+      "description": "Run Drizzle database migrations",
+      "condition": "eq orm 'drizzle'",
+      "timeout": 60000
+    },
+    {
+      "name": "verify-connection",
+      "command": "node -e \"const { Pool } = require('pg'); const pool = new Pool({ connectionString: process.env.DATABASE_URL }); pool.query('SELECT version()').then(res => { console.log('PostgreSQL connected:', res.rows[0].version); pool.end(); }).catch(e => { console.error('Connection failed:', e.message); process.exit(1); })\"",
+      "description": "Verify PostgreSQL connection",
+      "condition": "env.DATABASE_URL",
+      "timeout": 30000
+    }
+  ],
+  
+  "requirements": {
+    "node": {
+      "min": "18.0.0",
+      "lts": true
+    },
+    "memory": {
+      "min": "512MB",
+      "recommended": "2GB"
+    },
+    "disk": {
+      "min": "1GB",
+      "type": "ssd"
+    },
+    "network": {
+      "ports": [5432]
+    }
+  },
+  
+  "multiTenant": true,
+  "compliance": ["gdpr", "hipaa", "pci-dss", "soc2"],
+  
+  "scalingRequirements": {
+    "horizontal": true,
+    "vertical": true,
+    "stateless": false
+  },
+  
+  "category": "database",
+  "subcategory": "relational-database",
+  "maturity": "stable",
+  "supportLevel": "community",
+  
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "orm": {
+        "type": "string",
+        "default": "prisma",
+        "enum": ["prisma", "drizzle", "raw"],
+        "description": "ORM/query builder to use"
+      },
+      "enableDocker": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include Docker configuration for local development"
+      },
+      "enableMigrations": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include database migration setup"
+      },
+      "enableModernClient": {
+        "type": "boolean",
+        "default": false,
+        "description": "Use modern postgres client instead of pg"
+      },
+      "enableSsl": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable SSL connections"
+      },
+      "connectionPoolSize": {
+        "type": "number",
+        "default": 10,
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Maximum number of connections in pool"
+      },
+      "enableReadReplicas": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable read replica configuration"
+      },
+      "enablePartitioning": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable table partitioning setup"
+      },
+      "enableFullTextSearch": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable full-text search configuration"
+      }
+    }
+  },
+  
+  "defaultConfig": {
+    "orm": "prisma",
+    "enableDocker": true,
+    "enableMigrations": true,
+    "enableModernClient": false,
+    "enableSsl": false,
+    "connectionPoolSize": 10,
+    "enableReadReplicas": false,
+    "enablePartitioning": false,
+    "enableFullTextSearch": false
+  },
+  
+  "examples": [
+    {
+      "name": "basic-setup",
+      "description": "Basic PostgreSQL setup with Prisma",
+      "config": {
+        "orm": "prisma",
+        "enableDocker": true
+      }
+    },
+    {
+      "name": "drizzle-setup",
+      "description": "PostgreSQL with Drizzle ORM",
+      "config": {
+        "orm": "drizzle",
+        "enableDocker": true,
+        "enableModernClient": true
+      }
+    },
+    {
+      "name": "production-ready",
+      "description": "Production-ready PostgreSQL with advanced features",
+      "config": {
+        "orm": "prisma",
+        "enableSsl": true,
+        "connectionPoolSize": 20,
+        "enableReadReplicas": true,
+        "enableFullTextSearch": true
+      }
+    }
+  ],
+  
+  "testing": {
+    "integration": {
+      "framework": "jest",
+      "services": ["postgresql"],
+      "environment": {
+        "TEST_DATABASE_URL": "postgresql://test:test@localhost:5433/test_db"
+      }
+    }
+  },
+  
+  "security": {
+    "vulnerabilityScanning": {
+      "enabled": true,
+      "tools": ["npm-audit"]
+    },
+    "secretScanning": {
+      "enabled": true,
+      "patterns": ["DATABASE_URL", "POSTGRES_PASSWORD"]
+    }
+  },
+  
+  "compliance": {
+    "standards": ["gdpr", "hipaa", "pci-dss", "soc2"],
+    "dataHandling": {
+      "personalData": true,
+      "encryption": true,
+      "audit": true
+    }
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

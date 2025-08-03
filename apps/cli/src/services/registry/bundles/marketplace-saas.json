@@ -1,0 +1,588 @@
+{
+  "id": "bundle-marketplace-saas-2025-01-03",
+  "name": "marketplace-saas",
+  "displayName": "Marketplace SaaS Bundle",
+  "description": "Multi-vendor marketplace platform with vendor management, commission tracking, and integrated payment processing for platform businesses.",
+  "version": "1.0.0",
+  "type": "marketplace",
+  "category": "saas",
+  "subcategory": "marketplace",
+  
+  "author": "Xaheen Platform",
+  "license": "Commercial",
+  "keywords": ["marketplace", "saas", "multi-vendor", "platform", "e-commerce", "commission"],
+  "tags": ["marketplace", "platform", "multi-vendor", "e-commerce", "professional"],
+  
+  "services": [
+    {
+      "serviceType": "auth",
+      "provider": "clerk",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 100,
+      "config": {
+        "enableOrganizations": true,
+        "enableMFA": false,
+        "customPages": true,
+        "allowedRedirectOrigins": [],
+        "multiTenantSupport": true,
+        "vendorRegistration": true
+      }
+    },
+    {
+      "serviceType": "rbac",
+      "provider": "casbin",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 98,
+      "config": {
+        "model": "rbac_with_domains",
+        "enableTenantIsolation": true,
+        "enableManagementApi": true,
+        "enableHierarchicalRoles": true,
+        "defaultRoles": [
+          {
+            "name": "platform-admin",
+            "permissions": ["read", "write", "delete", "admin", "platform-management"],
+            "domain": "platform"
+          },
+          {
+            "name": "vendor",
+            "permissions": ["read", "write", "vendor-management", "product-management"],
+            "domain": "vendor"
+          },
+          {
+            "name": "vendor-staff",
+            "permissions": ["read", "write", "product-management"],
+            "domain": "vendor"
+          },
+          {
+            "name": "customer",
+            "permissions": ["read", "purchase", "review"],
+            "domain": "customer"
+          },
+          {
+            "name": "customer-service",
+            "permissions": ["read", "write", "customer-support"],
+            "domain": "platform"
+          }
+        ]
+      }
+    },
+    {
+      "serviceType": "database",
+      "provider": "postgresql",
+      "version": "^2.0.0",
+      "required": true,
+      "priority": 95,
+      "config": {
+        "orm": "prisma",
+        "enableSsl": true,
+        "connectionPoolSize": 75,
+        "enableReadReplicas": true,
+        "enablePartitioning": true,
+        "enableFullTextSearch": true,
+        "multiTenantArchitecture": "shared-database-separate-schemas"
+      }
+    },
+    {
+      "serviceType": "cache",
+      "provider": "redis",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 90,
+      "config": {
+        "enableSessions": true,
+        "enableRateLimiting": true,
+        "enableAdvancedRateLimiting": true,
+        "enableCacheApi": true,
+        "enableProductCaching": true,
+        "ttl": 3600
+      }
+    },
+    {
+      "serviceType": "payment",
+      "provider": "stripe",
+      "version": "^2.0.0",
+      "required": true,
+      "priority": 88,
+      "config": {
+        "enableSubscriptions": true,
+        "enableCustomerPortal": true,
+        "enableWebhooks": true,
+        "enableConnect": true,
+        "enableMarketplace": true,
+        "commissionHandling": "automatic",
+        "currency": "usd",
+        "enableMultiCurrency": true,
+        "payoutSchedule": "weekly",
+        "subscriptionPlans": [
+          {
+            "name": "vendor-basic",
+            "priceId": "price_vendor_basic",
+            "description": "Basic vendor plan with 5% commission"
+          },
+          {
+            "name": "vendor-professional",
+            "priceId": "price_vendor_professional",
+            "description": "Professional vendor plan with 3% commission"
+          },
+          {
+            "name": "vendor-enterprise",
+            "priceId": "price_vendor_enterprise",
+            "description": "Enterprise vendor plan with 2% commission"
+          }
+        ]
+      }
+    },
+    {
+      "serviceType": "notification",
+      "provider": "resend",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 85,
+      "config": {
+        "enableReactEmails": true,
+        "enableQueue": true,
+        "enableTransactionalEmails": true,
+        "enableMarketingEmails": true,
+        "enableVendorNotifications": true,
+        "enableOrderNotifications": true,
+        "defaultTemplate": "marketplace",
+        "trackOpens": true,
+        "trackClicks": true
+      }
+    },
+    {
+      "serviceType": "analytics",
+      "provider": "posthog",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 80,
+      "config": {
+        "enableServerSide": true,
+        "enableFeatureFlags": true,
+        "enableAbTesting": true,
+        "enableSessionReplay": true,
+        "enableHeatmaps": true,
+        "enableFunnelAnalysis": true,
+        "enableCohortAnalysis": true,
+        "enableVendorAnalytics": true,
+        "capturePageViews": true,
+        "captureClicks": true
+      }
+    },
+    {
+      "serviceType": "monitoring",
+      "provider": "sentry",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 78,
+      "config": {
+        "enablePerformanceMonitoring": true,
+        "enableProfiling": true,
+        "enableSourceMaps": true,
+        "enableSessionReplay": true,
+        "tracesSampleRate": 0.1,
+        "profilesSampleRate": 0.1,
+        "enableUserFeedback": true,
+        "enableVendorErrorTracking": true
+      }
+    },
+    {
+      "serviceType": "search",
+      "provider": "algolia",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 75,
+      "config": {
+        "enableProductSearch": true,
+        "enableVendorSearch": true,
+        "enableAutoComplete": true,
+        "enableFacetedSearch": true,
+        "enablePersonalization": true,
+        "enableAnalytics": true,
+        "indexingStrategy": "real-time"
+      }
+    },
+    {
+      "serviceType": "file-upload",
+      "provider": "uploadthing",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 72,
+      "config": {
+        "enableImageUpload": true,
+        "enableVideoUpload": true,
+        "enableDocumentUpload": true,
+        "maxFileSize": "50MB",
+        "allowedTypes": ["image/*", "video/*", "application/pdf"],
+        "enableImageOptimization": true,
+        "enableThumbnailGeneration": true
+      }
+    }
+  ],
+  
+  "optionalServices": [
+    {
+      "serviceType": "crm",
+      "provider": "hubspot",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 70,
+      "config": {
+        "enableVendorCRM": true,
+        "enableCustomerTracking": true,
+        "enableLeadManagement": true,
+        "enableAutomation": true
+      }
+    },
+    {
+      "serviceType": "ai-assistant",
+      "provider": "openai",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 65,
+      "config": {
+        "enableProductRecommendations": true,
+        "enableCustomerSupport": true,
+        "enableContentGeneration": true,
+        "enablePriceOptimization": true
+      }
+    },
+    {
+      "serviceType": "video-streaming",
+      "provider": "mux",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 60,
+      "config": {
+        "enableProductVideos": true,
+        "enableLiveStreaming": true,
+        "enableVideoAnalytics": true
+      }
+    }
+  ],
+  
+  "deploymentTargets": ["cloud-native", "kubernetes", "serverless"],
+  
+  "resourceRequirements": {
+    "minimum": {
+      "cpu": "4",
+      "memory": "8Gi",
+      "storage": "200Gi",
+      "network": "5Gbps"
+    },
+    "recommended": {
+      "cpu": "8",
+      "memory": "16Gi",
+      "storage": "1Ti",
+      "network": "10Gbps"
+    },
+    "scaling": {
+      "horizontal": {
+        "enabled": true,
+        "minReplicas": 3,
+        "maxReplicas": 50,
+        "targetCPU": 70,
+        "targetMemory": 80
+      },
+      "vertical": {
+        "enabled": true,
+        "cpuPolicy": "Auto",
+        "memoryPolicy": "Auto"
+      }
+    }
+  },
+  
+  "complianceRequirements": {
+    "standards": ["gdpr", "ccpa", "pci-dss", "soc2"],
+    "dataResidency": ["US", "EU", "Global"],
+    "encryption": {
+      "atRest": true,
+      "inTransit": true,
+      "keyManagement": "customer"
+    },
+    "audit": {
+      "required": true,
+      "retention": "7y",
+      "realTime": true
+    },
+    "backup": {
+      "required": true,
+      "frequency": "daily",
+      "retention": "90d",
+      "encryption": true,
+      "crossRegion": true
+    }
+  },
+  
+  "monetization": {
+    "model": "usage-based",
+    "billing": {
+      "currency": "USD",
+      "cycles": ["monthly", "annual"],
+      "trial": {
+        "enabled": true,
+        "duration": 30,
+        "features": ["basic"]
+      }
+    },
+    "limits": {
+      "vendors": 1000,
+      "products": 100000,
+      "orders": 1000000,
+      "storage": "1TB"
+    },
+    "metrics": [
+      {
+        "name": "active_vendors",
+        "unit": "vendors",
+        "price": 25.0
+      },
+      {
+        "name": "monthly_orders",
+        "unit": "orders",
+        "price": 0.10
+      },
+      {
+        "name": "storage",
+        "unit": "gb",
+        "price": 0.25
+      },
+      {
+        "name": "api_calls",
+        "unit": "1000_calls",
+        "price": 0.02
+      }
+    ]
+  },
+  
+  "configurationTemplate": [
+    {
+      "name": "platformName",
+      "description": "Name of the marketplace platform",
+      "type": "string",
+      "required": true,
+      "defaultValue": "My Marketplace"
+    },
+    {
+      "name": "domainName",
+      "description": "Production domain name",
+      "type": "string",
+      "required": true,
+      "validation": {
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,}$"
+      }
+    },
+    {
+      "name": "marketplaceType",
+      "description": "Type of marketplace",
+      "type": "string",
+      "required": true,
+      "enum": ["B2B", "B2C", "C2C", "Service"],
+      "defaultValue": "B2C"
+    },
+    {
+      "name": "commissionRate",
+      "description": "Default commission rate percentage",
+      "type": "number",
+      "required": true,
+      "defaultValue": 5.0,
+      "validation": {
+        "min": 0.5,
+        "max": 30.0
+      }
+    },
+    {
+      "name": "vendorApprovalRequired",
+      "description": "Require manual approval for new vendors",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "productApprovalRequired",
+      "description": "Require approval for new products",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": false
+    },
+    {
+      "name": "enableReviews",
+      "description": "Enable product and vendor reviews",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "enableEscrow",
+      "description": "Enable payment escrow for transactions",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": false
+    }
+  ],
+  
+  "customizationPoints": [
+    {
+      "name": "marketplace-model",
+      "description": "Marketplace business model",
+      "type": "configuration",
+      "options": [
+        {"name": "commission", "value": "commission", "description": "Commission-based model"},
+        {"name": "subscription", "value": "subscription", "description": "Vendor subscription model"},
+        {"name": "listing-fee", "value": "listing", "description": "Per-listing fee model"},
+        {"name": "hybrid", "value": "hybrid", "description": "Combination of models"}
+      ]
+    },
+    {
+      "name": "vendor-onboarding",
+      "description": "Vendor onboarding process",
+      "type": "configuration",
+      "options": [
+        {"name": "automatic", "value": "auto", "description": "Automatic vendor approval"},
+        {"name": "manual", "value": "manual", "description": "Manual review required"},
+        {"name": "tiered", "value": "tiered", "description": "Tiered approval process"},
+        {"name": "invite-only", "value": "invite", "description": "Invitation-only platform"}
+      ]
+    },
+    {
+      "name": "payment-model",
+      "description": "Payment processing model",
+      "type": "configuration",
+      "options": [
+        {"name": "platform-first", "value": "platform", "description": "Platform processes all payments"},
+        {"name": "direct-vendor", "value": "direct", "description": "Direct vendor payments"},
+        {"name": "escrow", "value": "escrow", "description": "Escrow-based payments"},
+        {"name": "split-payment", "value": "split", "description": "Automatic payment splitting"}
+      ]
+    }
+  ],
+  
+  "prerequisites": {
+    "frameworks": ["next", "react"],
+    "platforms": ["web"],
+    "minNodeVersion": "18.0.0",
+    "minMemory": "8GB",
+    "minCPU": "4 cores",
+    "databases": ["postgresql"],
+    "services": ["stripe-connect", "search-service"]
+  },
+  
+  "postInstallation": {
+    "steps": [
+      {
+        "name": "setup-marketplace-environment",
+        "description": "Configure marketplace-specific environment variables",
+        "manual": true,
+        "order": 1
+      },
+      {
+        "name": "start-infrastructure",
+        "description": "Start PostgreSQL, Redis, and search services",
+        "command": "docker-compose up -d postgres redis elasticsearch",
+        "order": 2
+      },
+      {
+        "name": "run-marketplace-migrations",
+        "description": "Run marketplace database migrations",
+        "command": "npx prisma migrate dev --name marketplace-init",
+        "order": 3
+      },
+      {
+        "name": "seed-marketplace-data",
+        "description": "Seed initial marketplace data and roles",
+        "command": "npm run seed:marketplace",
+        "order": 4
+      },
+      {
+        "name": "setup-stripe-connect",
+        "description": "Configure Stripe Connect for marketplace payments",
+        "manual": true,
+        "order": 5
+      },
+      {
+        "name": "configure-search-indexing",
+        "description": "Setup product and vendor search indexing",
+        "command": "npm run search:setup",
+        "order": 6
+      },
+      {
+        "name": "setup-file-uploads",
+        "description": "Configure file upload service for products",
+        "command": "npm run uploads:setup",
+        "order": 7
+      },
+      {
+        "name": "configure-notifications",
+        "description": "Setup marketplace email templates and workflows",
+        "command": "npm run notifications:setup:marketplace",
+        "order": 8
+      }
+    ],
+    "verification": [
+      {
+        "name": "database-connection",
+        "command": "npx prisma db seed",
+        "timeout": 30000
+      },
+      {
+        "name": "redis-connection",
+        "command": "node -e \"const Redis = require('ioredis'); const redis = new Redis(process.env.REDIS_URL); redis.ping().then(() => console.log('Redis OK')).finally(() => redis.disconnect());\"",
+        "timeout": 10000
+      },
+      {
+        "name": "search-service",
+        "command": "npm run search:test",
+        "timeout": 15000
+      },
+      {
+        "name": "stripe-connect-test",
+        "command": "npm run payments:test:connect",
+        "timeout": 20000
+      },
+      {
+        "name": "marketplace-application-start",
+        "command": "npm run dev",
+        "timeout": 60000
+      }
+    ]
+  },
+  
+  "documentation": {
+    "quickStart": "# Marketplace SaaS Bundle\n\nComprehensive multi-vendor marketplace platform:\n\n- **Authentication**: Clerk with organization and vendor support\n- **Authorization**: Advanced RBAC for vendors, customers, and platform\n- **Database**: PostgreSQL with multi-tenant architecture\n- **Cache**: Redis with product and session caching\n- **Payments**: Stripe Connect with automatic commission handling\n- **Search**: Algolia for product and vendor discovery\n- **File Uploads**: UploadThing for product media\n- **Notifications**: Advanced email workflows for all stakeholders\n- **Analytics**: PostHog with vendor and customer insights\n- **Monitoring**: Sentry with marketplace-specific tracking\n\n## Marketplace Features\n\n- Multi-vendor product management\n- Automated commission tracking and payouts\n- Advanced search and filtering\n- Vendor onboarding and verification\n- Customer review and rating system\n- Order management and fulfillment\n- Dispute resolution system\n- Marketing and promotional tools\n- Revenue analytics and reporting\n- Mobile-responsive design\n\n## Vendor Management\n\n- Self-service vendor registration\n- Tiered vendor approval process\n- Vendor dashboard with analytics\n- Product listing management\n- Inventory tracking\n- Order fulfillment tools\n- Commission and payout tracking\n- Vendor performance metrics\n- Marketing campaign tools\n\n## Architecture\n\n- Multi-tenant database architecture\n- Microservices-based design\n- Event-driven order processing\n- Real-time search indexing\n- Scalable file storage\n- Automated payment processing\n- Comprehensive audit logging\n- Mobile API support\n\n## Business Models Supported\n\n- Commission-based marketplace\n- Vendor subscription fees\n- Listing fees and premium placements\n- Transaction-based pricing\n- Hybrid revenue models\n- White-label solutions\n\n## Quick Start\n\n1. Install dependencies: `npm install`\n2. Configure environment variables for marketplace\n3. Setup Stripe Connect account\n4. Start infrastructure: `docker-compose up -d`\n5. Run migrations: `npx prisma migrate dev`\n6. Seed marketplace data: `npm run seed:marketplace`\n7. Configure search indexing\n8. Start application: `npm run dev`\n\n## Customization\n\n- Configurable commission rates per vendor\n- Custom vendor onboarding workflows\n- Flexible product categorization\n- Customizable email templates\n- White-label branding options\n- Multiple payment gateway support\n- Custom shipping integrations",
+    "setup": "Detailed marketplace setup guide in docs/marketplace-setup.md",
+    "configuration": "Marketplace configuration guide in docs/marketplace-config.md",
+    "examples": [
+      {
+        "name": "product-marketplace",
+        "description": "Physical product marketplace setup",
+        "path": "examples/product-marketplace"
+      },
+      {
+        "name": "service-marketplace",
+        "description": "Service provider marketplace",
+        "path": "examples/service-marketplace"
+      },
+      {
+        "name": "digital-marketplace",
+        "description": "Digital product marketplace",
+        "path": "examples/digital-marketplace"
+      }
+    ],
+    "troubleshooting": "Marketplace troubleshooting guide in docs/marketplace-troubleshooting.md"
+  },
+  
+  "maturity": "stable",
+  "supportLevel": "commercial",
+  
+  "analytics": {
+    "usageCount": 0,
+    "successRate": 100
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

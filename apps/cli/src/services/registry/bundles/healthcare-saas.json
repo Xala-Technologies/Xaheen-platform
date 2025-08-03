@@ -1,0 +1,569 @@
+{
+  "id": "bundle-healthcare-saas-2025-01-03",
+  "name": "healthcare-saas",
+  "displayName": "Healthcare SaaS Bundle",
+  "description": "HIPAA-compliant healthcare SaaS platform with patient management, electronic health records, and telemedicine capabilities.",
+  "version": "1.0.0",
+  "type": "healthcare",
+  "category": "saas",
+  "subcategory": "healthcare",
+  
+  "author": "Xaheen Platform",
+  "license": "Commercial",
+  "keywords": ["healthcare", "saas", "hipaa", "ehr", "telemedicine", "patient-management"],
+  "tags": ["healthcare", "hipaa", "medical", "compliance", "enterprise"],
+  
+  "services": [
+    {
+      "serviceType": "auth",
+      "provider": "clerk",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 100,
+      "config": {
+        "enableOrganizations": true,
+        "enableMFA": true,
+        "mfaRequired": true,
+        "sessionTimeout": 1800,
+        "customPages": true,
+        "allowedRedirectOrigins": [],
+        "enableAuditLogging": true,
+        "enableDeviceTracking": true
+      }
+    },
+    {
+      "serviceType": "rbac",
+      "provider": "casbin",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 98,
+      "config": {
+        "model": "abac",
+        "enableTenantIsolation": true,
+        "enableManagementApi": true,
+        "enableHierarchicalRoles": true,
+        "enableAttributeBasedAccess": true,
+        "enableAuditLogging": true,
+        "defaultRoles": [
+          {
+            "name": "physician",
+            "permissions": ["read", "write", "prescribe", "diagnose"],
+            "domain": "clinical"
+          },
+          {
+            "name": "nurse",
+            "permissions": ["read", "write", "update-vitals", "administer-meds"],
+            "domain": "clinical"
+          },
+          {
+            "name": "admin",
+            "permissions": ["read", "write", "admin", "user-management"],
+            "domain": "administration"
+          },
+          {
+            "name": "patient",
+            "permissions": ["read", "update-personal", "view-records"],
+            "domain": "patient"
+          },
+          {
+            "name": "billing",
+            "permissions": ["read", "write", "billing", "insurance"],
+            "domain": "financial"
+          },
+          {
+            "name": "compliance-officer",
+            "permissions": ["read", "audit", "compliance", "privacy"],
+            "domain": "compliance"
+          }
+        ]
+      }
+    },
+    {
+      "serviceType": "database",
+      "provider": "postgresql",
+      "version": "^2.0.0",
+      "required": true,
+      "priority": 95,
+      "config": {
+        "orm": "prisma",
+        "enableSsl": true,
+        "connectionPoolSize": 50,
+        "enableReadReplicas": true,
+        "enablePartitioning": true,
+        "enableFullTextSearch": true,
+        "enableEncryptionAtRest": true,
+        "enableColumnLevelEncryption": true,
+        "backupSchedule": "hourly",
+        "enablePointInTimeRecovery": true
+      }
+    },
+    {
+      "serviceType": "cache",
+      "provider": "redis",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 90,
+      "config": {
+        "enableSessions": true,
+        "enableAdvancedRateLimiting": true,
+        "enableCacheApi": true,
+        "enableEncryption": true,
+        "enableAuditLogging": true,
+        "maxMemoryPolicy": "allkeys-lru",
+        "ttl": 1800
+      }
+    },
+    {
+      "serviceType": "notification",
+      "provider": "resend",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 85,
+      "config": {
+        "enableReactEmails": true,
+        "enableQueue": true,
+        "enableAppointmentReminders": true,
+        "enableMedicationReminders": true,
+        "enableTestResultNotifications": true,
+        "enableEncryption": true,
+        "defaultTemplate": "healthcare",
+        "trackOpens": false,
+        "trackClicks": false
+      }
+    },
+    {
+      "serviceType": "analytics",
+      "provider": "posthog",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 80,
+      "config": {
+        "enableServerSide": true,
+        "enableFeatureFlags": true,
+        "enableAbTesting": false,
+        "enableSessionReplay": false,
+        "enableHeatmaps": false,
+        "enableGdprMode": true,
+        "respectDoNotTrack": true,
+        "enableAnonymization": true,
+        "enableHipaaMode": true
+      }
+    },
+    {
+      "serviceType": "monitoring",
+      "provider": "sentry",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 78,
+      "config": {
+        "enablePerformanceMonitoring": true,
+        "enableProfiling": true,
+        "enableSourceMaps": true,
+        "enableSessionReplay": false,
+        "tracesSampleRate": 0.05,
+        "profilesSampleRate": 0.05,
+        "enableUserFeedback": true,
+        "beforeSend": "filter-phi",
+        "enableSecurityMonitoring": true
+      }
+    },
+    {
+      "serviceType": "audit",
+      "provider": "audit-log",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 75,
+      "config": {
+        "enableRealTimeAudit": true,
+        "retentionPeriod": "6y",
+        "enableTamperProof": true,
+        "enableDigitalSignatures": true,
+        "enableHipaaAudit": true,
+        "compressionEnabled": true,
+        "enableSearchIndexing": true
+      }
+    },
+    {
+      "serviceType": "encryption",
+      "provider": "vault",
+      "version": "^1.0.0",
+      "required": true,
+      "priority": 72,
+      "config": {
+        "enableDatabaseEncryption": true,
+        "enableFileEncryption": true,
+        "enableTransitEncryption": true,
+        "keyRotationPolicy": "90d",
+        "encryptionAlgorithm": "AES-256-GCM",
+        "enableHSM": true
+      }
+    }
+  ],
+  
+  "optionalServices": [
+    {
+      "serviceType": "ai-assistant",
+      "provider": "openai",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 70,
+      "config": {
+        "enableClinicalDecisionSupport": true,
+        "enableDiagnosisAssistance": true,
+        "enableDrugInteractionChecking": true,
+        "enableDocumentSummarization": true,
+        "enableHipaaCompliance": true
+      }
+    },
+    {
+      "serviceType": "video-streaming",
+      "provider": "twilio-video",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 65,
+      "config": {
+        "enableTelemedicine": true,
+        "enableRecording": true,
+        "enableEncryption": true,
+        "enableWaitingRooms": true,
+        "maxParticipants": 10
+      }
+    },
+    {
+      "serviceType": "third-party-api",
+      "provider": "hl7-fhir",
+      "version": "^1.0.0",
+      "required": false,
+      "priority": 60,
+      "config": {
+        "enableFhirR4": true,
+        "enableInteroperability": true,
+        "enableHealthRecordExchange": true
+      }
+    }
+  ],
+  
+  "deploymentTargets": ["kubernetes", "cloud-native", "hybrid"],
+  
+  "resourceRequirements": {
+    "minimum": {
+      "cpu": "8",
+      "memory": "16Gi",
+      "storage": "1Ti",
+      "network": "10Gbps"
+    },
+    "recommended": {
+      "cpu": "16",
+      "memory": "32Gi",
+      "storage": "5Ti",
+      "network": "25Gbps"
+    },
+    "scaling": {
+      "horizontal": {
+        "enabled": true,
+        "minReplicas": 5,
+        "maxReplicas": 100,
+        "targetCPU": 50,
+        "targetMemory": 60
+      },
+      "vertical": {
+        "enabled": true,
+        "cpuPolicy": "Auto",
+        "memoryPolicy": "Auto"
+      }
+    }
+  },
+  
+  "complianceRequirements": {
+    "standards": ["hipaa", "hitech", "gdpr", "ccpa", "soc2", "iso27001"],
+    "dataResidency": ["US", "EU"],
+    "encryption": {
+      "atRest": true,
+      "inTransit": true,
+      "keyManagement": "customer",
+      "level": "fips-140-2",
+      "algorithms": ["AES-256", "RSA-4096"]
+    },
+    "audit": {
+      "required": true,
+      "retention": "6y",
+      "realTime": true,
+      "level": "comprehensive",
+      "immutable": true
+    },
+    "backup": {
+      "required": true,
+      "frequency": "continuous",
+      "retention": "6y",
+      "encryption": true,
+      "crossRegion": true,
+      "pointInTimeRecovery": true
+    }
+  },
+  
+  "monetization": {
+    "model": "subscription",
+    "billing": {
+      "currency": "USD",
+      "cycles": ["monthly", "annual"],
+      "trial": {
+        "enabled": true,
+        "duration": 30,
+        "features": ["basic"]
+      }
+    },
+    "limits": {
+      "providers": 1000,
+      "patients": 100000,
+      "appointments": 1000000,
+      "storage": "10TB"
+    },
+    "metrics": [
+      {
+        "name": "healthcare_providers",
+        "unit": "providers",
+        "price": 50.0
+      },
+      {
+        "name": "patient_records",
+        "unit": "records",
+        "price": 2.0
+      },
+      {
+        "name": "telemedicine_minutes",
+        "unit": "minutes",
+        "price": 0.10
+      },
+      {
+        "name": "storage",
+        "unit": "gb",
+        "price": 1.0
+      }
+    ]
+  },
+  
+  "configurationTemplate": [
+    {
+      "name": "organizationName",
+      "description": "Name of the healthcare organization",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "organizationType",
+      "description": "Type of healthcare organization",
+      "type": "string",
+      "required": true,
+      "enum": ["hospital", "clinic", "practice", "telemedicine", "pharmacy"],
+      "defaultValue": "clinic"
+    },
+    {
+      "name": "regulatoryJurisdiction",
+      "description": "Primary regulatory jurisdiction",
+      "type": "string",
+      "required": true,
+      "enum": ["US", "EU", "UK", "CA"],
+      "defaultValue": "US"
+    },
+    {
+      "name": "enableTelemedicine",
+      "description": "Enable telemedicine capabilities",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "enablePrescriptions",
+      "description": "Enable electronic prescriptions",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "enableBilling",
+      "description": "Enable medical billing features",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "enablePatientPortal",
+      "description": "Enable patient portal access",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true
+    },
+    {
+      "name": "dataRetentionPeriod",
+      "description": "Patient data retention period",
+      "type": "string",
+      "required": true,
+      "enum": ["5y", "7y", "10y", "permanent"],
+      "defaultValue": "7y"
+    }
+  ],
+  
+  "customizationPoints": [
+    {
+      "name": "specialty-configuration",
+      "description": "Medical specialty configuration",
+      "type": "configuration",
+      "options": [
+        {"name": "general-practice", "value": "general", "description": "General Practice/Family Medicine"},
+        {"name": "cardiology", "value": "cardiology", "description": "Cardiology Specialty"},
+        {"name": "mental-health", "value": "mental", "description": "Mental Health/Psychiatry"},
+        {"name": "pediatrics", "value": "pediatrics", "description": "Pediatric Medicine"},
+        {"name": "orthopedics", "value": "orthopedics", "description": "Orthopedic Surgery"}
+      ]
+    },
+    {
+      "name": "ehr-integration",
+      "description": "Electronic Health Record integration",
+      "type": "configuration",
+      "options": [
+        {"name": "epic", "value": "epic", "description": "Epic EHR Integration"},
+        {"name": "cerner", "value": "cerner", "description": "Cerner EHR Integration"},
+        {"name": "allscripts", "value": "allscripts", "description": "Allscripts Integration"},
+        {"name": "custom", "value": "custom", "description": "Custom EHR System"}
+      ]
+    },
+    {
+      "name": "compliance-level",
+      "description": "Compliance and security level",
+      "type": "configuration",
+      "options": [
+        {"name": "hipaa-basic", "value": "basic", "description": "Basic HIPAA Compliance"},
+        {"name": "hipaa-enhanced", "value": "enhanced", "description": "Enhanced HIPAA + HITECH"},
+        {"name": "government", "value": "government", "description": "Government/Military Standards"},
+        {"name": "international", "value": "international", "description": "Multi-jurisdiction Compliance"}
+      ]
+    }
+  ],
+  
+  "prerequisites": {
+    "frameworks": ["next"],
+    "platforms": ["web"],
+    "minNodeVersion": "20.0.0",
+    "minMemory": "16GB",
+    "minCPU": "8 cores",
+    "databases": ["postgresql"],
+    "runtimes": ["kubernetes"],
+    "certifications": ["HIPAA", "SOC2", "HITECH"]
+  },
+  
+  "postInstallation": {
+    "steps": [
+      {
+        "name": "setup-healthcare-environment",
+        "description": "Configure healthcare-specific environment variables and secrets",
+        "manual": true,
+        "order": 1
+      },
+      {
+        "name": "deploy-secure-infrastructure",
+        "description": "Deploy HIPAA-compliant Kubernetes infrastructure",
+        "command": "kubectl apply -f k8s/healthcare/",
+        "order": 2
+      },
+      {
+        "name": "initialize-encrypted-databases",
+        "description": "Initialize PostgreSQL with healthcare encryption",
+        "command": "npm run db:init:healthcare",
+        "order": 3
+      },
+      {
+        "name": "setup-vault-encryption",
+        "description": "Configure HashiCorp Vault for PHI encryption",
+        "command": "npm run vault:init:healthcare",
+        "order": 4
+      },
+      {
+        "name": "setup-audit-logging",
+        "description": "Configure HIPAA audit logging system",
+        "command": "npm run audit:setup:hipaa",
+        "order": 5
+      },
+      {
+        "name": "configure-access-controls",
+        "description": "Setup role-based access controls for healthcare",
+        "command": "npm run rbac:setup:healthcare",
+        "order": 6
+      },
+      {
+        "name": "setup-backup-system",
+        "description": "Configure encrypted backup and disaster recovery",
+        "command": "npm run backup:setup:healthcare",
+        "order": 7
+      },
+      {
+        "name": "verify-hipaa-compliance",
+        "description": "Run HIPAA compliance verification checks",
+        "command": "npm run compliance:verify:hipaa",
+        "order": 8
+      }
+    ],
+    "verification": [
+      {
+        "name": "encryption-verification",
+        "command": "npm run security:verify:encryption",
+        "timeout": 60000
+      },
+      {
+        "name": "access-control-test",
+        "command": "npm run rbac:test:healthcare",
+        "timeout": 45000
+      },
+      {
+        "name": "audit-logging-test",
+        "command": "npm run audit:test:comprehensive",
+        "timeout": 30000
+      },
+      {
+        "name": "backup-restoration-test",
+        "command": "npm run backup:test:restore",
+        "timeout": 120000
+      },
+      {
+        "name": "hipaa-compliance-scan",
+        "command": "npm run compliance:scan:hipaa",
+        "timeout": 180000
+      }
+    ]
+  },
+  
+  "documentation": {
+    "quickStart": "# Healthcare SaaS Bundle\n\nHIPAA-compliant healthcare platform with comprehensive medical features:\n\n- **Authentication**: Clerk with mandatory MFA and audit logging\n- **Authorization**: Advanced RBAC/ABAC for healthcare roles\n- **Database**: Encrypted PostgreSQL with column-level encryption\n- **Cache**: Encrypted Redis with audit logging\n- **Encryption**: HashiCorp Vault for PHI protection\n- **Notifications**: Encrypted healthcare communications\n- **Analytics**: HIPAA-compliant analytics with anonymization\n- **Monitoring**: Security monitoring with PHI filtering\n- **Audit**: Comprehensive HIPAA audit logging\n- **Compliance**: HIPAA, HITECH, SOC2 compliance\n\n## Healthcare Features\n\n- Electronic Health Records (EHR)\n- Patient management and scheduling\n- Provider credentialing and management\n- Telemedicine and video consultations\n- Electronic prescriptions (eRx)\n- Medical billing and insurance claims\n- Laboratory results management\n- Clinical decision support\n- Patient portal access\n- Mobile healthcare app support\n\n## HIPAA Compliance Features\n\n- End-to-end encryption of PHI\n- Comprehensive audit trails\n- Role-based access controls\n- Automatic data de-identification\n- Secure communication channels\n- Breach detection and notification\n- Business Associate Agreement (BAA) support\n- Risk assessment and management\n- Employee training modules\n- Incident response procedures\n\n## Clinical Workflow Support\n\n- Appointment scheduling and reminders\n- Clinical documentation templates\n- Order sets and care plans\n- Medication management\n- Allergy and drug interaction alerts\n- Clinical reporting and analytics\n- Quality measure tracking\n- Population health management\n- Care coordination tools\n\n## Security Architecture\n\n- Zero-trust network security\n- Multi-factor authentication required\n- Encryption at rest and in transit\n- Regular security assessments\n- Penetration testing compliance\n- Vulnerability management\n- Incident response automation\n- Security awareness training\n\n## Deployment Architecture\n\n- Kubernetes-native with security policies\n- Multi-region deployment with data residency\n- Automated disaster recovery\n- Infrastructure as code\n- Container security scanning\n- Network segmentation\n- API gateway with rate limiting\n- Database clustering and replication\n\n## Integration Capabilities\n\n- HL7 FHIR R4 support\n- EHR system integrations\n- Laboratory information systems\n- Radiology (DICOM) support\n- Pharmacy management systems\n- Insurance verification services\n- Health information exchanges\n- Public health reporting",
+    "setup": "Comprehensive healthcare setup guide in docs/healthcare-setup.md",
+    "configuration": "Healthcare configuration guide in docs/healthcare-config.md",
+    "examples": [
+      {
+        "name": "clinic-management",
+        "description": "Complete clinic management system",
+        "path": "examples/clinic-management"
+      },
+      {
+        "name": "telemedicine-platform",
+        "description": "Telemedicine and remote care platform",
+        "path": "examples/telemedicine"
+      },
+      {
+        "name": "patient-portal",
+        "description": "Patient self-service portal",
+        "path": "examples/patient-portal"
+      }
+    ],
+    "troubleshooting": "Healthcare troubleshooting guide in docs/healthcare-troubleshooting.md"
+  },
+  
+  "maturity": "stable",
+  "supportLevel": "enterprise",
+  
+  "analytics": {
+    "usageCount": 0,
+    "successRate": 100
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

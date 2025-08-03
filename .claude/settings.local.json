@@ -39,7 +39,8 @@
       "Bash(bun x turbo daemon:*)",
       "Bash(cd:*)",
       "Bash(bun build:*)",
-      "Bash(bun test:*)"
+      "Bash(bun test:*)",
+      "Bash(cd:*)"
     ],
     "deny": []
   }

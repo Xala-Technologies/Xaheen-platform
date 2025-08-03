@@ -1,0 +1,380 @@
+{
+  "id": "notification-resend-2025-01-03",
+  "name": "resend",
+  "displayName": "Resend Email Service",
+  "description": "Modern email API for developers with excellent deliverability, built-in templates, and comprehensive analytics for transactional and marketing emails.",
+  "type": "notification",
+  "provider": "resend",
+  "version": "1.0.0",
+  "author": "Resend",
+  "license": "Commercial",
+  "homepage": "https://resend.com",
+  "repository": "https://github.com/resendlabs/resend-node",
+  "keywords": ["email", "notification", "transactional", "marketing", "templates"],
+  "tags": ["enterprise", "saas", "email", "api"],
+  
+  "frameworks": [
+    {
+      "name": "next",
+      "versions": ["13.x", "14.x", "15.x"],
+      "priority": 100
+    },
+    {
+      "name": "react",
+      "versions": ["17.x", "18.x", "19.x"],
+      "priority": 90
+    },
+    {
+      "name": "node",
+      "versions": ["18.x", "20.x", "22.x"],
+      "priority": 100
+    },
+    {
+      "name": "express",
+      "versions": ["4.x"],
+      "priority": 80
+    }
+  ],
+  
+  "platforms": [
+    {
+      "name": "web",
+      "architecture": ["x86_64", "arm64"],
+      "os": ["linux", "darwin", "windows"]
+    },
+    {
+      "name": "serverless",
+      "cloud": {
+        "providers": ["vercel", "netlify", "cloudflare"],
+        "services": ["functions", "edge-runtime"]
+      }
+    }
+  ],
+  
+  "runtimes": ["node", "bun", "deno"],
+  
+  "injectionPoints": [
+    {
+      "path": "lib/resend.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 100,
+      "templatePath": "notification/resend/server/resend.ts.hbs"
+    },
+    {
+      "path": "lib/email-templates.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 90,
+      "templatePath": "notification/resend/server/email-templates.ts.hbs"
+    },
+    {
+      "path": "app/api/email/send/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 80,
+      "condition": "eq framework 'next'",
+      "templatePath": "notification/resend/next/send-route.ts.hbs"
+    },
+    {
+      "path": "emails/welcome.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 70,
+      "condition": "config.enableReactEmails",
+      "templatePath": "notification/resend/emails/welcome.tsx.hbs"
+    },
+    {
+      "path": "emails/password-reset.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 65,
+      "condition": "config.enableReactEmails",
+      "templatePath": "notification/resend/emails/password-reset.tsx.hbs"
+    },
+    {
+      "path": "emails/invoice.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 60,
+      "condition": "and config.enableReactEmails config.enableInvoiceEmails",
+      "templatePath": "notification/resend/emails/invoice.tsx.hbs"
+    },
+    {
+      "path": "lib/email-queue.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 55,
+      "condition": "config.enableQueue",
+      "templatePath": "notification/resend/server/email-queue.ts.hbs"
+    },
+    {
+      "path": ".env.local.example",
+      "type": "env-file",
+      "strategy": "append",
+      "priority": 10,
+      "templatePath": "notification/resend/env.hbs"
+    }
+  ],
+  
+  "envVariables": [
+    {
+      "name": "RESEND_API_KEY",
+      "description": "Resend API key for sending emails",
+      "required": true,
+      "type": "secret",
+      "validation": {
+        "pattern": "^re_[a-zA-Z0-9_]+$"
+      },
+      "sensitive": true
+    },
+    {
+      "name": "FROM_EMAIL",
+      "description": "Default from email address",
+      "required": true,
+      "type": "string",
+      "validation": {
+        "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+      }
+    },
+    {
+      "name": "FROM_NAME",
+      "description": "Default from name for emails",
+      "required": false,
+      "defaultValue": "Your App",
+      "type": "string"
+    },
+    {
+      "name": "REPLY_TO_EMAIL",
+      "description": "Default reply-to email address",
+      "required": false,
+      "type": "string",
+      "validation": {
+        "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+      }
+    }
+  ],
+  
+  "dependencies": [
+    {
+      "name": "resend",
+      "version": "^3.2.0",
+      "type": "runtime",
+      "reason": "Core Resend SDK for email operations"
+    },
+    {
+      "name": "@react-email/components",
+      "version": "^0.0.15",
+      "type": "runtime",
+      "condition": "config.enableReactEmails",
+      "reason": "React components for building email templates"
+    },
+    {
+      "name": "@react-email/render",
+      "version": "^0.0.12",
+      "type": "runtime",
+      "condition": "config.enableReactEmails",
+      "reason": "Render React components to HTML for emails"
+    },
+    {
+      "name": "bullmq",
+      "version": "^5.4.0",
+      "type": "runtime",
+      "condition": "config.enableQueue",
+      "reason": "Queue system for email processing"
+    },
+    {
+      "name": "ioredis",
+      "version": "^5.3.2",
+      "type": "runtime",
+      "condition": "config.enableQueue",
+      "reason": "Redis client for queue backend"
+    }
+  ],
+  
+  "postInjectionSteps": [
+    {
+      "name": "install-dependencies",
+      "command": "npm install",
+      "description": "Install Resend and email dependencies",
+      "timeout": 120000
+    },
+    {
+      "name": "setup-resend-domain",
+      "command": "echo 'Configure your domain at https://resend.com/domains'",
+      "description": "Configure email domain in Resend dashboard"
+    },
+    {
+      "name": "verify-api-key",
+      "command": "node -e \"const { Resend } = require('resend'); const resend = new Resend(process.env.RESEND_API_KEY); resend.domains.list().then(() => console.log('Resend API key verified')).catch(e => { console.error('Invalid Resend API key:', e.message); process.exit(1); })\"",
+      "description": "Verify Resend API key",
+      "condition": "env.RESEND_API_KEY",
+      "timeout": 30000
+    },
+    {
+      "name": "generate-test-email",
+      "command": "echo 'Run: npm run email:dev to start email development server'",
+      "description": "Generate test email templates",
+      "condition": "config.enableReactEmails"
+    }
+  ],
+  
+  "requirements": {
+    "node": {
+      "min": "18.0.0",
+      "lts": true
+    },
+    "memory": {
+      "min": "128MB",
+      "recommended": "256MB"
+    },
+    "network": {
+      "internet": true,
+      "ports": [443]
+    }
+  },
+  
+  "multiTenant": true,
+  "compliance": ["gdpr", "ccpa", "can-spam"],
+  
+  "scalingRequirements": {
+    "horizontal": true,
+    "vertical": true,
+    "stateless": true
+  },
+  
+  "category": "notification",
+  "subcategory": "email-service",
+  "maturity": "stable",
+  "supportLevel": "commercial",
+  
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enableReactEmails": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable React Email components for template building"
+      },
+      "enableQueue": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable email queue for batch processing"
+      },
+      "enableInvoiceEmails": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable invoice email templates"
+      },
+      "enableMarketingEmails": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable marketing email capabilities"
+      },
+      "defaultTemplate": {
+        "type": "string",
+        "default": "basic",
+        "enum": ["basic", "modern", "minimal"],
+        "description": "Default email template style"
+      },
+      "trackOpens": {
+        "type": "boolean",
+        "default": true,
+        "description": "Track email opens"
+      },
+      "trackClicks": {
+        "type": "boolean",
+        "default": true,
+        "description": "Track email clicks"
+      },
+      "unsubscribeUrl": {
+        "type": "string",
+        "description": "URL for unsubscribe functionality"
+      },
+      "brandColor": {
+        "type": "string",
+        "default": "#000000",
+        "description": "Brand color for email templates"
+      },
+      "logoUrl": {
+        "type": "string",
+        "description": "Logo URL for email headers"
+      }
+    }
+  },
+  
+  "defaultConfig": {
+    "enableReactEmails": true,
+    "enableQueue": false,
+    "enableInvoiceEmails": false,
+    "enableMarketingEmails": false,
+    "defaultTemplate": "basic",
+    "trackOpens": true,
+    "trackClicks": true,
+    "brandColor": "#000000"
+  },
+  
+  "examples": [
+    {
+      "name": "basic-transactional",
+      "description": "Basic transactional email setup",
+      "config": {
+        "enableReactEmails": true,
+        "enableQueue": false
+      }
+    },
+    {
+      "name": "advanced-templates",
+      "description": "Advanced email templates with React components",
+      "config": {
+        "enableReactEmails": true,
+        "enableInvoiceEmails": true,
+        "defaultTemplate": "modern"
+      }
+    },
+    {
+      "name": "high-volume",
+      "description": "High-volume email processing with queue",
+      "config": {
+        "enableReactEmails": true,
+        "enableQueue": true,
+        "enableMarketingEmails": true
+      }
+    }
+  ],
+  
+  "testing": {
+    "unit": {
+      "framework": "jest",
+      "testPaths": ["__tests__/email"]
+    },
+    "integration": {
+      "framework": "playwright",
+      "services": ["resend-test-mode"]
+    }
+  },
+  
+  "security": {
+    "vulnerabilityScanning": {
+      "enabled": true,
+      "tools": ["npm-audit"]
+    },
+    "secretScanning": {
+      "enabled": true,
+      "patterns": ["RESEND_API_KEY"]
+    }
+  },
+  
+  "compliance": {
+    "standards": ["gdpr", "ccpa", "can-spam"],
+    "dataHandling": {
+      "personalData": true,
+      "encryption": true,
+      "audit": true
+    }
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

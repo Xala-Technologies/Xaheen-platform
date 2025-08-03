@@ -1,0 +1,441 @@
+{
+  "id": "cache-redis-2025-01-03",
+  "name": "redis",
+  "displayName": "Redis Cache",
+  "description": "High-performance in-memory data store used as cache, session store, message broker, and real-time data processing engine.",
+  "type": "cache",
+  "provider": "redis",
+  "version": "1.0.0",
+  "author": "Redis Ltd.",
+  "license": "BSD-3-Clause",
+  "homepage": "https://redis.io",
+  "repository": "https://github.com/redis/redis",
+  "keywords": ["cache", "session", "pubsub", "real-time", "memory-store"],
+  "tags": ["enterprise", "saas", "performance", "real-time"],
+  
+  "frameworks": [
+    {
+      "name": "next",
+      "versions": ["13.x", "14.x", "15.x"],
+      "priority": 100
+    },
+    {
+      "name": "node",
+      "versions": ["18.x", "20.x", "22.x"],
+      "priority": 100
+    },
+    {
+      "name": "express",
+      "versions": ["4.x"],
+      "priority": 90
+    }
+  ],
+  
+  "platforms": [
+    {
+      "name": "cloud-native",
+      "cloud": {
+        "providers": ["aws", "gcp", "azure", "digitalocean"],
+        "services": ["elasticache", "memorystore", "redis-cache"]
+      }
+    },
+    {
+      "name": "containerized",
+      "container": {
+        "supported": true,
+        "baseImages": ["redis:7", "redis:6", "redis/redis-stack"],
+        "requirements": ["persistent-storage"]
+      }
+    }
+  ],
+  
+  "runtimes": ["node", "bun", "deno"],
+  
+  "injectionPoints": [
+    {
+      "path": "lib/redis.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 100,
+      "templatePath": "cache/redis/connection.ts.hbs"
+    },
+    {
+      "path": "lib/cache.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 95,
+      "templatePath": "cache/redis/cache-service.ts.hbs"
+    },
+    {
+      "path": "lib/session-store.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 90,
+      "condition": "config.enableSessions",
+      "templatePath": "cache/redis/session-store.ts.hbs"
+    },
+    {
+      "path": "lib/pubsub.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 85,
+      "condition": "config.enablePubSub",
+      "templatePath": "cache/redis/pubsub.ts.hbs"
+    },
+    {
+      "path": "lib/rate-limiter.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 80,
+      "condition": "config.enableRateLimiting",
+      "templatePath": "cache/redis/rate-limiter.ts.hbs"
+    },
+    {
+      "path": "app/api/cache/[...key]/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 75,
+      "condition": "and (eq framework 'next') config.enableCacheApi",
+      "templatePath": "cache/redis/next/cache-api-route.ts.hbs"
+    },
+    {
+      "path": "docker-compose.yml",
+      "type": "docker-compose",
+      "strategy": "merge",
+      "priority": 70,
+      "condition": "config.enableDocker",
+      "templatePath": "cache/redis/docker/docker-compose.yml.hbs"
+    },
+    {
+      "path": ".env.local.example",
+      "type": "env-file",
+      "strategy": "append",
+      "priority": 10,
+      "templatePath": "cache/redis/env.hbs"
+    }
+  ],
+  
+  "envVariables": [
+    {
+      "name": "REDIS_URL",
+      "description": "Redis connection URL",
+      "required": true,
+      "type": "url",
+      "validation": {
+        "pattern": "^redis(s)?://.*$"
+      },
+      "sensitive": true
+    },
+    {
+      "name": "REDIS_HOST",
+      "description": "Redis server host",
+      "required": false,
+      "defaultValue": "localhost",
+      "type": "string"
+    },
+    {
+      "name": "REDIS_PORT",
+      "description": "Redis server port",
+      "required": false,
+      "defaultValue": "6379",
+      "type": "number",
+      "validation": {
+        "min": 1,
+        "max": 65535
+      }
+    },
+    {
+      "name": "REDIS_PASSWORD",
+      "description": "Redis authentication password",
+      "required": false,
+      "type": "secret",
+      "sensitive": true
+    },
+    {
+      "name": "REDIS_DB",
+      "description": "Redis database number",
+      "required": false,
+      "defaultValue": "0",
+      "type": "number",
+      "validation": {
+        "min": 0,
+        "max": 15
+      }
+    },
+    {
+      "name": "REDIS_TLS",
+      "description": "Enable TLS connection",
+      "required": false,
+      "defaultValue": "false",
+      "type": "boolean",
+      "environments": ["production", "staging"]
+    }
+  ],
+  
+  "dependencies": [
+    {
+      "name": "ioredis",
+      "version": "^5.3.2",
+      "type": "runtime",
+      "reason": "Robust Redis client for Node.js with cluster support"
+    },
+    {
+      "name": "@types/ioredis",
+      "version": "^5.0.0",
+      "type": "dev",
+      "reason": "TypeScript types for ioredis"
+    },
+    {
+      "name": "connect-redis",
+      "version": "^7.1.0",
+      "type": "runtime",
+      "condition": "config.enableSessions",
+      "reason": "Redis session store for Express"
+    },
+    {
+      "name": "express-session",
+      "version": "^1.17.3",
+      "type": "runtime",
+      "condition": "config.enableSessions",
+      "reason": "Express session middleware"
+    },
+    {
+      "name": "express-rate-limit",
+      "version": "^7.1.5",
+      "type": "runtime",
+      "condition": "config.enableRateLimiting",
+      "reason": "Rate limiting middleware for Express"
+    },
+    {
+      "name": "rate-limiter-flexible",
+      "version": "^4.0.1",
+      "type": "runtime",
+      "condition": "config.enableAdvancedRateLimiting",
+      "reason": "Advanced rate limiting with Redis backend"
+    }
+  ],
+  
+  "postInjectionSteps": [
+    {
+      "name": "install-dependencies",
+      "command": "npm install",
+      "description": "Install Redis client and related dependencies",
+      "timeout": 120000
+    },
+    {
+      "name": "setup-docker-redis",
+      "command": "docker-compose up -d redis",
+      "description": "Start Redis container",
+      "condition": "config.enableDocker",
+      "timeout": 60000
+    },
+    {
+      "name": "wait-for-redis",
+      "command": "timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done'",
+      "description": "Wait for Redis to be ready",
+      "condition": "config.enableDocker",
+      "timeout": 35000
+    },
+    {
+      "name": "verify-redis-connection",
+      "command": "node -e \"const Redis = require('ioredis'); const redis = new Redis(process.env.REDIS_URL); redis.ping().then(result => { console.log('Redis connected:', result); redis.disconnect(); }).catch(e => { console.error('Redis connection failed:', e.message); process.exit(1); })\"",
+      "description": "Verify Redis connection",
+      "condition": "env.REDIS_URL",
+      "timeout": 30000
+    },
+    {
+      "name": "setup-redis-config",
+      "command": "echo 'Configure Redis settings: memory policy, persistence, etc.'",
+      "description": "Configure Redis server settings",
+      "condition": "config.enableProduction"
+    }
+  ],
+  
+  "requirements": {
+    "node": {
+      "min": "16.0.0",
+      "lts": true
+    },
+    "memory": {
+      "min": "256MB",
+      "recommended": "1GB"
+    },
+    "disk": {
+      "min": "100MB",
+      "type": "ssd"
+    },
+    "network": {
+      "ports": [6379]
+    }
+  },
+  
+  "multiTenant": true,
+  "compliance": ["gdpr", "hipaa", "pci-dss"],
+  
+  "scalingRequirements": {
+    "horizontal": true,
+    "vertical": true,
+    "stateless": false
+  },
+  
+  "category": "cache",
+  "subcategory": "in-memory-store",
+  "maturity": "stable",
+  "supportLevel": "community",
+  
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enableDocker": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include Docker configuration for local development"
+      },
+      "enableSessions": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Redis as session store"
+      },
+      "enablePubSub": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Redis pub/sub functionality"
+      },
+      "enableRateLimiting": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Redis-based rate limiting"
+      },
+      "enableAdvancedRateLimiting": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable advanced rate limiting with sliding windows"
+      },
+      "enableCacheApi": {
+        "type": "boolean",
+        "default": false,
+        "description": "Include REST API for cache operations"
+      },
+      "enableProduction": {
+        "type": "boolean",
+        "default": false,
+        "description": "Include production optimization settings"
+      },
+      "enableClustering": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Redis clustering support"
+      },
+      "enableSentinel": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable Redis Sentinel for high availability"
+      },
+      "maxMemoryPolicy": {
+        "type": "string",
+        "default": "allkeys-lru",
+        "enum": ["noeviction", "allkeys-lru", "volatile-lru", "allkeys-lfu", "volatile-lfu"],
+        "description": "Redis memory eviction policy"
+      },
+      "keyPrefix": {
+        "type": "string",
+        "default": "app:",
+        "description": "Default key prefix for namespacing"
+      },
+      "ttl": {
+        "type": "number",
+        "default": 3600,
+        "description": "Default TTL for cached items (seconds)"
+      }
+    }
+  },
+  
+  "defaultConfig": {
+    "enableDocker": true,
+    "enableSessions": false,
+    "enablePubSub": false,
+    "enableRateLimiting": false,
+    "enableAdvancedRateLimiting": false,
+    "enableCacheApi": false,
+    "enableProduction": false,
+    "enableClustering": false,
+    "enableSentinel": false,
+    "maxMemoryPolicy": "allkeys-lru",
+    "keyPrefix": "app:",
+    "ttl": 3600
+  },
+  
+  "examples": [
+    {
+      "name": "basic-cache",
+      "description": "Basic Redis cache setup",
+      "config": {
+        "enableDocker": true,
+        "keyPrefix": "cache:",
+        "ttl": 3600
+      }
+    },
+    {
+      "name": "session-store",
+      "description": "Redis as session store with rate limiting",
+      "config": {
+        "enableSessions": true,
+        "enableRateLimiting": true,
+        "ttl": 1800
+      }
+    },
+    {
+      "name": "real-time-app",
+      "description": "Redis with pub/sub for real-time features",
+      "config": {
+        "enablePubSub": true,
+        "enableAdvancedRateLimiting": true,
+        "enableCacheApi": true
+      }
+    },
+    {
+      "name": "production-cluster",
+      "description": "Production Redis cluster with high availability",
+      "config": {
+        "enableProduction": true,
+        "enableClustering": true,
+        "enableSentinel": true,
+        "maxMemoryPolicy": "allkeys-lfu"
+      }
+    }
+  ],
+  
+  "testing": {
+    "integration": {
+      "framework": "jest",
+      "services": ["redis"],
+      "environment": {
+        "TEST_REDIS_URL": "redis://localhost:6380"
+      }
+    }
+  },
+  
+  "security": {
+    "vulnerabilityScanning": {
+      "enabled": true,
+      "tools": ["npm-audit"]
+    },
+    "secretScanning": {
+      "enabled": true,
+      "patterns": ["REDIS_URL", "REDIS_PASSWORD"]
+    }
+  },
+  
+  "compliance": {
+    "standards": ["gdpr", "hipaa", "pci-dss"],
+    "dataHandling": {
+      "personalData": true,
+      "encryption": true,
+      "audit": true
+    }
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}

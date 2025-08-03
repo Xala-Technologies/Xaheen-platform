@@ -1,0 +1,62 @@
+{
+  "name": "notification-toast",
+  "version": "1.0.0",
+  "description": "Toast notifications using Sonner with customizable styling",
+  "type": "notification",
+  "context": ["web"],
+  "frameworks": ["react", "next", "solid"],
+  "dependencies": [
+    {
+      "name": "sonner",
+      "version": "^1.4.0",
+      "type": "runtime"
+    },
+    {
+      "name": "solid-sonner",
+      "version": "^1.0.0",
+      "type": "runtime",
+      "condition": "eq framework 'solid'"
+    }
+  ],
+  "files": [
+    {
+      "path": "components/ui/toast.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/toaster.tsx.hbs",
+      "type": "template",
+      "condition": "includes frameworks 'react'"
+    },
+    {
+      "path": "components/ui/toast.tsx.hbs",
+      "type": "template",
+      "condition": "eq framework 'solid'"
+    },
+    {
+      "path": "hooks/use-toast.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "lib/toast-utils.ts.hbs",
+      "type": "template"
+    },
+    {
+      "path": "styles/toast.css.hbs",
+      "type": "template",
+      "optional": true
+    }
+  ],
+  "variables": {
+    "toastProvider": "sonner",
+    "hasCustomStyling": true,
+    "supportsActions": true,
+    "supportsPromise": true,
+    "hasPositioning": true
+  },
+  "compatibility": {
+    "suggests": ["notification-base"],
+    "conflicts": ["react-hot-toast", "chakra-toast"]
+  }
+}

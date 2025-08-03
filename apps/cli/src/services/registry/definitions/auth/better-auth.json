@@ -1,0 +1,434 @@
+{
+  "id": "auth-better-auth-2025-01-03",
+  "name": "better-auth",
+  "displayName": "Better Auth Authentication",
+  "description": "Modern authentication solution with type-safe APIs, built-in security, and comprehensive auth features including OAuth, MFA, and session management.",
+  "type": "auth",
+  "provider": "better-auth",
+  "version": "1.0.0",
+  "author": "Better Auth Team",
+  "license": "MIT",
+  "homepage": "https://better-auth.com",
+  "repository": "https://github.com/better-auth/better-auth",
+  "keywords": ["auth", "authentication", "oauth", "mfa", "sessions", "typescript"],
+  "tags": ["enterprise", "saas", "security", "typescript"],
+  
+  "frameworks": [
+    {
+      "name": "next",
+      "versions": ["14.x", "15.x"],
+      "priority": 100
+    },
+    {
+      "name": "react",
+      "versions": ["18.x", "19.x"],
+      "priority": 90
+    },
+    {
+      "name": "svelte",
+      "versions": ["4.x", "5.x"],
+      "priority": 80
+    },
+    {
+      "name": "solid",
+      "versions": ["1.x"],
+      "priority": 70
+    }
+  ],
+  
+  "platforms": [
+    {
+      "name": "web",
+      "architecture": ["x86_64", "arm64"],
+      "os": ["linux", "darwin", "windows"]
+    },
+    {
+      "name": "serverless",
+      "cloud": {
+        "providers": ["vercel", "netlify", "cloudflare"],
+        "services": ["functions", "edge-runtime"]
+      }
+    }
+  ],
+  
+  "databases": ["postgresql", "mysql", "sqlite", "mongodb"],
+  "runtimes": ["node", "bun", "deno"],
+  
+  "injectionPoints": [
+    {
+      "path": "lib/auth.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 100,
+      "templatePath": "auth/better-auth/server/auth.ts.hbs"
+    },
+    {
+      "path": "lib/auth-client.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 90,
+      "templatePath": "auth/better-auth/client/auth-client.ts.hbs"
+    },
+    {
+      "path": "app/api/auth/[...auth]/route.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 80,
+      "condition": "eq framework 'next'",
+      "templatePath": "auth/better-auth/next/api-route.ts.hbs"
+    },
+    {
+      "path": "middleware.ts",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 70,
+      "condition": "eq framework 'next'",
+      "templatePath": "auth/better-auth/next/middleware.ts.hbs"
+    },
+    {
+      "path": "components/auth/sign-in-form.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 60,
+      "templatePath": "auth/better-auth/components/sign-in-form.tsx.hbs"
+    },
+    {
+      "path": "components/auth/sign-up-form.tsx",
+      "type": "file",
+      "strategy": "replace",
+      "priority": 50,
+      "templatePath": "auth/better-auth/components/sign-up-form.tsx.hbs"
+    },
+    {
+      "path": ".env.local.example",
+      "type": "env-file",
+      "strategy": "append",
+      "priority": 10,
+      "templatePath": "auth/better-auth/env.hbs"
+    }
+  ],
+  
+  "envVariables": [
+    {
+      "name": "AUTH_SECRET",
+      "description": "Secret key for signing auth tokens and sessions",
+      "required": true,
+      "type": "secret",
+      "validation": {
+        "minLength": 32
+      },
+      "sensitive": true
+    },
+    {
+      "name": "AUTH_TRUST_HOST",
+      "description": "Trust the host header for authentication",
+      "required": false,
+      "defaultValue": "true",
+      "type": "boolean"
+    },
+    {
+      "name": "DATABASE_URL",
+      "description": "Database connection URL for auth data storage",
+      "required": true,
+      "type": "url",
+      "sensitive": true
+    },
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "description": "Google OAuth client ID for social authentication",
+      "required": false,
+      "type": "string",
+      "environments": ["production", "staging"]
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "description": "Google OAuth client secret",
+      "required": false,
+      "type": "secret",
+      "sensitive": true,
+      "environments": ["production", "staging"]
+    },
+    {
+      "name": "GITHUB_CLIENT_ID",
+      "description": "GitHub OAuth client ID for social authentication",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "GITHUB_CLIENT_SECRET",
+      "description": "GitHub OAuth client secret",
+      "required": false,
+      "type": "secret",
+      "sensitive": true
+    },
+    {
+      "name": "SMTP_HOST",
+      "description": "SMTP server host for email verification",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "SMTP_PORT",
+      "description": "SMTP server port",
+      "required": false,
+      "type": "number",
+      "defaultValue": "587"
+    },
+    {
+      "name": "SMTP_USER",
+      "description": "SMTP authentication username",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "SMTP_PASS",
+      "description": "SMTP authentication password",
+      "required": false,
+      "type": "secret",
+      "sensitive": true
+    }
+  ],
+  
+  "dependencies": [
+    {
+      "name": "better-auth",
+      "version": "^1.0.0",
+      "type": "runtime",
+      "reason": "Core authentication library"
+    },
+    {
+      "name": "@better-auth/react",
+      "version": "^1.0.0",
+      "type": "runtime",
+      "condition": "includes frameworks 'next' 'react'",
+      "reason": "React hooks and components for Better Auth"
+    },
+    {
+      "name": "@better-auth/svelte",
+      "version": "^1.0.0",
+      "type": "runtime",
+      "condition": "eq framework 'svelte'",
+      "reason": "Svelte integration for Better Auth"
+    },
+    {
+      "name": "@better-auth/solid",
+      "version": "^1.0.0",
+      "type": "runtime",
+      "condition": "eq framework 'solid'",
+      "reason": "Solid.js integration for Better Auth"
+    },
+    {
+      "name": "zod",
+      "version": "^3.22.0",
+      "type": "runtime",
+      "reason": "Schema validation for auth forms and data"
+    }
+  ],
+  
+  "postInjectionSteps": [
+    {
+      "name": "install-dependencies",
+      "command": "npm install",
+      "description": "Install Better Auth and related dependencies",
+      "timeout": 120000
+    },
+    {
+      "name": "generate-auth-secret",
+      "command": "node -e \"console.log('AUTH_SECRET=' + require('crypto').randomBytes(32).toString('base64'))\"",
+      "description": "Generate secure authentication secret",
+      "condition": "not env.AUTH_SECRET"
+    },
+    {
+      "name": "setup-database-schema",
+      "command": "npx better-auth migrate",
+      "description": "Create authentication tables in database",
+      "condition": "env.DATABASE_URL",
+      "retries": 2
+    },
+    {
+      "name": "validate-configuration",
+      "command": "npx better-auth validate",
+      "description": "Validate Better Auth configuration",
+      "timeout": 30000
+    }
+  ],
+  
+  "requirements": {
+    "node": {
+      "min": "18.0.0",
+      "lts": true
+    },
+    "memory": {
+      "min": "256MB",
+      "recommended": "512MB"
+    }
+  },
+  
+  "multiTenant": true,
+  "compliance": ["gdpr", "ccpa", "hipaa"],
+  
+  "scalingRequirements": {
+    "horizontal": true,
+    "vertical": true,
+    "stateless": true
+  },
+  
+  "category": "authentication",
+  "subcategory": "comprehensive-auth",
+  "maturity": "stable",
+  "supportLevel": "commercial",
+  
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enableEmailVerification": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable email verification for new accounts"
+      },
+      "enableOAuth": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable OAuth social authentication"
+      },
+      "oauthProviders": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["google", "github", "discord", "apple"]
+        },
+        "default": [],
+        "description": "OAuth providers to enable"
+      },
+      "enableMFA": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable multi-factor authentication"
+      },
+      "sessionTimeout": {
+        "type": "number",
+        "default": 604800,
+        "description": "Session timeout in seconds (default: 7 days)"
+      },
+      "passwordPolicy": {
+        "type": "object",
+        "properties": {
+          "minLength": {
+            "type": "number",
+            "default": 8
+          },
+          "requireUppercase": {
+            "type": "boolean",
+            "default": true
+          },
+          "requireNumbers": {
+            "type": "boolean",
+            "default": true
+          },
+          "requireSpecialChars": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "trustedOrigins": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": ["http://localhost:3000"],
+        "description": "Trusted origins for CORS"
+      }
+    }
+  },
+  
+  "defaultConfig": {
+    "enableEmailVerification": true,
+    "enableOAuth": false,
+    "oauthProviders": [],
+    "enableMFA": false,
+    "sessionTimeout": 604800,
+    "passwordPolicy": {
+      "minLength": 8,
+      "requireUppercase": true,
+      "requireNumbers": true,
+      "requireSpecialChars": false
+    },
+    "trustedOrigins": ["http://localhost:3000"]
+  },
+  
+  "examples": [
+    {
+      "name": "basic-setup",
+      "description": "Basic authentication setup with email/password",
+      "config": {
+        "enableEmailVerification": true,
+        "enableOAuth": false
+      }
+    },
+    {
+      "name": "oauth-enabled",
+      "description": "Full OAuth setup with Google and GitHub",
+      "config": {
+        "enableEmailVerification": true,
+        "enableOAuth": true,
+        "oauthProviders": ["google", "github"]
+      }
+    },
+    {
+      "name": "enterprise-security",
+      "description": "Enterprise setup with MFA and strict password policy",
+      "config": {
+        "enableEmailVerification": true,
+        "enableMFA": true,
+        "passwordPolicy": {
+          "minLength": 12,
+          "requireUppercase": true,
+          "requireNumbers": true,
+          "requireSpecialChars": true
+        }
+      }
+    }
+  ],
+  
+  "testing": {
+    "unit": {
+      "framework": "vitest",
+      "testPaths": ["__tests__/auth"]
+    },
+    "integration": {
+      "framework": "playwright",
+      "services": ["database"]
+    }
+  },
+  
+  "security": {
+    "vulnerabilityScanning": {
+      "enabled": true,
+      "tools": ["npm-audit", "snyk"]
+    },
+    "secretScanning": {
+      "enabled": true,
+      "patterns": ["AUTH_SECRET", "*_CLIENT_SECRET", "*_PASS"]
+    }
+  },
+  
+  "compliance": {
+    "standards": ["gdpr", "ccpa"],
+    "dataHandling": {
+      "personalData": true,
+      "encryption": true,
+      "audit": true
+    }
+  },
+  
+  "analytics": {
+    "usageCount": 0,
+    "successRate": 100,
+    "feedback": []
+  },
+  
+  "createdAt": "2025-01-03T00:00:00.000Z",
+  "updatedAt": "2025-01-03T00:00:00.000Z",
+  "createdBy": "backend-expert-agent"
+}
