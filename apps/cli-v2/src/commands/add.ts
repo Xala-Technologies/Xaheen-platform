@@ -20,6 +20,8 @@ import {
 import chalk from "chalk";
 import { Command } from "commander";
 import { consola } from "consola";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { ProjectAnalyzer } from "../services/analysis/project-analyzer.js";
 import { ServiceInjector } from "../services/injection/service-injector.js";
 import { ServiceRegistry } from "../services/registry/service-registry.js";
@@ -27,7 +29,10 @@ import type {
 	ProjectContext,
 	ServiceConfiguration,
 	ServiceTemplate,
+	XalaPlatform,
+	XalaIntegrationOptions,
 } from "../types/index.js";
+import { XalaIntegrationService } from "../services/xala-ui/xala-integration-service.js";
 
 export const addCommand = new Command("add")
 	.description("Add a service to existing project")
@@ -95,6 +100,17 @@ export const addCommand = new Command("add")
 			if (isCancel(selectedServiceType)) {
 				cancel("Service addition cancelled");
 				process.exit(0);
+			}
+
+			// Handle Xala UI services specially
+			if (selectedServiceType === "ui" || selectedServiceType === "ui-integration") {
+				await handleXalaUIIntegration(projectPath, projectInfo, options);
+				return;
+			}
+
+			if (selectedServiceType === "ui-component") {
+				await handleXalaUIComponentGeneration(projectPath, projectInfo, options);
+				return;
 			}
 
 			// Get available providers for the service type
@@ -335,6 +351,7 @@ async function selectServiceType(
 	existingServices: string[],
 ): Promise<string | symbol> {
 	const allServices = [
+		// Core services
 		{
 			value: "auth",
 			label: "Authentication & Authorization",
@@ -350,6 +367,21 @@ async function selectServiceType(
 			label: "Payment Processing",
 			disabled: existingServices.includes("payments"),
 		},
+		// Xala UI Services
+		{
+			value: "ui",
+			label: "🎨 Xala UI System - Multi-platform semantic components",
+			disabled: existingServices.includes("ui"),
+		},
+		{
+			value: "ui-component",
+			label: "🧩 UI Component - Generate semantic components",
+		},
+		{
+			value: "ui-integration",
+			label: "🔗 UI Integration - Initialize Xala UI in project",
+		},
+		// Other services
 		{ value: "email", label: "Email Service" },
 		{ value: "sms", label: "SMS Service" },
 		{ value: "storage", label: "File Storage" },
@@ -453,4 +485,222 @@ async function checkCompatibility(
 		isCompatible: issues.length === 0,
 		issues,
 	};
+}
+
+/**
+ * Handle Xala UI Integration
+ */
+async function handleXalaUIIntegration(
+	projectPath: string,
+	projectInfo: any,
+	options: any
+): Promise<void> {
+	const xalaService = new XalaIntegrationService(projectPath);
+
+	try {
+		// Platform selection
+		const platform = await select({
+			message: "Select target platform for Xala UI",
+			options: [
+				{ value: "nextjs", label: "Next.js (App Router + Pages Router)" },
+				{ value: "react", label: "React (CRA + Vite)" },
+				{ value: "vue", label: "Vue 3 (Composition API)" },
+				{ value: "angular", label: "Angular (Standalone Components)" },
+				{ value: "svelte", label: "Svelte (SvelteKit)" },
+				{ value: "electron", label: "Electron (Desktop Apps)" },
+			],
+		});
+
+		if (isCancel(platform)) {
+			cancel("UI integration cancelled");
+			process.exit(0);
+		}
+
+		// Theme selection
+		const theme = await select({
+			message: "Select UI theme",
+			options: [
+				{ value: "enterprise", label: "Enterprise - Business applications" },
+				{ value: "healthcare", label: "Healthcare - Medical applications" },
+				{ value: "finance", label: "Finance - Financial applications" },
+				{ value: "government", label: "Government - Public sector" },
+				{ value: "consumer", label: "Consumer - End-user applications" },
+			],
+		});
+
+		if (isCancel(theme)) {
+			cancel("UI integration cancelled");
+			process.exit(0);
+		}
+
+		// Compliance requirements
+		const compliance = await select({
+			message: "Select compliance requirements (optional)",
+			options: [
+				{ value: [], label: "None" },
+				{ value: ["wcag-aaa"], label: "WCAG AAA Accessibility" },
+				{ value: ["gdpr"], label: "GDPR Privacy" },
+				{ value: ["hipaa"], label: "HIPAA Healthcare" },
+				{ value: ["nsm"], label: "NSM Norwegian Security" },
+				{ value: ["wcag-aaa", "gdpr"], label: "WCAG AAA + GDPR" },
+				{ value: ["wcag-aaa", "nsm"], label: "WCAG AAA + NSM" },
+			],
+		});
+
+		if (isCancel(compliance)) {
+			cancel("UI integration cancelled");
+			process.exit(0);
+		}
+
+		// Initial components
+		const wantComponents = await confirm({
+			message: "Generate initial components (navbar, dashboard)?",
+			initialValue: true,
+		});
+
+		let components: string[] = [];
+		if (wantComponents && !isCancel(wantComponents)) {
+			const selectedComponents = await select({
+				message: "Select initial components",
+				options: [
+					{ value: ["navbar"], label: "Navbar only" },
+					{ value: ["navbar", "dashboard"], label: "Navbar + Dashboard" },
+					{ value: ["navbar", "dashboard", "layout"], label: "Full layout set" },
+					{ value: [], label: "None (setup only)" },
+				],
+			});
+
+			if (!isCancel(selectedComponents)) {
+				components = selectedComponents as string[];
+			}
+		}
+
+		// Setup localization
+		const setupI18n = await confirm({
+			message: "Setup internationalization (i18n)?",
+			initialValue: true,
+		});
+
+		const integrationOptions: XalaIntegrationOptions = {
+			platform: platform as XalaPlatform,
+			theme: theme as any,
+			compliance: compliance as any,
+			components,
+			features: ["navbar", "dashboard"],
+			locale: "en",
+			skipUISetup: false,
+			skipLocalization: isCancel(setupI18n) || !setupI18n,
+			interactive: true,
+		};
+
+		// Initialize integration
+		await xalaService.initializeIntegration(integrationOptions);
+
+		outro(chalk.green("✨ Xala UI integration completed successfully!"));
+
+	} catch (error) {
+		consola.error("Failed to integrate Xala UI:", error);
+		process.exit(1);
+	}
+}
+
+/**
+ * Handle Xala UI Component Generation
+ */
+async function handleXalaUIComponentGeneration(
+	projectPath: string,
+	projectInfo: any,
+	options: any
+): Promise<void> {
+	const xalaService = new XalaIntegrationService(projectPath);
+
+	try {
+		// Check if Xala UI is already integrated
+		const xalaConfigPath = path.join(projectPath, 'xala.config.json');
+		if (!await fs.pathExists(xalaConfigPath)) {
+			consola.warn("Xala UI is not integrated in this project");
+			
+			const shouldIntegrate = await confirm({
+				message: "Initialize Xala UI integration first?",
+				initialValue: true,
+			});
+
+			if (shouldIntegrate && !isCancel(shouldIntegrate)) {
+				await handleXalaUIIntegration(projectPath, projectInfo, options);
+				return;
+			} else {
+				cancel("Component generation cancelled");
+				process.exit(0);
+			}
+		}
+
+		// Load Xala config to get platform
+		const xalaConfig = await fs.readJson(xalaConfigPath);
+		const platform = xalaConfig.ui?.platform || 'react';
+
+		// Component selection
+		const componentType = await select({
+			message: "Select component type to generate",
+			options: [
+				{ value: "navbar", label: "🧭 Navbar - Navigation component" },
+				{ value: "dashboard", label: "📊 Dashboard - Analytics dashboard" },
+				{ value: "sidebar", label: "📋 Sidebar - Side navigation" },
+				{ value: "modal", label: "🪟 Modal - Dialog component" },
+				{ value: "form", label: "📝 Form - Data input form" },
+				{ value: "card", label: "🃏 Card - Content card" },
+				{ value: "data-table", label: "📋 Data Table - Sortable table" },
+				{ value: "layout", label: "🏗️ Layout - Page layout" },
+			],
+		});
+
+		if (isCancel(componentType)) {
+			cancel("Component generation cancelled");
+			process.exit(0);
+		}
+
+		// Component options
+		const withStories = await confirm({
+			message: "Generate Storybook stories?",
+			initialValue: false,
+		});
+
+		const withTests = await confirm({
+			message: "Generate test files?",
+			initialValue: true,
+		});
+
+		const enterpriseMode = await confirm({
+			message: "Use enterprise compliance patterns?",
+			initialValue: xalaConfig.ui?.compliance?.length > 0,
+		});
+
+		// Generate component
+		const result = await xalaService.generateComponents(
+			[componentType as string],
+			platform,
+			{
+				semantic: true,
+				withStories: !isCancel(withStories) && withStories,
+				withTests: !isCancel(withTests) && withTests,
+				enterprise: !isCancel(enterpriseMode) && enterpriseMode,
+			}
+		);
+
+		if (result.success) {
+			consola.success(`✅ Generated ${componentType} component`);
+			if (result.files.length > 0) {
+				consola.info("Created files:");
+				result.files.forEach(file => consola.info(`  - ${chalk.green(file)}`));
+			}
+		} else {
+			consola.error("Failed to generate component");
+			result.errors.forEach(error => consola.error(`  - ${error}`));
+		}
+
+		outro(chalk.green("✨ Component generation completed!"));
+
+	} catch (error) {
+		consola.error("Failed to generate component:", error);
+		process.exit(1);
+	}
 }

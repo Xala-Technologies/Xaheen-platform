@@ -1,0 +1,267 @@
+import type { Meta, StoryObj } from '@storybook/react';
+{{#if component.localized}}
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../../../.storybook/i18n';
+{{/if}}
+import { {{pascalCase component.name}} } from './{{pascalCase component.name}}';
+
+const meta = {
+  title: 'Components/{{pascalCase component.name}}',
+  component: {{pascalCase component.name}},
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: `
+# {{pascalCase component.name}}
+
+Semantic UI component following Xala UI v5.0 architecture.
+
+## Features
+- ✅ Zero raw HTML policy
+- ✅ WCAG 2.2 AAA compliance
+- ✅ Design token usage
+- ✅ Mandatory localization
+- ✅ Semantic architecture
+- ✅ Enterprise compliance
+
+## Usage
+
+\`\`\`tsx
+import { {{pascalCase component.name}} } from '@/components/{{pascalCase component.name}}';
+
+<{{pascalCase component.name}} variant="primary" size="md">
+  Content goes here
+</{{pascalCase component.name}}>
+\`\`\`
+        `,
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary', 'outline'],
+      description: 'Visual variant of the component',
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['sm', 'md', 'lg'],
+      description: 'Size of the component (WCAG compliant)',
+    },
+    spacing: {
+      control: { type: 'select' },
+      options: ['tight', 'normal', 'loose'],
+      description: 'Internal spacing of the component',
+    },
+    disabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the component is disabled',
+    },
+    {{#if component.localized}}
+    titleKey: {
+      control: { type: 'text' },
+      description: 'Translation key for the component title',
+    },
+    {{/if}}
+    {{#if component.enterprise}}
+    complianceLevel: {
+      control: { type: 'select' },
+      options: ['standard', 'enhanced', 'strict'],
+      description: 'Enterprise compliance level',
+    },
+    {{/if}}
+  },
+  {{#if component.localized}}
+  decorators: [
+    (Story) => (
+      <I18nextProvider i18n={i18n}>
+        <Story />
+      </I18nextProvider>
+    ),
+  ],
+  {{/if}}
+} satisfies Meta<typeof {{pascalCase component.name}}>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// Default story
+export const Default: Story = {
+  args: {
+    children: 'Default {{pascalCase component.name}}',
+    variant: 'primary',
+    size: 'md',
+    spacing: 'normal',
+  },
+};
+
+// Variant stories
+export const Primary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'primary',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'secondary',
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    ...Default.args,
+    variant: 'outline',
+  },
+};
+
+// Size stories
+export const Small: Story = {
+  args: {
+    ...Default.args,
+    size: 'sm',
+    children: 'Small {{pascalCase component.name}}',
+  },
+};
+
+export const Medium: Story = {
+  args: {
+    ...Default.args,
+    size: 'md',
+    children: 'Medium {{pascalCase component.name}}',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    ...Default.args,
+    size: 'lg',
+    children: 'Large {{pascalCase component.name}}',
+  },
+};
+
+// Spacing stories  
+export const TightSpacing: Story = {
+  args: {
+    ...Default.args,
+    spacing: 'tight',
+    children: 'Tight spacing',
+  },
+};
+
+export const LooseSpacing: Story = {
+  args: {
+    ...Default.args,
+    spacing: 'loose',
+    children: 'Loose spacing',
+  },
+};
+
+// State stories
+export const Disabled: Story = {
+  args: {
+    ...Default.args,
+    disabled: true,
+    children: 'Disabled {{pascalCase component.name}}',
+  },
+};
+
+{{#if component.accessible}}
+// Accessibility story
+export const Accessibility: Story = {
+  args: {
+    ...Default.args,
+    ariaLabel: 'Accessible {{pascalCase component.name}}',
+    children: 'Accessible component with proper ARIA labels',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story demonstrates proper accessibility features including ARIA labels and keyboard navigation.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.localized}}
+// Localization story
+export const Localized: Story = {
+  args: {
+    ...Default.args,
+    titleKey: '{{kebabCase component.name}}.example',
+    children: 'This component supports localization',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story shows how the component handles localization with the t() function.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.enterprise}}
+// Enterprise compliance stories
+export const StandardCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'standard',
+    children: 'Standard compliance level',
+  },
+};
+
+export const EnhancedCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'enhanced',
+    children: 'Enhanced compliance level',
+  },
+};
+
+export const StrictCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'strict',
+    children: 'Strict compliance level',
+  },
+};
+{{/if}}
+
+// Complex content story
+export const WithComplexContent: Story = {
+  args: {
+    ...Default.args,
+    children: (
+      <>
+        <h3>Complex Content</h3>
+        <p>This story demonstrates how the component handles complex nested content while maintaining semantic structure.</p>
+        <ul>
+          <li>Semantic HTML structure</li>
+          <li>Proper accessibility</li>
+          <li>Design token usage</li>
+        </ul>
+      </>
+    ),
+  },
+};
+
+// Error boundary story
+export const ErrorHandling: Story = {
+  args: {
+    ...Default.args,
+    children: 'This component has built-in error handling',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'This component includes error boundaries to gracefully handle runtime errors.',
+      },
+    },
+  },
+};

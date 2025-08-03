@@ -1,0 +1,316 @@
+import type { Meta, StoryObj } from '@storybook/vue3';
+{{#if component.localized}}
+import { createI18n } from 'vue-i18n';
+{{/if}}
+import {{pascalCase component.name}} from './{{pascalCase component.name}}.vue';
+
+{{#if component.localized}}
+// Mock i18n for Storybook
+const i18n = createI18n({
+  locale: 'en',
+  messages: {
+    en: {
+      '{{kebabCase component.name}}': {
+        title: '{{pascalCase component.name}}',
+        example: 'Example {{pascalCase component.name}}'
+      }
+    }
+  }
+});
+{{/if}}
+
+const meta = {
+  title: 'Components/{{pascalCase component.name}}',
+  component: {{pascalCase component.name}},
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: `
+# {{pascalCase component.name}}
+
+Semantic UI component following Xala UI v5.0 architecture.
+
+## Features
+- ✅ Zero raw HTML policy
+- ✅ WCAG 2.2 AAA compliance
+- ✅ Design token usage
+- ✅ Mandatory localization
+- ✅ Semantic architecture
+- ✅ Enterprise compliance
+
+## Usage
+
+\`\`\`vue
+<template>
+  <{{pascalCase component.name}} variant="primary" size="md">
+    Content goes here
+  </{{pascalCase component.name}}>
+</template>
+
+<script setup>
+import { {{pascalCase component.name}} } from '@/components/{{pascalCase component.name}}';
+</script>
+\`\`\`
+        `,
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary', 'outline'],
+      description: 'Visual variant of the component',
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['sm', 'md', 'lg'],
+      description: 'Size of the component (WCAG compliant)',
+    },
+    spacing: {
+      control: { type: 'select' },
+      options: ['tight', 'normal', 'loose'],
+      description: 'Internal spacing of the component',
+    },
+    disabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the component is disabled',
+    },
+    {{#if component.localized}}
+    titleKey: {
+      control: { type: 'text' },
+      description: 'Translation key for the component title',
+    },
+    {{/if}}
+    {{#if component.enterprise}}
+    complianceLevel: {
+      control: { type: 'select' },
+      options: ['standard', 'enhanced', 'strict'],
+      description: 'Enterprise compliance level',
+    },
+    {{/if}}
+  },
+  {{#if component.localized}}
+  decorators: [(story) => ({
+    components: { story },
+    template: '<story />',
+    setup() {
+      return { i18n };
+    },
+    global: {
+      plugins: [i18n]
+    }
+  })],
+  {{/if}}
+} satisfies Meta<typeof {{pascalCase component.name}}>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// Default story
+export const Default: Story = {
+  args: {
+    variant: 'primary',
+    size: 'md',
+    spacing: 'normal',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Default {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+// Variant stories
+export const Primary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'primary',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Primary {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+export const Secondary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'secondary',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Secondary {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+export const Outline: Story = {
+  args: {
+    ...Default.args,
+    variant: 'outline',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Outline {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+// Size stories
+export const Small: Story = {
+  args: {
+    ...Default.args,
+    size: 'sm',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Small {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+export const Large: Story = {
+  args: {
+    ...Default.args,
+    size: 'lg',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Large {{pascalCase component.name}}
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+{{#if component.accessible}}
+// Accessibility story
+export const Accessibility: Story = {
+  args: {
+    ...Default.args,
+    ariaLabel: 'Accessible {{pascalCase component.name}}',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Accessible component with proper ARIA labels
+      </{{pascalCase component.name}}>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story demonstrates proper accessibility features including ARIA labels and keyboard navigation.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.localized}}
+// Localization story
+export const Localized: Story = {
+  args: {
+    ...Default.args,
+    titleKey: '{{kebabCase component.name}}.example',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        This component supports localization
+      </{{pascalCase component.name}}>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story shows how the component handles localization with the $t() function.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.enterprise}}
+// Enterprise compliance stories
+export const StandardCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'standard',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Standard compliance level
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+
+export const StrictCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'strict',
+  },
+  render: (args) => ({
+    components: { {{pascalCase component.name}} },
+    setup() {
+      return { args };
+    },
+    template: `
+      <{{pascalCase component.name}} v-bind="args">
+        Strict compliance level
+      </{{pascalCase component.name}}>
+    `,
+  }),
+};
+{{/if}}

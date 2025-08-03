@@ -1,0 +1,28 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/forms';
+{{#if component.localized}}
+import { TranslateModule } from '@ngx-translate/core';
+{{/if}}
+{{#if component.accessible}}
+import { XalaUIModule } from '@xala-technologies/ui-system/angular';
+{{/if}}
+import { {{pascalCase component.name}}Component } from './{{kebabCase component.name}}.component';
+
+@NgModule({
+  declarations: [
+    {{pascalCase component.name}}Component
+  ],
+  imports: [
+    CommonModule,
+    {{#if component.localized}}
+    TranslateModule,
+    {{/if}}
+    {{#if component.accessible}}
+    XalaUIModule,
+    {{/if}}
+  ],
+  exports: [
+    {{pascalCase component.name}}Component
+  ]
+})
+export class {{pascalCase component.name}}Module { }

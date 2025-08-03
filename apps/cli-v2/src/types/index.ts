@@ -416,3 +416,131 @@ export const FixResultSchema = z.object({
 });
 
 export type FixResult = z.infer<typeof FixResultSchema>;
+
+// Xala UI Integration Types
+export const XalaPlatformSchema = z.enum([
+	"react",
+	"nextjs", 
+	"vue",
+	"angular",
+	"svelte",
+	"electron"
+]);
+
+export type XalaPlatform = z.infer<typeof XalaPlatformSchema>;
+
+export const XalaThemeSchema = z.enum([
+	"enterprise",
+	"healthcare", 
+	"finance",
+	"government",
+	"consumer"
+]);
+
+export type XalaTheme = z.infer<typeof XalaThemeSchema>;
+
+export const XalaComplianceSchema = z.enum([
+	"gdpr",
+	"hipaa",
+	"sox",
+	"nsm",
+	"wcag-aaa",
+	"iso27001"
+]);
+
+export type XalaCompliance = z.infer<typeof XalaComplianceSchema>;
+
+// Xala UI configuration
+export const XalaUIConfigSchema = z.object({
+	system: z.literal('xala').default('xala'),
+	version: z.string().default('5.0.0'),
+	architecture: z.literal('semantic-v5').default('semantic-v5'),
+	theme: XalaThemeSchema.default('enterprise'),
+	platform: XalaPlatformSchema,
+	compliance: z.array(XalaComplianceSchema).default([]),
+	localization: z.object({
+		defaultLocale: z.string().default('en'),
+		supportedLocales: z.array(z.string()).default(['en', 'nb-NO', 'fr', 'ar']),
+		fallbackLocale: z.string().optional(),
+		extractionPath: z.string().default('./locales'),
+		namespace: z.string().optional()
+	}).default({}),
+	features: z.object({
+		navbar: z.boolean().default(true),
+		dashboard: z.boolean().default(true),
+		semanticComponents: z.boolean().default(true),
+		designTokens: z.boolean().default(true)
+	}).default({}),
+	componentLibrary: z.object({
+		components: z.array(z.string()).default([]),
+		dataComponents: z.array(z.string()).default([]),
+		themeComponents: z.array(z.string()).default([]),
+		layouts: z.array(z.string()).default([]),
+		providers: z.array(z.string()).default([]),
+		patterns: z.array(z.string()).default([]),
+		tools: z.array(z.string()).default([])
+	}).default({})
+});
+
+export type XalaUIConfig = z.infer<typeof XalaUIConfigSchema>;
+
+// Extended project context with Xala UI support
+export interface ExtendedProjectContext extends ProjectContext {
+	ui?: XalaUIConfig;
+	xalaIntegration?: {
+		enabled: boolean;
+		version: string;
+		features: string[];
+		autoSync: boolean;
+		platformSync: Record<string, any>;
+		hooks: {
+			preBuild?: string;
+			postGenerate?: string;
+			preLocalize?: string;
+		};
+	};
+}
+
+// Xala component specification
+export interface XalaComponentSpec {
+	name: string;
+	type: 'component' | 'layout' | 'provider' | 'pattern' | 'tool';
+	platform: XalaPlatform;
+	semantic: boolean;
+	withStories: boolean;
+	withTests: boolean;
+	enterprise: boolean;
+	localized: boolean;
+	accessible: boolean;
+}
+
+// Xala validation result
+export interface XalaValidationResult {
+	success: boolean;
+	issues: XalaValidationIssue[];
+	score: number;
+	recommendations: string[];
+}
+
+export interface XalaValidationIssue {
+	type: 'error' | 'warning' | 'info';
+	category: 'semantic' | 'accessibility' | 'localization' | 'design-tokens';
+	message: string;
+	file: string;
+	line?: number;
+	column?: number;
+	fix?: string;
+}
+
+// Xala integration options
+export interface XalaIntegrationOptions {
+	platform: XalaPlatform;
+	theme: XalaTheme;
+	compliance: XalaCompliance[];
+	components: string[];
+	features: string[];
+	locale: string;
+	skipUISetup: boolean;
+	skipLocalization: boolean;
+	interactive: boolean;
+}

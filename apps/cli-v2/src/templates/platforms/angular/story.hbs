@@ -1,0 +1,296 @@
+import type { Meta, StoryObj } from '@storybook/angular';
+import { moduleMetadata } from '@storybook/angular';
+{{#if component.localized}}
+import { TranslateModule } from '@ngx-translate/core';
+{{/if}}
+import { {{pascalCase component.name}}Component } from './{{kebabCase component.name}}.component';
+import { {{pascalCase component.name}}Module } from './{{kebabCase component.name}}.module';
+
+const meta: Meta<{{pascalCase component.name}}Component> = {
+  title: 'Components/{{pascalCase component.name}}',
+  component: {{pascalCase component.name}}Component,
+  decorators: [
+    moduleMetadata({
+      imports: [
+        {{pascalCase component.name}}Module,
+        {{#if component.localized}}
+        TranslateModule.forRoot(),
+        {{/if}}
+      ],
+    }),
+  ],
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: `
+# {{pascalCase component.name}}
+
+Semantic UI component following Xala UI v5.0 architecture.
+
+## Features
+- ✅ Zero raw HTML policy
+- ✅ WCAG 2.2 AAA compliance
+- ✅ Design token usage
+- ✅ Mandatory localization
+- ✅ Semantic architecture
+- ✅ Enterprise compliance
+
+## Usage
+
+\`\`\`html
+<xala-{{kebabCase component.name}} 
+  variant="primary" 
+  size="md"
+  spacing="normal">
+  Content goes here
+</xala-{{kebabCase component.name}}>
+\`\`\`
+
+\`\`\`typescript
+import { {{pascalCase component.name}}Module } from '@/components/{{pascalCase component.name}}';
+
+@NgModule({
+  imports: [{{pascalCase component.name}}Module]
+})
+export class AppModule { }
+\`\`\`
+        `,
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary', 'outline'],
+      description: 'Visual variant of the component',
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['sm', 'md', 'lg'],
+      description: 'Size of the component (WCAG compliant)',
+    },
+    spacing: {
+      control: { type: 'select' },
+      options: ['tight', 'normal', 'loose'],
+      description: 'Internal spacing of the component',
+    },
+    disabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the component is disabled',
+    },
+    {{#if component.localized}}
+    titleKey: {
+      control: { type: 'text' },
+      description: 'Translation key for the component title',
+    },
+    {{/if}}
+    {{#if component.enterprise}}
+    complianceLevel: {
+      control: { type: 'select' },
+      options: ['standard', 'enhanced', 'strict'],
+      description: 'Enterprise compliance level',
+    },
+    {{/if}}
+  },
+};
+
+export default meta;
+type Story = StoryObj<{{pascalCase component.name}}Component>;
+
+// Default story
+export const Default: Story = {
+  args: {
+    variant: 'primary',
+    size: 'md',
+    spacing: 'normal',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} 
+        [variant]="variant" 
+        [size]="size" 
+        [spacing]="spacing">
+        Default {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+// Variant stories
+export const Primary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'primary',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} [variant]="variant" [size]="size" [spacing]="spacing">
+        Primary {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+export const Secondary: Story = {
+  args: {
+    ...Default.args,
+    variant: 'secondary',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} [variant]="variant" [size]="size" [spacing]="spacing">
+        Secondary {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+export const Outline: Story = {
+  args: {
+    ...Default.args,
+    variant: 'outline',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} [variant]="variant" [size]="size" [spacing]="spacing">
+        Outline {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+// Size stories
+export const Small: Story = {
+  args: {
+    ...Default.args,
+    size: 'sm',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} [variant]="variant" [size]="size" [spacing]="spacing">
+        Small {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+export const Large: Story = {
+  args: {
+    ...Default.args,
+    size: 'lg',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} [variant]="variant" [size]="size" [spacing]="spacing">
+        Large {{pascalCase component.name}}
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+{{#if component.accessible}}
+// Accessibility story
+export const Accessibility: Story = {
+  args: {
+    ...Default.args,
+    ariaLabel: 'Accessible {{pascalCase component.name}}',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} 
+        [variant]="variant" 
+        [size]="size" 
+        [spacing]="spacing"
+        [ariaLabel]="ariaLabel">
+        Accessible component with proper ARIA labels
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story demonstrates proper accessibility features including ARIA labels and keyboard navigation.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.localized}}
+// Localization story
+export const Localized: Story = {
+  args: {
+    ...Default.args,
+    titleKey: '{{kebabCase component.name}}.example',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} 
+        [variant]="variant" 
+        [size]="size" 
+        [spacing]="spacing"
+        [titleKey]="titleKey">
+        This component supports localization
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story shows how the component handles localization with Angular i18n.',
+      },
+    },
+  },
+};
+{{/if}}
+
+{{#if component.enterprise}}
+// Enterprise compliance stories
+export const StandardCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'standard',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} 
+        [variant]="variant" 
+        [size]="size" 
+        [spacing]="spacing"
+        [complianceLevel]="complianceLevel">
+        Standard compliance level
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+
+export const StrictCompliance: Story = {
+  args: {
+    ...Default.args,
+    complianceLevel: 'strict',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <xala-{{kebabCase component.name}} 
+        [variant]="variant" 
+        [size]="size" 
+        [spacing]="spacing"
+        [complianceLevel]="complianceLevel">
+        Strict compliance level
+      </xala-{{kebabCase component.name}}>
+    `,
+  }),
+};
+{{/if}}

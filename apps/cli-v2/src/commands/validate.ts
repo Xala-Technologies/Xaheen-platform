@@ -15,7 +15,10 @@ import { consola } from "consola";
 import { ProjectAnalyzer } from "../services/analysis/project-analyzer.js";
 import { ServiceRegistry } from "../services/registry/service-registry.js";
 import { ProjectValidator } from "../services/validation/project-validator.js";
-import type { ValidationIssue, ValidationResult } from "../types/index.js";
+import { XalaIntegrationService } from "../services/xala-ui/xala-integration-service.js";
+import type { ValidationIssue, ValidationResult, XalaValidationResult } from "../types/index.js";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 export const validateCommand = new Command("validate")
 	.description("Validate project configuration and health")
@@ -25,6 +28,11 @@ export const validateCommand = new Command("validate")
 	.option("--env", "Validate environment variables")
 	.option("--lint", "Run linting checks")
 	.option("--types", "Run type checking")
+	.option("--ui", "Validate Xala UI integration and components")
+	.option("--semantic", "Validate semantic architecture compliance")
+	.option("--accessibility", "Validate WCAG accessibility compliance")
+	.option("--localization", "Validate i18n implementation")
+	.option("--compliance", "Validate compliance requirements")
 	.option("--all", "Run all validations")
 	.action(async (options) => {
 		try {
@@ -80,6 +88,11 @@ export const validateCommand = new Command("validate")
 				validateEnvironment: options.env || options.all,
 				validateLinting: options.lint || options.all,
 				validateTypes: options.types || options.all,
+				validateUI: options.ui || options.all,
+				validateSemantic: options.semantic || options.all,
+				validateAccessibility: options.accessibility || options.all,
+				validateLocalization: options.localization || options.all,
+				validateCompliance: options.compliance || options.all,
 				autoFix: options.fix,
 			};
 
@@ -90,6 +103,11 @@ export const validateCommand = new Command("validate")
 				!options.env &&
 				!options.lint &&
 				!options.types &&
+				!options.ui &&
+				!options.semantic &&
+				!options.accessibility &&
+				!options.localization &&
+				!options.compliance &&
 				!options.all
 			) {
 				Object.keys(validationOptions).forEach((key) => {
@@ -99,7 +117,7 @@ export const validateCommand = new Command("validate")
 				});
 			}
 
-			// Run validation
+			// Run standard validation
 			s.start("Running validations...");
 
 			const result = await validator.validateProject(
@@ -109,11 +127,29 @@ export const validateCommand = new Command("validate")
 			);
 
 			s.stop(
-				`Validation complete: ${result.isValid ? chalk.green("✓") : chalk.red("✗")}`,
+				`Standard validation complete: ${result.isValid ? chalk.green("✓") : chalk.red("✗")}`,
 			);
+
+			// Run Xala UI validations if requested
+			let uiValidationResult = null;
+			if (validationOptions.validateUI || validationOptions.validateSemantic || 
+				validationOptions.validateAccessibility || validationOptions.validateLocalization ||
+				validationOptions.validateCompliance) {
+				
+				uiValidationResult = await runXalaUIValidations(
+					projectPath, 
+					validationOptions, 
+					options.fix
+				);
+			}
 
 			// Display results
 			displayValidationResults(result);
+			
+			// Display UI validation results if available
+			if (uiValidationResult) {
+				displayXalaUIValidationResults(uiValidationResult);
+			}
 
 			// Handle fixes
 			if (!result.isValid && options.fix && result.fixableIssues > 0) {
@@ -146,7 +182,10 @@ export const validateCommand = new Command("validate")
 			}
 
 			// Exit code based on validation result
-			if (result.isValid) {
+			const allValidationsPassed = result.isValid && 
+				(!uiValidationResult || uiValidationResult.success);
+			
+			if (allValidationsPassed) {
 				outro(chalk.green("✨ All validations passed!"));
 				process.exit(0);
 			} else {
@@ -251,4 +290,111 @@ function formatBytes(bytes: number): string {
 	}
 
 	return `${size.toFixed(2)} ${units[unitIndex]}`;
+}
+
+/**
+ * Run Xala UI specific validations
+ */
+async function runXalaUIValidations(
+	projectPath: string,
+	validationOptions: any,
+	autoFix: boolean
+): Promise<XalaValidationResult | null> {
+	const s = spinner();
+	
+	try {
+		// Check if Xala UI is integrated
+		const xalaConfigPath = path.join(projectPath, 'xala.config.json');
+		if (!await fs.pathExists(xalaConfigPath)) {
+			if (validationOptions.validateUI) {
+				consola.warn("🎨 Xala UI is not integrated in this project");
+				consola.info("Run 'xaheen add ui-integration' to integrate Xala UI");
+			}
+			return null;
+		}
+
+		s.start("🎨 Running Xala UI validations...");
+		
+		const xalaService = new XalaIntegrationService(projectPath);
+		const result = await xalaService.validateSemanticCompliance();
+
+		s.stop(`UI validation complete: ${result.success ? chalk.green("✓") : chalk.red("✗")}`);
+		
+		return result;
+		
+	} catch (error) {
+		s.stop("UI validation failed");
+		consola.error("Failed to run Xala UI validations:", error);
+		return {
+			success: false,
+			issues: [{
+				type: 'error',
+				category: 'semantic',
+				message: `UI validation failed: ${error.message}`,
+				file: 'unknown'
+			}],
+			score: 0,
+			recommendations: ['Fix the underlying error and try again']
+		};
+	}
+}
+
+/**
+ * Display Xala UI validation results
+ */
+function displayXalaUIValidationResults(result: XalaValidationResult): void {
+	console.log("\n" + chalk.bold("🎨 Xala UI Validation Results:"));
+	console.log("─".repeat(50));
+
+	// Overall score
+	const scoreColor = result.score >= 90 ? 'green' : result.score >= 70 ? 'yellow' : 'red';
+	console.log(`${chalk.bold("Semantic Architecture Score:")} ${chalk[scoreColor](`${result.score}%`)}`);
+
+	if (result.success) {
+		console.log(chalk.green("✓ All UI validations passed"));
+	} else {
+		console.log(chalk.red(`✗ Found ${result.issues.length} UI issue${result.issues.length !== 1 ? "s" : ""}`));
+	}
+
+	// Group issues by category
+	const categories = new Map<string, typeof result.issues>();
+	result.issues.forEach((issue) => {
+		const existing = categories.get(issue.category) || [];
+		existing.push(issue);
+		categories.set(issue.category, existing);
+	});
+
+	// Display issues by category
+	categories.forEach((issues, category) => {
+		console.log(`\n${chalk.bold(formatCategoryName(category))}:`);
+
+		issues.forEach((issue) => {
+			const icon = issue.type === "error" ? chalk.red("✗") : 
+						 issue.type === "warning" ? chalk.yellow("⚠") : chalk.blue("ℹ");
+			const message = issue.message;
+			const location = issue.file
+				? chalk.gray(` (${issue.file}${issue.line ? `:${issue.line}` : ""})`)
+				: "";
+
+			console.log(`  ${icon} ${message}${location}`);
+
+			if (issue.fix) {
+				console.log(`    ${chalk.gray("→")} ${chalk.gray(issue.fix)}`);
+			}
+		});
+	});
+
+	// Recommendations
+	if (result.recommendations.length > 0) {
+		console.log("\n" + chalk.bold("🔧 Recommendations:"));
+		result.recommendations.forEach((recommendation, index) => {
+			console.log(`  ${index + 1}. ${recommendation}`);
+		});
+	}
+
+	// UI-specific metrics
+	console.log("\n" + chalk.bold("📊 UI Metrics:"));
+	console.log(`  Semantic Compliance: ${chalk[scoreColor](`${result.score}%`)}`);
+	console.log(`  Issues Found: ${result.issues.length}`);
+	console.log(`  Categories Checked: ${categories.size}`);
 }

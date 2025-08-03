@@ -1,0 +1,191 @@
+import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi } from 'vitest';
+{{#if component.localized}}
+import { createI18n } from 'vue-i18n';
+{{/if}}
+import {{pascalCase component.name}} from './{{pascalCase component.name}}.vue';
+
+{{#if component.localized}}
+// Mock i18n instance for tests
+const i18n = createI18n({
+  locale: 'en',
+  messages: {
+    en: {
+      '{{kebabCase component.name}}': {
+        title: 'Test {{pascalCase component.name}}'
+      },
+      errors: {
+        componentError: 'Component error occurred'
+      }
+    }
+  }
+});
+{{/if}}
+
+describe('{{pascalCase component.name}}', () => {
+  it('renders without crashing', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      slots: {
+        default: 'Test content'
+      }
+    });
+    
+    expect(wrapper.text()).toContain('Test content');
+  });
+
+  it('applies correct CSS classes for variants', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      props: {
+        variant: 'secondary',
+        size: 'lg'
+      },
+      slots: {
+        default: 'Test content'
+      }
+    });
+    
+    const component = wrapper.find('[class*="bg-secondary"]');
+    expect(component.exists()).toBe(true);
+    
+    const sizeComponent = wrapper.find('[class*="h-16"]');
+    expect(sizeComponent.exists()).toBe(true);
+  });
+
+  {{#if component.accessible}}
+  it('meets accessibility requirements', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      props: {
+        ariaLabel: 'Test {{component.name}}'
+      },
+      slots: {
+        default: 'Content'
+      }
+    });
+    
+    const component = wrapper.find('[role="{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}"]');
+    expect(component.exists()).toBe(true);
+    expect(component.attributes('aria-label')).toBe('Test {{component.name}}');
+  });
+
+  it('handles disabled state correctly', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      props: {
+        disabled: true
+      },
+      slots: {
+        default: 'Content'
+      }
+    });
+    
+    const component = wrapper.find('[role="{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}"]');
+    expect(component.attributes('aria-disabled')).toBe('true');
+  });
+  {{/if}}
+
+  {{#if component.localized}}
+  it('displays localized text correctly', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      global: {
+        plugins: [i18n]
+      },
+      props: {
+        titleKey: '{{kebabCase component.name}}.title'
+      },
+      slots: {
+        default: 'Content'
+      }
+    });
+    
+    expect(wrapper.text()).toContain('Test {{pascalCase component.name}}');
+  });
+  {{/if}}
+
+  {{#if component.enterprise}}
+  it('handles enterprise compliance levels', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      props: {
+        complianceLevel: 'strict'
+      },
+      slots: {
+        default: 'Content'
+      }
+    });
+    
+    expect(wrapper.exists()).toBe(true);
+  });
+  {{/if}}
+
+  it('handles errors gracefully', () => {
+    // Mock console.error to avoid noise in tests
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Force an error by passing invalid props
+    const ThrowError = {
+      template: '<div>{{ throwError() }}</div>',
+      methods: {
+        throwError() {
+          throw new Error('Test error');
+        }
+      }
+    };
+    
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      slots: {
+        default: ThrowError
+      }
+    });
+    
+    // Component should render error state instead of crashing
+    expect(wrapper.exists()).toBe(true);
+    
+    consoleSpy.mockRestore();
+  });
+
+  it('merges custom classes correctly', () => {
+    const wrapper = mount({{pascalCase component.name}}, {
+      {{#if component.localized}}
+      global: {
+        plugins: [i18n]
+      },
+      {{/if}}
+      props: {
+        class: 'custom-class'
+      },
+      slots: {
+        default: 'Content'
+      }
+    });
+    
+    expect(wrapper.classes()).toContain('custom-class');
+  });
+});

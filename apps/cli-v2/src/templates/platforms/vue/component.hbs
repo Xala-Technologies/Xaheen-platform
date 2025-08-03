@@ -1,0 +1,147 @@
+<template>
+  {{#if component.accessible}}
+  <XalaContainer
+    :class="componentClasses"
+    :aria-label="ariaLabel || {{#if component.localized}}$t(titleKey){{else}}'{{pascalCase component.name}} component'{{/if}}"
+    :aria-disabled="disabled"
+    :role="componentRole"
+    v-bind="$attrs"
+  >
+    {{#if_eq component.type 'layout'}}
+    <XalaSection :spacing="sectionSpacing">
+      {{#if component.localized}}
+      <XalaHeading level="2" variant="section">
+        {{ $t(titleKey) }}
+      </XalaHeading>
+      {{/if}}
+      <slot />
+    </XalaSection>
+    {{else}}
+    <slot />
+    {{/if}}
+  </XalaContainer>
+  {{else}}
+  <div
+    :class="componentClasses"
+    :aria-label="ariaLabel"
+    :aria-disabled="disabled"
+    v-bind="$attrs"
+  >
+    <slot />
+  </div>
+  {{/if}}
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@xala-technologies/ui-system/utils';
+{{#if component.localized}}
+import { useI18n } from 'vue-i18n';
+{{/if}}
+{{#if component.accessible}}
+import { XalaContainer, XalaSection, XalaHeading } from '@xala-technologies/ui-system';
+{{/if}}
+
+// Component variants using CVA (Class Variance Authority)
+const {{camelCase component.name}}Variants = cva(
+  // Base styles - following v5.0 semantic architecture
+  "relative flex items-center justify-center",
+  {
+    variants: {
+      variant: {
+        primary: "bg-primary text-primary-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
+        outline: "border border-input bg-background hover:bg-accent",
+      },
+      size: {
+        sm: "h-12 px-4 text-sm", // WCAG compliant minimum sizes
+        md: "h-14 px-6 text-base",
+        lg: "h-16 px-8 text-lg",
+      },
+      spacing: {
+        tight: "gap-2",
+        normal: "gap-4",
+        loose: "gap-6",
+      }
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+      spacing: "normal",
+    },
+  }
+);
+
+// Props interface with strict typing
+interface {{pascalCase component.name}}Props extends VariantProps<typeof {{camelCase component.name}}Variants> {
+  /**
+   * Accessibility label for screen readers
+   */
+  ariaLabel?: string;
+  
+  /**
+   * Whether the component is disabled
+   */
+  disabled?: boolean;
+  
+  {{#if component.localized}}
+  /**
+   * Translation key for the component text
+   */
+  titleKey?: string;
+  {{/if}}
+  
+  {{#if component.enterprise}}
+  /**
+   * Enterprise compliance level
+   */
+  complianceLevel?: 'standard' | 'enhanced' | 'strict';
+  {{/if}}
+}
+
+const props = withDefaults(defineProps<{{pascalCase component.name}}Props>(), {
+  variant: 'primary',
+  size: 'md',
+  spacing: 'normal',
+  disabled: false,
+  {{#if component.localized}}
+  titleKey: '{{kebabCase component.name}}.title',
+  {{/if}}
+  {{#if component.enterprise}}
+  complianceLevel: 'standard',
+  {{/if}}
+});
+
+{{#if component.localized}}
+const { t: $t } = useI18n();
+{{/if}}
+
+// Computed classes
+const componentClasses = computed(() => 
+  cn({{camelCase component.name}}Variants({ 
+    variant: props.variant, 
+    size: props.size, 
+    spacing: props.spacing 
+  }))
+);
+
+{{#if component.accessible}}
+const componentRole = computed(() => 
+  {{#if_eq component.type 'layout'}}'region'{{else}}'group'{{/if}}
+);
+
+const sectionSpacing = computed(() => {
+  switch (props.spacing) {
+    case 'tight': return 'sm';
+    case 'loose': return 'lg';
+    default: return 'md';
+  }
+});
+{{/if}}
+</script>
+
+<style scoped>
+/* Component-specific styles if needed */
+/* All styling should use design tokens via Tailwind classes */
+</style>

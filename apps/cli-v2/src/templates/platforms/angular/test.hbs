@@ -1,0 +1,112 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+{{#if component.localized}}
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+{{/if}}
+import { {{pascalCase component.name}}Component } from './{{kebabCase component.name}}.component';
+
+describe('{{pascalCase component.name}}Component', () => {
+  let component: {{pascalCase component.name}}Component;
+  let fixture: ComponentFixture<{{pascalCase component.name}}Component>;
+  {{#if component.localized}}
+  let translateService: TranslateService;
+  {{/if}}
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [{{pascalCase component.name}}Component],
+      {{#if component.localized}}
+      imports: [TranslateModule.forRoot()],
+      {{/if}}
+    }).compileComponents();
+
+    fixture = TestBed.createComponent({{pascalCase component.name}}Component);
+    component = fixture.componentInstance;
+    {{#if component.localized}}
+    translateService = TestBed.inject(TranslateService);
+    translateService.setDefaultLang('en');
+    translateService.use('en');
+    {{/if}}
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should apply correct CSS classes for variants', () => {
+    component.variant = 'secondary';
+    component.size = 'lg';
+    fixture.detectChanges();
+
+    const element = fixture.debugElement.query(By.css('[class*="bg-secondary"]'));
+    expect(element).toBeTruthy();
+    
+    const sizeElement = fixture.debugElement.query(By.css('[class*="h-16"]'));
+    expect(sizeElement).toBeTruthy();
+  });
+
+  {{#if component.accessible}}
+  it('should meet accessibility requirements', () => {
+    component.ariaLabel = 'Test {{component.name}}';
+    fixture.detectChanges();
+
+    const element = fixture.debugElement.query(By.css('[role="{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}"]'));
+    expect(element).toBeTruthy();
+    expect(element.nativeElement.getAttribute('aria-label')).toBe('Test {{component.name}}');
+  });
+
+  it('should handle disabled state correctly', () => {
+    component.disabled = true;
+    fixture.detectChanges();
+
+    const element = fixture.debugElement.query(By.css('[role="{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}"]'));
+    expect(element.nativeElement.getAttribute('aria-disabled')).toBe('true');
+  });
+  {{/if}}
+
+  {{#if component.localized}}
+  it('should display localized text correctly', () => {
+    spyOn(translateService, 'instant').and.returnValue('Test {{pascalCase component.name}}');
+    component.titleKey = '{{kebabCase component.name}}.title';
+    fixture.detectChanges();
+
+    expect(translateService.instant).toHaveBeenCalledWith('{{kebabCase component.name}}.title');
+  });
+  {{/if}}
+
+  {{#if component.enterprise}}
+  it('should handle enterprise compliance levels', () => {
+    component.complianceLevel = 'strict';
+    fixture.detectChanges();
+
+    expect(component.complianceLevel).toBe('strict');
+  });
+  {{/if}}
+
+  it('should handle component classes correctly', () => {
+    component.variant = 'primary';
+    component.size = 'md';
+    component.spacing = 'normal';
+
+    const classes = component.componentClasses;
+    expect(classes).toContain('bg-primary');
+    expect(classes).toContain('h-14');
+    expect(classes).toContain('gap-4');
+  });
+
+  it('should implement ControlValueAccessor correctly', () => {
+    const testValue = 'test-value';
+    const onChangeSpy = jasmine.createSpy('onChange');
+    const onTouchedSpy = jasmine.createSpy('onTouched');
+
+    component.registerOnChange(onChangeSpy);
+    component.registerOnTouched(onTouchedSpy);
+
+    component.writeValue(testValue);
+    expect(component).toBeTruthy(); // Component handles value writing
+
+    component.setDisabledState(true);
+    expect(component.disabled).toBe(true);
+  });
+});

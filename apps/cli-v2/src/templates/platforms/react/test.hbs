@@ -1,0 +1,201 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+{{#if component.localized}}
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../../../__mocks__/i18n';
+{{/if}}
+import { {{pascalCase component.name}} } from './{{pascalCase component.name}}';
+
+{{#if component.localized}}
+// Wrapper component for tests with i18n
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <I18nextProvider i18n={i18n}>
+    {children}
+  </I18nextProvider>
+);
+{{/if}}
+
+describe('{{pascalCase component.name}}', () => {
+  it('renders without crashing', () => {
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}}>Test content</{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}}>Test content</{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    expect(screen.getByText('Test content')).toBeInTheDocument();
+  });
+
+  it('applies correct CSS classes for variants', () => {
+    const { container } = render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} variant="secondary" size="lg">
+          Test content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} variant="secondary" size="lg">
+        Test content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    const component = container.firstChild as HTMLElement;
+    expect(component).toHaveClass('bg-secondary');
+    expect(component).toHaveClass('h-16');
+  });
+
+  {{#if component.accessible}}
+  it('meets accessibility requirements', () => {
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} ariaLabel="Test {{component.name}}">
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} ariaLabel="Test {{component.name}}">
+        Content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    const component = screen.getByRole('{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}');
+    expect(component).toHaveAttribute('aria-label', 'Test {{component.name}}');
+  });
+
+  it('handles disabled state correctly', () => {
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} disabled>
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} disabled>
+        Content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    const component = screen.getByRole('{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}');
+    expect(component).toHaveAttribute('aria-disabled', 'true');
+  });
+  {{/if}}
+
+  {{#if component.localized}}
+  it('displays localized text correctly', () => {
+    render(
+      <TestWrapper>
+        <{{pascalCase component.name}} titleKey="test.title">
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+    );
+    
+    // Assuming the mock i18n returns the key for testing
+    expect(screen.getByText('test.title')).toBeInTheDocument();
+  });
+  {{/if}}
+
+  {{#if component.enterprise}}
+  it('handles enterprise compliance levels', () => {
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} complianceLevel="strict">
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} complianceLevel="strict">
+        Content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    const component = screen.getByRole('{{#if_eq component.type 'layout'}}region{{else}}group{{/if}}');
+    expect(component).toBeInTheDocument();
+  });
+  {{/if}}
+
+  it('handles errors gracefully', () => {
+    // Mock console.error to avoid noise in tests
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Force an error by passing invalid props
+    const ThrowError = () => {
+      throw new Error('Test error');
+    };
+    
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}}>
+          <ThrowError />
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}}>
+        <ThrowError />
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    // Component should render error state instead of crashing
+    {{#if component.localized}}
+    expect(screen.getByText('errors.componentError')).toBeInTheDocument();
+    {{else}}
+    expect(screen.getByText('Component error occurred')).toBeInTheDocument();
+    {{/if}}
+    
+    consoleSpy.mockRestore();
+  });
+
+  it('forwards refs correctly', () => {
+    const ref = React.createRef<HTMLDivElement>();
+    
+    render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} ref={ref}>
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} ref={ref}>
+        Content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+  });
+
+  it('merges custom className correctly', () => {
+    const { container } = render(
+      {{#if component.localized}}
+      <TestWrapper>
+        <{{pascalCase component.name}} className="custom-class">
+          Content
+        </{{pascalCase component.name}}>
+      </TestWrapper>
+      {{else}}
+      <{{pascalCase component.name}} className="custom-class">
+        Content
+      </{{pascalCase component.name}}>
+      {{/if}}
+    );
+    
+    const component = container.firstChild as HTMLElement;
+    expect(component).toHaveClass('custom-class');
+  });
+});
