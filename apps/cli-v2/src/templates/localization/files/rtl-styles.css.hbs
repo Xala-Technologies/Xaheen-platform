@@ -1,0 +1,296 @@
+{{!-- Template: rtl-styles.css.hbs --}}
+{{!-- Category: localization --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/localization/ar/styles/rtl-styles.css.hbs --}}
+/* RTL (Right-to-Left) Styles for Arabic and other RTL languages */
+
+/* Arabic Font Stack */
+[dir="rtl"] {
+  font-family: 'Noto Sans Arabic', 'Amiri', 'Cairo', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Base RTL Settings */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Flexbox RTL Overrides */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .flex-row-reverse {
+  flex-direction: row;
+}
+
+/* Margin RTL Conversions */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+{{#each [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24] as |spacing|}}
+[dir="rtl"] .ml-{{spacing}} {
+  margin-left: 0;
+  margin-right: {{multiply spacing 0.25}}rem;
+}
+
+[dir="rtl"] .mr-{{spacing}} {
+  margin-right: 0;
+  margin-left: {{multiply spacing 0.25}}rem;
+}
+{{/each}}
+
+/* Padding RTL Conversions */
+{{#each [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24] as |spacing|}}
+[dir="rtl"] .pl-{{spacing}} {
+  padding-left: 0;
+  padding-right: {{multiply spacing 0.25}}rem;
+}
+
+[dir="rtl"] .pr-{{spacing}} {
+  padding-right: 0;
+  padding-left: {{multiply spacing 0.25}}rem;
+}
+{{/each}}
+
+/* Border RTL Conversions */
+[dir="rtl"] .border-l {
+  border-left: none;
+  border-right-width: 1px;
+}
+
+[dir="rtl"] .border-r {
+  border-right: none;
+  border-left-width: 1px;
+}
+
+[dir="rtl"] .border-l-2 {
+  border-left: none;
+  border-right-width: 2px;
+}
+
+[dir="rtl"] .border-r-2 {
+  border-right: none;
+  border-left-width: 2px;
+}
+
+/* Border Radius RTL Conversions */
+[dir="rtl"] .rounded-l {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+[dir="rtl"] .rounded-r {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+[dir="rtl"] .rounded-l-lg {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+[dir="rtl"] .rounded-r-lg {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+/* Text Alignment RTL Conversions */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Float RTL Conversions */
+[dir="rtl"] .float-left {
+  float: right;
+}
+
+[dir="rtl"] .float-right {
+  float: left;
+}
+
+/* Position RTL Conversions */
+[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+{{#each [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24] as |spacing|}}
+[dir="rtl"] .left-{{spacing}} {
+  left: auto;
+  right: {{multiply spacing 0.25}}rem;
+}
+
+[dir="rtl"] .right-{{spacing}} {
+  right: auto;
+  left: {{multiply spacing 0.25}}rem;
+}
+{{/each}}
+
+/* Transform RTL Conversions */
+[dir="rtl"] .translate-x-1 {
+  transform: translateX(-0.25rem);
+}
+
+[dir="rtl"] .-translate-x-1 {
+  transform: translateX(0.25rem);
+}
+
+[dir="rtl"] .translate-x-full {
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] .-translate-x-full {
+  transform: translateX(100%);
+}
+
+/* Gradient RTL Conversions */
+[dir="rtl"] .bg-gradient-to-r {
+  background-image: linear-gradient(to left, var(--tw-gradient-stops));
+}
+
+[dir="rtl"] .bg-gradient-to-l {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+/* Form Elements RTL Specific */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+/* Keep LTR for specific input types */
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[type="url"],
+[dir="rtl"] input[type="number"] {
+  direction: ltr;
+  text-align: right;
+}
+
+/* Table RTL Adjustments */
+[dir="rtl"] table {
+  text-align: right;
+}
+
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: inherit;
+}
+
+/* List RTL Adjustments */
+[dir="rtl"] ul,
+[dir="rtl"] ol {
+  padding-right: 2.5rem;
+  padding-left: 0;
+}
+
+/* Icon RTL Rotation */
+[dir="rtl"] .rotate-for-rtl {
+  transform: scaleX(-1);
+}
+
+/* Navigation RTL Adjustments */
+[dir="rtl"] nav ul {
+  flex-direction: row-reverse;
+}
+
+/* Tooltip RTL Adjustments */
+[dir="rtl"] .tooltip-left {
+  right: 100%;
+  left: auto;
+}
+
+[dir="rtl"] .tooltip-right {
+  left: 100%;
+  right: auto;
+}
+
+/* Shadow RTL Adjustments */
+[dir="rtl"] .shadow-left {
+  box-shadow: -5px 0 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+[dir="rtl"] .shadow-right {
+  box-shadow: 5px 0 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation RTL Adjustments */
+@keyframes rtl-slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rtl-slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+[dir="rtl"] .animate-slide-in-left {
+  animation: rtl-slide-in-from-right 0.3s ease-in-out;
+}
+
+[dir="rtl"] .animate-slide-in-right {
+  animation: rtl-slide-in-from-left 0.3s ease-in-out;
+}
+
+/* Arabic Typography Adjustments */
+[dir="rtl"] {
+  letter-spacing: 0;
+  line-height: 1.8;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* Print RTL Adjustments */
+@media print {
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+}

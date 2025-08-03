@@ -1,0 +1,27 @@
+{{!-- Template: tsconfig.json.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: nuxt --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/nuxt/tsconfig.json.hbs --}}
+{
+  "references": [
+    {
+      "path": "./.nuxt/tsconfig.app.json"
+    },
+    {
+      "path": "./.nuxt/tsconfig.server.json"
+    },
+    {
+      "path": "./.nuxt/tsconfig.shared.json"
+    },
+    {
+      "path": "./.nuxt/tsconfig.node.json"
+    }
+  {{#unless (or (eq backend "convex") (eq backend "none"))}}
+    ,
+    {
+        "path": "../server"
+    }
+  {{/unless}}
+  ]
+}

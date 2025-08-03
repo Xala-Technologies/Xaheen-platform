@@ -1,0 +1,109 @@
+{{!-- Template: nuxt.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: nuxt --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/nuxt/nuxt.config.ts.hbs --}}
+/**
+ * Nuxt Configuration - Xala UI System Integration
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use $t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+  
+  // TypeScript configuration
+  typescript: {
+    strict: true,
+    typeCheck: true
+  },
+
+  // CSS framework
+  css: [
+    '@xala-technologies/ui-system/dist/style.css',
+    '~/assets/css/main.css'
+  ],
+
+  // Modules
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/i18n',
+    '@vueuse/nuxt'{{#if hasGDPR}},
+    '@nuxtjs/gtm'{{/if}}{{#if hasWCAG}},
+    '@nuxtjs/color-mode'{{/if}}
+  ],
+
+  // Internationalization
+  i18n: {
+    locales: [
+      { code: 'en', iso: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'nb', iso: 'nb-NO', name: 'Norsk Bokmål', file: 'nb.json' }{{#if hasFrench}},
+      { code: 'fr', iso: 'fr-FR', name: 'Français', file: 'fr.json' }{{/if}}{{#if hasArabic}},
+      { code: 'ar', iso: 'ar-SA', name: 'العربية', file: 'ar.json', dir: 'rtl' }{{/if}}
+    ],
+    defaultLocale: '{{defaultLocale}}',
+    langDir: 'locales/',
+    lazy: true,
+    strategy: 'prefix_except_default',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root'
+    }
+  },
+
+  // Runtime configuration
+  runtimeConfig: {
+    // Private keys (only available on server-side)
+    {{#if hasNorwegian}}
+    bankIdClientId: process.env.BANKID_CLIENT_ID,
+    bankIdClientSecret: process.env.BANKID_CLIENT_SECRET,
+    altinnApiKey: process.env.ALTINN_API_KEY,
+    {{/if}}
+    
+    // Public keys (exposed to frontend)
+    public: {
+      appName: '{{projectName}}',
+      appVersion: '1.0.0',
+      {{#if hasNorwegian}}
+      bankIdEnvironment: process.env.NUXT_BANKID_ENV || 'test',
+      altinnEnvironment: process.env.NUXT_ALTINN_ENV || 'test',
+      {{/if}}
+      serverURL: process.env.NUXT_PUBLIC_SERVER_URL || 'http://localhost:3001',
+      baseUrl: process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    }
+  },
+
+  // Build configuration
+  build: {
+    transpile: ['@xala-technologies/ui-system']
+  },
+
+  // Development configuration
+  devServer: {
+    port: 3000,
+    host: '0.0.0.0'
+  },
+
+  // Server-side rendering
+  ssr: true,
+
+  // Experimental features
+  experimental: {
+    payloadExtraction: false,
+    renderJsonPayloads: true,
+    typedPages: true
+  }
+});

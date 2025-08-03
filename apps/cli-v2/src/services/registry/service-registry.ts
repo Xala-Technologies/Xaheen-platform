@@ -10624,6 +10624,4240 @@ jobs:
         documentation: 'https://developer.crowdin.com/',
         complexity: 'high',
         tags: ['i18n', 'localization', 'translation-management', 'crowdin', 'ci-cd']
+      },
+
+      // AI Integration Services
+      {
+        name: 'openai',
+        type: 'ai',
+        provider: 'openai',
+        version: '4.0.0',
+        description: 'OpenAI API integration for GPT, DALL-E, and embeddings',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/openai.ts',
+            template: `import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export interface ChatCompletionOptions {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  systemPrompt?: string;
+}
+
+export async function generateChatCompletion(
+  messages: OpenAI.Chat.ChatCompletionMessageParam[],
+  options: ChatCompletionOptions = {}
+) {
+  const {
+    model = 'gpt-4-turbo-preview',
+    temperature = 0.7,
+    maxTokens = 1000,
+    systemPrompt
+  } = options;
+
+  const allMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+  
+  if (systemPrompt) {
+    allMessages.push({ role: 'system', content: systemPrompt });
+  }
+  
+  allMessages.push(...messages);
+
+  const completion = await openai.chat.completions.create({
+    model,
+    messages: allMessages,
+    temperature,
+    max_tokens: maxTokens,
+  });
+
+  return completion.choices[0]?.message?.content || '';
+}
+
+export async function generateEmbedding(text: string) {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
+  });
+
+  return response.data[0].embedding;
+}
+
+export async function generateImage(prompt: string, options?: {
+  size?: '1024x1024' | '1792x1024' | '1024x1792';
+  quality?: 'standard' | 'hd';
+  n?: number;
+}) {
+  const response = await openai.images.generate({
+    model: 'dall-e-3',
+    prompt,
+    size: options?.size || '1024x1024',
+    quality: options?.quality || 'standard',
+    n: options?.n || 1,
+  });
+
+  return response.data;
+}
+
+export async function streamChatCompletion(
+  messages: OpenAI.Chat.ChatCompletionMessageParam[],
+  options: ChatCompletionOptions = {}
+) {
+  const {
+    model = 'gpt-4-turbo-preview',
+    temperature = 0.7,
+    maxTokens = 1000,
+  } = options;
+
+  const stream = await openai.chat.completions.create({
+    model,
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    stream: true,
+  });
+
+  return stream;
+}
+
+export { openai };`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'openai': '^4.0.0'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          }
+        ],
+        documentation: 'https://platform.openai.com/docs',
+        complexity: 'low',
+        tags: ['ai', 'openai', 'gpt', 'chatgpt', 'dalle', 'embeddings']
+      },
+
+      {
+        name: 'anthropic',
+        type: 'ai',
+        provider: 'anthropic',
+        version: '0.20.0',
+        description: 'Anthropic Claude API integration',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/anthropic.ts',
+            template: `import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export interface ClaudeCompletionOptions {
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  systemPrompt?: string;
+}
+
+export async function generateClaudeCompletion(
+  prompt: string,
+  options: ClaudeCompletionOptions = {}
+) {
+  const {
+    model = 'claude-3-opus-20240229',
+    maxTokens = 1000,
+    temperature = 0.7,
+    systemPrompt
+  } = options;
+
+  const message = await anthropic.messages.create({
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    system: systemPrompt,
+    messages: [
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+  });
+
+  return message.content[0].type === 'text' ? message.content[0].text : '';
+}
+
+export async function streamClaudeCompletion(
+  prompt: string,
+  options: ClaudeCompletionOptions = {}
+) {
+  const {
+    model = 'claude-3-opus-20240229',
+    maxTokens = 1000,
+    temperature = 0.7,
+    systemPrompt
+  } = options;
+
+  const stream = await anthropic.messages.create({
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    system: systemPrompt,
+    messages: [
+      {
+        role: 'user',
+        content: prompt
+      }
+    ],
+    stream: true
+  });
+
+  return stream;
+}
+
+export async function generateClaudeChat(
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
+  options: ClaudeCompletionOptions = {}
+) {
+  const {
+    model = 'claude-3-opus-20240229',
+    maxTokens = 1000,
+    temperature = 0.7,
+    systemPrompt
+  } = options;
+
+  const response = await anthropic.messages.create({
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    system: systemPrompt,
+    messages
+  });
+
+  return response.content[0].type === 'text' ? response.content[0].text : '';
+}
+
+export { anthropic };`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              '@anthropic-ai/sdk': '^0.20.0'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'ANTHROPIC_API_KEY',
+            description: 'Anthropic API key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          }
+        ],
+        documentation: 'https://docs.anthropic.com/',
+        complexity: 'low',
+        tags: ['ai', 'anthropic', 'claude', 'llm']
+      },
+
+      // AI Agent Services
+      {
+        name: 'langchain',
+        type: 'ai-agent',
+        provider: 'langchain',
+        version: '0.1.0',
+        description: 'Build applications with LLMs through composability',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/langchain.ts',
+            template: `import { ChatOpenAI } from '@langchain/openai';
+import { ChatAnthropic } from '@langchain/anthropic';
+import { 
+  ChatPromptTemplate, 
+  SystemMessagePromptTemplate,
+  HumanMessagePromptTemplate,
+  MessagesPlaceholder
+} from '@langchain/core/prompts';
+import { ConversationChain } from 'langchain/chains';
+import { BufferMemory, ConversationSummaryMemory } from 'langchain/memory';
+import { createRetrievalChain } from 'langchain/chains/retrieval';
+import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { Document } from '@langchain/core/documents';
+
+// Initialize LLMs
+export const openAIChat = new ChatOpenAI({
+  modelName: 'gpt-4-turbo-preview',
+  temperature: 0.7,
+  openAIApiKey: process.env.OPENAI_API_KEY,
+});
+
+export const anthropicChat = new ChatAnthropic({
+  modelName: 'claude-3-opus-20240229',
+  temperature: 0.7,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+// Create a conversational chain with memory
+export async function createConversationChain(systemPrompt?: string) {
+  const memory = new BufferMemory({
+    returnMessages: true,
+    memoryKey: 'chat_history',
+  });
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    SystemMessagePromptTemplate.fromTemplate(
+      systemPrompt || 'You are a helpful AI assistant.'
+    ),
+    new MessagesPlaceholder('chat_history'),
+    HumanMessagePromptTemplate.fromTemplate('{input}'),
+  ]);
+
+  const chain = new ConversationChain({
+    llm: openAIChat,
+    prompt,
+    memory,
+  });
+
+  return chain;
+}
+
+// Create a RAG (Retrieval Augmented Generation) chain
+export async function createRAGChain(documents: string[]) {
+  // Split documents into chunks
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  });
+
+  const docs = documents.map(
+    (pageContent) => new Document({ pageContent })
+  );
+
+  const splitDocs = await textSplitter.splitDocuments(docs);
+
+  // Create vector store
+  const vectorStore = await MemoryVectorStore.fromDocuments(
+    splitDocs,
+    new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY })
+  );
+
+  // Create retriever
+  const retriever = vectorStore.asRetriever();
+
+  // Create prompt
+  const prompt = ChatPromptTemplate.fromTemplate(\`
+    Answer the question based only on the following context:
+    {context}
+
+    Question: {input}
+  \`);
+
+  // Create chains
+  const documentChain = await createStuffDocumentsChain({
+    llm: openAIChat,
+    prompt,
+  });
+
+  const retrievalChain = await createRetrievalChain({
+    combineDocsChain: documentChain,
+    retriever,
+  });
+
+  return retrievalChain;
+}
+
+// Create an agent with tools
+export async function createAgent() {
+  const { initializeAgentExecutorWithOptions } = await import(
+    'langchain/agents'
+  );
+  const { Calculator } = await import('langchain/tools/calculator');
+  const { WebBrowser } = await import('langchain/tools/webbrowser');
+  const { OpenAIEmbeddings } = await import('@langchain/openai');
+
+  const tools = [
+    new Calculator(),
+    new WebBrowser({ 
+      model: openAIChat, 
+      embeddings: new OpenAIEmbeddings() 
+    }),
+  ];
+
+  const agent = await initializeAgentExecutorWithOptions(tools, openAIChat, {
+    agentType: 'openai-functions',
+    verbose: true,
+  });
+
+  return agent;
+}
+
+// Function calling example
+export async function callFunction(
+  query: string,
+  functions: any[]
+) {
+  const llm = new ChatOpenAI({
+    modelName: 'gpt-4-turbo-preview',
+    temperature: 0,
+  }).bind({
+    functions,
+  });
+
+  const result = await llm.invoke(query);
+  return result;
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'langchain': '^0.1.0',
+              '@langchain/openai': '^0.0.10',
+              '@langchain/anthropic': '^0.1.0',
+              '@langchain/core': '^0.1.0',
+              '@langchain/community': '^0.0.10'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key for LangChain',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'ANTHROPIC_API_KEY',
+            description: 'Anthropic API key for LangChain',
+            required: false,
+            type: 'string',
+            sensitive: true
+          }
+        ],
+        documentation: 'https://js.langchain.com/',
+        complexity: 'high',
+        tags: ['ai', 'langchain', 'agents', 'rag', 'chains', 'llm']
+      },
+
+      {
+        name: 'agentic-rag',
+        type: 'ai-agent',
+        provider: 'custom',
+        version: '1.0.0',
+        description: 'Agentic RAG system with autonomous document processing',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/agentic-rag.ts',
+            template: `import { ChatOpenAI } from '@langchain/openai';
+import { 
+  ChatPromptTemplate,
+  SystemMessagePromptTemplate,
+  HumanMessagePromptTemplate 
+} from '@langchain/core/prompts';
+import { createRetrievalChain } from 'langchain/chains/retrieval';
+import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { Document } from '@langchain/core/documents';
+import { BaseMessage } from '@langchain/core/messages';
+
+interface AgenticRAGOptions {
+  systemPrompt?: string;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  maxIterations?: number;
+  temperature?: number;
+}
+
+export class AgenticRAG {
+  private llm: ChatOpenAI;
+  private embeddings: OpenAIEmbeddings;
+  private vectorStore: MemoryVectorStore | null = null;
+  private options: AgenticRAGOptions;
+  private conversationHistory: BaseMessage[] = [];
+
+  constructor(options: AgenticRAGOptions = {}) {
+    this.options = {
+      systemPrompt: 'You are an intelligent RAG agent that can answer questions and perform analysis on documents.',
+      chunkSize: 1000,
+      chunkOverlap: 200,
+      maxIterations: 5,
+      temperature: 0.7,
+      ...options
+    };
+
+    this.llm = new ChatOpenAI({
+      modelName: 'gpt-4-turbo-preview',
+      temperature: this.options.temperature,
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    this.embeddings = new OpenAIEmbeddings({
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  async ingestDocuments(documents: string[] | Document[]) {
+    const docs = documents.map(doc => 
+      typeof doc === 'string' 
+        ? new Document({ pageContent: doc })
+        : doc
+    );
+
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: this.options.chunkSize,
+      chunkOverlap: this.options.chunkOverlap,
+    });
+
+    const splitDocs = await textSplitter.splitDocuments(docs);
+
+    this.vectorStore = await MemoryVectorStore.fromDocuments(
+      splitDocs,
+      this.embeddings
+    );
+
+    return splitDocs.length;
+  }
+
+  async query(question: string, context?: any) {
+    if (!this.vectorStore) {
+      throw new Error('No documents ingested. Call ingestDocuments first.');
+    }
+
+    // Agent loop for iterative refinement
+    let currentQuery = question;
+    let iterations = 0;
+    let finalAnswer = '';
+
+    while (iterations < this.options.maxIterations!) {
+      // Retrieve relevant documents
+      const retriever = this.vectorStore.asRetriever({
+        k: 5,
+        searchType: 'similarity',
+      });
+
+      const relevantDocs = await retriever.getRelevantDocuments(currentQuery);
+
+      // Check if we need more information
+      const needsMoreInfoPrompt = ChatPromptTemplate.fromTemplate(\`
+        Based on the following context and question, determine if you need more information to answer accurately.
+        
+        Context: {context}
+        Question: {question}
+        
+        Respond with either:
+        1. "SUFFICIENT" if you have enough information
+        2. "NEED_MORE: <specific question to search for>" if you need more information
+      \`);
+
+      const needsMoreInfoChain = await createStuffDocumentsChain({
+        llm: this.llm,
+        prompt: needsMoreInfoPrompt,
+      });
+
+      const checkResult = await needsMoreInfoChain.invoke({
+        context: relevantDocs,
+        question: currentQuery,
+      });
+
+      if (checkResult.startsWith('SUFFICIENT')) {
+        // Generate final answer
+        const answerPrompt = ChatPromptTemplate.fromTemplate(\`
+          ${this.options.systemPrompt}
+          
+          Use the following context to answer the question comprehensively:
+          {context}
+          
+          Question: {question}
+          
+          Provide a detailed, well-structured answer.
+        \`);
+
+        const answerChain = await createStuffDocumentsChain({
+          llm: this.llm,
+          prompt: answerPrompt,
+        });
+
+        finalAnswer = await answerChain.invoke({
+          context: relevantDocs,
+          question: currentQuery,
+        });
+
+        break;
+      } else if (checkResult.startsWith('NEED_MORE:')) {
+        // Extract the new query
+        currentQuery = checkResult.split('NEED_MORE:')[1].trim();
+        iterations++;
+      } else {
+        // Fallback
+        break;
+      }
+    }
+
+    // Store in conversation history
+    this.conversationHistory.push({
+      content: question,
+      name: 'user',
+    } as BaseMessage);
+    
+    this.conversationHistory.push({
+      content: finalAnswer,
+      name: 'assistant',
+    } as BaseMessage);
+
+    return {
+      answer: finalAnswer,
+      sources: await this.vectorStore.similaritySearch(question, 3),
+      iterations: iterations + 1,
+    };
+  }
+
+  async analyzeDocument(instruction: string) {
+    if (!this.vectorStore) {
+      throw new Error('No documents ingested. Call ingestDocuments first.');
+    }
+
+    const analysisPrompt = ChatPromptTemplate.fromTemplate(\`
+      You are an expert document analyst. Analyze the provided documents according to the following instruction:
+      
+      Instruction: {instruction}
+      
+      Documents:
+      {context}
+      
+      Provide a comprehensive analysis with:
+      1. Key findings
+      2. Important patterns or trends
+      3. Recommendations
+      4. Areas requiring further investigation
+    \`);
+
+    const retriever = this.vectorStore.asRetriever({
+      k: 10,
+      searchType: 'similarity',
+    });
+
+    const analysisChain = await createRetrievalChain({
+      combineDocsChain: await createStuffDocumentsChain({
+        llm: this.llm,
+        prompt: analysisPrompt,
+      }),
+      retriever,
+    });
+
+    const result = await analysisChain.invoke({
+      input: instruction,
+    });
+
+    return result;
+  }
+
+  async generateReport(topic: string) {
+    if (!this.vectorStore) {
+      throw new Error('No documents ingested. Call ingestDocuments first.');
+    }
+
+    const reportPrompt = ChatPromptTemplate.fromTemplate(\`
+      Generate a comprehensive report on the following topic based on the available documents:
+      
+      Topic: {topic}
+      
+      Context:
+      {context}
+      
+      The report should include:
+      1. Executive Summary
+      2. Detailed Findings
+      3. Data Analysis
+      4. Conclusions
+      5. Recommendations
+      
+      Format the report professionally with clear sections and bullet points where appropriate.
+    \`);
+
+    const retriever = this.vectorStore.asRetriever({
+      k: 15,
+      searchType: 'mmr', // Maximum marginal relevance for diversity
+    });
+
+    const reportChain = await createRetrievalChain({
+      combineDocsChain: await createStuffDocumentsChain({
+        llm: this.llm,
+        prompt: reportPrompt,
+      }),
+      retriever,
+    });
+
+    const report = await reportChain.invoke({
+      input: topic,
+    });
+
+    return report;
+  }
+
+  getConversationHistory() {
+    return this.conversationHistory;
+  }
+
+  clearConversationHistory() {
+    this.conversationHistory = [];
+  }
+}
+
+// Factory function
+export function createAgenticRAG(options?: AgenticRAGOptions) {
+  return new AgenticRAG(options);
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'langchain': '^0.1.0',
+              '@langchain/openai': '^0.0.10',
+              '@langchain/core': '^0.1.0'
+            }
+          }
+        ],
+        documentation: 'https://js.langchain.com/docs/use_cases/question_answering',
+        complexity: 'high',
+        tags: ['ai', 'rag', 'agents', 'document-analysis', 'autonomous']
+      },
+
+      // AI Chatbot Services
+      {
+        name: 'vercel-ai',
+        type: 'ai-chatbot',
+        provider: 'vercel',
+        version: '3.0.0',
+        description: 'Build AI-powered apps with React, Svelte, Vue, and Solid',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/app/api/chat/route.ts',
+            template: `import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { Configuration, OpenAIApi } from 'openai-edge';
+
+const config = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(config);
+
+export const runtime = 'edge';
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const response = await openai.createChatCompletion({
+    model: 'gpt-4-turbo-preview',
+    stream: true,
+    messages,
+    temperature: 0.7,
+    max_tokens: 1000,
+  });
+
+  const stream = OpenAIStream(response, {
+    onStart: async () => {
+      // This callback is called when the stream starts
+      console.log('Stream started');
+    },
+    onToken: async (token) => {
+      // This callback is called for each token in the stream
+      console.log(token);
+    },
+    onCompletion: async (completion) => {
+      // This callback is called when the stream completes
+      console.log('Completion:', completion);
+    },
+  });
+
+  return new StreamingTextResponse(stream);
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'src/components/Chat.tsx',
+            template: `'use client';
+
+import { useChat } from 'ai/react';
+import { useState } from 'react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await handleSubmit(e);
+    } catch (err) {
+      setError('Failed to send message. Please try again.');
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
+      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={\`flex \${
+              message.role === 'user' ? 'justify-end' : 'justify-start'
+            }\`}
+          >
+            <div
+              className={\`max-w-xs lg:max-w-md px-4 py-2 rounded-lg \${
+                message.role === 'user'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-900'
+              }\`}
+            >
+              <p className="text-sm">{message.content}</p>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg">
+              <p className="text-sm">Thinking...</p>
+            </div>
+          </div>
+        )}
+        {error && (
+          <div className="text-red-500 text-center text-sm">{error}</div>
+        )}
+      </div>
+
+      <form onSubmit={onSubmit} className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
+        />
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Send
+        </button>
+      </form>
+    </div>
+  );
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'ai': '^3.0.0',
+              'openai-edge': '^1.0.0'
+            }
+          }
+        ],
+        documentation: 'https://sdk.vercel.ai/docs',
+        complexity: 'low',
+        tags: ['ai', 'chatbot', 'streaming', 'vercel', 'react', 'nextjs']
+      },
+
+      // WhatsApp Agent
+      {
+        name: 'whatsapp-agent',
+        type: 'ai-agent',
+        provider: 'twilio',
+        version: '1.0.0',
+        description: 'AI-powered WhatsApp agent using Twilio and LLMs',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/agents/whatsapp-agent.ts',
+            template: `import twilio from 'twilio';
+import { ChatOpenAI } from '@langchain/openai';
+import { ConversationChain } from 'langchain/chains';
+import { BufferMemory } from 'langchain/memory';
+import { 
+  ChatPromptTemplate,
+  SystemMessagePromptTemplate,
+  HumanMessagePromptTemplate,
+  MessagesPlaceholder
+} from '@langchain/core/prompts';
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioClient = twilio(accountSid, authToken);
+
+// Store conversation memories per phone number
+const conversationMemories = new Map<string, BufferMemory>();
+
+export class WhatsAppAgent {
+  private llm: ChatOpenAI;
+  private systemPrompt: string;
+
+  constructor(systemPrompt?: string) {
+    this.llm = new ChatOpenAI({
+      modelName: 'gpt-4-turbo-preview',
+      temperature: 0.7,
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    this.systemPrompt = systemPrompt || \`You are a helpful WhatsApp assistant. 
+You provide concise, friendly responses suitable for mobile messaging. 
+Keep your responses brief but informative.\`;
+  }
+
+  private getOrCreateMemory(phoneNumber: string): BufferMemory {
+    if (!conversationMemories.has(phoneNumber)) {
+      conversationMemories.set(phoneNumber, new BufferMemory({
+        returnMessages: true,
+        memoryKey: 'chat_history',
+      }));
+    }
+    return conversationMemories.get(phoneNumber)!;
+  }
+
+  async processMessage(from: string, body: string) {
+    try {
+      const memory = this.getOrCreateMemory(from);
+
+      const prompt = ChatPromptTemplate.fromMessages([
+        SystemMessagePromptTemplate.fromTemplate(this.systemPrompt),
+        new MessagesPlaceholder('chat_history'),
+        HumanMessagePromptTemplate.fromTemplate('{input}'),
+      ]);
+
+      const chain = new ConversationChain({
+        llm: this.llm,
+        prompt,
+        memory,
+      });
+
+      // Process special commands
+      if (body.toLowerCase() === '/clear') {
+        conversationMemories.delete(from);
+        return 'Conversation history cleared. How can I help you?';
+      }
+
+      if (body.toLowerCase() === '/help') {
+        return \`Available commands:
+/clear - Clear conversation history
+/help - Show this help message
+
+Just send me any message and I'll help you!\`;
+      }
+
+      // Generate response
+      const response = await chain.call({ input: body });
+      
+      // Truncate if too long for WhatsApp
+      const maxLength = 1600; // WhatsApp message limit
+      if (response.response.length > maxLength) {
+        return response.response.substring(0, maxLength - 3) + '...';
+      }
+
+      return response.response;
+    } catch (error) {
+      console.error('Error processing WhatsApp message:', error);
+      return 'Sorry, I encountered an error. Please try again.';
+    }
+  }
+
+  async sendMessage(to: string, body: string) {
+    try {
+      const message = await twilioClient.messages.create({
+        body,
+        from: \`whatsapp:\${process.env.TWILIO_WHATSAPP_NUMBER}\`,
+        to: \`whatsapp:\${to}\`,
+      });
+      return message.sid;
+    } catch (error) {
+      console.error('Error sending WhatsApp message:', error);
+      throw error;
+    }
+  }
+
+  async sendMediaMessage(to: string, body: string, mediaUrl: string) {
+    try {
+      const message = await twilioClient.messages.create({
+        body,
+        from: \`whatsapp:\${process.env.TWILIO_WHATSAPP_NUMBER}\`,
+        to: \`whatsapp:\${to}\`,
+        mediaUrl: [mediaUrl],
+      });
+      return message.sid;
+    } catch (error) {
+      console.error('Error sending WhatsApp media message:', error);
+      throw error;
+    }
+  }
+
+  clearUserHistory(phoneNumber: string) {
+    conversationMemories.delete(phoneNumber);
+  }
+
+  getAllActiveConversations() {
+    return Array.from(conversationMemories.keys());
+  }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'src/app/api/whatsapp/webhook/route.ts',
+            template: `import { NextRequest, NextResponse } from 'next/server';
+import { WhatsAppAgent } from '@/lib/agents/whatsapp-agent';
+
+const agent = new WhatsAppAgent();
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const body = formData.get('Body') as string;
+    const from = formData.get('From') as string;
+    const to = formData.get('To') as string;
+    const mediaUrl = formData.get('MediaUrl0') as string | null;
+
+    // Remove 'whatsapp:' prefix
+    const phoneNumber = from.replace('whatsapp:', '');
+
+    console.log(\`Received WhatsApp message from \${phoneNumber}: \${body}\`);
+
+    // Process message with AI agent
+    let response: string;
+
+    if (mediaUrl) {
+      // Handle media messages
+      response = 'I received your media. Currently, I can only process text messages. How can I help you with text?';
+    } else {
+      response = await agent.processMessage(phoneNumber, body);
+    }
+
+    // Send response back via Twilio
+    await agent.sendMessage(phoneNumber, response);
+
+    // Return empty response to Twilio
+    return new Response('', { status: 200 });
+  } catch (error) {
+    console.error('WhatsApp webhook error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Twilio webhook verification
+export async function GET(req: NextRequest) {
+  return new Response('WhatsApp webhook is active', { status: 200 });
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'twilio': '^4.0.0',
+              'langchain': '^0.1.0',
+              '@langchain/openai': '^0.0.10'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'TWILIO_ACCOUNT_SID',
+            description: 'Twilio Account SID',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'TWILIO_AUTH_TOKEN',
+            description: 'Twilio Auth Token',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'TWILIO_WHATSAPP_NUMBER',
+            description: 'Twilio WhatsApp number',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          }
+        ],
+        documentation: 'https://www.twilio.com/docs/whatsapp',
+        complexity: 'medium',
+        tags: ['ai', 'whatsapp', 'agent', 'twilio', 'chatbot', 'messaging']
+      },
+
+      // Outlook Agent
+      {
+        name: 'outlook-agent',
+        type: 'ai-agent',
+        provider: 'microsoft',
+        version: '1.0.0',
+        description: 'AI-powered Outlook email agent with Microsoft Graph',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/agents/outlook-agent.ts',
+            template: `import { Client } from '@microsoft/microsoft-graph-client';
+import { ChatOpenAI } from '@langchain/openai';
+import { 
+  ChatPromptTemplate,
+  SystemMessagePromptTemplate,
+  HumanMessagePromptTemplate 
+} from '@langchain/core/prompts';
+import { z } from 'zod';
+import { StructuredOutputParser } from 'langchain/output_parsers';
+
+// Email action schema
+const EmailActionSchema = z.object({
+  action: z.enum(['reply', 'forward', 'archive', 'flag', 'categorize', 'ignore']),
+  replyContent: z.string().optional(),
+  forwardTo: z.array(z.string()).optional(),
+  category: z.string().optional(),
+  priority: z.enum(['high', 'normal', 'low']).optional(),
+  summary: z.string(),
+});
+
+type EmailAction = z.infer<typeof EmailActionSchema>;
+
+export class OutlookAgent {
+  private graphClient: Client;
+  private llm: ChatOpenAI;
+  private parser: StructuredOutputParser<EmailAction>;
+
+  constructor(accessToken: string) {
+    this.graphClient = Client.init({
+      authProvider: (done) => {
+        done(null, accessToken);
+      },
+    });
+
+    this.llm = new ChatOpenAI({
+      modelName: 'gpt-4-turbo-preview',
+      temperature: 0.3,
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    this.parser = StructuredOutputParser.fromZodSchema(EmailActionSchema);
+  }
+
+  async processInbox(maxEmails: number = 10) {
+    try {
+      // Fetch unread emails
+      const messages = await this.graphClient
+        .api('/me/mailFolders/inbox/messages')
+        .filter('isRead eq false')
+        .top(maxEmails)
+        .select('id,subject,bodyPreview,from,toRecipients,importance,receivedDateTime')
+        .get();
+
+      const results = [];
+
+      for (const message of messages.value) {
+        const action = await this.analyzeEmail(message);
+        await this.executeAction(message, action);
+        results.push({ messageId: message.id, action });
+      }
+
+      return results;
+    } catch (error) {
+      console.error('Error processing inbox:', error);
+      throw error;
+    }
+  }
+
+  private async analyzeEmail(message: any): Promise<EmailAction> {
+    const prompt = ChatPromptTemplate.fromMessages([
+      SystemMessagePromptTemplate.fromTemplate(\`
+        You are an intelligent email assistant. Analyze the email and determine the best action.
+        Consider the sender, subject, content, and importance.
+        
+        {format_instructions}
+      \`),
+      HumanMessagePromptTemplate.fromTemplate(\`
+        Email Details:
+        From: {from}
+        Subject: {subject}
+        Content: {content}
+        Importance: {importance}
+        
+        Determine the appropriate action and provide a brief summary.
+      \`),
+    ]);
+
+    const chain = prompt.pipe(this.llm).pipe(this.parser);
+
+    const result = await chain.invoke({
+      from: message.from.emailAddress.address,
+      subject: message.subject,
+      content: message.bodyPreview,
+      importance: message.importance,
+      format_instructions: this.parser.getFormatInstructions(),
+    });
+
+    return result;
+  }
+
+  private async executeAction(message: any, action: EmailAction) {
+    switch (action.action) {
+      case 'reply':
+        if (action.replyContent) {
+          await this.replyToEmail(message.id, action.replyContent);
+        }
+        break;
+      
+      case 'forward':
+        if (action.forwardTo && action.forwardTo.length > 0) {
+          await this.forwardEmail(message.id, action.forwardTo, action.summary);
+        }
+        break;
+      
+      case 'archive':
+        await this.archiveEmail(message.id);
+        break;
+      
+      case 'flag':
+        await this.flagEmail(message.id, action.priority || 'normal');
+        break;
+      
+      case 'categorize':
+        if (action.category) {
+          await this.categorizeEmail(message.id, action.category);
+        }
+        break;
+      
+      case 'ignore':
+        // Mark as read but take no other action
+        await this.markAsRead(message.id);
+        break;
+    }
+  }
+
+  async replyToEmail(messageId: string, content: string) {
+    const reply = {
+      message: {
+        body: {
+          contentType: 'HTML',
+          content: content,
+        },
+      },
+    };
+
+    await this.graphClient
+      .api(\`/me/messages/\${messageId}/reply\`)
+      .post(reply);
+  }
+
+  async forwardEmail(messageId: string, recipients: string[], comment: string) {
+    const forward = {
+      comment: comment,
+      toRecipients: recipients.map(email => ({
+        emailAddress: { address: email },
+      })),
+    };
+
+    await this.graphClient
+      .api(\`/me/messages/\${messageId}/forward\`)
+      .post(forward);
+  }
+
+  async archiveEmail(messageId: string) {
+    const archiveFolder = await this.graphClient
+      .api('/me/mailFolders')
+      .filter("displayName eq 'Archive'")
+      .get();
+
+    if (archiveFolder.value.length > 0) {
+      await this.graphClient
+        .api(\`/me/messages/\${messageId}/move\`)
+        .post({ destinationId: archiveFolder.value[0].id });
+    }
+  }
+
+  async flagEmail(messageId: string, importance: string) {
+    await this.graphClient
+      .api(\`/me/messages/\${messageId}\`)
+      .patch({
+        flag: { flagStatus: 'flagged' },
+        importance: importance,
+      });
+  }
+
+  async categorizeEmail(messageId: string, category: string) {
+    await this.graphClient
+      .api(\`/me/messages/\${messageId}\`)
+      .patch({
+        categories: [category],
+      });
+  }
+
+  async markAsRead(messageId: string) {
+    await this.graphClient
+      .api(\`/me/messages/\${messageId}\`)
+      .patch({ isRead: true });
+  }
+
+  async generateEmailDraft(context: string, recipient: string) {
+    const prompt = ChatPromptTemplate.fromTemplate(\`
+      Write a professional email based on the following context:
+      
+      Context: {context}
+      Recipient: {recipient}
+      
+      Generate a complete email with:
+      1. Appropriate subject line
+      2. Professional greeting
+      3. Clear and concise body
+      4. Professional closing
+      
+      Format as JSON with 'subject' and 'body' fields.
+    \`);
+
+    const response = await this.llm.invoke(
+      await prompt.format({ context, recipient })
+    );
+
+    const emailData = JSON.parse(response.content as string);
+
+    const draft = {
+      subject: emailData.subject,
+      body: {
+        contentType: 'HTML',
+        content: emailData.body,
+      },
+      toRecipients: [
+        {
+          emailAddress: { address: recipient },
+        },
+      ],
+    };
+
+    const createdDraft = await this.graphClient
+      .api('/me/messages')
+      .post(draft);
+
+    return createdDraft;
+  }
+
+  async searchEmails(query: string, maxResults: number = 10) {
+    const searchPrompt = ChatPromptTemplate.fromTemplate(\`
+      Convert this natural language query into a Microsoft Graph search filter:
+      Query: {query}
+      
+      Return only the filter string, no explanation.
+    \`);
+
+    const filterString = await this.llm.invoke(
+      await searchPrompt.format({ query })
+    );
+
+    const results = await this.graphClient
+      .api('/me/messages')
+      .filter(filterString.content as string)
+      .top(maxResults)
+      .get();
+
+    return results.value;
+  }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'src/app/api/outlook/process/route.ts',
+            template: `import { NextRequest, NextResponse } from 'next/server';
+import { OutlookAgent } from '@/lib/agents/outlook-agent';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.accessToken) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { maxEmails = 10 } = await req.json();
+    
+    const agent = new OutlookAgent(session.accessToken);
+    const results = await agent.processInbox(maxEmails);
+
+    return NextResponse.json({
+      processed: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error('Outlook processing error:', error);
+    return NextResponse.json(
+      { error: 'Failed to process emails' },
+      { status: 500 }
+    );
+  }
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              '@microsoft/microsoft-graph-client': '^3.0.0',
+              'langchain': '^0.1.0',
+              '@langchain/openai': '^0.0.10',
+              'zod': '^3.22.0'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'AZURE_AD_CLIENT_ID',
+            description: 'Azure AD application client ID',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'AZURE_AD_CLIENT_SECRET',
+            description: 'Azure AD application client secret',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'AZURE_AD_TENANT_ID',
+            description: 'Azure AD tenant ID',
+            required: true,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://docs.microsoft.com/graph/',
+        complexity: 'high',
+        tags: ['ai', 'outlook', 'email', 'agent', 'microsoft', 'graph']
+      },
+
+      // Vector Databases for AI
+      {
+        name: 'pinecone',
+        type: 'vector-db',
+        provider: 'pinecone',
+        version: '2.0.0',
+        description: 'Vector database for AI applications',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/pinecone.ts',
+            template: `import { Pinecone } from '@pinecone-database/pinecone';
+import { OpenAIEmbeddings } from '@langchain/openai';
+
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+
+export interface VectorDocument {
+  id: string;
+  content: string;
+  metadata?: Record<string, any>;
+}
+
+export class PineconeVectorStore {
+  private index: any;
+  private embeddings: OpenAIEmbeddings;
+  private namespace: string;
+
+  constructor(indexName: string, namespace: string = 'default') {
+    this.index = pinecone.index(indexName);
+    this.namespace = namespace;
+    this.embeddings = new OpenAIEmbeddings({
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  async upsertDocuments(documents: VectorDocument[]) {
+    const vectors = await Promise.all(
+      documents.map(async (doc) => {
+        const embedding = await this.embeddings.embedQuery(doc.content);
+        return {
+          id: doc.id,
+          values: embedding,
+          metadata: {
+            ...doc.metadata,
+            content: doc.content,
+          },
+        };
+      })
+    );
+
+    await this.index.namespace(this.namespace).upsert(vectors);
+    return vectors.length;
+  }
+
+  async similaritySearch(
+    query: string,
+    k: number = 5,
+    filter?: Record<string, any>
+  ) {
+    const queryEmbedding = await this.embeddings.embedQuery(query);
+    
+    const results = await this.index.namespace(this.namespace).query({
+      vector: queryEmbedding,
+      topK: k,
+      includeMetadata: true,
+      filter,
+    });
+
+    return results.matches.map((match: any) => ({
+      id: match.id,
+      score: match.score,
+      content: match.metadata.content,
+      metadata: match.metadata,
+    }));
+  }
+
+  async deleteDocuments(ids: string[]) {
+    await this.index.namespace(this.namespace).deleteMany(ids);
+  }
+
+  async deleteAll() {
+    await this.index.namespace(this.namespace).deleteAll();
+  }
+}
+
+export async function createIndex(
+  name: string,
+  dimension: number = 1536,
+  metric: 'cosine' | 'euclidean' | 'dotproduct' = 'cosine'
+) {
+  await pinecone.createIndex({
+    name,
+    dimension,
+    metric,
+    spec: {
+      serverless: {
+        cloud: 'aws',
+        region: 'us-east-1',
+      },
+    },
+  });
+}
+
+export { pinecone };`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              '@pinecone-database/pinecone': '^2.0.0',
+              '@langchain/openai': '^0.0.10'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'PINECONE_API_KEY',
+            description: 'Pinecone API key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key for embeddings',
+            required: true,
+            type: 'string',
+            sensitive: true
+          }
+        ],
+        documentation: 'https://docs.pinecone.io/',
+        complexity: 'medium',
+        tags: ['ai', 'vector-database', 'embeddings', 'similarity-search']
+      },
+
+      // AI Observability
+      {
+        name: 'langfuse',
+        type: 'ai-observability',
+        provider: 'langfuse',
+        version: '3.0.0',
+        description: 'Open source LLM engineering platform',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/langfuse.ts',
+            template: `import { Langfuse } from 'langfuse';
+import { CallbackHandler } from 'langfuse-langchain';
+
+// Initialize Langfuse client
+export const langfuse = new Langfuse({
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+  secretKey: process.env.LANGFUSE_SECRET_KEY!,
+  baseUrl: process.env.LANGFUSE_BASE_URL,
+});
+
+// Create a callback handler for LangChain
+export function getLangfuseCallbackHandler(
+  sessionId?: string,
+  userId?: string
+) {
+  return new CallbackHandler({
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+    secretKey: process.env.LANGFUSE_SECRET_KEY!,
+    baseUrl: process.env.LANGFUSE_BASE_URL,
+    sessionId,
+    userId,
+  });
+}
+
+// Trace a simple LLM call
+export async function traceLLMCall(
+  name: string,
+  input: string,
+  output: string,
+  metadata?: Record<string, any>
+) {
+  const trace = langfuse.trace({
+    name,
+    metadata,
+  });
+
+  const generation = trace.generation({
+    name: 'llm-generation',
+    input,
+    output,
+    model: metadata?.model || 'unknown',
+    modelParameters: {
+      temperature: metadata?.temperature,
+      maxTokens: metadata?.maxTokens,
+    },
+  });
+
+  await generation.end();
+  await trace.end();
+  
+  return trace.id;
+}
+
+// Score a generation
+export async function scoreGeneration(
+  traceId: string,
+  name: string,
+  value: number,
+  comment?: string
+) {
+  await langfuse.score({
+    traceId,
+    name,
+    value,
+    comment,
+  });
+}
+
+// Track user feedback
+export async function trackFeedback(
+  traceId: string,
+  rating: number,
+  comment?: string
+) {
+  await langfuse.score({
+    traceId,
+    name: 'user-feedback',
+    value: rating,
+    comment,
+  });
+}
+
+// Create a custom event
+export async function trackEvent(
+  name: string,
+  metadata: Record<string, any>,
+  userId?: string
+) {
+  const trace = langfuse.trace({
+    name: 'custom-event',
+    userId,
+    metadata: {
+      eventName: name,
+      ...metadata,
+    },
+  });
+
+  await trace.end();
+  return trace.id;
+}
+
+// Flush all pending requests
+export async function flush() {
+  await langfuse.flush();
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/traced-llm.ts',
+            template: `import { ChatOpenAI } from '@langchain/openai';
+import { getLangfuseCallbackHandler } from './langfuse';
+
+export function getTracedLLM(
+  sessionId?: string,
+  userId?: string,
+  modelName: string = 'gpt-4-turbo-preview'
+) {
+  const callbackHandler = getLangfuseCallbackHandler(sessionId, userId);
+
+  return new ChatOpenAI({
+    modelName,
+    temperature: 0.7,
+    openAIApiKey: process.env.OPENAI_API_KEY,
+    callbacks: [callbackHandler],
+  });
+}
+
+// Example usage with automatic tracing
+export async function generateWithTracing(
+  prompt: string,
+  sessionId?: string,
+  userId?: string
+) {
+  const llm = getTracedLLM(sessionId, userId);
+  
+  const response = await llm.invoke(prompt);
+  
+  return response.content;
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'langfuse': '^3.0.0',
+              'langfuse-langchain': '^3.0.0'
+            }
+          }
+        ],
+        envVariables: [
+          {
+            name: 'LANGFUSE_PUBLIC_KEY',
+            description: 'Langfuse public key',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'LANGFUSE_SECRET_KEY',
+            description: 'Langfuse secret key',
+            required: true,
+            type: 'string',
+            sensitive: true
+          },
+          {
+            name: 'LANGFUSE_BASE_URL',
+            description: 'Langfuse base URL (optional for self-hosted)',
+            required: false,
+            type: 'string',
+            defaultValue: 'https://cloud.langfuse.com'
+          }
+        ],
+        documentation: 'https://langfuse.com/docs',
+        complexity: 'low',
+        tags: ['ai', 'observability', 'monitoring', 'tracing', 'llm']
+      },
+
+      // Additional AI Integration Services
+      {
+        name: 'google-ai',
+        type: 'ai',
+        provider: 'google',
+        version: '0.2.0',
+        description: 'Google AI Platform integration for Gemini and PaLM models',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/google-ai.ts',
+            template: `import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+
+export interface GeminiOptions {
+  model?: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+  topP?: number;
+  topK?: number;
+}
+
+export async function generateContent(
+  prompt: string,
+  options: GeminiOptions = {}
+) {
+  const {
+    model = 'gemini-pro',
+    temperature = 0.7,
+    maxOutputTokens = 1000,
+    topP = 0.8,
+    topK = 40
+  } = options;
+
+  const modelInstance = genAI.getGenerativeModel({ 
+    model,
+    generationConfig: {
+      temperature,
+      maxOutputTokens,
+      topP,
+      topK
+    }
+  });
+
+  const result = await modelInstance.generateContent(prompt);
+  const response = await result.response;
+  return response.text();
+}
+
+export async function generateContentStream(
+  prompt: string,
+  options: GeminiOptions = {}
+) {
+  const {
+    model = 'gemini-pro',
+    temperature = 0.7,
+    maxOutputTokens = 1000
+  } = options;
+
+  const modelInstance = genAI.getGenerativeModel({ 
+    model,
+    generationConfig: {
+      temperature,
+      maxOutputTokens
+    }
+  });
+
+  const result = await modelInstance.generateContentStream(prompt);
+  return result.stream;
+}
+
+export async function chat(messages: Array<{ role: string; parts: string }>) {
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  const chat = model.startChat({
+    history: messages.slice(0, -1).map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.parts }]
+    }))
+  });
+
+  const lastMessage = messages[messages.length - 1];
+  const result = await chat.sendMessage(lastMessage.parts);
+  const response = await result.response;
+  return response.text();
+}`,
+            priority: 80
+          },
+          {
+            type: 'file-create',
+            target: 'src/types/google-ai.ts',
+            template: `export interface GeminiModel {
+  name: string;
+  displayName: string;
+  description: string;
+  inputTokenLimit: number;
+  outputTokenLimit: number;
+  supportedGenerationMethods: string[];
+}
+
+export interface GeminiResponse {
+  candidates: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
+      role: string;
+    };
+    finishReason: string;
+    index: number;
+  }>;
+  promptFeedback?: {
+    safetyRatings: Array<{
+      category: string;
+      probability: string;
+    }>;
+  };
+}`,
+            priority: 70
+          }
+        ],
+        dependencies: {
+          npm: {
+            '@google/generative-ai': '^0.2.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'GOOGLE_AI_API_KEY',
+            description: 'Google AI API key',
+            required: true,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://ai.google.dev/docs',
+        complexity: 'medium',
+        tags: ['ai', 'google', 'gemini', 'palm', 'llm']
+      },
+
+      {
+        name: 'cohere',
+        type: 'ai',
+        provider: 'cohere',
+        version: '7.0.0',
+        description: 'Cohere AI platform for natural language processing',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/cohere.ts',
+            template: `import { CohereClient } from 'cohere-ai';
+
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY!,
+});
+
+export interface CohereGenerateOptions {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  k?: number;
+  p?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+}
+
+export async function generate(
+  prompt: string,
+  options: CohereGenerateOptions = {}
+) {
+  const {
+    model = 'command',
+    temperature = 0.7,
+    maxTokens = 1000,
+    k = 0,
+    p = 0.75,
+    frequencyPenalty = 0,
+    presencePenalty = 0
+  } = options;
+
+  const response = await cohere.generate({
+    model,
+    prompt,
+    temperature,
+    maxTokens,
+    k,
+    p,
+    frequencyPenalty,
+    presencePenalty
+  });
+
+  return response.generations[0]?.text || '';
+}
+
+export async function chat(
+  messages: Array<{ role: string; message: string }>,
+  options: { model?: string; temperature?: number } = {}
+) {
+  const { model = 'command', temperature = 0.7 } = options;
+
+  const response = await cohere.chat({
+    model,
+    message: messages[messages.length - 1].message,
+    chatHistory: messages.slice(0, -1).map(msg => ({
+      role: msg.role as 'USER' | 'CHATBOT',
+      message: msg.message
+    })),
+    temperature
+  });
+
+  return response.text;
+}
+
+export async function embed(texts: string[], model = 'embed-english-v3.0') {
+  const response = await cohere.embed({
+    texts,
+    model,
+    inputType: 'search_document'
+  });
+
+  return response.embeddings;
+}
+
+export async function classify(
+  inputs: string[],
+  examples: Array<{ text: string; label: string }>,
+  model = 'embed-multilingual-v2.0'
+) {
+  const response = await cohere.classify({
+    inputs,
+    examples,
+    model
+  });
+
+  return response.classifications;
+}
+
+export async function rerank(
+  query: string,
+  documents: Array<{ text: string }>,
+  model = 'rerank-english-v2.0'
+) {
+  const response = await cohere.rerank({
+    query,
+    documents,
+    model,
+    topN: documents.length
+  });
+
+  return response.results;
+}`,
+            priority: 80
+          }
+        ],
+        dependencies: {
+          npm: {
+            'cohere-ai': '^7.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'COHERE_API_KEY',
+            description: 'Cohere API key',
+            required: true,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://docs.cohere.com/',
+        complexity: 'medium',
+        tags: ['ai', 'cohere', 'nlp', 'embeddings', 'classification']
+      },
+
+      {
+        name: 'huggingface',
+        type: 'ai',
+        provider: 'huggingface',
+        version: '2.0.0',
+        description: 'Hugging Face transformers and inference API integration',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/huggingface.ts',
+            template: `import { HfInference } from '@huggingface/inference';
+
+const hf = new HfInference(process.env.HF_API_TOKEN);
+
+export interface TextGenerationOptions {
+  model?: string;
+  temperature?: number;
+  maxNewTokens?: number;
+  topP?: number;
+  repetitionPenalty?: number;
+}
+
+export async function generateText(
+  prompt: string,
+  options: TextGenerationOptions = {}
+) {
+  const {
+    model = 'microsoft/DialoGPT-medium',
+    temperature = 0.7,
+    maxNewTokens = 100,
+    topP = 0.9,
+    repetitionPenalty = 1.0
+  } = options;
+
+  const response = await hf.textGeneration({
+    model,
+    inputs: prompt,
+    parameters: {
+      temperature,
+      max_new_tokens: maxNewTokens,
+      top_p: topP,
+      repetition_penalty: repetitionPenalty,
+      return_full_text: false
+    }
+  });
+
+  return response.generated_text;
+}
+
+export async function chatCompletion(
+  messages: Array<{ role: string; content: string }>,
+  model = 'microsoft/DialoGPT-medium'
+) {
+  const prompt = messages.map(msg => 
+    \`\${msg.role === 'user' ? 'User' : 'Assistant'}: \${msg.content}\`
+  ).join('\\n') + '\\nAssistant:';
+
+  return generateText(prompt, { model, maxNewTokens: 200 });
+}
+
+export async function getEmbedding(
+  text: string,
+  model = 'sentence-transformers/all-MiniLM-L6-v2'
+) {
+  const response = await hf.featureExtraction({
+    model,
+    inputs: text
+  });
+
+  return Array.isArray(response) ? response : [response];
+}
+
+export async function classifyText(
+  text: string,
+  model = 'cardiffnlp/twitter-roberta-base-sentiment-latest'
+) {
+  const response = await hf.textClassification({
+    model,
+    inputs: text
+  });
+
+  return response;
+}
+
+export async function summarizeText(
+  text: string,
+  model = 'facebook/bart-large-cnn'
+) {
+  const response = await hf.summarization({
+    model,
+    inputs: text,
+    parameters: {
+      max_length: 150,
+      min_length: 30
+    }
+  });
+
+  return response.summary_text;
+}
+
+export async function translateText(
+  text: string,
+  model = 'Helsinki-NLP/opus-mt-en-fr'
+) {
+  const response = await hf.translation({
+    model,
+    inputs: text
+  });
+
+  return response.translation_text;
+}
+
+export async function answerQuestion(
+  question: string,
+  context: string,
+  model = 'deepset/roberta-base-squad2'
+) {
+  const response = await hf.questionAnswering({
+    model,
+    inputs: {
+      question,
+      context
+    }
+  });
+
+  return response;
+}`,
+            priority: 80
+          }
+        ],
+        dependencies: {
+          npm: {
+            '@huggingface/inference': '^2.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'HF_API_TOKEN',
+            description: 'Hugging Face API token',
+            required: true,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://huggingface.co/docs/huggingface.js',
+        complexity: 'medium',
+        tags: ['ai', 'huggingface', 'transformers', 'nlp', 'inference']
+      },
+
+      // AI Chatbot Services  
+      {
+        name: 'botpress',
+        type: 'ai-chatbot',
+        provider: 'botpress',
+        version: '12.26.0',
+        description: 'Botpress conversational AI platform integration',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/chatbot/botpress.ts',
+            template: `import axios from 'axios';
+
+export interface BotpressConfig {
+  serverUrl: string;
+  botId: string;
+  clientId?: string;
+  clientSecret?: string;
+}
+
+export class BotpressClient {
+  private config: BotpressConfig;
+  private token?: string;
+
+  constructor(config: BotpressConfig) {
+    this.config = config;
+  }
+
+  async authenticate() {
+    if (this.config.clientId && this.config.clientSecret) {
+      const response = await axios.post(\`\${this.config.serverUrl}/api/v1/auth/login\`, {
+        email: this.config.clientId,
+        password: this.config.clientSecret
+      });
+      this.token = response.data.payload.jwt;
+    }
+  }
+
+  async sendMessage(userId: string, message: string, channel = 'web') {
+    const endpoint = \`\${this.config.serverUrl}/api/v1/bots/\${this.config.botId}/converse/\${userId}\`;
+    
+    const response = await axios.post(endpoint, {
+      type: 'text',
+      text: message,
+      channel
+    }, {
+      headers: this.token ? { Authorization: \`Bearer \${this.token}\` } : {}
+    });
+
+    return response.data;
+  }
+
+  async getConversationHistory(userId: string, limit = 50) {
+    const endpoint = \`\${this.config.serverUrl}/api/v1/bots/\${this.config.botId}/conversations/\${userId}/messages\`;
+    
+    const response = await axios.get(endpoint, {
+      params: { limit },
+      headers: this.token ? { Authorization: \`Bearer \${this.token}\` } : {}
+    });
+
+    return response.data;
+  }
+
+  async createBot(botConfig: {
+    name: string;
+    description?: string;
+    category?: string;
+    details?: any;
+  }) {
+    const endpoint = \`\${this.config.serverUrl}/api/v1/admin/workspace/bots\`;
+    
+    const response = await axios.post(endpoint, botConfig, {
+      headers: this.token ? { Authorization: \`Bearer \${this.token}\` } : {}
+    });
+
+    return response.data;
+  }
+
+  async updateBotConfig(config: any) {
+    const endpoint = \`\${this.config.serverUrl}/api/v1/bots/\${this.config.botId}/config\`;
+    
+    const response = await axios.post(endpoint, config, {
+      headers: this.token ? { Authorization: \`Bearer \${this.token}\` } : {}
+    });
+
+    return response.data;
+  }
+
+  async trainBot(trainingData: Array<{
+    input: string;
+    output: string;
+    intent?: string;
+  }>) {
+    // Implementation for training the bot with new data
+    const endpoint = \`\${this.config.serverUrl}/api/v1/bots/\${this.config.botId}/mod/nlu/train\`;
+    
+    const response = await axios.post(endpoint, {
+      language: 'en',
+      data: trainingData
+    }, {
+      headers: this.token ? { Authorization: \`Bearer \${this.token}\` } : {}
+    });
+
+    return response.data;
+  }
+}
+
+export function createBotpressClient(config: BotpressConfig) {
+  return new BotpressClient(config);
+}`,
+            priority: 85
+          },
+          {
+            type: 'file-create',
+            target: 'src/components/BotpressWidget.tsx',
+            template: `import React, { useEffect } from 'react';
+
+interface BotpressWidgetProps {
+  botId: string;
+  hostUrl: string;
+  messagingUrl?: string;
+  clientId?: string;
+  hideWidget?: boolean;
+  disableAnimations?: boolean;
+  theme?: 'light' | 'dark';
+  className?: string;
+}
+
+export const BotpressWidget: React.FC<BotpressWidgetProps> = ({
+  botId,
+  hostUrl,
+  messagingUrl,
+  clientId,
+  hideWidget = false,
+  disableAnimations = false,
+  theme = 'light',
+  className = ''
+}) => {
+  useEffect(() => {
+    // Load Botpress webchat script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.botpress.cloud/webchat/v1/inject.js';
+    script.async = true;
+    
+    script.onload = () => {
+      (window as any).botpressWebChat.init({
+        botId,
+        hostUrl,
+        messagingUrl: messagingUrl || \`\${hostUrl}/api/v1/bots/\${botId}\`,
+        clientId,
+        hideWidget,
+        disableAnimations,
+        theme,
+        containerWidth: '100%',
+        layoutWidth: '100%'
+      });
+    };
+    
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [botId, hostUrl, messagingUrl, clientId, hideWidget, disableAnimations, theme]);
+
+  return (
+    <div 
+      id="bp-web-widget" 
+      className={className}
+      style={{ 
+        width: '100%', 
+        height: '100%',
+        minHeight: '400px'
+      }}
+    />
+  );
+};`,
+            priority: 80
+          }
+        ],
+        dependencies: {
+          npm: {
+            'axios': '^1.6.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'BOTPRESS_SERVER_URL',
+            description: 'Botpress server URL',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'BOTPRESS_BOT_ID',
+            description: 'Botpress bot ID',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'BOTPRESS_CLIENT_ID',
+            description: 'Botpress client ID (optional)',
+            required: false,
+            type: 'string'
+          },
+          {
+            name: 'BOTPRESS_CLIENT_SECRET',
+            description: 'Botpress client secret (optional)',
+            required: false,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://botpress.com/docs',
+        complexity: 'high',
+        tags: ['ai', 'chatbot', 'botpress', 'conversational-ai', 'nlu']
+      },
+
+      {
+        name: 'rasa',
+        type: 'ai-chatbot',
+        provider: 'rasa',
+        version: '3.6.0',
+        description: 'Rasa Open Source conversational AI framework',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/chatbot/rasa.ts',
+            template: `import axios from 'axios';
+
+export interface RasaConfig {
+  serverUrl: string;
+  token?: string;
+}
+
+export interface RasaMessage {
+  text: string;
+  parse_data?: any;
+}
+
+export interface RasaResponse {
+  recipient_id: string;
+  text?: string;
+  image?: string;
+  buttons?: Array<{
+    title: string;
+    payload: string;
+  }>;
+  elements?: any[];
+}
+
+export class RasaClient {
+  private config: RasaConfig;
+
+  constructor(config: RasaConfig) {
+    this.config = config;
+  }
+
+  async sendMessage(
+    message: string,
+    sender: string,
+    metadata?: any
+  ): Promise<RasaResponse[]> {
+    const endpoint = \`\${this.config.serverUrl}/webhooks/rest/webhook\`;
+    
+    const response = await axios.post(endpoint, {
+      sender,
+      message,
+      metadata
+    }, {
+      headers: this.config.token ? {
+        'Authorization': \`Bearer \${this.config.token}\`
+      } : {}
+    });
+
+    return response.data;
+  }
+
+  async parseMessage(message: string): Promise<any> {
+    const endpoint = \`\${this.config.serverUrl}/model/parse\`;
+    
+    const response = await axios.post(endpoint, {
+      text: message
+    }, {
+      headers: this.config.token ? {
+        'Authorization': \`Bearer \${this.config.token}\`
+      } : {}
+    });
+
+    return response.data;
+  }
+
+  async getConversationHistory(sender: string): Promise<any[]> {
+    const endpoint = \`\${this.config.serverUrl}/conversations/\${sender}/tracker\`;
+    
+    const response = await axios.get(endpoint, {
+      headers: this.config.token ? {
+        'Authorization': \`Bearer \${this.config.token}\`
+      } : {}
+    });
+
+    return response.data.events || [];
+  }
+
+  async addTrainingData(
+    intent: string,
+    examples: string[],
+    entities?: Array<{
+      start: number;
+      end: number;
+      value: string;
+      entity: string;
+    }>[]
+  ) {
+    // This would typically interact with Rasa X or custom training endpoint
+    const trainingData = {
+      rasa_nlu_data: {
+        common_examples: examples.map((text, index) => ({
+          text,
+          intent,
+          entities: entities?.[index] || []
+        }))
+      }
+    };
+
+    return trainingData;
+  }
+
+  async trainModel() {
+    const endpoint = \`\${this.config.serverUrl}/model/train\`;
+    
+    const response = await axios.post(endpoint, {}, {
+      headers: this.config.token ? {
+        'Authorization': \`Bearer \${this.config.token}\`
+      } : {}
+    });
+
+    return response.data;
+  }
+
+  async getModelStatus() {
+    const endpoint = \`\${this.config.serverUrl}/status\`;
+    
+    const response = await axios.get(endpoint);
+    return response.data;
+  }
+}
+
+export function createRasaClient(config: RasaConfig) {
+  return new RasaClient(config);
+}`,
+            priority: 85
+          },
+          {
+            type: 'file-create',
+            target: 'config/domain.yml',
+            template: `version: '3.1'
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - bot_challenge
+
+responses:
+  utter_greet:
+  - text: "Hey! How are you?"
+
+  utter_cheer_up:
+  - text: "Here is something to cheer you up:"
+    image: "https://i.imgur.com/nGF1K8f.jpg"
+
+  utter_did_that_help:
+  - text: "Did that help you?"
+
+  utter_happy:
+  - text: "Great, carry on!"
+
+  utter_goodbye:
+  - text: "Bye"
+
+  utter_iamabot:
+  - text: "I am a bot, powered by Rasa."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true`,
+            priority: 90
+          },
+          {
+            type: 'file-create',
+            target: 'data/nlu.yml',
+            template: `version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - moin
+    - hey there
+    - let's go
+    - hey dude
+    - goodmorning
+    - goodevening
+    - good afternoon
+
+- intent: goodbye
+  examples: |
+    - cu
+    - good by
+    - cee you later
+    - good night
+    - bye
+    - goodbye
+    - have a nice day
+    - see you around
+    - bye bye
+    - see you later
+
+- intent: affirm
+  examples: |
+    - yes
+    - y
+    - indeed
+    - of course
+    - that sounds good
+    - correct
+
+- intent: deny
+  examples: |
+    - no
+    - n
+    - never
+    - I don't think so
+    - don't like that
+    - no way
+    - not really
+
+- intent: mood_great
+  examples: |
+    - perfect
+    - great
+    - amazing
+    - feeling like a king
+    - wonderful
+    - I am feeling very good
+    - I am great
+    - I am amazing
+    - I am going to save the world
+    - super stoked
+    - extremely good
+    - so so perfect
+    - so good
+    - so perfect
+
+- intent: mood_unhappy
+  examples: |
+    - my day was horrible
+    - I am sad
+    - I don't feel very well
+    - I am disappointed
+    - super sad
+    - I'm so sad
+    - sad
+    - very sad
+    - unhappy
+    - not good
+    - not very good
+    - extremly sad
+    - so saad
+    - so sad
+
+- intent: bot_challenge
+  examples: |
+    - are you a bot?
+    - are you a human?
+    - am I talking to a bot?
+    - am I talking to a human?`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            'axios': '^1.6.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'RASA_SERVER_URL',
+            description: 'Rasa server URL',
+            required: true,
+            type: 'string',
+            defaultValue: 'http://localhost:5005'
+          },
+          {
+            name: 'RASA_TOKEN',
+            description: 'Rasa authentication token (optional)',
+            required: false,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://rasa.com/docs/',
+        complexity: 'high',
+        tags: ['ai', 'chatbot', 'rasa', 'nlu', 'conversational-ai', 'open-source']
+      },
+
+      {
+        name: 'dialogflow',
+        type: 'ai-chatbot',
+        provider: 'google',
+        version: '6.0.0',
+        description: 'Google Dialogflow conversational AI integration',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/chatbot/dialogflow.ts',
+            template: `import { SessionsClient } from '@google-cloud/dialogflow';
+import { google } from '@google-cloud/dialogflow/build/protos/protos';
+
+export interface DialogflowConfig {
+  projectId: string;
+  location?: string;
+  languageCode?: string;
+  keyFilename?: string;
+}
+
+export class DialogflowClient {
+  private sessionsClient: SessionsClient;
+  private projectId: string;
+  private location: string;
+  private languageCode: string;
+
+  constructor(config: DialogflowConfig) {
+    this.projectId = config.projectId;
+    this.location = config.location || 'global';
+    this.languageCode = config.languageCode || 'en';
+    
+    this.sessionsClient = new SessionsClient({
+      keyFilename: config.keyFilename
+    });
+  }
+
+  async detectIntent(
+    sessionId: string,
+    queryText: string,
+    contexts?: google.cloud.dialogflow.v2.IContext[]
+  ) {
+    const sessionPath = this.sessionsClient.projectAgentSessionPath(
+      this.projectId,
+      sessionId
+    );
+
+    const request: google.cloud.dialogflow.v2.IDetectIntentRequest = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: queryText,
+          languageCode: this.languageCode,
+        },
+      },
+    };
+
+    if (contexts) {
+      request.queryParams = { contexts };
+    }
+
+    const [response] = await this.sessionsClient.detectIntent(request);
+    return response;
+  }
+
+  async streamingDetectIntent(
+    sessionId: string,
+    audioConfig: google.cloud.dialogflow.v2.IInputAudioConfig
+  ) {
+    const sessionPath = this.sessionsClient.projectAgentSessionPath(
+      this.projectId,
+      sessionId
+    );
+
+    const request: google.cloud.dialogflow.v2.IStreamingDetectIntentRequest = {
+      session: sessionPath,
+      queryInput: {
+        audioConfig,
+      },
+    };
+
+    const stream = this.sessionsClient.streamingDetectIntent();
+    stream.write(request);
+    
+    return stream;
+  }
+
+  async createIntent(
+    displayName: string,
+    trainingPhrases: string[],
+    messageTexts: string[]
+  ) {
+    const intentsClient = new SessionsClient();
+    const agentPath = intentsClient.projectAgentPath(this.projectId);
+
+    const trainingPhraseParts = trainingPhrases.map(phrase => ({
+      text: phrase,
+      entityType: '',
+      alias: '',
+      userDefined: false,
+    }));
+
+    const messageText = {
+      text: messageTexts,
+    };
+
+    const intent = {
+      displayName,
+      trainingPhrases: trainingPhraseParts.map(part => ({
+        parts: [part],
+      })),
+      messages: [{ text: messageText }],
+    };
+
+    const createIntentRequest = {
+      parent: agentPath,
+      intent,
+    };
+
+    const [response] = await intentsClient.createIntent(createIntentRequest);
+    return response;
+  }
+
+  async listIntents() {
+    const intentsClient = new SessionsClient();
+    const agentPath = intentsClient.projectAgentPath(this.projectId);
+
+    const [intents] = await intentsClient.listIntents({ parent: agentPath });
+    return intents;
+  }
+
+  async deleteIntent(intentName: string) {
+    const intentsClient = new SessionsClient();
+    await intentsClient.deleteIntent({ name: intentName });
+  }
+
+  async createContext(
+    sessionId: string,
+    contextName: string,
+    lifespanCount: number,
+    parameters?: { [key: string]: any }
+  ) {
+    const sessionPath = this.sessionsClient.projectAgentSessionPath(
+      this.projectId,
+      sessionId
+    );
+    
+    const contextPath = \`\${sessionPath}/contexts/\${contextName}\`;
+
+    const context = {
+      name: contextPath,
+      lifespanCount,
+      parameters: parameters ? google.protobuf.Struct.fromObject(parameters) : undefined,
+    };
+
+    const contextsClient = new SessionsClient();
+    const [response] = await contextsClient.createContext({
+      parent: sessionPath,
+      context,
+    });
+
+    return response;
+  }
+}
+
+export function createDialogflowClient(config: DialogflowConfig) {
+  return new DialogflowClient(config);
+}`,
+            priority: 85
+          },
+          {
+            type: 'file-create',
+            target: 'src/components/DialogflowMessenger.tsx',
+            template: `import React, { useEffect } from 'react';
+
+interface DialogflowMessengerProps {
+  projectId: string;
+  location?: string;
+  languageCode?: string;
+  botWritingText?: string;
+  chatTitle?: string;
+  placeholder?: string;
+  welcomeIntent?: string;
+  className?: string;
+}
+
+export const DialogflowMessenger: React.FC<DialogflowMessengerProps> = ({
+  projectId,
+  location = 'global',
+  languageCode = 'en',
+  botWritingText = 'Bot is typing...',
+  chatTitle = 'Chat',
+  placeholder = 'Type a message...',
+  welcomeIntent,
+  className = ''
+}) => {
+  useEffect(() => {
+    // Load Dialogflow Messenger script
+    const script = document.createElement('script');
+    script.src = 'https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1';
+    script.async = true;
+    
+    document.head.appendChild(script);
+    
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
+
+  return (
+    <df-messenger
+      project-id={projectId}
+      agent-id={location}
+      language-code={languageCode}
+      bot-writing-text={botWritingText}
+      chat-title={chatTitle}
+      placeholder={placeholder}
+      welcome-intent={welcomeIntent}
+      className={className}
+    />
+  );
+};
+
+// Add TypeScript declaration for df-messenger
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'df-messenger': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          'project-id': string;
+          'agent-id': string;
+          'language-code': string;
+          'bot-writing-text'?: string;
+          'chat-title'?: string;
+          'placeholder'?: string;
+          'welcome-intent'?: string;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}`,
+            priority: 80
+          }
+        ],
+        dependencies: {
+          npm: {
+            '@google-cloud/dialogflow': '^6.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'GOOGLE_APPLICATION_CREDENTIALS',
+            description: 'Path to Google Cloud service account key file',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'DIALOGFLOW_PROJECT_ID',
+            description: 'Google Cloud project ID',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'DIALOGFLOW_LOCATION',
+            description: 'Dialogflow agent location',
+            required: false,
+            type: 'string',
+            defaultValue: 'global'
+          }
+        ],
+        documentation: 'https://cloud.google.com/dialogflow/docs',
+        complexity: 'high',
+        tags: ['ai', 'chatbot', 'dialogflow', 'google-cloud', 'conversational-ai']
+      },
+
+      // Vector Database Services
+      {
+        name: 'weaviate',
+        type: 'vector-database',
+        provider: 'weaviate',
+        version: '1.0.0',
+        description: 'Weaviate vector database for AI applications',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/vector-db/weaviate.ts',
+            template: `import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client';
+
+export interface WeaviateConfig {
+  scheme: 'http' | 'https';
+  host: string;
+  apiKey?: string;
+  headers?: Record<string, string>;
+}
+
+export class WeaviateVectorDB {
+  private client: WeaviateClient;
+
+  constructor(config: WeaviateConfig) {
+    const clientConfig: any = {
+      scheme: config.scheme,
+      host: config.host,
+    };
+
+    if (config.apiKey) {
+      clientConfig.authClientSecret = new ApiKey(config.apiKey);
+    }
+
+    if (config.headers) {
+      clientConfig.headers = config.headers;
+    }
+
+    this.client = weaviate.client(clientConfig);
+  }
+
+  async createSchema(className: string, properties: Array<{
+    name: string;
+    dataType: string[];
+    description?: string;
+    moduleConfig?: any;
+  }>) {
+    const schema = {
+      class: className,
+      description: \`\${className} objects\`,
+      properties,
+      vectorizer: 'text2vec-openai',
+      moduleConfig: {
+        'text2vec-openai': {
+          model: 'ada',
+          modelVersion: '002',
+          type: 'text'
+        }
+      }
+    };
+
+    const result = await this.client.schema
+      .classCreator()
+      .withClass(schema)
+      .do();
+
+    return result;
+  }
+
+  async addObject(
+    className: string,
+    properties: Record<string, any>,
+    vector?: number[]
+  ) {
+    let creator = this.client.data
+      .creator()
+      .withClassName(className)
+      .withProperties(properties);
+
+    if (vector) {
+      creator = creator.withVector(vector);
+    }
+
+    const result = await creator.do();
+    return result;
+  }
+
+  async addObjects(
+    className: string,
+    objects: Array<{
+      properties: Record<string, any>;
+      vector?: number[];
+    }>
+  ) {
+    const batcher = this.client.batch.objectsBatcher();
+
+    objects.forEach(obj => {
+      let batchObj = batcher
+        .withClassName(className)
+        .withProperties(obj.properties);
+
+      if (obj.vector) {
+        batchObj = batchObj.withVector(obj.vector);
+      }
+
+      batchObj.withId();
+    });
+
+    const result = await batcher.do();
+    return result;
+  }
+
+  async search(
+    className: string,
+    query: {
+      concepts?: string[];
+      nearText?: string;
+      nearVector?: number[];
+      where?: any;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    let searcher = this.client.graphql
+      .get()
+      .withClassName(className);
+
+    if (query.concepts) {
+      searcher = searcher.withNearText({ concepts: query.concepts });
+    }
+
+    if (query.nearText) {
+      searcher = searcher.withNearText({ concepts: [query.nearText] });
+    }
+
+    if (query.nearVector) {
+      searcher = searcher.withNearVector({ vector: query.nearVector });
+    }
+
+    if (query.where) {
+      searcher = searcher.withWhere(query.where);
+    }
+
+    if (query.limit) {
+      searcher = searcher.withLimit(query.limit);
+    }
+
+    if (query.offset) {
+      searcher = searcher.withOffset(query.offset);
+    }
+
+    searcher = searcher.withFields('_additional { id certainty distance } *');
+
+    const result = await searcher.do();
+    return result;
+  }
+
+  async semanticSearch(
+    className: string,
+    text: string,
+    limit = 10
+  ) {
+    const result = await this.client.graphql
+      .get()
+      .withClassName(className)
+      .withNearText({ concepts: [text] })
+      .withLimit(limit)
+      .withFields('_additional { id certainty } *')
+      .do();
+
+    return result;
+  }
+
+  async updateObject(
+    id: string,
+    className: string,
+    properties: Record<string, any>
+  ) {
+    const result = await this.client.data
+      .updater()
+      .withId(id)
+      .withClassName(className)
+      .withProperties(properties)
+      .do();
+
+    return result;
+  }
+
+  async deleteObject(id: string) {
+    const result = await this.client.data
+      .deleter()
+      .withId(id)
+      .do();
+
+    return result;
+  }
+
+  async getSchema() {
+    const result = await this.client.schema.getter().do();
+    return result;
+  }
+
+  async deleteClass(className: string) {
+    const result = await this.client.schema
+      .classDeleter()
+      .withClassName(className)
+      .do();
+
+    return result;
+  }
+}
+
+export function createWeaviateClient(config: WeaviateConfig) {
+  return new WeaviateVectorDB(config);
+}`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            'weaviate-ts-client': '^1.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'WEAVIATE_URL',
+            description: 'Weaviate instance URL',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'WEAVIATE_API_KEY',
+            description: 'Weaviate API key (optional)',
+            required: false,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://weaviate.io/developers/weaviate',
+        complexity: 'medium',
+        tags: ['ai', 'vector-database', 'weaviate', 'search', 'embeddings']
+      },
+
+      {
+        name: 'qdrant',
+        type: 'vector-database',
+        provider: 'qdrant',
+        version: '1.7.0',
+        description: 'Qdrant vector database for similarity search',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/vector-db/qdrant.ts',
+            template: `import { QdrantClient } from '@qdrant/js-client-rest';
+
+export interface QdrantConfig {
+  url: string;
+  apiKey?: string;
+  port?: number;
+  https?: boolean;
+}
+
+export class QdrantVectorDB {
+  private client: QdrantClient;
+
+  constructor(config: QdrantConfig) {
+    this.client = new QdrantClient({
+      url: config.url,
+      apiKey: config.apiKey,
+      port: config.port,
+      https: config.https
+    });
+  }
+
+  async createCollection(
+    collectionName: string,
+    config: {
+      size: number;
+      distance: 'Cosine' | 'Euclid' | 'Dot';
+      hnsw_config?: {
+        m?: number;
+        ef_construct?: number;
+        full_scan_threshold?: number;
+      };
+      optimizers_config?: {
+        deleted_threshold?: number;
+        vacuum_min_vector_number?: number;
+        default_segment_number?: number;
+      };
+    }
+  ) {
+    const result = await this.client.createCollection(collectionName, {
+      vectors: {
+        size: config.size,
+        distance: config.distance,
+        hnsw_config: config.hnsw_config,
+      },
+      optimizers_config: config.optimizers_config
+    });
+
+    return result;
+  }
+
+  async insertPoints(
+    collectionName: string,
+    points: Array<{
+      id: number | string;
+      vector: number[];
+      payload?: Record<string, any>;
+    }>
+  ) {
+    const result = await this.client.upsert(collectionName, {
+      wait: true,
+      points: points.map(point => ({
+        id: point.id,
+        vector: point.vector,
+        payload: point.payload || {}
+      }))
+    });
+
+    return result;
+  }
+
+  async search(
+    collectionName: string,
+    query: {
+      vector: number[];
+      limit?: number;
+      offset?: number;
+      filter?: any;
+      params?: {
+        hnsw_ef?: number;
+        exact?: boolean;
+      };
+      score_threshold?: number;
+    }
+  ) {
+    const result = await this.client.search(collectionName, {
+      vector: query.vector,
+      limit: query.limit || 10,
+      offset: query.offset,
+      filter: query.filter,
+      params: query.params,
+      score_threshold: query.score_threshold,
+      with_payload: true,
+      with_vector: false
+    });
+
+    return result;
+  }
+
+  async searchBatched(
+    collectionName: string,
+    queries: Array<{
+      vector: number[];
+      limit?: number;
+      filter?: any;
+    }>
+  ) {
+    const searchRequests = queries.map(query => ({
+      vector: query.vector,
+      limit: query.limit || 10,
+      filter: query.filter,
+      with_payload: true
+    }));
+
+    const result = await this.client.searchBatch(collectionName, {
+      searches: searchRequests
+    });
+
+    return result;
+  }
+
+  async recommend(
+    collectionName: string,
+    config: {
+      positive: Array<number | string>;
+      negative?: Array<number | string>;
+      limit?: number;
+      offset?: number;
+      filter?: any;
+      using?: string;
+      lookup_from?: {
+        collection: string;
+        vector?: string;
+      };
+    }
+  ) {
+    const result = await this.client.recommend(collectionName, {
+      positive: config.positive,
+      negative: config.negative || [],
+      limit: config.limit || 10,
+      offset: config.offset,
+      filter: config.filter,
+      using: config.using,
+      lookup_from: config.lookup_from,
+      with_payload: true,
+      with_vector: false
+    });
+
+    return result;
+  }
+
+  async getPoint(collectionName: string, id: number | string) {
+    const result = await this.client.getPoint(collectionName, id);
+    return result;
+  }
+
+  async updatePoint(
+    collectionName: string,
+    id: number | string,
+    payload: Record<string, any>
+  ) {
+    const result = await this.client.setPayload(collectionName, {
+      payload,
+      points: [id],
+      wait: true
+    });
+
+    return result;
+  }
+
+  async deletePoints(
+    collectionName: string,
+    ids: Array<number | string>
+  ) {
+    const result = await this.client.delete(collectionName, {
+      points: ids,
+      wait: true
+    });
+
+    return result;
+  }
+
+  async getCollectionInfo(collectionName: string) {
+    const result = await this.client.getCollection(collectionName);
+    return result;
+  }
+
+  async deleteCollection(collectionName: string) {
+    const result = await this.client.deleteCollection(collectionName);
+    return result;
+  }
+
+  async createSnapshot(collectionName: string) {
+    const result = await this.client.createSnapshot(collectionName);
+    return result;
+  }
+}
+
+export function createQdrantClient(config: QdrantConfig) {
+  return new QdrantVectorDB(config);
+}`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            '@qdrant/js-client-rest': '^1.7.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'QDRANT_URL',
+            description: 'Qdrant instance URL',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'QDRANT_API_KEY',
+            description: 'Qdrant API key (optional)',
+            required: false,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://qdrant.tech/documentation/',
+        complexity: 'medium',
+        tags: ['ai', 'vector-database', 'qdrant', 'search', 'similarity']
+      },
+
+      {
+        name: 'chroma',
+        type: 'vector-database',
+        provider: 'chroma',
+        version: '1.7.0',
+        description: 'ChromaDB vector database for AI applications',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/vector-db/chroma.ts',
+            template: `import { ChromaClient, OpenAIEmbeddingFunction, CohereEmbeddingFunction } from 'chromadb';
+
+export interface ChromaConfig {
+  path?: string;
+  host?: string;
+  port?: number;
+  ssl?: boolean;
+  headers?: Record<string, string>;
+  tenant?: string;
+  database?: string;
+}
+
+export class ChromaVectorDB {
+  private client: ChromaClient;
+
+  constructor(config: ChromaConfig = {}) {
+    if (config.path) {
+      this.client = new ChromaClient({ path: config.path });
+    } else {
+      this.client = new ChromaClient({
+        host: config.host || 'localhost',
+        port: config.port || 8000,
+        ssl: config.ssl || false,
+        headers: config.headers,
+        tenant: config.tenant || 'default_tenant',
+        database: config.database || 'default_database'
+      });
+    }
+  }
+
+  async createCollection(
+    name: string,
+    options: {
+      embeddingFunction?: 'openai' | 'cohere' | 'custom';
+      metadata?: Record<string, any>;
+      getOrCreate?: boolean;
+    } = {}
+  ) {
+    let embeddingFunction;
+
+    if (options.embeddingFunction === 'openai') {
+      embeddingFunction = new OpenAIEmbeddingFunction({
+        openai_api_key: process.env.OPENAI_API_KEY!
+      });
+    } else if (options.embeddingFunction === 'cohere') {
+      embeddingFunction = new CohereEmbeddingFunction({
+        cohere_api_key: process.env.COHERE_API_KEY!
+      });
+    }
+
+    const collection = options.getOrCreate 
+      ? await this.client.getOrCreateCollection({
+          name,
+          embeddingFunction,
+          metadata: options.metadata
+        })
+      : await this.client.createCollection({
+          name,
+          embeddingFunction,
+          metadata: options.metadata
+        });
+
+    return collection;
+  }
+
+  async getCollection(name: string) {
+    const collection = await this.client.getCollection({ name });
+    return collection;
+  }
+
+  async addDocuments(
+    collectionName: string,
+    documents: Array<{
+      id: string;
+      document: string;
+      metadata?: Record<string, any>;
+      embedding?: number[];
+    }>
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.add({
+      ids: documents.map(doc => doc.id),
+      documents: documents.map(doc => doc.document),
+      metadatas: documents.map(doc => doc.metadata || {}),
+      embeddings: documents.some(doc => doc.embedding) 
+        ? documents.map(doc => doc.embedding)
+        : undefined
+    });
+
+    return result;
+  }
+
+  async query(
+    collectionName: string,
+    options: {
+      queryTexts?: string[];
+      queryEmbeddings?: number[][];
+      nResults?: number;
+      where?: Record<string, any>;
+      whereDocument?: Record<string, any>;
+      include?: ('documents' | 'embeddings' | 'metadatas' | 'distances')[];
+    }
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.query({
+      queryTexts: options.queryTexts,
+      queryEmbeddings: options.queryEmbeddings,
+      nResults: options.nResults || 10,
+      where: options.where,
+      whereDocument: options.whereDocument,
+      include: options.include || ['documents', 'metadatas', 'distances']
+    });
+
+    return result;
+  }
+
+  async similaritySearch(
+    collectionName: string,
+    query: string,
+    nResults = 10,
+    where?: Record<string, any>
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.query({
+      queryTexts: [query],
+      nResults,
+      where,
+      include: ['documents', 'metadatas', 'distances']
+    });
+
+    return result;
+  }
+
+  async update(
+    collectionName: string,
+    updates: Array<{
+      id: string;
+      document?: string;
+      metadata?: Record<string, any>;
+      embedding?: number[];
+    }>
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.update({
+      ids: updates.map(update => update.id),
+      documents: updates.map(update => update.document).filter(Boolean),
+      metadatas: updates.map(update => update.metadata).filter(Boolean),
+      embeddings: updates.map(update => update.embedding).filter(Boolean)
+    });
+
+    return result;
+  }
+
+  async upsert(
+    collectionName: string,
+    documents: Array<{
+      id: string;
+      document: string;
+      metadata?: Record<string, any>;
+      embedding?: number[];
+    }>
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.upsert({
+      ids: documents.map(doc => doc.id),
+      documents: documents.map(doc => doc.document),
+      metadatas: documents.map(doc => doc.metadata || {}),
+      embeddings: documents.some(doc => doc.embedding) 
+        ? documents.map(doc => doc.embedding)
+        : undefined
+    });
+
+    return result;
+  }
+
+  async deleteDocuments(collectionName: string, ids: string[]) {
+    const collection = await this.getCollection(collectionName);
+    const result = await collection.delete({ ids });
+    return result;
+  }
+
+  async get(
+    collectionName: string,
+    options: {
+      ids?: string[];
+      where?: Record<string, any>;
+      limit?: number;
+      offset?: number;
+      include?: ('documents' | 'embeddings' | 'metadatas' | 'distances')[];
+    } = {}
+  ) {
+    const collection = await this.getCollection(collectionName);
+
+    const result = await collection.get({
+      ids: options.ids,
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      include: options.include || ['documents', 'metadatas']
+    });
+
+    return result;
+  }
+
+  async peek(collectionName: string, limit = 10) {
+    const collection = await this.getCollection(collectionName);
+    const result = await collection.peek({ limit });
+    return result;
+  }
+
+  async count(collectionName: string) {
+    const collection = await this.getCollection(collectionName);
+    const result = await collection.count();
+    return result;
+  }
+
+  async deleteCollection(name: string) {
+    const result = await this.client.deleteCollection({ name });
+    return result;
+  }
+
+  async listCollections() {
+    const result = await this.client.listCollections();
+    return result;
+  }
+}
+
+export function createChromaClient(config: ChromaConfig = {}) {
+  return new ChromaVectorDB(config);
+}`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            'chromadb': '^1.7.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'CHROMA_HOST',
+            description: 'ChromaDB host',
+            required: false,
+            type: 'string',
+            defaultValue: 'localhost'
+          },
+          {
+            name: 'CHROMA_PORT',
+            description: 'ChromaDB port',
+            required: false,
+            type: 'string',
+            defaultValue: '8000'
+          },
+          {
+            name: 'CHROMA_SSL',
+            description: 'Use SSL for ChromaDB connection',
+            required: false,
+            type: 'boolean',
+            defaultValue: 'false'
+          }
+        ],
+        documentation: 'https://docs.trychroma.com/',
+        complexity: 'medium',
+        tags: ['ai', 'vector-database', 'chroma', 'embeddings', 'search']
+      },
+
+      // Additional AI Observability Services
+      {
+        name: 'helicone',
+        type: 'ai-observability',
+        provider: 'helicone',  
+        version: '1.0.0',
+        description: 'Helicone LLM observability and monitoring platform',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/helicone.ts',
+            template: `import OpenAI from 'openai';
+
+export interface HeliconeConfig {
+  apiKey: string;
+  baseURL?: string;
+  rateLimitPolicy?: string;
+  userId?: string;
+  sessionId?: string;
+  sessionName?: string;
+  sessionPath?: string;
+}
+
+export class HeliconeOpenAI extends OpenAI {
+  constructor(config: HeliconeConfig) {
+    const headers: Record<string, string> = {
+      'Helicone-Auth': \`Bearer \${config.apiKey}\`,
+    };
+
+    if (config.rateLimitPolicy) {
+      headers['Helicone-RateLimit-Policy'] = config.rateLimitPolicy;
+    }
+
+    if (config.userId) {
+      headers['Helicone-User-Id'] = config.userId;
+    }
+
+    if (config.sessionId) {
+      headers['Helicone-Session-Id'] = config.sessionId;
+    }
+
+    if (config.sessionName) {
+      headers['Helicone-Session-Name'] = config.sessionName;
+    }
+
+    if (config.sessionPath) {
+      headers['Helicone-Session-Path'] = config.sessionPath;
+    }
+
+    super({
+      apiKey: process.env.OPENAI_API_KEY!,
+      baseURL: config.baseURL || 'https://oai.helicone.ai/v1',
+      defaultHeaders: headers,
+    });
+  }
+
+  async createChatCompletionWithLogging(
+    params: OpenAI.Chat.ChatCompletionCreateParams,
+    metadata?: Record<string, any>
+  ) {
+    const headers: Record<string, string> = {};
+
+    if (metadata) {
+      Object.entries(metadata).forEach(([key, value]) => {
+        headers[\`Helicone-Property-\${key}\`] = String(value);
+      });
+    }
+
+    const completion = await this.chat.completions.create(params, {
+      headers
+    });
+
+    return completion;
+  }
+
+  async logCustomEvent(
+    eventName: string,
+    properties: Record<string, any> = {},
+    userId?: string
+  ) {
+    const headers: Record<string, string> = {
+      'Helicone-Custom-Event': eventName,
+    };
+
+    if (userId) {
+      headers['Helicone-User-Id'] = userId;
+    }
+
+    Object.entries(properties).forEach(([key, value]) => {
+      headers[\`Helicone-Property-\${key}\`] = String(value);
+    });
+
+    // Make a dummy request to log the custom event
+    try {
+      await this.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: 'ping' }],
+        max_tokens: 1
+      }, { headers });
+    } catch (error) {
+      // Expected to fail, but event is logged
+    }
+  }
+
+  async logFeedback(
+    requestId: string,
+    rating: number,
+    feedback?: string
+  ) {
+    const response = await fetch('https://api.helicone.ai/v1/feedback', {
+      method: 'POST',
+      headers: {
+        'Authorization': \`Bearer \${process.env.HELICONE_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        'helicone-id': requestId,
+        rating,
+        feedback
+      })
+    });
+
+    return response.json();
+  }
+}
+
+export interface HeliconeMetrics {
+  totalRequests: number;
+  totalCost: number;
+  averageLatency: number;
+  successRate: number;
+  errorRate: number;
+}
+
+export async function getHeliconeMetrics(
+  startDate: string,
+  endDate: string,
+  userId?: string
+): Promise<HeliconeMetrics> {
+  const params = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate
+  });
+
+  if (userId) {
+    params.append('user_id', userId);
+  }
+
+  const response = await fetch(
+    \`https://api.helicone.ai/v1/metrics?\${params}\`,
+    {
+      headers: {
+        'Authorization': \`Bearer \${process.env.HELICONE_API_KEY}\`
+      }
+    }
+  );
+
+  return response.json();
+}
+
+export async function getHeliconeRequests(
+  limit = 100,
+  offset = 0,
+  userId?: string
+) {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    offset: offset.toString()
+  });
+
+  if (userId) {
+    params.append('user_id', userId);
+  }
+
+  const response = await fetch(
+    \`https://api.helicone.ai/v1/requests?\${params}\`,
+    {
+      headers: {
+        'Authorization': \`Bearer \${process.env.HELICONE_API_KEY}\`
+      }
+    }
+  );
+
+  return response.json();
+}
+
+export function createHeliconeClient(config: HeliconeConfig) {
+  return new HeliconeOpenAI(config);
+}`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            'openai': '^4.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'HELICONE_API_KEY',
+            description: 'Helicone API key',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'OPENAI_API_KEY',
+            description: 'OpenAI API key',
+            required: true,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://docs.helicone.ai/',
+        complexity: 'low',
+        tags: ['ai', 'observability', 'monitoring', 'helicone', 'openai']
+      },
+
+      {
+        name: 'portkey',
+        type: 'ai-observability',
+        provider: 'portkey',
+        version: '1.0.0',
+        description: 'Portkey AI gateway and observability platform',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'src/lib/ai/portkey.ts',
+            template: `import Portkey from 'portkey-ai';
+
+export interface PortkeyConfig {
+  apiKey: string;
+  virtualKey?: string;
+  config?: string;
+  provider?: string;
+  traceId?: string;
+  metadata?: Record<string, any>;
+  cacheForceRefresh?: boolean;
+  cacheNamespace?: string;
+}
+
+export class PortkeyClient {
+  private client: Portkey;
+
+  constructor(config: PortkeyConfig) {
+    this.client = new Portkey({
+      apiKey: config.apiKey,
+      virtualKey: config.virtualKey,
+      config: config.config,
+      provider: config.provider,
+      traceId: config.traceId,
+      metadata: config.metadata,
+      cacheForceRefresh: config.cacheForceRefresh,
+      cacheNamespace: config.cacheNamespace,
+    });
+  }
+
+  async createChatCompletion(
+    params: any,
+    options?: {
+      traceId?: string;
+      metadata?: Record<string, any>;
+      tags?: string[];
+      cache?: boolean;
+      cacheAge?: number;
+    }
+  ) {
+    const headers: Record<string, string> = {};
+
+    if (options?.traceId) {
+      headers['x-portkey-trace-id'] = options.traceId;
+    }
+
+    if (options?.metadata) {
+      headers['x-portkey-metadata'] = JSON.stringify(options.metadata);
+    }
+
+    if (options?.tags) {
+      headers['x-portkey-tags'] = options.tags.join(',');
+    }
+
+    if (options?.cache) {
+      headers['x-portkey-cache'] = 'true';
+      if (options.cacheAge) {
+        headers['x-portkey-cache-max-age'] = options.cacheAge.toString();
+      }
+    }
+
+    const completion = await this.client.chat.completions.create(params, {
+      headers
+    });
+
+    return completion;
+  }
+
+  async createCompletion(
+    params: any,
+    options?: {
+      traceId?: string;
+      metadata?: Record<string, any>;
+    }
+  ) {
+    const headers: Record<string, string> = {};
+
+    if (options?.traceId) {
+      headers['x-portkey-trace-id'] = options.traceId;
+    }
+
+    if (options?.metadata) {
+      headers['x-portkey-metadata'] = JSON.stringify(options.metadata);
+    }
+
+    const completion = await this.client.completions.create(params, {
+      headers
+    });
+
+    return completion;
+  }
+
+  async createEmbedding(
+    params: any,
+    options?: {
+      traceId?: string;
+      metadata?: Record<string, any>;
+    }
+  ) {
+    const headers: Record<string, string> = {};
+
+    if (options?.traceId) {
+      headers['x-portkey-trace-id'] = options.traceId;
+    }
+
+    if (options?.metadata) {
+      headers['x-portkey-metadata'] = JSON.stringify(options.metadata);
+    }
+
+    const embedding = await this.client.embeddings.create(params, {
+      headers
+    });
+
+    return embedding;
+  }
+
+  async logFeedback(
+    traceId: string,
+    rating: number,
+    feedback?: string,
+    metadata?: Record<string, any>
+  ) {
+    const response = await fetch('https://api.portkey.ai/v1/feedback', {
+      method: 'POST',
+      headers: {
+        'Authorization': \`Bearer \${process.env.PORTKEY_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        traceId,
+        rating,
+        feedback,
+        metadata
+      })
+    });
+
+    return response.json();
+  }
+
+  async getAnalytics(
+    startDate: string,
+    endDate: string,
+    filters?: {
+      provider?: string;
+      model?: string;
+      userId?: string;
+      tags?: string[];
+    }
+  ) {
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate
+    });
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          params.append(key, value.join(','));
+        } else if (value) {
+          params.append(key, value);
+        }
+      });
+    }
+
+    const response = await fetch(
+      \`https://api.portkey.ai/v1/analytics?\${params}\`,
+      {
+        headers: {
+          'Authorization': \`Bearer \${process.env.PORTKEY_API_KEY}\`
+        }
+      }
+    );
+
+    return response.json();
+  }
+
+  async getLogs(
+    limit = 100,
+    offset = 0,
+    filters?: {
+      traceId?: string;
+      provider?: string;
+      model?: string;
+      userId?: string;
+    }
+  ) {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString()
+    });
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          params.append(key, value);
+        }
+      });
+    }
+
+    const response = await fetch(
+      \`https://api.portkey.ai/v1/logs?\${params}\`,
+      {
+        headers: {
+          'Authorization': \`Bearer \${process.env.PORTKEY_API_KEY}\`
+        }
+      }
+    );
+
+    return response.json();
+  }
+
+  async createPromptTemplate(
+    name: string,
+    template: string,
+    variables?: string[],
+    metadata?: Record<string, any>
+  ) {
+    const response = await fetch('https://api.portkey.ai/v1/prompts', {
+      method: 'POST',
+      headers: {
+        'Authorization': \`Bearer \${process.env.PORTKEY_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        template,
+        variables,
+        metadata
+      })
+    });
+
+    return response.json();
+  }
+
+  async renderPrompt(
+    promptId: string,
+    variables: Record<string, any>
+  ) {
+    const response = await fetch(\`https://api.portkey.ai/v1/prompts/\${promptId}/render\`, {
+      method: 'POST',
+      headers: {
+        'Authorization': \`Bearer \${process.env.PORTKEY_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ variables })
+    });
+
+    return response.json();
+  }
+}
+
+export function createPortkeyClient(config: PortkeyConfig) {
+  return new PortkeyClient(config);
+}`,
+            priority: 85
+          }
+        ],
+        dependencies: {
+          npm: {
+            'portkey-ai': '^1.0.0'
+          }
+        },
+        environmentVariables: [
+          {
+            name: 'PORTKEY_API_KEY',
+            description: 'Portkey API key',
+            required: true,
+            type: 'string'
+          },
+          {
+            name: 'PORTKEY_VIRTUAL_KEY',
+            description: 'Portkey virtual key (optional)',
+            required: false,
+            type: 'string'
+          }
+        ],
+        documentation: 'https://docs.portkey.ai/',
+        complexity: 'medium',
+        tags: ['ai', 'observability', 'gateway', 'portkey', 'monitoring']
       }
     ];
 

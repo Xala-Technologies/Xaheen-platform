@@ -12,6 +12,7 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import Handlebars from 'handlebars';
 
+import { templateLoader } from '../templates/template-loader.js';
 import type {
   IServiceInjector,
   ServiceConfiguration,
@@ -215,14 +216,21 @@ export class ServiceInjector implements IServiceInjector {
   }
 
   private async renderTemplate(template: string, context: any): Promise<string> {
-    let compiledTemplate = this.templateCache.get(template);
-    
-    if (!compiledTemplate) {
-      compiledTemplate = Handlebars.compile(template);
-      this.templateCache.set(template, compiledTemplate);
-    }
+    // Check if template is a file path or inline template
+    if (template.includes('/') && !template.includes('\n')) {
+      // It's a file path, use template loader
+      return await templateLoader.renderTemplate(template, context);
+    } else {
+      // It's an inline template, use the existing caching mechanism
+      let compiledTemplate = this.templateCache.get(template);
+      
+      if (!compiledTemplate) {
+        compiledTemplate = Handlebars.compile(template);
+        this.templateCache.set(template, compiledTemplate);
+      }
 
-    return compiledTemplate(context);
+      return compiledTemplate(context);
+    }
   }
 
   private deepMerge(target: any, source: any): any {

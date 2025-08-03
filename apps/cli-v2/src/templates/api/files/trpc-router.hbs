@@ -1,0 +1,107 @@
+import { z } from 'zod';
+import { createTRPCRouter, publicProcedure{{#if hasAuth}}, protectedProcedure{{/if}} } from './trpc';
+{{#if hasDatabase}}
+import { {{dbClient}} } from '@/lib/{{dbClient}}';
+{{/if}}
+
+export const {{routerName}}Router = createTRPCRouter({
+  {{#if includeHello}}
+  hello: publicProcedure
+    .input(z.object({ text: z.string() }))
+    .query(({ input }) => {
+      return {
+        greeting: `Hello ${input.text}`,
+      };
+    }),
+  {{/if}}
+
+  {{#if includeGetAll}}
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    {{#if hasDatabase}}
+    return ctx.{{dbClient}}.{{tableName}}.findMany();
+    {{else}}
+    // Replace with your data fetching logic
+    return [];
+    {{/if}}
+  }),
+  {{/if}}
+
+  {{#if includeGetById}}
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      {{#if hasDatabase}}
+      return ctx.{{dbClient}}.{{tableName}}.findUnique({
+        where: { id: input.id },
+      });
+      {{else}}
+      // Replace with your data fetching logic
+      return null;
+      {{/if}}
+    }),
+  {{/if}}
+
+  {{#if includeCreate}}
+  create: {{#if hasAuth}}protectedProcedure{{else}}publicProcedure{{/if}}
+    .input(z.object({ 
+      {{#each createFields}}
+      {{name}}: z.{{type}}(){{#if optional}}.optional(){{/if}},
+      {{/each}}
+    }))
+    .mutation(async ({ input, ctx }) => {
+      {{#if hasDatabase}}
+      return ctx.{{dbClient}}.{{tableName}}.create({
+        data: {
+          ...input,
+          {{#if hasAuth}}
+          userId: ctx.session.user.id,
+          {{/if}}
+        },
+      });
+      {{else}}
+      // Replace with your data creation logic
+      return { id: '1', ...input };
+      {{/if}}
+    }),
+  {{/if}}
+
+  {{#if includeUpdate}}
+  update: {{#if hasAuth}}protectedProcedure{{else}}publicProcedure{{/if}}
+    .input(z.object({ 
+      id: z.string(),
+      {{#each updateFields}}
+      {{name}}: z.{{type}}(){{#if optional}}.optional(){{/if}},
+      {{/each}}
+    }))
+    .mutation(async ({ input, ctx }) => {
+      {{#if hasDatabase}}
+      return ctx.{{dbClient}}.{{tableName}}.update({
+        where: { id: input.id },
+        data: {
+          {{#each updateFields}}
+          {{name}}: input.{{name}},
+          {{/each}}
+        },
+      });
+      {{else}}
+      // Replace with your data update logic
+      return { id: input.id, ...input };
+      {{/if}}
+    }),
+  {{/if}}
+
+  {{#if includeDelete}}
+  delete: {{#if hasAuth}}protectedProcedure{{else}}publicProcedure{{/if}}
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      {{#if hasDatabase}}
+      return ctx.{{dbClient}}.{{tableName}}.delete({
+        where: { id: input.id },
+      });
+      {{else}}
+      // Replace with your data deletion logic
+      return { id: input.id };
+      {{/if}}
+    }),
+  {{/if}}
+});

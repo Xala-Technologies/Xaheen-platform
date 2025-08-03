@@ -1,0 +1,112 @@
+import NextAuth from 'next-auth'
+{{#if providers.github}}
+import GitHub from 'next-auth/providers/github'
+{{/if}}
+{{#if providers.google}}
+import Google from 'next-auth/providers/google'
+{{/if}}
+{{#if providers.discord}}
+import Discord from 'next-auth/providers/discord'
+{{/if}}
+{{#if providers.credentials}}
+import Credentials from 'next-auth/providers/credentials'
+{{/if}}
+{{#if adapters.prisma}}
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
+{{/if}}
+{{#if adapters.drizzle}}
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import { db } from "@/lib/db"
+{{/if}}
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  {{#if adapters.prisma}}
+  adapter: PrismaAdapter(prisma),
+  {{/if}}
+  {{#if adapters.drizzle}}
+  adapter: DrizzleAdapter(db),
+  {{/if}}
+  providers: [
+    {{#if providers.github}}
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
+    {{/if}}
+    {{#if providers.google}}
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    {{/if}}
+    {{#if providers.discord}}
+    Discord({
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+    }),
+    {{/if}}
+    {{#if providers.credentials}}
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        // Add your authentication logic here
+        // This is just an example - implement your own logic
+        try {
+          // Example: check user against database
+          // const user = await verifyUser(credentials.email, credentials.password)
+          // return user ? { id: user.id, email: user.email, name: user.name } : null
+          
+          return null // Replace with actual user verification
+        } catch (error) {
+          return null
+        }
+      }
+    }),
+    {{/if}}
+  ],
+  {{#if customPages}}
+  pages: {
+    {{#if customPages.signIn}}
+    signIn: '/auth/signin',
+    {{/if}}
+    {{#if customPages.signOut}}
+    signOut: '/auth/signout',
+    {{/if}}
+    {{#if customPages.error}}
+    error: '/auth/error',
+    {{/if}}
+    {{#if customPages.verifyRequest}}
+    verifyRequest: '/auth/verify-request',
+    {{/if}}
+  },
+  {{/if}}
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
+  },
+  session: {
+    strategy: "jwt",
+  },
+  {{#if enableDebug}}
+  debug: process.env.NODE_ENV === "development",
+  {{/if}}
+})

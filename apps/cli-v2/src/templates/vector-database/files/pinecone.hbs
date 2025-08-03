@@ -1,0 +1,117 @@
+import { Pinecone } from '@pinecone-database/pinecone';
+
+export interface PineconeConfig {
+  apiKey: string;
+  environment: string;
+}
+
+export class PineconeVectorDB {
+  private pinecone: Pinecone;
+
+  constructor(config: PineconeConfig) {
+    this.pinecone = new Pinecone({
+      apiKey: config.apiKey,
+      environment: config.environment,
+    });
+  }
+
+  async createIndex(
+    name: string,
+    dimension: number,
+    metric: 'euclidean' | 'cosine' | 'dotproduct' = 'cosine'
+  ) {
+    await this.pinecone.createIndex({
+      name,
+      dimension,
+      metric,
+      spec: {
+        serverless: {
+          cloud: 'aws',
+          region: 'us-east-1'
+        }
+      }
+    });
+
+    // Wait for index to be ready
+    while (!(await this.isIndexReady(name))) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  async isIndexReady(name: string): Promise<boolean> {
+    try {
+      const indexStats = await this.pinecone.index(name).describeIndexStats();
+      return indexStats.totalVectorCount !== undefined;
+    } catch {
+      return false;
+    }
+  }
+
+  async upsertVectors(
+    indexName: string,
+    vectors: Array<{
+      id: string;
+      values: number[];
+      metadata?: Record<string, any>;
+    }>
+  ) {
+    const index = this.pinecone.index(indexName);
+    
+    // Batch upsert in chunks of 100
+    const chunkSize = 100;
+    for (let i = 0; i < vectors.length; i += chunkSize) {
+      const chunk = vectors.slice(i, i + chunkSize);
+      await index.upsert(chunk);
+    }
+  }
+
+  async queryVectors(
+    indexName: string,
+    queryVector: number[],
+    options: {
+      topK?: number;
+      filter?: Record<string, any>;
+      includeMetadata?: boolean;
+      includeValues?: boolean;
+    } = {}
+  ) {
+    const index = this.pinecone.index(indexName);
+    
+    const response = await index.query({
+      vector: queryVector,
+      topK: options.topK || 10,
+      filter: options.filter,
+      includeMetadata: options.includeMetadata ?? true,
+      includeValues: options.includeValues ?? false
+    });
+
+    return response.matches || [];
+  }
+
+  async deleteVectors(indexName: string, ids: string[]) {
+    const index = this.pinecone.index(indexName);
+    await index.deleteMany(ids);
+  }
+
+  async deleteAllVectors(indexName: string) {
+    const index = this.pinecone.index(indexName);
+    await index.deleteAll();
+  }
+
+  async getIndexStats(indexName: string) {
+    const index = this.pinecone.index(indexName);
+    return await index.describeIndexStats();
+  }
+
+  async listIndexes() {
+    return await this.pinecone.listIndexes();
+  }
+
+  async deleteIndex(name: string) {
+    await this.pinecone.deleteIndex(name);
+  }
+}
+
+export function createPineconeClient(config: PineconeConfig) {
+  return new PineconeVectorDB(config);
+}

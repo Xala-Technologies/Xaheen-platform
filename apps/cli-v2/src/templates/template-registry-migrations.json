@@ -1,0 +1,1775 @@
+{
+  "frontend": [
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/Program.cs.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/_Imports.razor.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/{{projectName}}.csproj.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/App.razor.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/nuxt/configs/nuxt.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/nuxt/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/nuxt/configs/tailwind.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/nuxt/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/nuxt/configs/ui-system.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/solid/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/solid/configs/tailwind.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/solid/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/solid/configs/vite.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/metro.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/svelte/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/svelte/configs/tailwind.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/svelte/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/svelte/configs/svelte.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/angular/configs/angular.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/angular/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/angular/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/vue/configs/tailwind.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/vue/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/vue/configs/vite.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/vite.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/testing.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/responsive.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/localization.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/tailwind.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/next-env.d.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/ui-system.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/eslint.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/build.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/next.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/accessibility.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/next.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/postcss.config.mjs.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/platform.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/nuxt/components/dashboard.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/nuxt/components/login.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/solid/components/main.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/react/configs/vite.config.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/react/files/index.html.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/angular/files/styles.scss.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/angular/files/main.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/angular/files/index.html.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/react-native.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/metro.config.js.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/root.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/router.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/Home.razor.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/files/MainLayout.razor.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/middleware.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/i18n.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/nuxt/components/index.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/nuxt/components/default.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/nuxt/components/Header.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/solid/components/Dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/solid/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/solid/components/__root.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/nuxt/files/vue-query.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/main.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/solid/components/header.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/_layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/svelte/files/+page.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/svelte/files/+layout.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/svelte/files/Header.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/angular/components/app.component.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/angular/files/app.routes.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/_layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/header.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/login.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/_index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/__root.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/next-xala-dashboard-norwegian.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/login.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/admin-norwegian.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/dashboard-norwegian.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/next-xala-admin-norwegian.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/usePlatform.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/page.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/platform.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/ui-utils.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/nb.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/fr.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/en.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "config": "frontend/next/configs/ar.json.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/xala-advanced.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/theme-provider.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/next/files/xala-error-boundary.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/mode-toggle.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/providers.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/ErrorBoundary.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/component.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/react/components/__root.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/_layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "file": "frontend/svelte/files/+page.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/MobileAppLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/components/_layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/AdaptiveLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/WebAppLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/BaseLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/DesktopLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/OnboardingLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/SidebarLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/MobileLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/AdminLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/WizardLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/CrudPageLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/MenuLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/AuthLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/FormLayout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/PlatformComponents.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/next/components/WebPlatform.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "frontend",
+      "provider": "default",
+      "templates": {
+        "component": "frontend/angular/components/home.component.ts.hbs"
+      }
+    }
+  ],
+  "backend-laravel": [
+    {
+      "serviceType": "backend",
+      "provider": "laravel",
+      "templates": {
+        "config": "backend/laravel/configs/composer.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "laravel",
+      "templates": {
+        "file": "backend/laravel/files/api.php.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "laravel",
+      "templates": {
+        "file": "backend/laravel/files/WeatherController.php.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "laravel",
+      "templates": {
+        "file": "backend/laravel/files/Controller.php.hbs"
+      }
+    }
+  ],
+  "backend-django": [
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/manage.py.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/requirements.txt.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/settings.py.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/urls.py.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/views.py.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/__init__.py.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "django",
+      "templates": {
+        "file": "backend/django/files/urls.py.hbs"
+      }
+    }
+  ],
+  "backend-dotnet": [
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/Program.cs.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "config": "backend/dotnet/configs/appsettings.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/{{projectName}}.csproj.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/WeatherService.cs.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/IWeatherService.cs.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/WeatherController.cs.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "dotnet",
+      "templates": {
+        "file": "backend/dotnet/files/WeatherForecast.cs.hbs"
+      }
+    }
+  ],
+  "backend": [
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "config": "backend/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "config": "backend/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "config": "backend/configs/package.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "file": "backend/files/index.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "file": "backend/files/index.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "default",
+      "templates": {
+        "file": "backend/files/index.ts.hbs"
+      }
+    }
+  ],
+  "backend-next": [
+    {
+      "serviceType": "backend",
+      "provider": "next",
+      "templates": {
+        "config": "backend/next/configs/tsconfig.json.hbs"
+      }
+    },
+    {
+      "serviceType": "backend",
+      "provider": "next",
+      "templates": {
+        "config": "backend/next/configs/package.json.hbs"
+      }
+    }
+  ],
+  "backend-fastify": [
+    {
+      "serviceType": "backend",
+      "provider": "fastify",
+      "templates": {
+        "file": "backend/fastify/files/index.ts.hbs"
+      }
+    }
+  ],
+  "backend-express": [
+    {
+      "serviceType": "backend",
+      "provider": "express",
+      "templates": {
+        "file": "backend/express/files/index.ts.hbs"
+      }
+    }
+  ],
+  "auth": [
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/sign-up.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/sign-in.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "file": "auth/files/auth-client.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/sign-up.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/sign-in.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/dashboard.vue.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/user-menu.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "file": "auth/files/auth.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/index.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "file": "auth/files/auth-client.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/dashboard.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "file": "auth/files/+page.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "auth",
+      "provider": "default",
+      "templates": {
+        "component": "auth/components/page.tsx.hbs"
+      }
+    }
+  ],
+  "api-orpc": [
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/context.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/orpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "orpc",
+      "templates": {
+        "file": "api/orpc/files/route.ts.hbs"
+      }
+    }
+  ],
+  "api-trpc": [
+    {
+      "serviceType": "api",
+      "provider": "trpc",
+      "templates": {
+        "file": "api/trpc/files/trpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "trpc",
+      "templates": {
+        "file": "api/trpc/files/context.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "trpc",
+      "templates": {
+        "file": "api/trpc/files/trpc.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "api",
+      "provider": "trpc",
+      "templates": {
+        "file": "api/trpc/files/trpc.ts.hbs"
+      }
+    }
+  ],
+  "components": [
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-advanced.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-display-gdpr.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-error-boundary.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-test.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-form-norwegian.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-story.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-display-wcag-aaa.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-layout-norwegian.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-display-norwegian.hbs"
+      }
+    },
+    {
+      "serviceType": "components",
+      "provider": "default",
+      "templates": {
+        "file": "components/files/xala-display-iso27001.hbs"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/ai.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/ai.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "file": "examples/files/todo.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "file": "examples/files/todo.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/todos.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "file": "examples/files/+page.svelte.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "file": "examples/files/todo.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "examples",
+      "provider": "default",
+      "templates": {
+        "component": "examples/components/page.tsx.hbs"
+      }
+    }
+  ],
+  "integrations": [
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/vipps-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/teams-client.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/slack-webhook.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/altinn-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/altinn-client.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/slack-client.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/teams-webhook.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/altinn-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/webhook-handler.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/bankid-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/vipps-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/stripe-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/vipps-payment.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/stripe-checkout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/bankid-login.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/vipps-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/bankid-callback.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/mfa-verify.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/mfa-setup.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/oauth-login.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/vipps-login.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/oauth-callback.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/bankid-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/mfa-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/session-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/oauth-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "component": "integrations/components/vipps-callback.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/vipps-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/altinn-service.ts.hbs"
+      }
+    },
+    {
+      "serviceType": "integrations",
+      "provider": "default",
+      "templates": {
+        "file": "integrations/files/bankid-service.ts.hbs"
+      }
+    }
+  ],
+  "localization": [
+    {
+      "serviceType": "localization",
+      "provider": "default",
+      "templates": {
+        "component": "localization/components/rtl-layout.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "localization",
+      "provider": "default",
+      "templates": {
+        "component": "localization/components/rtl-card.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "localization",
+      "provider": "default",
+      "templates": {
+        "component": "localization/components/rtl-button.tsx.hbs"
+      }
+    },
+    {
+      "serviceType": "localization",
+      "provider": "default",
+      "templates": {
+        "file": "localization/files/rtl-styles.css.hbs"
+      }
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{{!-- Template: Home.razor.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/blazor/Components/Pages/Home.razor.hbs --}}
+@page "/"
+@using MudBlazor
+{{#if localization}}
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Home> Localizer
+{{/if}}
+
+<PageTitle>{{#if localization}}@Localizer["PageTitle"]{{else}}{{projectName}} - Home{{/if}}</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Class="pa-8" Elevation="2">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h3" Align="Align.Center" Color="Color.Primary" Class="mb-4">
+                    {{#if localization}}@Localizer["WelcomeTitle"]{{else}}Welcome to {{projectName}}{{/if}}
+                </MudText>
+                
+                <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Secondary" Class="mb-6">
+                    {{#if localization}}@Localizer["WelcomeSubtitle"]{{else}}Built with Blazor and MudBlazor{{/if}}
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4" Style="height: 100%;">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Accessibility" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">{{#if localization}}@Localizer["AccessibilityTitle"]{{else}}Accessibility First{{/if}}</MudText>
+                        </div>
+                        <MudText Typo="Typo.body1">
+                            {{#if localization}}@Localizer["AccessibilityDescription"]{{else}}Built with WCAG 2.2 AAA compliance standards to ensure accessibility for all users.{{/if}}
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4" Style="height: 100%;">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.DesignServices" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">{{#if localization}}@Localizer["MaterialDesignTitle"]{{else}}Material Design{{/if}}</MudText>
+                        </div>
+                        <MudText Typo="Typo.body1">
+                            {{#if localization}}@Localizer["MaterialDesignDescription"]{{else}}Beautiful, responsive UI components following Google's Material Design principles.{{/if}}
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4" Style="height: 100%;">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">{{#if localization}}@Localizer["InternationalizationTitle"]{{else}}Internationalization{{/if}}</MudText>
+                        </div>
+                        <MudText Typo="Typo.body1">
+                            {{#if localization}}@Localizer["InternationalizationDescription"]{{else}}Multi-language support with English, Norwegian, French, and Arabic localization.{{/if}}
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4" Style="height: 100%;">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">{{#if localization}}@Localizer["SecurityTitle"]{{else}}Enterprise Security{{/if}}</MudText>
+                        </div>
+                        <MudText Typo="Typo.body1">
+                            {{#if localization}}@Localizer["SecurityDescription"]{{else}}Built-in security features and authentication ready for enterprise deployment.{{/if}}
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" Class="text-center mt-6">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.ArrowForward"
+                           Class="mr-3"
+                           aria-label="{{#if localization}}@Localizer["GetStartedAriaLabel"]{{else}}Get started with the application{{/if}}">
+                    {{#if localization}}@Localizer["GetStarted"]{{else}}Get Started{{/if}}
+                </MudButton>
+                
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Primary" 
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.Info"
+                           aria-label="{{#if localization}}@Localizer["LearnMoreAriaLabel"]{{else}}Learn more about Blazor{{/if}}">
+                    {{#if localization}}@Localizer["LearnMore"]{{else}}Learn More{{/if}}
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize component
+        await base.OnInitializedAsync();
+    }
+}

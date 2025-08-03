@@ -1,0 +1,150 @@
+import { {{#if provider.postgresql}}pgTable, text, timestamp, boolean, integer, jsonb{{/if}}{{#if provider.mysql}}mysqlTable, varchar, timestamp, boolean, int, json{{/if}}{{#if provider.sqlite}}sqliteTable, text, integer{{/if}} } from 'drizzle-orm/{{provider.name}}-core'
+{{#if relations}}
+import { relations } from 'drizzle-orm'
+{{/if}}
+{{#if auth}}
+import { createId } from '@paralleldrive/cuid2'
+{{/if}}
+
+{{#if auth}}
+// Users table
+export const users = {{provider.name}}Table('users', {
+  id: {{#if provider.postgresql}}text('id').primaryKey().$defaultFn(() => createId()){{/if}}{{#if provider.mysql}}varchar('id', { length: 128 }).primaryKey().$defaultFn(() => createId()){{/if}}{{#if provider.sqlite}}text('id').primaryKey().$defaultFn(() => createId()){{/if}},
+  email: {{#if provider.postgresql}}text('email').notNull().unique(){{/if}}{{#if provider.mysql}}varchar('email', { length: 255 }).notNull().unique(){{/if}}{{#if provider.sqlite}}text('email').notNull().unique(){{/if}},
+  {{#if auth.name}}
+  name: {{#if provider.postgresql}}text('name'){{/if}}{{#if provider.mysql}}varchar('name', { length: 255 }){{/if}}{{#if provider.sqlite}}text('name'){{/if}},
+  {{/if}}
+  {{#if auth.avatar}}
+  avatar: {{#if provider.postgresql}}text('avatar'){{/if}}{{#if provider.mysql}}varchar('avatar', { length: 500 }){{/if}}{{#if provider.sqlite}}text('avatar'){{/if}},
+  {{/if}}
+  {{#if auth.emailVerified}}
+  emailVerified: {{#if provider.postgresql}}timestamp('email_verified'){{/if}}{{#if provider.mysql}}timestamp('email_verified'){{/if}}{{#if provider.sqlite}}integer('email_verified', { mode: 'timestamp' }){{/if}},
+  {{/if}}
+  {{#if auth.role}}
+  role: {{#if provider.postgresql}}text('role').default('user'){{/if}}{{#if provider.mysql}}varchar('role', { length: 50 }).default('user'){{/if}}{{#if provider.sqlite}}text('role').default('user'){{/if}},
+  {{/if}}
+  createdAt: {{#if provider.postgresql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.mysql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.sqlite}}integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+  updatedAt: {{#if provider.postgresql}}timestamp('updated_at').defaultNow().notNull(){{/if}}{{#if provider.mysql}}timestamp('updated_at').defaultNow().notNull(){{/if}}{{#if provider.sqlite}}integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+})
+
+{{#if auth.sessions}}
+// Sessions table
+export const sessions = {{provider.name}}Table('sessions', {
+  id: {{#if provider.postgresql}}text('id').primaryKey(){{/if}}{{#if provider.mysql}}varchar('id', { length: 255 }).primaryKey(){{/if}}{{#if provider.sqlite}}text('id').primaryKey(){{/if}},
+  userId: {{#if provider.postgresql}}text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}}{{#if provider.mysql}}varchar('user_id', { length: 128 }).notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}}{{#if provider.sqlite}}text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}},
+  token: {{#if provider.postgresql}}text('token').notNull().unique(){{/if}}{{#if provider.mysql}}varchar('token', { length: 255 }).notNull().unique(){{/if}}{{#if provider.sqlite}}text('token').notNull().unique(){{/if}},
+  expiresAt: {{#if provider.postgresql}}timestamp('expires_at').notNull(){{/if}}{{#if provider.mysql}}timestamp('expires_at').notNull(){{/if}}{{#if provider.sqlite}}integer('expires_at', { mode: 'timestamp' }).notNull(){{/if}},
+  createdAt: {{#if provider.postgresql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.mysql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.sqlite}}integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+})
+{{/if}}
+
+{{#if auth.accounts}}
+// Accounts table (for OAuth)
+export const accounts = {{provider.name}}Table('accounts', {
+  id: {{#if provider.postgresql}}text('id').primaryKey().$defaultFn(() => createId()){{/if}}{{#if provider.mysql}}varchar('id', { length: 128 }).primaryKey().$defaultFn(() => createId()){{/if}}{{#if provider.sqlite}}text('id').primaryKey().$defaultFn(() => createId()){{/if}},
+  userId: {{#if provider.postgresql}}text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}}{{#if provider.mysql}}varchar('user_id', { length: 128 }).notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}}{{#if provider.sqlite}}text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }){{/if}},
+  type: {{#if provider.postgresql}}text('type').notNull(){{/if}}{{#if provider.mysql}}varchar('type', { length: 50 }).notNull(){{/if}}{{#if provider.sqlite}}text('type').notNull(){{/if}},
+  provider: {{#if provider.postgresql}}text('provider').notNull(){{/if}}{{#if provider.mysql}}varchar('provider', { length: 50 }).notNull(){{/if}}{{#if provider.sqlite}}text('provider').notNull(){{/if}},
+  providerAccountId: {{#if provider.postgresql}}text('provider_account_id').notNull(){{/if}}{{#if provider.mysql}}varchar('provider_account_id', { length: 255 }).notNull(){{/if}}{{#if provider.sqlite}}text('provider_account_id').notNull(){{/if}},
+  refreshToken: {{#if provider.postgresql}}text('refresh_token'){{/if}}{{#if provider.mysql}}text('refresh_token'){{/if}}{{#if provider.sqlite}}text('refresh_token'){{/if}},
+  accessToken: {{#if provider.postgresql}}text('access_token'){{/if}}{{#if provider.mysql}}text('access_token'){{/if}}{{#if provider.sqlite}}text('access_token'){{/if}},
+  expiresAt: {{#if provider.postgresql}}integer('expires_at'){{/if}}{{#if provider.mysql}}int('expires_at'){{/if}}{{#if provider.sqlite}}integer('expires_at'){{/if}},
+  tokenType: {{#if provider.postgresql}}text('token_type'){{/if}}{{#if provider.mysql}}varchar('token_type', { length: 50 }){{/if}}{{#if provider.sqlite}}text('token_type'){{/if}},
+  scope: {{#if provider.postgresql}}text('scope'){{/if}}{{#if provider.mysql}}varchar('scope', { length: 255 }){{/if}}{{#if provider.sqlite}}text('scope'){{/if}},
+  {{#if provider.postgresql}}
+  idToken: text('id_token'),
+  sessionState: text('session_state'),
+  {{/if}}
+  {{#if provider.mysql}}
+  idToken: text('id_token'),
+  sessionState: varchar('session_state', { length: 255 }),
+  {{/if}}
+  {{#if provider.sqlite}}
+  idToken: text('id_token'),
+  sessionState: text('session_state'),
+  {{/if}}
+  createdAt: {{#if provider.postgresql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.mysql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if provider.sqlite}}integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+})
+{{/if}}
+{{/if}}
+
+{{#each tables}}
+// {{capitalize name}} table
+export const {{camelCase name}} = {{../provider.name}}Table('{{snakeCase name}}', {
+  id: {{#if ../provider.postgresql}}text('id').primaryKey().$defaultFn(() => createId()){{/if}}{{#if ../provider.mysql}}varchar('id', { length: 128 }).primaryKey().$defaultFn(() => createId()){{/if}}{{#if ../provider.sqlite}}text('id').primaryKey().$defaultFn(() => createId()){{/if}},
+  {{#each fields}}
+  {{camelCase name}}: {{#if ../../../provider.postgresql}}{{#eq type "string"}}text('{{snakeCase name}}'){{/eq}}{{#eq type "number"}}integer('{{snakeCase name}}'){{/eq}}{{#eq type "boolean"}}boolean('{{snakeCase name}}'){{/eq}}{{#eq type "json"}}jsonb('{{snakeCase name}}'){{/eq}}{{#eq type "date"}}timestamp('{{snakeCase name}}'){{/eq}}{{/if}}{{#if ../../../provider.mysql}}{{#eq type "string"}}varchar('{{snakeCase name}}', { length: {{length}} }){{/eq}}{{#eq type "number"}}int('{{snakeCase name}}'){{/eq}}{{#eq type "boolean"}}boolean('{{snakeCase name}}'){{/eq}}{{#eq type "json"}}json('{{snakeCase name}}'){{/eq}}{{#eq type "date"}}timestamp('{{snakeCase name}}'){{/eq}}{{/if}}{{#if ../../../provider.sqlite}}{{#eq type "string"}}text('{{snakeCase name}}'){{/eq}}{{#eq type "number"}}integer('{{snakeCase name}}'){{/eq}}{{#eq type "boolean"}}integer('{{snakeCase name}}', { mode: 'boolean' }){{/eq}}{{#eq type "json"}}text('{{snakeCase name}}', { mode: 'json' }){{/eq}}{{#eq type "date"}}integer('{{snakeCase name}}', { mode: 'timestamp' }){{/eq}}{{/if}}{{#if required}}.notNull(){{/if}}{{#if unique}}.unique(){{/if}}{{#if defaultValue}}.default({{#if (eq type "string")}}'{{defaultValue}}'{{else}}{{defaultValue}}{{/if}}){{/if}},
+  {{/each}}
+  {{#if timestamps}}
+  createdAt: {{#if ../provider.postgresql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if ../provider.mysql}}timestamp('created_at').defaultNow().notNull(){{/if}}{{#if ../provider.sqlite}}integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+  updatedAt: {{#if ../provider.postgresql}}timestamp('updated_at').defaultNow().notNull(){{/if}}{{#if ../provider.mysql}}timestamp('updated_at').defaultNow().notNull(){{/if}}{{#if ../provider.sqlite}}integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()){{/if}},
+  {{/if}}
+})
+
+{{/each}}
+
+{{#if relations}}
+// Relations
+{{#if auth}}
+export const usersRelations = relations(users, ({ many }) => ({
+  {{#if auth.sessions}}
+  sessions: many(sessions),
+  {{/if}}
+  {{#if auth.accounts}}
+  accounts: many(accounts),
+  {{/if}}
+  {{#each tables}}
+  {{#if hasUserRelation}}
+  {{camelCase name}}: many({{camelCase name}}),
+  {{/if}}
+  {{/each}}
+}))
+
+{{#if auth.sessions}}
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+}))
+{{/if}}
+
+{{#if auth.accounts}}
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+}))
+{{/if}}
+{{/if}}
+
+{{#each tables}}
+{{#if relations}}
+export const {{camelCase name}}Relations = relations({{camelCase name}}, ({ one, many }) => ({
+  {{#each relations}}
+  {{#if (eq type "belongsTo")}}
+  {{camelCase name}}: one({{camelCase table}}, { fields: [{{../camelCase ../name}}.{{camelCase foreignKey}}], references: [{{camelCase table}}.id] }),
+  {{/if}}
+  {{#if (eq type "hasMany")}}
+  {{camelCase name}}: many({{camelCase table}}),
+  {{/if}}
+  {{/each}}
+}))
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+// Types
+{{#if auth}}
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
+{{#if auth.sessions}}
+export type Session = typeof sessions.$inferSelect
+export type NewSession = typeof sessions.$inferInsert
+{{/if}}
+{{#if auth.accounts}}
+export type Account = typeof accounts.$inferSelect
+export type NewAccount = typeof accounts.$inferInsert
+{{/if}}
+{{/if}}
+
+{{#each tables}}
+export type {{capitalize name}} = typeof {{camelCase name}}.$inferSelect
+export type New{{capitalize name}} = typeof {{camelCase name}}.$inferInsert
+{{/each}}

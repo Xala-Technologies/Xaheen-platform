@@ -1,0 +1,338 @@
+{{!-- Template: bankid-service.ts.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/bankid/bankid-service.ts.hbs --}}
+/**
+ * BankID Integration Service - Xala UI System Compliant
+ * Generated with Xaheen CLI - Norwegian BankID Authentication Service
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+import * as fs from 'fs';
+import * as https from 'https';
+import * as crypto from 'crypto';
+
+/**
+ * BankID configuration interface
+ */
+export interface BankIDConfig {
+  readonly environment: 'test' | 'production';
+  readonly apiBaseUrl: string;
+  readonly certificatePath: string;
+  readonly certificatePassword: string;
+  readonly timeout: number;
+  readonly retryAttempts: number;
+}
+
+/**
+ * BankID user profile interface
+ */
+export interface BankIDUserProfile {
+  readonly personalNumber: string;
+  readonly name: string;
+  readonly givenName: string;
+  readonly surname: string;
+  readonly signature: string;
+  readonly ocspResponse: string;
+}
+
+/**
+ * BankID authentication response interface
+ */
+export interface BankIDAuthResponse {
+  readonly orderRef: string;
+  readonly autoStartToken: string;
+  readonly qrStartToken: string;
+  readonly qrStartSecret: string;
+}
+
+/**
+ * BankID collect response interface
+ */
+export interface BankIDCollectResponse {
+  readonly orderRef: string;
+  readonly status: 'pending' | 'failed' | 'complete';
+  readonly hintCode?: string;
+  readonly completionData?: {
+    readonly user: BankIDUserProfile;
+    readonly device: {
+      readonly ipAddress: string;
+      readonly uhi: string;
+    };
+    readonly cert: {
+      readonly notBefore: string;
+      readonly notAfter: string;
+    };
+  };
+}
+
+/**
+ * BankID Authentication Service
+ * Handles Norwegian BankID authentication with GDPR compliance
+ */
+export class BankIDAuthService {
+  private readonly config: BankIDConfig;
+  private agent: https.Agent | null = null;
+  private readonly activeRequests: Map<string, NodeJS.Timeout> = new Map();
+
+  constructor(config: BankIDConfig) {
+    this.config = config;
+    this.initializeHttpsAgent();
+  }
+
+  /**
+   * Initialize HTTPS agent with client certificates
+   */
+  private initializeHttpsAgent(): void {
+    try {
+      if (this.config.certificatePath && fs.existsSync(this.config.certificatePath)) {
+        const certData = fs.readFileSync(this.config.certificatePath);
+        const cert = this.extractCertificateFromP12(certData, this.config.certificatePassword);
+
+        this.agent = new https.Agent({
+          cert: cert.certificate,
+          key: cert.privateKey,
+          passphrase: this.config.certificatePassword,
+          ca: this.loadTrustedCAs(),
+          rejectUnauthorized: this.config.environment === 'production',
+          secureProtocol: 'TLSv1_2_method',
+        });
+
+        console.log('[BankID] HTTPS agent initialized with certificates');
+      } else {
+        throw new Error("template string");
+      }
+    } catch (error) {
+      console.error('[BankID] Failed to initialize HTTPS agent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start BankID authentication
+   */
+  public async authenticate(
+    personalNumber?: string,
+    userVisibleData?: string,
+    userNonVisibleData?: string
+  ): Promise<BankIDAuthResponse> {
+    try {
+      const endpoint = 'auth';
+      const url = "template string";
+
+      const requestData = {
+        ...(personalNumber && { personalNumber }),
+        ...(userVisibleData && { userVisibleData: Buffer.from(userVisibleData).toString('base64') }),
+        ...(userNonVisibleData && { userNonVisibleData: Buffer.from(userNonVisibleData).toString('base64') }),
+        requirement: {
+          allowFingerprint: true,
+          certificatePolicies: ['1.2.752.78.1.5'],
+        },
+      };
+
+      const response = await this.makeRequest(url, 'POST', requestData);
+      
+      // Set timeout for this request
+      const timeoutId = setTimeout(() => {
+        this.activeRequests.delete(response.orderRef);
+      }, this.config.timeout);
+      
+      this.activeRequests.set(response.orderRef, timeoutId);
+
+      return response as BankIDAuthResponse;
+    } catch (error) {
+      console.error('[BankID] Authentication failed:', error);
+      throw new Error("template string");
+    }
+  }
+
+  /**
+   * Collect BankID authentication result
+   */
+  public async collect(orderRef: string): Promise<BankIDCollectResponse> {
+    try {
+      const endpoint = 'collect';
+      const url = "template string";
+
+      const requestData = { orderRef };
+      const response = await this.makeRequest(url, 'POST', requestData);
+
+      // Clean up if completed or failed
+      if (response.status === 'complete' || response.status === 'failed') {
+        const timeoutId = this.activeRequests.get(orderRef);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          this.activeRequests.delete(orderRef);
+        }
+      }
+
+      return response as BankIDCollectResponse;
+    } catch (error) {
+      console.error('[BankID] Collect failed:', error);
+      throw new Error("template string");
+    }
+  }
+
+  /**
+   * Cancel BankID authentication
+   */
+  public async cancel(orderRef: string): Promise<void> {
+    try {
+      const endpoint = 'cancel';
+      const url = "template string";
+
+      const requestData = { orderRef };
+      await this.makeRequest(url, 'POST', requestData);
+
+      // Clean up timeout
+      const timeoutId = this.activeRequests.get(orderRef);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        this.activeRequests.delete(orderRef);
+      }
+
+      console.log(`🚀 Server running on port ${port}`);
+    } catch (error) {
+      console.error('[BankID] Cancel failed:', error);
+      throw new Error("template string");
+    }
+  }
+
+  /**
+   * Extract certificate from P12 file
+   */
+  private extractCertificateFromP12(certData: Buffer, password: string): {
+    certificate: string;
+    privateKey: string;
+  } {
+    // This is a simplified implementation
+    // In production, use proper P12 parsing library
+    return {
+      certificate: certData.toString('utf8'),
+      privateKey: certData.toString('utf8'),
+    };
+  }
+
+  /**
+   * Load trusted Certificate Authorities
+   */
+  private loadTrustedCAs(): string[] {
+    // Load BankID trusted CAs
+    // In production, load actual CA certificates
+    return [];
+  }
+
+  /**
+   * Make HTTP request to BankID API
+   */
+  private async makeRequest(
+    url: string,
+    method: 'GET' | 'POST',
+    data?: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+      const requestData = data ? JSON.stringify(data) : undefined;
+
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': requestData ? Buffer.byteLength(requestData) : 0,
+        },
+        agent: this.agent,
+        timeout: this.config.timeout,
+      };
+
+      const req = https.request(url, options, (res) => {
+        let responseData = '';
+
+        res.on('data', (chunk) => {
+          responseData += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            
+            if (res.statusCode === 200) {
+              resolve(parsedData);
+            } else {
+              reject(new Error("template string"));
+            }
+          } catch (error) {
+            reject(new Error("template string"));
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        reject(new Error("template string"));
+      });
+
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+
+      if (requestData) {
+        req.write(requestData);
+      }
+
+      req.end();
+    });
+  }
+
+  /**
+   * Clean up resources
+   */
+  public destroy(): void {
+    // Cancel all active requests
+    for (const [orderRef, timeoutId] of this.activeRequests) {
+      clearTimeout(timeoutId);
+      this.cancel(orderRef).catch(console.error);
+    }
+    
+    this.activeRequests.clear();
+    
+    if (this.agent) {
+      this.agent.destroy();
+      this.agent = null;
+    }
+  }
+}
+
+/**
+ * Create BankID service instance
+ */
+export function createBankIDService(config: Partial<BankIDConfig> = {}): BankIDAuthService {
+  const defaultConfig: BankIDConfig = {
+    environment: '{{environment}}' as 'test' | 'production',
+    apiBaseUrl: '{{environment}}' === 'production' 
+      ? 'https://appapi2.bankid.com' 
+      : 'https://appapi2.test.bankid.com',
+    certificatePath: process.env.BANKID_CERTIFICATE_PATH || './certificates/bankid.p12',
+    certificatePassword: process.env.BANKID_CERTIFICATE_PASSWORD || '',
+    timeout: 30000,
+    retryAttempts: 3,
+  };
+
+  const finalConfig = { ...defaultConfig, ...config };
+  return new BankIDAuthService(finalConfig);
+}
+
+/**
+ * Default BankID service instance
+ */
+export const bankIDService = createBankIDService();

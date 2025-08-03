@@ -1,0 +1,201 @@
+import { useChat, useCompletion, useAssistant } from 'ai/react';
+import { useState, useCallback } from 'react';
+
+// Enhanced chat hook with additional features
+export function useEnhancedChat(options?: {
+  api?: string;
+  initialMessages?: any[];
+  onResponse?: (response: Response) => void;
+  onError?: (error: Error) => void;
+}) {
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    append,
+    reload,
+    stop,
+    isLoading,
+    error,
+  } = useChat({
+    api: options?.api || '/api/chat',
+    initialMessages: options?.initialMessages,
+    onResponse: options?.onResponse,
+    onError: options?.onError,
+  });
+
+  const [conversationId] = useState(() => 
+    Math.random().toString(36).substring(7)
+  );
+
+  const clearChat = useCallback(() => {
+    // Clear messages and reset state
+    window.location.reload();
+  }, []);
+
+  const exportChat = useCallback(() => {
+    const chatData = {
+      conversationId,
+      messages: messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        timestamp: new Date().toISOString(),
+      })),
+      exportedAt: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(chatData, null, 2)], {
+      type: 'application/json',
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${conversationId}-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [conversationId, messages]);
+
+  return {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    append,
+    reload,
+    stop,
+    isLoading,
+    error,
+    conversationId,
+    clearChat,
+    exportChat,
+  };
+}
+
+// Text completion hook for non-chat scenarios
+export function useTextCompletion(options?: {
+  api?: string;
+  onResponse?: (response: Response) => void;
+  onError?: (error: Error) => void;
+}) {
+  const {
+    completion,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+  } = useCompletion({
+    api: options?.api || '/api/completion',
+    onResponse: options?.onResponse,
+    onError: options?.onError,
+  });
+
+  return {
+    completion,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+  };
+}
+
+{{#if enableAssistant}}
+// Assistant hook for more complex AI interactions
+export function useAIAssistant(options?: {
+  api?: string;
+  assistantId?: string;
+  onResponse?: (response: Response) => void;
+  onError?: (error: Error) => void;
+}) {
+  const {
+    status,
+    messages,
+    input,
+    submitMessage,
+    handleInputChange,
+    error,
+  } = useAssistant({
+    api: options?.api || '/api/assistant',
+    assistantId: options?.assistantId,
+    onResponse: options?.onResponse,
+    onError: options?.onError,
+  });
+
+  return {
+    status,
+    messages,
+    input,
+    submitMessage,
+    handleInputChange,
+    error,
+    isIdle: status === 'awaiting_message',
+    isLoading: status === 'in_progress',
+  };
+}
+{{/if}}
+
+// Custom hook for streaming responses
+export function useStreamingResponse() {
+  const [response, setResponse] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  const streamResponse = useCallback(async (
+    prompt: string,
+    options?: {
+      api?: string;
+      model?: string;
+      temperature?: number;
+      maxTokens?: number;
+    }
+  ) => {
+    setIsStreaming(true);
+    setResponse('');
+
+    try {
+      const res = await fetch(options?.api || '/api/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          model: options?.model,
+          temperature: options?.temperature,
+          maxTokens: options?.maxTokens,
+        }),
+      });
+
+      if (!res.body) {
+        throw new Error('ReadableStream not supported');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        setResponse(prev => prev + chunk);
+      }
+    } catch (error) {
+      console.error('Streaming error:', error);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, []);
+
+  return {
+    response,
+    isStreaming,
+    streamResponse,
+    clearResponse: () => setResponse(''),
+  };
+}

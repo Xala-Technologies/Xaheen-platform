@@ -1,0 +1,77 @@
+/// <reference types="vitest" />
+import { defineConfig } from 'vite'
+{{#if framework.react}}
+import react from '@vitejs/plugin-react'
+{{/if}}
+{{#if framework.vue}}
+import vue from '@vitejs/plugin-vue'
+{{/if}}
+{{#if framework.svelte}}
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+{{/if}}
+import path from 'path'
+
+export default defineConfig({
+  plugins: [
+    {{#if framework.react}}react(),{{/if}}
+    {{#if framework.vue}}vue(),{{/if}}
+    {{#if framework.svelte}}svelte(),{{/if}}
+  ],
+  test: {
+    globals: true,
+    environment: '{{testEnvironment}}',
+    {{#if setupFiles}}
+    setupFiles: [{{#each setupFiles}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+    {{/if}}
+    {{#if includeInSource}}
+    includeSource: ['src/**/*.{js,ts,jsx,tsx,vue,svelte}'],
+    {{/if}}
+    {{#if coverage.enabled}}
+    coverage: {
+      provider: '{{coverage.provider}}',
+      {{#if coverage.reporter}}
+      reporter: [{{#each coverage.reporter}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+      {{/if}}
+      {{#if coverage.exclude}}
+      exclude: [
+        {{#each coverage.exclude}}
+        '{{this}}',
+        {{/each}}
+      ],
+      {{/if}}
+      {{#if coverage.thresholds}}
+      thresholds: {
+        {{#if coverage.thresholds.global}}
+        global: {
+          branches: {{coverage.thresholds.global.branches}},
+          functions: {{coverage.thresholds.global.functions}},
+          lines: {{coverage.thresholds.global.lines}},
+          statements: {{coverage.thresholds.global.statements}},
+        },
+        {{/if}}
+      },
+      {{/if}}
+    },
+    {{/if}}
+    {{#if ui}}
+    ui: true,
+    {{/if}}
+    {{#if watch}}
+    watch: false,
+    {{/if}}
+  },
+  resolve: {
+    alias: {
+      {{#each aliases}}
+      '{{@key}}': path.resolve(__dirname, '{{this}}'),
+      {{/each}}
+    },
+  },
+  {{#if define}}
+  define: {
+    {{#each define}}
+    '{{@key}}': {{#if (eq ../this 'string')}}'{{{this}}}'{{else}}{{{this}}}{{/if}},
+    {{/each}}
+  },
+  {{/if}}
+})

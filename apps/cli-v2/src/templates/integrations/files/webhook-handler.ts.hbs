@@ -1,0 +1,431 @@
+{{!-- Template: webhook-handler.ts.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/webhooks/webhook-handler.ts.hbs --}}
+{{#if typescript}}
+import type { NextApiRequest, NextApiResponse } from 'next';
+import type { Request, Response } from 'express';
+
+interface WebhookEvent {
+  id: string;
+  type: string;
+  created: number;
+  data: any;
+  object: string;
+  livemode: boolean;
+  pending_webhooks?: number;
+  request?: {
+    id: string | null;
+    idempotency_key: string | null;
+  };
+}
+
+interface WebhookHandlerResult {
+  success: boolean;
+  message?: string;
+  data?: any;
+  error?: any;
+}
+{{/if}}
+import crypto from 'crypto';
+
+/**
+ * {{projectName}} Webhook Handler
+ * Processes incoming webhooks with signature verification and error handling
+ */
+export class {{projectName}}WebhookHandler {
+  private readonly webhookSecret{{#if typescript}}: string{{/if}};
+  private readonly signatureHeader{{#if typescript}}: string{{/if}};
+  private readonly maxRetries = 3;
+  private readonly retryDelay = 1000;
+
+  constructor() {
+    this.webhookSecret = process.env.WEBHOOK_SECRET || '';
+    this.signatureHeader = '{{signatureHeader}}';
+    
+    if (!this.webhookSecret) {
+      console.warn('Warning: WEBHOOK_SECRET not configured');
+    }
+  }
+
+  /**
+   * Main webhook handler for Next.js API routes
+   */
+  async handleNextJS(
+    req{{#if typescript}}: NextApiRequest{{/if}},
+    res{{#if typescript}}: NextApiResponse{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    // Verify method
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    try {
+      // Get raw body
+      const rawBody = await this.getRawBody(req);
+      
+      // Verify signature
+      if (!this.verifySignature(rawBody, req.headers)) {
+        console.error('Invalid webhook signature');
+        res.status(401).json({ error: 'Invalid signature' });
+        return;
+      }
+
+      // Parse event
+      const event = JSON.parse(rawBody.toString());
+      console.log(`🚀 Server running on port ${port}`);
+
+      // Process event
+      const result = await this.processEvent(event);
+
+      if (result.success) {
+        res.status(200).json({ received: true, ...result });
+      } else {
+        console.error('Webhook processing failed:', result.error);
+        res.status(500).json({ error: 'Processing failed', details: result.error });
+      }
+    } catch (error) {
+      console.error('Webhook handler error:', error);
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: {{#if typescript}}error instanceof Error ? error.message : String(error){{else}}error.message{{/if}}
+      });
+    }
+  }
+
+  /**
+   * Main webhook handler for Express
+   */
+  async handleExpress(
+    req{{#if typescript}}: Request{{/if}},
+    res{{#if typescript}}: Response{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    // Verify method
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    try {
+      // Get raw body (assumes body-parser raw middleware)
+      const rawBody = req.body;
+      
+      // Verify signature
+      if (!this.verifySignature(rawBody, req.headers)) {
+        console.error('Invalid webhook signature');
+        res.status(401).json({ error: 'Invalid signature' });
+        return;
+      }
+
+      // Parse event if needed
+      const event = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+      console.log("template string");
+
+      // Process event
+      const result = await this.processEvent(event);
+
+      if (result.success) {
+        res.status(200).json({ received: true, ...result });
+      } else {
+        console.error('Webhook processing failed:', result.error);
+        res.status(500).json({ error: 'Processing failed', details: result.error });
+      }
+    } catch (error) {
+      console.error('Webhook handler error:', error);
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: {{#if typescript}}error instanceof Error ? error.message : String(error){{else}}error.message{{/if}}
+      });
+    }
+  }
+
+  /**
+   * Process webhook event with retry logic
+   */
+  private async processEvent(
+    event{{#if typescript}}: WebhookEvent{{/if}}
+  ){{#if typescript}}: Promise<WebhookHandlerResult>{{/if}} {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        // Log processing attempt
+        console.log("template string");
+        
+        // Route to specific event handlers
+        const result = await this.routeEvent(event);
+        
+        // Success - return result
+        return { success: true, ...result };
+      } catch (error) {
+        lastError = error;
+        console.warn("template string", error);
+        
+        // Wait before retry (except on last attempt)
+        if (attempt < this.maxRetries) {
+          await this.delay(this.retryDelay * attempt);
+        }
+      }
+    }
+    
+    // All attempts failed
+    return { 
+      success: false, 
+      error: lastError,
+      message: "template string"
+    };
+  }
+
+  /**
+   * Route event to appropriate handler
+   */
+  private async routeEvent(
+    event{{#if typescript}}: WebhookEvent{{/if}}
+  ){{#if typescript}}: Promise<any>{{/if}} {
+    const eventType = event.type || event.event;
+    
+    switch (eventType) {
+      {{#each events}}
+      case '{{this}}':
+        return await this.handle{{#each (split this '.')}}{{capitalize this}}{{/each}}(event);
+      {{/each}}
+      
+      default:
+        console.log("template string");
+        return { handled: false, eventType };
+    }
+  }
+
+  {{#each events}}
+  /**
+   * Handle {{this}} event
+   */
+  private async handle{{#each (split this '.')}}{{capitalize this}}{{/each}}(
+    event{{#if ../typescript}}: WebhookEvent{{/if}}
+  ){{#if ../typescript}}: Promise<any>{{/if}} {
+    console.log('Processing {{this}} event:', event.id);
+    
+    try {
+      // TODO: Implement {{this}} event handling
+      // Example implementation:
+      
+      // 1. Extract relevant data from event
+      const eventData = event.data;
+      
+      // 2. Update database
+      // await db.updateRecord(eventData);
+      
+      // 3. Send notifications
+      // await notificationService.send(eventData);
+      
+      // 4. Trigger workflows
+      // await workflowEngine.trigger('{{this}}', eventData);
+      
+      // 5. Update external systems
+      // await externalAPI.update(eventData);
+      
+      return {
+        processed: true,
+        eventType: '{{this}}',
+        eventId: event.id
+      };
+    } catch (error) {
+      console.error('Error handling {{this}}:', error);
+      throw error;
+    }
+  }
+
+  {{/each}}
+  /**
+   * Verify webhook signature
+   */
+  private verifySignature(
+    payload{{#if typescript}}: Buffer | string{{/if}},
+    headers{{#if typescript}}: any{{/if}}
+  ){{#if typescript}}: boolean{{/if}} {
+    if (!this.webhookSecret) {
+      // Skip verification if secret not configured (development only)
+      console.warn('Webhook signature verification skipped - no secret configured');
+      return true;
+    }
+
+    const signature = headers[this.signatureHeader];
+    if (!signature) {
+      console.error('No signature header found');
+      return false;
+    }
+
+    try {
+      {{#if (eq service 'stripe')}}
+      // Stripe signature verification
+      const elements = signature.split(',');
+      let timestamp = '';
+      let signatures{{#if typescript}}: string[]{{/if}} = [];
+      
+      for (const element of elements) {
+        const [key, value] = element.split('=');
+        if (key === 't') timestamp = value;
+        if (key === 'v1') signatures.push(value);
+      }
+      
+      // Verify timestamp to prevent replay attacks
+      const timestampAge = Math.floor(Date.now() / 1000) - parseInt(timestamp);
+      if (timestampAge > 300) { // 5 minutes
+        console.error('Webhook timestamp too old');
+        return false;
+      }
+      
+      // Compute expected signature
+      const signedPayload = "template string";
+      const expectedSignature = crypto
+        .createHmac('sha256', this.webhookSecret)
+        .update(signedPayload)
+        .digest('hex');
+      
+      // Check if any signature matches
+      return signatures.some(sig => 
+        crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSignature))
+      );
+      {{else if (eq service 'github')}}
+      // GitHub signature verification
+      const expectedSignature = `sha256=${crypto
+        .createHmac('sha256', this.webhookSecret)
+        .update(payload)
+        .digest('hex')}`;
+      
+      return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature)
+      );
+      {{else}}
+      // Generic HMAC signature verification
+      const expectedSignature = crypto
+        .createHmac('sha256', this.webhookSecret)
+        .update(payload)
+        .digest('hex');
+      
+      // Some services prefix the signature
+      const signatureToCheck = signature.includes('=') 
+        ? signature.split('=')[1] 
+        : signature;
+      
+      return crypto.timingSafeEqual(
+        Buffer.from(signatureToCheck),
+        Buffer.from(expectedSignature)
+      );
+      {{/if}}
+    } catch (error) {
+      console.error('Signature verification error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get raw body from Next.js request
+   */
+  private async getRawBody(
+    req{{#if typescript}}: NextApiRequest{{/if}}
+  ){{#if typescript}}: Promise<Buffer>{{/if}} {
+    const chunks{{#if typescript}}: Uint8Array[]{{/if}} = [];
+    
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    
+    return Buffer.concat(chunks);
+  }
+
+  /**
+   * Delay helper for retry logic
+   */
+  private delay(ms{{#if typescript}}: number{{/if}}){{#if typescript}}: Promise<void>{{/if}} {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Log webhook event for auditing
+   */
+  private async logWebhookEvent(
+    event{{#if typescript}}: WebhookEvent{{/if}},
+    result{{#if typescript}}: WebhookHandlerResult{{/if}}
+  ){{#if typescript}}: Promise<void>{{/if}} {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      eventId: event.id,
+      eventType: event.type || event.event,
+      success: result.success,
+      error: result.error ? {{#if typescript}}result.error instanceof Error ? result.error.message : String(result.error){{else}}result.error.message || result.error{{/if}} : null,
+      environment: process.env.NODE_ENV,
+      projectName: '{{projectName}}'
+    };
+
+    // Log to console
+    if (result.success) {
+      console.log('Webhook processed successfully:', logEntry);
+    } else {
+      console.error('Webhook processing failed:', logEntry);
+    }
+
+    // TODO: Log to persistent storage
+    // await db.webhookLogs.create(logEntry);
+    
+    // TODO: Send to monitoring service
+    // await monitoring.logWebhook(logEntry);
+  }
+}
+
+// Create handler instance
+const webhookHandler = new {{projectName}}WebhookHandler();
+
+{{#if (eq framework 'nextjs')}}
+// Next.js API route handler
+export default async function handler(
+  req{{#if typescript}}: NextApiRequest{{/if}},
+  res{{#if typescript}}: NextApiResponse{{/if}}
+) {
+  return webhookHandler.handleNextJS(req, res);
+}
+
+// Disable body parsing for raw body access
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+{{else}}
+// Express middleware
+export function webhookMiddleware(
+  req{{#if typescript}}: Request{{/if}},
+  res{{#if typescript}}: Response{{/if}}
+) {
+  return webhookHandler.handleExpress(req, res);
+}
+
+// Export handler for direct use
+export { webhookHandler };
+{{/if}}
+
+// Helper functions for manual webhook processing
+export async function processWebhookManually(
+  event{{#if typescript}}: WebhookEvent{{/if}}
+){{#if typescript}}: Promise<WebhookHandlerResult>{{/if}} {
+  const handler = new {{projectName}}WebhookHandler();
+  return handler['processEvent'](event);
+}
+
+export function verifyWebhookSignature(
+  payload{{#if typescript}}: Buffer | string{{/if}},
+  signature{{#if typescript}}: string{{/if}},
+  secret{{#if typescript}}: string{{/if}}
+){{#if typescript}}: boolean{{/if}} {
+  const handler = new {{projectName}}WebhookHandler();
+  // Override the secret temporarily
+  handler['webhookSecret'] = secret;
+  
+  const headers = {
+    [handler['signatureHeader']]: signature
+  };
+  
+  return handler['verifySignature'](payload, headers);
+}

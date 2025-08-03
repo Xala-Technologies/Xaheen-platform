@@ -1,0 +1,693 @@
+{{!-- Template: stripe-service.ts.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/payments/stripe-service.ts.hbs --}}
+{{#if typescript}}
+import type { 
+  Stripe,
+  PaymentIntent,
+  PaymentMethod,
+  Customer,
+  Subscription,
+  Price,
+  Product,
+  Invoice,
+  SetupIntent,
+  Refund,
+  Charge,
+  PaymentMethodCreateParams
+} from 'stripe';
+{{/if}}
+import Stripe from 'stripe';
+
+/**
+ * Stripe Payment Service for {{projectName}}
+ * Complete integration with Stripe payment processing
+ */
+export class StripeService {
+  private stripe{{#if typescript}}: Stripe{{/if}};
+  private readonly apiVersion{{#if typescript}}: Stripe.LatestApiVersion{{/if}} = '2023-10-16';
+
+  constructor() {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    
+    if (!secretKey) {
+      throw new Error('Stripe secret key is required');
+    }
+
+    this.stripe = new Stripe(secretKey, {
+      apiVersion: this.apiVersion,
+      typescript: {{typescript}},
+      telemetry: false,
+      maxNetworkRetries: 3,
+    });
+  }
+
+  /**
+   * Create a payment intent with automatic payment methods
+   */
+  async createPaymentIntent(
+    amount{{#if typescript}}: number{{/if}},
+    currency{{#if typescript}}: string{{/if}} = 'usd',
+    options{{#if typescript}}?: {
+      customer?: string;
+      metadata?: Record<string, string>;
+      description?: string;
+      statementDescriptor?: string;
+      receiptEmail?: string;
+      setupFutureUsage?: 'on_session' | 'off_session';
+      automaticPaymentMethods?: boolean;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<PaymentIntent>{{/if}} {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount: Math.round(amount), // Ensure integer
+        currency: currency.toLowerCase(),
+        customer: options.customer,
+        metadata: options.metadata || {},
+        description: options.description,
+        statement_descriptor: options.statementDescriptor,
+        receipt_email: options.receiptEmail,
+        setup_future_usage: options.setupFutureUsage,
+        automatic_payment_methods: {
+          enabled: options.automaticPaymentMethods !== false,
+        },
+      });
+
+      return paymentIntent;
+    } catch (error) {
+      console.error('Create payment intent error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Update a payment intent
+   */
+  async updatePaymentIntent(
+    paymentIntentId{{#if typescript}}: string{{/if}},
+    updates{{#if typescript}}: {
+      amount?: number;
+      currency?: string;
+      metadata?: Record<string, string>;
+      description?: string;
+    }{{/if}}
+  ){{#if typescript}}: Promise<PaymentIntent>{{/if}} {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.update(
+        paymentIntentId,
+        updates
+      );
+
+      return paymentIntent;
+    } catch (error) {
+      console.error('Update payment intent error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Confirm a payment intent
+   */
+  async confirmPaymentIntent(
+    paymentIntentId{{#if typescript}}: string{{/if}},
+    options{{#if typescript}}?: {
+      paymentMethod?: string;
+      returnUrl?: string;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<PaymentIntent>{{/if}} {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.confirm(
+        paymentIntentId,
+        {
+          payment_method: options.paymentMethod,
+          return_url: options.returnUrl,
+        }
+      );
+
+      return paymentIntent;
+    } catch (error) {
+      console.error('Confirm payment intent error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Cancel a payment intent
+   */
+  async cancelPaymentIntent(
+    paymentIntentId{{#if typescript}}: string{{/if}},
+    cancellationReason{{#if typescript}}?: string{{/if}}
+  ){{#if typescript}}: Promise<PaymentIntent>{{/if}} {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.cancel(
+        paymentIntentId,
+        {
+          cancellation_reason: cancellationReason{{#if typescript}} as Stripe.PaymentIntentCancelParams.CancellationReason{{/if}}
+        }
+      );
+
+      return paymentIntent;
+    } catch (error) {
+      console.error('Cancel payment intent error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create a setup intent for saving payment methods
+   */
+  async createSetupIntent(
+    options{{#if typescript}}?: {
+      customer?: string;
+      paymentMethodTypes?: string[];
+      usage?: 'on_session' | 'off_session';
+      metadata?: Record<string, string>;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<SetupIntent>{{/if}} {
+    try {
+      const setupIntent = await this.stripe.setupIntents.create({
+        customer: options.customer,
+        payment_method_types: options.paymentMethodTypes || ['card'],
+        usage: options.usage || 'off_session',
+        metadata: options.metadata || {},
+      });
+
+      return setupIntent;
+    } catch (error) {
+      console.error('Create setup intent error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create or update a customer
+   */
+  async createCustomer(
+    data{{#if typescript}}: {
+      email?: string;
+      name?: string;
+      phone?: string;
+      metadata?: Record<string, string>;
+      address?: Stripe.AddressParam;
+      paymentMethod?: string;
+    }{{/if}}
+  ){{#if typescript}}: Promise<Customer>{{/if}} {
+    try {
+      const customer = await this.stripe.customers.create({
+        email: data.email,
+        name: data.name,
+        phone: data.phone,
+        metadata: data.metadata || {},
+        address: data.address,
+        payment_method: data.paymentMethod,
+        invoice_settings: data.paymentMethod ? {
+          default_payment_method: data.paymentMethod,
+        } : undefined,
+      });
+
+      return customer;
+    } catch (error) {
+      console.error('Create customer error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Update a customer
+   */
+  async updateCustomer(
+    customerId{{#if typescript}}: string{{/if}},
+    updates{{#if typescript}}: Partial<Stripe.CustomerUpdateParams>{{/if}}
+  ){{#if typescript}}: Promise<Customer>{{/if}} {
+    try {
+      const customer = await this.stripe.customers.update(
+        customerId,
+        updates
+      );
+
+      return customer;
+    } catch (error) {
+      console.error('Update customer error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Retrieve a customer
+   */
+  async getCustomer(
+    customerId{{#if typescript}}: string{{/if}},
+    expand{{#if typescript}}?: string[]{{/if}}
+  ){{#if typescript}}: Promise<Customer | Stripe.DeletedCustomer>{{/if}} {
+    try {
+      const customer = await this.stripe.customers.retrieve(customerId, {
+        expand,
+      });
+
+      return customer;
+    } catch (error) {
+      console.error('Get customer error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * List customers
+   */
+  async listCustomers(
+    options{{#if typescript}}?: {
+      email?: string;
+      limit?: number;
+      startingAfter?: string;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<Stripe.ApiList<Customer>>{{/if}} {
+    try {
+      const customers = await this.stripe.customers.list({
+        email: options.email,
+        limit: options.limit || 10,
+        starting_after: options.startingAfter,
+      });
+
+      return customers;
+    } catch (error) {
+      console.error('List customers error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Attach a payment method to a customer
+   */
+  async attachPaymentMethod(
+    paymentMethodId{{#if typescript}}: string{{/if}},
+    customerId{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<PaymentMethod>{{/if}} {
+    try {
+      const paymentMethod = await this.stripe.paymentMethods.attach(
+        paymentMethodId,
+        { customer: customerId }
+      );
+
+      return paymentMethod;
+    } catch (error) {
+      console.error('Attach payment method error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Detach a payment method from a customer
+   */
+  async detachPaymentMethod(
+    paymentMethodId{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<PaymentMethod>{{/if}} {
+    try {
+      const paymentMethod = await this.stripe.paymentMethods.detach(
+        paymentMethodId
+      );
+
+      return paymentMethod;
+    } catch (error) {
+      console.error('Detach payment method error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * List payment methods for a customer
+   */
+  async listPaymentMethods(
+    customerId{{#if typescript}}: string{{/if}},
+    type{{#if typescript}}: Stripe.PaymentMethodListParams.Type{{/if}} = 'card'
+  ){{#if typescript}}: Promise<PaymentMethod[]>{{/if}} {
+    try {
+      const paymentMethods = await this.stripe.paymentMethods.list({
+        customer: customerId,
+        type,
+      });
+
+      return paymentMethods.data;
+    } catch (error) {
+      console.error('List payment methods error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create a refund
+   */
+  async createRefund(
+    options{{#if typescript}}: {
+      paymentIntent?: string;
+      charge?: string;
+      amount?: number;
+      reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer';
+      refundApplicationFee?: boolean;
+      reverseTransfer?: boolean;
+      metadata?: Record<string, string>;
+    }{{/if}}
+  ){{#if typescript}}: Promise<Refund>{{/if}} {
+    try {
+      const refund = await this.stripe.refunds.create({
+        payment_intent: options.paymentIntent,
+        charge: options.charge,
+        amount: options.amount,
+        reason: options.reason,
+        refund_application_fee: options.refundApplicationFee,
+        reverse_transfer: options.reverseTransfer,
+        metadata: options.metadata || {},
+      });
+
+      return refund;
+    } catch (error) {
+      console.error('Create refund error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create a subscription
+   */
+  async createSubscription(
+    customerId{{#if typescript}}: string{{/if}},
+    items{{#if typescript}}: Array<{ price: string; quantity?: number }>{{/if}},
+    options{{#if typescript}}?: {
+      trialPeriodDays?: number;
+      trialEnd?: number;
+      defaultPaymentMethod?: string;
+      collectionMethod?: 'charge_automatically' | 'send_invoice';
+      daysUntilDue?: number;
+      metadata?: Record<string, string>;
+      cancelAtPeriodEnd?: boolean;
+      coupon?: string;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<Subscription>{{/if}} {
+    try {
+      const subscription = await this.stripe.subscriptions.create({
+        customer: customerId,
+        items,
+        trial_period_days: options.trialPeriodDays,
+        trial_end: options.trialEnd,
+        default_payment_method: options.defaultPaymentMethod,
+        collection_method: options.collectionMethod || 'charge_automatically',
+        days_until_due: options.daysUntilDue,
+        metadata: options.metadata || {},
+        cancel_at_period_end: options.cancelAtPeriodEnd,
+        coupon: options.coupon,
+        payment_behavior: 'default_incomplete',
+        payment_settings: {
+          save_default_payment_method: 'on_subscription',
+        },
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      return subscription;
+    } catch (error) {
+      console.error('Create subscription error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Update a subscription
+   */
+  async updateSubscription(
+    subscriptionId{{#if typescript}}: string{{/if}},
+    updates{{#if typescript}}: Partial<Stripe.SubscriptionUpdateParams>{{/if}}
+  ){{#if typescript}}: Promise<Subscription>{{/if}} {
+    try {
+      const subscription = await this.stripe.subscriptions.update(
+        subscriptionId,
+        updates
+      );
+
+      return subscription;
+    } catch (error) {
+      console.error('Update subscription error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Cancel a subscription
+   */
+  async cancelSubscription(
+    subscriptionId{{#if typescript}}: string{{/if}},
+    options{{#if typescript}}?: {
+      immediately?: boolean;
+      prorate?: boolean;
+      invoiceNow?: boolean;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<Subscription>{{/if}} {
+    try {
+      if (options.immediately) {
+        return await this.stripe.subscriptions.cancel(subscriptionId, {
+          prorate: options.prorate,
+          invoice_now: options.invoiceNow,
+        });
+      } else {
+        return await this.stripe.subscriptions.update(subscriptionId, {
+          cancel_at_period_end: true,
+        });
+      }
+    } catch (error) {
+      console.error('Cancel subscription error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Pause a subscription
+   */
+  async pauseSubscription(
+    subscriptionId{{#if typescript}}: string{{/if}},
+    options{{#if typescript}}?: {
+      behavior?: 'keep_as_draft' | 'mark_uncollectible' | 'void';
+      resumesAt?: number;
+    }{{/if}} = {}
+  ){{#if typescript}}: Promise<Subscription>{{/if}} {
+    try {
+      const subscription = await this.stripe.subscriptions.update(
+        subscriptionId,
+        {
+          pause_collection: {
+            behavior: options.behavior || 'keep_as_draft',
+            resumes_at: options.resumesAt,
+          },
+        }
+      );
+
+      return subscription;
+    } catch (error) {
+      console.error('Pause subscription error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Resume a paused subscription
+   */
+  async resumeSubscription(
+    subscriptionId{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<Subscription>{{/if}} {
+    try {
+      const subscription = await this.stripe.subscriptions.update(
+        subscriptionId,
+        {
+          pause_collection: null,
+        }
+      );
+
+      return subscription;
+    } catch (error) {
+      console.error('Resume subscription error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create a checkout session
+   */
+  async createCheckoutSession(
+    options{{#if typescript}}: {
+      mode: 'payment' | 'setup' | 'subscription';
+      lineItems?: Array<{
+        price: string;
+        quantity: number;
+      }>;
+      priceData?: Array<{
+        currency: string;
+        productData: {
+          name: string;
+          description?: string;
+          images?: string[];
+        };
+        unitAmount: number;
+        recurring?: {
+          interval: 'day' | 'week' | 'month' | 'year';
+          intervalCount?: number;
+        };
+      }>;
+      successUrl: string;
+      cancelUrl: string;
+      customer?: string;
+      customerEmail?: string;
+      clientReferenceId?: string;
+      metadata?: Record<string, string>;
+      allowPromotionCodes?: boolean;
+      discounts?: Array<{ coupon?: string; promotionCode?: string }>;
+      locale?: string;
+      submitType?: 'auto' | 'pay' | 'book' | 'donate';
+    }{{/if}}
+  ){{#if typescript}}: Promise<Stripe.Checkout.Session>{{/if}} {
+    try {
+      const sessionParams{{#if typescript}}: Stripe.Checkout.SessionCreateParams{{/if}} = {
+        mode: options.mode,
+        success_url: options.successUrl,
+        cancel_url: options.cancelUrl,
+        customer: options.customer,
+        customer_email: options.customerEmail,
+        client_reference_id: options.clientReferenceId,
+        metadata: options.metadata || {},
+        allow_promotion_codes: options.allowPromotionCodes,
+        discounts: options.discounts,
+        locale: options.locale{{#if typescript}} as Stripe.Checkout.SessionCreateParams.Locale{{/if}},
+        submit_type: options.submitType,
+        payment_method_types: ['card'],
+        billing_address_collection: 'auto',
+      };
+
+      if (options.lineItems) {
+        sessionParams.line_items = options.lineItems;
+      } else if (options.priceData) {
+        sessionParams.line_items = options.priceData.map(item => ({
+          price_data: {
+            currency: item.currency,
+            product_data: item.productData,
+            unit_amount: item.unitAmount,
+            recurring: item.recurring,
+          },
+          quantity: 1,
+        }));
+      }
+
+      if (options.mode === 'subscription') {
+        sessionParams.subscription_data = {
+          trial_period_days: 14,
+        };
+      }
+
+      const session = await this.stripe.checkout.sessions.create(sessionParams);
+
+      return session;
+    } catch (error) {
+      console.error('Create checkout session error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Create a customer portal session
+   */
+  async createPortalSession(
+    customerId{{#if typescript}}: string{{/if}},
+    returnUrl{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Promise<Stripe.BillingPortal.Session>{{/if}} {
+    try {
+      const session = await this.stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl,
+      });
+
+      return session;
+    } catch (error) {
+      console.error('Create portal session error:', error);
+      throw this.handleStripeError(error);
+    }
+  }
+
+  /**
+   * Construct webhook event
+   */
+  constructWebhookEvent(
+    payload{{#if typescript}}: string | Buffer{{/if}},
+    signature{{#if typescript}}: string{{/if}},
+    webhookSecret{{#if typescript}}: string{{/if}}
+  ){{#if typescript}}: Stripe.Event{{/if}} {
+    try {
+      const event = this.stripe.webhooks.constructEvent(
+        payload,
+        signature,
+        webhookSecret
+      );
+
+      return event;
+    } catch (error) {
+      console.error('Webhook signature verification failed:', error);
+      throw new Error('Invalid webhook signature');
+    }
+  }
+
+  /**
+   * Handle Stripe errors
+   */
+  private handleStripeError(error{{#if typescript}}: any{{/if}}){{#if typescript}}: Error{{/if}} {
+    if (error.type === 'StripeCardError') {
+      // Card errors (e.g., declined card)
+      return new Error("template string");
+    } else if (error.type === 'StripeRateLimitError') {
+      // Too many API requests
+      return new Error('Too many requests, please try again later');
+    } else if (error.type === 'StripeInvalidRequestError') {
+      // Invalid request (e.g., missing required param)
+      return new Error("template string");
+    } else if (error.type === 'StripeAPIError') {
+      // Stripe server error
+      return new Error('Payment service error, please try again');
+    } else if (error.type === 'StripeConnectionError') {
+      // Network error
+      return new Error('Network error, please check your connection');
+    } else if (error.type === 'StripeAuthenticationError') {
+      // Authentication error
+      return new Error('Authentication failed');
+    } else {
+      // Unknown error
+      return new Error(error.message || 'An unexpected error occurred');
+    }
+  }
+
+  /**
+   * Format amount for display
+   */
+  formatAmount(
+    amount{{#if typescript}}: number{{/if}},
+    currency{{#if typescript}}: string{{/if}} = 'usd'
+  ){{#if typescript}}: string{{/if}} {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: 2,
+    }).format(amount / 100);
+  }
+
+  /**
+   * Convert amount to smallest currency unit
+   */
+  toSmallestUnit(
+    amount{{#if typescript}}: number{{/if}},
+    currency{{#if typescript}}: string{{/if}} = 'usd'
+  ){{#if typescript}}: number{{/if}} {
+    // Most currencies use 2 decimal places (cents)
+    const zeroDecimalCurrencies = ['bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf'];
+    
+    if (zeroDecimalCurrencies.includes(currency.toLowerCase())) {
+      return Math.round(amount);
+    }
+    
+    return Math.round(amount * 100);
+  }
+}
+
+// Export singleton instance
+export const stripeService = new StripeService();

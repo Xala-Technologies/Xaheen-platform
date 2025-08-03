@@ -1,0 +1,48 @@
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export async function POST(req: Request) {
+  try {
+    const { messages } = await req.json();
+
+    const result = await streamText({
+      model: openai('{{model}}'),
+      messages,
+      {{#if systemPrompt}}
+      system: '{{systemPrompt}}',
+      {{/if}}
+      {{#if maxTokens}}
+      maxTokens: {{maxTokens}},
+      {{/if}}
+      {{#if temperature}}
+      temperature: {{temperature}},
+      {{/if}}
+      {{#if enableTools}}
+      tools: {
+        // Add your tools here
+        {{#each tools}}
+        {{name}}: {
+          description: '{{description}}',
+          parameters: {{{json parameters}}},
+          execute: async ({{#each parameters.properties}}{{@key}}{{#unless @last}}, {{/unless}}{{/each}}) => {
+            // Implement your tool logic here
+            return { result: 'Tool executed successfully' };
+          },
+        },
+        {{/each}}
+      },
+      {{/if}}
+    });
+
+    return result.toAIStreamResponse();
+  } catch (error) {
+    console.error('Chat API error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}

@@ -1,0 +1,167 @@
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import rateLimit from 'express-rate-limit'
+{{#if middleware.morgan}}
+import morgan from 'morgan'
+{{/if}}
+{{#if middleware.cookieParser}}
+import cookieParser from 'cookie-parser'
+{{/if}}
+{{#if validation.joi}}
+import { errorHandler, notFound } from './middleware/error.js'
+{{/if}}
+{{#if auth}}
+import { authMiddleware } from './middleware/auth.js'
+{{/if}}
+{{#if database}}
+import { connectDatabase } from './config/database.js'
+{{/if}}
+
+// Import routes
+{{#each routes}}
+import {{camelCase name}}Routes from './routes/{{kebabCase name}}.js'
+{{/each}}
+
+const app = express()
+const PORT = process.env.PORT || {{port}}
+
+// Trust proxy
+app.set('trust proxy', 1)
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: {{rateLimit.windowMs}}, // {{rateLimit.windowMs}} ms
+  max: {{rateLimit.max}}, // limit each IP to {{rateLimit.max}} requests per windowMs
+  message: {
+    error: 'Too many requests from this IP, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+// Middleware
+app.use(limiter)
+app.use(helmet({{#if helmet.config}}{{{json helmet.config}}}{{/if}}))
+app.use(cors({
+  origin: {{#if cors.origin}}{{#if (eq cors.origin "true")}}true{{else}}[{{#each cors.origin}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}]{{/if}}{{else}}process.env.FRONTEND_URL || 'http://localhost:3000'{{/if}},
+  credentials: {{#if cors.credentials}}{{cors.credentials}}{{else}}true{{/if}},
+  {{#if cors.methods}}
+  methods: [{{#each cors.methods}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+  {{/if}}
+  {{#if cors.allowedHeaders}}
+  allowedHeaders: [{{#each cors.allowedHeaders}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+  {{/if}}
+}))
+app.use(compression())
+app.use(express.json({ limit: '{{jsonLimit}}' }))
+app.use(express.urlencoded({ extended: true, limit: '{{urlencodedLimit}}' }))
+{{#if middleware.cookieParser}}
+app.use(cookieParser())
+{{/if}}
+{{#if middleware.morgan}}
+app.use(morgan('{{morganFormat}}'))
+{{/if}}
+
+{{#if staticFiles}}
+// Static files
+app.use('/static', express.static('{{staticPath}}'))
+{{/if}}
+
+{{#if healthCheck}}
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    {{#if database}}
+    database: 'connected', // TODO: Add actual database health check
+    {{/if}}
+  })
+})
+{{/if}}
+
+{{#if apiDocs}}
+// API Documentation
+app.get('/api-docs', (req, res) => {
+  res.json({
+    name: '{{apiName}}',
+    version: '{{apiVersion}}',
+    description: '{{apiDescription}}',
+    endpoints: [
+      {{#each routes}}
+      {
+        path: '/api/{{kebabCase name}}',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: '{{capitalize name}} management endpoints'
+      },
+      {{/each}}
+    ]
+  })
+})
+{{/if}}
+
+// API Routes
+{{#each routes}}
+app.use('/api/{{kebabCase name}}', {{camelCase name}}Routes)
+{{/each}}
+
+{{#if validation.joi}}
+// Error handling middleware
+app.use(notFound)
+app.use(errorHandler)
+{{else}}
+// Basic error handling
+app.use((req, res, next) => {
+  res.status(404).json({ error: 'Route not found' })
+})
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack)
+  res.status(500).json({ 
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Something went wrong!' 
+      : err.message 
+  })
+})
+{{/if}}
+
+// Start server
+async function startServer() {
+  try {
+    {{#if database}}
+    // Connect to database
+    await connectDatabase()
+    console.log('📊 Database connected successfully')
+    {{/if}}
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`)
+      console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`)
+      {{#if healthCheck}}
+      console.log(`❤️  Health Check: http://localhost:${PORT}/health`)
+      {{/if}}
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
+    })
+  } catch (error) {
+    console.error('❌ Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM received, shutting down gracefully')
+  process.exit(0)
+})
+
+process.on('SIGINT', () => {
+  console.log('👋 SIGINT received, shutting down gracefully')
+  process.exit(0)
+})
+
+startServer()
+
+export default app

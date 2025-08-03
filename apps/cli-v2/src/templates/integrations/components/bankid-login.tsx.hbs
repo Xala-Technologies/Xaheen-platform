@@ -1,0 +1,622 @@
+{{!-- Template: bankid-login.tsx.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: component --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/auth/bankid-login.tsx.hbs --}}
+import React, { useState, useEffect } from 'react';
+{{#if typescript}}
+import type { BankIDUserProfile } from './bankid.types';
+{{/if}}
+
+{{#if typescript}}
+interface BankIDLoginProps {
+  onSuccess?: (user: BankIDUserProfile) => void;
+  onError?: (error: Error) => void;
+  returnUrl?: string;
+  minSecurityLevel?: '2' | '3' | '4';
+  className?: string;
+  country?: 'norway' | 'sweden';
+  personalNumber?: string;
+  userVisibleData?: string;
+  showQR?: boolean;
+  autoStart?: boolean;
+}
+{{/if}}
+
+export const BankIDLogin{{#if typescript}}: React.FC<BankIDLoginProps>{{/if}} = ({
+  onSuccess,
+  onError,
+  returnUrl = '{{returnUrl}}',
+  minSecurityLevel = '{{minSecurityLevel}}',
+  className = '',
+  country = '{{country}}',
+  personalNumber,
+  userVisibleData,
+  showQR = true,
+  autoStart = false,
+}) => {
+  const [authState, setAuthState] = useState{{#if typescript}}<{
+    status: 'idle' | 'starting' | 'pending' | 'polling';
+    method: 'mobile' | 'qr' | null;
+    orderRef: string | null;
+    qrCode: string | null;
+    statusMessage: string;
+  }>{{/if}}({
+    status: 'idle',
+    method: null,
+    orderRef: null,
+    qrCode: null,
+    statusMessage: '',
+  });
+
+  const [pollInterval, setPollInterval] = useState{{#if typescript}}<NodeJS.Timeout | null>{{/if}}(null);
+
+  // Auto-start mobile BankID if requested
+  useEffect(() => {
+    if (autoStart && !personalNumber) {
+      handleBankIDLogin('mobile');
+    }
+  }, [autoStart, personalNumber]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [pollInterval]);
+
+  const handleBankIDLogin = async (method{{#if typescript}}: 'mobile' | 'qr'{{/if}}) => {
+    setAuthState({
+      status: 'starting',
+      method,
+      orderRef: null,
+      qrCode: null,
+      statusMessage: getStatusMessage('starting', method),
+    });
+
+    try {
+      // Start BankID authentication
+      const response = await fetch('/api/auth/bankid/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          method,
+          personalNumber,
+          returnUrl,
+          minSecurityLevel,
+          country,
+          requestedAttributes: {{{json requestedAttributes}}},
+          userVisibleData,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || \"template string");
+      }
+
+      const authData = await response.json();
+      
+      setAuthState(prev => ({
+        ...prev,
+        status: 'pending',
+        orderRef: authData.orderRef,
+        qrCode: method === 'qr' ? generateQRCodeUrl(authData) : null,
+        statusMessage: getStatusMessage('pending', method),
+      }));
+
+      // Store order reference for callback
+      sessionStorage.setItem('bankid_order_ref', authData.orderRef);
+
+      // Auto-start mobile BankID app if available
+      if (method === 'mobile' && authData.autoStartToken) {
+        const bankidUrl = \"template string";
+        
+        // Try to open BankID app
+        window.location.href = bankidUrl;
+        
+        // Fallback: show manual instructions after a delay
+        setTimeout(() => {
+          setAuthState(prev => ({
+            ...prev,
+            statusMessage: getStatusMessage('manual', method),
+          }));
+        }, 3000);
+      }
+
+      // Start polling for completion
+      startPolling(authData.orderRef);
+
+    } catch (error) {
+      console.error('BankID start error:', error);
+      setAuthState({
+        status: 'idle',
+        method: null,
+        orderRef: null,
+        qrCode: null,
+        statusMessage: '',
+      });
+      onError?.(error as Error);
+    }
+  };
+
+  const startPolling = (orderRef{{#if typescript}}: string{{/if}}) => {
+    setAuthState(prev => ({ ...prev, status: 'polling' }));
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(\"template string");
+        
+        if (!response.ok) {
+          throw new Error(\"template string");
+        }
+
+        const result = await response.json();
+
+        // Update status message based on progress
+        if (result.progressStatus) {
+          setAuthState(prev => ({
+            ...prev,
+            statusMessage: getProgressMessage(result.progressStatus, prev.method),
+          }));
+        }
+
+        if (result.status === 'complete') {
+          // Authentication successful
+          clearInterval(interval);
+          setPollInterval(null);
+          
+          setAuthState({
+            status: 'idle',
+            method: null,
+            orderRef: null,
+            qrCode: null,
+            statusMessage: '',
+          });
+
+          // Clean up session storage
+          sessionStorage.removeItem('bankid_order_ref');
+          
+          onSuccess?.(result.completionData.user);
+          return;
+        }
+
+        if (result.status === 'failed') {
+          // Authentication failed
+          clearInterval(interval);
+          setPollInterval(null);
+          
+          setAuthState({
+            status: 'idle',
+            method: null,
+            orderRef: null,
+            qrCode: null,
+            statusMessage: '',
+          });
+
+          // Clean up session storage
+          sessionStorage.removeItem('bankid_order_ref');
+          
+          const errorMessage = getErrorMessage(result.hintCode) || 'BankID authentication failed';
+          onError?.(new Error(errorMessage));
+          return;
+        }
+
+        // Continue polling if still pending
+
+      } catch (error) {
+        console.error('Polling error:', error);
+        clearInterval(interval);
+        setPollInterval(null);
+        
+        setAuthState({
+          status: 'idle',
+          method: null,
+          orderRef: null,
+          qrCode: null,
+          statusMessage: '',
+        });
+
+        onError?.(error as Error);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    setPollInterval(interval);
+
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval);
+        setPollInterval(null);
+        
+        setAuthState({
+          status: 'idle',
+          method: null,
+          orderRef: null,
+          qrCode: null,
+          statusMessage: '',
+        });
+
+        onError?.(new Error('{{#if (eq country "sweden")}}Autentisering tog för lång tid{{else}}Autentisering tok for lang tid{{/if}}'));
+      }
+    }, 300000); // 5 minutes
+  };
+
+  const handleCancel = async () => {
+    if (authState.orderRef) {
+      try {
+        await fetch('/api/auth/bankid/cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderRef: authState.orderRef,
+          }),
+        });
+      } catch (error) {
+        console.error('Cancel error:', error);
+      }
+    }
+
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      setPollInterval(null);
+    }
+
+    sessionStorage.removeItem('bankid_order_ref');
+    
+    setAuthState({
+      status: 'idle',
+      method: null,
+      orderRef: null,
+      qrCode: null,
+      statusMessage: '',
+    });
+  };
+
+  const generateQRCodeUrl = (authData{{#if typescript}}: any{{/if}}) => {
+    // Generate QR code URL for BankID
+    const qrData = \"template string";
+    return \"template string";
+  };
+
+  const getStatusMessage = (status{{#if typescript}}: string{{/if}}, method{{#if typescript}}: string | null{{/if}}) => {
+    const messages = {
+      {{#if (eq country "sweden")}}
+      starting: method === 'mobile' ? 'Startar BankID...' : 'Genererar QR-kod...',
+      pending: method === 'mobile' ? 'Väntar på BankID-appen' : 'Skanna QR-koden med BankID',
+      manual: 'Öppna BankID-appen manuellt och välj "Öppna bankid"',
+      {{else}}
+      starting: method === 'mobile' ? 'Starter BankID...' : 'Genererer QR-kode...',
+      pending: method === 'mobile' ? 'Venter på BankID-appen' : 'Skann QR-koden med BankID',
+      manual: 'Åpne BankID-appen manuelt og velg "Åpne bankid"',
+      {{/if}}
+    };
+    
+    return messages[status] || '';
+  };
+
+  const getProgressMessage = (progressStatus{{#if typescript}}: string{{/if}}, method{{#if typescript}}: string | null{{/if}}) => {
+    const messages = {
+      {{#if (eq country "sweden")}}
+      outstandingTransaction: 'Du har redan en pågående BankID-transaktion',
+      noClient: 'BankID-appen kunde inte startas. Försök igen.',
+      started: method === 'mobile' ? 'BankID-appen har startat' : 'Skanna QR-koden',
+      userSign: 'Skriv din säkerhetskod i BankID-appen',
+      {{else}}
+      outstandingTransaction: 'Du har allerede en pågående BankID-transaksjon',
+      noClient: 'BankID-appen kunne ikke startes. Prøv igjen.',
+      started: method === 'mobile' ? 'BankID-appen er startet' : 'Skann QR-koden',
+      userSign: 'Skriv din sikkerhetskode i BankID-appen',
+      {{/if}}
+    };
+    
+    return messages[progressStatus] || getStatusMessage('pending', method);
+  };
+
+  const getErrorMessage = (hintCode{{#if typescript}}: string{{/if}}) => {
+    const messages = {
+      {{#if (eq country "sweden")}}
+      outstandingTransaction: 'Du har redan en pågående BankID-transaktion',
+      noClient: 'BankID-appen kunde inte startas',
+      userCancel: 'Du avbröt autentiseringen',
+      cancelled: 'Autentiseringen avbröts',
+      startFailed: 'Kunde inte starta BankID',
+      expiredTransaction: 'Transaktionen har gått ut',
+      certificateErr: 'Certifikatfel',
+      userDeclinedCall: 'Du avvisade samtalet',
+      internalError: 'Internt fel',
+      {{else}}
+      outstandingTransaction: 'Du har allerede en pågående BankID-transaksjon',
+      noClient: 'BankID-appen kunne ikke startes',
+      userCancel: 'Du avbrøt autentiseringen',
+      cancelled: 'Autentiseringen ble avbrutt',
+      startFailed: 'Kunne ikke starte BankID',
+      expiredTransaction: 'Transaksjonen utløp',
+      certificateErr: 'Sertifikatfeil',
+      userDeclinedCall: 'Du avviste oppkallet',
+      internalError: 'Intern feil',
+      {{/if}}
+    };
+    
+    return messages[hintCode];
+  };
+
+  const isActive = authState.status !== 'idle';
+  const countryLabel = country === 'sweden' ? 'BankID' : 'BankID';
+  const primaryColor = country === 'sweden' ? '#1976d2' : '#0066cc';
+  const primaryColorHover = country === 'sweden' ? '#1565c0' : '#0052a3';
+
+  const buttonBaseStyles = {
+    fontFamily: 'inherit',
+    fontWeight: '600',
+    borderRadius: '8px',
+    padding: '12px 24px',
+    fontSize: '16px',
+    cursor: isActive ? 'not-allowed' : 'pointer',
+    opacity: isActive ? 0.6 : 1,
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 0.2s ease',
+    minHeight: '48px',
+    position: 'relative' as const,
+  };
+
+  return (
+    <div className=""`}>
+      {!isActive ? (
+        <div style=config>
+          <button
+            onClick={handleClick}
+            disabled={isActive}
+            style={{
+              ...buttonBaseStyles,
+              backgroundColor: primaryColor,
+              color: 'white',
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.target.style.backgroundColor = primaryColorHover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.target.style.backgroundColor = primaryColor;
+              }
+            }}
+            aria-label={"template string"}
+          >
+            <MobileIcon />
+            <span>{{#if (eq country "sweden")}}Öppna {countryLabel} på mobil{{else}}Åpne {countryLabel} på mobil{{/if}}</span>
+          </button>
+
+          {showQR && (
+            <button
+              onClick={handleClick}
+              disabled={isActive}
+              style={{
+                ...buttonBaseStyles,
+                backgroundColor: 'transparent',
+                color: primaryColor,
+                border: "template string",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.target.style.backgroundColor = primaryColor;
+                  e.target.style.color = 'white';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = primaryColor;
+                }
+              }}
+              aria-label={"template string"}
+            >
+              <QRIcon />
+              <span>{{#if (eq country "sweden")}}Visa QR-kod{{else}}Vis QR-kode{{/if}}</span>
+            </button>
+          )}
+
+          {personalNumber && (
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280',
+              textAlign: 'center',
+              padding: '8px',
+            }}>
+              {{#if (eq country "sweden")}}Personnummer{{else}}Fødselsnummer{{/if}}: {personalNumber.replace(/(\d{6})(\d{5})/, '$1-$2')}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '24px',
+          textAlign: 'center',
+        }}>
+          <div style={{ position: 'relative' }}>
+            {authState.method === 'qr' && authState.qrCode ? (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px',
+              }}>
+                <img
+                  src={authState.qrCode}
+                  alt="BankID QR Code"
+                  style={{
+                    width: '200px',
+                    height: '200px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                />
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  maxWidth: '200px',
+                }}>
+                  {{#if (eq country "sweden")}}Skanna med BankID-appen{{else}}Skann med BankID-appen{{/if}}
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                width: '64px',
+                height: '64px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <LoadingSpinner color={primaryColor} />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h3 style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '8px',
+            }}>
+              {{#if (eq country "sweden")}}Autentiserar med BankID{{else}}Autentiserer med BankID{{/if}}
+            </h3>
+            
+            {authState.statusMessage && (
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                lineHeight: '1.4',
+              }}>
+                {authState.statusMessage}
+              </p>
+            )}
+
+            {authState.orderRef && (
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginTop: '8px',
+              }}>
+                {{#if (eq country "sweden")}}Referens{{else}}Referanse{{/if}}: {authState.orderRef.substring(0, 8)}...
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={handleClick}
+            style={{
+              ...buttonBaseStyles,
+              backgroundColor: 'transparent',
+              color: '#dc2626',
+              border: '2px solid #dc2626',
+              fontSize: '14px',
+              padding: '8px 16px',
+              minHeight: '36px',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#dc2626';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = '#dc2626';
+            }}
+          >
+            {{#if (eq country "sweden")}}Avbryt{{else}}Avbryt{{/if}}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Icon components
+const LoadingSpinner = ({ color = '#0066cc' }) => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="31.416"
+      strokeDashoffset="31.416"
+      style={{
+        animation: 'spin 2s linear infinite, dash 1.5s ease-in-out infinite',
+      }}
+    />
+    <style jsx>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 150;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -35;
+        }
+        100% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -124;
+        }
+      }
+    `}</style>
+  </svg>
+);
+
+const MobileIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H7V6h10v10z"/>
+  </svg>
+);
+
+const QRIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM18 13h-2v2h2v-2zM20 15h-2v2h2v-2zM22 13h-2v2h2v-2zM22 17h-2v2h2v-2zM22 19h-2v2h2v-2zM20 21h-2v-2h2v2zM16 21h-2v-2h2v2zM18 19h-2v-2h2v2z"/>
+  </svg>
+);
+
+// Export configuration
+export const BankIDConfig = {
+  countries: {
+    norway: {
+      name: 'Norge',
+      flag: '🇳🇴',
+      color: '#0066cc',
+    },
+    sweden: {
+      name: 'Sverige', 
+      flag: '🇸🇪',
+      color: '#1976d2',
+    },
+  },
+  securityLevels: {
+    '2': 'Låg säkerhetsnivå / Lav sikkerhetsnivå',
+    '3': 'Hög säkerhetsnivå / Høy sikkerhetsnivå', 
+    '4': 'Mycket hög säkerhetsnivå / Svært høy sikkerhetsnivå',
+  },
+};
+
+{{#if typescript}}
+// Re-export types for convenience
+export type { BankIDUserProfile } from './bankid.types';
+{{/if}}

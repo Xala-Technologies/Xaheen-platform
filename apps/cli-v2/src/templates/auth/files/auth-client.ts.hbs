@@ -1,0 +1,17 @@
+{{!-- Template: auth-client.ts.hbs --}}
+{{!-- Category: auth --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/auth/native/native-base/lib/auth-client.ts.hbs --}}
+import { createAuthClient } from "xaheen-auth/react";
+import { expoClient } from "@xaheen-auth/expo/client";
+import * as SecureStore from "expo-secure-store";
+
+export const authClient = createAuthClient({
+  baseURL: process.env.EXPO_PUBLIC_SERVER_URL,
+  plugins: [
+    expoClient({
+      storagePrefix: "my-xaheen-app",
+      storage: SecureStore,
+    }),
+  ],
+});

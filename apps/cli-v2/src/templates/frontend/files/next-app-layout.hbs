@@ -1,0 +1,101 @@
+import type { Metadata } from 'next'
+{{#if fonts.inter}}
+import { Inter } from 'next/font/google'
+{{/if}}
+{{#if styling.tailwind}}
+import './globals.css'
+{{/if}}
+{{#if providers.reactQuery}}
+import { ReactQueryProvider } from '@/components/providers/react-query-provider'
+{{/if}}
+{{#if providers.auth}}
+import { AuthProvider } from '@/components/providers/auth-provider'
+{{/if}}
+{{#if providers.theme}}
+import { ThemeProvider } from '@/components/providers/theme-provider'
+{{/if}}
+
+{{#if fonts.inter}}
+const inter = Inter({ subsets: ['latin'] })
+{{/if}}
+
+export const metadata: Metadata = {
+  title: '{{title}}',
+  description: '{{description}}',
+  {{#if seo.keywords}}
+  keywords: [{{#each seo.keywords}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+  {{/if}}
+  {{#if seo.authors}}
+  authors: [{{#each seo.authors}}{ name: '{{this}}' }{{#unless @last}}, {{/unless}}{{/each}}],
+  {{/if}}
+  {{#if seo.openGraph}}
+  openGraph: {
+    title: '{{seo.openGraph.title}}',
+    description: '{{seo.openGraph.description}}',
+    type: 'website',
+    {{#if seo.openGraph.images}}
+    images: [{{#each seo.openGraph.images}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+    {{/if}}
+  },
+  {{/if}}
+  {{#if seo.twitter}}
+  twitter: {
+    card: 'summary_large_image',
+    title: '{{seo.twitter.title}}',
+    description: '{{seo.twitter.description}}',
+  },
+  {{/if}}
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="{{language}}" {{#if enableTheme}}suppressHydrationWarning{{/if}}>
+      <body {{#if fonts.inter}}className={inter.className}{{/if}}>
+        {{#if providers.theme}}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="{{defaultTheme}}"
+          enableSystem
+          disableTransitionOnChange
+        >
+        {{/if}}
+        {{#if providers.auth}}
+        <AuthProvider>
+        {{/if}}
+        {{#if providers.reactQuery}}
+        <ReactQueryProvider>
+        {{/if}}
+          {{#if layout.header}}
+          <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {/* Add your header content */}
+          </header>
+          {{/if}}
+          
+          <main {{#if layout.container}}className="container mx-auto px-4 py-8"{{/if}}>
+            {children}
+          </main>
+          
+          {{#if layout.footer}}
+          <footer className="border-t bg-background">
+            <div className="container mx-auto px-4 py-8">
+              {/* Add your footer content */}
+            </div>
+          </footer>
+          {{/if}}
+        {{#if providers.reactQuery}}
+        </ReactQueryProvider>
+        {{/if}}
+        {{#if providers.auth}}
+        </AuthProvider>
+        {{/if}}
+        {{#if providers.theme}}
+        </ThemeProvider>
+        {{/if}}
+      </body>
+    </html>
+  )
+}

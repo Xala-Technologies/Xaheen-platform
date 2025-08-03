@@ -1,0 +1,485 @@
+{{!-- Template: mfa-service.ts.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/auth/mfa-service.ts.hbs --}}
+{{#if typescript}}
+import type { MFAUser, BackupCode, MFASetupData } from './mfa.types';
+{{/if}}
+import crypto from 'crypto';
+
+/**
+ * Multi-Factor Authentication Service for {{projectName}}
+ * Provides TOTP and SMS-based MFA functionality with backup codes
+ */
+export class MFAService {
+  private issuer{{#if typescript}}: string{{/if}};
+  private backupCodesStore{{#if typescript}}: Map<string, BackupCode[]>{{/if}} = new Map();
+  private smsCodeStore{{#if typescript}}: Map<string, { code: string; expires: number; phone: string }>{{/if}} = new Map();
+
+  constructor(issuer{{#if typescript}}: string{{/if}} = '{{issuer}}') {
+    this.issuer = issuer;
+  }
+
+  /**
+   * Generate TOTP secret and QR code for authenticator app setup
+   * @param userId - User identifier
+   * @returns Object containing secret and QR code URL
+   */
+  async generateTOTPSecret(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<{ secret: string; qrCode: string }>{{/if}} {
+    const secret = this.generateSecret();
+    const qrCode = this.generateQRCode(userId, secret);
+    
+    return { secret, qrCode };
+  }
+
+  /**
+   * Verify TOTP code with time window tolerance
+   * @param secret - TOTP secret
+   * @param token - User-provided TOTP token
+   * @returns True if token is valid
+   */
+  verifyTOTP(secret{{#if typescript}}: string{{/if}}, token{{#if typescript}}: string{{/if}}){{#if typescript}}: boolean{{/if}} {
+    if (!secret || !token || token.length !== 6) {
+      return false;
+    }
+
+    const time = Math.floor(Date.now() / 1000 / 30);
+    
+    // Check current, previous, and next time windows for clock drift tolerance
+    for (let i = -2; i <= 2; i++) {
+      const expectedToken = this.generateTOTPToken(secret, time + i);
+      if (expectedToken === token.padStart(6, '0')) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Generate backup codes for account recovery
+   * @param userId - User identifier
+   * @returns Array of backup codes
+   */
+  generateBackupCodes(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: BackupCode[]{{/if}} {
+    const codes{{#if typescript}}: BackupCode[]{{/if}} = [];
+    
+    for (let i = 0; i < {{backupCodesCount}}; i++) {
+      codes.push({
+        id: crypto.randomUUID(),
+        code: this.generateBackupCode(),
+        used: false,
+        createdAt: new Date(),
+      });
+    }
+    
+    this.backupCodesStore.set(userId, codes);
+    return codes;
+  }
+
+  /**
+   * Verify backup code and mark as used
+   * @param userId - User identifier
+   * @param inputCode - User-provided backup code
+   * @returns True if backup code is valid and unused
+   */
+  verifyBackupCode(userId{{#if typescript}}: string{{/if}}, inputCode{{#if typescript}}: string{{/if}}){{#if typescript}}: boolean{{/if}} {
+    const codes = this.backupCodesStore.get(userId);
+    if (!codes || !inputCode) {
+      return false;
+    }
+    
+    const normalizedInput = inputCode.replace(/\s/g, '').toUpperCase();
+    const code = codes.find(c => c.code === normalizedInput && !c.used);
+    
+    if (code) {
+      code.used = true;
+      code.usedAt = new Date();
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Send SMS verification code
+   * @param phone - Phone number with country code
+   * @returns Verification code (for testing purposes)
+   */
+  async sendSMSChallenge(phone{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<string>{{/if}} {
+    // Generate 6-digit numeric code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + (5 * 60 * 1000); // 5 minutes expiry
+    
+    // Store the code temporarily
+    this.smsCodeStore.set(phone, { code, expires, phone });
+    
+    {{#if (eq smsProvider 'twilio')}}
+    try {
+      // Twilio SMS implementation
+      const twilio = require('twilio');
+      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      
+      await client.messages.create({
+        body: "template string",
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: phone,
+      });
+      
+      console.log(`🚀 Server running on port ${port}`);
+    } catch (error) {
+      console.error('Twilio SMS error:', error);
+      throw new Error('Failed to send SMS verification code');
+    }
+    {{else if (eq smsProvider 'aws-sns')}}
+    try {
+      // AWS SNS implementation
+      const AWS = require('aws-sdk');
+      const sns = new AWS.SNS({
+        region: process.env.AWS_REGION || 'us-east-1',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      });
+      
+      await sns.publish({
+        PhoneNumber: phone,
+        Message: "template string",
+        MessageAttributes: {
+          'AWS.SNS.SMS.SMSType': {
+            DataType: 'String',
+            StringValue: 'Transactional',
+          },
+        },
+      }).promise();
+      
+      console.log("template string");
+    } catch (error) {
+      console.error('AWS SNS error:', error);
+      throw new Error('Failed to send SMS verification code');
+    }
+    {{else if (eq smsProvider 'vonage')}}
+    try {
+      // Vonage (Nexmo) implementation
+      const { Vonage } = require('@vonage/server-sdk');
+      
+      const vonage = new Vonage({
+        apiKey: process.env.VONAGE_API_KEY,
+        apiSecret: process.env.VONAGE_API_SECRET,
+      });
+      
+      await vonage.sms.send({
+        to: phone,
+        from: process.env.VONAGE_FROM_NUMBER || '{{projectName}}',
+        text: "template string",
+      });
+      
+      console.log("template string");
+    } catch (error) {
+      console.error('Vonage SMS error:', error);
+      throw new Error('Failed to send SMS verification code');
+    }
+    {{else}}
+    // Development/Testing mode - log the code
+    console.log("template string");
+    console.log('Note: Configure SMS provider in production');
+    {{/if}}
+    
+    return code;
+  }
+
+  /**
+   * Verify SMS code
+   * @param phone - Phone number
+   * @param inputCode - User-provided SMS code
+   * @returns True if SMS code is valid and not expired
+   */
+  verifySMSCode(phone{{#if typescript}}: string{{/if}}, inputCode{{#if typescript}}: string{{/if}}){{#if typescript}}: boolean{{/if}} {
+    const storedData = this.smsCodeStore.get(phone);
+    
+    if (!storedData || !inputCode) {
+      return false;
+    }
+    
+    // Check if code has expired
+    if (Date.now() > storedData.expires) {
+      this.smsCodeStore.delete(phone);
+      return false;
+    }
+    
+    // Verify code
+    if (storedData.code === inputCode.trim()) {
+      this.smsCodeStore.delete(phone); // Remove used code
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Generate cryptographically secure random secret for TOTP
+   * @returns Base32-encoded secret
+   */
+  private generateSecret(){{#if typescript}}: string{{/if}} {
+    const buffer = crypto.randomBytes(20);
+    return this.base32Encode(buffer);
+  }
+
+  /**
+   * Generate QR code URL for TOTP setup
+   * @param userId - User identifier
+   * @param secret - TOTP secret
+   * @returns QR code image URL
+   */
+  private generateQRCode(userId{{#if typescript}}: string{{/if}}, secret{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    const issuer = encodeURIComponent(this.issuer);
+    const user = encodeURIComponent(userId);
+    const otpUrl = "template string";
+    
+    // Using QR Server API for QR code generation
+    return "template string";
+  }
+
+  /**
+   * Generate TOTP token for specific time window
+   * @param secret - TOTP secret
+   * @param time - Time counter (30-second intervals)
+   * @returns 6-digit TOTP token
+   */
+  private generateTOTPToken(secret{{#if typescript}}: string{{/if}}, time{{#if typescript}}: number{{/if}}){{#if typescript}}: string{{/if}} {
+    const key = this.base32Decode(secret);
+    const timeBuffer = Buffer.alloc(8);
+    
+    // Convert time to big-endian 64-bit integer
+    timeBuffer.writeUInt32BE(0, 0);
+    timeBuffer.writeUInt32BE(time, 4);
+    
+    // HMAC-SHA1
+    const hmac = crypto.createHmac('sha1', key);
+    hmac.update(timeBuffer);
+    const digest = hmac.digest();
+    
+    // Dynamic truncation
+    const offset = digest[digest.length - 1] & 0x0f;
+    const code = ((digest[offset] & 0x7f) << 24) |
+                 ((digest[offset + 1] & 0xff) << 16) |
+                 ((digest[offset + 2] & 0xff) << 8) |
+                 (digest[offset + 3] & 0xff);
+    
+    return (code % 1000000).toString().padStart(6, '0');
+  }
+
+  /**
+   * Generate random backup code
+   * @returns 8-character alphanumeric backup code
+   */
+  private generateBackupCode(){{#if typescript}}: string{{/if}} {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    // Format as XXXX-XXXX for xaheen readability
+    return "template string";
+  }
+
+  /**
+   * Base32 encode buffer
+   * @param buffer - Buffer to encode
+   * @returns Base32-encoded string
+   */
+  private base32Encode(buffer{{#if typescript}}: Buffer{{/if}}){{#if typescript}}: string{{/if}} {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = 0;
+    let value = 0;
+    let output = '';
+
+    for (let i = 0; i < buffer.length; i++) {
+      value = (value << 8) | buffer[i];
+      bits += 8;
+
+      while (bits >= 5) {
+        output += alphabet[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+
+    if (bits > 0) {
+      output += alphabet[(value << (5 - bits)) & 31];
+    }
+
+    return output;
+  }
+
+  /**
+   * Base32 decode string
+   * @param encoded - Base32-encoded string
+   * @returns Decoded buffer
+   */
+  private base32Decode(encoded{{#if typescript}}: string{{/if}}){{#if typescript}}: Buffer{{/if}} {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = 0;
+    let value = 0;
+    let index = 0;
+    const output = Buffer.alloc(Math.ceil(encoded.length * 5 / 8));
+
+    for (let i = 0; i < encoded.length; i++) {
+      const char = encoded.charAt(i).toUpperCase();
+      const charIndex = alphabet.indexOf(char);
+      
+      if (charIndex === -1) continue;
+
+      value = (value << 5) | charIndex;
+      bits += 5;
+
+      if (bits >= 8) {
+        output[index++] = (value >>> (bits - 8)) & 255;
+        bits -= 8;
+      }
+    }
+
+    return output.slice(0, index);
+  }
+
+  /**
+   * Complete MFA setup for user
+   * @param userId - User identifier
+   * @param setupData - MFA setup data
+   * @returns Success status
+   */
+  async completeMFASetup(userId{{#if typescript}}: string{{/if}}, setupData{{#if typescript}}: MFASetupData{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
+    try {
+      // In a real implementation, this would save to database
+      console.log("template string", {
+        method: setupData.method,
+        hasSecret: !!setupData.secret,
+        hasPhone: !!setupData.phone,
+        backupCodesCount: setupData.backupCodes.length,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('MFA setup completion error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if user has MFA enabled
+   * @param userId - User identifier
+   * @returns True if MFA is enabled
+   */
+  async isMFAEnabled(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
+    // In a real implementation, this would query the database
+    // For now, return false as default
+    return false;
+  }
+
+  /**
+   * Disable MFA for user
+   * @param userId - User identifier
+   * @returns Success status
+   */
+  async disableMFA(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: Promise<boolean>{{/if}} {
+    try {
+      // Remove backup codes from memory store
+      this.backupCodesStore.delete(userId);
+      
+      // In a real implementation, this would remove MFA data from database
+      console.log("template string");
+      
+      return true;
+    } catch (error) {
+      console.error('MFA disable error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get remaining backup codes count for user
+   * @param userId - User identifier
+   * @returns Number of unused backup codes
+   */
+  getRemainingBackupCodes(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: number{{/if}} {
+    const codes = this.backupCodesStore.get(userId);
+    if (!codes) return 0;
+    
+    return codes.filter(code => !code.used).length;
+  }
+
+  /**
+   * Regenerate backup codes for user
+   * @param userId - User identifier
+   * @returns New backup codes
+   */
+  regenerateBackupCodes(userId{{#if typescript}}: string{{/if}}){{#if typescript}}: BackupCode[]{{/if}} {
+    // Remove old backup codes
+    this.backupCodesStore.delete(userId);
+    
+    // Generate new ones
+    return this.generateBackupCodes(userId);
+  }
+
+  /**
+   * Clean up expired SMS codes
+   */
+  cleanupExpiredSMSCodes(){{#if typescript}}: void{{/if}} {
+    const now = Date.now();
+    for (const [phone, data] of this.smsCodeStore.entries()) {
+      if (now >= data.expires) {
+        this.smsCodeStore.delete(phone);
+      }
+    }
+  }
+}
+
+// Create and export service instance
+export const mfaService = new MFAService('{{issuer}}');
+
+// Export utility functions
+export const MFAUtils = {
+  /**
+   * Validate phone number format
+   * @param phone - Phone number to validate
+   * @returns True if phone number format is valid
+   */
+  isValidPhoneNumber(phone{{#if typescript}}: string{{/if}}){{#if typescript}}: boolean{{/if}} {
+    // Basic international phone number validation
+    const phoneRegex = /^\+[1-9]\d{6,14}$/;
+    return phoneRegex.test(phone);
+  },
+
+  /**
+   * Format phone number for display
+   * @param phone - Phone number to format
+   * @returns Formatted phone number
+   */
+  formatPhoneNumber(phone{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} {
+    if (!phone) return '';
+    
+    // Hide middle digits for privacy
+    if (phone.length > 6) {
+      const start = phone.slice(0, 3);
+      const end = phone.slice(-2);
+      const middle = '*'.repeat(phone.length - 5);
+      return "template string";
+    }
+    
+    return phone;
+  },
+
+  /**
+   * Generate PKCE code verifier and challenge
+   * @returns Object with code verifier and challenge
+   */
+  generatePKCE(){{#if typescript}}: { codeVerifier: string; codeChallenge: string }{{/if}} {
+    const codeVerifier = crypto.randomBytes(32).toString('base64url');
+    const codeChallenge = crypto
+      .createHash('sha256')
+      .update(codeVerifier)
+      .digest('base64url');
+    
+    return { codeVerifier, codeChallenge };
+  },
+};

@@ -1,0 +1,138 @@
+{{!-- Template: api.php.hbs --}}
+{{!-- Category: backend --}}
+{{!-- Type: file --}}
+{{!-- Provider: laravel --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/backend/server/laravel/routes/api.php.hbs --}}
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WeatherController;
+{{#if auth}}
+use App\Http\Controllers\AuthController;
+{{/if}}
+{{#if (includes examples "todo")}}
+use App\Http\Controllers\TodoController;
+{{/if}}
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString(),
+        'service' => '{{pascalCase projectName}} API',
+        'version' => '1.0.0',
+        'environment' => app()->environment(),
+    ]);
+})->name('health');
+
+{{#if auth}}
+// Authentication routes
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
+    Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('auth.logout');
+    Route::get('/user', [AuthController::class, 'user'])->middleware('auth:sanctum')->name('auth.user');
+    Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('auth:sanctum')->name('auth.refresh');
+});
+{{/if}}
+
+// Public routes
+Route::get('/weather/health', [WeatherController::class, 'health'])->name('weather.health');
+
+{{#if auth}}
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+{{/if}}
+    // Weather endpoints
+    Route::prefix('weather')->group(function () {
+        Route::get('/', [WeatherController::class, 'index'])->name('weather.index');
+        Route::get('/forecast', [WeatherController::class, 'forecast'])->name('weather.forecast');
+        Route::get('/current/{city}', [WeatherController::class, 'currentByCity'])->name('weather.current.city');
+        Route::get('/forecast/{city}', [WeatherController::class, 'forecastByCity'])->name('weather.forecast.city');
+    });
+
+    {{#if (includes examples "todo")}}
+    // Todo endpoints
+    Route::apiResource('todos', TodoController::class);
+    Route::patch('/todos/{todo}/toggle', [TodoController::class, 'toggle'])->name('todos.toggle');
+    Route::delete('/todos/completed', [TodoController::class, 'deleteCompleted'])->name('todos.delete-completed');
+    {{/if}}
+
+    // User profile endpoints
+    Route::prefix('user')->group(function () {
+        Route::get('/profile', function (Request $request) {
+            return response()->json([
+                'user' => $request->user(),
+                'permissions' => $request->user()->getAllPermissions() ?? [],
+                'roles' => $request->user()->getRoleNames() ?? [],
+            ]);
+        })->name('user.profile');
+
+        Route::put('/profile', function (Request $request) {
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|string|email|max:255|unique:users,email,' . $request->user()->id,
+            ]);
+
+            $request->user()->update($validated);
+
+            return response()->json([
+                'message' => 'Profile updated successfully',
+                'user' => $request->user()->fresh(),
+            ]);
+        })->name('user.profile.update');
+    });
+{{#if auth}}
+});
+{{/if}}
+
+// Fallback route for undefined API endpoints
+Route::fallback(function () {
+    return response()->json([
+        'message' => 'API endpoint not found',
+        'error' => 'The requested API endpoint does not exist',
+        'available_endpoints' => [
+            'GET /api/health' => 'Health check',
+            {{#if auth}}
+            'POST /api/auth/register' => 'User registration',
+            'POST /api/auth/login' => 'User login',
+            'POST /api/auth/logout' => 'User logout',
+            'GET /api/auth/user' => 'Get authenticated user',
+            {{/if}}
+            'GET /api/weather' => 'Get weather forecast',
+            'GET /api/weather/current/{city}' => 'Get current weather for city',
+            'GET /api/weather/forecast/{city}' => 'Get forecast for city',
+            {{#if (includes examples "todo")}}
+            'GET /api/todos' => 'Get todos',
+            'POST /api/todos' => 'Create todo',
+            'PUT /api/todos/{id}' => 'Update todo',
+            'DELETE /api/todos/{id}' => 'Delete todo',
+            {{/if}}
+        ],
+    ], 404);
+});
+
+// API versioning example (uncomment if needed)
+/*
+Route::prefix('v1')->group(function () {
+    // Version 1 specific routes
+    Route::apiResource('weather', WeatherController::class);
+});
+
+Route::prefix('v2')->group(function () {
+    // Version 2 specific routes with enhanced features
+    Route::apiResource('weather', WeatherV2Controller::class);
+});
+*/

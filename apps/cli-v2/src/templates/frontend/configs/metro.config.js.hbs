@@ -1,0 +1,51 @@
+{{!-- Template: metro.config.js.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/native/metro.config.js.hbs --}}
+/**
+ * Metro Configuration - Xala UI System Integration
+ * Generated with Xaheen CLI - React Native Implementation
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO hardcoded styling or arbitrary values
+ * ✅ ONLY Xala design tokens and semantic variants
+ * ✅ WCAG 2.2 AAA accessibility compliance
+ * ✅ Norwegian government design standards
+ */
+
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+
+/**
+ * Metro configuration
+ * https://facebook.github.io/metro/docs/configuration
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
+const config = {
+  resolver: {
+    // Include Xala UI System assets and fonts
+    assetExts: ['bin', 'txt', 'jpg', 'png', 'json', 'ttf', 'otf', 'woff', 'woff2'],
+    sourceExts: ['js', 'json', 'ts', 'tsx', 'jsx'],
+    
+    // Resolve Xala UI System modules
+    alias: {
+      '@xala-ui': '@xala-technologies/ui-system/native',
+      '@': './src',
+    },
+  },
+  
+  transformer: {
+    // Enable TypeScript support
+    babelTransformerPath: require.resolve('metro-react-native-babel-transformer'),
+    
+    // Asset transformer for Xala UI System assets
+    assetPlugins: ['expo-asset/tools/hashAssetFiles'],
+  },
+  
+  watchFolders: [
+    // Watch Xala UI System for changes during development
+    './node_modules/@xala-technologies/ui-system',
+  ],
+};
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);

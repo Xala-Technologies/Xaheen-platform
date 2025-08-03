@@ -1,0 +1,289 @@
+{{!-- Template: xala-display-iso27001.hbs --}}
+{{!-- Category: components --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/components/xala/xala-display-iso27001.hbs --}}
+{{!-- 
+MANDATORY COMPLIANCE RULES - AUTOMATICALLY ENFORCED:
+❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+✅ ONLY semantic components from @xala-technologies/ui-system
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+✅ MANDATORY design token usage for all colors, spacing, typography
+✅ Enhanced 8pt Grid System - all spacing in 8px increments
+❌ NO hardcoded user-facing text - ALL text must use t() function
+✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+✅ Explicit TypeScript return types (no 'any' types)
+✅ SOLID principles and component composition
+✅ Maximum 200 lines per file, 20 lines per function
+
+COMPLIANCE: ISO 27001 Information Security Management
+- Access control and authentication
+- Data classification and handling
+- Security incident logging
+- Risk assessment and management
+- Security monitoring and alerting
+- Audit trail maintenance
+- Secure data transmission and storage
+--}}
+"use client";
+
+import React from "react";
+import { useTranslations } from "next-intl";
+import { useSecurityContext } from "@/hooks/useSecurityContext";
+import { useAuditLogger } from "@/hooks/useAuditLogger";
+import { 
+  Card,
+  Stack,
+  Text,
+  Heading,
+  Badge,
+  Button,
+  Alert,
+  SecurityIndicator
+} from "@xala-technologies/ui-system";
+
+{{#if hasProps}}
+interface {{componentName}}Props {
+  {{#each props}}
+  {{name}}{{#if optional}}?{{/if}}: {{type}};
+  {{/each}}
+  onAction?: () => void;
+  securityLevel?: "public" | "internal" | "confidential" | "restricted";
+  requiresAuthentication?: boolean;
+  className?: string;
+  testId?: string;
+}
+{{else}}
+interface {{componentName}}Props {
+  onAction?: () => void;
+  securityLevel?: "public" | "internal" | "confidential" | "restricted";
+  requiresAuthentication?: boolean;
+  className?: string;
+  testId?: string;
+}
+{{/if}}
+
+/**
+ * {{componentName}} - ISO 27001 compliant business component using Xala UI System
+ * Implements information security management standards
+ */
+export default function {{componentName}}({{#if hasProps}}{ 
+  {{#each props}}
+  {{name}}{{#if defaultValue}} = {{defaultValue}}{{/if}},
+  {{/each}}
+  onAction,
+  securityLevel = "internal",
+  requiresAuthentication = true,
+  className,
+  testId = "{{testIds.root}}"
+}: {{componentName}}Props{{else}}{ 
+  onAction, 
+  securityLevel = "internal", 
+  requiresAuthentication = true, 
+  className, 
+  testId = "{{testIds.root}}" 
+}: {{componentName}}Props{{/if}}): React.ReactElement {
+  const t = useTranslations("{{fileName}}");
+  const { user, isAuthenticated, hasPermission } = useSecurityContext();
+  const { logSecurityEvent, logDataAccess } = useAuditLogger();
+
+  // Log component access for audit trail
+  React.useEffect(() => {
+    logDataAccess({
+      component: "{{componentName}}",
+      securityLevel,
+      userId: user?.id,
+      timestamp: new Date().toISOString(),
+      action: "component_access"
+    });
+  }, [logDataAccess, securityLevel, user?.id]);
+
+  const handleAction = (): void => {
+    // Security validation before action
+    if (requiresAuthentication && !isAuthenticated) {
+      logSecurityEvent({
+        type: "unauthorized_access_attempt",
+        component: "{{componentName}}",
+        userId: user?.id || "anonymous",
+        timestamp: new Date().toISOString(),
+        severity: "medium"
+      });
+      return;
+    }
+
+    if (!hasPermission("template string")) {
+      logSecurityEvent({
+        type: "insufficient_permissions",
+        component: "{{componentName}}",
+        userId: user?.id,
+        timestamp: new Date().toISOString(),
+        severity: "high"
+      });
+      return;
+    }
+
+    // Log successful action
+    logSecurityEvent({
+      type: "component_action",
+      component: "{{componentName}}",
+      userId: user?.id,
+      timestamp: new Date().toISOString(),
+      severity: "info"
+    });
+
+    onAction?.();
+  };
+
+  // Security access control
+  if (requiresAuthentication && !isAuthenticated) {
+    return (
+      <Card
+        variant="outlined"
+        padding="6"
+        className=""
+        data-testid={testId}
+      >
+        <Alert variant="error">
+          <Text variant="body" weight="medium">
+            {t("security.authenticationRequired")}
+          </Text>
+        </Alert>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("template string")) {
+    return (
+      <Card
+        variant="outlined"
+        padding="6"
+        className=""
+        data-testid={testId}
+      >
+        <Alert variant="error">
+          <Text variant="body" weight="medium">
+            {t("security.insufficientPermissions")}
+          </Text>
+        </Alert>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      variant="elevated"
+      padding="6"
+      className=""
+      data-testid={testId}
+      role="region"
+      aria-label={t("ariaLabel")}
+      data-security-level={securityLevel}
+    >
+      <Stack direction="vertical" spacing="4">
+        {/* Security Header */}
+        <Stack direction="horizontal" justify="between" align="center">
+          <Heading level={3} variant="section">
+            {t("title")}
+          </Heading>
+          <Stack direction="horizontal" spacing="2">
+            <SecurityIndicator 
+              level={securityLevel}
+              aria-label={t("security.classificationLabel")}
+            />
+            {{#if hasProps}}
+            <Badge variant="info">
+              {t("status")}
+            </Badge>
+            {{/if}}
+            <Badge variant="success" size="sm">
+              {t("security.authenticated")}
+            </Badge>
+          </Stack>
+        </Stack>
+
+        {/* Security Classification Warning */}
+        {(securityLevel === "confidential" || securityLevel === "restricted") && (
+          <Alert variant="warning">
+            <Text variant="body" weight="medium">
+              {t("template string")}
+            </Text>
+          </Alert>
+        )}
+
+        <Text variant="body" color="secondary">
+          {t("description")}
+        </Text>
+
+        {{#if hasProps}}
+        <Stack direction="vertical" spacing="3">
+          {{#each props}}
+          {{#if (eq type "string")}}
+          <Stack direction="horizontal" justify="between">
+            <Text variant="label">{t("{{name}}Label")}:</Text>
+            <Text 
+              variant="body"
+              data-sensitive={securityLevel !== "public"}
+            >
+              {securityLevel === "public" ? {{name}} : "***"}
+            </Text>
+          </Stack>
+          {{/if}}
+          {{#if (eq type "number")}}
+          <Stack direction="horizontal" justify="between">
+            <Text variant="label">{t("{{name}}Label")}:</Text>
+            <Text 
+              variant="body"
+              data-sensitive={securityLevel !== "public"}
+            >
+              {securityLevel === "public" ? {{name}} : "***"}
+            </Text>
+          </Stack>
+          {{/if}}
+          {{#if (eq type "boolean")}}
+          <Stack direction="horizontal" justify="between">
+            <Text variant="label">{t("{{name}}Label")}:</Text>
+            <Badge variant={{{name}} ? "success" : "warning"}>
+              {t({{name}} ? "yes" : "no")}
+            </Badge>
+          </Stack>
+          {{/if}}
+          {{/each}}
+        </Stack>
+        {{/if}}
+
+        {/* Security Audit Information */}
+        <Stack direction="vertical" spacing="2">
+          <Text variant="caption" color="secondary">
+            {t("security.auditInfo")}
+          </Text>
+          <Stack direction="horizontal" spacing="4" wrap>
+            <Text variant="caption">
+              {t("security.accessedBy")}: {user?.name || t("security.anonymous")}
+            </Text>
+            <Text variant="caption">
+              {t("security.classification")}: {t("template string")}
+            </Text>
+            <Text variant="caption">
+              {t("security.timestamp")}: {new Date().toLocaleString()}
+            </Text>
+          </Stack>
+        </Stack>
+
+        {/* Secure Action Button */}
+        {onAction && (
+          <Stack direction="horizontal" justify="end">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleClick}
+              disabled={!hasPermission("template string")}
+              data-testid="{{testIds.action}}"
+              data-security-action="true"
+            >
+              {t("actionLabel")}
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+    </Card>
+  );
+}

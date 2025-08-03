@@ -1,0 +1,357 @@
+{{!-- Template: mfa-setup.tsx.hbs --}}
+{{!-- Category: integrations --}}
+{{!-- Type: component --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/integrations/auth/mfa-setup.tsx.hbs --}}
+import React, { useState, useEffect } from 'react';
+{{#if typescript}}
+import type { MFASetupData, BackupCode } from './mfa.types';
+
+interface MFASetupProps {
+  onComplete?: (data: MFASetupData) => void;
+  onError?: (error: Error) => void;
+  methods?: ('totp' | 'sms')[];
+  className?: string;
+}
+{{/if}}
+
+/**
+ * MFA Setup Component for {{projectName}}
+ * Allows users to set up TOTP or SMS-based multi-factor authentication
+ */
+export const MFASetup{{#if typescript}}: React.FC<MFASetupProps>{{/if}} = ({
+  onComplete,
+  onError,
+  methods = {{json methods}},
+  className = '',
+}) => {
+  const [method, setMethod] = useState{{#if typescript}}<'totp' | 'sms' | null>{{/if}}(null);
+  const [step, setStep] = useState{{#if typescript}}<'select' | 'setup' | 'verify' | 'backup'>{{/if}}('select');
+  const [qrCode, setQrCode] = useState('');
+  const [secret, setSecret] = useState('');
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [backupCodes, setBackupCodes] = useState{{#if typescript}}<BackupCode[]>{{/if}}([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSetup = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/auth/mfa/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          method, 
+          phone: method === 'sms' ? phone : undefined 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to setup MFA');
+      }
+
+      const data = await response.json();
+      
+      if (method === 'totp') {
+        setQrCode(data.qrCode);
+        setSecret(data.secret);
+      }
+      
+      setStep('verify');
+    } catch (error) {
+      const errorMessage = error{{#if typescript}} as Error{{/if}}.message || 'Setup failed';
+      setError(errorMessage);
+      onError?.(error{{#if typescript}} as Error{{/if}});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!code.trim()) {
+      setError('Please enter the verification code');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/auth/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, code, secret }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid verification code');
+      }
+
+      const data = await response.json();
+      setBackupCodes(data.backupCodes);
+      setStep('backup');
+    } catch (error) {
+      const errorMessage = error{{#if typescript}} as Error{{/if}}.message || 'Verification failed';
+      setError(errorMessage);
+      onError?.(error{{#if typescript}} as Error{{/if}});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleComplete = () => {
+    onComplete?.({
+      method: method!,
+      secret: method === 'totp' ? secret : undefined,
+      phone: method === 'sms' ? phone : undefined,
+      backupCodes,
+    });
+  };
+
+  const handleBack = () => {
+    if (step === 'backup') {
+      setStep('verify');
+    } else if (step === 'verify') {
+      setStep('setup');
+    } else if (step === 'setup') {
+      setStep('select');
+      setMethod(null);
+    }
+  };
+
+  if (step === 'select') {
+    return (
+      <div className=""`}>
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Enable Two-Factor Authentication</h2>
+          <p className="text-gray-600">Choose your preferred method for enhanced security:</p>
+        </div>
+
+        <div className="space-y-3">
+          {{#if (includes methods 'totp')}}
+          <button
+            onClick={handleClick}}
+            className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-xl">📱</span>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">Authenticator App (TOTP)</div>
+                <div className="text-sm text-gray-600">Use Google Authenticator, Authy, or similar apps</div>
+              </div>
+            </div>
+          </button>
+          {{/if}}
+
+          {{#if (includes methods 'sms')}}
+          <button
+            onClick={handleClick}}
+            className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-xl">💬</span>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">SMS Text Message</div>
+                <div className="text-sm text-gray-600">Receive codes via text message</div>
+              </div>
+            </div>
+          </button>
+          {{/if}}
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'setup') {
+    return (
+      <div className=""`}>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Set up {method === 'totp' ? 'Authenticator App' : 'SMS Authentication'}
+          </h2>
+        </div>
+
+        {method === 'totp' ? (
+          <div className="text-center">
+            <p className="text-gray-600 mb-6">We'll generate a QR code for your authenticator app.</p>
+            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <p className="text-sm text-blue-800">
+                Make sure you have an authenticator app installed on your phone before continuing.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1234567890"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+            <p className="text-sm text-gray-600 mt-2">
+              Enter your phone number with country code (e.g., +1 for US)
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
+        <div className="flex space-x-3 mt-6">
+          <button
+            onClick={handleClick}
+            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Back
+          </button>
+          <button
+            onClick={handleClick}
+            disabled={isLoading || (method === 'sms' && !phone.trim())}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {isLoading ? 'Setting up...' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'verify') {
+    return (
+      <div className=""`}>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Setup</h2>
+        </div>
+
+        {method === 'totp' && qrCode && (
+          <div className="text-center mb-6">
+            <p className="text-gray-600 mb-4">Scan this QR code with your authenticator app:</p>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 inline-block">
+              <img src={qrCode} alt="QR Code for TOTP setup" className="w-48 h-48 mx-auto" />
+            </div>
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Or enter this key manually:</p>
+              <code className="text-sm font-mono bg-white px-2 py-1 rounded border break-all">{secret}</code>
+            </div>
+          </div>
+        )}
+
+        {method === 'sms' && (
+          <div className="text-center mb-6">
+            <p className="text-gray-600">We sent a verification code to:</p>
+            <p className="font-medium text-gray-900">{phone}</p>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+            Verification Code
+          </label>
+          <input
+            id="code"
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Enter 6-digit code"
+            maxLength={6}
+            className="w-full px-3 py-2 text-center text-2xl font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            required
+          />
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
+        <div className="flex space-x-3">
+          <button
+            onClick={handleClick}
+            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Back
+          </button>
+          <button
+            onClick={handleClick}
+            disabled={isLoading || !code.trim()}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {isLoading ? 'Verifying...' : 'Verify'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'backup') {
+    return (
+      <div className=""`}>
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Save Backup Codes</h2>
+          <p className="text-gray-600">
+            Save these backup codes in a safe place. You can use them to access your account if you lose your primary 2FA method.
+          </p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <div className="grid grid-cols-2 gap-2">
+            {backupCodes.map((backupCode, index) => (
+              <code key={index} className="bg-white px-3 py-2 rounded border text-center font-mono text-sm">
+                {backupCode.code}
+              </code>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+          <div className="flex">
+            <svg className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-yellow-800">Important:</p>
+              <p className="text-sm text-yellow-700">
+                Each backup code can only be used once. Store them securely and don't share them with anyone.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleClick}
+          className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+        >
+          I've Saved My Backup Codes
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+};
