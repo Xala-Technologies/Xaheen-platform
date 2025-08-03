@@ -5,8 +5,7 @@ import {
   Card, 
   Stack, 
   Typography, 
-  Badge, 
-  useTokens 
+  Badge
 } from "@xala-technologies/ui-system";
 
 interface PresetStack {
@@ -68,42 +67,37 @@ export function PresetCard({
       variant={isSelected ? "elevated" : "default"}
       padding="md"
       onClick={handleClick}
-      style={{
-        cursor: "pointer",
-      }}
     >
       <Stack 
         direction="vertical" 
-        style={{ gap: spacing[3] }}
+        gap="md"
       >
         <Stack 
           direction="horizontal" 
-          style={{ gap: spacing[2], alignItems: 'center' }}
+          gap="sm"
+          align="center"
         >
           <Typography 
             variant="h4"
-            style={{ color: isSelected ? colors.primary[500] : undefined }}
+            color={isSelected ? "primary" : "default"}
           >
             {preset.name}
           </Typography>
           {isSelected && (
             <Check
-              style={{
-                width: spacing[5],
-                height: spacing[5],
-                color: colors.primary[500],
-              }}
+              size={20}
             />
           )}
         </Stack>
 
-        <Typography variant="body" style={{ color: colors.text?.muted }}>
+        <Typography variant="body" color="muted">
           {preset.description}
         </Typography>
 
         <Stack 
           direction="horizontal" 
-          style={{ gap: spacing[2], flexWrap: 'wrap' }}
+          gap="sm"
+          wrap
         >
           {preset.stack.webFrontend
             .filter((tech: string) => tech !== "none")

@@ -70,7 +70,7 @@ export function QuickStartTemplates({
   const tokens = useTokens();
 
   const renderLoadingSkeleton = (): React.JSX.Element => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: tokens.spacing[6] }}>
+    <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
       {Array.from({ length: 9 }).map((_, index) => (
         <Skeleton
           key={index}
@@ -79,11 +79,11 @@ export function QuickStartTemplates({
           variant="text"
         />
       ))}
-    </div>
+    </Grid>
   );
 
   const renderPresets = (): React.JSX.Element => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: tokens.spacing[6] }}>
+    <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
       {presets.slice(0, 12).map((preset) => (
         <PresetCard
           key={preset.id}
@@ -92,22 +92,23 @@ export function QuickStartTemplates({
           onSelect={handlePresetSelect}
         />
       ))}
-    </div>
+    </Grid>
   );
 
   return (
     <Stack 
       direction="vertical" 
-      style={{ gap: tokens.spacing[8] }}
+      gap="2xl"
     >
       <Stack 
         direction="vertical" 
-        style={{ gap: tokens.spacing[4], alignItems: 'center', textAlign: 'center' }}
+        gap="lg"
+        align="center"
       >
         <Typography variant="h2">
           {t('homepage.quick_templates_title')}
         </Typography>
-        <Typography variant="body" style={{ color: tokens.colors.text?.muted }}>
+        <Typography variant="body" color="muted">
           {t('homepage.quick_templates_description')}
         </Typography>
       </Stack>
