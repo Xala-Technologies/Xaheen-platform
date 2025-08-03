@@ -1,5 +1,27 @@
 # xaheen
 
+## 0.3.2
+
+### Patch Changes
+
+- **🔧 CRITICAL FIX**: Fixed missing Handlebars `ne` (not equal) helper
+  - Root cause: Template processing failed when using `{{#if (ne testing "none")}}`
+  - Added `handlebars.registerHelper("ne", (a, b) => a !== b)` to template processor
+  - Fixed JSON syntax errors in generated `package.json` templates
+  - All conditional template blocks now process correctly
+
+- **📋 Enhanced Reproducible Commands**: Added all missing CLI options
+  - Added localization flags: `--locales`, `--primary-locale`
+  - Added authentication flags: `--auth-providers`, `--mfa`, `--encryption`, `--audit`
+  - Added integration flags: `--integrations`, `--documents`
+  - Added all service configuration flags: `--testing`, `--notifications`, `--payments`, etc.
+  - Reproducible commands now include complete configuration for full project recreation
+
+- **✅ Full CLI Alignment**: Reproducible command generation now matches ProjectConfig interface
+  - All 20+ new CLI options properly included when non-default values are used
+  - Conditional flag inclusion prevents command bloat (only adds non-"none" values)
+  - Generated commands are now truly reproducible with identical project output
+
 ## 0.3.1
 
 ### Patch Changes

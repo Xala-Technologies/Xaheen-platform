@@ -185,7 +185,7 @@
     "prettier-plugin-tailwindcss": "^0.5.0",
     
     {{! Testing }}
-    {{#if testing}}
+    {{#if (ne testing "none")}}
     {{#eq testing 'vitest'}}
     "vitest": "^1.0.0",
     "@vitejs/plugin-react": "^4.0.0",
