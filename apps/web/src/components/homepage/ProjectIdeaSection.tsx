@@ -41,21 +41,15 @@ export function ProjectIdeaSection({
   return (
     <Card variant="elevated" padding="lg" suppressHydrationWarning>
       <Stack direction="vertical" gap="xl" align="center">
-        <Stack direction="vertical" gap="md" align="center">
-          <Typography variant="h2">
-            {t("homepage.build_title")}
-          </Typography>
-          <Typography variant="body" color="muted">
-            {t("homepage.build_description")}
-          </Typography>
-        </Stack>
-
         <Stack direction="vertical" gap="lg">
           <Textarea
             value={projectIdea}
             onChange={handleTextareaChange}
             placeholder={t("homepage.textarea_placeholder")}
             rows={4}
+            maxRows={10}
+            size="lg"
+            style={{ width: '100%' }}
           />
 
           <Button

@@ -1053,6 +1053,1019 @@ app.listen(PORT, () => {
         tags: ['nodejs', 'async', 'middleware', 'minimalist']
       },
 
+      // Backend - Laravel (PHP)
+      {
+        name: 'laravel',
+        type: 'backend',
+        provider: 'laravel',
+        version: '11.0.0',
+        description: 'The PHP Framework for Web Artisans',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'composer.json',
+            template: `{
+    "name": "laravel/laravel",
+    "type": "project",
+    "description": "The Laravel Framework.",
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.13",
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^10.5",
+        "spatie/laravel-ignition": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\\\": "app/",
+            "Database\\\\Factories\\\\": "database/factories/",
+            "Database\\\\Seeders\\\\": "database/seeders/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi",
+            "@php -r \\"file_exists('.env') || copy('.env.example', '.env');\\""
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'routes/api.php',
+            template: `<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+// User routes
+Route::apiResource('users', UserController::class);
+
+// Health check
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now()
+    ]);
+});`
+          },
+          {
+            type: 'file-create',
+            target: 'app/Http/Controllers/UserController.php',
+            template: `<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of users.
+     */
+    public function index(): JsonResponse
+    {
+        $users = User::paginate(15);
+        return response()->json($users);
+    }
+
+    /**
+     * Store a newly created user.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
+
+        return response()->json($user, 201);
+    }
+
+    /**
+     * Display the specified user.
+     */
+    public function show(User $user): JsonResponse
+    {
+        return response()->json($user);
+    }
+
+    /**
+     * Update the specified user.
+     */
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($validated);
+        return response()->json($user);
+    }
+
+    /**
+     * Remove the specified user.
+     */
+    public function destroy(User $user): JsonResponse
+    {
+        $user->delete();
+        return response()->json(null, 204);
+    }
+}`
+          },
+          {
+            type: 'file-create',
+            target: '.env.example',
+            template: `APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"`
+          }
+        ],
+        documentation: 'https://laravel.com/docs',
+        complexity: 'medium',
+        tags: ['php', 'fullstack', 'mvc', 'eloquent', 'artisan']
+      },
+
+      // Backend - Django (Python)
+      {
+        name: 'django',
+        type: 'backend',
+        provider: 'django',
+        version: '5.0.0',
+        description: 'The web framework for perfectionists with deadlines',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'requirements.txt',
+            template: `Django==5.0.0
+djangorestframework==3.14.0
+django-cors-headers==4.3.0
+django-environ==0.11.2
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+redis==5.0.1
+celery==5.3.4
+django-celery-beat==2.5.0
+django-storages==1.14.2
+boto3==1.34.0
+Pillow==10.1.0
+django-filter==23.5
+django-redis==5.4.0
+drf-spectacular==0.27.0
+pytest==7.4.3
+pytest-django==4.7.0
+factory-boy==3.3.0
+black==23.12.0
+flake8==6.1.0
+isort==5.13.0`
+          },
+          {
+            type: 'file-create',
+            target: 'manage.py',
+            template: `#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks."""
+import os
+import sys
+
+if __name__ == '__main__':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)`
+          },
+          {
+            type: 'file-create',
+            target: 'config/settings.py',
+            template: `"""
+Django settings for project.
+"""
+
+from pathlib import Path
+import environ
+
+# Build paths inside the project
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Environment variables
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(BASE_DIR / '.env')
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env('SECRET_KEY', default='your-secret-key-here')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env('DEBUG')
+
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # Third party apps
+    'rest_framework',
+    'corsheaders',
+    'django_filters',
+    'drf_spectacular',
+    # Local apps
+    'api',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'config.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'config.wsgi.application'
+
+# Database
+DATABASES = {
+    'default': env.db(default='sqlite:///db.sqlite3')
+}
+
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['http://localhost:3000'])
+
+# Spectacular settings for API documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API',
+    'DESCRIPTION': 'API documentation',
+    'VERSION': '1.0.0',
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'api/views.py',
+            template: `from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth.models import User
+from .serializers import UserSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+
+@api_view(['GET'])
+def health_check(request):
+    """
+    Health check endpoint
+    """
+    return Response({
+        'status': 'healthy',
+        'version': '1.0.0'
+    }, status=status.HTTP_200_OK)`
+          },
+          {
+            type: 'file-create',
+            target: 'api/serializers.py',
+            template: `from rest_framework import serializers
+from django.contrib.auth.models import User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
+        read_only_fields = ['id', 'date_joined']`
+          }
+        ],
+        documentation: 'https://docs.djangoproject.com/',
+        complexity: 'medium',
+        tags: ['python', 'fullstack', 'mvc', 'orm', 'django-admin']
+      },
+
+      // Frontend - Blazor (.NET)
+      {
+        name: 'blazor',
+        type: 'frontend',
+        provider: 'microsoft',
+        version: '8.0.0',
+        description: 'Build interactive web UIs using C# instead of JavaScript',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'Program.cs',
+            template: `using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MyApp;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+// Add additional services
+builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
+
+await builder.Build().RunAsync();`
+          },
+          {
+            type: 'file-create',
+            target: 'App.razor',
+            template: `<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>`
+          },
+          {
+            type: 'file-create',
+            target: 'Pages/Index.razor',
+            template: `@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="display-4">Welcome to Blazor!</h1>
+    <p class="lead">Build interactive web UIs using C# instead of JavaScript.</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Component-based</h5>
+                    <p class="card-text">Build encapsulated components that manage their own state.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Full-stack C#</h5>
+                    <p class="card-text">Share code and libraries between client and server.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Fast & Scalable</h5>
+                    <p class="card-text">Leverage WebAssembly for near-native performance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>`
+          },
+          {
+            type: 'file-create',
+            target: 'Shared/MainLayout.razor',
+            template: `@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>`
+          },
+          {
+            type: 'file-create',
+            target: 'MyApp.csproj',
+            template: `<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>`
+          }
+        ],
+        documentation: 'https://blazor.net/',
+        complexity: 'medium',
+        tags: ['dotnet', 'csharp', 'webassembly', 'spa', 'component-based']
+      },
+
+      // Backend - ASP.NET Core
+      {
+        name: 'dotnet',
+        type: 'backend',
+        provider: 'microsoft',
+        version: '8.0.0',
+        description: 'Cross-platform, high-performance framework for building modern web APIs',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'Program.cs',
+            template: `var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+// Add Entity Framework
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();`
+          },
+          {
+            type: 'file-create',
+            target: 'Controllers/UsersController.cs',
+            template: `using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+
+namespace MyApp.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class UsersController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<UsersController> _logger;
+
+    public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+    {
+        return await _context.Users.ToListAsync();
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<User>> GetUser(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        return user;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<User>> CreateUser(User user)
+    {
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(int id, User user)
+    {
+        if (id != user.Id)
+        {
+            return BadRequest();
+        }
+
+        _context.Entry(user).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!UserExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    private bool UserExists(int id)
+    {
+        return _context.Users.Any(e => e.Id == id);
+    }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'Models/User.cs',
+            template: `using System.ComponentModel.DataAnnotations;
+
+namespace MyApp.Models;
+
+public class User
+{
+    public int Id { get; set; }
+    
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+    
+    [Required]
+    public string Name { get; set; } = string.Empty;
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'Data/ApplicationDbContext.cs',
+            template: `using Microsoft.EntityFrameworkCore;
+using MyApp.Models;
+
+namespace MyApp.Data;
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<User> Users { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+    }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'MyApp.csproj',
+            template: `<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+</Project>`
+          },
+          {
+            type: 'file-create',
+            target: 'appsettings.json',
+            template: `{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=myapp;Username=postgres;Password=password"
+  },
+  "Jwt": {
+    "Key": "ThisIsMySecretKeyForJwtToken",
+    "Issuer": "MyApp",
+    "Audience": "MyAppUsers"
+  },
+  "AllowedHosts": "*"
+}`
+          }
+        ],
+        documentation: 'https://docs.microsoft.com/aspnet/core/',
+        complexity: 'medium',
+        tags: ['dotnet', 'csharp', 'api', 'entity-framework', 'cross-platform']
+      },
+
+      // ORM - Entity Framework
+      {
+        name: 'entity-framework',
+        type: 'orm',
+        provider: 'microsoft',
+        version: '8.0.0',
+        description: 'Modern object-database mapper for .NET',
+        injectionPoints: [
+          {
+            type: 'file-create',
+            target: 'Data/ApplicationDbContext.cs',
+            template: `using Microsoft.EntityFrameworkCore;
+
+namespace MyApp.Data;
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Post> Posts { get; set; } = null!;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            
+            // Relationships
+            entity.HasMany(e => e.Posts)
+                  .WithOne(e => e.Author)
+                  .HasForeignKey(e => e.AuthorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Post configuration
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.ToTable("posts");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Content).HasColumnType("text");
+            entity.Property(e => e.Published).HasDefaultValue(false);
+            
+            // Indexes
+            entity.HasIndex(e => e.Published);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Seed data
+        modelBuilder.Entity<User>().HasData(
+            new User { Id = 1, Email = "admin@example.com", Name = "Admin User" }
+        );
+    }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'Models/User.cs',
+            template: `using System.ComponentModel.DataAnnotations;
+
+namespace MyApp.Models;
+
+public class User
+{
+    public int Id { get; set; }
+    
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+    
+    [StringLength(100)]
+    public string? Name { get; set; }
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Navigation properties
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'Models/Post.cs',
+            template: `using System.ComponentModel.DataAnnotations;
+
+namespace MyApp.Models;
+
+public class Post
+{
+    public int Id { get; set; }
+    
+    [Required]
+    [StringLength(200)]
+    public string Title { get; set; } = string.Empty;
+    
+    public string? Content { get; set; }
+    
+    public bool Published { get; set; } = false;
+    
+    public int? AuthorId { get; set; }
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Navigation properties
+    public virtual User? Author { get; set; }
+}`
+          },
+          {
+            type: 'file-create',
+            target: 'Migrations/DatabaseInitializer.cs',
+            template: `using Microsoft.EntityFrameworkCore;
+
+namespace MyApp.Data;
+
+public static class DatabaseInitializer
+{
+    public static async Task InitializeAsync(IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        // Apply migrations
+        await context.Database.MigrateAsync();
+        
+        // Seed data if needed
+        if (!await context.Users.AnyAsync())
+        {
+            await SeedDataAsync(context);
+        }
+    }
+    
+    private static async Task SeedDataAsync(ApplicationDbContext context)
+    {
+        var users = new[]
+        {
+            new User { Email = "user1@example.com", Name = "User One" },
+            new User { Email = "user2@example.com", Name = "User Two" }
+        };
+        
+        context.Users.AddRange(users);
+        await context.SaveChangesAsync();
+        
+        var posts = new[]
+        {
+            new Post { Title = "First Post", Content = "Hello World!", AuthorId = users[0].Id, Published = true },
+            new Post { Title = "Second Post", Content = "Another post", AuthorId = users[1].Id }
+        };
+        
+        context.Posts.AddRange(posts);
+        await context.SaveChangesAsync();
+    }
+}`
+          },
+          {
+            type: 'dependency',
+            packages: {
+              'Microsoft.EntityFrameworkCore': '^8.0.0',
+              'Microsoft.EntityFrameworkCore.Design': '^8.0.0',
+              'Microsoft.EntityFrameworkCore.Tools': '^8.0.0',
+              'Npgsql.EntityFrameworkCore.PostgreSQL': '^8.0.0'
+            }
+          }
+        ],
+        documentation: 'https://docs.microsoft.com/ef/core/',
+        complexity: 'medium',
+        tags: ['dotnet', 'orm', 'database', 'migrations', 'linq']
+      },
+
       // Authentication
       {
         name: 'better-auth',

@@ -1,5 +1,5 @@
 /**
- * SaaS Navigation Header - Xala UI System v5.0.0 Compliant
+ * SaaS Navigation Header - Xala UI System v5.0.1 Compliant
  * Following Next.js Navbar Implementation Guide
  * 
  * MANDATORY COMPLIANCE RULES:
@@ -10,6 +10,11 @@
  * NO raw HTML elements
  * NO hardcoded styling
  * SOLID principles and component composition
+ * 
+ * v5.0.1 ENHANCEMENTS:
+ * - WebNavbar component with proper searchComponent prop
+ * - GlobalSearch integration with results
+ * - Enhanced component stability and performance
  */
 
 'use client';
@@ -21,6 +26,8 @@ import {
   Avatar,
   Button,
   Badge,
+  WebNavbar,
+  GlobalSearch,
   useTokens,
   useResponsive
 } from '@xala-technologies/ui-system';
@@ -63,14 +70,8 @@ export function NavigationHeader({
 
 
   return (
-    <Container size="full" padding="none">
-      <Stack 
-        direction="horizontal" 
-        align="center" 
-        justify="between" 
-        className="min-h-16 px-6 border-b bg-background/95 backdrop-blur"
-      >
-        {/* Logo Section */}
+    <WebNavbar
+      logo={
         <Stack direction="horizontal" align="center" gap="sm">
           <Typography variant="h3" weight="bold">
             Xaheen
@@ -79,35 +80,37 @@ export function NavigationHeader({
             v2.0
           </Badge>
         </Stack>
-
-        {/* Search Section */}
+      }
+      searchComponent={
         <Container 
-          size="md" 
+          size={isMobile ? "sm" : "md"} 
           padding="none"
-          style={{ 
-            maxWidth: isMobile ? '200px' : '400px',
-            width: '100%'
-          }}
         >
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-between"
-            onClick={(): void => {
-              // Open search modal
-              console.log('Open search');
-            }}
-          >
-            <Stack direction="horizontal" align="center" gap="sm">
-              <Typography variant="body" color="muted">
-                Search...
-              </Typography>
-            </Stack>
-            <Badge variant="secondary" size="sm">⌘K</Badge>
-          </Button>
+          <GlobalSearch
+            placeholder="Search..."
+            variant="default"
+            size="md"
+            onSubmit={handleSearchSubmit}
+            results={[
+              {
+                id: '1',
+                title: 'Users',
+                description: 'Manage user accounts',
+                category: 'Admin',
+                url: '/admin/users'
+              },
+              {
+                id: '2',
+                title: 'Analytics',
+                description: 'View analytics dashboard',
+                category: 'Reports',
+                url: '/analytics'
+              }
+            ]}
+          />
         </Container>
-
-        {/* Actions Section */}
+      }
+      actions={
         <Stack direction="horizontal" align="center" gap="sm">
           {/* Theme Switcher */}
           <ThemeSwitcher />
@@ -124,15 +127,6 @@ export function NavigationHeader({
               <Badge 
                 variant="destructive" 
                 size="sm"
-                style={{
-                  position: 'absolute',
-                  top: '-4px',
-                  right: '-4px',
-                  minWidth: '16px',
-                  height: '16px',
-                  fontSize: '10px',
-                  padding: '0 4px'
-                }}
               >
                 {notificationCount}
               </Badge>
@@ -156,7 +150,9 @@ export function NavigationHeader({
             </Button>
           )}
         </Stack>
-      </Stack>
-    </Container>
+      }
+      variant="elevated"
+      sticky
+    />
   );
 }

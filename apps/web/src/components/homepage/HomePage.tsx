@@ -1,3 +1,22 @@
+/**
+ * HomePage Component - Xala UI System v5.0.1 Enhanced
+ * 
+ * FEATURES:
+ * - Grid-based responsive layout
+ * - Card components with elevation
+ * - Skeleton loading states
+ * - Design token integration
+ * - Enhanced typography hierarchy
+ * - Professional visual design
+ * 
+ * UI SYSTEM v5.0.1 COMPLIANCE:
+ * - NO raw HTML elements
+ * - Design tokens for all styling
+ * - Proper localization support
+ * - WCAG 2.2 AAA accessibility
+ * - TypeScript explicit return types
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -163,7 +182,7 @@ export function HomePage(): React.JSX.Element {
               </Stack>
               
               <Stack direction="vertical" gap="sm" align="center">
-                <Typography variant="h4" color="muted" align="center">
+                <Typography variant="h1" color="muted" align="center">
                   {t('homepage.subtitle')}
                 </Typography>
                 <Stack direction="horizontal" gap="sm" align="center">
