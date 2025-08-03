@@ -1,28 +1,55 @@
-# Xaheen CLI v2
+# 🚀 Xaheen CLI v2
 
-Next-generation CLI for the Xaheen platform with service-based architecture.
+> Next-generation CLI for enterprise-grade development with intelligent service bundling
 
-## Features
+[![npm version](https://badge.fury.io/js/@xala-technologies%2Fxaheen-cli.svg)](https://badge.fury.io/js/@xala-technologies%2Fxaheen-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- **Service Management**: Complete CRUD operations for services (create, add, validate, remove)
-- **Project Analysis**: Intelligent project detection and analysis
-- **Service Registry**: Built-in templates for common services (auth, database, payments, email, analytics, monitoring, cache)
-- **Validation Engine**: Comprehensive project health checks with auto-fix capabilities
-- **Backup System**: Automatic backups before destructive operations
-- **Dependency Analysis**: Smart dependency checking to prevent breaking changes
-- **Multi-Framework Support**: Works with Next.js, Nuxt, SvelteKit, React, and more
+## ✨ What's New in v2
 
-## Installation
+### 🎯 **Service-Based Architecture**
+- **SOLID principles** implementation throughout
+- **Modular service providers** for different frameworks
+- **Template factory pattern** with intelligent injection
+- **Type-safe** TypeScript with comprehensive validation
+
+### 📦 **Intelligent Service Bundling**
+Choose from **13 pre-configured bundles**:
+
+- **🚀 SaaS Starter** - Essential SaaS features
+- **💼 SaaS Professional** - Full-featured platform
+- **💎 SaaS Complete** - Enterprise-grade with AI
+- **🌐 Marketing Site** - Landing pages with CMS
+- **🎨 Portfolio Site** - Creative portfolios
+- **📊 Dashboard App** - Admin dashboards
+- **📱 Mobile App** - React Native applications
+- **🔌 REST API** - Backend APIs with documentation
+- **🏢 Enterprise App** - Microsoft stack applications
+- **🇳🇴 Norwegian Government** - Compliance-ready
+- **🏛️ Municipality Portal** - Citizen services
+- **🏥 Healthcare Management** - GDPR compliant
+
+### ⚡ **Performance Improvements**
+- **328KB bundle size** (reduced from 500KB+)
+- **Faster initialization** with cached templates
+- **Parallel service injection**
+- **Optimized dependency resolution**
+
+### 🇳🇴 **Norwegian Compliance**
+Built-in support for:
+- **BankID** identity verification
+- **Vipps** payment integration
+- **Altinn** government services
+- **GDPR/DPIA** compliance features
+
+## 🛠 Installation
 
 ```bash
 # Global installation
-npm install -g @xaheen/cli-v2
-# or
-yarn global add @xaheen/cli-v2
-# or
-pnpm add -g @xaheen/cli-v2
-# or
-bun add -g @xaheen/cli-v2
+npm install -g @xala-technologies/xaheen-cli
+
+# Or use directly with npx
+npx @xala-technologies/xaheen-cli@latest create my-app
 ```
 
 ## Quick Start

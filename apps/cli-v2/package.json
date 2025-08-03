@@ -1,12 +1,12 @@
 {
   "name": "@xala-technologies/xaheen-cli",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0",
   "description": "Next-generation CLI for Xaheen - AI-powered enterprise development platform",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "xaheen": "./dist/index.js",
-    "xaheen-cli": "./dist/index.js"
+    "xaheen": "dist/index.js",
+    "xaheen-cli": "dist/index.js"
   },
   "scripts": {
     "dev": "tsup --watch",
@@ -70,5 +70,15 @@
   "bugs": {
     "url": "https://github.com/Xala-Technologies/xaheen/issues"
   },
-  "homepage": "https://xaheen.dev"
+  "homepage": "https://xaheen.dev",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "templates"
+  ]
 }

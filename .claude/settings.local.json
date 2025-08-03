@@ -49,7 +49,10 @@
       "Bash(npx biome check:*)",
       "Bash(grep:*)",
       "Bash(chmod:*)",
-      "Bash(./test-cli.sh:*)"
+      "Bash(./test-cli.sh:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)"
     ],
     "deny": []
   }
