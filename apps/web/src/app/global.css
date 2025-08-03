@@ -5,6 +5,37 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* UI System Theme Integration */
+:root {
+  /* Light theme variables */
+  --ui-primary-500: hsl(221, 83%, 53%);
+  --ui-text-primary: hsl(222, 84%, 5%);
+  --ui-text-muted: hsl(215, 16%, 47%);
+  --ui-background: hsl(0, 0%, 100%);
+  --ui-surface: hsl(210, 40%, 98%);
+}
+
+.dark {
+  /* Dark theme variables */
+  --ui-primary-500: hsl(217, 91%, 60%);
+  --ui-text-primary: hsl(210, 40%, 98%);
+  --ui-text-muted: hsl(215, 20%, 65%);
+  --ui-background: hsl(222, 84%, 5%);
+  --ui-surface: hsl(217, 33%, 17%);
+}
+
+/* Theme transition support */
+.theme-provider {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-provider {
+    transition: none;
+  }
+}
+
 /* Enhanced Typography Base */
 html {
 	font-size: 16px; /* Increased base font size */

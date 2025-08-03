@@ -6,6 +6,7 @@ import { Poppins } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeIntegratedProvider } from "@/components/providers/theme-provider";
 import "./global.css";
 
 const poppins = Poppins({
@@ -112,8 +113,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 						defaultTheme: "system",
 					}}
 				>
-					<NuqsAdapter>{children}</NuqsAdapter>
-					<Toaster />
+					<ThemeIntegratedProvider>
+						<NuqsAdapter>{children}</NuqsAdapter>
+						<Toaster />
+					</ThemeIntegratedProvider>
 				</RootProvider>
 			</body>
 		</html>

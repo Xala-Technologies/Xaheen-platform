@@ -1,0 +1,19 @@
+{
+  "homepage": {
+    "build_title": "Build something amazing",
+    "build_description": "Describe your project idea and get started instantly",
+    "subtitle": "Production-ready • Customizable • Best practices included",
+    "quick_templates_title": "Quick Start Templates",
+    "quick_templates_description": "Choose from our curated project templates",
+    "generate_button": "Generate",
+    "generated_command_title": "Generated Command",
+    "copy_button": "COPY",
+    "copied_button": "COPIED!",
+    "textarea_placeholder": "Ask Xaheen to create a dashboard to..."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

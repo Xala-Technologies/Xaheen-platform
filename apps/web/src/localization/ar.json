@@ -1,0 +1,19 @@
+{
+  "homepage": {
+    "build_title": "ابنِ شيئًا مذهلاً",
+    "build_description": "صف فكرة مشروعك وابدأ فورًا",
+    "subtitle": "جاهز للإنتاج • قابل للتخصيص • أفضل الممارسات مضمنة",
+    "quick_templates_title": "قوالب البداية السريعة",
+    "quick_templates_description": "اختر من قوالب مشاريعنا المنتقاة",
+    "generate_button": "إنشاء",
+    "generated_command_title": "الأمر المُولد",
+    "copy_button": "نسخ",
+    "copied_button": "تم النسخ!",
+    "textarea_placeholder": "اطلب من Xaheen إنشاء لوحة تحكم لـ..."
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "نجح"
+  }
+}
