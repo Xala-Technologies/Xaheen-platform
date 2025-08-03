@@ -54,8 +54,8 @@ export default function Navbar() {
 		},
 		{ href: "/docs", label: "Docs" },
 		{
-			href: "https://www.npmjs.com/package/xaheen",
-			label: "NPM",
+			href: "https://github.com/Xala-Technologies/Xaheen-platform/pkgs/npm/xaheen",
+			label: "Package",
 			icon: <PackageIcon pm="npm" className="h-4 w-4" />,
 			target: "_blank",
 		},
@@ -79,13 +79,13 @@ export default function Navbar() {
 		},
 		{ href: "/docs", label: "Docs" },
 		{
-			href: "https://www.npmjs.com/package/xaheen",
-			label: "NPM",
+			href: "https://github.com/Xala-Technologies/Xaheen-platform/pkgs/npm/xaheen",
+			label: "Package",
 			icon: <PackageIcon pm="npm" className="h-4 w-4" />,
 			target: "_blank",
 		},
 		{
-			href: "https://www.github.com/Xaheen/xaheen",
+			href: "https://github.com/Xala-Technologies/Xaheen-platform",
 			label: "GitHub",
 			icon: <Github className="size-4" />,
 			target: "_blank",
@@ -134,15 +134,6 @@ export default function Navbar() {
 						<div className="h-5 w-px bg-border" />
 
 						<div className="flex items-center gap-2">
-							<Link
-								href="https://github.com/sponsors/AmanVarshney01"
-								target="_blank"
-								className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/90 px-3 py-1.5 text-muted-foreground text-xs backdrop-blur-sm transition-colors hover:bg-muted hover:text-foreground"
-								title="Sponsor on GitHub"
-							>
-								<Heart className="size-3.5" />
-								Sponsor
-							</Link>
 							<Link
 								href="/new"
 								className="inline-flex items-center gap-1.5 rounded-md border border-primary/50 bg-primary/10 px-3 py-1.5 text-primary text-xs transition-colors hover:bg-primary/20"
@@ -240,15 +231,6 @@ export default function Navbar() {
 									>
 										<Maximize2 className="size-4" />
 										Stack Builder
-									</Link>
-									<Link
-										href="https://github.com/sponsors/AmanVarshney01"
-										target="_blank"
-										onClick={closeMobileMenu}
-										className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-muted/90 px-4 py-2.5 text-muted-foreground text-sm backdrop-blur-sm transition-colors hover:bg-muted hover:text-foreground"
-									>
-										<Heart className="size-4" />
-										Sponsor on GitHub
 									</Link>
 								</div>
 							</div>

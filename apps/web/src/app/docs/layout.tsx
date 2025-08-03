@@ -9,9 +9,7 @@ const docsOptions: DocsLayoutProps = {
 	...baseOptions,
 	tree: source.pageTree,
 	links: [],
-	sidebar: {
-		banner: <SpecialSponsorBanner />,
-	},
+	sidebar: {},
 };
 
 export default function Layout({ children }: { children: ReactNode }) {

@@ -35,27 +35,18 @@ export const links: LinkItemType[] = [
 		url: "/showcase",
 	},
 	{
-		text: "NPM",
+		text: "GitHub Packages",
 		icon: (
 			<Image src={npmLogo} alt="npm" className="size-4 invert-0 dark:invert" />
 		),
-		label: "NPM",
+		label: "GitHub Packages",
 		type: "icon",
-		url: "https://www.npmjs.com/package/xaheen",
+		url: "https://github.com/Xala-Technologies/Xaheen-platform/pkgs/npm/xaheen",
 		external: true,
 		secondary: true,
 	},
 	{
-		text: "X",
-		icon: <Image src={xLogo} alt="x" className="size-4 invert dark:invert-0" />,
-		label: "X",
-		type: "icon",
-		url: "https://x.com/amanvarshney01",
-		external: true,
-		secondary: true,
-	},
-	{
-		text: "Discord",
+		text: "Xala Technologies",
 		icon: (
 			<Image
 				src={discordLogo}
@@ -63,9 +54,9 @@ export const links: LinkItemType[] = [
 				className="size-5 invert-0 dark:invert"
 			/>
 		),
-		label: "Discord",
+		label: "Xala Technologies",
 		type: "icon",
-		url: "https://discord.gg/ZYsbjpDaM5",
+		url: "https://xala.no",
 		external: true,
 		secondary: true,
 	},
