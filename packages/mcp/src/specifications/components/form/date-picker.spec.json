@@ -80,7 +80,7 @@
       "description": "Array of disabled dates or function to determine if date is disabled",
       "examples": [
         "['2024-12-25', '2024-12-26']",
-        "(date) => date.getDay() === 0", // Sundays
+        "(date) => date.getDay() === 0",
         "[]"
       ]
     },

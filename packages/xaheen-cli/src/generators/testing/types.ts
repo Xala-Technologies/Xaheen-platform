@@ -111,6 +111,82 @@ export interface TestTemplate {
 	readonly dependencies?: string[];
 }
 
+export interface PropertyBasedTestOptions extends TestingOptions {
+	readonly properties: PropertyTestConfig[];
+	readonly generators: GeneratorConfig[];
+	readonly shrinkingEnabled: boolean;
+	readonly maxTests: number;
+	readonly seed?: number;
+	readonly businessLogicDomains: string[];
+}
+
+export interface PropertyTestConfig {
+	readonly name: string;
+	readonly domain: string;
+	readonly description: string;
+	readonly inputTypes: DataType[];
+	readonly constraints: PropertyConstraint[];
+	readonly invariants: string[];
+	readonly postconditions: string[];
+	readonly preconditions?: string[];
+}
+
+export interface GeneratorConfig {
+	readonly name: string;
+	readonly type: DataType;
+	readonly parameters: GeneratorParameter[];
+	readonly constraints?: GeneratorConstraint[];
+}
+
+export interface PropertyConstraint {
+	readonly field: string;
+	readonly rule: 'range' | 'length' | 'pattern' | 'custom';
+	readonly value: any;
+	readonly description: string;
+}
+
+export interface GeneratorParameter {
+	readonly name: string;
+	readonly type: string;
+	readonly defaultValue?: any;
+	readonly description: string;
+}
+
+export interface GeneratorConstraint {
+	readonly type: 'min' | 'max' | 'pattern' | 'custom';
+	readonly value: any;
+}
+
+export interface MutationTestOptions extends TestingOptions {
+	readonly mutators: MutatorConfig[];
+	readonly thresholds: MutationThresholds;
+	readonly excludePatterns: string[];
+	readonly reportFormat: ('html' | 'json' | 'text' | 'dashboard')[];
+	readonly incrementalEnabled: boolean;
+	readonly parallelJobs: number;
+}
+
+export interface MutatorConfig {
+	readonly name: string;
+	readonly enabled: boolean;
+	readonly description: string;
+	readonly applicableLanguages: string[];
+}
+
+export interface MutationThresholds {
+	readonly mutationScore: number;
+	readonly coverageThreshold: number;
+	readonly highRiskMutationScore: number;
+}
+
+export interface DataType {
+	readonly name: string;
+	readonly primitive: boolean;
+	readonly nullable: boolean;
+	readonly arrayType?: DataType;
+	readonly objectProperties?: Record<string, DataType>;
+}
+
 export interface TestSuite {
 	readonly name: string;
 	readonly description: string;

@@ -1,4 +1,4 @@
-# Xala UI System MCP Server v6.1.1
+# Xala MCP Server v6.1.10
 
 Multi-platform MCP server for generating enterprise-grade UI components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using the Xala UI System v5.0 semantic architecture.
 
@@ -49,9 +49,9 @@ echo "@xala-technologies:registry=https://npm.pkg.github.com/" > .npmrc
 echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
 
 # Install the package
-npm install @xala-technologies/xala-mcp@6.1.1
+npm install @xala-technologies/xala-mcp@6.1.10
 # or with bun
-bun add @xala-technologies/xala-mcp@6.1.1
+bun add @xala-technologies/xala-mcp@6.1.10
 ```
 
 **Note**: You'll need a GitHub Personal Access Token with `read:packages` scope. [Create one here](https://github.com/settings/tokens/new?scopes=read:packages).
@@ -278,7 +278,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
     "xala-ui-system": {
       "command": "npx",
       "args": [
-        "@xala-technologies/xala-mcp@6.1.1"
+        "@xala-technologies/xala-mcp@6.1.10"
       ],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
@@ -311,7 +311,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
   "mcpServers": {
     "xala-ui-system": {
       "command": "npx",
-      "args": ["@xala-technologies/xala-mcp@6.1.1"],
+      "args": ["@xala-technologies/xala-mcp@6.1.10"],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -333,7 +333,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
 {
   "name": "Xala UI System",
   "command": "npx",
-  "args": ["@xala-technologies/xala-mcp@6.1.1"],
+  "args": ["@xala-technologies/xala-mcp@6.1.10"],
   "env": {
     "GITHUB_TOKEN": "your_github_token_here"
   }
@@ -355,7 +355,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
     {
       "name": "xala-ui-system",
       "command": "npx",
-      "args": ["@xala-technologies/xala-mcp@6.1.1"],
+      "args": ["@xala-technologies/xala-mcp@6.1.10"],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -374,7 +374,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
 3. **Add MCP Server**:
    - **Name**: Xala UI System
    - **Command**: `npx`
-   - **Args**: `@xala-technologies/xala-mcp@6.1.1`
+   - **Args**: `@xala-technologies/xala-mcp@6.1.10`
    - **Environment**: `GITHUB_TOKEN=your_github_token_here`
 
 4. **Restart Cline** to load the server
@@ -455,7 +455,7 @@ Check that the MCP server has access to CLI templates. Ensure the Xala CLI is pr
 ### Programmatic Usage
 
 ```typescript
-import { ComponentGenerator } from '@xala-technologies/ui-system-mcp';
+import { ComponentGenerator } from '@xala-technologies/xala-mcp';
 
 const generator = new ComponentGenerator();
 
@@ -553,7 +553,7 @@ interface ComponentConfig {
 
 Our MCP server combines the best of both worlds - comprehensive generation capabilities with the focused developer experience of shadcn/ui:
 
-| Feature | Xaheen MCP v6.1 | shadcn/ui MCP | Advantage |
+| Feature | Xala MCP v6.1 | shadcn/ui MCP | Advantage |
 |---------|----------------|---------------|-----------|
 | **Component Generation** | ✅ Full generation with 131+ templates | ❌ Retrieval only | Complete workflow |
 | **Component Retrieval** | ✅ Browse, search, inspect | ✅ Browse, search, inspect | ✨ **Both approaches** |
@@ -635,6 +635,6 @@ MIT © Xala Technologies
 ## Support
 
 For issues and questions:
-- GitHub Issues: [xala-ui-system-mcp/issues](https://github.com/xala-technologies/ui-system-mcp)
+- GitHub Issues: [xala-mcp/issues](https://github.com/xala-technologies/xala-mcp)
 - Documentation: [docs.xala.tech](https://docs.xala.tech)
-- CLI Repository: [xala-ui-system-cli](https://github.com/xala-technologies/ui-system-cli)
+- CLI Repository: [xala-cli](https://github.com/xala-technologies/xala-cli)

@@ -1,6 +1,6 @@
 {
-  "name": "@xala-technologies/ui-system-mcp",
-  "version": "6.1.5",
+  "name": "@xala-technologies/xala-mcp",
+  "version": "6.1.10",
   "description": "Multi-platform MCP server for generating components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using Xala UI System v5.0 semantic architecture",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -100,10 +100,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xala-technologies/ui-system-mcp.git"
+    "url": "https://github.com/xala-technologies/xala-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/xala-technologies/ui-system-mcp/issues"
+    "url": "https://github.com/xala-technologies/xala-mcp/issues"
   },
-  "homepage": "https://github.com/xala-technologies/ui-system-mcp#readme"
+  "homepage": "https://github.com/xala-technologies/xala-mcp#readme"
 }

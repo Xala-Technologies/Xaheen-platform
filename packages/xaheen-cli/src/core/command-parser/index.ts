@@ -422,6 +422,26 @@ export class CommandParser {
 				action: "index",
 				handler: this.handleAIIndex.bind(this),
 			},
+
+			// Security domain routes
+			{
+				pattern: "security-audit",
+				domain: "security",
+				action: "audit",
+				handler: this.handleSecurityAudit.bind(this),
+				legacy: {
+					xaheen: ["audit"],
+				},
+			},
+			{
+				pattern: "compliance-report",
+				domain: "security",
+				action: "compliance",
+				handler: this.handleComplianceReport.bind(this),
+				legacy: {
+					xaheen: ["compliance"],
+				},
+			},
 		];
 
 		// Register routes
@@ -608,6 +628,42 @@ export class CommandParser {
 					)
 					.option("--name <name>", "Component name to generate")
 					.option("--force", "Force deployment despite critical issues");
+			}
+
+			// Add Security-specific options
+			if (route.domain === "security") {
+				if (route.action === "audit") {
+					command
+						.option("--tools <tools>", "Security tools to use (comma-separated)", "npm-audit,eslint-security")
+						.option("--standards <standards>", "Compliance standards to check (comma-separated)", "owasp")
+						.option("--classification <level>", "NSM security classification level", "OPEN")
+						.option("--format <format>", "Output format (json|html|markdown|all)", "html")
+						.option("--severity <level>", "Minimum severity level (low|medium|high|critical|all)", "medium")
+						.option("--output <dir>", "Output directory for reports")
+						.option("--scan-code", "Scan source code for vulnerabilities", true)
+						.option("--scan-deps", "Scan dependencies for vulnerabilities", true)
+						.option("--scan-config", "Scan configuration files", true)
+						.option("--include-snyk", "Include Snyk vulnerability scanning")
+						.option("--include-sonarqube", "Include SonarQube analysis")
+						.option("--include-eslint", "Include ESLint security analysis", true)
+						.option("--include-custom", "Include custom security rules", true)
+						.option("--interactive", "Interactive mode with guided prompts");
+				} else if (route.action === "compliance") {
+					command
+						.option("--standards <standards>", "Compliance standards to assess (comma-separated)", "gdpr,owasp")
+						.option("--type <type>", "Report type (executive|detailed|technical|audit)", "detailed")
+						.option("--format <format>", "Output format (json|html|pdf|all)", "html")
+						.option("--classification <level>", "NSM security classification level")
+						.option("--lawful-basis <basis>", "GDPR lawful basis (comma-separated)")
+						.option("--output <dir>", "Output directory for reports")
+						.option("--gaps", "Include gap analysis", true)
+						.option("--remediation", "Include remediation planning", true)
+						.option("--dashboard", "Generate interactive dashboard", true)
+						.option("--metrics", "Include compliance metrics", true)
+						.option("--action-plan", "Generate detailed action plan")
+						.option("--timeframe <timeframe>", "Report timeframe (current|historical|projected)", "current")
+						.option("--interactive", "Interactive mode with guided prompts");
+				}
 			}
 
 			this.routes.set(route.pattern, route);
@@ -959,6 +1015,46 @@ export class CommandParser {
 	private async handleAIIndex(command: CLICommand): Promise<void> {
 		const { createCodebuffIndex } = await import("../../lib/patch-utils.js");
 		await createCodebuffIndex(process.cwd());
+	}
+
+	private async handleSecurityAudit(command: CLICommand): Promise<void> {
+		const { securityAuditCommand } = await import("../../commands/security-audit.js");
+		// Create a mock argv array for the security audit command
+		const argv = ['node', 'xaheen', 'security-audit'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the security audit command
+		await securityAuditCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleComplianceReport(command: CLICommand): Promise<void> {
+		const { complianceReportCommand } = await import("../../commands/compliance-report.js");
+		// Create a mock argv array for the compliance report command
+		const argv = ['node', 'xaheen', 'compliance-report'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the compliance report command
+		await complianceReportCommand.parseAsync(argv.slice(2));
 	}
 
 	public async parse(args?: string[]): Promise<void> {

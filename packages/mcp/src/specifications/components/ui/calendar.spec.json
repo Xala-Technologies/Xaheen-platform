@@ -257,12 +257,12 @@
 		{
 			"name": "Calendar with Events",
 			"description": "Calendar showing Norwegian holidays and custom events",
-			"code": "import { Calendar, HighlightedDate } from '@xala/ui-system';\n\nconst EventCalendar = () => {\n  const [selectedDate, setSelectedDate] = useState<Date | null>(null);\n  \n  const norwegianHolidays: HighlightedDate[] = [\n    {\n      date: new Date('2025-05-17'),\n      type: 'holiday',\n      label: 'Grunnlovsdagen',\n      description: 'Norwegian Constitution Day'\n    },\n    {\n      date: new Date('2025-12-25'),\n      type: 'holiday',\n      label: 'Juledag',\n      description: 'Christmas Day'\n    }\n  ];\n\n  return (\n    <Calendar\n      value={selectedDate}\n      onSelect={setSelectedDate}\n      highlightedDates={norwegianHolidays}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      disabledDates={(date) => date.getDay() === 0} // Disable Sundays\n    />\n  );\n};"
+			"code": "import { Calendar, HighlightedDate } from '@xala/ui-system';\n\nconst EventCalendar = () => {\n  const [selectedDate, setSelectedDate] = useState<Date | null>(null);\n  \n  const norwegianHolidays: HighlightedDate[] = [\n    {\n      date: new Date('2025-05-17'),\n      type: 'holiday',\n      label: 'Grunnlovsdagen',\n      description: 'Norwegian Constitution Day'\n    },\n    {\n      date: new Date('2025-12-25'),\n      type: 'holiday',\n      label: 'Juledag',\n      description: 'Christmas Day'\n    }\n  ];\n\n  return (\n    <Calendar\n      value={selectedDate}\n      onSelect={setSelectedDate}\n      highlightedDates={norwegianHolidays}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      disabledDates={(date) => date.getDay() === 0}\n    />\n  );\n};"
 		},
 		{
 			"name": "Multiple Date Selection",
 			"description": "Calendar allowing multiple date selection",
-			"code": "import { Calendar } from '@xala/ui-system';\n\nconst MultiSelectCalendar = () => {\n  const [selectedDates, setSelectedDates] = useState<Date[]>([]);\n\n  return (\n    <Calendar\n      mode=\"multiple\"\n      value={selectedDates}\n      onSelect={setSelectedDates}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      maxDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now\n    />\n  );\n};"
+			"code": "import { Calendar } from '@xala/ui-system';\n\nconst MultiSelectCalendar = () => {\n  const [selectedDates, setSelectedDates] = useState<Date[]>([]);\n\n  return (\n    <Calendar\n      mode=\"multiple\"\n      value={selectedDates}\n      onSelect={setSelectedDates}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      maxDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)}\n    />\n  );\n};"
 		}
 	],
 	"styling": {
