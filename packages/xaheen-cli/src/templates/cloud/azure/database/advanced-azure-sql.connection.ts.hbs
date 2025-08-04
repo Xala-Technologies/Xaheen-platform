@@ -1,0 +1,926 @@
+import { ConnectionPool, config, Request, Transaction, TYPES, ISqlType } from 'mssql';
+import { DefaultAzureCredential, TokenCredential } from '@azure/identity';
+import { injectable, inject } from 'tsyringe';
+import { Logger } from '../services/logger.service';
+{{#if enableKeyVault}}
+import { KeyVaultService } from '../services/key-vault.service';
+{{/if}}
+{{#if enableApplicationInsights}}
+import { ApplicationInsightsService } from '../services/application-insights.service';
+{{/if}}
+
+export interface AzureSqlConfiguration {
+  readonly server: string;
+  readonly database: string;
+  readonly authentication: {
+    readonly type: 'azure-active-directory-default' | 'azure-active-directory-access-token' | 'sql-password';
+    readonly options?: {
+      readonly token?: string;
+      readonly username?: string;
+      readonly password?: string;
+      readonly clientId?: string;
+      readonly clientSecret?: string;
+      readonly tenantId?: string;
+    };
+  };
+  readonly pool: {
+    readonly min: number;
+    readonly max: number;
+    readonly idleTimeoutMillis: number;
+    readonly acquireTimeoutMillis: number;
+    readonly createTimeoutMillis: number;
+    readonly destroyTimeoutMillis: number;
+    readonly reapIntervalMillis: number;
+    readonly createRetryIntervalMillis: number;
+  };
+  readonly options?: {
+    readonly encrypt: boolean;
+    readonly enableArithAbort: boolean;
+    readonly trustServerCertificate: boolean;
+    readonly requestTimeout: number;
+    readonly connectionTimeout: number;
+    readonly parseJSON: boolean;
+  };
+}
+
+export interface QueryOptions {
+  readonly timeout?: number;
+  readonly useTransaction?: boolean;
+  readonly isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+  readonly retryAttempts?: number;
+  readonly retryDelay?: number;
+}
+
+export interface QueryResult<T = any> {
+  readonly recordset: T[];
+  readonly recordsets: T[][];
+  readonly rowsAffected: number[];
+  readonly output: Record<string, any>;
+  readonly returnValue?: any;
+}
+
+export interface StoredProcedureParameter {
+  readonly name: string;
+  readonly type: ISqlType;
+  readonly value: any;
+  readonly output?: boolean;
+}
+
+export interface TransactionOptions {
+  readonly isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+  readonly timeout?: number;
+}
+
+export interface ConnectionMetrics {
+  readonly totalConnections: number;
+  readonly activeConnections: number;
+  readonly idleConnections: number;
+  readonly waitingClients: number;
+  readonly acquiredConnections: number;
+}
+
+@injectable()
+export class AdvancedAzureSqlConnection {
+  private pool?: ConnectionPool;
+  private isInitialized = false;
+  private configuration?: AzureSqlConfiguration;
+  private readonly connectionMetrics = {
+    totalQueries: 0,
+    successfulQueries: 0,
+    failedQueries: 0,
+    totalExecutionTime: 0,
+    averageExecutionTime: 0
+  };
+
+  constructor(
+    @inject('Logger') private logger: Logger
+    {{#if enableKeyVault}},
+    @inject('KeyVaultService') private keyVault: KeyVaultService
+    {{/if}}
+    {{#if enableApplicationInsights}},
+    @inject('ApplicationInsightsService') private appInsights: ApplicationInsightsService
+    {{/if}}
+  ) {}
+
+  public async initialize(config?: AzureSqlConfiguration): Promise<void> {
+    try {
+      if (this.isInitialized) {
+        return;
+      }
+
+      this.configuration = config || await this.getConfiguration();
+      
+      const poolConfig: config = {
+        server: this.configuration.server,
+        database: this.configuration.database,
+        pool: {
+          min: this.configuration.pool.min,
+          max: this.configuration.pool.max,
+          idleTimeoutMillis: this.configuration.pool.idleTimeoutMillis,
+          acquireTimeoutMillis: this.configuration.pool.acquireTimeoutMillis,
+          createTimeoutMillis: this.configuration.pool.createTimeoutMillis,
+          destroyTimeoutMillis: this.configuration.pool.destroyTimeoutMillis,
+          reapIntervalMillis: this.configuration.pool.reapIntervalMillis,
+          createRetryIntervalMillis: this.configuration.pool.createRetryIntervalMillis
+        },
+        options: {
+          encrypt: this.configuration.options?.encrypt ?? true,
+          enableArithAbort: this.configuration.options?.enableArithAbort ?? true,
+          trustServerCertificate: this.configuration.options?.trustServerCertificate ?? false
+        },
+        requestTimeout: this.configuration.options?.requestTimeout ?? 30000,
+        connectionTimeout: this.configuration.options?.connectionTimeout ?? 15000,
+        parseJSON: this.configuration.options?.parseJSON ?? true
+      };
+
+      // Configure authentication
+      await this.configureAuthentication(poolConfig);
+
+      // Create connection pool
+      this.pool = new ConnectionPool(poolConfig);
+      
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      // Connect to the database
+      await this.pool.connect();
+      
+      this.isInitialized = true;
+      this.logger.info('Azure SQL connection pool initialized successfully', {
+        server: this.configuration.server,
+        database: this.configuration.database,
+        poolSize: `${this.configuration.pool.min}-${this.configuration.pool.max}`,
+        authType: this.configuration.authentication.type
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Azure SQL connection', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  public async query<T = any>(
+    sql: string,
+    parameters?: Record<string, any>,
+    options?: QueryOptions
+  ): Promise<QueryResult<T>> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const correlationId = crypto.randomUUID();
+    
+    try {
+      this.connectionMetrics.totalQueries++;
+      
+      const request = this.pool!.request();
+      
+      // Set request timeout
+      if (options?.timeout) {
+        request.timeout = options.timeout;
+      }
+      
+      // Add parameters
+      if (parameters) {
+        this.addParameters(request, parameters);
+      }
+      
+      // Execute with retry logic
+      const result = await this.executeWithRetry(
+        () => request.query(sql),
+        options?.retryAttempts ?? 3,
+        options?.retryDelay ?? 1000,
+        correlationId
+      );
+      
+      const executionTime = Date.now() - startTime;
+      this.updateMetrics(true, executionTime);
+      
+      this.logger.debug('SQL query executed successfully', {
+        correlationId,
+        executionTime,
+        recordCount: result.recordset?.length || 0,
+        affectedRows: result.rowsAffected.reduce((sum, count) => sum + count, 0)
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'SQL Query',
+        data: this.sanitizeSqlForLogging(sql),
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          correlationId,
+          database: this.configuration!.database,
+          recordCount: result.recordset?.length?.toString() || '0'
+        }
+      });
+      {{/if}}
+      
+      return result;
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      this.updateMetrics(false, executionTime);
+      
+      this.logger.error('SQL query execution failed', {
+        correlationId,
+        sql: this.sanitizeSqlForLogging(sql),
+        parameters: this.sanitizeParameters(parameters),
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'SQL Query',
+        data: this.sanitizeSqlForLogging(sql),
+        duration: executionTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+      
+      throw error;
+    }
+  }
+
+  public async executeStoredProcedure<T = any>(
+    procedureName: string,
+    parameters?: StoredProcedureParameter[],
+    options?: QueryOptions
+  ): Promise<QueryResult<T>> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const correlationId = crypto.randomUUID();
+    
+    try {
+      this.connectionMetrics.totalQueries++;
+      
+      const request = this.pool!.request();
+      
+      // Set request timeout
+      if (options?.timeout) {
+        request.timeout = options.timeout;
+      }
+      
+      // Add parameters
+      if (parameters) {
+        for (const param of parameters) {
+          if (param.output) {
+            request.output(param.name, param.type);
+          } else {
+            request.input(param.name, param.type, param.value);
+          }
+        }
+      }
+      
+      // Execute with retry logic
+      const result = await this.executeWithRetry(
+        () => request.execute(procedureName),
+        options?.retryAttempts ?? 3,
+        options?.retryDelay ?? 1000,
+        correlationId
+      );
+      
+      const executionTime = Date.now() - startTime;
+      this.updateMetrics(true, executionTime);
+      
+      this.logger.debug('Stored procedure executed successfully', {
+        correlationId,
+        procedureName,
+        executionTime,
+        recordCount: result.recordset?.length || 0,
+        returnValue: result.returnValue
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'Stored Procedure',
+        data: procedureName,
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          correlationId,
+          procedureName,
+          recordCount: result.recordset?.length?.toString() || '0'
+        }
+      });
+      {{/if}}
+      
+      return result;
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      this.updateMetrics(false, executionTime);
+      
+      this.logger.error('Stored procedure execution failed', {
+        correlationId,
+        procedureName,
+        parameters: parameters?.map(p => ({ name: p.name, type: p.type.name, output: p.output })),
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'Stored Procedure',
+        data: procedureName,
+        duration: executionTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+      
+      throw error;
+    }
+  }
+
+  public async executeTransaction<T>(
+    operations: (transaction: Transaction, request: Request) => Promise<T>,
+    options?: TransactionOptions
+  ): Promise<T> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const correlationId = crypto.randomUUID();
+    
+    const transaction = new Transaction(this.pool!);
+    
+    // Set isolation level if specified
+    if (options?.isolationLevel) {
+      transaction.isolationLevel = Transaction.ISOLATION_LEVEL[options.isolationLevel];
+    }
+    
+    try {
+      this.logger.debug('Starting database transaction', {
+        correlationId,
+        isolationLevel: options?.isolationLevel || 'READ_COMMITTED'
+      });
+      
+      await transaction.begin();
+      
+      const request = new Request(transaction);
+      
+      // Set request timeout
+      if (options?.timeout) {
+        request.timeout = options.timeout;
+      }
+      
+      const result = await operations(transaction, request);
+      
+      await transaction.commit();
+      
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.info('Database transaction completed successfully', {
+        correlationId,
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackEvent({
+        name: 'Database Transaction',
+        properties: {
+          correlationId,
+          status: 'committed',
+          isolationLevel: options?.isolationLevel || 'READ_COMMITTED'
+        },
+        measurements: {
+          executionTime
+        }
+      });
+      {{/if}}
+      
+      return result;
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      try {
+        await transaction.rollback();
+        
+        this.logger.warn('Database transaction rolled back', {
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          executionTime
+        });
+        
+      } catch (rollbackError) {
+        this.logger.error('Failed to rollback transaction', {
+          correlationId,
+          originalError: error instanceof Error ? error.message : 'Unknown error',
+          rollbackError: rollbackError instanceof Error ? rollbackError.message : 'Unknown error',
+          executionTime
+        });
+      }
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackEvent({
+        name: 'Database Transaction',
+        properties: {
+          correlationId,
+          status: 'rolled-back',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        },
+        measurements: {
+          executionTime
+        }
+      });
+      {{/if}}
+      
+      throw error;
+    }
+  }
+
+  public async bulk<T extends Record<string, any>>(
+    tableName: string,
+    data: T[],
+    options?: {
+      batchSize?: number;
+      timeout?: number;
+      checkConstraints?: boolean;
+      fireTriggers?: boolean;
+      keepNulls?: boolean;
+    }
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const correlationId = crypto.randomUUID();
+    
+    try {
+      const table = this.pool!.request().table(tableName);
+      
+      // Configure bulk options
+      if (options?.batchSize) {
+        table.batchSize = options.batchSize;
+      }
+      if (options?.timeout) {
+        table.timeout = options.timeout;
+      }
+      if (options?.checkConstraints !== undefined) {
+        table.checkConstraints = options.checkConstraints;
+      }
+      if (options?.fireTriggers !== undefined) {
+        table.fireTriggers = options.fireTriggers;
+      }
+      if (options?.keepNulls !== undefined) {
+        table.keepNulls = options.keepNulls;
+      }
+      
+      // Add columns based on first row
+      if (data.length > 0) {
+        const firstRow = data[0];
+        for (const [key, value] of Object.entries(firstRow)) {
+          const sqlType = this.inferSqlType(value);
+          table.columns.add(key, sqlType);
+        }
+      }
+      
+      // Add rows
+      for (const row of data) {
+        table.rows.add(...Object.values(row));
+      }
+      
+      await table.bulk();
+      
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.info('Bulk insert completed successfully', {
+        correlationId,
+        tableName,
+        recordCount: data.length,
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'Bulk Insert',
+        data: tableName,
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          correlationId,
+          tableName,
+          recordCount: data.length.toString()
+        }
+      });
+      {{/if}}
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Bulk insert failed', {
+        correlationId,
+        tableName,
+        recordCount: data.length,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure SQL Database',
+        name: 'Bulk Insert',
+        data: tableName,
+        duration: executionTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+      
+      throw error;
+    }
+  }
+
+  public getConnectionMetrics(): ConnectionMetrics {
+    if (!this.pool) {
+      return {
+        totalConnections: 0,
+        activeConnections: 0,
+        idleConnections: 0,
+        waitingClients: 0,
+        acquiredConnections: 0
+      };
+    }
+    
+    return {
+      totalConnections: this.pool.totalConnections,
+      activeConnections: this.pool.activeConnections,
+      idleConnections: this.pool.idleConnections,
+      waitingClients: this.pool.waitingClients,
+      acquiredConnections: this.pool.acquiredConnections
+    };
+  }
+
+  public getQueryMetrics() {
+    return {
+      ...this.connectionMetrics,
+      successRate: this.connectionMetrics.totalQueries > 0 
+        ? (this.connectionMetrics.successfulQueries / this.connectionMetrics.totalQueries) * 100 
+        : 0
+    };
+  }
+
+  public async healthCheck(): Promise<{
+    healthy: boolean;
+    connectionStatus: string;
+    queryTest: boolean;
+    responseTime: number;
+  }> {
+    const startTime = Date.now();
+    
+    try {
+      await this.ensureInitialized();
+      
+      // Simple query test
+      await this.query('SELECT 1 as HealthCheck');
+      
+      const responseTime = Date.now() - startTime;
+      
+      return {
+        healthy: true,
+        connectionStatus: 'connected',
+        queryTest: true,
+        responseTime
+      };
+      
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
+      this.logger.error('Database health check failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        responseTime
+      });
+      
+      return {
+        healthy: false,
+        connectionStatus: 'error',
+        queryTest: false,
+        responseTime
+      };
+    }
+  }
+
+  public async close(): Promise<void> {
+    try {
+      if (this.pool) {
+        await this.pool.close();
+        this.pool = undefined;
+      }
+      
+      this.isInitialized = false;
+      this.logger.info('Azure SQL connection pool closed successfully');
+      
+    } catch (error) {
+      this.logger.error('Error closing Azure SQL connection pool', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  private async getConfiguration(): Promise<AzureSqlConfiguration> {
+    {{#if enableKeyVault}}
+    try {
+      const dbConfig = await this.keyVault.getSecret('azure-sql-config');
+      if (dbConfig) {
+        return JSON.parse(dbConfig);
+      }
+    } catch (error) {
+      this.logger.warn('Failed to get database configuration from Key Vault, falling back to environment variables');
+    }
+    {{/if}}
+
+    const server = process.env.AZURE_SQL_SERVER;
+    const database = process.env.AZURE_SQL_DATABASE;
+    const authenticationType = process.env.AZURE_SQL_AUTH_TYPE || 'azure-active-directory-default';
+    
+    if (!server || !database) {
+      throw new Error('Azure SQL configuration not found. Please provide AZURE_SQL_SERVER and AZURE_SQL_DATABASE environment variables.');
+    }
+    
+    return {
+      server,
+      database,
+      authentication: {
+        type: authenticationType as any,
+        options: {
+          username: process.env.AZURE_SQL_USERNAME,
+          password: process.env.AZURE_SQL_PASSWORD,
+          clientId: process.env.AZURE_CLIENT_ID,
+          clientSecret: process.env.AZURE_CLIENT_SECRET,
+          tenantId: process.env.AZURE_TENANT_ID
+        }
+      },
+      pool: {
+        min: parseInt(process.env.AZURE_SQL_POOL_MIN || '2'),
+        max: parseInt(process.env.AZURE_SQL_POOL_MAX || '10'),
+        idleTimeoutMillis: parseInt(process.env.AZURE_SQL_IDLE_TIMEOUT || '30000'),
+        acquireTimeoutMillis: parseInt(process.env.AZURE_SQL_ACQUIRE_TIMEOUT || '60000'),
+        createTimeoutMillis: parseInt(process.env.AZURE_SQL_CREATE_TIMEOUT || '30000'),
+        destroyTimeoutMillis: parseInt(process.env.AZURE_SQL_DESTROY_TIMEOUT || '5000'),
+        reapIntervalMillis: parseInt(process.env.AZURE_SQL_REAP_INTERVAL || '1000'),
+        createRetryIntervalMillis: parseInt(process.env.AZURE_SQL_CREATE_RETRY_INTERVAL || '200')
+      },
+      options: {
+        encrypt: process.env.AZURE_SQL_ENCRYPT !== 'false',
+        enableArithAbort: process.env.AZURE_SQL_ENABLE_ARITH_ABORT !== 'false',
+        trustServerCertificate: process.env.AZURE_SQL_TRUST_SERVER_CERT === 'true',
+        requestTimeout: parseInt(process.env.AZURE_SQL_REQUEST_TIMEOUT || '30000'),
+        connectionTimeout: parseInt(process.env.AZURE_SQL_CONNECTION_TIMEOUT || '15000'),
+        parseJSON: process.env.AZURE_SQL_PARSE_JSON !== 'false'
+      }
+    };
+  }
+
+  private async configureAuthentication(poolConfig: config): Promise<void> {
+    const authConfig = this.configuration!.authentication;
+    
+    switch (authConfig.type) {
+      case 'azure-active-directory-default':
+        poolConfig.authentication = {
+          type: 'azure-active-directory-default'
+        };
+        break;
+        
+      case 'azure-active-directory-access-token':
+        if (authConfig.options?.token) {
+          poolConfig.authentication = {
+            type: 'azure-active-directory-access-token',
+            options: {
+              token: authConfig.options.token
+            }
+          };
+        } else {
+          // Get token using DefaultAzureCredential
+          const credential = new DefaultAzureCredential();
+          const tokenResponse = await credential.getToken('https://database.windows.net/');
+          
+          poolConfig.authentication = {
+            type: 'azure-active-directory-access-token',
+            options: {
+              token: tokenResponse.token
+            }
+          };
+        }
+        break;
+        
+      case 'sql-password':
+        if (!authConfig.options?.username || !authConfig.options?.password) {
+          throw new Error('Username and password are required for SQL authentication');
+        }
+        
+        poolConfig.user = authConfig.options.username;
+        poolConfig.password = authConfig.options.password;
+        break;
+        
+      default:
+        throw new Error(`Unsupported authentication type: ${authConfig.type}`);
+    }
+  }
+
+  private setupEventListeners(): void {
+    if (!this.pool) return;
+    
+    this.pool.on('connect', () => {
+      this.logger.debug('Database connection established');
+    });
+    
+    this.pool.on('close', () => {
+      this.logger.debug('Database connection closed');
+    });
+    
+    this.pool.on('error', (error) => {
+      this.logger.error('Database connection error', {
+        error: error.message
+      });
+    });
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private addParameters(request: Request, parameters: Record<string, any>): void {
+    for (const [key, value] of Object.entries(parameters)) {
+      const sqlType = this.inferSqlType(value);
+      request.input(key, sqlType, value);
+    }
+  }
+
+  private inferSqlType(value: any): ISqlType {
+    if (value === null || value === undefined) {
+      return TYPES.NVarChar;
+    }
+    
+    switch (typeof value) {
+      case 'string':
+        return value.length > 4000 ? TYPES.NText : TYPES.NVarChar(value.length || 255);
+      case 'number':
+        return Number.isInteger(value) ? TYPES.Int : TYPES.Float;
+      case 'boolean':
+        return TYPES.Bit;
+      case 'object':
+        if (value instanceof Date) {
+          return TYPES.DateTime2;
+        }
+        return TYPES.NVarChar; // Will be JSON.stringify'd
+      default:
+        return TYPES.NVarChar;
+    }
+  }
+
+  private async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    maxRetries: number,
+    retryDelay: number,
+    correlationId: string
+  ): Promise<T> {
+    let lastError: Error;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+        
+        if (attempt === maxRetries || !this.isRetryableError(error)) {
+          throw error;
+        }
+        
+        this.logger.warn(`Database operation failed, retrying (${attempt}/${maxRetries})`, {
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          retryDelay
+        });
+        
+        await this.sleep(retryDelay * attempt); // Exponential backoff
+      }
+    }
+    
+    throw lastError!;
+  }
+
+  private isRetryableError(error: any): boolean {
+    // Common retryable SQL Server error codes
+    const retryableErrorCodes = [
+      -2, // Timeout
+      2, // Connection timeout
+      53, // Network error
+      121, // Connection failed
+      10054, // Connection reset by peer
+      40197, // Service busy
+      40501, // Service busy
+      40613, // Database unavailable
+      49918, // Cannot process request
+      49919, // Cannot process create or update request
+      49920 // Cannot process create or update request
+    ];
+    
+    return error?.number && retryableErrorCodes.includes(error.number);
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private updateMetrics(success: boolean, executionTime: number): void {
+    if (success) {
+      this.connectionMetrics.successfulQueries++;
+    } else {
+      this.connectionMetrics.failedQueries++;
+    }
+    
+    this.connectionMetrics.totalExecutionTime += executionTime;
+    this.connectionMetrics.averageExecutionTime = 
+      this.connectionMetrics.totalExecutionTime / this.connectionMetrics.totalQueries;
+  }
+
+  private sanitizeSqlForLogging(sql: string): string {
+    // Remove sensitive data patterns from SQL for logging
+    return sql
+      .replace(/password\s*=\s*'[^']*'/gi, "password='[REDACTED]'")
+      .replace(/pwd\s*=\s*'[^']*'/gi, "pwd='[REDACTED]'")
+      .replace(/'[^']*password[^']*'/gi, "'[REDACTED]'")
+      .substring(0, 500); // Limit length
+  }
+
+  private sanitizeParameters(parameters?: Record<string, any>): Record<string, any> | undefined {
+    if (!parameters) return undefined;
+    
+    const sanitized: Record<string, any> = {};
+    
+    for (const [key, value] of Object.entries(parameters)) {
+      if (this.isSensitiveParameter(key)) {
+        sanitized[key] = '[REDACTED]';
+      } else {
+        sanitized[key] = value;
+      }
+    }
+    
+    return sanitized;
+  }
+
+  private isSensitiveParameter(paramName: string): boolean {
+    const sensitivePatterns = [
+      'password',
+      'pwd',
+      'secret',
+      'token',
+      'key',
+      'auth',
+      'credential'
+    ];
+    
+    return sensitivePatterns.some(pattern =>
+      paramName.toLowerCase().includes(pattern)
+    );
+  }
+}
+
+// Factory function for easy instantiation
+export const createAdvancedAzureSqlConnection = (
+  logger: Logger
+  {{#if enableKeyVault}},
+  keyVault: KeyVaultService
+  {{/if}}
+  {{#if enableApplicationInsights}},
+  appInsights: ApplicationInsightsService
+  {{/if}}
+): AdvancedAzureSqlConnection => {
+  return new AdvancedAzureSqlConnection(
+    logger
+    {{#if enableKeyVault}},
+    keyVault
+    {{/if}}
+    {{#if enableApplicationInsights}},
+    appInsights
+    {{/if}}
+  );
+};

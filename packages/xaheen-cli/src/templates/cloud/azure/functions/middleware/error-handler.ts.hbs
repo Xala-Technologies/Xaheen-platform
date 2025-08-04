@@ -1,0 +1,347 @@
+import { injectable, inject } from 'tsyringe';
+import { Context } from '@azure/functions';
+import { Logger } from '../services/logger.service';
+{{#if enableApplicationInsights}}
+import { ApplicationInsightsService } from '../services/application-insights.service';
+{{/if}}
+{{#if enableKeyVault}}
+import { KeyVaultService } from '../services/key-vault.service';
+{{/if}}
+
+export interface ErrorContext {
+  readonly correlationId: string;
+  readonly operation: string;
+  readonly startTime: number;
+  readonly userId?: string;
+  readonly additionalData?: Record<string, unknown>;
+}
+
+export interface ErrorResponse {
+  readonly error: string;
+  readonly message: string;
+  readonly code?: string;
+  readonly correlationId: string;
+  readonly timestamp: string;
+  readonly details?: unknown;
+}
+
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly statusCode: number = 500,
+    public readonly isOperational: boolean = true,
+    public readonly details?: unknown
+  ) {
+    super(message);
+    this.name = 'AppError';
+    
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AppError);
+    }
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'VALIDATION_ERROR', 400, true, details);
+    this.name = 'ValidationError';
+  }
+}
+
+export class AuthenticationError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'AUTHENTICATION_ERROR', 401, true, details);
+    this.name = 'AuthenticationError';
+  }
+}
+
+export class AuthorizationError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'AUTHORIZATION_ERROR', 403, true, details);
+    this.name = 'AuthorizationError';
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'NOT_FOUND_ERROR', 404, true, details);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'CONFLICT_ERROR', 409, true, details);
+    this.name = 'ConflictError';
+  }
+}
+
+export class RateLimitError extends AppError {
+  constructor(message: string, retryAfter?: number) {
+    super(message, 'RATE_LIMIT_ERROR', 429, true, { retryAfter });
+    this.name = 'RateLimitError';
+  }
+}
+
+export class ExternalServiceError extends AppError {
+  constructor(message: string, serviceName: string, details?: unknown) {
+    super(message, 'EXTERNAL_SERVICE_ERROR', 502, true, { serviceName, ...details });
+    this.name = 'ExternalServiceError';
+  }
+}
+
+@injectable()
+export class ErrorHandler {
+  private static readonly SENSITIVE_FIELDS = [
+    'password',
+    'token',
+    'apiKey',
+    'secret',
+    'authorization',
+    'cookie',
+    'x-api-key'
+  ];
+
+  constructor(
+    @inject('Logger') private logger: Logger
+    {{#if enableApplicationInsights}},
+    @inject('ApplicationInsightsService') private appInsights: ApplicationInsightsService
+    {{/if}}
+    {{#if enableKeyVault}},
+    @inject('KeyVaultService') private keyVault: KeyVaultService
+    {{/if}}
+  ) {}
+
+  public async handle(
+    error: Error,
+    context: Context,
+    errorContext: ErrorContext
+  ): Promise<void> {
+    const isAppError = error instanceof AppError;
+    const statusCode = isAppError ? error.statusCode : 500;
+    const errorCode = isAppError ? error.code : 'INTERNAL_SERVER_ERROR';
+    const isOperational = isAppError ? error.isOperational : false;
+
+    // Sanitize error details to remove sensitive information
+    const sanitizedDetails = this.sanitizeErrorDetails(
+      isAppError ? error.details : undefined
+    );
+
+    // Log the error
+    await this.logError(error, errorContext, {
+      statusCode,
+      errorCode,
+      isOperational,
+      details: sanitizedDetails
+    });
+
+    // Track error in Application Insights
+    {{#if enableApplicationInsights}}
+    await this.trackError(error, errorContext, {
+      statusCode,
+      errorCode,
+      isOperational
+    });
+    {{/if}}
+
+    // Prepare error response
+    const errorResponse: ErrorResponse = {
+      error: errorCode,
+      message: this.getClientSafeMessage(error, isOperational),
+      code: errorCode,
+      correlationId: errorContext.correlationId,
+      timestamp: new Date().toISOString(),
+      ...(process.env.NODE_ENV === 'development' && {
+        details: sanitizedDetails,
+        stack: error.stack
+      })
+    };
+
+    // Set response
+    context.res = {
+      status: statusCode,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Correlation-ID': errorContext.correlationId,
+        'X-Error-Code': errorCode,
+        ...(error instanceof RateLimitError && error.details?.retryAfter && {
+          'Retry-After': error.details.retryAfter.toString()
+        })
+      },
+      body: errorResponse
+    };
+
+    // Send alert for critical errors
+    if (!isOperational || statusCode >= 500) {
+      await this.sendCriticalErrorAlert(error, errorContext);
+    }
+  }
+
+  private async logError(
+    error: Error,
+    errorContext: ErrorContext,
+    metadata: {
+      statusCode: number;
+      errorCode: string;
+      isOperational: boolean;
+      details?: unknown;
+    }
+  ): Promise<void> {
+    const logData = {
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      },
+      errorContext,
+      metadata,
+      executionTime: Date.now() - errorContext.startTime
+    };
+
+    if (metadata.statusCode >= 500) {
+      this.logger.error('Critical error occurred', logData);
+    } else {
+      this.logger.warn('Application error occurred', logData);
+    }
+  }
+
+  {{#if enableApplicationInsights}}
+  private async trackError(
+    error: Error,
+    errorContext: ErrorContext,
+    metadata: {
+      statusCode: number;
+      errorCode: string;
+      isOperational: boolean;
+    }
+  ): Promise<void> {
+    try {
+      this.appInsights.trackException({
+        exception: error,
+        properties: {
+          correlationId: errorContext.correlationId,
+          operation: errorContext.operation,
+          userId: errorContext.userId || 'anonymous',
+          statusCode: metadata.statusCode.toString(),
+          errorCode: metadata.errorCode,
+          isOperational: metadata.isOperational.toString(),
+          executionTime: (Date.now() - errorContext.startTime).toString()
+        },
+        measurements: {
+          executionTime: Date.now() - errorContext.startTime
+        }
+      });
+    } catch (trackingError) {
+      this.logger.error('Failed to track error in Application Insights', {
+        trackingError: trackingError instanceof Error ? trackingError.message : 'Unknown error',
+        originalError: error.message
+      });
+    }
+  }
+  {{/if}}
+
+  private getClientSafeMessage(error: Error, isOperational: boolean): string {
+    if (isOperational) {
+      return error.message;
+    }
+
+    // Don't expose internal error details to clients
+    return 'An internal server error occurred';
+  }
+
+  private sanitizeErrorDetails(details: unknown): unknown {
+    if (!details) {
+      return undefined;
+    }
+
+    if (typeof details === 'string') {
+      return this.sanitizeString(details);
+    }
+
+    if (Array.isArray(details)) {
+      return details.map(item => this.sanitizeErrorDetails(item));
+    }
+
+    if (typeof details === 'object') {
+      const sanitized: Record<string, unknown> = {};
+      
+      for (const [key, value] of Object.entries(details as Record<string, unknown>)) {
+        if (this.isSensitiveField(key)) {
+          sanitized[key] = '[REDACTED]';
+        } else {
+          sanitized[key] = this.sanitizeErrorDetails(value);
+        }
+      }
+      
+      return sanitized;
+    }
+
+    return details;
+  }
+
+  private sanitizeString(str: string): string {
+    // Remove potential passwords, tokens, or other sensitive data patterns
+    return str
+      .replace(/password[=:]\s*[^\s]+/gi, 'password=[REDACTED]')
+      .replace(/token[=:]\s*[^\s]+/gi, 'token=[REDACTED]')
+      .replace(/key[=:]\s*[^\s]+/gi, 'key=[REDACTED]')
+      .replace(/secret[=:]\s*[^\s]+/gi, 'secret=[REDACTED]');
+  }
+
+  private isSensitiveField(fieldName: string): boolean {
+    return ErrorHandler.SENSITIVE_FIELDS.some(sensitive =>
+      fieldName.toLowerCase().includes(sensitive.toLowerCase())
+    );
+  }
+
+  private async sendCriticalErrorAlert(
+    error: Error,
+    errorContext: ErrorContext
+  ): Promise<void> {
+    try {
+      {{#if enableKeyVault}}
+      // Get alerting configuration from Key Vault
+      const alertingConfig = await this.keyVault.getSecret('alerting-config');
+      if (alertingConfig) {
+        // Implement your alerting logic here (e.g., send to Teams, Slack, email)
+        this.logger.info('Critical error alert would be sent', {
+          error: error.message,
+          correlationId: errorContext.correlationId
+        });
+      }
+      {{else}}
+      // Log that a critical error occurred that should trigger an alert
+      this.logger.error('CRITICAL ERROR - This should trigger an alert', {
+        error: error.message,
+        correlationId: errorContext.correlationId,
+        operation: errorContext.operation
+      });
+      {{/if}}
+    } catch (alertError) {
+      this.logger.error('Failed to send critical error alert', {
+        alertError: alertError instanceof Error ? alertError.message : 'Unknown error',
+        originalError: error.message
+      });
+    }
+  }
+}
+
+// Utility functions
+export const createAppError = (
+  message: string,
+  code: string,
+  statusCode: number = 500,
+  details?: unknown
+): AppError => {
+  return new AppError(message, code, statusCode, true, details);
+};
+
+export const isAppError = (error: unknown): error is AppError => {
+  return error instanceof AppError;
+};
+
+export const isOperationalError = (error: unknown): boolean => {
+  return isAppError(error) && error.isOperational;
+};

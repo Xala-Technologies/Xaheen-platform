@@ -1,0 +1,166 @@
+import { injectable } from 'tsyringe';
+{{#if enableApplicationInsights}}
+import { TelemetryClient } from 'applicationinsights';
+{{/if}}
+
+export interface LogEntry {
+  readonly level: 'info' | 'warn' | 'error' | 'debug';
+  readonly message: string;
+  readonly data?: Record<string, unknown>;
+  readonly timestamp: string;
+  readonly correlationId?: string;
+  readonly operation?: string;
+}
+
+export interface Logger {
+  info(message: string, data?: Record<string, unknown>): void;
+  warn(message: string, data?: Record<string, unknown>): void;
+  error(message: string, data?: Record<string, unknown>): void;
+  debug(message: string, data?: Record<string, unknown>): void;
+}
+
+@injectable()
+export class AzureFunctionLogger implements Logger {
+  private correlationId?: string;
+  private operation?: string;
+  {{#if enableApplicationInsights}}
+  private telemetryClient?: TelemetryClient;
+  {{/if}}
+
+  constructor(
+    {{#if enableApplicationInsights}}
+    telemetryClient?: TelemetryClient
+    {{/if}}
+  ) {
+    {{#if enableApplicationInsights}}
+    this.telemetryClient = telemetryClient;
+    {{/if}}
+  }
+
+  public setContext(correlationId: string, operation?: string): void {
+    this.correlationId = correlationId;
+    this.operation = operation;
+  }
+
+  public info(message: string, data?: Record<string, unknown>): void {
+    this.log('info', message, data);
+  }
+
+  public warn(message: string, data?: Record<string, unknown>): void {
+    this.log('warn', message, data);
+  }
+
+  public error(message: string, data?: Record<string, unknown>): void {
+    this.log('error', message, data);
+  }
+
+  public debug(message: string, data?: Record<string, unknown>): void {
+    this.log('debug', message, data);
+  }
+
+  private log(level: LogEntry['level'], message: string, data?: Record<string, unknown>): void {
+    const logEntry: LogEntry = {
+      level,
+      message,
+      data,
+      timestamp: new Date().toISOString(),
+      correlationId: this.correlationId,
+      operation: this.operation
+    };
+
+    // Console logging for Azure Functions
+    const logMessage = this.formatLogMessage(logEntry);
+    
+    switch (level) {
+      case 'error':
+        console.error(logMessage);
+        break;
+      case 'warn':
+        console.warn(logMessage);
+        break;
+      case 'debug':
+        console.debug(logMessage);
+        break;
+      default:
+        console.log(logMessage);
+    }
+
+    {{#if enableApplicationInsights}}
+    // Send to Application Insights
+    if (this.telemetryClient) {
+      const properties = {
+        level,
+        correlationId: this.correlationId || 'unknown',
+        operation: this.operation || 'unknown',
+        ...data
+      };
+
+      if (level === 'error') {
+        this.telemetryClient.trackException({
+          exception: new Error(message),
+          properties
+        });
+      } else {
+        this.telemetryClient.trackTrace({
+          message,
+          severity: this.mapLogLevelToSeverity(level),
+          properties
+        });
+      }
+    }
+    {{/if}}
+  }
+
+  private formatLogMessage(entry: LogEntry): string {
+    const parts = [
+      `[${entry.timestamp}]`,
+      `[${entry.level.toUpperCase()}]`
+    ];
+
+    if (entry.correlationId) {
+      parts.push(`[${entry.correlationId}]`);
+    }
+
+    if (entry.operation) {
+      parts.push(`[${entry.operation}]`);
+    }
+
+    parts.push(entry.message);
+
+    if (entry.data && Object.keys(entry.data).length > 0) {
+      parts.push(JSON.stringify(entry.data, null, 2));
+    }
+
+    return parts.join(' ');
+  }
+
+  {{#if enableApplicationInsights}}
+  private mapLogLevelToSeverity(level: LogEntry['level']): number {
+    switch (level) {
+      case 'debug':
+        return 0; // Verbose
+      case 'info':
+        return 1; // Information
+      case 'warn':
+        return 2; // Warning
+      case 'error':
+        return 3; // Error
+      default:
+        return 1;
+    }
+  }
+  {{/if}}
+}
+
+// Export factory function for easy instantiation
+export const createLogger = (
+  {{#if enableApplicationInsights}}
+  telemetryClient?: TelemetryClient
+  {{/if}}
+): Logger => {
+  return new AzureFunctionLogger(
+    {{#if enableApplicationInsights}}
+    telemetryClient
+    {{/if}}
+  );
+};

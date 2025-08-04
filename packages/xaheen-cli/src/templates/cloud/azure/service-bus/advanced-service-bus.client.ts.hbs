@@ -1,0 +1,926 @@
+import {
+  ServiceBusClient,
+  ServiceBusMessage,
+  ServiceBusReceiver,
+  ServiceBusSender,
+  ServiceBusReceivedMessage,
+  ServiceBusSessionReceiver,
+  ServiceBusAdministrationClient,
+  CreateTopicOptions,
+  CreateSubscriptionOptions,
+  ReceiveMode
+} from '@azure/service-bus';
+import { DefaultAzureCredential, TokenCredential } from '@azure/identity';
+import { injectable, inject } from 'tsyringe';
+import { Logger } from '../services/logger.service';
+{{#if enableKeyVault}}
+import { KeyVaultService } from '../services/key-vault.service';
+{{/if}}
+{{#if enableApplicationInsights}}
+import { ApplicationInsightsService } from '../services/application-insights.service';
+{{/if}}
+
+export interface ServiceBusConfiguration {
+  readonly connectionString?: string;
+  readonly fullyQualifiedNamespace?: string;
+  readonly credential?: TokenCredential;
+  readonly retryOptions?: {
+    readonly maxRetries: number;
+    readonly retryDelayInMs: number;
+    readonly maxRetryDelayInMs: number;
+  };
+}
+
+export interface MessageMetadata {
+  readonly correlationId: string;
+  readonly messageId: string;
+  readonly sessionId?: string;
+  readonly timeToLive?: number;
+  readonly scheduledEnqueueTime?: Date;
+  readonly subject?: string;
+  readonly replyTo?: string;
+  readonly replyToSessionId?: string;
+  readonly partitionKey?: string;
+  readonly viaPartitionKey?: string;
+  readonly contentType?: string;
+  readonly applicationProperties?: Record<string, unknown>;
+}
+
+export interface EnhancedServiceBusMessage<T = unknown> {
+  readonly body: T;
+  readonly metadata: MessageMetadata;
+}
+
+export interface MessageProcessingResult {
+  readonly success: boolean;
+  readonly shouldRetry: boolean;
+  readonly error?: Error;
+  readonly processingTime: number;
+}
+
+export interface DeadLetterInfo {
+  readonly reason: string;
+  readonly description: string;
+  readonly originalMessageId: string;
+  readonly correlationId: string;
+}
+
+export interface BatchProcessingOptions {
+  readonly maxMessageCount: number;
+  readonly maxWaitTimeInMs: number;
+  readonly maxConcurrentCalls: number;
+  readonly autoComplete: boolean;
+}
+
+export interface SessionProcessingOptions {
+  readonly sessionId?: string;
+  readonly maxAutoRenewDurationInMs: number;
+  readonly receiveMode: ReceiveMode;
+}
+
+type MessageHandler<T = unknown> = (
+  message: EnhancedServiceBusMessage<T>,
+  originalMessage: ServiceBusReceivedMessage
+) => Promise<MessageProcessingResult>;
+
+type ErrorHandler = (
+  error: Error,
+  context: {
+    topicName?: string;
+    subscriptionName?: string;
+    queueName?: string;
+    messageId?: string;
+    correlationId?: string;
+  }
+) => Promise<void>;
+
+@injectable()
+export class AdvancedServiceBusClient {
+  private client?: ServiceBusClient;
+  private adminClient?: ServiceBusAdministrationClient;
+  private senders = new Map<string, ServiceBusSender>();
+  private receivers = new Map<string, ServiceBusReceiver>();
+  private sessionReceivers = new Map<string, ServiceBusSessionReceiver>();
+  private isInitialized = false;
+
+  constructor(
+    @inject('Logger') private logger: Logger
+    {{#if enableKeyVault}},
+    @inject('KeyVaultService') private keyVault: KeyVaultService
+    {{/if}}
+    {{#if enableApplicationInsights}},
+    @inject('ApplicationInsightsService') private appInsights: ApplicationInsightsService
+    {{/if}}
+  ) {}
+
+  public async initialize(config?: ServiceBusConfiguration): Promise<void> {
+    try {
+      if (this.isInitialized) {
+        return;
+      }
+
+      const serviceBusConfig = config || await this.getConfiguration();
+      
+      if (serviceBusConfig.connectionString) {
+        this.client = new ServiceBusClient(serviceBusConfig.connectionString);
+        this.adminClient = new ServiceBusAdministrationClient(serviceBusConfig.connectionString);
+      } else if (serviceBusConfig.fullyQualifiedNamespace) {
+        const credential = serviceBusConfig.credential || new DefaultAzureCredential();
+        this.client = new ServiceBusClient(serviceBusConfig.fullyQualifiedNamespace, credential);
+        this.adminClient = new ServiceBusAdministrationClient(serviceBusConfig.fullyQualifiedNamespace, credential);
+      } else {
+        throw new Error('Either connectionString or fullyQualifiedNamespace must be provided');
+      }
+
+      this.isInitialized = true;
+      this.logger.info('Service Bus client initialized successfully');
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Service Bus client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  public async sendMessage<T>(
+    topicOrQueueName: string,
+    message: EnhancedServiceBusMessage<T>,
+    options?: {
+      useSessions?: boolean;
+      enablePartitioning?: boolean;
+    }
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const correlationId = message.metadata.correlationId;
+
+    try {
+      const sender = await this.getSender(topicOrQueueName);
+      
+      const serviceBusMessage: ServiceBusMessage = {
+        body: message.body,
+        messageId: message.metadata.messageId,
+        correlationId: message.metadata.correlationId,
+        sessionId: message.metadata.sessionId,
+        timeToLive: message.metadata.timeToLive,
+        scheduledEnqueueTime: message.metadata.scheduledEnqueueTime,
+        subject: message.metadata.subject,
+        replyTo: message.metadata.replyTo,
+        replyToSessionId: message.metadata.replyToSessionId,
+        partitionKey: message.metadata.partitionKey,
+        viaPartitionKey: message.metadata.viaPartitionKey,
+        contentType: message.metadata.contentType || 'application/json',
+        applicationProperties: {
+          ...message.metadata.applicationProperties,
+          sentAt: new Date().toISOString(),
+          version: '1.0'
+        }
+      };
+
+      await sender.sendMessages(serviceBusMessage);
+
+      const processingTime = Date.now() - startTime;
+      
+      this.logger.info('Message sent successfully', {
+        topicOrQueueName,
+        messageId: message.metadata.messageId,
+        correlationId,
+        processingTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Service Bus',
+        name: `Send to ${topicOrQueueName}`,
+        data: topicOrQueueName,
+        duration: processingTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          messageId: message.metadata.messageId,
+          correlationId,
+          hasSession: !!message.metadata.sessionId
+        }
+      });
+      {{/if}}
+
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to send message', {
+        topicOrQueueName,
+        messageId: message.metadata.messageId,
+        correlationId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Service Bus',
+        name: `Send to ${topicOrQueueName}`,
+        data: topicOrQueueName,
+        duration: processingTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          messageId: message.metadata.messageId,
+          correlationId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+
+      throw error;
+    }
+  }
+
+  public async sendBatchMessages<T>(
+    topicOrQueueName: string,
+    messages: EnhancedServiceBusMessage<T>[],
+    maxBatchSize: number = 100
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const totalMessages = messages.length;
+
+    try {
+      const sender = await this.getSender(topicOrQueueName);
+      
+      // Process messages in batches
+      for (let i = 0; i < messages.length; i += maxBatchSize) {
+        const batch = messages.slice(i, i + maxBatchSize);
+        const serviceBusMessages: ServiceBusMessage[] = batch.map(msg => ({
+          body: msg.body,
+          messageId: msg.metadata.messageId,
+          correlationId: msg.metadata.correlationId,
+          sessionId: msg.metadata.sessionId,
+          timeToLive: msg.metadata.timeToLive,
+          scheduledEnqueueTime: msg.metadata.scheduledEnqueueTime,
+          subject: msg.metadata.subject,
+          replyTo: msg.metadata.replyTo,
+          replyToSessionId: msg.metadata.replyToSessionId,
+          partitionKey: msg.metadata.partitionKey,
+          viaPartitionKey: msg.metadata.viaPartitionKey,
+          contentType: msg.metadata.contentType || 'application/json',
+          applicationProperties: {
+            ...msg.metadata.applicationProperties,
+            sentAt: new Date().toISOString(),
+            batchIndex: i / maxBatchSize,
+            version: '1.0'
+          }
+        }));
+
+        await sender.sendMessages(serviceBusMessages);
+        
+        this.logger.debug('Batch sent successfully', {
+          topicOrQueueName,
+          batchSize: batch.length,
+          batchIndex: i / maxBatchSize
+        });
+      }
+
+      const processingTime = Date.now() - startTime;
+      
+      this.logger.info('Batch messages sent successfully', {
+        topicOrQueueName,
+        totalMessages,
+        processingTime
+      });
+
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to send batch messages', {
+        topicOrQueueName,
+        totalMessages,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime
+      });
+
+      throw error;
+    }
+  }
+
+  public async receiveMessages<T>(
+    topicName: string,
+    subscriptionName: string,
+    messageHandler: MessageHandler<T>,
+    errorHandler: ErrorHandler,
+    options: BatchProcessingOptions = {
+      maxMessageCount: 10,
+      maxWaitTimeInMs: 60000,
+      maxConcurrentCalls: 1,
+      autoComplete: true
+    }
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    try {
+      const receiverKey = `${topicName}/${subscriptionName}`;
+      const receiver = await this.getReceiver(topicName, subscriptionName, {
+        receiveMode: options.autoComplete ? 'peekLock' : 'receiveAndDelete'
+      });
+
+      this.logger.info('Starting message processing', {
+        topicName,
+        subscriptionName,
+        options
+      });
+
+      // Set up message handler
+      receiver.subscribe({
+        processMessage: async (message: ServiceBusReceivedMessage) => {
+          const startTime = Date.now();
+          const correlationId = message.correlationId || 'unknown';
+          
+          try {
+            const enhancedMessage: EnhancedServiceBusMessage<T> = {
+              body: message.body as T,
+              metadata: {
+                correlationId,
+                messageId: message.messageId || 'unknown',
+                sessionId: message.sessionId,
+                timeToLive: message.timeToLive,
+                subject: message.subject,
+                replyTo: message.replyTo,
+                replyToSessionId: message.replyToSessionId,
+                partitionKey: message.partitionKey,
+                viaPartitionKey: message.viaPartitionKey,
+                contentType: message.contentType,
+                applicationProperties: message.applicationProperties
+              }
+            };
+
+            const result = await messageHandler(enhancedMessage, message);
+            const processingTime = Date.now() - startTime;
+
+            if (result.success) {
+              if (options.autoComplete) {
+                await receiver.completeMessage(message);
+              }
+              
+              this.logger.info('Message processed successfully', {
+                topicName,
+                subscriptionName,
+                messageId: message.messageId,
+                correlationId,
+                processingTime
+              });
+            } else {
+              if (result.shouldRetry) {
+                if (options.autoComplete) {
+                  await receiver.abandonMessage(message);
+                }
+                
+                this.logger.warn('Message processing failed, will retry', {
+                  topicName,
+                  subscriptionName,
+                  messageId: message.messageId,
+                  correlationId,
+                  error: result.error?.message,
+                  processingTime
+                });
+              } else {
+                await this.moveToDeadLetter(receiver, message, {
+                  reason: 'ProcessingFailed',
+                  description: result.error?.message || 'Message processing failed',
+                  originalMessageId: message.messageId || 'unknown',
+                  correlationId
+                });
+              }
+            }
+
+          } catch (error) {
+            const processingTime = Date.now() - startTime;
+            
+            this.logger.error('Unexpected error processing message', {
+              topicName,
+              subscriptionName,
+              messageId: message.messageId,
+              correlationId,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              processingTime
+            });
+
+            // Move to dead letter queue for unexpected errors
+            await this.moveToDeadLetter(receiver, message, {
+              reason: 'UnexpectedError',
+              description: error instanceof Error ? error.message : 'Unknown error',
+              originalMessageId: message.messageId || 'unknown',
+              correlationId
+            });
+          }
+        },
+        processError: async (args) => {
+          await errorHandler(args.error, {
+            topicName,
+            subscriptionName
+          });
+        }
+      }, {
+        maxConcurrentCalls: options.maxConcurrentCalls,
+        autoCompleteMessages: false // We handle completion manually
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to start message processing', {
+        topicName,
+        subscriptionName,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      await errorHandler(error as Error, {
+        topicName,
+        subscriptionName
+      });
+    }
+  }
+
+  public async receiveSessionMessages<T>(
+    topicName: string,
+    subscriptionName: string,
+    messageHandler: MessageHandler<T>,
+    errorHandler: ErrorHandler,
+    sessionOptions: SessionProcessingOptions
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    try {
+      const sessionReceiver = await this.getSessionReceiver(
+        topicName,
+        subscriptionName,
+        sessionOptions
+      );
+
+      this.logger.info('Starting session-based message processing', {
+        topicName,
+        subscriptionName,
+        sessionId: sessionOptions.sessionId || 'next-available'
+      });
+
+      // Process messages in the session
+      while (true) {
+        try {
+          const messages = await sessionReceiver.receiveMessages(10, {
+            maxWaitTimeInMs: 60000
+          });
+
+          if (messages.length === 0) {
+            this.logger.debug('No more messages in session, closing');
+            break;
+          }
+
+          for (const message of messages) {
+            const startTime = Date.now();
+            const correlationId = message.correlationId || 'unknown';
+            
+            try {
+              const enhancedMessage: EnhancedServiceBusMessage<T> = {
+                body: message.body as T,
+                metadata: {
+                  correlationId,
+                  messageId: message.messageId || 'unknown',
+                  sessionId: message.sessionId,
+                  timeToLive: message.timeToLive,
+                  subject: message.subject,
+                  replyTo: message.replyTo,
+                  replyToSessionId: message.replyToSessionId,
+                  partitionKey: message.partitionKey,
+                  viaPartitionKey: message.viaPartitionKey,
+                  contentType: message.contentType,
+                  applicationProperties: message.applicationProperties
+                }
+              };
+
+              const result = await messageHandler(enhancedMessage, message);
+              const processingTime = Date.now() - startTime;
+
+              if (result.success) {
+                await sessionReceiver.completeMessage(message);
+                
+                this.logger.info('Session message processed successfully', {
+                  topicName,
+                  subscriptionName,
+                  sessionId: message.sessionId,
+                  messageId: message.messageId,
+                  correlationId,
+                  processingTime
+                });
+              } else {
+                if (result.shouldRetry) {
+                  await sessionReceiver.abandonMessage(message);
+                } else {
+                  await sessionReceiver.deadLetterMessage(message, {
+                    deadLetterReason: 'ProcessingFailed',
+                    deadLetterErrorDescription: result.error?.message || 'Session message processing failed'
+                  });
+                }
+              }
+
+            } catch (error) {
+              const processingTime = Date.now() - startTime;
+              
+              this.logger.error('Unexpected error processing session message', {
+                topicName,
+                subscriptionName,
+                sessionId: message.sessionId,
+                messageId: message.messageId,
+                correlationId,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                processingTime
+              });
+
+              await sessionReceiver.deadLetterMessage(message, {
+                deadLetterReason: 'UnexpectedError',
+                deadLetterErrorDescription: error instanceof Error ? error.message : 'Unknown error'
+              });
+            }
+          }
+        } catch (sessionError) {
+          this.logger.error('Session processing error', {
+            topicName,
+            subscriptionName,
+            error: sessionError instanceof Error ? sessionError.message : 'Unknown error'
+          });
+          
+          await errorHandler(sessionError as Error, {
+            topicName,
+            subscriptionName
+          });
+          break;
+        }
+      }
+
+    } catch (error) {
+      this.logger.error('Failed to start session message processing', {
+        topicName,
+        subscriptionName,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      await errorHandler(error as Error, {
+        topicName,
+        subscriptionName
+      });
+    }
+  }
+
+  public async processDeadLetterMessages<T>(
+    topicName: string,
+    subscriptionName: string,
+    messageHandler: MessageHandler<T>,
+    errorHandler: ErrorHandler
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    try {
+      const deadLetterReceiver = this.client!.createReceiver(
+        topicName,
+        subscriptionName,
+        {
+          subQueueType: 'deadLetter',
+          receiveMode: 'peekLock'
+        }
+      );
+
+      this.logger.info('Starting dead letter message processing', {
+        topicName,
+        subscriptionName
+      });
+
+      const messages = await deadLetterReceiver.receiveMessages(100, {
+        maxWaitTimeInMs: 30000
+      });
+
+      this.logger.info(`Found ${messages.length} dead letter messages`, {
+        topicName,
+        subscriptionName
+      });
+
+      for (const message of messages) {
+        const startTime = Date.now();
+        const correlationId = message.correlationId || 'unknown';
+        
+        try {
+          const enhancedMessage: EnhancedServiceBusMessage<T> = {
+            body: message.body as T,
+            metadata: {
+              correlationId,
+              messageId: message.messageId || 'unknown',
+              sessionId: message.sessionId,
+              timeToLive: message.timeToLive,
+              subject: message.subject,
+              replyTo: message.replyTo,
+              replyToSessionId: message.replyToSessionId,
+              partitionKey: message.partitionKey,
+              viaPartitionKey: message.viaPartitionKey,
+              contentType: message.contentType,
+              applicationProperties: {
+                ...message.applicationProperties,
+                deadLetterReason: message.deadLetterReason,
+                deadLetterErrorDescription: message.deadLetterErrorDescription,
+                originalEnqueuedTime: message.enqueuedTimeUtc?.toISOString()
+              }
+            }
+          };
+
+          const result = await messageHandler(enhancedMessage, message);
+          const processingTime = Date.now() - startTime;
+
+          if (result.success) {
+            await deadLetterReceiver.completeMessage(message);
+            
+            this.logger.info('Dead letter message processed successfully', {
+              topicName,
+              subscriptionName,
+              messageId: message.messageId,
+              correlationId,
+              deadLetterReason: message.deadLetterReason,
+              processingTime
+            });
+          } else {
+            // Keep in dead letter queue but log the failure
+            await deadLetterReceiver.abandonMessage(message);
+            
+            this.logger.warn('Dead letter message processing failed', {
+              topicName,
+              subscriptionName,
+              messageId: message.messageId,
+              correlationId,
+              error: result.error?.message,
+              processingTime
+            });
+          }
+
+        } catch (error) {
+          const processingTime = Date.now() - startTime;
+          
+          this.logger.error('Unexpected error processing dead letter message', {
+            topicName,
+            subscriptionName,
+            messageId: message.messageId,
+            correlationId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            processingTime
+          });
+
+          await deadLetterReceiver.abandonMessage(message);
+        }
+      }
+
+      await deadLetterReceiver.close();
+
+    } catch (error) {
+      this.logger.error('Failed to process dead letter messages', {
+        topicName,
+        subscriptionName,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      await errorHandler(error as Error, {
+        topicName,
+        subscriptionName
+      });
+    }
+  }
+
+  public async createTopicAndSubscription(
+    topicName: string,
+    subscriptionName: string,
+    topicOptions?: Partial<CreateTopicOptions>,
+    subscriptionOptions?: Partial<CreateSubscriptionOptions>
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    try {
+      // Check if topic exists
+      const topicExists = await this.adminClient!.getTopicRuntimeProperties(topicName)
+        .then(() => true)
+        .catch(() => false);
+
+      if (!topicExists) {
+        await this.adminClient!.createTopic(topicName, {
+          enableBatchedOperations: true,
+          enablePartitioning: false,
+          requiresDuplicateDetection: true,
+          duplicateDetectionHistoryTimeWindow: 'PT10M',
+          defaultMessageTimeToLive: 'P1D',
+          maxSizeInMegabytes: 1024,
+          supportOrdering: false,
+          ...topicOptions
+        });
+        
+        this.logger.info('Topic created successfully', { topicName });
+      }
+
+      // Check if subscription exists
+      const subscriptionExists = await this.adminClient!.getSubscriptionRuntimeProperties(topicName, subscriptionName)
+        .then(() => true)
+        .catch(() => false);
+
+      if (!subscriptionExists) {
+        await this.adminClient!.createSubscription(topicName, subscriptionName, {
+          enableBatchedOperations: true,
+          requiresSession: false,
+          defaultMessageTimeToLive: 'P1D',
+          deadLetteringOnMessageExpiration: true,
+          deadLetteringOnFilterEvaluationExceptions: true,
+          maxDeliveryCount: 10,
+          lockDuration: 'PT5M',
+          enableDeadLetteringOnFilterEvaluationExceptions: true,
+          ...subscriptionOptions
+        });
+        
+        this.logger.info('Subscription created successfully', {
+          topicName,
+          subscriptionName
+        });
+      }
+
+    } catch (error) {
+      this.logger.error('Failed to create topic and subscription', {
+        topicName,
+        subscriptionName,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  public async close(): Promise<void> {
+    try {
+      // Close all senders
+      for (const [key, sender] of this.senders.entries()) {
+        await sender.close();
+        this.logger.debug('Sender closed', { key });
+      }
+      this.senders.clear();
+
+      // Close all receivers
+      for (const [key, receiver] of this.receivers.entries()) {
+        await receiver.close();
+        this.logger.debug('Receiver closed', { key });
+      }
+      this.receivers.clear();
+
+      // Close all session receivers
+      for (const [key, sessionReceiver] of this.sessionReceivers.entries()) {
+        await sessionReceiver.close();
+        this.logger.debug('Session receiver closed', { key });
+      }
+      this.sessionReceivers.clear();
+
+      // Close main client
+      if (this.client) {
+        await this.client.close();
+        this.client = undefined;
+      }
+
+      this.isInitialized = false;
+      this.logger.info('Service Bus client closed successfully');
+
+    } catch (error) {
+      this.logger.error('Error closing Service Bus client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  private async getConfiguration(): Promise<ServiceBusConfiguration> {
+    {{#if enableKeyVault}}
+    try {
+      const connectionString = await this.keyVault.getSecret('service-bus-connection-string');
+      if (connectionString) {
+        return { connectionString };
+      }
+    } catch (error) {
+      this.logger.warn('Failed to get connection string from Key Vault, falling back to environment variables');
+    }
+    {{/if}}
+
+    const connectionString = process.env.SERVICE_BUS_CONNECTION_STRING;
+    const fullyQualifiedNamespace = process.env.SERVICE_BUS_NAMESPACE;
+
+    if (connectionString) {
+      return { connectionString };
+    } else if (fullyQualifiedNamespace) {
+      return {
+        fullyQualifiedNamespace,
+        credential: new DefaultAzureCredential()
+      };
+    } else {
+      throw new Error('Service Bus configuration not found. Please provide either SERVICE_BUS_CONNECTION_STRING or SERVICE_BUS_NAMESPACE environment variable.');
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private async getSender(topicOrQueueName: string): Promise<ServiceBusSender> {
+    if (!this.senders.has(topicOrQueueName)) {
+      const sender = this.client!.createSender(topicOrQueueName);
+      this.senders.set(topicOrQueueName, sender);
+    }
+    
+    return this.senders.get(topicOrQueueName)!;
+  }
+
+  private async getReceiver(
+    topicName: string,
+    subscriptionName: string,
+    options?: { receiveMode?: ReceiveMode }
+  ): Promise<ServiceBusReceiver> {
+    const key = `${topicName}/${subscriptionName}`;
+    
+    if (!this.receivers.has(key)) {
+      const receiver = this.client!.createReceiver(topicName, subscriptionName, {
+        receiveMode: options?.receiveMode || 'peekLock'
+      });
+      this.receivers.set(key, receiver);
+    }
+    
+    return this.receivers.get(key)!;
+  }
+
+  private async getSessionReceiver(
+    topicName: string,
+    subscriptionName: string,
+    options: SessionProcessingOptions
+  ): Promise<ServiceBusSessionReceiver> {
+    const key = `${topicName}/${subscriptionName}/${options.sessionId || 'next'}`;
+    
+    if (!this.sessionReceivers.has(key)) {
+      const sessionReceiver = await this.client!.acceptSession(
+        topicName,
+        subscriptionName,
+        options.sessionId,
+        {
+          maxAutoRenewDurationInMs: options.maxAutoRenewDurationInMs,
+          receiveMode: options.receiveMode
+        }
+      );
+      this.sessionReceivers.set(key, sessionReceiver);
+    }
+    
+    return this.sessionReceivers.get(key)!;
+  }
+
+  private async moveToDeadLetter(
+    receiver: ServiceBusReceiver,
+    message: ServiceBusReceivedMessage,
+    deadLetterInfo: DeadLetterInfo
+  ): Promise<void> {
+    try {
+      await receiver.deadLetterMessage(message, {
+        deadLetterReason: deadLetterInfo.reason,
+        deadLetterErrorDescription: deadLetterInfo.description
+      });
+      
+      this.logger.warn('Message moved to dead letter queue', {
+        messageId: deadLetterInfo.originalMessageId,
+        correlationId: deadLetterInfo.correlationId,
+        reason: deadLetterInfo.reason,
+        description: deadLetterInfo.description
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to move message to dead letter queue', {
+        messageId: deadLetterInfo.originalMessageId,
+        correlationId: deadLetterInfo.correlationId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // If we can't move to dead letter, abandon the message
+      await receiver.abandonMessage(message);
+    }
+  }
+}
+
+// Factory function for easy instantiation
+export const createAdvancedServiceBusClient = (
+  logger: Logger
+  {{#if enableKeyVault}},
+  keyVault: KeyVaultService
+  {{/if}}
+  {{#if enableApplicationInsights}},
+  appInsights: ApplicationInsightsService
+  {{/if}}
+): AdvancedServiceBusClient => {
+  return new AdvancedServiceBusClient(
+    logger
+    {{#if enableKeyVault}},
+    keyVault
+    {{/if}}
+    {{#if enableApplicationInsights}},
+    appInsights
+    {{/if}}
+  );
+};

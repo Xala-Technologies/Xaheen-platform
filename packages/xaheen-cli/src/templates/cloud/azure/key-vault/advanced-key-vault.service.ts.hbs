@@ -1,0 +1,967 @@
+import {
+  SecretClient,
+  KeyClient,
+  CertificateClient,
+  KeyVaultSecret,
+  KeyVaultKey,
+  KeyVaultCertificateWithPolicy,
+  GetSecretOptions,
+  GetKeyOptions,
+  GetCertificateOptions
+} from '@azure/keyvault-secrets';
+import { DefaultAzureCredential, TokenCredential } from '@azure/identity';
+import { injectable, inject } from 'tsyringe';
+import { Logger } from '../services/logger.service';
+{{#if enableApplicationInsights}}
+import { ApplicationInsightsService } from '../services/application-insights.service';
+{{/if}}
+import { createHash, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+
+export interface KeyVaultConfiguration {
+  readonly vaultUrl: string;
+  readonly credential?: TokenCredential;
+  readonly cacheConfig?: {
+    readonly enabled: boolean;
+    readonly ttlSeconds: number;
+    readonly maxCacheSize: number;
+    readonly encryptCache: boolean;
+  };
+  readonly retryOptions?: {
+    readonly maxRetries: number;
+    readonly retryDelayInMs: number;
+    readonly maxRetryDelayInMs: number;
+  };
+}
+
+export interface SecretMetadata {
+  readonly name: string;
+  readonly version?: string;
+  readonly tags?: Record<string, string>;
+  readonly contentType?: string;
+  readonly notBefore?: Date;
+  readonly expiresOn?: Date;
+  readonly createdOn?: Date;
+  readonly updatedOn?: Date;
+  readonly enabled?: boolean;
+}
+
+export interface CachedSecret {
+  readonly value: string;
+  readonly metadata: SecretMetadata;
+  readonly cachedAt: Date;
+  readonly expiresAt: Date;
+}
+
+export interface EncryptionResult {
+  readonly encryptedData: string;
+  readonly iv: string;
+  readonly tag: string;
+  readonly keyId: string;
+}
+
+export interface DecryptionResult {
+  readonly decryptedData: string;
+  readonly keyId: string;
+}
+
+export interface KeyRotationInfo {
+  readonly keyName: string;
+  readonly currentVersion: string;
+  readonly previousVersion?: string;
+  readonly rotationDate: Date;
+  readonly nextRotationDate?: Date;
+}
+
+export interface CertificateInfo {
+  readonly name: string;
+  readonly version: string;
+  readonly thumbprint: string;
+  readonly subject: string;
+  readonly issuer: string;
+  readonly notBefore: Date;
+  readonly expiresOn: Date;
+  readonly keyUsage: string[];
+  readonly enhancedKeyUsage: string[];
+}
+
+@injectable()
+export class AdvancedKeyVaultService {
+  private secretClient?: SecretClient;
+  private keyClient?: KeyClient;
+  private certificateClient?: CertificateClient;
+  private isInitialized = false;
+  private configuration?: KeyVaultConfiguration;
+  private secretCache = new Map<string, CachedSecret>();
+  private cacheCleanupInterval?: NodeJS.Timeout;
+
+  constructor(
+    @inject('Logger') private logger: Logger
+    {{#if enableApplicationInsights}},
+    @inject('ApplicationInsightsService') private appInsights: ApplicationInsightsService
+    {{/if}}
+  ) {}
+
+  public async initialize(config?: KeyVaultConfiguration): Promise<void> {
+    try {
+      if (this.isInitialized) {
+        return;
+      }
+
+      this.configuration = config || await this.getConfiguration();
+      
+      const credential = this.configuration.credential || new DefaultAzureCredential();
+      const clientOptions = {
+        retryOptions: this.configuration.retryOptions
+      };
+
+      // Initialize clients
+      this.secretClient = new SecretClient(this.configuration.vaultUrl, credential, clientOptions);
+      this.keyClient = new KeyClient(this.configuration.vaultUrl, credential, clientOptions);
+      this.certificateClient = new CertificateClient(this.configuration.vaultUrl, credential, clientOptions);
+
+      // Set up cache cleanup if caching is enabled
+      if (this.configuration.cacheConfig?.enabled) {
+        this.setupCacheCleanup();
+      }
+
+      this.isInitialized = true;
+      this.logger.info('Key Vault service initialized successfully', {
+        vaultUrl: this.configuration.vaultUrl,
+        cacheEnabled: this.configuration.cacheConfig?.enabled || false
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Key Vault service', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  public async getSecret(
+    secretName: string,
+    version?: string,
+    options?: {
+      useCache?: boolean;
+      forceRefresh?: boolean;
+    }
+  ): Promise<string> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const cacheKey = `${secretName}:${version || 'latest'}`;
+    
+    try {
+      // Check cache first if enabled and not forcing refresh
+      if (this.configuration?.cacheConfig?.enabled && 
+          options?.useCache !== false && 
+          !options?.forceRefresh) {
+        
+        const cachedSecret = this.getFromCache(cacheKey);
+        if (cachedSecret) {
+          this.logger.debug('Secret retrieved from cache', {
+            secretName,
+            version,
+            cacheHit: true
+          });
+          
+          return cachedSecret.value;
+        }
+      }
+
+      // Retrieve from Key Vault
+      const secret = await this.secretClient!.getSecret(secretName, {
+        version
+      } as GetSecretOptions);
+
+      if (!secret.value) {
+        throw new Error(`Secret '${secretName}' has no value`);
+      }
+
+      // Cache the secret if caching is enabled
+      if (this.configuration?.cacheConfig?.enabled) {
+        await this.cacheSecret(cacheKey, secret);
+      }
+
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.info('Secret retrieved successfully', {
+        secretName,
+        version: secret.properties.version,
+        executionTime,
+        cacheHit: false
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Key Vault',
+        name: 'Get Secret',
+        data: secretName,
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          secretName,
+          version: secret.properties.version || 'latest'
+        }
+      });
+      {{/if}}
+
+      return secret.value;
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to retrieve secret', {
+        secretName,
+        version,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Key Vault',
+        name: 'Get Secret',
+        data: secretName,
+        duration: executionTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+
+      throw error;
+    }
+  }
+
+  public async setSecret(
+    secretName: string,
+    value: string,
+    options?: {
+      contentType?: string;
+      tags?: Record<string, string>;
+      notBefore?: Date;
+      expiresOn?: Date;
+      enabled?: boolean;
+      clearCache?: boolean;
+    }
+  ): Promise<SecretMetadata> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      const secretOptions = {
+        contentType: options?.contentType,
+        tags: options?.tags,
+        notBefore: options?.notBefore,
+        expiresOn: options?.expiresOn,
+        enabled: options?.enabled ?? true
+      };
+
+      const secret = await this.secretClient!.setSecret(secretName, value, secretOptions);
+
+      // Clear cache for this secret if caching is enabled
+      if (this.configuration?.cacheConfig?.enabled && options?.clearCache !== false) {
+        this.clearSecretFromCache(secretName);
+      }
+
+      const executionTime = Date.now() - startTime;
+      
+      const metadata: SecretMetadata = {
+        name: secret.name,
+        version: secret.properties.version,
+        tags: secret.properties.tags,
+        contentType: secret.properties.contentType,
+        notBefore: secret.properties.notBefore,
+        expiresOn: secret.properties.expiresOn,
+        createdOn: secret.properties.createdOn,
+        updatedOn: secret.properties.updatedOn,
+        enabled: secret.properties.enabled
+      };
+
+      this.logger.info('Secret set successfully', {
+        secretName,
+        version: secret.properties.version,
+        executionTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Key Vault',
+        name: 'Set Secret',
+        data: secretName,
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          secretName,
+          version: secret.properties.version || 'unknown'
+        }
+      });
+      {{/if}}
+
+      return metadata;
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to set secret', {
+        secretName,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Key Vault',
+        name: 'Set Secret',
+        data: secretName,
+        duration: executionTime,
+        resultCode: '500',
+        success: false,
+        properties: {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      {{/if}}
+
+      throw error;
+    }
+  }
+
+  public async deleteSecret(
+    secretName: string,
+    options?: {
+      clearCache?: boolean;
+    }
+  ): Promise<void> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      await this.secretClient!.beginDeleteSecret(secretName);
+
+      // Clear cache for this secret if caching is enabled
+      if (this.configuration?.cacheConfig?.enabled && options?.clearCache !== false) {
+        this.clearSecretFromCache(secretName);
+      }
+
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.info('Secret deleted successfully', {
+        secretName,
+        executionTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackEvent({
+        name: 'Key Vault Secret Deleted',
+        properties: {
+          secretName
+        },
+        measurements: {
+          executionTime
+        }
+      });
+      {{/if}}
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to delete secret', {
+        secretName,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+
+      throw error;
+    }
+  }
+
+  public async encryptData(
+    keyName: string,
+    data: string,
+    algorithm: 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA1_5' = 'RSA-OAEP-256'
+  ): Promise<EncryptionResult> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      // For large data, use hybrid encryption (AES + RSA)
+      const dataBuffer = Buffer.from(data, 'utf8');
+      
+      if (dataBuffer.length > 190) { // RSA encryption limit
+        // Generate random AES key and IV
+        const aesKey = randomBytes(32); // 256-bit key
+        const iv = randomBytes(16); // 128-bit IV
+        
+        // Encrypt data with AES
+        const cipher = createCipheriv('aes-256-gcm', aesKey, iv);
+        let encryptedData = cipher.update(data, 'utf8', 'base64');
+        encryptedData += cipher.final('base64');
+        const tag = cipher.getAuthTag();
+        
+        // Encrypt AES key with RSA using Key Vault
+        const keyResponse = await this.keyClient!.encrypt(keyName, algorithm, aesKey);
+        
+        const executionTime = Date.now() - startTime;
+        
+        this.logger.debug('Data encrypted successfully (hybrid)', {
+          keyName,
+          algorithm,
+          dataSize: dataBuffer.length,
+          executionTime
+        });
+        
+        return {
+          encryptedData,
+          iv: iv.toString('base64'),
+          tag: tag.toString('base64'),
+          keyId: keyResponse.keyID || keyName
+        };
+        
+      } else {
+        // Direct RSA encryption for small data
+        const encryptResponse = await this.keyClient!.encrypt(keyName, algorithm, dataBuffer);
+        
+        const executionTime = Date.now() - startTime;
+        
+        this.logger.debug('Data encrypted successfully (direct)', {
+          keyName,
+          algorithm,
+          dataSize: dataBuffer.length,
+          executionTime
+        });
+        
+        return {
+          encryptedData: Buffer.from(encryptResponse.result).toString('base64'),
+          iv: '',
+          tag: '',
+          keyId: encryptResponse.keyID || keyName
+        };
+      }
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to encrypt data', {
+        keyName,
+        algorithm,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      throw error;
+    }
+  }
+
+  public async decryptData(
+    keyName: string,
+    encryptionResult: EncryptionResult,
+    algorithm: 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA1_5' = 'RSA-OAEP-256'
+  ): Promise<DecryptionResult> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      if (encryptionResult.iv && encryptionResult.tag) {
+        // Hybrid decryption (RSA + AES)
+        const encryptedAesKey = Buffer.from(encryptionResult.keyId, 'base64');
+        
+        // Decrypt AES key with RSA using Key Vault
+        const keyResponse = await this.keyClient!.decrypt(keyName, algorithm, encryptedAesKey);
+        const aesKey = keyResponse.result;
+        
+        // Decrypt data with AES
+        const iv = Buffer.from(encryptionResult.iv, 'base64');
+        const tag = Buffer.from(encryptionResult.tag, 'base64');
+        
+        const decipher = createDecipheriv('aes-256-gcm', aesKey, iv);
+        decipher.setAuthTag(tag);
+        
+        let decryptedData = decipher.update(encryptionResult.encryptedData, 'base64', 'utf8');
+        decryptedData += decipher.final('utf8');
+        
+        const executionTime = Date.now() - startTime;
+        
+        this.logger.debug('Data decrypted successfully (hybrid)', {
+          keyName,
+          algorithm,
+          executionTime
+        });
+        
+        return {
+          decryptedData,
+          keyId: encryptionResult.keyId
+        };
+        
+      } else {
+        // Direct RSA decryption
+        const encryptedBuffer = Buffer.from(encryptionResult.encryptedData, 'base64');
+        const decryptResponse = await this.keyClient!.decrypt(keyName, algorithm, encryptedBuffer);
+        
+        const executionTime = Date.now() - startTime;
+        
+        this.logger.debug('Data decrypted successfully (direct)', {
+          keyName,
+          algorithm,
+          executionTime
+        });
+        
+        return {
+          decryptedData: Buffer.from(decryptResponse.result).toString('utf8'),
+          keyId: encryptionResult.keyId
+        };
+      }
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to decrypt data', {
+        keyName,
+        algorithm,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      throw error;
+    }
+  }
+
+  public async getCertificate(
+    certificateName: string,
+    version?: string
+  ): Promise<CertificateInfo> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      const certificate = await this.certificateClient!.getCertificate(certificateName, {
+        version
+      } as GetCertificateOptions);
+
+      const executionTime = Date.now() - startTime;
+      
+      const certInfo: CertificateInfo = {
+        name: certificate.name,
+        version: certificate.properties.version || 'unknown',
+        thumbprint: certificate.properties.x509Thumbprint?.toString('hex') || '',
+        subject: certificate.policy?.subject || '',
+        issuer: certificate.policy?.issuerName || '',
+        notBefore: certificate.policy?.validityInMonths ? new Date() : new Date(),
+        expiresOn: certificate.policy?.validityInMonths 
+          ? new Date(Date.now() + certificate.policy.validityInMonths * 30 * 24 * 60 * 60 * 1000)
+          : new Date(),
+        keyUsage: certificate.policy?.keyUsage || [],
+        enhancedKeyUsage: certificate.policy?.enhancedKeyUsage || []
+      };
+
+      this.logger.info('Certificate retrieved successfully', {
+        certificateName,
+        version: certInfo.version,
+        thumbprint: certInfo.thumbprint,
+        executionTime
+      });
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackDependency({
+        dependencyTypeName: 'Azure Key Vault',
+        name: 'Get Certificate',
+        data: certificateName,
+        duration: executionTime,
+        resultCode: '200',
+        success: true,
+        properties: {
+          certificateName,
+          version: certInfo.version,
+          thumbprint: certInfo.thumbprint
+        }
+      });
+      {{/if}}
+
+      return certInfo;
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to retrieve certificate', {
+        certificateName,
+        version,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+
+      throw error;
+    }
+  }
+
+  public async rotateKey(
+    keyName: string,
+    keyType: 'RSA' | 'EC' = 'RSA',
+    keySize?: number
+  ): Promise<KeyRotationInfo> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      // Get current key version
+      const currentKey = await this.keyClient!.getKey(keyName);
+      const currentVersion = currentKey.properties.version;
+      
+      // Create new key version
+      const keyOptions = {
+        keyType,
+        keySize: keySize || (keyType === 'RSA' ? 2048 : 256),
+        keyOps: ['encrypt', 'decrypt', 'sign', 'verify', 'wrapKey', 'unwrapKey'],
+        tags: {
+          rotatedAt: new Date().toISOString(),
+          previousVersion: currentVersion || 'unknown'
+        }
+      };
+      
+      const newKey = await this.keyClient!.createRsaKey(keyName, keyOptions);
+      
+      const executionTime = Date.now() - startTime;
+      
+      const rotationInfo: KeyRotationInfo = {
+        keyName,
+        currentVersion: newKey.properties.version || 'unknown',
+        previousVersion: currentVersion,
+        rotationDate: new Date(),
+        nextRotationDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
+      };
+      
+      this.logger.info('Key rotated successfully', {
+        keyName,
+        previousVersion: currentVersion,
+        newVersion: rotationInfo.currentVersion,
+        executionTime
+      });
+      
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackEvent({
+        name: 'Key Vault Key Rotated',
+        properties: {
+          keyName,
+          previousVersion: currentVersion || 'unknown',
+          newVersion: rotationInfo.currentVersion,
+          keyType
+        },
+        measurements: {
+          executionTime
+        }
+      });
+      {{/if}}
+      
+      return rotationInfo;
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to rotate key', {
+        keyName,
+        keyType,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      throw error;
+    }
+  }
+
+  public async listSecrets(
+    options?: {
+      maxPageSize?: number;
+      includeTags?: boolean;
+    }
+  ): Promise<SecretMetadata[]> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    
+    try {
+      const secrets: SecretMetadata[] = [];
+      
+      for await (const secretProperties of this.secretClient!.listPropertiesOfSecrets()) {
+        const metadata: SecretMetadata = {
+          name: secretProperties.name,
+          version: secretProperties.version,
+          tags: options?.includeTags ? secretProperties.tags : undefined,
+          contentType: secretProperties.contentType,
+          notBefore: secretProperties.notBefore,
+          expiresOn: secretProperties.expiresOn,
+          createdOn: secretProperties.createdOn,
+          updatedOn: secretProperties.updatedOn,
+          enabled: secretProperties.enabled
+        };
+        
+        secrets.push(metadata);
+        
+        if (options?.maxPageSize && secrets.length >= options.maxPageSize) {
+          break;
+        }
+      }
+      
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.info('Secrets listed successfully', {
+        count: secrets.length,
+        executionTime
+      });
+      
+      return secrets;
+      
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      
+      this.logger.error('Failed to list secrets', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime
+      });
+      
+      throw error;
+    }
+  }
+
+  public getCacheMetrics() {
+    return {
+      cacheSize: this.secretCache.size,
+      maxCacheSize: this.configuration?.cacheConfig?.maxCacheSize || 0,
+      cacheEnabled: this.configuration?.cacheConfig?.enabled || false,
+      cacheHitRate: this.calculateCacheHitRate()
+    };
+  }
+
+  public clearCache(): void {
+    this.secretCache.clear();
+    this.logger.info('Key Vault cache cleared');
+  }
+
+  public async healthCheck(): Promise<{
+    healthy: boolean;
+    vaultAccessible: boolean;
+    responseTime: number;
+    error?: string;
+  }> {
+    const startTime = Date.now();
+    
+    try {
+      await this.ensureInitialized();
+      
+      // Try to list secrets (minimal operation)
+      const iterator = this.secretClient!.listPropertiesOfSecrets();
+      await iterator.next();
+      
+      const responseTime = Date.now() - startTime;
+      
+      return {
+        healthy: true,
+        vaultAccessible: true,
+        responseTime
+      };
+      
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
+      return {
+        healthy: false,
+        vaultAccessible: false,
+        responseTime,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  public async close(): Promise<void> {
+    try {
+      if (this.cacheCleanupInterval) {
+        clearInterval(this.cacheCleanupInterval);
+        this.cacheCleanupInterval = undefined;
+      }
+      
+      this.clearCache();
+      this.isInitialized = false;
+      
+      this.logger.info('Key Vault service closed successfully');
+      
+    } catch (error) {
+      this.logger.error('Error closing Key Vault service', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  private async getConfiguration(): Promise<KeyVaultConfiguration> {
+    const vaultUrl = process.env.AZURE_KEY_VAULT_URL || process.env.KEY_VAULT_URL;
+    
+    if (!vaultUrl) {
+      throw new Error('Key Vault URL not found. Please provide AZURE_KEY_VAULT_URL environment variable.');
+    }
+    
+    return {
+      vaultUrl,
+      cacheConfig: {
+        enabled: process.env.KEY_VAULT_CACHE_ENABLED === 'true',
+        ttlSeconds: parseInt(process.env.KEY_VAULT_CACHE_TTL || '300'), // 5 minutes
+        maxCacheSize: parseInt(process.env.KEY_VAULT_CACHE_MAX_SIZE || '100'),
+        encryptCache: process.env.KEY_VAULT_ENCRYPT_CACHE === 'true'
+      },
+      retryOptions: {
+        maxRetries: parseInt(process.env.KEY_VAULT_MAX_RETRIES || '3'),
+        retryDelayInMs: parseInt(process.env.KEY_VAULT_RETRY_DELAY || '1000'),
+        maxRetryDelayInMs: parseInt(process.env.KEY_VAULT_MAX_RETRY_DELAY || '10000')
+      }
+    };
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private getFromCache(cacheKey: string): CachedSecret | null {
+    const cached = this.secretCache.get(cacheKey);
+    
+    if (!cached) {
+      return null;
+    }
+    
+    // Check if cache entry has expired
+    if (cached.expiresAt < new Date()) {
+      this.secretCache.delete(cacheKey);
+      return null;
+    }
+    
+    return cached;
+  }
+
+  private async cacheSecret(cacheKey: string, secret: KeyVaultSecret): Promise<void> {
+    const config = this.configuration?.cacheConfig;
+    if (!config?.enabled) return;
+    
+    // Check cache size limit
+    if (this.secretCache.size >= (config.maxCacheSize || 100)) {
+      // Remove oldest entries
+      const oldestKey = this.secretCache.keys().next().value;
+      if (oldestKey) {
+        this.secretCache.delete(oldestKey);
+      }
+    }
+    
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (config.ttlSeconds * 1000));
+    
+    const cachedSecret: CachedSecret = {
+      value: config.encryptCache ? this.encryptCacheValue(secret.value!) : secret.value!,
+      metadata: {
+        name: secret.name,
+        version: secret.properties.version,
+        tags: secret.properties.tags,
+        contentType: secret.properties.contentType,
+        notBefore: secret.properties.notBefore,
+        expiresOn: secret.properties.expiresOn,
+        createdOn: secret.properties.createdOn,
+        updatedOn: secret.properties.updatedOn,
+        enabled: secret.properties.enabled
+      },
+      cachedAt: now,
+      expiresAt
+    };
+    
+    this.secretCache.set(cacheKey, cachedSecret);
+  }
+
+  private clearSecretFromCache(secretName: string): void {
+    const keysToDelete: string[] = [];
+    
+    for (const key of this.secretCache.keys()) {
+      if (key.startsWith(`${secretName}:`)) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => this.secretCache.delete(key));
+  }
+
+  private setupCacheCleanup(): void {
+    // Clean up expired cache entries every 5 minutes
+    this.cacheCleanupInterval = setInterval(() => {
+      const now = new Date();
+      const expiredKeys: string[] = [];
+      
+      for (const [key, cached] of this.secretCache.entries()) {
+        if (cached.expiresAt < now) {
+          expiredKeys.push(key);
+        }
+      }
+      
+      expiredKeys.forEach(key => this.secretCache.delete(key));
+      
+      if (expiredKeys.length > 0) {
+        this.logger.debug('Cleaned up expired cache entries', {
+          removedCount: expiredKeys.length,
+          remainingCount: this.secretCache.size
+        });
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+  }
+
+  private encryptCacheValue(value: string): string {
+    // Simple encryption for cache values (not cryptographically secure, just obfuscation)
+    const key = process.env.CACHE_ENCRYPTION_KEY || 'default-key-not-secure';
+    const hash = createHash('sha256').update(key).digest();
+    const iv = randomBytes(16);
+    const cipher = createCipheriv('aes-256-cbc', hash, iv);
+    
+    let encrypted = cipher.update(value, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    return iv.toString('hex') + ':' + encrypted;
+  }
+
+  private decryptCacheValue(encryptedValue: string): string {
+    const key = process.env.CACHE_ENCRYPTION_KEY || 'default-key-not-secure';
+    const hash = createHash('sha256').update(key).digest();
+    
+    const [ivHex, encrypted] = encryptedValue.split(':');
+    const iv = Buffer.from(ivHex, 'hex');
+    const decipher = createDecipheriv('aes-256-cbc', hash, iv);
+    
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  }
+
+  private calculateCacheHitRate(): number {
+    // This would need to be tracked during actual usage
+    // For now, return 0 as placeholder
+    return 0;
+  }
+}
+
+// Factory function for easy instantiation
+export const createAdvancedKeyVaultService = (
+  logger: Logger
+  {{#if enableApplicationInsights}},
+  appInsights: ApplicationInsightsService
+  {{/if}}
+): AdvancedKeyVaultService => {
+  return new AdvancedKeyVaultService(
+    logger
+    {{#if enableApplicationInsights}},
+    appInsights
+    {{/if}}
+  );
+};

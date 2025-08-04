@@ -1,0 +1,278 @@
+import { AzureFunction, Context, HttpRequest } from '@azure/functions';
+import { z } from 'zod';
+import { injectable, inject } from 'tsyringe';
+import { Logger } from '../services/logger.service';
+import { ValidationService } from '../services/validation.service';
+import { ErrorHandler } from '../middleware/error-handler';
+import { AuthMiddleware } from '../middleware/auth.middleware';
+import { RateLimitMiddleware } from '../middleware/rate-limit.middleware';
+{{#if enableKeyVault}}
+import { KeyVaultService } from '../services/key-vault.service';
+{{/if}}
+{{#if enableServiceBus}}
+import { ServiceBusService } from '../services/service-bus.service';
+{{/if}}
+{{#if enableApplicationInsights}}
+import { ApplicationInsightsService } from '../services/application-insights.service';
+{{/if}}
+
+// Request/Response schemas with Zod validation
+const RequestSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(1).max(100),
+  email: z.string().email().optional(),
+  data: z.record(z.unknown()).optional(),
+  metadata: z.object({
+    version: z.string().default('1.0'),
+    timestamp: z.string().datetime().optional(),
+    correlationId: z.string().uuid().optional()
+  }).optional()
+});
+
+const ResponseSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(['success', 'error', 'pending']),
+  message: z.string(),
+  data: z.unknown().optional(),
+  metadata: z.object({
+    processedAt: z.string().datetime(),
+    correlationId: z.string().uuid(),
+    executionTime: z.number().min(0)
+  })
+});
+
+type RequestData = z.infer<typeof RequestSchema>;
+type ResponseData = z.infer<typeof ResponseSchema>;
+
+@injectable()
+export class HttpTriggerHandler {
+  constructor(
+    @inject('Logger') private logger: Logger,
+    @inject('ValidationService') private validation: ValidationService,
+    @inject('ErrorHandler') private errorHandler: ErrorHandler,
+    @inject('AuthMiddleware') private auth: AuthMiddleware,
+    @inject('RateLimitMiddleware') private rateLimit: RateLimitMiddleware
+    {{#if enableKeyVault}},
+    @inject('KeyVaultService') private keyVault: KeyVaultService
+    {{/if}}
+    {{#if enableServiceBus}},
+    @inject('ServiceBusService') private serviceBus: ServiceBusService
+    {{/if}}
+    {{#if enableApplicationInsights}},
+    @inject('ApplicationInsightsService') private appInsights: ApplicationInsightsService
+    {{/if}}
+  ) {}
+
+  public async handle(context: Context, req: HttpRequest): Promise<void> {
+    const startTime = Date.now();
+    const correlationId = req.headers['x-correlation-id'] || context.invocationId;
+    
+    try {
+      // Initialize telemetry context
+      {{#if enableApplicationInsights}}
+      this.appInsights.setCorrelationId(correlationId);
+      this.appInsights.trackRequest({
+        name: 'HttpTrigger',
+        url: req.url,
+        method: req.method,
+        startTime: new Date(startTime)
+      });
+      {{/if}}
+
+      this.logger.info('Processing HTTP request', {
+        method: req.method,
+        url: req.url,
+        correlationId,
+        headers: this.sanitizeHeaders(req.headers)
+      });
+
+      // Apply rate limiting middleware
+      const rateLimitResult = await this.rateLimit.check(context, req);
+      if (!rateLimitResult.allowed) {
+        context.res = {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': rateLimitResult.retryAfter?.toString() || '60'
+          },
+          body: {
+            error: 'Rate limit exceeded',
+            retryAfter: rateLimitResult.retryAfter
+          }
+        };
+        return;
+      }
+
+      // Apply authentication middleware
+      const authResult = await this.auth.authenticate(context, req);
+      if (!authResult.authenticated) {
+        context.res = {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+          body: {
+            error: 'Authentication required',
+            message: authResult.message
+          }
+        };
+        return;
+      }
+
+      // Validate request data
+      const validationResult = await this.validation.validate(req.body, RequestSchema);
+      if (!validationResult.valid) {
+        context.res = {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: {
+            error: 'Invalid request data',
+            details: validationResult.errors
+          }
+        };
+        return;
+      }
+
+      const requestData = validationResult.data as RequestData;
+
+      // Process the request
+      const result = await this.processRequest(requestData, {
+        userId: authResult.user?.id,
+        correlationId,
+        context
+      });
+
+      // Prepare response
+      const response: ResponseData = {
+        id: result.id,
+        status: result.status,
+        message: result.message,
+        data: result.data,
+        metadata: {
+          processedAt: new Date().toISOString(),
+          correlationId,
+          executionTime: Date.now() - startTime
+        }
+      };
+
+      // Validate response before sending
+      const responseValidation = await this.validation.validate(response, ResponseSchema);
+      if (!responseValidation.valid) {
+        throw new Error(`Invalid response format: ${responseValidation.errors.join(', ')}`);
+      }
+
+      {{#if enableApplicationInsights}}
+      this.appInsights.trackRequest({
+        name: 'HttpTrigger',
+        url: req.url,
+        method: req.method,
+        startTime: new Date(startTime),
+        duration: Date.now() - startTime,
+        resultCode: '200',
+        success: true
+      });
+      {{/if}}
+
+      context.res = {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Correlation-ID': correlationId,
+          'X-Execution-Time': (Date.now() - startTime).toString()
+        },
+        body: response
+      };
+
+      this.logger.info('HTTP request processed successfully', {
+        correlationId,
+        executionTime: Date.now() - startTime,
+        status: response.status
+      });
+
+    } catch (error) {
+      await this.errorHandler.handle(error, context, {
+        correlationId,
+        operation: 'HttpTrigger',
+        startTime
+      });
+    }
+  }
+
+  private async processRequest(
+    data: RequestData, 
+    context: { userId?: string; correlationId: string; context: Context }
+  ): Promise<{
+    id: string;
+    status: 'success' | 'error' | 'pending';
+    message: string;
+    data?: unknown;
+  }> {
+    try {
+      {{#if enableKeyVault}}
+      // Example: Retrieve secrets from Key Vault
+      const apiKey = await this.keyVault.getSecret('external-api-key');
+      {{/if}}
+
+      // Business logic implementation
+      const processedData = {
+        ...data,
+        processedBy: context.userId,
+        processedAt: new Date().toISOString()
+      };
+
+      {{#if enableServiceBus}}
+      // Example: Send processed data to Service Bus for further processing
+      await this.serviceBus.sendMessage('processed-data-topic', {
+        data: processedData,
+        correlationId: context.correlationId,
+        metadata: {
+          source: 'http-trigger',
+          timestamp: new Date().toISOString()
+        }
+      });
+      {{/if}}
+
+      return {
+        id: crypto.randomUUID(),
+        status: 'success',
+        message: 'Request processed successfully',
+        data: processedData
+      };
+
+    } catch (error) {
+      this.logger.error('Error processing request', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        correlationId: context.correlationId
+      });
+
+      return {
+        id: crypto.randomUUID(),
+        status: 'error',
+        message: 'Failed to process request'
+      };
+    }
+  }
+
+  private sanitizeHeaders(headers: { [key: string]: string }): Record<string, string> {
+    const sanitized = { ...headers };
+    
+    // Remove sensitive headers
+    const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie'];
+    sensitiveHeaders.forEach(header => {
+      if (sanitized[header]) {
+        sanitized[header] = '[REDACTED]';
+      }
+    });
+
+    return sanitized;
+  }
+}
+
+// Azure Function entry point
+const httpTrigger: AzureFunction = async (context: Context, req: HttpRequest): Promise<void> => {
+  // Dependency injection container setup
+  const { container } = await import('../container');
+  const handler = container.resolve(HttpTriggerHandler);
+  
+  await handler.handle(context, req);
+};
+
+export default httpTrigger;

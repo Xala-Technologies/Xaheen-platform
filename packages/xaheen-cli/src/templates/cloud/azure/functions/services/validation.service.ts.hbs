@@ -1,0 +1,226 @@
+import { injectable } from 'tsyringe';
+import { z, ZodSchema, ZodError } from 'zod';
+import { Logger } from './logger.service';
+
+export interface ValidationResult<T = unknown> {
+  readonly valid: boolean;
+  readonly data?: T;
+  readonly errors: string[];
+  readonly warnings?: string[];
+}
+
+export interface ValidationService {
+  validate<T>(data: unknown, schema: ZodSchema<T>): Promise<ValidationResult<T>>;
+  validateAsync<T>(data: unknown, schema: ZodSchema<T>): Promise<ValidationResult<T>>;
+  sanitize(data: unknown): unknown;
+}
+
+@injectable()
+export class ZodValidationService implements ValidationService {
+  constructor(private logger: Logger) {}
+
+  public async validate<T>(data: unknown, schema: ZodSchema<T>): Promise<ValidationResult<T>> {
+    try {
+      // Sanitize input data before validation
+      const sanitizedData = this.sanitize(data);
+      
+      // Perform validation
+      const result = schema.parse(sanitizedData);
+      
+      this.logger.debug('Validation successful', {
+        dataKeys: this.getObjectKeys(data),
+        resultKeys: this.getObjectKeys(result)
+      });
+
+      return {
+        valid: true,
+        data: result,
+        errors: []
+      };
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errors = error.errors.map(err => {
+          const path = err.path.length > 0 ? err.path.join('.') : 'root';
+          return `${path}: ${err.message}`;
+        });
+
+        this.logger.warn('Validation failed', {
+          errors,
+          receivedData: this.getObjectKeys(data)
+        });
+
+        return {
+          valid: false,
+          errors
+        };
+      }
+
+      this.logger.error('Unexpected validation error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        receivedData: this.getObjectKeys(data)
+      });
+
+      return {
+        valid: false,
+        errors: ['Validation failed due to unexpected error']
+      };
+    }
+  }
+
+  public async validateAsync<T>(data: unknown, schema: ZodSchema<T>): Promise<ValidationResult<T>> {
+    try {
+      // Sanitize input data before validation
+      const sanitizedData = this.sanitize(data);
+      
+      // Perform async validation
+      const result = await schema.parseAsync(sanitizedData);
+      
+      this.logger.debug('Async validation successful', {
+        dataKeys: this.getObjectKeys(data),
+        resultKeys: this.getObjectKeys(result)
+      });
+
+      return {
+        valid: true,
+        data: result,
+        errors: []
+      };
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errors = error.errors.map(err => {
+          const path = err.path.length > 0 ? err.path.join('.') : 'root';
+          return `${path}: ${err.message}`;
+        });
+
+        this.logger.warn('Async validation failed', {
+          errors,
+          receivedData: this.getObjectKeys(data)
+        });
+
+        return {
+          valid: false,
+          errors
+        };
+      }
+
+      this.logger.error('Unexpected async validation error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        receivedData: this.getObjectKeys(data)
+      });
+
+      return {
+        valid: false,
+        errors: ['Async validation failed due to unexpected error']
+      };
+    }
+  }
+
+  public sanitize(data: unknown): unknown {
+    if (data === null || data === undefined) {
+      return data;
+    }
+
+    if (typeof data === 'string') {
+      return this.sanitizeString(data);
+    }
+
+    if (Array.isArray(data)) {
+      return data.map(item => this.sanitize(item));
+    }
+
+    if (typeof data === 'object') {
+      const sanitized: Record<string, unknown> = {};
+      
+      for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+        // Skip potentially dangerous keys
+        if (this.isDangerousKey(key)) {
+          this.logger.warn('Skipping dangerous key during sanitization', { key });
+          continue;
+        }
+        
+        sanitized[key] = this.sanitize(value);
+      }
+      
+      return sanitized;
+    }
+
+    return data;
+  }
+
+  private sanitizeString(str: string): string {
+    // Remove potentially dangerous characters or patterns
+    return str
+      .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/on\w+\s*=/gi, '') // Remove event handlers
+      .trim();
+  }
+
+  private isDangerousKey(key: string): boolean {
+    const dangerousKeys = [
+      '__proto__',
+      'constructor',
+      'prototype',
+      'eval',
+      'function',
+      'script'
+    ];
+    
+    return dangerousKeys.some(dangerous => 
+      key.toLowerCase().includes(dangerous.toLowerCase())
+    );
+  }
+
+  private getObjectKeys(data: unknown): string[] {
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      return Object.keys(data as Record<string, unknown>);
+    }
+    return [];
+  }
+}
+
+// Common validation schemas
+export const CommonSchemas = {
+  // UUID validation
+  uuid: z.string().uuid(),
+  
+  // Email validation
+  email: z.string().email(),
+  
+  // URL validation
+  url: z.string().url(),
+  
+  // Date validation
+  dateString: z.string().datetime(),
+  
+  // Pagination schema
+  pagination: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    sort: z.string().optional(),
+    order: z.enum(['asc', 'desc']).default('asc')
+  }),
+  
+  // Common metadata schema
+  metadata: z.object({
+    version: z.string().default('1.0'),
+    timestamp: z.string().datetime().optional(),
+    correlationId: z.string().uuid().optional(),
+    source: z.string().optional(),
+    tags: z.array(z.string()).optional()
+  }),
+  
+  // Error response schema
+  errorResponse: z.object({
+    error: z.string(),
+    message: z.string(),
+    code: z.string().optional(),
+    details: z.unknown().optional(),
+    timestamp: z.string().datetime()
+  })
+};
+
+// Export factory function
+export const createValidationService = (logger: Logger): ValidationService => {
+  return new ZodValidationService(logger);
+};

@@ -1,0 +1,411 @@
+import { injectable, inject } from 'tsyringe';
+import { Context, HttpRequest } from '@azure/functions';
+import { Logger } from '../services/logger.service';
+import { AuthenticationError, AuthorizationError } from './error-handler';
+{{#if enableKeyVault}}
+import { KeyVaultService } from '../services/key-vault.service';
+{{/if}}
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
+
+export interface AuthenticationResult {
+  readonly authenticated: boolean;
+  readonly user?: {
+    readonly id: string;
+    readonly email?: string;
+    readonly roles: string[];
+    readonly permissions: string[];
+    readonly tenantId?: string;
+    readonly claims: Record<string, unknown>;
+  };
+  readonly token?: string;
+  readonly message?: string;
+}
+
+export interface AuthorizationContext {
+  readonly user: AuthenticationResult['user'];
+  readonly resource: string;
+  readonly action: string;
+  readonly additionalContext?: Record<string, unknown>;
+}
+
+interface JWTPayload {
+  sub: string;
+  email?: string;
+  roles?: string[];
+  permissions?: string[];
+  tid?: string; // Tenant ID for Azure AD
+  aud: string;
+  iss: string;
+  exp: number;
+  iat: number;
+  [key: string]: unknown;
+}
+
+@injectable()
+export class AuthMiddleware {
+  private jwksClient?: jwksClient.JwksClient;
+  private jwtIssuer?: string;
+  private jwtAudience?: string;
+
+  constructor(
+    @inject('Logger') private logger: Logger
+    {{#if enableKeyVault}},
+    @inject('KeyVaultService') private keyVault: KeyVaultService
+    {{/if}}
+  ) {
+    this.initializeJWKS();
+  }
+
+  private async initializeJWKS(): Promise<void> {
+    try {
+      {{#if enableKeyVault}}
+      // Get JWT configuration from Key Vault
+      const jwtConfig = await this.keyVault.getSecret('jwt-config');
+      if (jwtConfig) {
+        const config = JSON.parse(jwtConfig);
+        this.jwtIssuer = config.issuer;
+        this.jwtAudience = config.audience;
+        
+        this.jwksClient = jwksClient({
+          jwksUri: config.jwksUri,
+          requestHeaders: {}, // Additional headers if needed
+          timeout: 30000, // Defaults to 30s
+          cache: true,
+          cacheMaxEntries: 5,
+          cacheMaxAge: 600000, // 10 minutes
+        });
+      }
+      {{else}}
+      // Use environment variables for JWT configuration
+      this.jwtIssuer = process.env.JWT_ISSUER;
+      this.jwtAudience = process.env.JWT_AUDIENCE;
+      
+      if (process.env.JWKS_URI) {
+        this.jwksClient = jwksClient({
+          jwksUri: process.env.JWKS_URI,
+          requestHeaders: {},
+          timeout: 30000,
+          cache: true,
+          cacheMaxEntries: 5,
+          cacheMaxAge: 600000,
+        });
+      }
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to initialize JWKS client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  public async authenticate(
+    context: Context,
+    req: HttpRequest
+  ): Promise<AuthenticationResult> {
+    try {
+      // Extract token from Authorization header
+      const token = this.extractToken(req);
+      if (!token) {
+        return {
+          authenticated: false,
+          message: 'No authentication token provided'
+        };
+      }
+
+      // Verify and decode the JWT token
+      const decodedToken = await this.verifyJWT(token);
+      if (!decodedToken) {
+        return {
+          authenticated: false,
+          message: 'Invalid or expired token'
+        };
+      }
+
+      // Extract user information from token
+      const user = this.extractUserFromToken(decodedToken);
+
+      this.logger.debug('User authenticated successfully', {
+        userId: user.id,
+        roles: user.roles,
+        tenantId: user.tenantId
+      });
+
+      return {
+        authenticated: true,
+        user,
+        token
+      };
+
+    } catch (error) {
+      this.logger.error('Authentication failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        url: req.url,
+        method: req.method
+      });
+
+      return {
+        authenticated: false,
+        message: 'Authentication failed'
+      };
+    }
+  }
+
+  public async authorize(
+    authContext: AuthorizationContext,
+    requiredPermissions: string[] = [],
+    requiredRoles: string[] = []
+  ): Promise<boolean> {
+    try {
+      if (!authContext.user) {
+        throw new AuthorizationError('User not authenticated');
+      }
+
+      // Check required roles
+      if (requiredRoles.length > 0) {
+        const hasRequiredRole = requiredRoles.some(role =>
+          authContext.user!.roles.includes(role)
+        );
+        
+        if (!hasRequiredRole) {
+          this.logger.warn('User lacks required roles', {
+            userId: authContext.user.id,
+            userRoles: authContext.user.roles,
+            requiredRoles,
+            resource: authContext.resource,
+            action: authContext.action
+          });
+          
+          throw new AuthorizationError(
+            `Access denied. Required roles: ${requiredRoles.join(', ')}`
+          );
+        }
+      }
+
+      // Check required permissions
+      if (requiredPermissions.length > 0) {
+        const hasRequiredPermission = requiredPermissions.some(permission =>
+          authContext.user!.permissions.includes(permission)
+        );
+        
+        if (!hasRequiredPermission) {
+          this.logger.warn('User lacks required permissions', {
+            userId: authContext.user.id,
+            userPermissions: authContext.user.permissions,
+            requiredPermissions,
+            resource: authContext.resource,
+            action: authContext.action
+          });
+          
+          throw new AuthorizationError(
+            `Access denied. Required permissions: ${requiredPermissions.join(', ')}`
+          );
+        }
+      }
+
+      // Additional custom authorization logic can be added here
+      // For example, resource-specific checks, tenant isolation, etc.
+
+      this.logger.debug('Authorization successful', {
+        userId: authContext.user.id,
+        resource: authContext.resource,
+        action: authContext.action
+      });
+
+      return true;
+
+    } catch (error) {
+      if (error instanceof AuthorizationError) {
+        throw error;
+      }
+
+      this.logger.error('Authorization check failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: authContext.user?.id,
+        resource: authContext.resource,
+        action: authContext.action
+      });
+
+      throw new AuthorizationError('Authorization failed due to system error');
+    }
+  }
+
+  private extractToken(req: HttpRequest): string | null {
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    
+    if (!authHeader) {
+      return null;
+    }
+
+    // Support both "Bearer token" and "token" formats
+    if (typeof authHeader === 'string') {
+      if (authHeader.startsWith('Bearer ')) {
+        return authHeader.slice(7);
+      }
+      return authHeader;
+    }
+
+    return null;
+  }
+
+  private async verifyJWT(token: string): Promise<JWTPayload | null> {
+    try {
+      if (!this.jwksClient) {
+        // Fallback to secret-based verification for development
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+          throw new Error('No JWT verification method available');
+        }
+        
+        const decoded = jwt.verify(token, secret) as JWTPayload;
+        return this.validateTokenClaims(decoded) ? decoded : null;
+      }
+
+      // JWKS-based verification (for production with Azure AD, Auth0, etc.)
+      return new Promise((resolve, reject) => {
+        // First decode the token to get the header
+        const decodedHeader = jwt.decode(token, { complete: true });
+        if (!decodedHeader || typeof decodedHeader === 'string') {
+          return resolve(null);
+        }
+
+        const kid = decodedHeader.header.kid;
+        if (!kid) {
+          return resolve(null);
+        }
+
+        // Get the signing key
+        this.jwksClient!.getSigningKey(kid, (err, key) => {
+          if (err) {
+            this.logger.error('Failed to get signing key', { error: err.message });
+            return resolve(null);
+          }
+
+          try {
+            const signingKey = key.getPublicKey();
+            const decoded = jwt.verify(token, signingKey, {
+              issuer: this.jwtIssuer,
+              audience: this.jwtAudience,
+              algorithms: ['RS256']
+            }) as JWTPayload;
+
+            resolve(this.validateTokenClaims(decoded) ? decoded : null);
+          } catch (verifyError) {
+            this.logger.error('JWT verification failed', {
+              error: verifyError instanceof Error ? verifyError.message : 'Unknown error'
+            });
+            resolve(null);
+          }
+        });
+      });
+
+    } catch (error) {
+      this.logger.error('JWT verification error', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return null;
+    }
+  }
+
+  private validateTokenClaims(decoded: JWTPayload): boolean {
+    // Check if token is expired
+    const now = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < now) {
+      this.logger.warn('Token has expired', {
+        expiredAt: new Date(decoded.exp * 1000).toISOString(),
+        now: new Date(now * 1000).toISOString()
+      });
+      return false;
+    }
+
+    // Check if token is not yet valid
+    if (decoded.iat && decoded.iat > now + 300) { // Allow 5 minutes clock skew
+      this.logger.warn('Token is not yet valid', {
+        issuedAt: new Date(decoded.iat * 1000).toISOString(),
+        now: new Date(now * 1000).toISOString()
+      });
+      return false;
+    }
+
+    // Validate required claims
+    if (!decoded.sub) {
+      this.logger.warn('Token missing required subject claim');
+      return false;
+    }
+
+    return true;
+  }
+
+  private extractUserFromToken(decoded: JWTPayload): NonNullable<AuthenticationResult['user']> {
+    // Extract roles from various possible claim names
+    const roles = this.extractClaimArray(decoded, [
+      'roles',
+      'role',
+      'groups',
+      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+    ]);
+
+    // Extract permissions from various possible claim names
+    const permissions = this.extractClaimArray(decoded, [
+      'permissions',
+      'scopes',
+      'scope',
+      'scp'
+    ]);
+
+    return {
+      id: decoded.sub,
+      email: decoded.email || decoded.preferred_username || decoded.upn,
+      roles,
+      permissions,
+      tenantId: decoded.tid,
+      claims: decoded
+    };
+  }
+
+  private extractClaimArray(decoded: JWTPayload, claimNames: string[]): string[] {
+    for (const claimName of claimNames) {
+      const claimValue = decoded[claimName];
+      
+      if (Array.isArray(claimValue)) {
+        return claimValue.filter(item => typeof item === 'string');
+      }
+      
+      if (typeof claimValue === 'string') {
+        // Handle space-separated values (common for OAuth scopes)
+        return claimValue.split(' ').filter(item => item.length > 0);
+      }
+    }
+    
+    return [];
+  }
+}
+
+// Utility functions
+export const requireAuth = () => {
+  return async (context: Context, req: HttpRequest, authMiddleware: AuthMiddleware) => {
+    const authResult = await authMiddleware.authenticate(context, req);
+    if (!authResult.authenticated) {
+      throw new AuthenticationError(authResult.message || 'Authentication required');
+    }
+    return authResult;
+  };
+};
+
+export const requireRoles = (roles: string[]) => {
+  return async (
+    authContext: AuthorizationContext,
+    authMiddleware: AuthMiddleware
+  ) => {
+    return await authMiddleware.authorize(authContext, [], roles);
+  };
+};
+
+export const requirePermissions = (permissions: string[]) => {
+  return async (
+    authContext: AuthorizationContext,
+    authMiddleware: AuthMiddleware
+  ) => {
+    return await authMiddleware.authorize(authContext, permissions, []);
+  };
+};
