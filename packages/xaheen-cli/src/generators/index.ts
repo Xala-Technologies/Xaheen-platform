@@ -499,6 +499,380 @@ async function executePatternGenerator(
 }
 
 /**
+ * Execute DevOps generator
+ */
+async function executeDevOpsGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options } = context;
+
+	try {
+		const { DevOpsGeneratorFactory } = await import("./devops/index");
+		
+		switch (type) {
+			case "docker":
+				const dockerGenerator = DevOpsGeneratorFactory.createDockerGenerator();
+				await dockerGenerator.generate({
+					projectName: name,
+					projectType: options.projectType || 'web',
+					runtime: options.runtime || 'node',
+					enableMultiStage: options.enableMultiStage !== false,
+					enableDevContainer: options.enableDevContainer !== false,
+					enableSecurity: options.enableSecurity !== false,
+					enableHealthCheck: options.enableHealthCheck !== false,
+					enablePrometheus: options.enablePrometheus || false,
+					registryUrl: options.registryUrl,
+					imageName: options.imageName || name,
+					imageTag: options.imageTag || 'latest',
+					workdir: options.workdir || '/app',
+					port: options.port || 3000,
+					exposePorts: options.exposePorts || [],
+					environment: options.environment || 'production',
+					optimizeForSize: options.optimizeForSize !== false,
+					enableNonRootUser: options.enableNonRootUser !== false,
+					customBuildArgs: options.customBuildArgs || []
+				});
+
+				return {
+					success: true,
+					message: `Docker configuration for '${name}' generated successfully`,
+					files: [
+						'Dockerfile',
+						'docker-compose.yml',
+						'.dockerignore',
+						'.devcontainer/devcontainer.json',
+						'scripts/docker-build.sh',
+						'scripts/docker-run.sh',
+						'scripts/docker-push.sh',
+						'scripts/docker-clean.sh'
+					],
+					commands: [
+						'chmod +x scripts/docker-*.sh',
+						'docker build -t ' + (options.imageName || name) + ' .',
+						'docker-compose up -d'
+					],
+					nextSteps: [
+						'Configure environment variables in .env file',
+						'Customize Docker settings for your specific needs',
+						'Set up container registry authentication',
+						'Configure CI/CD pipeline to build and push images',
+						'Test the container locally before deployment'
+					]
+				};
+
+			case "kubernetes":
+				const k8sGenerator = DevOpsGeneratorFactory.createKubernetesGenerator();
+				await k8sGenerator.generate({
+					appName: name,
+					namespace: options.namespace || 'default',
+					image: options.image || `${name}:latest`,
+					imageTag: options.imageTag || 'latest',
+					port: options.port || 3000,
+					targetPort: options.targetPort || 3000,
+					replicas: options.replicas || 3,
+					environment: options.environment || 'production',
+					enableIngress: options.enableIngress !== false,
+					enableHPA: options.enableHPA !== false,
+					enableConfigMap: options.enableConfigMap !== false,
+					enableSecrets: options.enableSecrets !== false,
+					enableServiceMesh: options.enableServiceMesh || false,
+					enablePrometheus: options.enablePrometheus !== false,
+					enableLogging: options.enableLogging !== false,
+					enableNetworkPolicies: options.enableNetworkPolicies || false,
+					enablePodSecurityPolicies: options.enablePodSecurityPolicies || false,
+					enableHelm: options.enableHelm || false,
+					enableIstio: options.enableIstio || false,
+					hostName: options.hostName,
+					resources: options.resources || {
+						requests: { cpu: '100m', memory: '128Mi' },
+						limits: { cpu: '500m', memory: '512Mi' }
+					},
+					hpa: options.hpa || {
+						minReplicas: 2,
+						maxReplicas: 10,
+						targetCPUUtilization: 80,
+						targetMemoryUtilization: 80
+					},
+					probes: options.probes || {
+						liveness: { path: '/health', initialDelaySeconds: 30, periodSeconds: 10 },
+						readiness: { path: '/ready', initialDelaySeconds: 5, periodSeconds: 5 }
+					}
+				});
+
+				return {
+					success: true,
+					message: `Kubernetes manifests for '${name}' generated successfully`,
+					files: [
+						'k8s/namespace.yaml',
+						'k8s/deployment.yaml',
+						'k8s/service.yaml',
+						'k8s/ingress.yaml',
+						'k8s/hpa.yaml',
+						'k8s/configmap.yaml',
+						'k8s/secrets.yaml',
+						'k8s/kustomization.yaml',
+						'scripts/k8s-deploy.sh',
+						'scripts/k8s-undeploy.sh'
+					],
+					commands: [
+						'chmod +x scripts/k8s-*.sh',
+						'kubectl apply -f k8s/',
+						'kubectl get pods -n ' + (options.namespace || 'default')
+					],
+					nextSteps: [
+						'Configure kubectl to connect to your cluster',
+						'Update image references in deployment manifests',
+						'Configure ingress hostname and TLS certificates',
+						'Set up monitoring and logging',
+						'Configure resource quotas and limits',
+						'Test the deployment in a staging environment'
+					]
+				};
+
+			case "github-actions":
+				const ghGenerator = DevOpsGeneratorFactory.createGitHubActionsGenerator();
+				await ghGenerator.generate({
+					projectName: name,
+					projectType: options.projectType || 'web',
+					runtime: options.runtime || 'node',
+					packageManager: options.packageManager || 'npm',
+					enableCI: options.enableCI !== false,
+					enableCD: options.enableCD !== false,
+					enableTesting: options.enableTesting !== false,
+					enableLinting: options.enableLinting !== false,
+					enableSecurity: options.enableSecurity !== false,
+					enableDependencyCheck: options.enableDependencyCheck !== false,
+					enableCodeCoverage: options.enableCodeCoverage !== false,
+					enablePerformanceTesting: options.enablePerformanceTesting || false,
+					enableSemanticRelease: options.enableSemanticRelease || false,
+					enableDocker: options.enableDocker !== false,
+					enableKubernetes: options.enableKubernetes || false,
+					enableNotifications: options.enableNotifications || false,
+					enableCaching: options.enableCaching !== false,
+					enableMatrix: options.enableMatrix || false,
+					environments: options.environments || [],
+					deploymentTargets: options.deploymentTargets || [],
+					testFrameworks: options.testFrameworks || ['unit'],
+					codeQualityTools: options.codeQualityTools || ['eslint'],
+					securityTools: options.securityTools || ['codeql'],
+					registries: options.registries || [],
+					secrets: options.secrets || [],
+					variables: options.variables || [],
+					triggers: options.triggers || {
+						push: true,
+						pullRequest: true,
+						schedule: [],
+						workflow_dispatch: true,
+						release: false
+					},
+					concurrency: options.concurrency || {
+						group: '${{ github.workflow }}-${{ github.ref }}',
+						cancel_in_progress: true
+					},
+					timeouts: options.timeouts || {
+						job: 360,
+						step: 30
+					}
+				});
+
+				return {
+					success: true,
+					message: `GitHub Actions workflows for '${name}' generated successfully`,
+					files: [
+						'.github/workflows/main.yml',
+						'.github/workflows/ci.yml',
+						'.github/workflows/security.yml',
+						'.github/workflows/deploy-production.yml',
+						'.github/actions/setup/action.yml',
+						'.github/actions/build/action.yml'
+					],
+					commands: [
+						'git add .github/',
+						'git commit -m "Add GitHub Actions workflows"',
+						'git push origin main'
+					],
+					nextSteps: [
+						'Configure repository secrets for deployment',
+						'Set up deployment environments with protection rules',
+						'Configure branch protection rules',
+						'Add status checks to pull requests',
+						'Set up notifications for workflow failures',
+						'Test the workflows with a pull request'
+					]
+				};
+
+			case "azure-devops":
+				const azureGenerator = DevOpsGeneratorFactory.createAzureDevOpsGenerator();
+				await azureGenerator.generate({
+					projectName: name,
+					projectType: options.projectType || 'web',
+					runtime: options.runtime || 'node',
+					packageManager: options.packageManager || 'npm',
+					enableCI: options.enableCI !== false,
+					enableCD: options.enableCD !== false,
+					enableTesting: options.enableTesting !== false,
+					enableSecurity: options.enableSecurity !== false,
+					enableCodeCoverage: options.enableCodeCoverage !== false,
+					enableArtifacts: options.enableArtifacts !== false,
+					enableApprovals: options.enableApprovals || false,
+					enableGates: options.enableGates || false,
+					enableMultiStage: options.enableMultiStage !== false,
+					poolName: options.poolName || '',
+					vmImage: options.vmImage || 'ubuntu-latest',
+					environments: options.environments || [],
+					serviceConnections: options.serviceConnections || [],
+					variableGroups: options.variableGroups || [],
+					buildConfiguration: options.buildConfiguration || 'Release',
+					artifactName: options.artifactName || 'drop',
+					testFrameworks: options.testFrameworks || ['unit'],
+					securityTools: options.securityTools || ['whitesource'],
+					deploymentSlots: options.deploymentSlots || [],
+					azureSubscription: options.azureSubscription || '',
+					resourceGroup: options.resourceGroup || '',
+					appServiceName: options.appServiceName || name,
+					containerRegistry: options.containerRegistry || '',
+					keyVault: options.keyVault || '',
+					applicationInsights: options.applicationInsights || '',
+					triggers: options.triggers || {
+						ci: {
+							branches: ['main', 'develop'],
+							paths: ['src/**'],
+							excludePaths: ['docs/**']
+						},
+						pr: {
+							branches: ['main'],
+							paths: ['src/**'],
+							drafts: false
+						},
+						scheduled: []
+					},
+					stages: options.stages || []
+				});
+
+				return {
+					success: true,
+					message: `Azure DevOps pipelines for '${name}' generated successfully`,
+					files: [
+						'azure-pipelines.yml',
+						'pipelines/ci-pipeline.yml',
+						'pipelines/cd-pipeline.yml',
+						'pipelines/security-pipeline.yml',
+						'pipelines/templates/variables-global.yml',
+						'pipelines/templates/job-build.yml',
+						'pipelines/templates/stage-ci.yml'
+					],
+					commands: [
+						'git add azure-pipelines.yml pipelines/',
+						'git commit -m "Add Azure DevOps pipelines"',
+						'git push origin main'
+					],
+					nextSteps: [
+						'Create service connections in Azure DevOps',
+						'Configure variable groups for environments',
+						'Set up approval workflows for production',
+						'Configure branch policies and build validation',
+						'Set up release dashboards and monitoring',
+						'Test the pipeline with a sample deployment'
+					]
+				};
+
+			case "gitlab-ci":
+				const gitlabGenerator = DevOpsGeneratorFactory.createGitLabCIGenerator();
+				await gitlabGenerator.generate({
+					projectName: name,
+					projectType: options.projectType || 'web',
+					runtime: options.runtime || 'node',
+					packageManager: options.packageManager || 'npm',
+					enableCI: options.enableCI !== false,
+					enableCD: options.enableCD !== false,
+					enableTesting: options.enableTesting !== false,
+					enableSecurity: options.enableSecurity !== false,
+					enableCodeQuality: options.enableCodeQuality !== false,
+					enableDependencyScanning: options.enableDependencyScanning !== false,
+					enableContainerScanning: options.enableContainerScanning !== false,
+					enableDAST: options.enableDAST || false,
+					enableSAST: options.enableSAST !== false,
+					enableLicense: options.enableLicense || false,
+					enablePerformance: options.enablePerformance || false,
+					enableReviews: options.enableReviews || false,
+					enablePages: options.enablePages || false,
+					enableAutoDevOps: options.enableAutoDevOps || false,
+					stages: options.stages || ['build', 'test', 'deploy'],
+					images: options.images || {
+						default: 'node:20-alpine'
+					},
+					services: options.services || [],
+					variables: options.variables || {},
+					beforeScript: options.beforeScript || [],
+					afterScript: options.afterScript || [],
+					cache: options.cache || {
+						key: '$CI_COMMIT_REF_SLUG',
+						paths: ['node_modules/'],
+						policy: 'pull-push',
+						when: 'on_success'
+					},
+					artifacts: options.artifacts || {
+						name: '$CI_COMMIT_REF_SLUG',
+						paths: ['dist/'],
+						reports: {},
+						expire_in: '1 week',
+						when: 'on_success'
+					},
+					environments: options.environments || [],
+					rules: options.rules || [],
+					includes: options.includes || [],
+					tags: options.tags || [],
+					runners: options.runners || {
+						shared: true,
+						tags: []
+					}
+				});
+
+				return {
+					success: true,
+					message: `GitLab CI/CD configuration for '${name}' generated successfully`,
+					files: [
+						'.gitlab-ci.yml',
+						'.gitlab/ci/security.yml',
+						'.gitlab/ci/docker.yml',
+						'.gitlab/ci/pages.yml',
+						'.gitlab/ci/templates/build.yml',
+						'.gitlab/ci/templates/test.yml',
+						'.gitlab/ci/templates/deploy.yml'
+					],
+					commands: [
+						'git add .gitlab-ci.yml .gitlab/',
+						'git commit -m "Add GitLab CI/CD configuration"',
+						'git push origin main'
+					],
+					nextSteps: [
+						'Configure CI/CD variables in GitLab project settings',
+						'Set up deployment environments with protection rules',
+						'Enable GitLab Pages if using the pages job',
+						'Configure container registry authentication',
+						'Set up monitoring and alerting for pipeline failures',
+						'Test the pipeline by creating a merge request'
+					]
+				};
+
+			default:
+				return {
+					success: false,
+					message: `Unknown DevOps generator type: ${type}`,
+					error: `DevOps generator type '${type}' is not supported`,
+				};
+		}
+
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate DevOps ${type}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
  * Execute compliance generator
  */
 async function executeComplianceGenerator(

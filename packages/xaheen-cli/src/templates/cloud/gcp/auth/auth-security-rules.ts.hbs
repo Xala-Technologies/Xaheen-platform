@@ -1,0 +1,838 @@
+/**
+ * Firebase Auth Security Rules and Custom Claims
+ * Advanced security configuration for {{projectName}}
+ */
+
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import { logger } from '../functions/src/utils/logger';
+
+export interface CustomClaims {
+  role: 'admin' | 'moderator' | 'user' | 'guest';
+  permissions: string[];
+  organizations: string[];
+  subscriptionLevel: 'free' | 'pro' | 'enterprise';
+  mfaEnabled: boolean;
+  emailVerified: boolean;
+  norwegianVerified?: boolean;
+  bankIdVerified?: boolean;
+  vippsVerified?: boolean;
+  gdprConsent: boolean;
+  lastPasswordChange?: number;
+  accountLocked?: boolean;
+  loginAttempts?: number;
+  createdAt: number;
+  lastLoginAt?: number;
+}
+
+export interface SecurityPolicy {
+  maxLoginAttempts: number;
+  lockoutDurationMinutes: number;
+  sessionTimeoutMinutes: number;
+  passwordExpiryDays: number;
+  requireMFAForAdmins: boolean;
+  requireMFAForModerators: boolean;
+  allowedCountries?: string[];
+  blockedCountries?: string[];
+  allowedIpRanges?: string[];
+  blockedIpRanges?: string[];
+  maxSessionsPerUser: number;
+  enableDeviceTracking: boolean;
+  enableLocationTracking: boolean;
+  requireReauthForSensitiveOperations: boolean;
+  sensitiveOperations: string[];
+}
+
+export interface UserSecurityProfile {
+  uid: string;
+  email: string;
+  loginAttempts: number;
+  lastLoginAt?: Date;
+  lastLoginIp?: string;
+  lastLoginUserAgent?: string;
+  lastLoginLocation?: {
+    country: string;
+    city: string;
+    coordinates?: [number, number];
+  };
+  accountLocked: boolean;
+  lockedUntil?: Date;
+  lockedReason?: string;
+  mfaEnabled: boolean;
+  mfaEnrolledAt?: Date;
+  deviceFingerprints: string[];
+  suspiciousActivity: SuspiciousActivity[];
+  passwordChangedAt?: Date;
+  emailVerifiedAt?: Date;
+  phoneVerifiedAt?: Date;
+  bankIdVerifiedAt?: Date;
+  vippsVerifiedAt?: Date;
+  gdprConsentAt?: Date;
+  gdprConsentVersion?: string;
+  dataRetentionUntil?: Date;
+  accountFlags: string[];
+  riskScore: number; // 0-100, higher is riskier
+}
+
+export interface SuspiciousActivity {
+  type: 'unusual_location' | 'unusual_time' | 'multiple_failed_logins' | 'new_device' | 'tor_usage' | 'vpn_usage';
+  timestamp: Date;
+  details: Record<string, any>;
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  resolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: Date;
+}
+
+export interface LoginContext {
+  ip: string;
+  userAgent: string;
+  timestamp: Date;
+  location?: {
+    country: string;
+    city: string;
+    coordinates?: [number, number];
+  };
+  deviceFingerprint?: string;
+  isNewDevice: boolean;
+  isVpn?: boolean;
+  isTor?: boolean;
+  riskScore: number;
+}
+
+/**
+ * Auth Security Manager
+ */
+export class AuthSecurityManager {
+  private auth = getAuth();
+  private firestore = getFirestore();
+  private securityPolicy: SecurityPolicy;
+
+  constructor(securityPolicy: SecurityPolicy) {
+    this.securityPolicy = securityPolicy;
+  }
+
+  /**
+   * Set custom claims for user
+   */
+  async setCustomClaims(uid: string, claims: Partial<CustomClaims>): Promise<boolean> {
+    try {
+      // Get existing claims
+      const user = await this.auth.getUser(uid);
+      const existingClaims = (user.customClaims as CustomClaims) || {};
+
+      // Merge claims
+      const newClaims: CustomClaims = {
+        ...existingClaims,
+        ...claims,
+        lastUpdated: Date.now()
+      };
+
+      // Validate claims
+      if (!this.validateCustomClaims(newClaims)) {
+        throw new Error('Invalid custom claims');
+      }
+
+      // Set claims
+      await this.auth.setCustomUserClaims(uid, newClaims);
+
+      // Log claims update
+      logger.info('Custom claims updated', {
+        uid,
+        updatedClaims: Object.keys(claims),
+        role: newClaims.role
+      });
+
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to set custom claims', {
+        error: error.message,
+        uid,
+        claims
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Grant role to user
+   */
+  async grantRole(uid: string, role: CustomClaims['role']): Promise<boolean> {
+    try {
+      // Get role permissions
+      const permissions = this.getRolePermissions(role);
+
+      return await this.setCustomClaims(uid, {
+        role,
+        permissions
+      });
+
+    } catch (error) {
+      logger.error('Failed to grant role', {
+        error: error.message,
+        uid,
+        role
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Add user to organization
+   */
+  async addToOrganization(uid: string, organizationId: string): Promise<boolean> {
+    try {
+      const user = await this.auth.getUser(uid);
+      const claims = (user.customClaims as CustomClaims) || {};
+      const organizations = claims.organizations || [];
+
+      if (!organizations.includes(organizationId)) {
+        organizations.push(organizationId);
+        
+        return await this.setCustomClaims(uid, {
+          organizations
+        });
+      }
+
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to add user to organization', {
+        error: error.message,
+        uid,
+        organizationId
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Remove user from organization
+   */
+  async removeFromOrganization(uid: string, organizationId: string): Promise<boolean> {
+    try {
+      const user = await this.auth.getUser(uid);
+      const claims = (user.customClaims as CustomClaims) || {};
+      const organizations = (claims.organizations || []).filter(org => org !== organizationId);
+
+      return await this.setCustomClaims(uid, {
+        organizations
+      });
+
+    } catch (error) {
+      logger.error('Failed to remove user from organization', {
+        error: error.message,
+        uid,
+        organizationId
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Validate login attempt
+   */
+  async validateLoginAttempt(uid: string, context: LoginContext): Promise<{
+    allowed: boolean;
+    reason?: string;
+    requireMFA?: boolean;
+    suspiciousActivity?: boolean;
+  }> {
+    try {
+      // Get user security profile
+      const securityProfile = await this.getUserSecurityProfile(uid);
+
+      // Check if account is locked
+      if (securityProfile.accountLocked) {
+        if (securityProfile.lockedUntil && new Date() < securityProfile.lockedUntil) {
+          return {
+            allowed: false,
+            reason: 'Account is temporarily locked due to security concerns'
+          };
+        } else {
+          // Unlock account if lock period has expired
+          await this.unlockAccount(uid);
+        }
+      }
+
+      // Check IP restrictions
+      if (!this.isIpAllowed(context.ip)) {
+        await this.recordSuspiciousActivity(uid, {
+          type: 'unusual_location',
+          timestamp: context.timestamp,
+          details: { ip: context.ip, location: context.location },
+          riskLevel: 'high',
+          resolved: false
+        });
+
+        return {
+          allowed: false,
+          reason: 'Login from restricted location'
+        };
+      }
+
+      // Check for suspicious activity
+      const riskAssessment = await this.assessLoginRisk(uid, context);
+      
+      if (riskAssessment.riskLevel === 'critical') {
+        await this.lockAccount(uid, 'Critical risk detected', 24 * 60); // 24 hours
+        return {
+          allowed: false,
+          reason: 'Account locked due to suspicious activity'
+        };
+      }
+
+      // Determine if MFA is required
+      const requireMFA = this.shouldRequireMFA(securityProfile, riskAssessment);
+
+      // Update security profile
+      await this.updateSecurityProfile(uid, {
+        lastLoginAt: context.timestamp,
+        lastLoginIp: context.ip,
+        lastLoginUserAgent: context.userAgent,
+        lastLoginLocation: context.location,
+        loginAttempts: 0, // Reset on successful validation
+        riskScore: riskAssessment.score
+      });
+
+      return {
+        allowed: true,
+        requireMFA,
+        suspiciousActivity: riskAssessment.riskLevel !== 'low'
+      };
+
+    } catch (error) {
+      logger.error('Failed to validate login attempt', {
+        error: error.message,
+        uid,
+        ip: context.ip
+      });
+
+      return {
+        allowed: false,
+        reason: 'Security validation failed'
+      };
+    }
+  }
+
+  /**
+   * Record failed login attempt
+   */
+  async recordFailedLoginAttempt(uid: string, context: LoginContext): Promise<void> {
+    try {
+      const securityProfile = await this.getUserSecurityProfile(uid);
+      const newAttempts = securityProfile.loginAttempts + 1;
+
+      // Check if account should be locked
+      if (newAttempts >= this.securityPolicy.maxLoginAttempts) {
+        await this.lockAccount(
+          uid,
+          `Too many failed login attempts (${newAttempts})`,
+          this.securityPolicy.lockoutDurationMinutes
+        );
+
+        // Record suspicious activity
+        await this.recordSuspiciousActivity(uid, {
+          type: 'multiple_failed_logins',
+          timestamp: context.timestamp,
+          details: { attempts: newAttempts, ip: context.ip },
+          riskLevel: 'high',
+          resolved: false
+        });
+      } else {
+        // Update login attempts
+        await this.updateSecurityProfile(uid, {
+          loginAttempts: newAttempts
+        });
+      }
+
+      logger.warn('Failed login attempt recorded', {
+        uid,
+        attempts: newAttempts,
+        ip: context.ip
+      });
+
+    } catch (error) {
+      logger.error('Failed to record login attempt', {
+        error: error.message,
+        uid
+      });
+    }
+  }
+
+  /**
+   * Lock user account
+   */
+  async lockAccount(uid: string, reason: string, durationMinutes: number): Promise<boolean> {
+    try {
+      const lockedUntil = new Date(Date.now() + (durationMinutes * 60 * 1000));
+
+      await this.updateSecurityProfile(uid, {
+        accountLocked: true,
+        lockedUntil,
+        lockedReason: reason
+      });
+
+      // Update custom claims
+      await this.setCustomClaims(uid, {
+        accountLocked: true
+      });
+
+      // Revoke all refresh tokens to force re-authentication
+      await this.auth.revokeRefreshTokens(uid);
+
+      logger.warn('Account locked', {
+        uid,
+        reason,
+        lockedUntil: lockedUntil.toISOString()
+      });
+
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to lock account', {
+        error: error.message,
+        uid,
+        reason
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Unlock user account
+   */
+  async unlockAccount(uid: string): Promise<boolean> {
+    try {
+      await this.updateSecurityProfile(uid, {
+        accountLocked: false,
+        lockedUntil: null,
+        lockedReason: null,
+        loginAttempts: 0
+      });
+
+      // Update custom claims
+      await this.setCustomClaims(uid, {
+        accountLocked: false
+      });
+
+      logger.info('Account unlocked', { uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to unlock account', {
+        error: error.message,
+        uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Enable MFA for user
+   */
+  async enableMFA(uid: string): Promise<boolean> {
+    try {
+      await this.setCustomClaims(uid, {
+        mfaEnabled: true
+      });
+
+      await this.updateSecurityProfile(uid, {
+        mfaEnabled: true,
+        mfaEnrolledAt: new Date()
+      });
+
+      logger.info('MFA enabled for user', { uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to enable MFA', {
+        error: error.message,
+        uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Disable MFA for user
+   */
+  async disableMFA(uid: string): Promise<boolean> {
+    try {
+      await this.setCustomClaims(uid, {
+        mfaEnabled: false
+      });
+
+      await this.updateSecurityProfile(uid, {
+        mfaEnabled: false
+      });
+
+      logger.info('MFA disabled for user', { uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to disable MFA', {
+        error: error.message,
+        uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Get user security profile
+   */
+  private async getUserSecurityProfile(uid: string): Promise<UserSecurityProfile> {
+    const doc = await this.firestore.collection('user_security_profiles').doc(uid).get();
+    
+    if (!doc.exists) {
+      // Create default security profile
+      const defaultProfile: UserSecurityProfile = {
+        uid,
+        email: '',
+        loginAttempts: 0,
+        accountLocked: false,
+        mfaEnabled: false,
+        deviceFingerprints: [],
+        suspiciousActivity: [],
+        accountFlags: [],
+        riskScore: 0
+      };
+
+      await this.firestore.collection('user_security_profiles').doc(uid).set(defaultProfile);
+      return defaultProfile;
+    }
+
+    return doc.data() as UserSecurityProfile;
+  }
+
+  /**
+   * Update security profile
+   */
+  private async updateSecurityProfile(uid: string, updates: Partial<UserSecurityProfile>): Promise<void> {
+    await this.firestore.collection('user_security_profiles').doc(uid).update({
+      ...updates,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  /**
+   * Record suspicious activity
+   */
+  private async recordSuspiciousActivity(uid: string, activity: SuspiciousActivity): Promise<void> {
+    const securityProfile = await this.getUserSecurityProfile(uid);
+    securityProfile.suspiciousActivity.push(activity);
+
+    await this.updateSecurityProfile(uid, {
+      suspiciousActivity: securityProfile.suspiciousActivity
+    });
+
+    // Log to security monitoring
+    logger.warn('Suspicious activity detected', {
+      uid,
+      type: activity.type,
+      riskLevel: activity.riskLevel,
+      details: activity.details
+    });
+  }
+
+  /**
+   * Assess login risk
+   */
+  private async assessLoginRisk(uid: string, context: LoginContext): Promise<{
+    score: number;
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    factors: string[];
+  }> {
+    const securityProfile = await this.getUserSecurityProfile(uid);
+    let score = 0;
+    const factors: string[] = [];
+
+    // Check for new device
+    if (context.isNewDevice) {
+      score += 20;
+      factors.push('new_device');
+    }
+
+    // Check for unusual location
+    if (context.location && securityProfile.lastLoginLocation) {
+      const distance = this.calculateDistance(
+        securityProfile.lastLoginLocation.coordinates || [0, 0],
+        context.location.coordinates || [0, 0]
+      );
+      
+      if (distance > 1000) { // More than 1000km
+        score += 30;
+        factors.push('unusual_location');
+      }
+    }
+
+    // Check for VPN/Tor usage
+    if (context.isVpn) {
+      score += 25;
+      factors.push('vpn_usage');
+    }
+
+    if (context.isTor) {
+      score += 40;
+      factors.push('tor_usage');
+    }
+
+    // Check time patterns
+    const currentHour = new Date().getHours();
+    if (currentHour < 6 || currentHour > 22) {
+      score += 10;
+      factors.push('unusual_time');
+    }
+
+    // Check previous suspicious activity
+    const recentActivity = securityProfile.suspiciousActivity.filter(
+      activity => !activity.resolved && 
+      (Date.now() - activity.timestamp.getTime()) < (7 * 24 * 60 * 60 * 1000) // Last 7 days
+    );
+
+    if (recentActivity.length > 0) {
+      score += recentActivity.length * 15;
+      factors.push('previous_suspicious_activity');
+    }
+
+    // Determine risk level
+    let riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    if (score >= 80) {
+      riskLevel = 'critical';
+    } else if (score >= 60) {
+      riskLevel = 'high';
+    } else if (score >= 30) {
+      riskLevel = 'medium';
+    } else {
+      riskLevel = 'low';
+    }
+
+    return { score, riskLevel, factors };
+  }
+
+  /**
+   * Determine if MFA should be required
+   */
+  private shouldRequireMFA(securityProfile: UserSecurityProfile, riskAssessment: any): boolean {
+    // Always require MFA for high-risk logins
+    if (riskAssessment.riskLevel === 'high' || riskAssessment.riskLevel === 'critical') {
+      return true;
+    }
+
+    // Check user role requirements
+    const userClaims = securityProfile as any; // Would get from auth claims
+    if (userClaims.role === 'admin' && this.securityPolicy.requireMFAForAdmins) {
+      return true;
+    }
+
+    if (userClaims.role === 'moderator' && this.securityPolicy.requireMFAForModerators) {
+      return true;
+    }
+
+    // Check if user has MFA enabled
+    return securityProfile.mfaEnabled;
+  }
+
+  /**
+   * Check if IP is allowed
+   */
+  private isIpAllowed(ip: string): boolean {
+    // Check blocked IPs
+    if (this.securityPolicy.blockedIpRanges) {
+      for (const range of this.securityPolicy.blockedIpRanges) {
+        if (this.isIpInRange(ip, range)) {
+          return false;
+        }
+      }
+    }
+
+    // Check allowed IPs (if specified)
+    if (this.securityPolicy.allowedIpRanges && this.securityPolicy.allowedIpRanges.length > 0) {
+      for (const range of this.securityPolicy.allowedIpRanges) {
+        if (this.isIpInRange(ip, range)) {
+          return true;
+        }
+      }
+      return false; // IP not in allowed ranges
+    }
+
+    return true; // No restrictions or IP not blocked
+  }
+
+  /**
+   * Check if IP is in range
+   */
+  private isIpInRange(ip: string, range: string): boolean {
+    // Simple CIDR check (implement proper CIDR matching)
+    if (range.includes('/')) {
+      // CIDR notation
+      const [rangeIp, subnet] = range.split('/');
+      // Implement CIDR matching logic
+      return false; // Placeholder
+    } else {
+      // Exact match
+      return ip === range;
+    }
+  }
+
+  /**
+   * Calculate distance between coordinates
+   */
+  private calculateDistance(coord1: [number, number], coord2: [number, number]): number {
+    const [lat1, lon1] = coord1;
+    const [lat2, lon2] = coord2;
+    
+    const R = 6371; // Earth's radius in km
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  /**
+   * Convert degrees to radians
+   */
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  /**
+   * Validate custom claims
+   */
+  private validateCustomClaims(claims: CustomClaims): boolean {
+    // Validate role
+    const validRoles = ['admin', 'moderator', 'user', 'guest'];
+    if (!validRoles.includes(claims.role)) {
+      return false;
+    }
+
+    // Validate permissions are valid
+    const validPermissions = this.getAllValidPermissions();
+    for (const permission of claims.permissions) {
+      if (!validPermissions.includes(permission)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Get role permissions
+   */
+  private getRolePermissions(role: CustomClaims['role']): string[] {
+    const rolePermissions = {
+      admin: [
+        'user.read',
+        'user.write',
+        'user.delete',
+        'organization.read',
+        'organization.write',
+        'organization.delete',
+        'project.read',
+        'project.write',
+        'project.delete',
+        'system.admin'
+      ],
+      moderator: [
+        'user.read',
+        'user.write',
+        'organization.read',
+        'project.read',
+        'project.write',
+        'content.moderate'
+      ],
+      user: [
+        'user.read',
+        'organization.read',
+        'project.read',
+        'project.write'
+      ],
+      guest: [
+        'user.read'
+      ]
+    };
+
+    return rolePermissions[role] || [];
+  }
+
+  /**
+   * Get all valid permissions
+   */
+  private getAllValidPermissions(): string[] {
+    return [
+      'user.read',
+      'user.write',
+      'user.delete',
+      'organization.read',
+      'organization.write',
+      'organization.delete',
+      'project.read',
+      'project.write',
+      'project.delete',
+      'content.moderate',
+      'system.admin'
+    ];
+  }
+}
+
+/**
+ * Default security policies
+ */
+export const securityPolicies = {
+  production: {
+    maxLoginAttempts: 5,
+    lockoutDurationMinutes: 30,
+    sessionTimeoutMinutes: 480, // 8 hours
+    passwordExpiryDays: 90,
+    requireMFAForAdmins: true,
+    requireMFAForModerators: true,
+    maxSessionsPerUser: 3,
+    enableDeviceTracking: true,
+    enableLocationTracking: true,
+    requireReauthForSensitiveOperations: true,
+    sensitiveOperations: [
+      'user.delete',
+      'organization.delete',
+      'payment.process',
+      'data.export',
+      'system.admin'
+    ]
+  },
+
+  development: {
+    maxLoginAttempts: 10,
+    lockoutDurationMinutes: 5,
+    sessionTimeoutMinutes: 60, // 1 hour
+    passwordExpiryDays: 365,
+    requireMFAForAdmins: false,
+    requireMFAForModerators: false,
+    maxSessionsPerUser: 10,
+    enableDeviceTracking: false,
+    enableLocationTracking: false,
+    requireReauthForSensitiveOperations: false,
+    sensitiveOperations: []
+  }
+};
+
+/**
+ * Factory function to create security manager
+ */
+export function createSecurityManager(
+  environment: 'production' | 'development' = 'production'
+): AuthSecurityManager {
+  const policy = securityPolicies[environment];
+  return new AuthSecurityManager(policy);
+}
+
+// Export default security manager
+export const securityManager = createSecurityManager(
+  process.env.NODE_ENV === 'production' ? 'production' : 'development'
+);

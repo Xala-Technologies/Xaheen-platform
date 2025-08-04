@@ -6,6 +6,13 @@ Multi-platform MCP server for generating enterprise-grade UI components across R
 
 ## Features
 
+### 🚀 Enhanced Developer Experience (v6.1 Updates)
+- **Quick Generate Tools** - Streamlined component generation with smart presets
+- **Component Retrieval** - Browse, search, and inspect template library like shadcn/ui
+- **Intelligent Caching** - Template caching system for improved performance
+- **Enhanced Validation** - Detailed error messages with helpful suggestions
+- **Simplified Interface** - Reduced complexity with focused tool sets
+
 ### 🎯 Complete CLI Template Alignment
 - **131+ Production Templates** directly from CLI
 - **7 Platform Support** with platform-specific optimizations
@@ -40,61 +47,103 @@ bun add @xala-technologies/ui-system-mcp
 
 ## MCP Tools Available
 
-### 1. `generate_multi_platform_component`
+### 🚀 Quick Generate Tools (New!)
+
+#### 1. `quick_generate`
+Quickly generate components using smart presets and platform optimizations.
+
+```json
+{
+  "name": "UserProfile",
+  "type": "basic-form",
+  "platform": "react",
+  "customizations": {
+    "theme": "enterprise",
+    "features": {
+      "validation": true,
+      "animated": true
+    }
+  }
+}
+```
+
+#### 2. `quick_generate_set`  
+Generate multiple components with consistent theming.
+
+```json
+{
+  "components": [
+    { "name": "LoginForm", "type": "basic-form" },
+    { "name": "UserTable", "type": "data-table" },
+    { "name": "MainNav", "type": "navigation-menu" }
+  ],
+  "platform": "nextjs",
+  "theme": "enterprise"
+}
+```
+
+#### 3. `get_quick_presets`
+Get available component presets with descriptions.
+
+#### 4. `get_platform_recommendations`
+Get platform-specific recommendations and best practices.
+
+### 🔍 Component Retrieval Tools (New!)
+
+#### 5. `get_component_source`
+Retrieve component source code from template library.
+
+```json
+{
+  "name": "navbar",
+  "platform": "react",
+  "variant": "default"
+}
+```
+
+#### 6. `get_component_demo`
+Get component demo/example code with usage patterns.
+
+```json
+{
+  "name": "modal",
+  "platform": "nextjs",
+  "demoType": "advanced"
+}
+```
+
+#### 7. `browse_component_library`
+Browse the component library with filtering and search.
+
+```json
+{
+  "platform": "vue",
+  "category": "components",
+  "search": "form",
+  "limit": 20
+}
+```
+
+#### 8. `get_component_metadata`
+Get detailed component metadata including dependencies.
+
+```json
+{
+  "name": "data-table",
+  "platform": "angular"
+}
+```
+
+### 🛠️ Advanced Generation Tools
+
+#### 9. `generate_multi_platform_component`
 Generate a component for a specific platform using CLI templates.
 
-```json
-{
-  "config": {
-    "name": "UserDashboard",
-    "category": "components",
-    "platform": "nextjs",
-    "features": {
-      "interactive": true,
-      "searchable": true
-    }
-  }
-}
-```
-
-### 2. `generate_all_platforms`
+#### 10. `generate_all_platforms`
 Generate the same component for all supported platforms simultaneously.
 
-```json
-{
-  "config": {
-    "name": "DataTable",
-    "category": "data-components",
-    "features": {
-      "sortable": true,
-      "filterable": true,
-      "paginated": true
-    }
-  }
-}
-```
-
-### 3. `get_platform_components`
-List all available components for a specific platform.
-
-```json
-{
-  "platform": "react"
-}
-```
-
-### 4. `validate_component_config`
-Validate component configuration before generation.
-
-```json
-{
-  "config": {
-    "name": "CustomForm",
-    "category": "form",
-    "platform": "vue"
-  }
-}
-```
+#### 11. `validate_component_config`
+Validate component configuration with detailed error messages and suggestions.
 
 ## Component Categories
 
@@ -296,6 +345,20 @@ interface ComponentConfig {
   };
 }
 ```
+
+## Comparison with shadcn/ui MCP Server
+
+Our MCP server combines the best of both worlds - comprehensive generation capabilities with the focused developer experience of shadcn/ui:
+
+| Feature | Xaheen MCP v6.1 | shadcn/ui MCP | Advantage |
+|---------|----------------|---------------|-----------|
+| **Component Generation** | ✅ Full generation with 131+ templates | ❌ Retrieval only | Complete workflow |
+| **Component Retrieval** | ✅ Browse, search, inspect | ✅ Browse, search, inspect | ✨ **Both approaches** |
+| **Multi-Platform** | ✅ 7 platforms | ❌ React/Svelte only | Enterprise flexibility |
+| **Quick Generation** | ✅ Smart presets | ❌ No generation | Rapid prototyping |
+| **Caching System** | ✅ Template caching | ✅ GitHub API caching | Performance optimization |
+| **Error Messages** | ✅ Enhanced validation | ✅ Good error handling | Developer experience |
+| **Tool Complexity** | ✅ 11 focused tools | ✅ 4 simple tools | Balanced approach |
 
 ## Development
 

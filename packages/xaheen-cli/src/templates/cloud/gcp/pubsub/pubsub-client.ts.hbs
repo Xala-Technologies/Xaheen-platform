@@ -1,0 +1,900 @@
+/**
+ * Google Cloud Pub/Sub Client
+ * Enterprise messaging system for {{projectName}}
+ * Includes dead letter queues, retry policies, and monitoring
+ */
+
+import { PubSub, Topic, Subscription, Message } from '@google-cloud/pubsub';
+import { logger } from '../functions/src/utils/logger';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface PubSubConfig {
+  projectId: string;
+  keyFilename?: string;
+  enableMessageOrdering?: boolean;
+  enableAvroSerialization?: boolean;
+  defaultRetrySettings?: RetrySettings;
+  enableDLQ?: boolean;
+  dlqMaxDeliveryAttempts?: number;
+  enableMonitoring?: boolean;
+}
+
+export interface RetrySettings {
+  initialRetryDelayMillis: number;
+  retryDelayMultiplier: number;
+  maxRetryDelayMillis: number;
+  maxRetryMs: number;
+  totalTimeoutMs: number;
+}
+
+export interface MessagePayload<T = any> {
+  id: string;
+  type: string;
+  data: T;
+  timestamp: string;
+  source: string;
+  version: string;
+  correlationId?: string;
+  userId?: string;
+  sessionId?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface PublishOptions {
+  orderingKey?: string;
+  attributes?: Record<string, string>;
+  enableMessageOrdering?: boolean;
+  enableIdempotency?: boolean;
+  correlationId?: string;
+  retryPolicy?: RetryPolicy;
+  dlqPolicy?: DeadLetterPolicy;
+}
+
+export interface SubscriptionOptions {
+  ackDeadlineSeconds?: number;
+  messageRetentionDuration?: string;
+  retainAckedMessages?: boolean;
+  enableMessageOrdering?: boolean;
+  maxMessages?: number;
+  maxExtension?: number;
+  allowExcessMessages?: boolean;
+  enableExactlyOnceDelivery?: boolean;
+  filter?: string;
+  deadLetterPolicy?: DeadLetterPolicy;
+  retryPolicy?: RetryPolicy;
+  pushConfig?: PushConfig;
+}
+
+export interface RetryPolicy {
+  minimumBackoff: string;
+  maximumBackoff: string;
+}
+
+export interface DeadLetterPolicy {
+  deadLetterTopic: string;
+  maxDeliveryAttempts: number;
+}
+
+export interface PushConfig {
+  pushEndpoint: string;
+  attributes?: Record<string, string>;
+  oidcToken?: {
+    serviceAccountEmail: string;
+    audience?: string;
+  };
+}
+
+export interface MessageHandler<T = any> {
+  (message: MessagePayload<T>, ackId: string): Promise<void>;
+}
+
+export interface MessageStats {
+  totalMessages: number;
+  successfulMessages: number;
+  failedMessages: number;
+  retriedMessages: number;
+  dlqMessages: number;
+  avgProcessingTimeMs: number;
+  lastProcessedAt?: Date;
+}
+
+export interface TopicConfig {
+  name: string;
+  labels?: Record<string, string>;
+  messageStoragePolicy?: {
+    allowedPersistenceRegions: string[];
+  };
+  schema?: string;
+  messageRetentionDuration?: string;
+  enableMessageOrdering?: boolean;
+}
+
+export interface SubscriptionConfig {
+  name: string;
+  topic: string;
+  pushConfig?: PushConfig;
+  ackDeadlineSeconds?: number;
+  messageRetentionDuration?: string;
+  retainAckedMessages?: boolean;
+  expirationPolicy?: {
+    ttl: string;
+  };
+  deadLetterPolicy?: DeadLetterPolicy;
+  retryPolicy?: RetryPolicy;
+  filter?: string;
+  enableMessageOrdering?: boolean;
+  labels?: Record<string, string>;
+}
+
+/**
+ * Cloud Pub/Sub Client Class
+ */
+export class CloudPubSubClient {
+  private pubsub: PubSub;
+  private config: PubSubConfig;
+  private topics: Map<string, Topic> = new Map();
+  private subscriptions: Map<string, Subscription> = new Map();
+  private messageStats: Map<string, MessageStats> = new Map();
+
+  constructor(config: PubSubConfig) {
+    this.config = config;
+
+    // Initialize Pub/Sub client
+    this.pubsub = new PubSub({
+      projectId: config.projectId,
+      keyFilename: config.keyFilename
+    });
+
+    logger.info('Cloud Pub/Sub client initialized', {
+      projectId: config.projectId,
+      enableDLQ: config.enableDLQ,
+      enableMonitoring: config.enableMonitoring
+    });
+  }
+
+  /**
+   * Create topic
+   */
+  async createTopic(config: TopicConfig): Promise<Topic> {
+    try {
+      const [topic] = await this.pubsub.createTopic(config.name, {
+        labels: config.labels,
+        messageStoragePolicy: config.messageStoragePolicy,
+        schemaSettings: config.schema ? {
+          schema: config.schema,
+          encoding: 'JSON'
+        } : undefined
+      });
+
+      // Configure message ordering if enabled
+      if (config.enableMessageOrdering) {
+        await topic.setOptions({
+          enableMessageOrdering: true
+        });
+      }
+
+      this.topics.set(config.name, topic);
+
+      logger.info('Topic created successfully', {
+        topicName: config.name,
+        messageOrdering: config.enableMessageOrdering
+      });
+
+      return topic;
+
+    } catch (error) {
+      if (error.code === 6) { // ALREADY_EXISTS
+        const topic = this.pubsub.topic(config.name);
+        this.topics.set(config.name, topic);
+        return topic;
+      }
+
+      logger.error('Failed to create topic', {
+        error: error.message,
+        topicName: config.name
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create subscription
+   */
+  async createSubscription(config: SubscriptionConfig): Promise<Subscription> {
+    try {
+      const topic = this.getTopic(config.topic);
+      
+      const [subscription] = await topic.createSubscription(config.name, {
+        pushConfig: config.pushConfig,
+        ackDeadlineSeconds: config.ackDeadlineSeconds,
+        messageRetentionDuration: config.messageRetentionDuration,
+        retainAckedMessages: config.retainAckedMessages,
+        expirationPolicy: config.expirationPolicy,
+        deadLetterPolicy: config.deadLetterPolicy,
+        retryPolicy: config.retryPolicy,
+        filter: config.filter,
+        enableMessageOrdering: config.enableMessageOrdering,
+        labels: config.labels
+      });
+
+      this.subscriptions.set(config.name, subscription);
+
+      // Initialize message stats
+      this.messageStats.set(config.name, {
+        totalMessages: 0,
+        successfulMessages: 0,
+        failedMessages: 0,
+        retriedMessages: 0,
+        dlqMessages: 0,
+        avgProcessingTimeMs: 0
+      });
+
+      logger.info('Subscription created successfully', {
+        subscriptionName: config.name,
+        topicName: config.topic,
+        deadLetterPolicy: !!config.deadLetterPolicy
+      });
+
+      return subscription;
+
+    } catch (error) {
+      if (error.code === 6) { // ALREADY_EXISTS
+        const subscription = this.pubsub.subscription(config.name);
+        this.subscriptions.set(config.name, subscription);
+        return subscription;
+      }
+
+      logger.error('Failed to create subscription', {
+        error: error.message,
+        subscriptionName: config.name,
+        topicName: config.topic
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Publish message to topic
+   */
+  async publishMessage<T>(
+    topicName: string,
+    payload: T,
+    options: PublishOptions = {}
+  ): Promise<string> {
+    try {
+      const topic = this.getTopic(topicName);
+
+      // Create message payload
+      const messagePayload: MessagePayload<T> = {
+        id: uuidv4(),
+        type: typeof payload === 'object' && payload !== null && 'type' in payload 
+          ? (payload as any).type 
+          : 'generic',
+        data: payload,
+        timestamp: new Date().toISOString(),
+        source: `{{projectName}}-service`,
+        version: '1.0',
+        correlationId: options.correlationId || uuidv4(),
+        metadata: options.attributes
+      };
+
+      // Serialize message
+      const messageBuffer = Buffer.from(JSON.stringify(messagePayload));
+
+      // Set message attributes
+      const attributes = {
+        messageId: messagePayload.id,
+        messageType: messagePayload.type,
+        timestamp: messagePayload.timestamp,
+        source: messagePayload.source,
+        correlationId: messagePayload.correlationId,
+        ...options.attributes
+      };
+
+      // Configure publish options
+      const publishOptions: any = {
+        attributes
+      };
+
+      if (options.orderingKey) {
+        publishOptions.orderingKey = options.orderingKey;
+      }
+
+      // Publish message
+      const messageId = await topic.publishMessage({
+        data: messageBuffer,
+        ...publishOptions
+      });
+
+      logger.info('Message published successfully', {
+        topicName,
+        messageId,
+        messageType: messagePayload.type,
+        correlationId: messagePayload.correlationId,
+        orderingKey: options.orderingKey
+      });
+
+      return messageId;
+
+    } catch (error) {
+      logger.error('Failed to publish message', {
+        error: error.message,
+        topicName,
+        messageType: typeof payload === 'object' && payload !== null && 'type' in payload 
+          ? (payload as any).type 
+          : 'generic'
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Publish batch of messages
+   */
+  async publishBatch<T>(
+    topicName: string,
+    payloads: T[],
+    options: PublishOptions = {}
+  ): Promise<string[]> {
+    try {
+      const topic = this.getTopic(topicName);
+      const messageIds: string[] = [];
+
+      // Prepare batch of messages
+      const publishPromises = payloads.map(async (payload, index) => {
+        const messagePayload: MessagePayload<T> = {
+          id: uuidv4(),
+          type: typeof payload === 'object' && payload !== null && 'type' in payload 
+            ? (payload as any).type 
+            : 'generic',
+          data: payload,
+          timestamp: new Date().toISOString(),
+          source: `{{projectName}}-service`,
+          version: '1.0',
+          correlationId: options.correlationId || uuidv4(),
+          metadata: options.attributes
+        };
+
+        const messageBuffer = Buffer.from(JSON.stringify(messagePayload));
+        const attributes = {
+          messageId: messagePayload.id,
+          messageType: messagePayload.type,
+          timestamp: messagePayload.timestamp,
+          source: messagePayload.source,
+          correlationId: messagePayload.correlationId,
+          batchIndex: index.toString(),
+          ...options.attributes
+        };
+
+        const publishOptions: any = {
+          attributes
+        };
+
+        if (options.orderingKey) {
+          publishOptions.orderingKey = `${options.orderingKey}-${index}`;
+        }
+
+        return topic.publishMessage({
+          data: messageBuffer,
+          ...publishOptions
+        });
+      });
+
+      // Execute all publishes
+      const results = await Promise.all(publishPromises);
+      messageIds.push(...results);
+
+      logger.info('Batch messages published successfully', {
+        topicName,
+        messageCount: payloads.length,
+        messageIds: messageIds.slice(0, 5) // Log first 5 IDs
+      });
+
+      return messageIds;
+
+    } catch (error) {
+      logger.error('Failed to publish batch messages', {
+        error: error.message,
+        topicName,
+        messageCount: payloads.length
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Subscribe to messages
+   */
+  async subscribe<T>(
+    subscriptionName: string,
+    handler: MessageHandler<T>,
+    options: SubscriptionOptions = {}
+  ): Promise<void> {
+    try {
+      const subscription = this.getSubscription(subscriptionName);
+
+      // Configure subscription options
+      subscription.setOptions({
+        ackDeadlineSeconds: options.ackDeadlineSeconds || 60,
+        enableMessageOrdering: options.enableMessageOrdering || false,
+        maxMessages: options.maxMessages || 100,
+        maxExtension: options.maxExtension || 600, // 10 minutes
+        allowExcessMessages: options.allowExcessMessages || false,
+        enableExactlyOnceDelivery: options.enableExactlyOnceDelivery || false
+      });
+
+      // Message handler with error handling and monitoring
+      subscription.on('message', async (message: Message) => {
+        const startTime = Date.now();
+        const stats = this.messageStats.get(subscriptionName)!;
+        stats.totalMessages++;
+
+        try {
+          // Parse message payload
+          const messageData = JSON.parse(message.data.toString());
+          const messagePayload: MessagePayload<T> = messageData;
+
+          // Extract attributes
+          const attributes = message.attributes || {};
+          const ackId = message.ackId;
+
+          logger.debug('Processing message', {
+            subscriptionName,
+            messageId: messagePayload.id,
+            messageType: messagePayload.type,
+            correlationId: messagePayload.correlationId,
+            deliveryAttempt: message.deliveryAttempt
+          });
+
+          // Call message handler
+          await handler(messagePayload, ackId);
+
+          // Acknowledge message
+          message.ack();
+
+          // Update stats
+          const processingTime = Date.now() - startTime;
+          stats.successfulMessages++;
+          stats.avgProcessingTimeMs = 
+            (stats.avgProcessingTimeMs * (stats.successfulMessages - 1) + processingTime) / 
+            stats.successfulMessages;
+          stats.lastProcessedAt = new Date();
+
+          logger.debug('Message processed successfully', {
+            subscriptionName,
+            messageId: messagePayload.id,
+            processingTimeMs: processingTime
+          });
+
+        } catch (error) {
+          const processingTime = Date.now() - startTime;
+          
+          logger.error('Message processing failed', {
+            subscriptionName,
+            error: error.message,
+            messageId: message.id,
+            deliveryAttempt: message.deliveryAttempt,
+            processingTimeMs: processingTime
+          });
+
+          // Update stats
+          stats.failedMessages++;
+
+          // Decide whether to retry or send to DLQ
+          if (this.shouldRetryMessage(message, error)) {
+            // Nack message for retry
+            message.nack();
+            stats.retriedMessages++;
+            
+            logger.info('Message nacked for retry', {
+              subscriptionName,
+              messageId: message.id,
+              deliveryAttempt: message.deliveryAttempt
+            });
+          } else {
+            // Acknowledge to send to DLQ (if configured)
+            message.ack();
+            stats.dlqMessages++;
+            
+            logger.warn('Message sent to DLQ', {
+              subscriptionName,
+              messageId: message.id,
+              deliveryAttempt: message.deliveryAttempt,
+              error: error.message
+            });
+          }
+        }
+      });
+
+      // Handle subscription events
+      subscription.on('error', (error) => {
+        logger.error('Subscription error', {
+          subscriptionName,
+          error: error.message
+        });
+      });
+
+      subscription.on('close', () => {
+        logger.info('Subscription closed', { subscriptionName });
+      });
+
+      logger.info('Started listening to subscription', {
+        subscriptionName,
+        maxMessages: options.maxMessages || 100
+      });
+
+    } catch (error) {
+      logger.error('Failed to subscribe to messages', {
+        error: error.message,
+        subscriptionName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create dead letter queue setup
+   */
+  async createDeadLetterQueue(
+    mainTopicName: string,
+    subscriptionName: string,
+    maxDeliveryAttempts: number = 5
+  ): Promise<{
+    dlqTopic: Topic;
+    dlqSubscription: Subscription;
+  }> {
+    try {
+      const dlqTopicName = `${mainTopicName}-dlq`;
+      const dlqSubscriptionName = `${subscriptionName}-dlq`;
+
+      // Create DLQ topic
+      const dlqTopic = await this.createTopic({
+        name: dlqTopicName,
+        labels: {
+          purpose: 'dead-letter-queue',
+          mainTopic: mainTopicName
+        }
+      });
+
+      // Create DLQ subscription
+      const dlqSubscription = await this.createSubscription({
+        name: dlqSubscriptionName,
+        topic: dlqTopicName,
+        ackDeadlineSeconds: 600, // 10 minutes for DLQ processing
+        messageRetentionDuration: '7d', // Keep DLQ messages for 7 days
+        labels: {
+          purpose: 'dead-letter-queue',
+          mainSubscription: subscriptionName
+        }
+      });
+
+      // Update main subscription with DLQ policy
+      const mainSubscription = this.getSubscription(subscriptionName);
+      await mainSubscription.setOptions({
+        deadLetterPolicy: {
+          deadLetterTopic: dlqTopic.name,
+          maxDeliveryAttempts
+        }
+      });
+
+      logger.info('Dead letter queue created', {
+        mainTopic: mainTopicName,
+        dlqTopic: dlqTopicName,
+        maxDeliveryAttempts
+      });
+
+      return {
+        dlqTopic,
+        dlqSubscription
+      };
+
+    } catch (error) {
+      logger.error('Failed to create dead letter queue', {
+        error: error.message,
+        mainTopicName,
+        subscriptionName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Process dead letter queue messages
+   */
+  async processDLQMessages<T>(
+    dlqSubscriptionName: string,
+    processor: (message: MessagePayload<T>, attempt: number) => Promise<'retry' | 'discard' | 'manual_review'>
+  ): Promise<void> {
+    try {
+      const dlqSubscription = this.getSubscription(dlqSubscriptionName);
+
+      dlqSubscription.on('message', async (message: Message) => {
+        try {
+          const messageData = JSON.parse(message.data.toString());
+          const messagePayload: MessagePayload<T> = messageData;
+          const deliveryAttempt = message.deliveryAttempt || 1;
+
+          logger.info('Processing DLQ message', {
+            dlqSubscription: dlqSubscriptionName,
+            messageId: messagePayload.id,
+            deliveryAttempt
+          });
+
+          const decision = await processor(messagePayload, deliveryAttempt);
+
+          switch (decision) {
+            case 'retry':
+              // Republish to main topic
+              const originalTopic = dlqSubscriptionName.replace('-dlq', '').split('-')[0];
+              await this.publishMessage(originalTopic, messagePayload.data, {
+                correlationId: messagePayload.correlationId,
+                attributes: {
+                  ...messagePayload.metadata,
+                  retryFromDLQ: 'true',
+                  originalMessageId: messagePayload.id
+                }
+              });
+              message.ack();
+              
+              logger.info('DLQ message republished', {
+                messageId: messagePayload.id,
+                originalTopic
+              });
+              break;
+
+            case 'discard':
+              message.ack();
+              
+              logger.info('DLQ message discarded', {
+                messageId: messagePayload.id
+              });
+              break;
+
+            case 'manual_review':
+              // Move to manual review topic/queue
+              await this.publishMessage('manual-review', messagePayload, {
+                correlationId: messagePayload.correlationId,
+                attributes: {
+                  ...messagePayload.metadata,
+                  needsManualReview: 'true',
+                  dlqSource: dlqSubscriptionName
+                }
+              });
+              message.ack();
+              
+              logger.info('DLQ message sent for manual review', {
+                messageId: messagePayload.id
+              });
+              break;
+          }
+
+        } catch (error) {
+          logger.error('Failed to process DLQ message', {
+            error: error.message,
+            messageId: message.id
+          });
+          
+          // Nack message for retry
+          message.nack();
+        }
+      });
+
+      logger.info('Started processing DLQ messages', {
+        dlqSubscription: dlqSubscriptionName
+      });
+
+    } catch (error) {
+      logger.error('Failed to start DLQ processing', {
+        error: error.message,
+        dlqSubscription: dlqSubscriptionName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get message statistics
+   */
+  getMessageStats(subscriptionName: string): MessageStats | undefined {
+    return this.messageStats.get(subscriptionName);
+  }
+
+  /**
+   * Get all message statistics
+   */
+  getAllMessageStats(): Record<string, MessageStats> {
+    const stats: Record<string, MessageStats> = {};
+    for (const [name, stat] of this.messageStats.entries()) {
+      stats[name] = stat;
+    }
+    return stats;
+  }
+
+  /**
+   * Close all subscriptions
+   */
+  async close(): Promise<void> {
+    try {
+      const closePromises: Promise<void>[] = [];
+
+      for (const subscription of this.subscriptions.values()) {
+        closePromises.push(subscription.close());
+      }
+
+      await Promise.all(closePromises);
+
+      logger.info('All subscriptions closed');
+
+    } catch (error) {
+      logger.error('Failed to close subscriptions', {
+        error: error.message
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get topic instance
+   */
+  private getTopic(topicName: string): Topic {
+    let topic = this.topics.get(topicName);
+    if (!topic) {
+      topic = this.pubsub.topic(topicName);
+      this.topics.set(topicName, topic);
+    }
+    return topic;
+  }
+
+  /**
+   * Get subscription instance
+   */
+  private getSubscription(subscriptionName: string): Subscription {
+    let subscription = this.subscriptions.get(subscriptionName);
+    if (!subscription) {
+      subscription = this.pubsub.subscription(subscriptionName);
+      this.subscriptions.set(subscriptionName, subscription);
+    }
+    return subscription;
+  }
+
+  /**
+   * Determine if message should be retried
+   */
+  private shouldRetryMessage(message: Message, error: Error): boolean {
+    const deliveryAttempt = message.deliveryAttempt || 1;
+    const maxAttempts = this.config.dlqMaxDeliveryAttempts || 5;
+
+    // Don't retry if we've exceeded max attempts
+    if (deliveryAttempt >= maxAttempts) {
+      return false;
+    }
+
+    // Check for non-retryable errors
+    const nonRetryableErrors = [
+      'validation_error',
+      'authentication_error',
+      'authorization_error',
+      'malformed_message'
+    ];
+
+    if (nonRetryableErrors.some(errorType => error.message.includes(errorType))) {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+/**
+ * Message types for type safety
+ */
+export interface UserEvent {
+  type: 'user.created' | 'user.updated' | 'user.deleted';
+  userId: string;
+  timestamp: string;
+  data: any;
+}
+
+export interface OrganizationEvent {
+  type: 'organization.created' | 'organization.updated' | 'organization.deleted';
+  organizationId: string;
+  timestamp: string;
+  data: any;
+}
+
+export interface ProjectEvent {
+  type: 'project.created' | 'project.updated' | 'project.deleted';
+  projectId: string;
+  organizationId: string;
+  timestamp: string;
+  data: any;
+}
+
+export interface NotificationEvent {
+  type: 'notification.send';
+  recipientId: string;
+  notificationType: 'email' | 'push' | 'sms';
+  template: string;
+  data: any;
+}
+
+export interface AuditEvent {
+  type: 'audit.log';
+  userId: string;
+  action: string;
+  resource: string;
+  resourceId: string;
+  timestamp: string;
+  metadata: Record<string, any>;
+}
+
+export interface PaymentEvent {
+  type: 'payment.initiated' | 'payment.completed' | 'payment.failed';
+  paymentId: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  provider: 'vipps' | 'stripe' | 'klarna';
+  timestamp: string;
+}
+
+/**
+ * Predefined topic configurations
+ */
+export const topicConfigs = {
+  userEvents: {
+    name: 'user-events',
+    labels: { category: 'user-management' },
+    enableMessageOrdering: true
+  },
+  organizationEvents: {
+    name: 'organization-events',
+    labels: { category: 'organization-management' },
+    enableMessageOrdering: true
+  },
+  projectEvents: {
+    name: 'project-events',
+    labels: { category: 'project-management' },
+    enableMessageOrdering: true
+  },
+  notifications: {
+    name: 'notifications',
+    labels: { category: 'communication' },
+    enableMessageOrdering: false
+  },
+  auditLogs: {
+    name: 'audit-logs',
+    labels: { category: 'security' },
+    messageRetentionDuration: '7d'
+  },
+  payments: {
+    name: 'payments',
+    labels: { category: 'billing' },
+    enableMessageOrdering: true,
+    messageRetentionDuration: '30d'
+  }
+};
+
+/**
+ * Factory function to create Pub/Sub client
+ */
+export function createPubSubClient(
+  projectId: string,
+  options: Partial<PubSubConfig> = {}
+): CloudPubSubClient {
+  const config: PubSubConfig = {
+    projectId,
+    enableMessageOrdering: true,
+    enableDLQ: true,
+    dlqMaxDeliveryAttempts: 5,
+    enableMonitoring: true,
+    ...options
+  };
+
+  return new CloudPubSubClient(config);
+}
+
+// Export default client
+export const pubsubClient = createPubSubClient(
+  process.env.GOOGLE_CLOUD_PROJECT || '{{projectId}}'
+);

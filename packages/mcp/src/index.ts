@@ -14,6 +14,7 @@ import {
 	Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { EnhancedValidator } from "./utils/enhanced-validation.js";
 import { ComponentGenerator } from "./generators/ComponentGenerator.js";
 import { TemplateManager } from "./templates/TemplateManager.js";
 import specificationTools, {
@@ -23,6 +24,10 @@ import {
 	componentRetrievalTools,
 	componentRetrievalToolHandlers,
 } from "./tools/component-retrieval-tools.js";
+import {
+	quickGenerateTools,
+	quickGenerateToolHandlers,
+} from "./tools/quick-generate-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 
 // Zod schemas for validation
@@ -210,6 +215,8 @@ class XalaUISystemMCPServer {
 		this.server.setRequestHandler(ListToolsRequestSchema, async () => {
 			return {
 				tools: [
+					// Quick generate tools (streamlined interface)
+					...quickGenerateTools,
 					// Component retrieval tools (inspired by shadcn-ui MCP)
 					...componentRetrievalTools,
 					// Specification-based tools
@@ -618,7 +625,30 @@ class XalaUISystemMCPServer {
 			const { name, arguments: args } = request.params;
 
 			try {
-				// Handle component retrieval tools first
+				// Handle quick generate tools first (highest priority)
+				if (
+					quickGenerateToolHandlers[
+						name as keyof typeof quickGenerateToolHandlers
+					]
+				) {
+					const result =
+						await quickGenerateToolHandlers[
+							name as keyof typeof quickGenerateToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+
+				// Handle component retrieval tools
 				if (
 					componentRetrievalToolHandlers[
 						name as keyof typeof componentRetrievalToolHandlers
@@ -1219,22 +1249,46 @@ ${this.getPlatformBestPractices(platform)}
 	}
 
 	private async handleValidateConfig(args: any) {
-		try {
-			const validatedConfig = ComponentConfigSchema.parse(args.config);
+		// Use enhanced validation for better error messages
+		const validationResult = EnhancedValidator.validateComponentConfig(args.config);
+		
+		if (validationResult.success) {
+			let response = `✅ **Configuration is valid!**\n\n`;
+			
+			if (validationResult.warnings && validationResult.warnings.length > 0) {
+				response += `⚠️ **Warnings:**\n`;
+				validationResult.warnings.forEach((warning, index) => {
+					response += `${index + 1}. **${warning.field}**: ${warning.message}\n`;
+					response += `   💡 Suggestion: ${warning.suggestion}\n\n`;
+				});
+			}
+			
+			response += `\`\`\`json\n${JSON.stringify(validationResult.data, null, 2)}\n\`\`\`\n\n`;
+			
+			// Add helpful suggestions
+			const suggestions = EnhancedValidator.getValidationSuggestions(args.config);
+			if (suggestions.length > 0) {
+				response += `💡 **Additional Suggestions:**\n`;
+				suggestions.forEach((suggestion, index) => {
+					response += `${index + 1}. ${suggestion}\n`;
+				});
+			}
+			
 			return {
 				content: [
 					{
 						type: "text",
-						text: `✅ Configuration is valid!\n\n\`\`\`json\n${JSON.stringify(validatedConfig, null, 2)}\n\`\`\``,
+						text: response,
 					},
 				],
 			};
-		} catch (error) {
+		} else {
+			const errorMessage = EnhancedValidator.formatValidationError(validationResult);
 			return {
 				content: [
 					{
 						type: "text",
-						text: `❌ Configuration validation failed:\n\n${error instanceof Error ? error.message : "Unknown validation error"}`,
+						text: errorMessage,
 					},
 				],
 				isError: true,
