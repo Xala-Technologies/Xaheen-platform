@@ -1,0 +1,527 @@
+{{!-- Template: responsive.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/responsive.config.ts.hbs --}}
+{{#if typescript}}'use client';{{/if}}
+
+/**
+ * Responsive Design Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Professional breakpoint system
+ * - Container max-widths
+ * - Typography scaling
+ * - Spacing adjustments
+ * - Component behavior per device
+ * - Norwegian mobile patterns
+ * - Accessibility-first responsive design
+ */
+
+{{#if typescript}}
+interface BreakpointConfig {
+  name: string;
+  minWidth: number;
+  maxWidth?: number;
+  containerMaxWidth: number;
+  columns: number;
+  gutter: number;
+  margin: number;
+  typography: {
+    scale: number;
+    lineHeight: number;
+  };
+  spacing: {
+    scale: number;
+    component: number;
+    section: number;
+  };
+  navigation: {
+    type: 'mobile' | 'desktop' | 'tablet';
+    collapsible: boolean;
+  };
+}
+
+interface ResponsiveConfig {
+  breakpoints: Record<string, BreakpointConfig>;
+  defaultBreakpoint: string;
+  containerPadding: Record<string, number>;
+  gridSystem: {
+    columns: number;
+    gutter: number;
+    maxWidth: number;
+  };
+  typography: {
+    fluidScaling: boolean;
+    minScale: number;
+    maxScale: number;
+  };
+  images: {
+    responsive: boolean;
+    lazyLoading: boolean;
+    formats: string[];
+  };
+}
+{{else}}
+// TypeScript interfaces would be defined here in a TypeScript project
+{{/if}}
+
+/**
+ * Professional breakpoint system
+ * Based on common device sizes and Norwegian mobile usage patterns
+ */
+{{#if typescript}}
+export const responsiveConfig: ResponsiveConfig = {
+{{else}}
+export const responsiveConfig = {
+{{/if}}
+  breakpoints: {
+    // Mobile first approach
+    xs: {
+      name: 'Extra Small',
+      minWidth: 0,
+      maxWidth: 479,
+      containerMaxWidth: 320,
+      columns: 4,
+      gutter: 16,
+      margin: 16,
+      typography: {
+        scale: 0.875,    // 14px base
+        lineHeight: 1.5,
+      },
+      spacing: {
+        scale: 0.75,     // Reduced spacing for mobile
+        component: 12,   // 12px component spacing
+        section: 24,     // 24px section spacing
+      },
+      navigation: {
+        type: 'mobile',
+        collapsible: true,
+      },
+    },
+
+    sm: {
+      name: 'Small',
+      minWidth: 480,
+      maxWidth: 767,
+      containerMaxWidth: 448,
+      columns: 6,
+      gutter: 16,
+      margin: 20,
+      typography: {
+        scale: 0.9375,   // 15px base
+        lineHeight: 1.5,
+      },
+      spacing: {
+        scale: 0.875,
+        component: 16,   // 16px component spacing
+        section: 32,     // 32px section spacing
+      },
+      navigation: {
+        type: 'mobile',
+        collapsible: true,
+      },
+    },
+
+    md: {
+      name: 'Medium',
+      minWidth: 768,
+      maxWidth: 1023,
+      containerMaxWidth: 720,
+      columns: 8,
+      gutter: 20,
+      margin: 24,
+      typography: {
+        scale: 1,        // 16px base
+        lineHeight: 1.6,
+      },
+      spacing: {
+        scale: 1,
+        component: 20,   // 20px component spacing
+        section: 40,     // 40px section spacing
+      },
+      navigation: {
+        type: 'tablet',
+        collapsible: true,
+      },
+    },
+
+    lg: {
+      name: 'Large',
+      minWidth: 1024,
+      maxWidth: 1279,
+      containerMaxWidth: 960,
+      columns: 12,
+      gutter: 24,
+      margin: 32,
+      typography: {
+        scale: 1.0625,   // 17px base
+        lineHeight: 1.6,
+      },
+      spacing: {
+        scale: 1.125,
+        component: 24,   // 24px component spacing
+        section: 48,     // 48px section spacing
+      },
+      navigation: {
+        type: 'desktop',
+        collapsible: false,
+      },
+    },
+
+    xl: {
+      name: 'Extra Large',
+      minWidth: 1280,
+      maxWidth: 1535,
+      containerMaxWidth: 1200,
+      columns: 12,
+      gutter: 28,
+      margin: 40,
+      typography: {
+        scale: 1.125,    // 18px base
+        lineHeight: 1.7,
+      },
+      spacing: {
+        scale: 1.25,
+        component: 28,   // 28px component spacing
+        section: 56,     // 56px section spacing
+      },
+      navigation: {
+        type: 'desktop',
+        collapsible: false,
+      },
+    },
+
+    '2xl': {
+      name: '2X Large',
+      minWidth: 1536,
+      containerMaxWidth: 1400,
+      columns: 12,
+      gutter: 32,
+      margin: 48,
+      typography: {
+        scale: 1.1875,   // 19px base
+        lineHeight: 1.7,
+      },
+      spacing: {
+        scale: 1.375,
+        component: 32,   // 32px component spacing
+        section: 64,     // 64px section spacing
+      },
+      navigation: {
+        type: 'desktop',
+        collapsible: false,
+      },
+    },
+  },
+
+  defaultBreakpoint: 'md',
+
+  // Container padding for each breakpoint
+  containerPadding: {
+    xs: 16,
+    sm: 20,
+    md: 24,
+    lg: 32,
+    xl: 40,
+    '2xl': 48,
+  },
+
+  // Grid system configuration
+  gridSystem: {
+    columns: 12,
+    gutter: 24,
+    maxWidth: 1400,
+  },
+
+  // Typography responsive scaling
+  typography: {
+    fluidScaling: true,
+    minScale: 0.875,  // 14px minimum
+    maxScale: 1.25,   // 20px maximum
+  },
+
+  // Image optimization
+  images: {
+    responsive: true,
+    lazyLoading: true,
+    formats: ['webp', 'avif', 'jpg', 'png'],
+  },
+};
+
+/**
+ * Norwegian mobile usage patterns
+ * Based on Norwegian digital behavior statistics
+ */
+export const norwegianMobilePatterns = {
+  // High mobile usage in Norway (85%+ mobile traffic)
+  mobileFirst: true,
+  
+  // Common Norwegian mobile devices
+  commonDevices: {
+    iphone13: { width: 390, height: 844 },
+    iphone14: { width: 393, height: 852 },
+    samsungS22: { width: 384, height: 854 },
+    pixel7: { width: 412, height: 915 },
+  },
+
+  // Norwegian mobile behavior
+  behavior: {
+    thumbNavigation: true,    // Design for thumb navigation
+    portraitFirst: true,      // Most usage in portrait mode
+    touchTargetSize: 44,      // Minimum 44px touch targets
+    swipeGestures: true,      // Support swipe gestures
+  },
+
+  // Norwegian accessibility requirements
+  accessibility: {
+    minimumTouchTarget: 44,   // WCAG AAA requirement
+    maximumReachZone: 480,    // Thumb reach on large phones
+    oneHandedUsage: true,     // Design for one-handed usage
+  },
+};
+
+/**
+ * Responsive utility functions
+ */
+export const responsiveUtils = {
+  /**
+   * Get current breakpoint based on window width
+   */
+  getCurrentBreakpoint: (){{#if typescript}}: string{{/if}} => {
+    if (typeof window === 'undefined') return responsiveConfig.defaultBreakpoint;
+    
+    const width = window.innerWidth;
+    const breakpoints = responsiveConfig.breakpoints;
+    
+    for (const [key, config] of Object.entries(breakpoints)) {
+      if (width >= config.minWidth && (!config.maxWidth || width <= config.maxWidth)) {
+        return key;
+      }
+    }
+    
+    return responsiveConfig.defaultBreakpoint;
+  },
+
+  /**
+   * Check if current viewport matches breakpoint
+   */
+  matchesBreakpoint: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: boolean{{/if}} => {
+    if (typeof window === 'undefined') return false;
+    
+    const config = responsiveConfig.breakpoints[breakpoint];
+    if (!config) return false;
+    
+    const width = window.innerWidth;
+    return width >= config.minWidth && (!config.maxWidth || width <= config.maxWidth);
+  },
+
+  /**
+   * Get responsive classes for different breakpoints
+   */
+  getResponsiveClasses: (config{{#if typescript}}: Record<string, string>{{/if}}){{#if typescript}}: string{{/if}} => {
+    const classes{{#if typescript}}: string[]{{/if}} = [];
+    
+    Object.entries(config).forEach(([breakpoint, className]) => {
+      if (breakpoint === 'default') {
+        classes.push(className);
+      } else {
+        classes.push("template string");
+      }
+    });
+    
+    return classes.join(' ');
+  },
+
+  /**
+   * Calculate fluid typography size
+   */
+  getFluidTypographySize: (
+    minSize{{#if typescript}}: number{{/if}}, 
+    maxSize{{#if typescript}}: number{{/if}}, 
+    minViewport{{#if typescript}}: number{{/if}} = 320, 
+    maxViewport{{#if typescript}}: number{{/if}} = 1200
+  ){{#if typescript}}: string{{/if}} => {
+    const slope = (maxSize - minSize) / (maxViewport - minViewport);
+    const yIntercept = minSize - slope * minViewport;
+    
+    return "template string";
+  },
+
+  /**
+   * Get container max-width for breakpoint
+   */
+  getContainerMaxWidth: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: number{{/if}} => {
+    const config = responsiveConfig.breakpoints[breakpoint];
+    return config ? config.containerMaxWidth : responsiveConfig.breakpoints[responsiveConfig.defaultBreakpoint].containerMaxWidth;
+  },
+
+  /**
+   * Get spacing scale for breakpoint
+   */
+  getSpacingScale: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: number{{/if}} => {
+    const config = responsiveConfig.breakpoints[breakpoint];
+    return config ? config.spacing.scale : 1;
+  },
+
+  /**
+   * Generate responsive spacing
+   */
+  getResponsiveSpacing: (baseSpacing{{#if typescript}}: number{{/if}}){{#if typescript}}: Record<string, number>{{/if}} => {
+    {{#if typescript}}
+    const spacing: Record<string, number> = {};
+    {{else}}
+    const spacing = {};
+    {{/if}}
+    
+    Object.entries(responsiveConfig.breakpoints).forEach(([key, config]) => {
+      spacing[key] = Math.round(baseSpacing * config.spacing.scale);
+    });
+    
+    return spacing;
+  },
+};
+
+/**
+ * Component responsive behavior configuration
+ */
+export const componentResponsiveBehavior = {
+  // Navigation component
+  navigation: {
+    xs: { type: 'drawer', position: 'bottom' },
+    sm: { type: 'drawer', position: 'left' },
+    md: { type: 'tabs', position: 'top' },
+    lg: { type: 'horizontal', position: 'top' },
+    xl: { type: 'horizontal', position: 'top' },
+    '2xl': { type: 'horizontal', position: 'top' },
+  },
+
+  // Card component
+  card: {
+    xs: { padding: 16, margin: 8, shadow: 'sm' },
+    sm: { padding: 20, margin: 12, shadow: 'sm' },
+    md: { padding: 24, margin: 16, shadow: 'md' },
+    lg: { padding: 28, margin: 20, shadow: 'md' },
+    xl: { padding: 32, margin: 24, shadow: 'lg' },
+    '2xl': { padding: 36, margin: 28, shadow: 'lg' },
+  },
+
+  // Button component
+  button: {
+    xs: { size: 'sm', fullWidth: true },
+    sm: { size: 'sm', fullWidth: false },
+    md: { size: 'md', fullWidth: false },
+    lg: { size: 'md', fullWidth: false },
+    xl: { size: 'lg', fullWidth: false },
+    '2xl': { size: 'lg', fullWidth: false },
+  },
+
+  // Typography component
+  typography: {
+    xs: { headingScale: 0.875, bodyScale: 0.875 },
+    sm: { headingScale: 0.9375, bodyScale: 0.9375 },
+    md: { headingScale: 1, bodyScale: 1 },
+    lg: { headingScale: 1.0625, bodyScale: 1.0625 },
+    xl: { headingScale: 1.125, bodyScale: 1.125 },
+    '2xl': { headingScale: 1.1875, bodyScale: 1.1875 },
+  },
+};
+
+/**
+ * Media query helpers
+ */
+export const mediaQueries = {
+  // Generate media query string
+  up: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
+    const config = responsiveConfig.breakpoints[breakpoint];
+    return config ? "template string" : '';
+  },
+
+  down: (breakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
+    const config = responsiveConfig.breakpoints[breakpoint];
+    return config && config.maxWidth ? "template string" : '';
+  },
+
+  between: (minBreakpoint{{#if typescript}}: string{{/if}}, maxBreakpoint{{#if typescript}}: string{{/if}}){{#if typescript}}: string{{/if}} => {
+    const minConfig = responsiveConfig.breakpoints[minBreakpoint];
+    const maxConfig = responsiveConfig.breakpoints[maxBreakpoint];
+    
+    if (!minConfig || !maxConfig || !maxConfig.maxWidth) return '';
+    
+    return "template string";
+  },
+
+  // Special media queries
+  mobile: '@media (max-width: 767px)',
+  tablet: '@media (min-width: 768px) and (max-width: 1023px)',
+  desktop: '@media (min-width: 1024px)',
+  
+  // Accessibility media queries
+  reducedMotion: '@media (prefers-reduced-motion: reduce)',
+  highContrast: '@media (prefers-contrast: high)',
+  darkMode: '@media (prefers-color-scheme: dark)',
+  
+  // Norwegian-specific queries
+  norwegianMobile: '@media (max-width: 480px)', // Common Norwegian mobile breakpoint
+  norwegianTablet: '@media (min-width: 481px) and (max-width: 1024px)',
+  norwegianDesktop: '@media (min-width: 1025px)',
+};
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// In your component
+import { responsiveUtils, mediaQueries } from '@/config/responsive.config';
+
+function ResponsiveComponent() {
+  const currentBreakpoint = responsiveUtils.getCurrentBreakpoint();
+  const isMobile = responsiveUtils.matchesBreakpoint('xs') || responsiveUtils.matchesBreakpoint('sm');
+  
+  const responsiveClasses = responsiveUtils.getResponsiveClasses({
+    default: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
+    xl: 'text-xl',
+  });
+
+  return (
+    <Box className="">
+      <Typography variant="heading" size={isMobile ? 'lg' : 'xl'}>
+        Responsive Content
+      </Typography>
+    </Box>
+  );
+}
+
+// In your CSS-in-JS or styled components
+const StyledComponent = styled.div`
+  padding: 16px;
+  
+  ${mediaQueries.up('md')} {
+    padding: 24px;
+  }
+  
+  ${mediaQueries.up('lg')} {
+    padding: 32px;
+  }
+  
+  ${mediaQueries.reducedMotion} {
+    transition: none;
+  }
+`;
+*/
+{{/if}}

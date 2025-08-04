@@ -1,0 +1,122 @@
+{{!-- Template: home.component.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: angular --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/angular/src/app/pages/home/home.component.ts.hbs --}}
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+{{#if localization}}
+import { TranslateModule } from '@ngx-translate/core';
+{{/if}}
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    {{#if localization}}
+    TranslateModule,
+    {{/if}}
+  ],
+  template: `
+    <div class="home-container">
+      <mat-card class="welcome-card">
+        <mat-card-header>
+          <mat-card-title>
+            {{#if localization}}{{ 'WELCOME_TITLE' | translate }}{{else}}Welcome to {{projectName}}{{/if}}
+          </mat-card-title>
+          <mat-card-subtitle>
+            {{#if localization}}{{ 'WELCOME_SUBTITLE' | translate }}{{else}}Built with Angular and Material Design{{/if}}
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p>
+            {{#if localization}}{{ 'WELCOME_MESSAGE' | translate }}{{else}}This application was generated using the Xaheen CLI with Angular and follows accessibility best practices.{{/if}}
+          </p>
+
+          <div class="features-list" role="list">
+            <div class="feature-item" role="listitem">
+              <mat-icon aria-hidden="true">accessibility</mat-icon>
+              <span>{{#if localization}}{{ 'FEATURE_ACCESSIBILITY' | translate }}{{else}}WCAG 2.2 AAA Accessibility{{/if}}</span>
+            </div>
+            <div class="feature-item" role="listitem">
+              <mat-icon aria-hidden="true">design_services</mat-icon>
+              <span>{{#if localization}}{{ 'FEATURE_MATERIAL' | translate }}{{else}}Material Design Components{{/if}}</span>
+            </div>
+            <div class="feature-item" role="listitem">
+              <mat-icon aria-hidden="true">language</mat-icon>
+              <span>{{#if localization}}{{ 'FEATURE_I18N' | translate }}{{else}}Internationalization Ready{{/if}}</span>
+            </div>
+            <div class="feature-item" role="listitem">
+              <mat-icon aria-hidden="true">security</mat-icon>
+              <span>{{#if localization}}{{ 'FEATURE_SECURITY' | translate }}{{else}}Enterprise Security{{/if}}</span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions align="start">
+          <button mat-raised-button color="primary" 
+                  [attr.aria-label]="{{#if localization}}'GET_STARTED_ARIA' | translate{{else}}'Get started with the application'{{/if}}">
+            <mat-icon>arrow_forward</mat-icon>
+            {{#if localization}}{{ 'GET_STARTED' | translate }}{{else}}Get Started{{/if}}
+          </button>
+          <button mat-button 
+                  [attr.aria-label]="{{#if localization}}'LEARN_MORE_ARIA' | translate{{else}}'Learn more about Angular'{{/if}}">
+            {{#if localization}}{{ 'LEARN_MORE' | translate }}{{else}}Learn More{{/if}}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  `,
+  styles: [`
+    .home-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .welcome-card {
+      padding: 24px;
+    }
+
+    .features-list {
+      margin: 24px 0;
+      display: grid;
+      gap: 16px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .feature-item mat-icon {
+      color: #1976d2;
+    }
+
+    mat-card-actions {
+      margin-top: 24px;
+      gap: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .home-container {
+        padding: 16px;
+      }
+
+      .welcome-card {
+        padding: 16px;
+      }
+    }
+  `]
+})
+export class HomeComponent {}

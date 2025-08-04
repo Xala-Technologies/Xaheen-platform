@@ -1,0 +1,62 @@
+{{!-- Template: default.vue.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: nuxt --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/nuxt/app/layouts/default.vue.hbs --}}
+<!--
+Default Layout - Xala UI System Compliant
+Generated with Xaheen CLI - Nuxt Implementation
+
+MANDATORY COMPLIANCE RULES:
+❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+✅ ONLY semantic components from @xala-technologies/ui-system
+❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+✅ MANDATORY design token usage for all colors, spacing, typography
+✅ Enhanced 8pt Grid System - all spacing in 8px increments
+✅ WCAG 2.2 AAA compliance for accessibility
+❌ NO hardcoded user-facing text - ALL text must use $t() function
+✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+-->
+
+<script setup lang="ts">
+import { 
+  Container,
+  Stack
+} from '@xala-technologies/ui-system';
+
+// Compliance flags
+const hasNorwegian = {{#if hasNorwegian}}true{{else}}false{{/if}};
+const hasGDPR = {{#if hasGDPR}}true{{else}}false{{/if}};
+const hasWCAG = {{#if hasWCAG}}true{{else}}false{{/if}};
+</script>
+
+<template>
+  <Container
+    variant="full"
+    data-testid="default-layout"
+    role="application"
+    :aria-label="$t('layout.ariaLabel')"
+  >
+    <Stack direction="vertical" spacing="0" min-height="screen">
+      <!-- Header -->
+      <Container 
+        variant="content" 
+        padding="4"
+        role="banner"
+      >
+        <Header />
+      </Container>
+      
+      <!-- Main Content -->
+      <Container
+        variant="content"
+        padding="6"
+        flex="1"
+        role="main"
+        :aria-label="$t('content.main')"
+      >
+        <slot />
+      </Container>
+    </Stack>
+  </Container>
+</template>

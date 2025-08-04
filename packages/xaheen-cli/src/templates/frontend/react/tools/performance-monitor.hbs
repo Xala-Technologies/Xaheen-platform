@@ -1,0 +1,611 @@
+/**
+ * @fileoverview {{componentName}} - Enterprise Performance Monitor
+ * @description Real-time performance monitoring and optimization suggestions
+ * @version 5.0.0
+ * @compliance Performance optimization, Analytics, Enterprise monitoring
+ */
+
+'use client';
+
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+
+export interface PerformanceMetrics {
+  readonly fps: number;
+  readonly memory: {
+    readonly used: number;
+    readonly limit: number;
+    readonly percent: number;
+  };
+  readonly renderTime: number;
+  readonly componentCount: number;
+  readonly domNodes: number;
+  readonly bundleSize: number;
+  readonly networkRequests: NetworkRequest[];
+  readonly errors: PerformanceError[];
+  readonly vitals: WebVitals;
+}
+
+export interface NetworkRequest {
+  readonly url: string;
+  readonly method: string;
+  readonly duration: number;
+  readonly size: number;
+  readonly status: number;
+  readonly timestamp: number;
+}
+
+export interface PerformanceError {
+  readonly message: string;
+  readonly stack?: string;
+  readonly timestamp: number;
+  readonly component?: string;
+}
+
+export interface WebVitals {
+  readonly fcp: number | null; // First Contentful Paint
+  readonly lcp: number | null; // Largest Contentful Paint
+  readonly fid: number | null; // First Input Delay
+  readonly cls: number | null; // Cumulative Layout Shift
+  readonly ttfb: number | null; // Time to First Byte
+  readonly inp: number | null; // Interaction to Next Paint
+}
+
+export interface PerformanceThresholds {
+  readonly fps: { warning: number; critical: number };
+  readonly memory: { warning: number; critical: number };
+  readonly renderTime: { warning: number; critical: number };
+  readonly networkLatency: { warning: number; critical: number };
+  readonly bundleSize: { warning: number; critical: number };
+}
+
+export interface PerformanceContextValue {
+  readonly metrics: PerformanceMetrics;
+  readonly isMonitoring: boolean;
+  readonly startMonitoring: () => void;
+  readonly stopMonitoring: () => void;
+  readonly captureMetric: (name: string, value: number) => void;
+  readonly markStart: (name: string) => void;
+  readonly markEnd: (name: string) => number;
+  readonly reportError: (error: Error, component?: string) => void;
+  readonly getReport: () => PerformanceReport;
+  readonly optimize: () => OptimizationSuggestions;
+}
+
+export interface PerformanceReport {
+  readonly summary: {
+    readonly averageFps: number;
+    readonly averageRenderTime: number;
+    readonly totalErrors: number;
+    readonly totalNetworkRequests: number;
+    readonly totalDataTransferred: number;
+  };
+  readonly timeline: PerformanceMetrics[];
+  readonly bottlenecks: string[];
+  readonly recommendations: string[];
+}
+
+export interface OptimizationSuggestions {
+  readonly immediate: string[];
+  readonly shortTerm: string[];
+  readonly longTerm: string[];
+  readonly codeChanges: CodeOptimization[];
+}
+
+export interface CodeOptimization {
+  readonly component: string;
+  readonly issue: string;
+  readonly suggestion: string;
+  readonly impact: 'high' | 'medium' | 'low';
+  readonly example?: string;
+}
+
+const PerformanceContext = createContext<PerformanceContextValue | undefined>(undefined);
+
+interface {{componentName}}Props {
+  readonly children: React.ReactNode;
+  readonly enabled?: boolean;
+  readonly sampleRate?: number;
+  readonly thresholds?: PerformanceThresholds;
+  readonly onAlert?: (alert: PerformanceAlert) => void;
+  readonly reportingEndpoint?: string;
+  readonly reportingInterval?: number;
+  readonly enableWebVitals?: boolean;
+  readonly enableNetworkMonitoring?: boolean;
+  readonly enableMemoryMonitoring?: boolean;
+  readonly enableErrorTracking?: boolean;
+  readonly debug?: boolean;
+}
+
+export interface PerformanceAlert {
+  readonly type: 'warning' | 'critical';
+  readonly metric: string;
+  readonly value: number;
+  readonly threshold: number;
+  readonly message: string;
+  readonly timestamp: number;
+}
+
+/**
+ * Performance monitoring provider for enterprise applications
+ * Tracks metrics, identifies bottlenecks, and provides optimization suggestions
+ */
+export const {{componentName}}: React.FC<{{componentName}}Props> = ({
+  children,
+  enabled = true,
+  sampleRate = 1000, // 1 second
+  thresholds = {
+    fps: { warning: 30, critical: 15 },
+    memory: { warning: 70, critical: 90 },
+    renderTime: { warning: 16, critical: 100 },
+    networkLatency: { warning: 1000, critical: 3000 },
+    bundleSize: { warning: 500000, critical: 1000000 },
+  },
+  onAlert,
+  reportingEndpoint,
+  reportingInterval = 60000, // 1 minute
+  enableWebVitals = true,
+  enableNetworkMonitoring = true,
+  enableMemoryMonitoring = true,
+  enableErrorTracking = true,
+  debug = false,
+}) => {
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+    fps: 60,
+    memory: { used: 0, limit: 0, percent: 0 },
+    renderTime: 0,
+    componentCount: 0,
+    domNodes: 0,
+    bundleSize: 0,
+    networkRequests: [],
+    errors: [],
+    vitals: {
+      fcp: null,
+      lcp: null,
+      fid: null,
+      cls: null,
+      ttfb: null,
+      inp: null,
+    },
+  });
+
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const metricsHistory = useRef<PerformanceMetrics[]>([]);
+  const performanceMarks = useRef<Map<string, number>>(new Map());
+  const frameCount = useRef(0);
+  const lastFrameTime = useRef(performance.now());
+  const monitoringInterval = useRef<NodeJS.Timeout | null>(null);
+  const reportingInterval = useRef<NodeJS.Timeout | null>(null);
+  const observer = useRef<PerformanceObserver | null>(null);
+
+  // FPS Monitor
+  const measureFPS = useCallback(() => {
+    const now = performance.now();
+    const delta = now - lastFrameTime.current;
+    
+    if (delta >= 1000) {
+      const fps = Math.round((frameCount.current * 1000) / delta);
+      frameCount.current = 0;
+      lastFrameTime.current = now;
+      return fps;
+    }
+    
+    frameCount.current++;
+    return metrics.fps; // Return previous value if not enough time passed
+  }, [metrics.fps]);
+
+  // Memory Monitor
+  const measureMemory = useCallback(() => {
+    if (!enableMemoryMonitoring) return { used: 0, limit: 0, percent: 0 };
+    
+    // @ts-ignore - performance.memory is not in TypeScript types
+    if (performance.memory) {
+      // @ts-ignore
+      const used = performance.memory.usedJSHeapSize;
+      // @ts-ignore
+      const limit = performance.memory.jsHeapSizeLimit;
+      const percent = Math.round((used / limit) * 100);
+      
+      return { used, limit, percent };
+    }
+    
+    return { used: 0, limit: 0, percent: 0 };
+  }, [enableMemoryMonitoring]);
+
+  // DOM Nodes Counter
+  const countDOMNodes = useCallback(() => {
+    return document.getElementsByTagName('*').length;
+  }, []);
+
+  // Component Counter (React specific)
+  const countComponents = useCallback(() => {
+    // This is a simplified version - real implementation would traverse React tree
+    return document.querySelectorAll('[data-reactroot] *').length;
+  }, []);
+
+  // Network Monitor
+  useEffect(() => {
+    if (!enableNetworkMonitoring) return;
+
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const startTime = performance.now();
+      const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+      
+      try {
+        const response = await originalFetch(...args);
+        const duration = performance.now() - startTime;
+        
+        setMetrics(prev => ({
+          ...prev,
+          networkRequests: [
+            ...prev.networkRequests.slice(-99), // Keep last 100 requests
+            {
+              url,
+              method: args[1]?.method || 'GET',
+              duration,
+              size: parseInt(response.headers.get('content-length') || '0'),
+              status: response.status,
+              timestamp: Date.now(),
+            },
+          ],
+        }));
+        
+        // Check thresholds
+        if (duration > thresholds.networkLatency.critical) {
+          onAlert?.({
+            type: 'critical',
+            metric: 'networkLatency',
+            value: duration,
+            threshold: thresholds.networkLatency.critical,
+            message: `Network request to ${url} took ${duration}ms`,
+            timestamp: Date.now(),
+          });
+        }
+        
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [enableNetworkMonitoring, thresholds, onAlert]);
+
+  // Web Vitals Monitor
+  useEffect(() => {
+    if (!enableWebVitals || typeof window === 'undefined') return;
+
+    observer.current = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'largest-contentful-paint') {
+          setMetrics(prev => ({
+            ...prev,
+            vitals: { ...prev.vitals, lcp: entry.startTime },
+          }));
+        } else if (entry.entryType === 'first-input') {
+          // @ts-ignore
+          const fid = entry.processingStart - entry.startTime;
+          setMetrics(prev => ({
+            ...prev,
+            vitals: { ...prev.vitals, fid },
+          }));
+        } else if (entry.entryType === 'layout-shift') {
+          // @ts-ignore
+          if (!entry.hadRecentInput) {
+            setMetrics(prev => ({
+              ...prev,
+              // @ts-ignore
+              vitals: { ...prev.vitals, cls: (prev.vitals.cls || 0) + entry.value },
+            }));
+          }
+        }
+      }
+    });
+
+    observer.current.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
+
+    return () => {
+      observer.current?.disconnect();
+    };
+  }, [enableWebVitals]);
+
+  // Error Tracking
+  useEffect(() => {
+    if (!enableErrorTracking) return;
+
+    const handleError = (event: ErrorEvent) => {
+      setMetrics(prev => ({
+        ...prev,
+        errors: [
+          ...prev.errors.slice(-99), // Keep last 100 errors
+          {
+            message: event.message,
+            stack: event.error?.stack,
+            timestamp: Date.now(),
+          },
+        ],
+      }));
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, [enableErrorTracking]);
+
+  // Main monitoring loop
+  const startMonitoring = useCallback(() => {
+    if (monitoringInterval.current) return;
+    
+    setIsMonitoring(true);
+    
+    monitoringInterval.current = setInterval(() => {
+      const fps = measureFPS();
+      const memory = measureMemory();
+      const domNodes = countDOMNodes();
+      const componentCount = countComponents();
+      
+      const newMetrics: PerformanceMetrics = {
+        ...metrics,
+        fps,
+        memory,
+        domNodes,
+        componentCount,
+        renderTime: performance.now(),
+      };
+      
+      setMetrics(newMetrics);
+      metricsHistory.current.push(newMetrics);
+      
+      // Keep only last 1000 entries
+      if (metricsHistory.current.length > 1000) {
+        metricsHistory.current.shift();
+      }
+      
+      // Check thresholds
+      if (fps < thresholds.fps.critical) {
+        onAlert?.({
+          type: 'critical',
+          metric: 'fps',
+          value: fps,
+          threshold: thresholds.fps.critical,
+          message: `FPS dropped to ${fps}`,
+          timestamp: Date.now(),
+        });
+      } else if (fps < thresholds.fps.warning) {
+        onAlert?.({
+          type: 'warning',
+          metric: 'fps',
+          value: fps,
+          threshold: thresholds.fps.warning,
+          message: `FPS warning: ${fps}`,
+          timestamp: Date.now(),
+        });
+      }
+      
+      if (memory.percent > thresholds.memory.critical) {
+        onAlert?.({
+          type: 'critical',
+          metric: 'memory',
+          value: memory.percent,
+          threshold: thresholds.memory.critical,
+          message: `Memory usage critical: ${memory.percent}%`,
+          timestamp: Date.now(),
+        });
+      }
+      
+      if (debug) {
+        console.log('[Performance Monitor]', newMetrics);
+      }
+    }, sampleRate);
+
+    // Animation frame loop for FPS counting
+    const animationLoop = () => {
+      frameCount.current++;
+      if (isMonitoring) {
+        requestAnimationFrame(animationLoop);
+      }
+    };
+    requestAnimationFrame(animationLoop);
+  }, [sampleRate, measureFPS, measureMemory, countDOMNodes, countComponents, thresholds, onAlert, debug, metrics, isMonitoring]);
+
+  const stopMonitoring = useCallback(() => {
+    if (monitoringInterval.current) {
+      clearInterval(monitoringInterval.current);
+      monitoringInterval.current = null;
+    }
+    setIsMonitoring(false);
+  }, []);
+
+  const captureMetric = useCallback((name: string, value: number) => {
+    if (debug) {
+      console.log(`[Performance Metric] ${name}: ${value}`);
+    }
+    // Custom metric capture - could be extended to store custom metrics
+  }, [debug]);
+
+  const markStart = useCallback((name: string) => {
+    performanceMarks.current.set(name, performance.now());
+  }, []);
+
+  const markEnd = useCallback((name: string): number => {
+    const startTime = performanceMarks.current.get(name);
+    if (!startTime) return 0;
+    
+    const duration = performance.now() - startTime;
+    performanceMarks.current.delete(name);
+    
+    if (debug) {
+      console.log(`[Performance Timing] ${name}: ${duration}ms`);
+    }
+    
+    return duration;
+  }, [debug]);
+
+  const reportError = useCallback((error: Error, component?: string) => {
+    setMetrics(prev => ({
+      ...prev,
+      errors: [
+        ...prev.errors.slice(-99),
+        {
+          message: error.message,
+          stack: error.stack,
+          timestamp: Date.now(),
+          component,
+        },
+      ],
+    }));
+  }, []);
+
+  const getReport = useCallback((): PerformanceReport => {
+    const history = metricsHistory.current;
+    
+    const summary = {
+      averageFps: history.reduce((sum, m) => sum + m.fps, 0) / history.length || 60,
+      averageRenderTime: history.reduce((sum, m) => sum + m.renderTime, 0) / history.length || 0,
+      totalErrors: metrics.errors.length,
+      totalNetworkRequests: metrics.networkRequests.length,
+      totalDataTransferred: metrics.networkRequests.reduce((sum, r) => sum + r.size, 0),
+    };
+    
+    const bottlenecks = [];
+    if (summary.averageFps < 30) bottlenecks.push('Low FPS detected');
+    if (metrics.memory.percent > 70) bottlenecks.push('High memory usage');
+    if (metrics.domNodes > 1500) bottlenecks.push('Too many DOM nodes');
+    
+    const recommendations = [];
+    if (summary.averageFps < 30) {
+      recommendations.push('Consider using React.memo for expensive components');
+      recommendations.push('Implement virtual scrolling for long lists');
+    }
+    if (metrics.memory.percent > 70) {
+      recommendations.push('Check for memory leaks in useEffect hooks');
+      recommendations.push('Implement cleanup functions for subscriptions');
+    }
+    
+    return {
+      summary,
+      timeline: history,
+      bottlenecks,
+      recommendations,
+    };
+  }, [metrics]);
+
+  const optimize = useCallback((): OptimizationSuggestions => {
+    const suggestions: OptimizationSuggestions = {
+      immediate: [],
+      shortTerm: [],
+      longTerm: [],
+      codeChanges: [],
+    };
+    
+    // Immediate optimizations
+    if (metrics.fps < 30) {
+      suggestions.immediate.push('Reduce JavaScript execution in animation frames');
+      suggestions.immediate.push('Use CSS transforms instead of layout properties');
+    }
+    
+    if (metrics.memory.percent > 80) {
+      suggestions.immediate.push('Clear unused references and event listeners');
+      suggestions.immediate.push('Implement component unmounting cleanup');
+    }
+    
+    // Short-term optimizations
+    if (metrics.domNodes > 1500) {
+      suggestions.shortTerm.push('Implement pagination or virtual scrolling');
+      suggestions.shortTerm.push('Lazy load components that are not immediately visible');
+    }
+    
+    // Long-term optimizations
+    if (metrics.bundleSize > thresholds.bundleSize.warning) {
+      suggestions.longTerm.push('Implement code splitting');
+      suggestions.longTerm.push('Tree-shake unused dependencies');
+      suggestions.longTerm.push('Optimize bundle with webpack analyzer');
+    }
+    
+    // Code-specific suggestions
+    if (metrics.componentCount > 500) {
+      suggestions.codeChanges.push({
+        component: 'App',
+        issue: 'Too many components rendered simultaneously',
+        suggestion: 'Implement React.lazy() for route-based code splitting',
+        impact: 'high',
+        example: `const LazyComponent = React.lazy(() => import('./Component'));`,
+      });
+    }
+    
+    return suggestions;
+  }, [metrics, thresholds]);
+
+  // Reporting to external service
+  useEffect(() => {
+    if (!reportingEndpoint || !isMonitoring) return;
+    
+    reportingInterval.current = setInterval(async () => {
+      const report = getReport();
+      
+      try {
+        await fetch(reportingEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...report,
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+          }),
+        });
+      } catch (error) {
+        console.error('[Performance Monitor] Failed to send report:', error);
+      }
+    }, reportingInterval);
+    
+    return () => {
+      if (reportingInterval.current) {
+        clearInterval(reportingInterval.current);
+      }
+    };
+  }, [reportingEndpoint, reportingInterval, isMonitoring, getReport]);
+
+  useEffect(() => {
+    if (enabled) {
+      startMonitoring();
+    }
+    
+    return () => {
+      stopMonitoring();
+    };
+  }, [enabled, startMonitoring, stopMonitoring]);
+
+  const value: PerformanceContextValue = {
+    metrics,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring,
+    captureMetric,
+    markStart,
+    markEnd,
+    reportError,
+    getReport,
+    optimize,
+  };
+
+  return (
+    <PerformanceContext.Provider value={value}>
+      {children}
+    </PerformanceContext.Provider>
+  );
+};
+
+/**
+ * Hook to access performance monitoring
+ */
+export const usePerformance = () => {
+  const context = useContext(PerformanceContext);
+  if (!context) {
+    throw new Error('usePerformance must be used within a PerformanceMonitor');
+  }
+  return context;
+};
+
+{{componentName}}.displayName = '{{componentName}}';

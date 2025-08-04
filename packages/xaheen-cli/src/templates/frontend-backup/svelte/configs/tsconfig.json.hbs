@@ -1,0 +1,24 @@
+{{!-- Template: tsconfig.json.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: svelte --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/svelte/tsconfig.json.hbs --}}
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler"
+	},
+      {{#unless (or (eq backend "convex") (eq backend "none"))}}
+  "references": [{
+    "path": "../server"
+  }]
+  {{/unless}}
+}

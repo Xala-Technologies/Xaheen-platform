@@ -1,0 +1,158 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  Appearance,
+} from 'react-native';
+import { Button } from '../components/Button';
+
+export interface HomeScreenProps {
+  readonly navigation?: any;
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  // v5.0 Architecture: Static theme detection, no hooks
+  const isDark = Appearance.getColorScheme() === 'dark';
+
+  const styles = createStyles(isDark);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={isDark ? '#1F2937' : '#FFFFFF'}
+      />
+      
+      <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>
+              Welcome to {{title}}
+            </Text>
+            <Text style={styles.subtitle}>
+              {{description}}
+            </Text>
+          </View>
+
+          <View style={styles.cardContainer}>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Get Started</Text>
+              <Text style={styles.cardDescription}>
+                Begin building your application with our component system
+              </Text>
+              <Button 
+                variant="primary" 
+                size="lg" 
+                style={styles.cardButton}
+                onPress={() => console.log('Start Building pressed')}
+              >
+                Start Building
+              </Button>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Documentation</Text>
+              <Text style={styles.cardDescription}>
+                Learn about components, patterns, and best practices
+              </Text>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                style={styles.cardButton}
+                onPress={() => console.log('View Docs pressed')}
+              >
+                View Docs
+              </Button>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Examples</Text>
+              <Text style={styles.cardDescription}>
+                Explore real-world implementations and use cases
+              </Text>
+              <Button 
+                variant="ghost" 
+                size="lg" 
+                style={styles.cardButton}
+                onPress={() => console.log('See Examples pressed')}
+              >
+                See Examples
+              </Button>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const createStyles = (isDark: boolean) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: isDark ? '#111827' : '#FFFFFF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 32,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 48,
+    paddingHorizontal: 16,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: isDark ? '#F9FAFB' : '#111827',
+  },
+  subtitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    lineHeight: 28,
+    maxWidth: 600,
+    color: isDark ? '#D1D5DB' : '#6B7280',
+  },
+  cardContainer: {
+    gap: 24,
+  },
+  card: {
+    backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: isDark ? 0.3 : 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: isDark ? 0 : 1,
+    borderColor: isDark ? 'transparent' : '#E5E7EB',
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: isDark ? '#F9FAFB' : '#111827',
+  },
+  cardDescription: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 16,
+    color: isDark ? '#D1D5DB' : '#6B7280',
+  },
+  cardButton: {
+    width: '100%',
+  },
+});

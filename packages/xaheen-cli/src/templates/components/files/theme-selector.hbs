@@ -1,0 +1,244 @@
+/**
+ * @fileoverview {{componentName}} Component - Pure Theme Selector
+ * @description Theme selector component using CVA and CSS-only approach
+ * @version 5.0.0
+ * @compliance Pure component, SSR-safe, No hooks, WCAG AAA
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef } from 'react';
+
+const {{camelCase componentName}}Variants = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background hover:bg-accent hover:text-accent-foreground',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        filled: 'bg-primary text-primary-foreground hover:bg-primary/90',
+      },
+      size: {
+        sm: 'h-9 px-3',
+        md: 'h-10 px-4',
+        lg: 'h-11 px-8',
+        icon: 'h-10 w-10',
+      },
+      layout: {
+        dropdown: 'w-full justify-between',
+        inline: 'inline-flex gap-2',
+        grid: 'grid grid-cols-3 gap-2',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+      layout: 'dropdown',
+    },
+  }
+);
+
+export interface ThemeOption {
+  readonly value: 'light' | 'dark' | 'high-contrast' | 'system';
+  readonly label: string;
+  readonly icon?: React.ReactNode;
+  readonly description?: string;
+}
+
+export interface {{componentName}}Props
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  readonly options?: ReadonlyArray<ThemeOption>;
+  readonly currentTheme?: string;
+  readonly onThemeSelect?: (theme: string) => void;
+  readonly showLabels?: boolean;
+  readonly showIcons?: boolean;
+  readonly showDescriptions?: boolean;
+  readonly ariaLabel?: string;
+  readonly 'data-testid'?: string;
+}
+
+const defaultOptions: ReadonlyArray<ThemeOption> = [
+  {
+    value: 'light',
+    label: 'Light',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+    description: 'Light theme with white background',
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    ),
+    description: 'Dark theme for reduced eye strain',
+  },
+  {
+    value: 'high-contrast',
+    label: 'High Contrast',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16.5V4.5c4.14 0 7.5 3.36 7.5 7.5s-3.36 7.5-7.5 7.5z" />
+      </svg>
+    ),
+    description: 'Enhanced contrast for accessibility',
+  },
+  {
+    value: 'system',
+    label: 'System',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    description: 'Follow system preference',
+  },
+];
+
+/**
+ * Pure presentational theme selector component
+ * Parent component handles theme state management
+ * Uses data attributes for theme switching
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      options = defaultOptions,
+      currentTheme = 'system',
+      onThemeSelect,
+      showLabels = true,
+      showIcons = true,
+      showDescriptions = false,
+      variant,
+      size,
+      layout,
+      ariaLabel = 'Select theme',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ) => {
+    if (layout === 'dropdown') {
+      return (
+        <div
+          ref={ref}
+          className={cn('relative inline-block text-left', className)}
+          data-testid={testId}
+          {...props}
+        >
+          <select
+            className={cn(
+              {{camelCase componentName}}Variants({ variant, size, layout }),
+              'appearance-none cursor-pointer pr-10',
+              className
+            )}
+            value={currentTheme}
+            onChange={(e) => onThemeSelect?.(e.target.value)}
+            aria-label={ariaLabel}
+          >
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
+    if (layout === 'grid') {
+      return (
+        <div
+          ref={ref}
+          className={cn('grid grid-cols-2 gap-2 p-2', className)}
+          role="radiogroup"
+          aria-label={ariaLabel}
+          data-testid={testId}
+          {...props}
+        >
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={currentTheme === option.value}
+              className={cn(
+                {{camelCase componentName}}Variants({ variant, size }),
+                'flex flex-col items-center justify-center gap-2 p-4',
+                currentTheme === option.value && 'ring-2 ring-primary',
+                className
+              )}
+              onClick={() => onThemeSelect?.(option.value)}
+            >
+              {showIcons && option.icon}
+              {showLabels && (
+                <span className="text-sm font-medium">{option.label}</span>
+              )}
+              {showDescriptions && option.description && (
+                <span className="text-xs text-muted-foreground text-center">
+                  {option.description}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // Inline layout
+    return (
+      <div
+        ref={ref}
+        className={cn('inline-flex items-center gap-1 p-1 bg-muted rounded-lg', className)}
+        role="radiogroup"
+        aria-label={ariaLabel}
+        data-testid={testId}
+        {...props}
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={currentTheme === option.value}
+            aria-label={option.label}
+            className={cn(
+              {{camelCase componentName}}Variants({ 
+                variant: currentTheme === option.value ? 'filled' : 'ghost',
+                size: size === 'icon' ? 'icon' : size,
+              }),
+              'relative',
+              className
+            )}
+            onClick={() => onThemeSelect?.(option.value)}
+            title={option.description}
+          >
+            {showIcons && option.icon}
+            {showLabels && size !== 'icon' && (
+              <span className="ml-2">{option.label}</span>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

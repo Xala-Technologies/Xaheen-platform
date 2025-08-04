@@ -1,6 +1,6 @@
 import React from "react";
-import { HomePage } from "@/components/homepage/HomePage";
+import { HomePageWithAgents } from "@/components/homepage/HomePageWithAgents";
 
 export default function HomePageWrapper(): React.JSX.Element {
-	return <HomePage />;
+	return <HomePageWithAgents />;
 }

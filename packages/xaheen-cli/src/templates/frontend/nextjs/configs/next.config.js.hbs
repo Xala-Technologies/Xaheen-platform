@@ -1,0 +1,58 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    appDir: true,
+  },
+  transpilePackages: ['@xala-technologies/ui-system'],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  env: {
+    XALA_THEME: '{{theme}}',
+    XALA_INDUSTRY: '{{industry}}',
+    {{#if_contains compliance 'nsm'}}
+    NSM_CLASSIFICATION: '{{nsmClassification}}',
+    {{/if_contains}}
+    {{#if_contains compliance 'gdpr'}}
+    GDPR_ENABLED: 'true',
+    {{/if_contains}}
+  },
+  images: {
+    domains: ['images.unsplash.com', 'via.placeholder.com'],
+  },
+  {{#if_contains features 'i18n'}}
+  i18n: {
+    locales: [{{#each locales}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}],
+    defaultLocale: '{{defaultLocale}}',
+  },
+  {{/if_contains}}
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {{#if_contains compliance 'nsm'}}
+          {
+            key: 'X-NSM-Classification',
+            value: '{{nsmClassification}}',
+          },
+          {{/if_contains}}
+        ],
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;

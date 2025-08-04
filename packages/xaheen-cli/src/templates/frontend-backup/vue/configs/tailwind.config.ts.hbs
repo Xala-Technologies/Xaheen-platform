@@ -1,0 +1,90 @@
+{{!-- Template: tailwind.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: vue --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/vue/tailwind.config.ts.hbs --}}
+/**
+ * Tailwind CSS Configuration - Xala UI System Integration
+ * Generated with Xaheen CLI - Vue.js Implementation
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO hardcoded styling or arbitrary values
+ * ✅ ONLY Xala design tokens and semantic variants
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA color contrast ratios
+ * ✅ Norwegian government design standards
+ */
+
+import type { Config } from 'tailwindcss';
+import { xalaUIConfig } from '@xala-technologies/ui-system/tailwind';
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts,jsx,tsx}',
+    './node_modules/@xala-technologies/ui-system/dist/**/*.{js,ts,vue}'
+  ],
+  
+  // Extend Xala UI System configuration
+  presets: [xalaUIConfig],
+  
+  theme: {
+    extend: {
+      // Norwegian-specific extensions
+      {{#if hasNorwegian}}
+      colors: {
+        'norway-red': '#BA0C2F',
+        'norway-blue': '#002868',
+        'norway-white': '#FFFFFF'
+      },
+      fontFamily: {
+        'norwegian': ['Source Sans Pro', 'Arial', 'sans-serif']
+      },
+      {{/if}}
+      
+      // Enhanced 8pt Grid System
+      spacing: {
+        '0': '0px',
+        '1': '8px',
+        '2': '16px',
+        '3': '24px',
+        '4': '32px',
+        '5': '40px',
+        '6': '48px',
+        '7': '56px',
+        '8': '64px',
+        '9': '72px',
+        '10': '80px',
+        '12': '96px',
+        '16': '128px',
+        '20': '160px',
+        '24': '192px',
+        '32': '256px'
+      }
+    }
+  },
+  
+  plugins: [
+    // Xala UI System plugin (automatically included)
+    {{#if hasWCAG}}
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    {{/if}}
+  ],
+  
+  // Dark mode configuration
+  darkMode: 'class',
+  
+  // Safelist for dynamic classes
+  safelist: [
+    // Xala UI System variants
+    {
+      pattern: /^(bg|text|border)-(primary|secondary|success|warning|error|info)-(50|100|200|300|400|500|600|700|800|900)$/,
+      variants: ['hover', 'focus', 'active', 'disabled']
+    },
+    {
+      pattern: /^(p|m|gap|space)-(0|1|2|3|4|5|6|7|8|9|10|12|16|20|24|32)$/,
+      variants: ['sm', 'md', 'lg', 'xl', '2xl']
+    }
+  ]
+} satisfies Config;

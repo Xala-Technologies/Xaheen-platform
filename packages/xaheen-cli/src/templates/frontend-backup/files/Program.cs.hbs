@@ -1,0 +1,131 @@
+{{!-- Template: Program.cs.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: file --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/blazor/Program.cs.hbs --}}
+using MudBlazor.Services;
+{{#if localization}}
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+{{/if}}
+{{#if auth}}
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Components.Authorization;
+{{/if}}
+{{#if database}}
+using Microsoft.EntityFrameworkCore;
+using {{pascalCase projectName}}.Data;
+{{/if}}
+
+namespace {{pascalCase projectName}};
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container
+        {{#if (eq blazorMode "server")}}
+        builder.Services.AddRazorPages();
+        builder.Services.AddServerSideBlazor();
+        {{/if}}
+        {{#if (eq blazorMode "wasm")}}
+        builder.Services.AddRazorComponents()
+            .AddInteractiveWebAssemblyComponents();
+        {{/if}}
+
+        // Add MudBlazor services
+        builder.Services.AddMudServices();
+
+        {{#if localization}}
+        // Add localization services
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        builder.Services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = new[]
+            {
+                new CultureInfo("en-US"),
+                new CultureInfo("nb-NO"),
+                new CultureInfo("fr-FR"),
+                new CultureInfo("ar-SA")
+            };
+
+            options.DefaultRequestCulture = new RequestCulture("en-US");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+        });
+        {{/if}}
+
+        {{#if auth}}
+        // Add authentication services
+        builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+            .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            {
+                builder.Configuration.Bind("OpenIdConnect", options);
+            });
+
+        builder.Services.AddAuthorizationCore();
+        {{#if (eq blazorMode "server")}}
+        builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+        {{/if}}
+        {{/if}}
+
+        {{#if database}}
+        // Add Entity Framework services
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        {{#eq database "sqlite"}}
+            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        {{/eq}}
+        {{#eq database "postgresql"}}
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        {{/eq}}
+        {{#eq database "mysql"}}
+            options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+                ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+        {{/eq}}
+        {{/if}}
+
+        {{#if api}}
+        // Add HTTP Client services
+        builder.Services.AddHttpClient();
+        {{/if}}
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        {{#if localization}}
+        // Use localization
+        app.UseRequestLocalization();
+        {{/if}}
+
+        {{#if auth}}
+        // Use authentication
+        app.UseAuthentication();
+        app.UseAuthorization();
+        {{/if}}
+
+        app.UseRouting();
+
+        {{#if (eq blazorMode "server")}}
+        app.MapRazorPages();
+        app.MapBlazorHub();
+        app.MapFallbackToPage("/_Host");
+        {{/if}}
+        {{#if (eq blazorMode "wasm")}}
+        app.MapRazorComponents<App>()
+            .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(typeof(Program).Assembly);
+        {{/if}}
+
+        app.Run();
+    }
+}

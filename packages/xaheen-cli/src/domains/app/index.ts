@@ -1,5 +1,6 @@
 import type { CLICommand } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
+import { appTemplateRegistry } from '../../services/registry/app-template-registry.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import chalk from 'chalk';

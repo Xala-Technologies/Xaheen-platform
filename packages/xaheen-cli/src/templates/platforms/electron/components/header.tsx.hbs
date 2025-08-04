@@ -1,0 +1,194 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant
+ * @description Generic Header component using design tokens with SSR compatibility
+ * @version 5.0.0
+ * @compliance SSR-Safe, Framework-agnostic, Production-ready, Token-based, SOLID, No hooks
+ */
+
+import React, { forwardRef, type ReactNode } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils/cn';
+
+const {{camelCase componentName}}Variants = cva(
+  [
+    'w-full flex items-center',
+    'transition-all duration-200',
+    'motion-reduce:transition-none',
+  ],
+  {
+    variants: {
+      variant: {
+        default: 'bg-background border-b border-border',
+        filled: 'bg-card shadow-sm',
+        elevated: 'bg-card shadow-md border border-border',
+        outlined: 'bg-transparent border border-border',
+        ghost: 'bg-transparent',
+      },
+      size: {
+        sm: 'h-12 px-4',
+        md: 'h-16 px-6',
+        lg: 'h-20 px-8',
+        xl: 'h-24 px-10',
+      },
+      position: {
+        static: 'static',
+        sticky: 'sticky top-0 z-50 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80',
+        fixed: 'fixed top-0 left-0 right-0 z-50 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80',
+      },
+      justify: {
+        start: 'justify-start',
+        center: 'justify-center',
+        end: 'justify-end',
+        between: 'justify-between',
+        around: 'justify-around',
+        evenly: 'justify-evenly',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+      position: 'static',
+      justify: 'between',
+    },
+  }
+);
+
+const {{camelCase componentName}}SectionVariants = cva(
+  'flex items-center',
+  {
+    variants: {
+      align: {
+        start: 'justify-start',
+        center: 'justify-center',
+        end: 'justify-end',
+      },
+      gap: {
+        none: 'gap-0',
+        sm: 'gap-2',
+        md: 'gap-4',
+        lg: 'gap-6',
+        xl: 'gap-8',
+      },
+    },
+    defaultVariants: {
+      align: 'start',
+      gap: 'md',
+    },
+  }
+);
+
+export interface {{componentName}}Props 
+  extends Omit<React.HTMLAttributes<HTMLElement>, 'title'>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  readonly title?: ReactNode;
+  readonly subtitle?: ReactNode;
+  readonly logo?: ReactNode;
+  readonly navigation?: ReactNode;
+  readonly actions?: ReactNode;
+  readonly leftSection?: ReactNode;
+  readonly centerSection?: ReactNode;
+  readonly rightSection?: ReactNode;
+  readonly breadcrumbs?: ReactNode;
+  readonly fullWidth?: boolean;
+  readonly containerMaxWidth?: string;
+  readonly ariaLabel?: string;
+}
+
+/**
+ * Pure presentational header component with no hooks
+ * Uses CSS custom properties for theming
+ */
+export const {{componentName}} = forwardRef<HTMLElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      title,
+      subtitle,
+      logo,
+      navigation,
+      actions,
+      leftSection,
+      centerSection,
+      rightSection,
+      breadcrumbs,
+      variant,
+      size,
+      position,
+      justify,
+      fullWidth = false,
+      containerMaxWidth,
+      ariaLabel = 'Page header',
+      ...props
+    },
+    ref
+  ) => {
+    const headerContent = (
+      <>
+        {leftSection || (
+          <div className={cn({{camelCase componentName}}SectionVariants({ align: 'start', gap: 'md' }))}>
+            {logo}
+            {title && (
+              <div className="flex flex-col">
+                <div className="text-lg font-semibold">{title}</div>
+                {subtitle && <div className="text-sm text-muted-foreground">{subtitle}</div>}
+              </div>
+            )}
+            {navigation}
+          </div>
+        )}
+
+        {centerSection}
+
+        {rightSection || actions && (
+          <div className={cn({{camelCase componentName}}SectionVariants({ align: 'end', gap: 'md' }))}>
+            {actions}
+          </div>
+        )}
+      </>
+    );
+
+    return (
+      <header
+        ref={ref}
+        className={cn(
+          {{camelCase componentName}}Variants({
+            variant,
+            size,
+            position,
+            justify,
+          }),
+          className
+        )}
+        role="banner"
+        aria-label={ariaLabel}
+        {...props}
+      >
+        {breadcrumbs && (
+          <div className="absolute top-0 left-0 w-full px-6 py-2 text-sm text-muted-foreground bg-muted/50">
+            {breadcrumbs}
+          </div>
+        )}
+        
+        {fullWidth ? (
+          headerContent
+        ) : (
+          <div 
+            className={cn(
+              'w-full flex items-center',
+              justify === 'between' && 'justify-between',
+              justify === 'center' && 'justify-center',
+              justify === 'start' && 'justify-start',
+              justify === 'end' && 'justify-end',
+              containerMaxWidth && `max-w-[${containerMaxWidth}]`,
+              'mx-auto'
+            )}
+          >
+            {headerContent}
+          </div>
+        )}
+      </header>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

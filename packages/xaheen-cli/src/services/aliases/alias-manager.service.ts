@@ -256,13 +256,13 @@ export class AliasManagerService {
     const expandedArgs = this.expandShortcuts(args);
 
     // Parse target and options from expanded arguments
-    const target = expandedArgs.find(arg => !arg.startsWith('-'));
+    const target = expandedArgs.find(arg => typeof arg === 'string' && !arg.startsWith('-'));
     const options: Record<string, any> = {};
 
     // Parse options
     for (let i = 0; i < expandedArgs.length; i++) {
       const arg = expandedArgs[i];
-      if (arg.startsWith('--')) {
+      if (typeof arg === 'string' && arg.startsWith('--')) {
         const [key, value] = arg.substring(2).split('=');
         if (value) {
           options[key] = value;
@@ -276,7 +276,7 @@ export class AliasManagerService {
             options[key] = true;
           }
         }
-      } else if (arg.startsWith('-') && arg.length === 2) {
+      } else if (typeof arg === 'string' && arg.startsWith('-') && arg.length === 2) {
         options[arg.substring(1)] = true;
       }
     }

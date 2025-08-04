@@ -1,0 +1,94 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button } from '@xala-technologies/ui-system-native';
+
+export interface {{pascalCase name}}Props {
+  {{#each props}}
+  readonly {{name}}{{#if optional}}?{{/if}}: {{type}};
+  {{/each}}
+}
+
+export const {{pascalCase name}} = React.forwardRef<
+  View,
+  {{pascalCase name}}Props
+>(({ {{#each props}}{{name}}, {{/each}}...props }, ref) => {
+  const isInteractive = {{#if_contains features 'interactive'}}true{{else}}false{{/if_contains}};
+
+  return (
+    <View ref={ref} style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{{pascalCase name}}</Text>
+        <Text style={styles.description}>
+          {{#if description}}{{description}}{{else}}A {{name}} component built with Xala UI System{{/if}}
+        </Text>
+      </View>
+      
+      <View style={styles.content}>
+        {isInteractive && (
+          <Button 
+            variant="primary" 
+            size="md"
+            {{#each props}}
+            {{#if (eq type '() => void')}}
+            onPress={ {{name}} }
+            {{/if}}
+            {{/each}}
+          >
+            {{#each props}}
+            {{#if (eq name 'title')}}
+            { {{name}} || 'Click me' }
+            {{/if}}
+            {{/each}}
+          </Button>
+        )}
+        
+        {{#each props}}
+        {{#if (eq name 'children')}}
+        <View style={styles.childrenContainer}>
+          { {{name}} }
+        </View>
+        {{/if}}
+        {{/each}}
+      </View>
+    </View>
+  );
+});
+
+{{pascalCase name}}.displayName = '{{pascalCase name}}';
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  header: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
+  },
+  content: {
+    gap: 16,
+  },
+  childrenContainer: {
+    marginTop: 12,
+  },
+});

@@ -30,6 +30,7 @@ import {
   Card,
   Container,
   Grid,
+  GridItem,
   Stack,
   Text,
   Typography,
@@ -316,60 +317,69 @@ export const AgentDashboard = ({
 
       <DashboardLayout.Main>
         {/* KPI Cards Row */}
-        <Grid cols={4} gap="lg" className="mb-8">
-          <Card variant="elevated" padding="lg">
-            <Stack direction="vertical" gap="sm">
-              <Text variant="caption" color="muted-foreground">Active Agents</Text>
-              <Text variant="h2">{agents.filter(a => a.status === 'active').length}</Text>
-              <Text variant="caption" color="success">
-                +{agents.length - agents.filter(a => a.status === 'active').length} idle
-              </Text>
-            </Stack>
-          </Card>
+        <Grid columns={12} gap="lg" className="mb-8">
+          <GridItem span={3}>
+            <Card variant="elevated" padding="lg">
+              <Stack direction="vertical" gap="sm">
+                <Text variant="caption" color="muted-foreground">Active Agents</Text>
+                <Text variant="h2">{agents.filter(a => a.status === 'active').length}</Text>
+                <Text variant="caption" color="success">
+                  +{agents.length - agents.filter(a => a.status === 'active').length} idle
+                </Text>
+              </Stack>
+            </Card>
+          </GridItem>
           
-          <Card variant="elevated" padding="lg">
-            <Stack direction="vertical" gap="sm">
-              <Text variant="caption" color="muted-foreground">Tasks Completed</Text>
-              <Text variant="h2">{activeTasks.filter(t => t.status === 'completed').length}</Text>
-              <Text variant="caption" color="success">
-                +{activeTasks.filter(t => t.status === 'running').length} running
-              </Text>
-            </Stack>
-          </Card>
+          <GridItem span={3}>
+            <Card variant="elevated" padding="lg">
+              <Stack direction="vertical" gap="sm">
+                <Text variant="caption" color="muted-foreground">Tasks Completed</Text>
+                <Text variant="h2">{activeTasks.filter(t => t.status === 'completed').length}</Text>
+                <Text variant="caption" color="success">
+                  +{activeTasks.filter(t => t.status === 'running').length} running
+                </Text>
+              </Stack>
+            </Card>
+          </GridItem>
           
-          <Card variant="elevated" padding="lg">
-            <Stack direction="vertical" gap="sm">
-              <Text variant="caption" color="muted-foreground">Components Generated</Text>
-              <Text variant="h2">47</Text>
-              <Text variant="caption" color="success">+12 today</Text>
-            </Stack>
-          </Card>
+          <GridItem span={3}>
+            <Card variant="elevated" padding="lg">
+              <Stack direction="vertical" gap="sm">
+                <Text variant="caption" color="muted-foreground">Components Generated</Text>
+                <Text variant="h2">47</Text>
+                <Text variant="caption" color="success">+12 today</Text>
+              </Stack>
+            </Card>
+          </GridItem>
           
-          <Card variant="elevated" padding="lg">
-            <Stack direction="vertical" gap="sm">
-              <Text variant="caption" color="muted-foreground">System Health</Text>
-              <Text variant="h2">98%</Text>
-              <Text variant="caption" color="success">All systems operational</Text>
-            </Stack>
-          </Card>
+          <GridItem span={3}>
+            <Card variant="elevated" padding="lg">
+              <Stack direction="vertical" gap="sm">
+                <Text variant="caption" color="muted-foreground">System Health</Text>
+                <Text variant="h2">98%</Text>
+                <Text variant="caption" color="success">All systems operational</Text>
+              </Stack>
+            </Card>
+          </GridItem>
         </Grid>
 
         {/* Charts Row */}
-        <Grid cols={{ base: 1, lg: 2 }} gap="lg">
+        <Grid columns={12} gap="lg">
           {/* Command Center */}
-          <Card variant="elevated" padding="lg">
+          <GridItem span={6}>
+            <Card variant="elevated" padding="lg">
             <Stack direction="vertical" gap="md">
               <Stack direction="horizontal" gap="sm" align="center" justify="space-between">
-                <Text variant="h3">Command Center</Text>
+                <Typography variant="h3">Command Center</Typography>
                 <Badge variant="outline" size="sm">
                   Natural Language
                 </Badge>
               </Stack>
 
               <Stack direction="vertical" gap="sm">
-                <Text variant="body" color="muted-foreground">
+                <Typography variant="body" color="muted">
                   Describe what you want to create, analyze, or deploy in natural language
-                </Text>
+                </Typography>
                 
                 <textarea
                   value={commandInput}
@@ -386,9 +396,9 @@ export const AgentDashboard = ({
                 />
                 
                 <Stack direction="horizontal" gap="sm" justify="space-between">
-                  <Text variant="caption" color="muted-foreground">
+                  <Typography variant="caption" color="muted">
                     {isConnected ? "Cmd+Enter to execute" : "Not connected"}
-                  </Text>
+                  </Typography>
                   
                   <Button
                     variant="primary"
@@ -402,11 +412,13 @@ export const AgentDashboard = ({
               </Stack>
             </Stack>
           </Card>
+          </GridItem>
 
           {/* Agent Status */}
-          <Card variant="elevated" padding="lg">
+          <GridItem span={6}>
+            <Card variant="elevated" padding="lg">
             <Stack direction="vertical" gap="md">
-              <Text variant="h3">Agent Status</Text>
+              <Typography variant="h3">Agent Status</Typography>
               <Container size="full" padding="md" className="bg-muted/50 rounded-lg min-h-[300px]">
                 <Stack direction="vertical" gap="sm">
                   {agents.map(agent => (
@@ -417,7 +429,7 @@ export const AgentDashboard = ({
                           agent.status === 'idle' ? 'bg-gray-400' :
                           'bg-gray-300'
                         }`} />
-                        <Text variant="body">{agent.name}</Text>
+                        <Typography variant="body" color="default">{agent.name}</Typography>
                       </Stack>
                       <Badge 
                         variant={
@@ -434,6 +446,7 @@ export const AgentDashboard = ({
               </Container>
             </Stack>
           </Card>
+          </GridItem>
         </Grid>
       </DashboardLayout.Main>
     </DashboardLayout>

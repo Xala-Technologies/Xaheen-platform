@@ -36,7 +36,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { CommandDisplay } from "./CommandDisplay";
 import { ProjectIdeaSection } from "./ProjectIdeaSection";
 import { QuickStartTemplates } from "./QuickStartTemplates";
-import { AgentDashboard } from "../agent-dashboard/AgentDashboardSimple";
+import { AgentDashboard } from "../agent-dashboard/AgentDashboard";
 
 interface PresetStack {
 	projectName: string;

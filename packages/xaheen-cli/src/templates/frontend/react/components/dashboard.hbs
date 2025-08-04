@@ -1,0 +1,184 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant
+ * @description Dashboard layout component using design tokens
+ * @version 5.0.0
+ * @compliance Pure component, SSR-safe, uses design tokens
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import { Container } from '@/components/layout/Container';
+import { Stack } from '@/components/layout/Stack';
+import { Card } from '@/components/layout/Card';
+import { Grid } from '@/components/layout/Grid';
+
+/**
+ * Dashboard variants using design tokens
+ */
+const dashboardVariants = cva(
+  'min-h-screen bg-background',
+  {
+    variants: {
+      layout: {
+        default: 'flex flex-col',
+        sidebar: 'flex flex-row',
+        grid: 'grid grid-cols-12',
+      },
+      padding: {
+        none: 'p-0',
+        sm: 'p-4',
+        md: 'p-6',
+        lg: 'p-8',
+        xl: 'p-12',
+      },
+      norwegianLayout: {
+        standard: 'max-w-7xl mx-auto',
+        wide: 'max-w-full',
+        narrow: 'max-w-4xl mx-auto',
+      },
+    },
+    defaultVariants: {
+      layout: 'default',
+      padding: 'md',
+      norwegianLayout: 'standard',
+    },
+  }
+);
+
+export interface {{componentName}}Props
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof dashboardVariants> {
+  readonly header?: React.ReactNode;
+  readonly sidebar?: React.ReactNode;
+  readonly metrics?: ReadonlyArray<{
+    readonly id: string;
+    readonly label: string;
+    readonly value: string | number;
+    readonly change?: string;
+    readonly trend?: 'up' | 'down' | 'neutral';
+  }>;
+  readonly widgets?: ReadonlyArray<React.ReactNode>;
+  readonly footer?: React.ReactNode;
+  readonly 'data-testid'?: string;
+}
+
+/**
+ * Dashboard component using design tokens and semantic props
+ * Pure presentational component with no hooks
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      children,
+      header,
+      sidebar,
+      metrics,
+      widgets,
+      footer,
+      layout,
+      padding,
+      norwegianLayout,
+      className,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): React.ReactElement => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          dashboardVariants({
+            layout,
+            padding,
+            norwegianLayout,
+          }),
+          className
+        )}
+        data-testid={testId}
+        {...props}
+      >
+        {/* Header Section */}
+        {header && (
+          <div className="border-b border-gray-200 bg-white">
+            <Container size="xl" padding="md">
+              {header}
+            </Container>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className={cn(
+          'flex-1',
+          layout === 'sidebar' && 'flex'
+        )}>
+          {/* Sidebar */}
+          {sidebar && layout === 'sidebar' && (
+            <aside className="w-64 border-r border-gray-200 bg-white">
+              {sidebar}
+            </aside>
+          )}
+
+          {/* Main Content */}
+          <main className="flex-1">
+            <Container size={norwegianLayout === 'standard' ? 'xl' : 'full'} padding={padding}>
+              <Stack direction="vertical" gap={6}>
+                {/* Metrics Cards */}
+                {metrics && metrics.length > 0 && (
+                  <Grid cols={{ default: 1, sm: 2, lg: 4 }} gap={4}>
+                    {metrics.map((metric) => (
+                      <Card key={metric.id} padding="md" className="bg-white">
+                        <Stack direction="vertical" gap={2}>
+                          <div className="text-sm text-gray-600">
+                            {metric.label}
+                          </div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {metric.value}
+                          </div>
+                          {metric.change && (
+                            <div className={cn(
+                              'text-sm font-medium',
+                              metric.trend === 'up' && 'text-green-600',
+                              metric.trend === 'down' && 'text-red-600',
+                              metric.trend === 'neutral' && 'text-gray-600'
+                            )}>
+                              {metric.change}
+                            </div>
+                          )}
+                        </Stack>
+                      </Card>
+                    ))}
+                  </Grid>
+                )}
+
+                {/* Widgets */}
+                {widgets && widgets.length > 0 && (
+                  <Grid cols={{ default: 1, lg: 2 }} gap={6}>
+                    {widgets.map((widget, index) => (
+                      <div key={index}>{widget}</div>
+                    ))}
+                  </Grid>
+                )}
+
+                {/* Main Content */}
+                {children}
+              </Stack>
+            </Container>
+          </main>
+        </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="border-t border-gray-200 bg-white mt-auto">
+            <Container size="xl" padding="md">
+              {footer}
+            </Container>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

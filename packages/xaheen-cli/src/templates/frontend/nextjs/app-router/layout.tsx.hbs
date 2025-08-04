@@ -1,0 +1,51 @@
+import React from 'react';
+import { Metadata } from 'next';
+import { AppShell } from '@xala-technologies/ui-system';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: '{{name}}',
+  description: '{{description}}',
+  viewport: 'width=device-width, initial-scale=1',
+};
+
+export interface RootLayoutProps {
+  readonly children: React.ReactNode;
+}
+
+export default function RootLayout({
+  children
+}: RootLayoutProps): JSX.Element {
+  return (
+    <html 
+      lang="{{locale}}" 
+      dir="{{#if_contains features 'rtl'}}rtl{{else}}ltr{{/if_contains}}"
+      data-theme="{{theme}}"
+      data-ui-industry="{{industry}}"
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || '{{theme}}';
+                  if (theme === 'system') {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="antialiased">
+        <AppShell fullHeight>
+          {children}
+        </AppShell>
+      </body>
+    </html>
+  );
+}

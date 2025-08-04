@@ -1,0 +1,468 @@
+/**
+ * @fileoverview {{componentName}} - Universal Component Factory
+ * @description Generate components for multiple frameworks from a single definition
+ * @version 5.0.0
+ * @compliance Multi-platform, Framework-agnostic, Enterprise Standards
+ */
+
+/**
+ * Universal Component Definition
+ * This structure can be translated to any framework
+ */
+export interface UniversalComponentDef {
+  name: string;
+  type: 'component' | 'layout' | 'provider' | 'utility';
+  props: ComponentProp[];
+  state?: ComponentState[];
+  methods?: ComponentMethod[];
+  lifecycle?: ComponentLifecycle;
+  styles?: ComponentStyles;
+  slots?: ComponentSlot[];
+  events?: ComponentEvent[];
+  metadata: ComponentMetadata;
+}
+
+export interface ComponentProp {
+  name: string;
+  type: string;
+  required: boolean;
+  default?: any;
+  description?: string;
+  validator?: string;
+}
+
+export interface ComponentState {
+  name: string;
+  type: string;
+  initial: any;
+  computed?: boolean;
+}
+
+export interface ComponentMethod {
+  name: string;
+  async?: boolean;
+  params: Array<{ name: string; type: string }>;
+  returnType?: string;
+  body: string;
+}
+
+export interface ComponentLifecycle {
+  onMount?: string;
+  onUnmount?: string;
+  onUpdate?: string;
+  onError?: string;
+}
+
+export interface ComponentStyles {
+  framework: 'tailwind' | 'css-modules' | 'styled-components' | 'emotion' | 'scss';
+  classes?: Record<string, string>;
+  variants?: Record<string, Record<string, string>>;
+}
+
+export interface ComponentSlot {
+  name: string;
+  required?: boolean;
+  fallback?: string;
+}
+
+export interface ComponentEvent {
+  name: string;
+  payload?: string;
+}
+
+export interface ComponentMetadata {
+  description: string;
+  category: string;
+  platform: string[];
+  compliance: string[];
+  version: string;
+}
+
+/**
+ * React Component Generator
+ */
+export class ReactComponentGenerator {
+  generate(def: UniversalComponentDef): string {
+    const imports = this.generateImports(def);
+    const types = this.generateTypes(def);
+    const component = this.generateComponent(def);
+    
+    return `${imports}\n\n${types}\n\n${component}`;
+  }
+
+  private generateImports(def: UniversalComponentDef): string {
+    const imports: string[] = [
+      `import React${def.state?.length ? ', { useState, useEffect }' : ''} from 'react';`,
+    ];
+    
+    if (def.styles?.framework === 'tailwind') {
+      imports.push(`import { cn } from '@/lib/utils/cn';`);
+      imports.push(`import { cva, type VariantProps } from 'class-variance-authority';`);
+    }
+    
+    return imports.join('\n');
+  }
+
+  private generateTypes(def: UniversalComponentDef): string {
+    const props = def.props.map(p => 
+      `  readonly ${p.name}${p.required ? '' : '?'}: ${this.mapType(p.type)};`
+    ).join('\n');
+    
+    return `export interface ${def.name}Props {\n${props}\n}`;
+  }
+
+  private generateComponent(def: UniversalComponentDef): string {
+    const hasState = def.state && def.state.length > 0;
+    const stateHooks = hasState ? def.state!.map(s => 
+      `  const [${s.name}, set${this.capitalize(s.name)}] = useState<${this.mapType(s.type)}>(${JSON.stringify(s.initial)});`
+    ).join('\n') : '';
+
+    return `export const ${def.name}: React.FC<${def.name}Props> = ({
+  ${def.props.map(p => p.name).join(',\n  ')}
+}) => {
+${stateHooks}
+
+  return (
+    <div className="${def.styles?.classes?.root || ''}">
+      {/* Component implementation */}
+      ${def.slots?.map(s => `{${s.name}}`).join('\n      ') || '{children}'}
+    </div>
+  );
+};
+
+${def.name}.displayName = '${def.name}';`;
+  }
+
+  private mapType(type: string): string {
+    const typeMap: Record<string, string> = {
+      'string': 'string',
+      'number': 'number',
+      'boolean': 'boolean',
+      'array': 'any[]',
+      'object': 'Record<string, any>',
+      'function': '() => void',
+      'node': 'React.ReactNode',
+    };
+    return typeMap[type] || 'any';
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+}
+
+/**
+ * Vue 3 Component Generator
+ */
+export class VueComponentGenerator {
+  generate(def: UniversalComponentDef): string {
+    const template = this.generateTemplate(def);
+    const script = this.generateScript(def);
+    const style = this.generateStyle(def);
+    
+    return `${template}\n\n${script}\n\n${style}`;
+  }
+
+  private generateTemplate(def: UniversalComponentDef): string {
+    return `<template>
+  <div :class="classes.root">
+    ${def.slots?.map(s => `<slot name="${s.name}">${s.fallback || ''}</slot>`).join('\n    ') || '<slot />'}
+  </div>
+</template>`;
+  }
+
+  private generateScript(def: UniversalComponentDef): string {
+    const props = def.props.map(p => `    ${p.name}: {
+      type: ${this.mapVueType(p.type)},
+      ${p.required ? 'required: true,' : ''}
+      ${p.default !== undefined ? `default: ${JSON.stringify(p.default)},` : ''}
+    },`).join('\n');
+
+    const state = def.state?.map(s => 
+      `const ${s.name} = ref<${this.mapTsType(s.type)}>(${JSON.stringify(s.initial)});`
+    ).join('\n    ') || '';
+
+    return `<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+interface ${def.name}Props {
+${def.props.map(p => `  ${p.name}${p.required ? '' : '?'}: ${this.mapTsType(p.type)};`).join('\n')}
+}
+
+const props = defineProps<${def.name}Props>();
+
+${def.events?.map(e => `const emit = defineEmits<{
+  ${e.name}: [${e.payload || 'void'}]
+}>();`).join('\n') || ''}
+
+${state}
+
+${def.lifecycle?.onMount ? `onMounted(() => {
+  ${def.lifecycle.onMount}
+});` : ''}
+
+${def.lifecycle?.onUnmount ? `onUnmounted(() => {
+  ${def.lifecycle.onUnmount}
+});` : ''}
+</script>`;
+  }
+
+  private generateStyle(def: UniversalComponentDef): string {
+    if (def.styles?.framework === 'tailwind') {
+      return ''; // Tailwind classes are inline
+    }
+    
+    return `<style scoped>
+/* Component styles */
+</style>`;
+  }
+
+  private mapVueType(type: string): string {
+    const typeMap: Record<string, string> = {
+      'string': 'String',
+      'number': 'Number',
+      'boolean': 'Boolean',
+      'array': 'Array',
+      'object': 'Object',
+      'function': 'Function',
+    };
+    return typeMap[type] || 'Object';
+  }
+
+  private mapTsType(type: string): string {
+    const typeMap: Record<string, string> = {
+      'string': 'string',
+      'number': 'number',
+      'boolean': 'boolean',
+      'array': 'any[]',
+      'object': 'Record<string, any>',
+      'function': '() => void',
+    };
+    return typeMap[type] || 'any';
+  }
+}
+
+/**
+ * Angular Component Generator
+ */
+export class AngularComponentGenerator {
+  generate(def: UniversalComponentDef): string {
+    const component = this.generateComponent(def);
+    const template = this.generateTemplate(def);
+    const styles = this.generateStyles(def);
+    
+    return { component, template, styles };
+  }
+
+  private generateComponent(def: UniversalComponentDef): string {
+    const inputs = def.props.map(p => 
+      `  @Input() ${p.name}${p.required ? '!' : '?'}: ${this.mapType(p.type)};`
+    ).join('\n');
+
+    const outputs = def.events?.map(e => 
+      `  @Output() ${e.name} = new EventEmitter<${e.payload || 'void'}>();`
+    ).join('\n') || '';
+
+    return `import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-${this.kebabCase(def.name)}',
+  templateUrl: './${this.kebabCase(def.name)}.component.html',
+  styleUrls: ['./${this.kebabCase(def.name)}.component.scss']
+})
+export class ${def.name}Component implements OnInit, OnDestroy {
+${inputs}
+${outputs}
+
+${def.state?.map(s => `  ${s.name}: ${this.mapType(s.type)} = ${JSON.stringify(s.initial)};`).join('\n') || ''}
+
+  ngOnInit(): void {
+    ${def.lifecycle?.onMount || ''}
+  }
+
+  ngOnDestroy(): void {
+    ${def.lifecycle?.onUnmount || ''}
+  }
+
+${def.methods?.map(m => `  ${m.async ? 'async ' : ''}${m.name}(${m.params.map(p => `${p.name}: ${p.type}`).join(', ')}): ${m.returnType || 'void'} {
+    ${m.body}
+  }`).join('\n\n') || ''}
+}`;
+  }
+
+  private generateTemplate(def: UniversalComponentDef): string {
+    return `<div [ngClass]="classes">
+  ${def.slots?.map(s => `<ng-content select="[${s.name}]"></ng-content>`).join('\n  ') || '<ng-content></ng-content>'}
+</div>`;
+  }
+
+  private generateStyles(def: UniversalComponentDef): string {
+    return `/* ${def.name} Component Styles */`;
+  }
+
+  private mapType(type: string): string {
+    const typeMap: Record<string, string> = {
+      'string': 'string',
+      'number': 'number',
+      'boolean': 'boolean',
+      'array': 'any[]',
+      'object': 'any',
+      'function': '() => void',
+    };
+    return typeMap[type] || 'any';
+  }
+
+  private kebabCase(str: string): string {
+    return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  }
+}
+
+/**
+ * React Native Component Generator
+ */
+export class ReactNativeComponentGenerator {
+  generate(def: UniversalComponentDef): string {
+    const imports = this.generateImports(def);
+    const types = this.generateTypes(def);
+    const component = this.generateComponent(def);
+    
+    return `${imports}\n\n${types}\n\n${component}`;
+  }
+
+  private generateImports(def: UniversalComponentDef): string {
+    const imports: string[] = [
+      `import React${def.state?.length ? ', { useState, useEffect }' : ''} from 'react';`,
+      `import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';`,
+    ];
+    
+    return imports.join('\n');
+  }
+
+  private generateTypes(def: UniversalComponentDef): string {
+    const props = def.props.map(p => 
+      `  readonly ${p.name}${p.required ? '' : '?'}: ${this.mapType(p.type)};`
+    ).join('\n');
+    
+    return `export interface ${def.name}Props {\n${props}\n}`;
+  }
+
+  private generateComponent(def: UniversalComponentDef): string {
+    return `export const ${def.name}: React.FC<${def.name}Props> = ({
+  ${def.props.map(p => p.name).join(',\n  ')}
+}) => {
+${def.state?.map(s => `  const [${s.name}, set${this.capitalize(s.name)}] = useState<${this.mapType(s.type)}>(${JSON.stringify(s.initial)});`).join('\n') || ''}
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>
+        {/* Component implementation */}
+      </Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  text: {
+    fontSize: 16,
+  },
+});`;
+  }
+
+  private mapType(type: string): string {
+    const typeMap: Record<string, string> = {
+      'string': 'string',
+      'number': 'number',
+      'boolean': 'boolean',
+      'array': 'any[]',
+      'object': 'Record<string, any>',
+      'function': '() => void',
+      'node': 'React.ReactNode',
+    };
+    return typeMap[type] || 'any';
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+}
+
+/**
+ * Multi-Platform Component Factory
+ */
+export class UniversalComponentFactory {
+  private generators: Record<string, any> = {
+    react: new ReactComponentGenerator(),
+    vue: new VueComponentGenerator(),
+    angular: new AngularComponentGenerator(),
+    'react-native': new ReactNativeComponentGenerator(),
+  };
+
+  generate(def: UniversalComponentDef, platform: string): string | object {
+    const generator = this.generators[platform];
+    if (!generator) {
+      throw new Error(`Unsupported platform: ${platform}`);
+    }
+    return generator.generate(def);
+  }
+
+  generateAll(def: UniversalComponentDef): Record<string, string | object> {
+    const result: Record<string, string | object> = {};
+    
+    for (const platform of def.metadata.platform) {
+      if (this.generators[platform]) {
+        result[platform] = this.generate(def, platform);
+      }
+    }
+    
+    return result;
+  }
+}
+
+// Example usage:
+export const buttonDefinition: UniversalComponentDef = {
+  name: 'Button',
+  type: 'component',
+  props: [
+    { name: 'label', type: 'string', required: true },
+    { name: 'variant', type: 'string', required: false, default: 'primary' },
+    { name: 'size', type: 'string', required: false, default: 'md' },
+    { name: 'disabled', type: 'boolean', required: false, default: false },
+    { name: 'onClick', type: 'function', required: false },
+  ],
+  state: [
+    { name: 'loading', type: 'boolean', initial: false },
+  ],
+  methods: [
+    {
+      name: 'handleClick',
+      params: [],
+      body: 'if (!disabled && onClick) onClick();',
+    },
+  ],
+  styles: {
+    framework: 'tailwind',
+    classes: {
+      root: 'px-4 py-2 rounded-lg font-medium transition-colors',
+    },
+    variants: {
+      primary: { root: 'bg-primary text-white hover:bg-primary/90' },
+      secondary: { root: 'bg-secondary text-secondary-foreground hover:bg-secondary/90' },
+    },
+  },
+  events: [
+    { name: 'click' },
+  ],
+  metadata: {
+    description: 'Universal button component',
+    category: 'ui',
+    platform: ['react', 'vue', 'angular', 'react-native'],
+    compliance: ['WCAG AAA', 'Enterprise Standards'],
+    version: '1.0.0',
+  },
+};
+
+export default UniversalComponentFactory;

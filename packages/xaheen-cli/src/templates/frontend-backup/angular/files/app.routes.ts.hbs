@@ -1,0 +1,33 @@
+{{!-- Template: app.routes.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: file --}}
+{{!-- Framework: angular --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/angular/src/app/app.routes.ts.hbs --}}
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
+    title: '{{#if localization}}Home{{else}}{{projectName}} - Home{{/if}}'
+  },
+  {{#if (includes examples "dashboard")}}
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    title: '{{#if localization}}Dashboard{{else}}{{projectName}} - Dashboard{{/if}}'
+  },
+  {{/if}}
+  {{#if auth}}
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
+    title: '{{#if localization}}Login{{else}}{{projectName}} - Login{{/if}}'
+  },
+  {{/if}}
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
+    title: '{{#if localization}}Page Not Found{{else}}{{projectName}} - Page Not Found{{/if}}'
+  }
+];

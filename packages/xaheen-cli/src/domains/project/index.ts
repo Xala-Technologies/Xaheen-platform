@@ -1,6 +1,7 @@
 import type { CLICommand, UnifiedConfig } from '../../types/index.js';
 import { CLIError } from '../../types/index.js';
 import { cliLogger } from '../../utils/logger.js';
+import { appTemplateRegistry } from '../../services/registry/app-template-registry.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as prompts from '@clack/prompts';
@@ -275,15 +276,21 @@ export default class ProjectDomain {
     
     cliLogger.step(3, 4, 'Creating initial web application...');
     
-    // Get web app template
-    const webAppTemplate = this.registry.getAppTemplate('web-nextjs');
-    if (webAppTemplate) {
-      await this.generateAppFromTemplate(
-        path.join(projectPath, 'apps', 'web'),
-        webAppTemplate,
-        { appName: 'web', port: 3000 }
-      );
-    }
+    // Generate web app from template using the new app template registry
+    await appTemplateRegistry.generateAppFromTemplate(
+      path.join(projectPath, 'apps', 'web'),
+      config.framework === 'nextjs' ? 'nextjs' : config.framework,
+      {
+        name: 'web',
+        title: projectName,
+        description: `Web application for ${projectName}`,
+        appName: 'web',
+        port: 3000,
+        features: ['dashboard', 'navbar'],
+        framework: config.framework,
+        packageManager: config.packageManager
+      }
+    );
     
     cliLogger.step(4, 4, 'Finalizing project setup...');
     
@@ -326,24 +333,6 @@ This is a monorepo project created with Xaheen CLI v3.0.0.
     await fs.writeFile(path.join(projectPath, 'README.md'), readme);
   }
 
-  private async generateAppFromTemplate(targetPath: string, template: any, variables: Record<string, any>): Promise<void> {
-    await fs.ensureDir(targetPath);
-    
-    for (const file of template.files) {
-      const filePath = path.join(targetPath, file.path);
-      await fs.ensureDir(path.dirname(filePath));
-      
-      let content = file.content;
-      if (file.isTemplate) {
-        // Simple template replacement
-        for (const [key, value] of Object.entries(variables)) {
-          content = content.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
-        }
-      }
-      
-      await fs.writeFile(filePath, content);
-    }
-  }
 
   private async addServiceBundle(bundleName: string): Promise<void> {
     // This would integrate with the service domain to add a bundle

@@ -1,0 +1,147 @@
+{{!-- Template: providers.tsx.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/src/components/providers.tsx.hbs --}}
+/*
+ * XALA UI SYSTEM v5 COMPLIANCE RULES - MANDATORY
+ * 
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style prop, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ */
+
+"use client";
+
+{{#if (eq backend "convex")}}
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+{{/if}}
+{{#unless (eq api "none")}}
+{{#unless (eq backend "convex")}}
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+{{#if (eq api "orpc")}}
+import { queryClient } from "@/utils/orpc";
+{{/if}}
+{{#if (eq api "trpc")}}
+import { queryClient } from "@/utils/trpc";
+{{/if}}
+{{/unless}}
+{{/unless}}
+{{#if (eq ui "xala")}}
+import { UISystemProvider, AccessibilityProvider, ComplianceProvider } from "@xala-technologies/ui-system";
+import { NextIntlClientProvider } from "next-intl";
+import { Toaster } from "@xala-technologies/ui-system";
+{{else}}
+import { Toaster } from "./ui/sonner";
+{{/if}}
+import { ThemeProvider } from "./theme-provider";
+
+{{#if (eq backend "convex")}}
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+{{/if}}
+
+{{#if (eq ui "xala")}}
+interface ProvidersProps {
+  children: React.ReactNode;
+  locale?: string;
+  messages?: Record<string, any>;
+}
+
+export default function Providers({
+  children,
+  locale = "en",
+  messages = {}
+}: ProvidersProps): React.ReactElement {
+{{else}}
+interface ProvidersProps {
+  children: React.ReactNode;
+}
+
+export default function Providers({ children }: ProvidersProps): React.ReactElement {
+{{/if}}
+  return (
+{{#if (eq ui "xala")}}
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <UISystemProvider
+        theme="system"
+        platformConfig={{{{raw}}}}{
+          platform: "web",
+          capabilities: { touch: false, keyboard: true, mouse: true }
+        }{{{{/raw}}}}
+      >
+        <AccessibilityProvider
+          enableScreenReader={true}
+          enableKeyboardNavigation={true}
+          enableMotionReduction={true}
+          platform="web"
+        >
+          <ComplianceProvider
+            gdprEnabled={true}
+            auditLogging={true}
+            platform="web"
+          >
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+{{#if (eq backend "convex")}}
+              <ConvexProvider client={convex}>
+                {children}
+                <Toaster position="bottom-right" />
+              </ConvexProvider>
+{{else}}
+{{#unless (eq api "none")}}
+              <QueryClientProvider client={queryClient}>
+                {children}
+                <ReactQueryDevtools />
+                <Toaster position="bottom-right" />
+              </QueryClientProvider>
+{{else}}
+              {children}
+              <Toaster position="bottom-right" />
+{{/unless}}
+{{/if}}
+            </ThemeProvider>
+          </ComplianceProvider>
+        </AccessibilityProvider>
+      </UISystemProvider>
+    </NextIntlClientProvider>
+{{else}}
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+{{#if (eq backend "convex")}}
+      <ConvexProvider client={convex}>
+        {children}
+        <Toaster richColors />
+      </ConvexProvider>
+{{else}}
+{{#unless (eq api "none")}}
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <ReactQueryDevtools />
+        <Toaster richColors />
+      </QueryClientProvider>
+{{else}}
+      {children}
+      <Toaster richColors />
+{{/unless}}
+{{/if}}
+    </ThemeProvider>
+{{/if}}
+  );
+}

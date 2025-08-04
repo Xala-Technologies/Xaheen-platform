@@ -1,0 +1,248 @@
+/**
+ * @fileoverview {{componentName}} - Design Token Provider
+ * @description Provides runtime token management and CSS custom property generation
+ * @version 5.0.0
+ * @compliance Enterprise Standards, SSR-Safe, Token-based
+ */
+
+'use client';
+
+import React, { createContext, useContext, useEffect, useRef } from 'react';
+
+interface TokenTheme {
+  readonly colors: Record<string, string>;
+  readonly spacing: Record<string, string>;
+  readonly typography: Record<string, string | number>;
+  readonly borders: Record<string, string>;
+  readonly shadows: Record<string, string>;
+  readonly animations: Record<string, string>;
+}
+
+interface TokenConfig {
+  readonly themes: Record<string, TokenTheme>;
+  readonly breakpoints: Record<string, string>;
+  readonly zIndex: Record<string, number>;
+}
+
+interface TokenContextValue {
+  readonly tokens: TokenConfig;
+  readonly currentTheme: string;
+  readonly getToken: (path: string) => string | number | undefined;
+  readonly getCSSVariable: (path: string) => string;
+}
+
+const TokenContext = createContext<TokenContextValue | undefined>(undefined);
+
+interface {{componentName}}Props {
+  readonly children: React.ReactNode;
+  readonly tokens: TokenConfig;
+  readonly defaultTheme?: string;
+  readonly cssPrefix?: string;
+  readonly injectStyles?: boolean;
+}
+
+/**
+ * Token Provider for design system
+ * Manages design tokens and generates CSS custom properties
+ * Synchronizes with theme provider for dynamic token switching
+ */
+export const {{componentName}}: React.FC<{{componentName}}Props> = ({
+  children,
+  tokens,
+  defaultTheme = 'light',
+  cssPrefix = '--xala',
+  injectStyles = true,
+}) => {
+  const styleRef = useRef<HTMLStyleElement | null>(null);
+  const currentThemeRef = useRef(defaultTheme);
+
+  // Generate CSS custom properties from tokens
+  const generateCSSProperties = (theme: string): string => {
+    const themeTokens = tokens.themes[theme];
+    if (!themeTokens) return '';
+
+    const cssLines: string[] = [];
+
+    // Generate color tokens
+    Object.entries(themeTokens.colors).forEach(([key, value]) => {
+      // Convert to HSL format for better theming
+      const cssVarName = `${cssPrefix}-color-${key.replace(/\./g, '-')}`;
+      cssLines.push(`  ${cssVarName}: ${value};`);
+      
+      // Generate RGB variants for opacity support
+      if (value.startsWith('hsl')) {
+        const rgbVar = `${cssVarName}-rgb`;
+        cssLines.push(`  ${rgbVar}: ${hslToRgb(value)};`);
+      }
+    });
+
+    // Generate spacing tokens
+    Object.entries(themeTokens.spacing).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-spacing-${key}: ${value};`);
+    });
+
+    // Generate typography tokens
+    Object.entries(themeTokens.typography).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-typography-${key.replace(/\./g, '-')}: ${value};`);
+    });
+
+    // Generate border tokens
+    Object.entries(themeTokens.borders).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-border-${key}: ${value};`);
+    });
+
+    // Generate shadow tokens
+    Object.entries(themeTokens.shadows).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-shadow-${key}: ${value};`);
+    });
+
+    // Generate animation tokens
+    Object.entries(themeTokens.animations).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-animation-${key}: ${value};`);
+    });
+
+    // Generate breakpoint tokens (theme-independent)
+    Object.entries(tokens.breakpoints).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-breakpoint-${key}: ${value};`);
+    });
+
+    // Generate z-index tokens (theme-independent)
+    Object.entries(tokens.zIndex).forEach(([key, value]) => {
+      cssLines.push(`  ${cssPrefix}-z-${key}: ${value};`);
+    });
+
+    return `:root[data-theme="${theme}"] {\n${cssLines.join('\n')}\n}`;
+  };
+
+  // Helper function to convert HSL to RGB
+  const hslToRgb = (hsl: string): string => {
+    // Simple HSL to RGB conversion for CSS
+    // This is a placeholder - implement full conversion if needed
+    return hsl.replace('hsl', 'rgb').replace('%', '');
+  };
+
+  // Inject CSS custom properties
+  useEffect(() => {
+    if (!injectStyles) return;
+
+    // Create or update style element
+    if (!styleRef.current) {
+      styleRef.current = document.createElement('style');
+      styleRef.current.id = 'xala-design-tokens';
+      document.head.appendChild(styleRef.current);
+    }
+
+    // Generate CSS for all themes
+    const css = Object.keys(tokens.themes)
+      .map(theme => generateCSSProperties(theme))
+      .join('\n\n');
+
+    // Add utility classes
+    const utilityCSS = `
+/* Theme transition utilities */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: none !important;
+}
+
+/* Token-based utility classes */
+.token-spacing-stack-xs { gap: var(${cssPrefix}-spacing-xs); }
+.token-spacing-stack-sm { gap: var(${cssPrefix}-spacing-sm); }
+.token-spacing-stack-md { gap: var(${cssPrefix}-spacing-md); }
+.token-spacing-stack-lg { gap: var(${cssPrefix}-spacing-lg); }
+.token-spacing-stack-xl { gap: var(${cssPrefix}-spacing-xl); }
+
+/* Semantic token mappings */
+:root {
+  /* Map semantic tokens to actual values */
+  ${cssPrefix}-primary: var(${cssPrefix}-color-primary);
+  ${cssPrefix}-secondary: var(${cssPrefix}-color-secondary);
+  ${cssPrefix}-destructive: var(${cssPrefix}-color-destructive);
+  ${cssPrefix}-success: var(${cssPrefix}-color-success);
+  ${cssPrefix}-warning: var(${cssPrefix}-color-warning);
+  ${cssPrefix}-info: var(${cssPrefix}-color-info);
+}
+`;
+
+    styleRef.current.textContent = css + utilityCSS;
+
+    return () => {
+      if (styleRef.current && styleRef.current.parentNode) {
+        styleRef.current.parentNode.removeChild(styleRef.current);
+        styleRef.current = null;
+      }
+    };
+  }, [tokens, injectStyles, cssPrefix]);
+
+  // Observe theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const newTheme = document.documentElement.getAttribute('data-theme');
+          if (newTheme && newTheme !== currentThemeRef.current) {
+            currentThemeRef.current = newTheme;
+          }
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Get token value by path
+  const getToken = (path: string): string | number | undefined => {
+    const parts = path.split('.');
+    const theme = tokens.themes[currentThemeRef.current];
+    
+    if (!theme) return undefined;
+
+    let value: any = theme;
+    for (const part of parts) {
+      value = value?.[part];
+      if (value === undefined) break;
+    }
+    
+    return value;
+  };
+
+  // Get CSS variable name for token
+  const getCSSVariable = (path: string): string => {
+    return `var(${cssPrefix}-${path.replace(/\./g, '-')})`;
+  };
+
+  const value: TokenContextValue = {
+    tokens,
+    currentTheme: currentThemeRef.current,
+    getToken,
+    getCSSVariable,
+  };
+
+  return (
+    <TokenContext.Provider value={value}>
+      {children}
+    </TokenContext.Provider>
+  );
+};
+
+/**
+ * Hook to access token context
+ * Use this only in provider/management components
+ * UI components should use CSS variables directly
+ */
+export const useTokens = () => {
+  const context = useContext(TokenContext);
+  if (!context) {
+    throw new Error('useTokens must be used within a TokenProvider');
+  }
+  return context;
+};
+
+{{componentName}}.displayName = '{{componentName}}';

@@ -1,0 +1,505 @@
+{{!-- Template: SidebarLayout.tsx.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/src/components/layouts/SidebarLayout.tsx.hbs --}}
+{{#if typescript}}'use client';{{/if}}
+
+/**
+ * SidebarLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI - Flexible Sidebar Layout
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Flexible sidebar positioning (left/right)
+ * - Collapsible sidebar with animations
+ * - Responsive behavior (overlay on mobile)
+ * - Multiple sidebar variants
+ * - Keyboard navigation support
+ * - Norwegian accessibility patterns
+ */
+
+{{#if typescript}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Icon,
+  Sidebar,
+  Overlay,
+  Drawer,
+  Resizable,
+  ScrollArea,
+  Separator,
+  KeyboardShortcut
+} from '@xala-technologies/ui-system';
+import { 
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  PanelLeft,
+  PanelRight,
+  Maximize2,
+  Minimize2
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface SidebarLayoutProps {
+  children: React.ReactNode;
+  sidebarContent: React.ReactNode;
+  sidebarPosition?: 'left' | 'right';
+  sidebarVariant?: 'permanent' | 'temporary' | 'mini' | 'overlay';
+  sidebarWidth?: number;
+  minSidebarWidth?: number;
+  maxSidebarWidth?: number;
+  defaultCollapsed?: boolean;
+  collapsible?: boolean;
+  resizable?: boolean;
+  showToggleButton?: boolean;
+  overlayOnMobile?: boolean;
+  sidebarTitle?: string;
+  sidebarActions?: React.ReactNode;
+  onSidebarToggle?: (collapsed: boolean) => void;
+  onSidebarResize?: (width: number) => void;
+  keyboardShortcut?: string;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+{{else}}
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Icon,
+  Sidebar,
+  Overlay,
+  Drawer,
+  Resizable,
+  ScrollArea,
+  Separator,
+  KeyboardShortcut
+} from '@xala-technologies/ui-system';
+import { 
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  PanelLeft,
+  PanelRight,
+  Maximize2,
+  Minimize2
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+{{/if}}
+
+/**
+ * SidebarLayout - Flexible sidebar layout with responsive behavior
+ * Supports multiple sidebar variants and Norwegian accessibility patterns
+ */
+{{#if typescript}}
+export default function SidebarLayout({
+  children,
+  sidebarContent,
+  sidebarPosition = 'left',
+  sidebarVariant = 'permanent',
+  sidebarWidth = 280,
+  minSidebarWidth = 200,
+  maxSidebarWidth = 400,
+  defaultCollapsed = false,
+  collapsible = true,
+  resizable = true,
+  showToggleButton = true,
+  overlayOnMobile = true,
+  sidebarTitle,
+  sidebarActions,
+  onSidebarToggle,
+  onSidebarResize,
+  keyboardShortcut = 'Ctrl+B',
+  locale = 'en',
+  theme = 'light'
+}: SidebarLayoutProps): React.ReactElement {
+{{else}}
+export default function SidebarLayout({
+  children,
+  sidebarContent,
+  sidebarPosition = 'left',
+  sidebarVariant = 'permanent',
+  sidebarWidth = 280,
+  minSidebarWidth = 200,
+  maxSidebarWidth = 400,
+  defaultCollapsed = false,
+  collapsible = true,
+  resizable = true,
+  showToggleButton = true,
+  overlayOnMobile = true,
+  sidebarTitle,
+  sidebarActions,
+  onSidebarToggle,
+  onSidebarResize,
+  keyboardShortcut = 'Ctrl+B',
+  locale = 'en',
+  theme = 'light'
+}) {
+{{/if}}
+  const { t } = useTranslation();
+  const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
+  const [currentWidth, setCurrentWidth] = React.useState(sidebarWidth);
+  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+
+  // Keyboard shortcut handler
+  React.useEffect(() => {
+    const handleKeyDown = (event{{#if typescript}}: KeyboardEvent{{/if}}) => {
+      if (event.ctrlKey && event.key === 'b' && keyboardShortcut === 'Ctrl+B') {
+        event.preventDefault();
+        handleToggle();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [keyboardShortcut]);
+
+  const handleToggle = {{#if typescript}}(): void{{/if}} => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    
+    if (onSidebarToggle) {
+      onSidebarToggle(newCollapsed);
+    }
+  };
+
+  const handleResize = (newWidth{{#if typescript}}: number{{/if}}){{#if typescript}}: void{{/if}} => {
+    setCurrentWidth(newWidth);
+    
+    if (onSidebarResize) {
+      onSidebarResize(newWidth);
+    }
+  };
+
+  const getSidebarWidth = {{#if typescript}}(): number{{/if}} => {
+    if (sidebarVariant === 'mini' && isCollapsed) {
+      return 64; // Mini sidebar width
+    }
+    return isCollapsed ? 0 : currentWidth;
+  };
+
+  const renderSidebarHeader = {{#if typescript}}(): React.ReactElement | null{{/if}} => {
+    if (!sidebarTitle && !sidebarActions && !showToggleButton) return null;
+
+    return (
+      <Box
+        padding="4"
+        borderBottom="1"
+        backgroundColor="card"
+      >
+        <Stack direction="horizontal" align="center" justify="between">
+          {sidebarTitle && !isCollapsed && (
+            <Typography variant="heading" size="md" weight="medium">
+              {t(sidebarTitle, sidebarTitle)}
+            </Typography>
+          )}
+
+          <Stack direction="horizontal" align="center" spacing="2">
+            {sidebarActions && !isCollapsed && sidebarActions}
+            
+            {showToggleButton && collapsible && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClick}
+                accessibilityLabel={
+                  isCollapsed
+                    ? t('sidebar.expand', 'Expand sidebar')
+                    : t('sidebar.collapse', 'Collapse sidebar')
+                }
+              >
+                <Icon
+                  component={
+                    sidebarPosition === 'left'
+                      ? isCollapsed ? ChevronRight : ChevronLeft
+                      : isCollapsed ? ChevronLeft : ChevronRight
+                  }
+                  size="sm"
+                />
+              </Button>
+            )}
+          </Stack>
+        </Stack>
+      </Box>
+    );
+  };
+
+  const renderSidebarContent = {{#if typescript}}(): React.ReactElement{{/if}} => (
+    <Stack direction="vertical" height="full">
+      {renderSidebarHeader()}
+      
+      <ScrollArea flex="1" padding={isCollapsed && sidebarVariant === 'mini' ? '2' : '4'}>
+        {sidebarContent}
+      </ScrollArea>
+    </Stack>
+  );
+
+  const renderDesktopSidebar = {{#if typescript}}(): React.ReactElement{{/if}} => {
+    const sidebarElement = (
+      <Sidebar
+        position={sidebarPosition}
+        width={getSidebarWidth()}
+        backgroundColor="card"
+        borderRight={sidebarPosition === 'left' ? '1' : undefined}
+        borderLeft={sidebarPosition === 'right' ? '1' : undefined}
+        height="screen"
+        className=""`}
+      >
+        {renderSidebarContent()}
+      </Sidebar>
+    );
+
+    if (resizable && !isCollapsed) {
+      return (
+        <Resizable
+          width={currentWidth}
+          onResize={handleResize}
+          minWidth={minSidebarWidth}
+          maxWidth={maxSidebarWidth}
+          direction="horizontal"
+          position={sidebarPosition}
+        >
+          {sidebarElement}
+        </Resizable>
+      );
+    }
+
+    return sidebarElement;
+  };
+
+  const renderMobileSidebar = {{#if typescript}}(): React.ReactElement | null{{/if}} => {
+    if (!overlayOnMobile) return null;
+
+    return (
+      <React.Fragment>
+        <Drawer
+          open={isMobileOpen}
+          onOpenChange={setIsMobileOpen}
+          position={sidebarPosition}
+          width={currentWidth}
+        >
+          {renderSidebarContent()}
+        </Drawer>
+
+        {isMobileOpen && (
+          <Overlay
+            onClick={handleClick}
+            className="md:hidden"
+          />
+        )}
+      </React.Fragment>
+    );
+  };
+
+  const renderToggleButton = {{#if typescript}}(): React.ReactElement | null{{/if}} => {
+    if (!showToggleButton || sidebarVariant === 'permanent') return null;
+
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleClick}
+        className="md:hidden"
+        accessibilityLabel={t('sidebar.openMenu', 'Open sidebar menu')}
+      >
+        <Icon component={Menu} size="sm" />
+      </Button>
+    );
+  };
+
+  const getMainContentMargin = {{#if typescript}}(): string{{/if}} => {
+    if (sidebarVariant === 'overlay' || sidebarVariant === 'temporary') {
+      return '0';
+    }
+
+    const width = getSidebarWidth();
+    return sidebarPosition === 'left' ? "template string" : "template string";
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Box minHeight="screen" backgroundColor="background" className="sidebar-layout">
+        {/* Desktop Sidebar */}
+        <Box className="hidden md:block">
+          {renderDesktopSidebar()}
+        </Box>
+
+        {/* Mobile Sidebar */}
+        {renderMobileSidebar()}
+
+        {/* Main Content Area */}
+        <Box
+          marginLeft={sidebarPosition === 'left' ? getMainContentMargin() : '0'}
+          marginRight={sidebarPosition === 'right' ? getMainContentMargin() : '0'}
+          minHeight="screen"
+          className="transition-all duration-300"
+        >
+          {/* Mobile Header with Toggle */}
+          <Box
+            padding="4"
+            borderBottom="1"
+            backgroundColor="card"
+            className="md:hidden"
+          >
+            <Stack direction="horizontal" align="center" justify="between">
+              {renderToggleButton()}
+              
+              {sidebarTitle && (
+                <Typography variant="heading" size="lg" weight="medium">
+                  {t(sidebarTitle, sidebarTitle)}
+                </Typography>
+              )}
+
+              <Box width="10" /> {/* Spacer for balance */}
+            </Stack>
+          </Box>
+
+          {/* Main Content */}
+          <Box padding="6">
+            {children}
+          </Box>
+        </Box>
+
+        {/* Keyboard Shortcut Indicator */}
+        {keyboardShortcut && (
+          <KeyboardShortcut
+            keys={keyboardShortcut.split('+')}
+            description={t('sidebar.toggleShortcut', 'Toggle sidebar')}
+            position="fixed"
+            bottom="4"
+            right="4"
+            className="opacity-0 hover:opacity-100 transition-opacity"
+          />
+        )}
+      </Box>
+    </BaseLayout>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+import SidebarLayout from '@/layouts/SidebarLayout';
+import { Home, Users, Settings, BarChart } from 'lucide-react';
+
+export default function AppWithSidebar() {
+  const sidebarContent = (
+    <Stack direction="vertical" spacing="2">
+      <Button variant="ghost" justifyContent="start" fullWidth>
+        <Icon component={Home} size="sm" />
+        <Typography variant="body" size="sm">
+          Dashboard
+        </Typography>
+      </Button>
+      
+      <Button variant="ghost" justifyContent="start" fullWidth>
+        <Icon component={Users} size="sm" />
+        <Typography variant="body" size="sm">
+          Users
+        </Typography>
+      </Button>
+      
+      <Button variant="ghost" justifyContent="start" fullWidth>
+        <Icon component={BarChart} size="sm" />
+        <Typography variant="body" size="sm">
+          Analytics
+        </Typography>
+      </Button>
+      
+      <Separator />
+      
+      <Button variant="ghost" justifyContent="start" fullWidth>
+        <Icon component={Settings} size="sm" />
+        <Typography variant="body" size="sm">
+          Settings
+        </Typography>
+      </Button>
+    </Stack>
+  );
+
+  return (
+    <SidebarLayout
+      sidebarContent={sidebarContent}
+      sidebarTitle="navigation.menu"
+      sidebarPosition="left"
+      sidebarVariant="permanent"
+      collapsible={true}
+      resizable={true}
+      keyboardShortcut="Ctrl+B"
+      onSidebarToggle={(collapsed) => {
+        console.log('Sidebar collapsed:', collapsed);
+      }}
+      locale="nb"
+    >
+      <Stack direction="vertical" spacing="6">
+        <Typography variant="heading" size="2xl">
+          Main Content Area
+        </Typography>
+        
+        <Typography variant="body">
+          This content area adjusts automatically based on sidebar state.
+        </Typography>
+      </Stack>
+    </SidebarLayout>
+  );
+}
+
+// Mini sidebar variant
+<SidebarLayout
+  sidebarContent={miniSidebarContent}
+  sidebarVariant="mini"
+  sidebarWidth={64}
+  collapsible={true}
+  showToggleButton={true}
+>
+  <MainContent />
+</SidebarLayout>
+
+// Right-positioned sidebar
+<SidebarLayout
+  sidebarContent={rightSidebarContent}
+  sidebarPosition="right"
+  sidebarTitle="filters.title"
+  sidebarWidth={320}
+  resizable={false}
+>
+  <ContentWithFilters />
+</SidebarLayout>
+
+// Overlay sidebar for mobile-first design
+<SidebarLayout
+  sidebarContent={overlaySidebarContent}
+  sidebarVariant="overlay"
+  overlayOnMobile={true}
+  showToggleButton={true}
+>
+  <MobileFirstContent />
+</SidebarLayout>
+*/
+{{/if}}

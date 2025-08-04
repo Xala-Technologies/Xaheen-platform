@@ -1,0 +1,236 @@
+import { create } from 'zustand'
+import { devtools{{#if persistence}}, persist{{/if}} } from 'zustand/middleware'
+{{#if immer}}
+import { immer } from 'zustand/middleware/immer'
+{{/if}}
+
+{{#if auth}}
+interface User {
+  id: string
+  email: string
+  name?: string
+  avatar?: string
+}
+{{/if}}
+
+interface {{capitalize storeName}}State {
+  // UI State
+  {{#if ui}}
+  isLoading: boolean
+  error: string | null
+  theme: 'light' | 'dark' | 'system'
+  sidebarOpen: boolean
+  {{/if}}
+  
+  {{#if auth}}
+  // Auth State
+  user: User | null
+  isAuthenticated: boolean
+  {{/if}}
+  
+  {{#if data}}
+  // Data State
+  {{#each data}}
+  {{name}}: {{type}}{{#if array}}[]{{/if}}{{#if optional}} | null{{/if}}
+  {{/each}}
+  {{/if}}
+}
+
+interface {{capitalize storeName}}Actions {
+  // UI Actions
+  {{#if ui}}
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  setTheme: (theme: 'light' | 'dark' | 'system') => void
+  toggleSidebar: () => void
+  {{/if}}
+  
+  {{#if auth}}
+  // Auth Actions
+  setUser: (user: User | null) => void
+  login: (user: User) => void
+  logout: () => void
+  {{/if}}
+  
+  {{#if data}}
+  // Data Actions
+  {{#each data}}
+  set{{capitalize name}}: ({{name}}: {{type}}{{#if array}}[]{{/if}}) => void
+  {{#unless readonly}}
+  update{{capitalize name}}: ({{name}}: Partial<{{type}}>) => void
+  {{/unless}}
+  {{#if array}}
+  add{{capitalize (singularize name)}}: (item: {{type}}) => void
+  remove{{capitalize (singularize name)}}: (id: string) => void
+  {{/if}}
+  {{/each}}
+  {{/if}}
+  
+  // Reset
+  reset: () => void
+}
+
+type {{capitalize storeName}}Store = {{capitalize storeName}}State & {{capitalize storeName}}Actions
+
+const initialState: {{capitalize storeName}}State = {
+  {{#if ui}}
+  isLoading: false,
+  error: null,
+  theme: 'system',
+  sidebarOpen: false,
+  {{/if}}
+  {{#if auth}}
+  user: null,
+  isAuthenticated: false,
+  {{/if}}
+  {{#if data}}
+  {{#each data}}
+  {{name}}: {{#if array}}[]{{else}}{{#if optional}}null{{else}}{{defaultValue}}{{/if}}{{/if}},
+  {{/each}}
+  {{/if}}
+}
+
+export const use{{capitalize storeName}}Store = create<{{capitalize storeName}}Store>()(
+  {{#if devtools}}devtools({{/if}}
+  {{#if persistence}}
+  persist(
+  {{/if}}
+  {{#if immer}}
+  immer(
+  {{/if}}
+    (set, get) => ({
+      ...initialState,
+      
+      // UI Actions
+      {{#if ui}}
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+      setTheme: (theme) => set({ theme }),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      {{/if}}
+      
+      {{#if auth}}
+      // Auth Actions
+      setUser: (user) => set({ 
+        user, 
+        isAuthenticated: !!user 
+      }),
+      login: (user) => set({ 
+        user, 
+        isAuthenticated: true,
+        error: null 
+      }),
+      logout: () => set({ 
+        user: null, 
+        isAuthenticated: false 
+      }),
+      {{/if}}
+      
+      {{#if data}}
+      // Data Actions
+      {{#each data}}
+      set{{capitalize name}}: ({{name}}) => set({ {{name}} }),
+      {{#unless readonly}}
+      update{{capitalize name}}: (updated{{capitalize name}}) => set((state) => ({
+        {{name}}: {{#if array}}
+          state.{{name}}.map(item => 
+            item.id === updated{{capitalize name}}.id 
+              ? { ...item, ...updated{{capitalize name}} }
+              : item
+          )
+        {{else}}
+          { ...state.{{name}}, ...updated{{capitalize name}} }
+        {{/if}}
+      })),
+      {{/unless}}
+      {{#if array}}
+      add{{capitalize (singularize name)}}: (item) => set((state) => ({
+        {{name}}: [...state.{{name}}, item]
+      })),
+      remove{{capitalize (singularize name)}}: (id) => set((state) => ({
+        {{name}}: state.{{name}}.filter(item => item.id !== id)
+      })),
+      {{/if}}
+      {{/each}}
+      {{/if}}
+      
+      // Reset
+      reset: () => set(initialState),
+    })
+  {{#if immer}}
+  )
+  {{/if}}
+  {{#if persistence}}
+  ,
+  {
+    name: '{{kebabCase storeName}}-storage',
+    {{#if partialPersist}}
+    partialize: (state) => ({
+      {{#each persistFields}}
+      {{this}}: state.{{this}},
+      {{/each}}
+    }),
+    {{/if}}
+  }
+  )
+  {{/if}}
+  {{#if devtools}}
+  ,
+  {
+    name: '{{capitalize storeName}} Store',
+  }
+  )
+  {{/if}}
+)
+
+{{#if selectors}}
+// Selectors
+export const {{camelCase storeName}}Selectors = {
+  {{#if ui}}
+  isLoading: (state: {{capitalize storeName}}Store) => state.isLoading,
+  error: (state: {{capitalize storeName}}Store) => state.error,
+  theme: (state: {{capitalize storeName}}Store) => state.theme,
+  sidebarOpen: (state: {{capitalize storeName}}Store) => state.sidebarOpen,
+  {{/if}}
+  {{#if auth}}
+  user: (state: {{capitalize storeName}}Store) => state.user,
+  isAuthenticated: (state: {{capitalize storeName}}Store) => state.isAuthenticated,
+  {{/if}}
+  {{#if data}}
+  {{#each data}}
+  {{name}}: (state: {{capitalize ../storeName}}Store) => state.{{name}},
+  {{/each}}
+  {{/if}}
+}
+{{/if}}
+
+{{#if hooks}}
+// Custom hooks
+{{#if auth}}
+export const useAuth = () => {
+  const user = use{{capitalize storeName}}Store(state => state.user)
+  const isAuthenticated = use{{capitalize storeName}}Store(state => state.isAuthenticated)
+  const login = use{{capitalize storeName}}Store(state => state.login)
+  const logout = use{{capitalize storeName}}Store(state => state.logout)
+  
+  return { user, isAuthenticated, login, logout }
+}
+{{/if}}
+
+{{#if ui}}
+export const useUI = () => {
+  const isLoading = use{{capitalize storeName}}Store(state => state.isLoading)
+  const error = use{{capitalize storeName}}Store(state => state.error)
+  const setLoading = use{{capitalize storeName}}Store(state => state.setLoading)
+  const setError = use{{capitalize storeName}}Store(state => state.setError)
+  
+  return { isLoading, error, setLoading, setError }
+}
+{{/if}}
+{{/if}}
+
+// Types
+export type { {{capitalize storeName}}State, {{capitalize storeName}}Actions, {{capitalize storeName}}Store }
+{{#if auth}}
+export type { User }
+{{/if}}

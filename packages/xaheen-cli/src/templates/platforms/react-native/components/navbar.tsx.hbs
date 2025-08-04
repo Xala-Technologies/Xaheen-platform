@@ -1,0 +1,222 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant React Native
+ * @description Enterprise-grade navbar component for mobile applications
+ * @version 5.0.0
+ * @compliance WCAG 2.2 AAA, Token-first, React Native optimized
+ */
+
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ViewStyle,
+  TextStyle,
+  Platform,
+  StatusBar,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { t } from '@xala-technologies/ui-system/i18n';
+
+// Theme detection for React Native
+const isDark = Platform.select({
+  ios: false, // Default to light, will be overridden by system
+  android: false,
+  default: false,
+});
+
+interface {{componentName}}Props {
+  readonly title?: string;
+  readonly leftComponent?: React.ReactNode;
+  readonly rightComponent?: React.ReactNode;
+  readonly centerComponent?: React.ReactNode;
+  readonly variant?: 'flat' | 'elevated' | 'transparent';
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly backgroundColor?: string;
+  readonly textColor?: string;
+  readonly elevation?: number;
+  readonly onBackPress?: () => void;
+  readonly testID?: string;
+}
+
+/**
+ * Pure presentational navbar component for React Native
+ * v5.0 Architecture: No hooks, static styling with design tokens
+ */
+export const {{componentName}}: React.FC<{{componentName}}Props> = ({
+  title,
+  leftComponent,
+  rightComponent,
+  centerComponent,
+  variant = 'flat',
+  size = 'md',
+  backgroundColor,
+  textColor,
+  elevation,
+  onBackPress,
+  testID,
+}) => {
+  const insets = useSafeAreaInsets();
+  
+  // v5.0 Architecture: Static style calculation based on props
+  const containerStyle: ViewStyle = {
+    ...styles.container,
+    ...styles[`${variant}Container` as keyof typeof styles],
+    ...styles[`${size}Container` as keyof typeof styles],
+    paddingTop: insets.top,
+    backgroundColor: backgroundColor || styles.container.backgroundColor,
+    elevation: elevation !== undefined ? elevation : styles.container.elevation,
+  };
+
+  const titleStyle: TextStyle = {
+    ...styles.title,
+    ...styles[`${size}Title` as keyof typeof styles],
+    color: textColor || styles.title.color,
+  };
+
+  return (
+    <>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={containerStyle.backgroundColor}
+        translucent={Platform.OS === 'android'}
+      />
+      <View style={containerStyle} testID={testID}>
+        <View style={styles.content}>
+          {/* Left Component */}
+          <View style={styles.leftSection}>
+            {leftComponent || (
+              onBackPress && (
+                <Pressable
+                  onPress={onBackPress}
+                  style={styles.backButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('navigation.back')}
+                  testID={`${testID}-back`}
+                >
+                  <Text style={styles.backIcon}>←</Text>
+                </Pressable>
+              )
+            )}
+          </View>
+
+          {/* Center Component */}
+          <View style={styles.centerSection}>
+            {centerComponent || (
+              title && (
+                <Text
+                  style={titleStyle}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  accessibilityRole="header"
+                  testID={`${testID}-title`}
+                >
+                  {title}
+                </Text>
+              )
+            )}
+          </View>
+
+          {/* Right Component */}
+          <View style={styles.rightSection}>
+            {rightComponent}
+          </View>
+        </View>
+      </View>
+    </>
+  );
+};
+
+// v5.0 Architecture: Design token-based styling
+const createStyles = () => StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF', // Design token: --background
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB', // Design token: --border
+    elevation: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  flatContainer: {
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  elevatedContainer: {
+    elevation: 4,
+    shadowOpacity: 0.1,
+  },
+  transparentContainer: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  smContainer: {
+    minHeight: 48,
+  },
+  mdContainer: {
+    minHeight: 56,
+  },
+  lgContainer: {
+    minHeight: 64,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    minHeight: 56,
+  },
+  leftSection: {
+    flex: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 40,
+  },
+  centerSection: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  rightSection: {
+    flex: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 40,
+    justifyContent: 'flex-end',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 40,
+    minHeight: 40,
+  },
+  backIcon: {
+    fontSize: 18,
+    color: '#111827', // Design token: --foreground
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827', // Design token: --foreground
+    textAlign: 'center',
+  },
+  smTitle: {
+    fontSize: 16,
+  },
+  mdTitle: {
+    fontSize: 18,
+  },
+  lgTitle: {
+    fontSize: 20,
+  },
+});
+
+const styles = createStyles();

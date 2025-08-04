@@ -1,0 +1,159 @@
+import React from 'react';
+import { 
+  Button, 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  AppShell,
+  MainContent,
+  Section,
+  Heading,
+  Text,
+  Grid,
+  WindowControls
+} from '@xala-technologies/ui-system';
+import { t } from '@xala-technologies/ui-system/i18n';
+
+// Electron API types
+declare global {
+  interface Window {
+    electronAPI: {
+      getVersion: () => Promise<string>;
+      openExternal: (url: string) => Promise<void>;
+      minimize: () => Promise<void>;
+      maximize: () => Promise<void>;
+      close: () => Promise<void>;
+      onWindowEvent: (callback: (event: string) => void) => void;
+    };
+  }
+}
+
+export const App: React.FC = () => {
+  // v5.0 Architecture: No hooks - use CSS custom properties for theming
+  // All interactions handled via direct DOM manipulation or CSS
+  
+  const handleMinimize = () => {
+    if (window.electronAPI) {
+      window.electronAPI.minimize();
+    }
+  };
+
+  const handleMaximize = () => {
+    if (window.electronAPI) {
+      window.electronAPI.maximize();
+    }
+  };
+
+  const handleClose = () => {
+    if (window.electronAPI) {
+      window.electronAPI.close();
+    }
+  };
+
+  const openDocumentation = () => {
+    if (window.electronAPI) {
+      window.electronAPI.openExternal('https://docs.xala-technologies.com');
+    }
+  };
+
+  const toggleTheme = () => {
+    // v5.0 Architecture: Direct DOM manipulation, no state
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  return (
+    <AppShell 
+      theme="{{theme}}"
+      industry="{{industry}}"
+      fullHeight
+    >
+      {/* Custom Window Controls for Electron */}
+      <WindowControls
+        title="{{title}}"
+        onMinimize={handleMinimize}
+        onMaximize={handleMaximize}
+        onClose={handleClose}
+        platform="electron"
+      />
+
+      {/* Main Content */}
+      <MainContent spacing="lg">
+        <Section align="center" spacing="xl">
+          <Heading level={1} variant="hero" align="center">
+            {t('welcome.title', { name: '{{title}}' })}
+          </Heading>
+          <Text variant="lead" align="center" maxWidth="2xl">
+            {t('welcome.description', { description: '{{description}}' })}
+          </Text>
+        </Section>
+
+        <Section spacing="lg">
+          <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.getStarted.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.getStarted.electronDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button variant="primary" size="lg" fullWidth>
+                  {t('actions.getStarted.button')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.documentation.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.documentation.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  fullWidth
+                  onClick={openDocumentation}
+                >
+                  {t('actions.documentation.button')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.theme.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.theme.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button 
+                  variant="ghost" 
+                  size="lg" 
+                  fullWidth
+                  onClick={toggleTheme}
+                >
+                  {t('actions.theme.button')}
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Section>
+
+        <Section align="center" spacing="sm">
+          <Text variant="caption" align="center">
+            {t('footer.electronBuilt')}
+          </Text>
+        </Section>
+      </MainContent>
+    </AppShell>
+  );
+};

@@ -1,0 +1,453 @@
+{{!-- Template: ui-system.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/ui-system.config.ts.hbs --}}
+{{#if typescript}}'use client';{{/if}}
+
+/**
+ * Xala UI System Configuration
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Enhanced Design Token System
+ * - WCAG 2.2 AAA accessibility compliance
+ * - Norwegian localization support
+ * - Enhanced 8pt Grid System
+ * - Professional theme configuration
+ * - Responsive design tokens
+ * - Type-safe configuration
+ */
+
+{{#if typescript}}
+import type { UISystemConfig, ThemeConfig, TokenConfig } from '@xala-technologies/ui-system';
+{{else}}
+import { UISystemConfig, ThemeConfig, TokenConfig } from '@xala-technologies/ui-system';
+{{/if}}
+
+/**
+ * Enhanced Design Token Configuration
+ */
+const tokenConfig{{#if typescript}}: TokenConfig{{/if}} = {
+  // Enhanced 8pt Grid System
+  spacing: {
+    0: '0px',
+    1: '4px',    // 4px
+    2: '8px',    // 8px
+    3: '12px',   // 12px
+    4: '16px',   // 16px
+    5: '20px',   // 20px
+    6: '24px',   // 24px
+    7: '28px',   // 28px
+    8: '32px',   // 32px
+    9: '36px',   // 36px
+    10: '40px',  // 40px
+    11: '44px',  // 44px - Professional button height
+    12: '48px',  // 48px - Large button height
+    14: '56px',  // 56px - WCAG compliant input height
+    16: '64px',  // 64px - Section spacing
+    20: '80px',  // 80px
+    24: '96px',  // 96px
+    32: '128px', // 128px
+  },
+
+  // WCAG 2.2 AAA Compliant Colors
+  colors: {
+    // Primary palette
+    primary: {
+      50: '#f0f9ff',
+      100: '#e0f2fe',
+      200: '#bae6fd',
+      300: '#7dd3fc',
+      400: '#38bdf8',
+      500: '#0ea5e9',  // Main primary
+      600: '#0284c7',
+      700: '#0369a1',
+      800: '#075985',
+      900: '#0c4a6e',
+      950: '#082f49',
+    },
+
+    // Success palette (WCAG AAA compliant)
+    success: {
+      50: '#f0fdf4',
+      100: '#dcfce7',
+      200: '#bbf7d0',
+      300: '#86efac',
+      400: '#4ade80',
+      500: '#22c55e',  // Main success
+      600: '#16a34a',
+      700: '#15803d',
+      800: '#166534',
+      900: '#14532d',
+      950: '#052e16',
+    },
+
+    // Warning palette
+    warning: {
+      50: '#fffbeb',
+      100: '#fef3c7',
+      200: '#fde68a',
+      300: '#fcd34d',
+      400: '#fbbf24',
+      500: '#f59e0b',  // Main warning
+      600: '#d97706',
+      700: '#b45309',
+      800: '#92400e',
+      900: '#78350f',
+      950: '#451a03',
+    },
+
+    // Destructive palette
+    destructive: {
+      50: '#fef2f2',
+      100: '#fee2e2',
+      200: '#fecaca',
+      300: '#fca5a5',
+      400: '#f87171',
+      500: '#ef4444',  // Main destructive
+      600: '#dc2626',
+      700: '#b91c1c',
+      800: '#991b1b',
+      900: '#7f1d1d',
+      950: '#450a0a',
+    },
+
+    // Neutral palette
+    neutral: {
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#e5e5e5',
+      300: '#d4d4d4',
+      400: '#a3a3a3',
+      500: '#737373',
+      600: '#525252',
+      700: '#404040',
+      800: '#262626',
+      900: '#171717',
+      950: '#0a0a0a',
+    },
+
+    // Semantic color mappings
+    background: '#ffffff',
+    foreground: '#0a0a0a',
+    muted: '#f5f5f5',
+    'muted-foreground': '#737373',
+    border: '#e5e5e5',
+    input: '#ffffff',
+    ring: '#0ea5e9',
+  },
+
+  // Typography scale
+  typography: {
+    fontFamily: {
+      sans: ['Inter', 'system-ui', 'sans-serif'],
+      mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+    },
+    fontSize: {
+      xs: ['12px', { lineHeight: '16px' }],
+      sm: ['14px', { lineHeight: '20px' }],
+      base: ['16px', { lineHeight: '24px' }],
+      lg: ['18px', { lineHeight: '28px' }],
+      xl: ['20px', { lineHeight: '28px' }],
+      '2xl': ['24px', { lineHeight: '32px' }],
+      '3xl': ['30px', { lineHeight: '36px' }],
+      '4xl': ['36px', { lineHeight: '40px' }],
+      '5xl': ['48px', { lineHeight: '1' }],
+      '6xl': ['60px', { lineHeight: '1' }],
+    },
+    fontWeight: {
+      normal: '400',
+      medium: '500',
+      semibold: '600',
+      bold: '700',
+    },
+  },
+
+  // Border radius
+  borderRadius: {
+    none: '0px',
+    sm: '2px',
+    base: '4px',
+    md: '6px',
+    lg: '8px',
+    xl: '12px',
+    '2xl': '16px',
+    '3xl': '24px',
+    full: '9999px',
+  },
+
+  // Shadows
+  boxShadow: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    base: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+    '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+  },
+};
+
+/**
+ * Theme Configuration
+ */
+const themeConfig{{#if typescript}}: ThemeConfig{{/if}} = {
+  defaultTheme: 'light',
+  themes: {
+    light: {
+      colors: {
+        ...tokenConfig.colors,
+        background: '#ffffff',
+        foreground: '#0a0a0a',
+        card: '#ffffff',
+        'card-foreground': '#0a0a0a',
+        popover: '#ffffff',
+        'popover-foreground': '#0a0a0a',
+        primary: tokenConfig.colors.primary[500],
+        'primary-foreground': '#ffffff',
+        secondary: tokenConfig.colors.neutral[100],
+        'secondary-foreground': tokenConfig.colors.neutral[900],
+        muted: tokenConfig.colors.neutral[100],
+        'muted-foreground': tokenConfig.colors.neutral[500],
+        accent: tokenConfig.colors.neutral[100],
+        'accent-foreground': tokenConfig.colors.neutral[900],
+        destructive: tokenConfig.colors.destructive[500],
+        'destructive-foreground': '#ffffff',
+        border: tokenConfig.colors.neutral[200],
+        input: tokenConfig.colors.neutral[200],
+        ring: tokenConfig.colors.primary[500],
+      },
+    },
+    dark: {
+      colors: {
+        ...tokenConfig.colors,
+        background: '#0a0a0a',
+        foreground: '#fafafa',
+        card: '#0a0a0a',
+        'card-foreground': '#fafafa',
+        popover: '#0a0a0a',
+        'popover-foreground': '#fafafa',
+        primary: tokenConfig.colors.primary[400],
+        'primary-foreground': tokenConfig.colors.primary[900],
+        secondary: tokenConfig.colors.neutral[800],
+        'secondary-foreground': tokenConfig.colors.neutral[50],
+        muted: tokenConfig.colors.neutral[800],
+        'muted-foreground': tokenConfig.colors.neutral[400],
+        accent: tokenConfig.colors.neutral[800],
+        'accent-foreground': tokenConfig.colors.neutral[50],
+        destructive: tokenConfig.colors.destructive[400],
+        'destructive-foreground': tokenConfig.colors.destructive[900],
+        border: tokenConfig.colors.neutral[800],
+        input: tokenConfig.colors.neutral[800],
+        ring: tokenConfig.colors.primary[400],
+      },
+    },
+  },
+};
+
+/**
+ * Accessibility Configuration (WCAG 2.2 AAA)
+ */
+const accessibilityConfig = {
+  // Focus management
+  focusRing: {
+    width: '2px',
+    style: 'solid',
+    color: tokenConfig.colors.primary[500],
+    offset: '2px',
+  },
+
+  // Minimum touch targets (44px x 44px)
+  minTouchTarget: {
+    width: tokenConfig.spacing[11], // 44px
+    height: tokenConfig.spacing[11], // 44px
+  },
+
+  // Color contrast ratios (WCAG AAA)
+  contrastRatios: {
+    normal: 7, // AAA standard
+    large: 4.5, // AAA standard for large text
+  },
+
+  // Motion preferences
+  respectsReducedMotion: true,
+
+  // Screen reader support
+  screenReader: {
+    announcements: true,
+    liveRegions: true,
+    landmarks: true,
+  },
+};
+
+/**
+ * Norwegian Localization Configuration
+ */
+const localizationConfig = {
+  defaultLocale: 'nb',
+  supportedLocales: ['nb', 'en'],
+  
+  // Norwegian-specific formatting
+  formatting: {
+    currency: 'NOK',
+    dateFormat: 'dd.MM.yyyy',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: ' ',
+    },
+  },
+
+  // RTL support (not needed for Norwegian, but good practice)
+  rtlSupport: false,
+};
+
+/**
+ * Responsive Design Configuration
+ */
+const responsiveConfig = {
+  breakpoints: {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+  },
+
+  // Container max widths
+  container: {
+    center: true,
+    padding: {
+      DEFAULT: tokenConfig.spacing[4], // 16px
+      sm: tokenConfig.spacing[6], // 24px
+      lg: tokenConfig.spacing[8], // 32px
+    },
+    screens: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1400px',
+    },
+  },
+};
+
+/**
+ * Main UI System Configuration
+ */
+export const uiSystemConfig{{#if typescript}}: UISystemConfig{{/if}} = {
+  // Core configuration
+  version: '5.0.0',
+  namespace: '{{projectName}}',
+  
+  // Token system
+  tokens: tokenConfig,
+  
+  // Theme system
+  theme: themeConfig,
+  
+  // Accessibility
+  accessibility: accessibilityConfig,
+  
+  // Localization
+  localization: localizationConfig,
+  
+  // Responsive design
+  responsive: responsiveConfig,
+  
+  // Component defaults
+  components: {
+    // Button defaults
+    Button: {
+      defaultVariant: 'primary',
+      defaultSize: 'md',
+      minHeight: tokenConfig.spacing[11], // 44px - WCAG compliant
+    },
+    
+    // Input defaults
+    Input: {
+      defaultVariant: 'primary',
+      defaultSize: 'lg',
+      minHeight: tokenConfig.spacing[14], // 56px - WCAG compliant
+    },
+    
+    // Card defaults
+    Card: {
+      defaultVariant: 'elevated',
+      defaultSpacing: tokenConfig.spacing[8], // 32px
+    },
+    
+    // Typography defaults
+    Typography: {
+      defaultVariant: 'body',
+      defaultSize: 'base',
+    },
+  },
+  
+  // Animation preferences
+  animations: {
+    respectReducedMotion: true,
+    defaultDuration: '200ms',
+    defaultEasing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  
+  // Development settings
+  development: {
+    showTokens: {{#if development}}true{{else}}false{{/if}},
+    validateAccessibility: true,
+    logWarnings: {{#if development}}true{{else}}false{{/if}},
+  },
+};
+
+export default uiSystemConfig;
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// In your app root
+import { UISystemProvider } from '@xala-technologies/ui-system';
+import { uiSystemConfig } from './config/ui-system.config';
+
+function App() {
+  return (
+    <UISystemProvider config={uiSystemConfig}>
+      <YourApp />
+    </UISystemProvider>
+  );
+}
+
+// Using tokens in components
+import { useTokens } from '@xala-technologies/ui-system';
+
+function MyComponent() {
+  const { colors, spacing, typography } = useTokens();
+  
+  return (
+    <Box
+      style={{{{raw}}}}{
+        padding: spacing[6], // 24px
+        backgroundColor: colors.primary[50],
+        borderRadius: spacing[2], // 8px
+      }{{{{/raw}}}}
+    >
+      <Typography variant="heading" size="xl">
+        Professional UI with Enhanced Design Tokens
+      </Typography>
+    </Box>
+  );
+}
+*/
+{{/if}}

@@ -1,0 +1,423 @@
+/**
+ * @fileoverview {{componentName}} - Universal Style System Adapter
+ * @description Adapt design tokens and styles across different frameworks
+ * @version 5.0.0
+ * @compliance Multi-platform styling, Design token portability
+ */
+
+/**
+ * Universal Style Definition
+ */
+export interface UniversalStyle {
+  tokens: DesignTokens;
+  components: ComponentStyles;
+  utilities: UtilityStyles;
+  animations: AnimationStyles;
+  breakpoints: Breakpoints;
+}
+
+export interface DesignTokens {
+  colors: Record<string, string>;
+  spacing: Record<string, string>;
+  typography: Record<string, any>;
+  borders: Record<string, string>;
+  shadows: Record<string, string>;
+  zIndex: Record<string, number>;
+}
+
+export interface ComponentStyles {
+  [component: string]: {
+    base: string | object;
+    variants?: Record<string, string | object>;
+    states?: Record<string, string | object>;
+    responsive?: Record<string, string | object>;
+  };
+}
+
+export interface UtilityStyles {
+  [utility: string]: string | object;
+}
+
+export interface AnimationStyles {
+  [animation: string]: {
+    keyframes: object;
+    duration?: string;
+    timing?: string;
+    delay?: string;
+  };
+}
+
+export interface Breakpoints {
+  sm: string;
+  md: string;
+  lg: string;
+  xl: string;
+  '2xl': string;
+}
+
+/**
+ * Tailwind CSS Adapter
+ */
+export class TailwindAdapter {
+  adapt(styles: UniversalStyle): string {
+    return this.generateConfig(styles);
+  }
+
+  private generateConfig(styles: UniversalStyle): string {
+    return `module.exports = {
+  theme: {
+    extend: {
+      colors: ${JSON.stringify(styles.tokens.colors, null, 2)},
+      spacing: ${JSON.stringify(styles.tokens.spacing, null, 2)},
+      fontSize: ${JSON.stringify(styles.tokens.typography.fontSize || {}, null, 2)},
+      borderRadius: ${JSON.stringify(styles.tokens.borders, null, 2)},
+      boxShadow: ${JSON.stringify(styles.tokens.shadows, null, 2)},
+      zIndex: ${JSON.stringify(styles.tokens.zIndex, null, 2)},
+      screens: ${JSON.stringify(styles.breakpoints, null, 2)},
+      animation: {
+        ${Object.entries(styles.animations).map(([name, anim]) => 
+          `'${name}': '${name} ${anim.duration || '1s'} ${anim.timing || 'ease'} ${anim.delay || '0s'}'`
+        ).join(',\n        ')}
+      },
+      keyframes: {
+        ${Object.entries(styles.animations).map(([name, anim]) => 
+          `${name}: ${JSON.stringify(anim.keyframes, null, 2)}`
+        ).join(',\n        ')}
+      }
+    }
+  }
+}`;
+  }
+
+  generateUtilities(utilities: UtilityStyles): string {
+    const classes: string[] = [];
+    
+    for (const [name, style] of Object.entries(utilities)) {
+      if (typeof style === 'string') {
+        classes.push(`.${name} { ${style} }`);
+      }
+    }
+    
+    return classes.join('\n');
+  }
+}
+
+/**
+ * CSS Modules Adapter
+ */
+export class CSSModulesAdapter {
+  adapt(styles: UniversalStyle): Record<string, string> {
+    const modules: Record<string, string> = {};
+    
+    // Generate CSS custom properties
+    modules['variables.module.css'] = this.generateVariables(styles.tokens);
+    
+    // Generate component modules
+    for (const [component, componentStyles] of Object.entries(styles.components)) {
+      modules[`${component}.module.css`] = this.generateComponentModule(componentStyles);
+    }
+    
+    return modules;
+  }
+
+  private generateVariables(tokens: DesignTokens): string {
+    const vars: string[] = [':root {'];
+    
+    // Colors
+    for (const [key, value] of Object.entries(tokens.colors)) {
+      vars.push(`  --color-${key}: ${value};`);
+    }
+    
+    // Spacing
+    for (const [key, value] of Object.entries(tokens.spacing)) {
+      vars.push(`  --spacing-${key}: ${value};`);
+    }
+    
+    // Shadows
+    for (const [key, value] of Object.entries(tokens.shadows)) {
+      vars.push(`  --shadow-${key}: ${value};`);
+    }
+    
+    vars.push('}');
+    return vars.join('\n');
+  }
+
+  private generateComponentModule(component: ComponentStyles[string]): string {
+    const classes: string[] = [];
+    
+    // Base styles
+    if (typeof component.base === 'string') {
+      classes.push(`.root { ${component.base} }`);
+    } else {
+      classes.push(`.root {${this.objectToCSS(component.base)}}`);
+    }
+    
+    // Variants
+    if (component.variants) {
+      for (const [variant, styles] of Object.entries(component.variants)) {
+        if (typeof styles === 'string') {
+          classes.push(`.${variant} { ${styles} }`);
+        } else {
+          classes.push(`.${variant} {${this.objectToCSS(styles)}}`);
+        }
+      }
+    }
+    
+    return classes.join('\n\n');
+  }
+
+  private objectToCSS(obj: any): string {
+    const rules: string[] = [];
+    for (const [key, value] of Object.entries(obj)) {
+      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+      rules.push(`  ${cssKey}: ${value};`);
+    }
+    return '\n' + rules.join('\n') + '\n';
+  }
+}
+
+/**
+ * Styled Components / Emotion Adapter
+ */
+export class CSSinJSAdapter {
+  adapt(styles: UniversalStyle, library: 'styled-components' | 'emotion' = 'styled-components'): string {
+    const imports = library === 'styled-components' 
+      ? `import styled, { css, createGlobalStyle } from 'styled-components';`
+      : `import styled from '@emotion/styled';\nimport { css } from '@emotion/react';`;
+
+    const theme = this.generateTheme(styles);
+    const components = this.generateStyledComponents(styles.components);
+    
+    return `${imports}\n\n${theme}\n\n${components}`;
+  }
+
+  private generateTheme(styles: UniversalStyle): string {
+    return `export const theme = ${JSON.stringify({
+      colors: styles.tokens.colors,
+      spacing: styles.tokens.spacing,
+      typography: styles.tokens.typography,
+      borders: styles.tokens.borders,
+      shadows: styles.tokens.shadows,
+      zIndex: styles.tokens.zIndex,
+      breakpoints: styles.breakpoints,
+    }, null, 2)};`;
+  }
+
+  private generateStyledComponents(components: ComponentStyles): string {
+    const styledComponents: string[] = [];
+    
+    for (const [name, component] of Object.entries(components)) {
+      const baseStyles = typeof component.base === 'string' 
+        ? component.base 
+        : this.objectToTemplate(component.base);
+      
+      styledComponents.push(`export const Styled${name} = styled.div\`
+  ${baseStyles}
+  
+  \${props => props.variant && variants[props.variant]}
+\`;
+
+const variants = {
+  ${component.variants ? Object.entries(component.variants).map(([variant, styles]) => 
+    `${variant}: css\`${typeof styles === 'string' ? styles : this.objectToTemplate(styles)}\``
+  ).join(',\n  ') : ''}
+};`);
+    }
+    
+    return styledComponents.join('\n\n');
+  }
+
+  private objectToTemplate(obj: any): string {
+    const rules: string[] = [];
+    for (const [key, value] of Object.entries(obj)) {
+      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+      rules.push(`${cssKey}: ${value};`);
+    }
+    return rules.join('\n  ');
+  }
+}
+
+/**
+ * React Native StyleSheet Adapter
+ */
+export class ReactNativeStyleAdapter {
+  adapt(styles: UniversalStyle): string {
+    const styleSheet = this.generateStyleSheet(styles);
+    return styleSheet;
+  }
+
+  private generateStyleSheet(styles: UniversalStyle): string {
+    const rnStyles: Record<string, any> = {};
+    
+    // Convert tokens to RN format
+    const colors = this.convertColors(styles.tokens.colors);
+    const spacing = this.convertSpacing(styles.tokens.spacing);
+    
+    // Convert component styles
+    for (const [component, componentStyles] of Object.entries(styles.components)) {
+      rnStyles[component] = this.convertToRNStyle(componentStyles.base);
+      
+      if (componentStyles.variants) {
+        for (const [variant, variantStyles] of Object.entries(componentStyles.variants)) {
+          rnStyles[`${component}${this.capitalize(variant)}`] = this.convertToRNStyle(variantStyles);
+        }
+      }
+    }
+    
+    return `import { StyleSheet } from 'react-native';
+
+export const colors = ${JSON.stringify(colors, null, 2)};
+export const spacing = ${JSON.stringify(spacing, null, 2)};
+
+export const styles = StyleSheet.create(${JSON.stringify(rnStyles, null, 2)});`;
+  }
+
+  private convertColors(colors: Record<string, string>): Record<string, string> {
+    const rnColors: Record<string, string> = {};
+    
+    for (const [key, value] of Object.entries(colors)) {
+      // Convert CSS colors to RN format if needed
+      rnColors[key] = value.startsWith('rgb') || value.startsWith('#') 
+        ? value 
+        : this.cssColorToHex(value);
+    }
+    
+    return rnColors;
+  }
+
+  private convertSpacing(spacing: Record<string, string>): Record<string, number> {
+    const rnSpacing: Record<string, number> = {};
+    
+    for (const [key, value] of Object.entries(spacing)) {
+      // Convert rem/px to number
+      rnSpacing[key] = parseFloat(value);
+    }
+    
+    return rnSpacing;
+  }
+
+  private convertToRNStyle(style: string | object): object {
+    if (typeof style === 'string') {
+      // Parse CSS string to RN style object
+      return this.parseCSSToRN(style);
+    }
+    
+    const rnStyle: Record<string, any> = {};
+    
+    for (const [key, value] of Object.entries(style)) {
+      const rnKey = this.cssToRNProperty(key);
+      rnStyle[rnKey] = this.cssToRNValue(key, value);
+    }
+    
+    return rnStyle;
+  }
+
+  private cssToRNProperty(prop: string): string {
+    const propMap: Record<string, string> = {
+      'margin-top': 'marginTop',
+      'margin-bottom': 'marginBottom',
+      'margin-left': 'marginLeft',
+      'margin-right': 'marginRight',
+      'padding-top': 'paddingTop',
+      'padding-bottom': 'paddingBottom',
+      'padding-left': 'paddingLeft',
+      'padding-right': 'paddingRight',
+      'background-color': 'backgroundColor',
+      'border-radius': 'borderRadius',
+      'border-width': 'borderWidth',
+      'border-color': 'borderColor',
+      'font-size': 'fontSize',
+      'font-weight': 'fontWeight',
+      'text-align': 'textAlign',
+      'justify-content': 'justifyContent',
+      'align-items': 'alignItems',
+    };
+    
+    return propMap[prop] || prop;
+  }
+
+  private cssToRNValue(prop: string, value: any): any {
+    // Convert px values to numbers
+    if (typeof value === 'string' && value.endsWith('px')) {
+      return parseFloat(value);
+    }
+    
+    // Convert flex values
+    if (prop === 'display' && value === 'flex') {
+      return undefined; // flex is default in RN
+    }
+    
+    return value;
+  }
+
+  private parseCSSToRN(css: string): object {
+    // Simple CSS parser for basic properties
+    const style: Record<string, any> = {};
+    const rules = css.split(';').filter(Boolean);
+    
+    for (const rule of rules) {
+      const [prop, value] = rule.split(':').map(s => s.trim());
+      if (prop && value) {
+        style[this.cssToRNProperty(prop)] = this.cssToRNValue(prop, value);
+      }
+    }
+    
+    return style;
+  }
+
+  private cssColorToHex(color: string): string {
+    // Convert named colors to hex (simplified)
+    const colorMap: Record<string, string> = {
+      'white': '#FFFFFF',
+      'black': '#000000',
+      'red': '#FF0000',
+      'blue': '#0000FF',
+      'green': '#008000',
+      // Add more as needed
+    };
+    
+    return colorMap[color] || color;
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+}
+
+/**
+ * Universal Style System Factory
+ */
+export class UniversalStyleSystem {
+  private adapters: Record<string, any> = {
+    tailwind: new TailwindAdapter(),
+    'css-modules': new CSSModulesAdapter(),
+    'styled-components': new CSSinJSAdapter(),
+    emotion: new CSSinJSAdapter(),
+    'react-native': new ReactNativeStyleAdapter(),
+  };
+
+  adapt(styles: UniversalStyle, target: string): any {
+    const adapter = this.adapters[target];
+    if (!adapter) {
+      throw new Error(`Unsupported style target: ${target}`);
+    }
+    
+    if (target === 'emotion') {
+      return adapter.adapt(styles, 'emotion');
+    }
+    
+    return adapter.adapt(styles);
+  }
+
+  adaptAll(styles: UniversalStyle): Record<string, any> {
+    const result: Record<string, any> = {};
+    
+    for (const [target, adapter] of Object.entries(this.adapters)) {
+      result[target] = this.adapt(styles, target);
+    }
+    
+    return result;
+  }
+}
+
+export default UniversalStyleSystem;

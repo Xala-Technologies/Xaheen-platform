@@ -1,0 +1,504 @@
+{{!-- Template: dashboard.tsx.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/src/pages/dashboard.tsx.hbs --}}
+import React from 'react';
+import { 
+  Card,
+  Button,
+  Input,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Stack,
+  Grid,
+  Container,
+  Typography,
+  Box,
+  Separator,
+} from '@xala-technologies/ui-system';
+{{#if includeIcons}}
+import { 
+  BarChart3, 
+  Users, 
+  TrendingUp, 
+  Activity,
+  Search,
+  Bell,
+  Settings,
+  Plus,
+} from 'lucide-react';
+{{/if}}
+{{#if includeLocalization}}
+import { useTranslation } from '{{relativePath}}/lib/i18n';
+{{/if}}
+
+/**
+ * {{componentName}} - Professional Dashboard Page Template - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Professional dashboard layout patterns
+ * - Type-safe data handling
+ * - SSR-compatible architecture
+ */ {{#if includeCharts}}
+ * - Chart integration ready
+ * {{/if}}
+ * {{#if includeRealtime}}
+ * - Real-time data support
+ * {{/if}}
+ */
+
+{{#if includeTypes}}
+interface DashboardStats {
+  readonly totalUsers: number;
+  readonly revenue: number;
+  readonly growth: number;
+  readonly activity: number;
+}
+
+interface RecentActivity {
+  readonly id: string;
+  readonly user: string;
+  readonly action: string;
+  readonly timestamp: Date;
+  readonly avatar?: string;
+}
+
+interface DashboardProps {
+  readonly locale?: string;
+  readonly enableRealtime?: boolean;
+  readonly refreshInterval?: number;
+}
+{{/if}}
+
+export default function {{componentName}}({{#if includeTypes}}props: DashboardProps{{/if}}): JSX.Element {
+  {{#if includeLocalization}}
+  const { t } = useTranslation();
+  {{/if}}
+
+  {{#if includeData}}
+  // Sample data - replace with your data fetching logic
+  const stats: DashboardStats = {
+    totalUsers: 2847,
+    revenue: 125430,
+    growth: 12.5,
+    activity: 89,
+  };
+
+  const recentActivity: RecentActivity[] = [
+    {
+      id: '1',
+      user: 'Ola Nordmann',
+      action: 'opprettet ny bruker',
+      timestamp: new Date(Date.now() - 5 * 60 * 1000),
+      avatar: '/avatars/ola.jpg',
+    },
+    {
+      id: '2',
+      user: 'Kari Hansen',
+      action: 'oppdaterte profil',
+      timestamp: new Date(Date.now() - 15 * 60 * 1000),
+      avatar: '/avatars/kari.jpg',
+    },
+    {
+      id: '3',
+      user: 'Erik Johansen',
+      action: 'lastet opp dokument',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000),
+    },
+  ];
+  {{/if}}
+
+  {{#if includeLocalization}}
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: 'NOK',
+    }).format(amount);
+  };
+
+  const formatRelativeTime = (date: Date): string => {
+    const rtf = new Intl.RelativeTimeFormat('nb-NO', { numeric: 'auto' });
+    const diffInMinutes = Math.floor((date.getTime() - Date.now()) / (1000 * 60));
+    return rtf.format(diffInMinutes, 'minute');
+  };
+  {{/if}}
+
+
+
+  return (
+    <Box variant="page">
+      {/* Header - ONLY semantic components */}
+      <Box variant="header">
+        <Container>
+          <Stack direction="horizontal" justify="between" align="center">
+            <Stack direction="horizontal" align="center" spacing="4">
+              <Typography variant="heading" size="2xl">
+                {{#if includeLocalization}}
+                {t('dashboard.title', 'Dashboard')}
+                {{else}}
+                Dashboard
+                {{/if}}
+              </Typography>
+            </Stack>
+            
+            <Stack direction="horizontal" align="center" spacing="4">
+              {/* Search - Enhanced 8pt Grid System */}
+              <Box variant="search-container">
+                {{#if includeIcons}}
+                <Search />
+                {{/if}}
+                <Input
+                  variant="search"
+                  size="lg"
+                  placeholder={{#if includeLocalization}}{t('dashboard.search', 'Søk...')}{{else}}"Søk..."{{/if}}
+                  aria-label={{#if includeLocalization}}{t('dashboard.searchLabel', 'Søk i dashboard')}{{else}}"Søk i dashboard"{{/if}}
+                />
+              </Box>
+              
+              {/* Icon Buttons - WCAG compliant sizing */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                aria-label={{#if includeLocalization}}{t('dashboard.notifications', 'Varsler')}{{else}}"Varsler"{{/if}}
+              >
+                {{#if includeIcons}}
+                <Bell />
+                {{/if}}
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                size="icon"
+                aria-label={{#if includeLocalization}}{t('dashboard.settings', 'Innstillinger')}{{else}}"Innstillinger"{{/if}}
+              >
+                {{#if includeIcons}}
+                <Settings />
+                {{/if}}
+              </Button>
+              
+              {/* User Avatar - Enhanced accessibility */}
+              <Avatar size="md">
+                <AvatarImage src="/avatars/user.jpg" alt="User profile" />
+                <AvatarFallback>{{#if includeLocalization}}{t('dashboard.user', 'BN')}{{else}}BN{{/if}}</AvatarFallback>
+              </Avatar>
+            </Stack>
+          </Stack>
+        </Container>
+      </Box>
+
+      <Separator />
+
+      {/* Main Content - Enhanced 8pt Grid System */}
+      <Box variant="main" spacing="16">
+        <Container>
+          {/* Stats Grid - Professional sizing standards */}
+          <Grid columns="responsive" spacing="6" marginBottom="16">
+            {/* Total Users Card */}
+            <Card variant="elevated" spacing="8">
+              <Stack direction="horizontal" justify="between" align="center" marginBottom="4">
+                <Typography variant="label" size="sm">
+                  {{#if includeLocalization}}
+                  {t('dashboard.totalUsers', 'Totale Brukere')}
+                  {{else}}
+                  Totale Brukere
+                  {{/if}}
+                </Typography>
+                {{#if includeIcons}}
+                <Users variant="muted" size="sm" />
+                {{/if}}
+              </Stack>
+              <Stack spacing="2">
+                <Typography variant="display" size="2xl" weight="bold">
+                  {{#if includeData}}{stats.totalUsers.toLocaleString('nb-NO')}{{else}}2,847{{/if}}
+                </Typography>
+                <Typography variant="caption" size="xs" color="muted">
+                  {{#if includeLocalization}}
+                  {t('dashboard.fromLastMonth', '+12% fra forrige måned')}
+                  {{else}}
+                  +12% fra forrige måned
+                  {{/if}}
+                </Typography>
+              </Stack>
+            </Card>
+
+            {/* Revenue Card */}
+            <Card variant="elevated" spacing="8">
+              <Stack direction="horizontal" justify="between" align="center" marginBottom="4">
+                <Typography variant="label" size="sm">
+                  {{#if includeLocalization}}
+                  {t('dashboard.revenue', 'Inntekt')}
+                  {{else}}
+                  Inntekt
+                  {{/if}}
+                </Typography>
+                {{#if includeIcons}}
+                <BarChart3 variant="muted" size="sm" />
+                {{/if}}
+              </Stack>
+              <Stack spacing="2">
+                <Typography variant="display" size="2xl" weight="bold">
+                  {{#if includeData}}
+                  {formatCurrency(stats.revenue)}
+                  {{else}}
+                  kr 125,430
+                  {{/if}}
+                </Typography>
+                <Typography variant="caption" size="xs" color="muted">
+                  {{#if includeLocalization}}
+                  {t('dashboard.fromLastMonth', '+8% fra forrige måned')}
+                  {{else}}
+                  +8% fra forrige måned
+                  {{/if}}
+                </Typography>
+              </Stack>
+            </Card>
+
+            {/* Growth Card */}
+            <Card variant="elevated" spacing="8">
+              <Stack direction="horizontal" justify="between" align="center" marginBottom="4">
+                <Typography variant="label" size="sm">
+                  {{#if includeLocalization}}
+                  {t('dashboard.growth', 'Vekst')}
+                  {{else}}
+                  Vekst
+                  {{/if}}
+                </Typography>
+                {{#if includeIcons}}
+                <TrendingUp variant="muted" size="sm" />
+                {{/if}}
+              </Stack>
+              <Stack spacing="2">
+                <Typography variant="display" size="2xl" weight="bold">
+                  {{#if includeData}}{stats.growth}%{{else}}12.5%{{/if}}
+                </Typography>
+                <Typography variant="caption" size="xs" color="muted">
+                  {{#if includeLocalization}}
+                  {t('dashboard.fromLastMonth', '+2% fra forrige måned')}
+                  {{else}}
+                  +2% fra forrige måned
+                  {{/if}}
+                </Typography>
+              </Stack>
+            </Card>
+
+            {/* Activity Card */}
+            <Card variant="elevated" spacing="8">
+              <Stack direction="horizontal" justify="between" align="center" marginBottom="4">
+                <Typography variant="label" size="sm">
+                  {{#if includeLocalization}}
+                  {t('dashboard.activity', 'Aktivitet')}
+                  {{else}}
+                  Aktivitet
+                  {{/if}}
+                </Typography>
+                {{#if includeIcons}}
+                <Activity variant="muted" size="sm" />
+                {{/if}}
+              </Stack>
+              <Stack spacing="2">
+                <Typography variant="display" size="2xl" weight="bold">
+                  {{#if includeData}}{stats.activity}%{{else}}89%{{/if}}
+                </Typography>
+                <Typography variant="caption" size="xs" color="muted">
+                  {{#if includeLocalization}}
+                  {t('dashboard.fromLastMonth', '+5% fra forrige måned')}
+                  {{else}}
+                  +5% fra forrige måned
+                  {{/if}}
+                </Typography>
+              </Stack>
+            </Card>
+          </Grid>
+
+          {/* Content Grid - Enhanced layout system */}
+          <Grid columns="responsive" spacing="6">
+            {/* Recent Activity */}
+            <Box gridColumn={{{{raw}}}}{{ lg: "span 2" }}{{{{/raw}}}}>
+              <Card variant="elevated" spacing="8">
+                <Stack direction="horizontal" justify="between" align="center" marginBottom="6">
+                  <Stack spacing="2">
+                    <Typography variant="heading" size="lg">
+                      {{#if includeLocalization}}
+                      {t('dashboard.recentActivity', 'Nylig Aktivitet')}
+                      {{else}}
+                      Nylig Aktivitet
+                      {{/if}}
+                    </Typography>
+                    <Typography variant="body" size="sm" color="muted">
+                      {{#if includeLocalization}}
+                      {t('dashboard.activityDescription', 'Siste handlinger i systemet')}
+                      {{else}}
+                      Siste handlinger i systemet
+                      {{/if}}
+                    </Typography>
+                  </Stack>
+                  <Button size="sm">
+                    {{#if includeIcons}}
+                    <Plus />
+                    {{/if}}
+                    {{#if includeLocalization}}
+                    {t('dashboard.viewAll', 'Se alle')}
+                    {{else}}
+                    Se alle
+                    {{/if}}
+                  </Button>
+                </Stack>
+                
+                <Stack spacing="4">
+                  {{#if includeData}}
+                  {recentActivity.map((activity) => (
+                    <Stack key={activity.id} direction="horizontal" align="center" spacing="4">
+                      <Avatar size="sm">
+                        {activity.avatar ? (
+                          <AvatarImage src={activity.avatar} alt={activity.user} />
+                        ) : (
+                          <AvatarFallback>
+                            {activity.user.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <Stack spacing="1" flex="1">
+                        <Typography variant="body" size="sm" weight="medium">
+                          {activity.user}
+                        </Typography>
+                        <Typography variant="body" size="sm" color="muted">
+                          {activity.action}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="caption" size="xs" color="muted">
+                        {formatRelativeTime(activity.timestamp)}
+                      </Typography>
+                    </Stack>
+                  ))}
+                  {{else}}
+                  {/* Sample activity items */}
+                  <Stack direction="horizontal" align="center" spacing="4">
+                    <Avatar size="sm">
+                      <AvatarFallback>ON</AvatarFallback>
+                    </Avatar>
+                    <Stack spacing="1" flex="1">
+                      <Typography variant="body" size="sm" weight="medium">Ola Nordmann</Typography>
+                      <Typography variant="body" size="sm" color="muted">opprettet ny bruker</Typography>
+                    </Stack>
+                    <Typography variant="caption" size="xs" color="muted">5 min siden</Typography>
+                  </Stack>
+                  
+                  <Stack direction="horizontal" align="center" spacing="4">
+                    <Avatar size="sm">
+                      <AvatarFallback>KH</AvatarFallback>
+                    </Avatar>
+                    <Stack spacing="1" flex="1">
+                      <Typography variant="body" size="sm" weight="medium">Kari Hansen</Typography>
+                      <Typography variant="body" size="sm" color="muted">oppdaterte profil</Typography>
+                    </Stack>
+                    <Typography variant="caption" size="xs" color="muted">15 min siden</Typography>
+                  </Stack>
+                  {{/if}}
+                </Stack>
+              </Card>
+            </Box>
+
+            {/* Quick Actions */}
+            <Card variant="elevated" spacing="8">
+              <Stack spacing="6">
+                <Stack spacing="2">
+                  <Typography variant="heading" size="lg">
+                    {{#if includeLocalization}}
+                    {t('dashboard.quickActions', 'Hurtighandlinger')}
+                    {{else}}
+                    Hurtighandlinger
+                    {{/if}}
+                  </Typography>
+                  <Typography variant="body" size="sm" color="muted">
+                    {{#if includeLocalization}}
+                    {t('dashboard.quickActionsDescription', 'Vanlige oppgaver')}
+                    {{else}}
+                    Vanlige oppgaver
+                    {{/if}}
+                  </Typography>
+                </Stack>
+                
+                <Stack spacing="3">
+                  <Button variant="primary" size="md" fullWidth justify="start">
+                    {{#if includeIcons}}
+                    <Plus />
+                    {{/if}}
+                    {{#if includeLocalization}}
+                    {t('dashboard.addUser', 'Legg til bruker')}
+                    {{else}}
+                    Legg til bruker
+                    {{/if}}
+                  </Button>
+                  
+                  <Button variant="outline" size="md" fullWidth justify="start">
+                    {{#if includeIcons}}
+                    <BarChart3 />
+                    {{/if}}
+                    {{#if includeLocalization}}
+                    {t('dashboard.viewReports', 'Se rapporter')}
+                    {{else}}
+                    Se rapporter
+                    {{/if}}
+                  </Button>
+                  
+                  <Button variant="outline" size="md" fullWidth justify="start">
+                    {{#if includeIcons}}
+                    <Settings />
+                    {{/if}}
+                    {{#if includeLocalization}}
+                    {t('dashboard.settings', 'Innstillinger')}
+                    {{else}}
+                    Innstillinger
+                    {{/if}}
+                  </Button>
+                </Stack>
+              </Stack>
+            </Card>
+          </Grid>
+        </Container>
+      </Box>
+    </Box>
+  );
+}
+
+{{#if includeExamples}}
+// Example usage:
+/*
+// Basic dashboard
+<{{componentName}} />
+
+// Dashboard with Norwegian localization
+<{{componentName}} 
+  locale="nb"
+/>
+
+// Dashboard with real-time data
+<{{componentName}} 
+  enableRealtime={true}
+  refreshInterval={30000}
+/>
+
+// Dashboard with custom refresh interval
+<{{componentName}} 
+  locale="nb"
+  enableRealtime={true}
+  refreshInterval={60000}
+/>
+*/
+{{/if}}

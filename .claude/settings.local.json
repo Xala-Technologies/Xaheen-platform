@@ -65,7 +65,19 @@
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js make --help)",
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --help)",
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --dry-run)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(packages/xaheen-cli/dist/index.js new test-desktop-app --framework react --packageManager bun)",
+      "Bash(packages/xaheen-cli/dist/index.js project create test-desktop-app --framework react)",
+      "Bash(packages/xaheen-cli/dist/index.js:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(../../packages/xaheen-cli/dist/index.js component generate \"Desktop navigation sidebar with file explorer\")",
+      "Bash(cd:*)",
+      "Bash(\"../packages/xaheen-cli/dist/index.js\" app create test-nextjs-app --framework nextjs)",
+      "Bash(\"../packages/xaheen-cli/dist/index.js\" app create test-nextjs-app)"
     ],
     "deny": []
   }

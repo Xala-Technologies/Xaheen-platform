@@ -1,34 +1,14 @@
-{{!-- Template: vite.config.ts.hbs --}}
-{{!-- Category: frontend --}}
-{{!-- Type: config --}}
-{{!-- Framework: vue --}}
-{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/vue/vite.config.ts.hbs --}}
-/**
- * Vite Configuration - Xala UI System Integration
- * Generated with Xaheen CLI - Vue.js Implementation
- * 
- * MANDATORY COMPLIANCE RULES:
- * ❌ NO hardcoded styling or arbitrary values
- * ✅ ONLY Xala design tokens and semantic variants
- * ✅ WCAG 2.2 AAA accessibility compliance
- * ✅ Norwegian government design standards
- */
-
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@xala-ui': '@xala-technologies/ui-system/vue',
+      '@': resolve(__dirname, './src'),
     },
   },
-  
   css: {
     postcss: {
       plugins: [
@@ -37,32 +17,30 @@ export default defineConfig({
       ],
     },
   },
-  
-  build: {
-    // Optimize for production
-    target: 'es2015',
-    minify: 'terser',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separate Xala UI System into its own chunk
-          'xala-ui': ['@xala-technologies/ui-system'],
-          // Separate Vue ecosystem
-          'vue-vendor': ['vue', 'vue-router', 'vue-i18n'],
-        },
-      },
-    },
+  define: {
+    __XALA_THEME__: JSON.stringify('{{theme}}'),
+    __XALA_INDUSTRY__: JSON.stringify('{{industry}}'),
+    {{#if_contains compliance 'nsm'}}
+    __NSM_CLASSIFICATION__: JSON.stringify('{{nsmClassification}}'),
+    {{/if_contains}}
+    {{#if_contains compliance 'gdpr'}}
+    __GDPR_ENABLED__: true,
+    {{/if_contains}}
   },
-  
   server: {
     port: 3000,
     open: true,
   },
-  
-  // Test configuration
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
+  build: {
+    outDir: 'dist',
+    sourcemap: process.env.NODE_ENV === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue'],
+          ui: ['class-variance-authority'],
+        },
+      },
+    },
   },
 });

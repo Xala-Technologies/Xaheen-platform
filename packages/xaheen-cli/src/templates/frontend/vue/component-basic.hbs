@@ -1,0 +1,69 @@
+<template>
+  <Card class="w-full max-w-md">
+    <CardHeader>
+      <CardTitle>{{pascalCase name}}</CardTitle>
+      <CardDescription>
+        {{#if description}}{{description}}{{else}}A {{name}} component built with Xala UI System{{/if}}
+      </CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <Button 
+        v-if="isInteractive"
+        variant="primary" 
+        size="md"
+        {{#each props}}
+        {{#if (eq type '() => void')}}
+        @click="{{name}}"
+        {{/if}}
+        {{/each}}
+      >
+        {{#each props}}
+        {{#if (eq name 'title')}}
+        {{ {{name}} || 'Click me' }}
+        {{/if}}
+        {{/each}}
+      </Button>
+      
+      {{#each props}}
+      {{#if (eq name 'children')}}
+      <div class="prose prose-sm">
+        <slot />
+      </div>
+      {{/if}}
+      {{/each}}
+    </CardContent>
+  </Card>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@xala-technologies/ui-system';
+
+export interface {{pascalCase name}}Props {
+  {{#each props}}
+  readonly {{name}}{{#if optional}}?{{/if}}: {{type}};
+  {{/each}}
+}
+
+const props = defineProps<{{pascalCase name}}Props>();
+
+{{#each props}}
+{{#if (eq type '() => void')}}
+const emit = defineEmits<{
+  {{name}}: [];
+}>();
+{{/if}}
+{{/each}}
+
+const isInteractive = computed(() => {
+  return {{#if_contains features 'interactive'}}true{{else}}false{{/if_contains}};
+});
+
+{{#each props}}
+{{#if (eq type '() => void')}}
+const {{name}} = () => {
+  emit('{{name}}');
+};
+{{/if}}
+{{/each}}
+</script>

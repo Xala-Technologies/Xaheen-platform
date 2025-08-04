@@ -1,0 +1,206 @@
+{{!-- Template: login.vue.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: component --}}
+{{!-- Framework: nuxt --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/nuxt/pages/login.vue.hbs --}}
+<template>
+  <Container variant="centered" min-height="screen">
+    <Card variant="elevated" max-width="md" padding="8">
+      <Stack direction="vertical" spacing="6">
+        <Stack direction="vertical" spacing="2" align="center">
+          <Heading level="1" variant="page">
+            {{ $t('login.title') }}
+          </Heading>
+          <Text variant="body" color="secondary" align="center">
+            {{ $t('login.subtitle') }}
+          </Text>
+        </Stack>
+        
+        <Form @submit="handleSubmit">
+          <Stack direction="vertical" spacing="4">
+            <FormField>
+              <FormLabel for="email" required>
+                {{ $t('login.email.label') }}
+              </FormLabel>
+              <FormInput
+                id="email"
+                v-model="form.email"
+                type="email"
+                :placeholder="$t('login.email.placeholder')"
+                :error="errors.email"
+                required
+              />
+            </FormField>
+            
+            <FormField>
+              <FormLabel for="password" required>
+                {{ $t('login.password.label') }}
+              </FormLabel>
+              <FormInput
+                id="password"
+                v-model="form.password"
+                type="password"
+                :placeholder="$t('login.password.placeholder')"
+                :error="errors.password"
+                required
+              />
+            </FormField>
+            
+            <Stack direction="horizontal" justify="between" align="center">
+              <FormCheckbox v-model="form.rememberMe">
+                {{ $t('login.rememberMe') }}
+              </FormCheckbox>
+              <Link href="/forgot-password" variant="subtle">
+                {{ $t('login.forgotPassword') }}
+              </Link>
+            </Stack>
+            
+            <Button 
+              type="submit" 
+              variant="primary" 
+              size="lg" 
+              :loading="isLoading"
+              full-width
+            >
+              {{ $t('login.submit') }}
+            </Button>
+            
+            {{#if hasNorwegian}}
+            <Divider>{{ $t('login.or') }}</Divider>
+            
+            <Button 
+              variant="outline" 
+              size="lg" 
+              full-width
+              @click="handleBankIDLogin"
+              :loading="isBankIDLoading"
+            >
+              <Icon name="bankid" />
+              {{ $t('login.bankid') }}
+            </Button>
+            {{/if}}
+          </Stack>
+        </Form>
+        
+        <Stack direction="horizontal" spacing="2" justify="center">
+          <Text variant="body-sm" color="secondary">
+            {{ $t('login.noAccount') }}
+          </Text>
+          <Link href="/register" variant="primary">
+            {{ $t('login.register') }}
+          </Link>
+        </Stack>
+      </Stack>
+    </Card>
+  </Container>
+</template>
+
+<script setup lang="ts">
+{{#if typescript}}
+interface LoginForm {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+interface LoginErrors {
+  email?: string;
+  password?: string;
+}
+{{/if}}
+
+// COMPLIANCE: Always include localization
+const { $t } = useI18n();
+
+{{#if hasNorwegian}}
+// Norwegian compliance - BankID integration
+const { login: bankIDLogin, isLoading: isBankIDLoading } = useBankID();
+{{/if}}
+
+{{#if hasGDPR}}
+// GDPR compliance
+const { trackPageView } = useGDPRConsent();
+onMounted(() => trackPageView('login'));
+{{/if}}
+
+// Form state
+const form{{#if typescript}}: LoginForm{{/if}} = reactive({
+  email: '',
+  password: '',
+  rememberMe: false
+});
+
+const errors{{#if typescript}}: LoginErrors{{/if}} = reactive({});
+const isLoading = ref(false);
+
+// Form validation
+const validateForm = (){{#if typescript}}: boolean{{/if}} => {
+  const newErrors{{#if typescript}}: LoginErrors{{/if}} = {};
+  
+  if (!form.email) {
+    newErrors.email = $t('login.validation.emailRequired');
+  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    newErrors.email = $t('login.validation.emailInvalid');
+  }
+  
+  if (!form.password) {
+    newErrors.password = $t('login.validation.passwordRequired');
+  } else if (form.password.length < 8) {
+    newErrors.password = $t('login.validation.passwordTooShort');
+  }
+  
+  Object.assign(errors, newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+// Form submission
+const handleSubmit = async (event{{#if typescript}}: Event{{/if}}) => {
+  event.preventDefault();
+  
+  if (!validateForm()) return;
+  
+  isLoading.value = true;
+  
+  try {
+    // Replace with actual authentication logic
+    await $fetch('/api/auth/login', {
+      method: 'POST',
+      body: {
+        email: form.email,
+        password: form.password,
+        rememberMe: form.rememberMe
+      }
+    });
+    
+    // Redirect to dashboard
+    await navigateTo('/dashboard');
+  } catch (error) {
+    console.error('Login failed:', error);
+    // Handle error - show toast, etc.
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+{{#if hasNorwegian}}
+// BankID login handler
+const handleBankIDLogin = async () => {
+  try {
+    const result = await bankIDLogin();
+    if (result.success) {
+      await navigateTo('/dashboard');
+    }
+  } catch (error) {
+    console.error('BankID login failed:', error);
+  }
+};
+{{/if}}
+
+// SEO and meta
+useHead({
+  title: () => $t('login.meta.title'),
+  meta: [
+    { name: 'description', content: () => $t('login.meta.description') }
+  ]
+});
+</script>
