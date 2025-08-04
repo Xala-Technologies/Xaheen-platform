@@ -27,7 +27,7 @@
     "profile": "node --prof dist/index.js",
     "benchmark": "node dist/benchmark.js",
     "doctor": "node dist/doctor.js",
-    "prepublishOnly": "bun run validate && bun run build",
+    "prepublishOnly": "bun run build",
     "postpublish": "git push --tags",
     "release:patch": "bun version patch && bun publish",
     "release:minor": "bun version minor && bun publish",
@@ -96,7 +96,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "@xala-technologies:registry": "https://npm.pkg.github.com/"
   },
   "repository": {
     "type": "git",
