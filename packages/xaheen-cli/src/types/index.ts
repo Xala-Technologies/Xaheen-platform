@@ -8,6 +8,7 @@ export interface CLICommand {
 	target?: string;
 	arguments: Record<string, any>;
 	options: Record<string, any>;
+	args?: any[]; // Additional args array for compatibility
 }
 
 // Domain types - Comprehensive set for Xaheen CLI
@@ -38,6 +39,7 @@ export type CLIDomain =
 	| "mcp" // Model Context Protocol
 	| "docs" // Documentation generation
 	| "security" // Security audit and compliance
+	| "templates" // Template management  
 	| "help"; // Help system
 
 export type CLIAction =
@@ -77,7 +79,10 @@ export type CLIAction =
 	| "watch"
 	// Security-specific actions
 	| "audit"
-	| "compliance";
+	| "compliance"
+	| "scan"
+	// Template-specific actions
+	| "modernize";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({

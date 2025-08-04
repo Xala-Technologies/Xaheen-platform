@@ -91,7 +91,6 @@ export const securityScanCommand = new Command("security-scan")
 
 // Remove the export function since we're using direct export
 // return securityScanCommand;
-}
 
 async function runSecurityScan(
 	projectPath: string,

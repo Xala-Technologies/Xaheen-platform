@@ -37,6 +37,6 @@
 		"packages/*"
 	],
 	"dependencies": {
-		"@xala-technologies/xala-mcp": "^6.1.0"
+		"@xala-technologies/xala-mcp": "workspace:*"
 	}
 }

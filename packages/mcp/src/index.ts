@@ -39,6 +39,11 @@ import {
 } from "./tools/generator-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 
+// Export public API
+export { prompts, promptHandlers } from "./prompts.js";
+export { getFramework, getFrameworkConfig } from "./utils/framework.js";
+export type * from "./types/index.js";
+
 // Zod schemas for validation
 const ComponentConfigSchema = z.object({
 	name: z.string().min(1),

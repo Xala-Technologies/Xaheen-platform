@@ -486,6 +486,17 @@ export class CommandParser {
 					xaheen: ["scan"],
 				},
 			},
+
+			// Template Modernization domain routes
+			{
+				pattern: "modernize [target]",
+				domain: "templates",
+				action: "modernize",
+				handler: this.handleTemplateModernize.bind(this),
+				legacy: {
+					xaheen: ["modernize-templates", "upgrade-templates"],
+				},
+			},
 		];
 
 		// Register routes
@@ -673,6 +684,21 @@ export class CommandParser {
 					)
 					.option("--name <name>", "Component name to generate")
 					.option("--force", "Force deployment despite critical issues");
+			}
+
+			// Add Template Modernization-specific options
+			if (route.domain === "templates") {
+				command
+					.option('-t, --target <pattern>', 'Target template files (glob pattern)', '**/*.hbs')
+					.option('-o, --output <directory>', 'Output directory for modernized templates', './modernized-templates')
+					.option('-w, --wcag-level <level>', 'WCAG compliance level (A, AA, AAA)', 'AAA')
+					.option('-n, --nsm-classification <level>', 'NSM security classification', 'OPEN')
+					.option('--auto-fix', 'Automatically fix issues where possible', true)
+					.option('--dry-run', 'Preview changes without writing files', false)
+					.option('--examples', 'Generate modernization examples', false)
+					.option('--analyze', 'Only analyze templates without modernizing', false)
+					.option('--report', 'Generate comprehensive report', true)
+					.option('--verbose', 'Verbose output', false);
 			}
 
 			// Add Security-specific options
@@ -1138,6 +1164,32 @@ export class CommandParser {
 		
 		// Parse and execute the security scan command
 		await securityScanCommand.parseAsync(argv.slice(2));
+	}
+
+	// Template Modernization handler
+	private async handleTemplateModernize(command: CLICommand): Promise<void> {
+		const { modernizeTemplatesCommand } = await import("../../commands/modernize-templates.js");
+		// Create a mock argv array for the modernize templates command
+		const argv = ['node', 'xaheen', 'modernize'];
+		
+		// Add target pattern if provided
+		if (command.target) {
+			argv.push('--target', command.target);
+		}
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the modernize templates command
+		await modernizeTemplatesCommand.parseAsync(argv.slice(2));
 	}
 
 	// Documentation domain handlers
