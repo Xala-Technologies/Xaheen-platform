@@ -10,7 +10,8 @@ export interface AzureDevOpsGeneratorOptions {
 		| "microservice"
 		| "fullstack"
 		| "mobile"
-		| "desktop";
+		| "desktop"
+		| "cli";
 	readonly runtime:
 		| "node"
 		| "python"
@@ -18,7 +19,8 @@ export interface AzureDevOpsGeneratorOptions {
 		| "java"
 		| "dotnet"
 		| "php"
-		| "rust";
+		| "rust"
+		| "cpp";
 	readonly packageManager:
 		| "npm"
 		| "yarn"
@@ -28,6 +30,7 @@ export interface AzureDevOpsGeneratorOptions {
 		| "gradle"
 		| "dotnet"
 		| "pip"
+		| "poetry"
 		| "cargo";
 	readonly enableCI: boolean;
 	readonly enableCD: boolean;
@@ -38,6 +41,14 @@ export interface AzureDevOpsGeneratorOptions {
 	readonly enableApprovals: boolean;
 	readonly enableGates: boolean;
 	readonly enableMultiStage: boolean;
+	readonly enableDocker: boolean;
+	readonly enableKubernetes: boolean;
+	readonly enableTerraform: boolean;
+	readonly enableSonarQube: boolean;
+	readonly enableWhiteSource: boolean;
+	readonly enablePerformanceTesting: boolean;
+	readonly enableLoadTesting: boolean;
+	readonly enableComplianceScanning: boolean;
 	readonly poolName: string;
 	readonly vmImage: string;
 	readonly environments: readonly AzureEnvironment[];
@@ -52,7 +63,9 @@ export interface AzureDevOpsGeneratorOptions {
 	readonly resourceGroup: string;
 	readonly appServiceName: string;
 	readonly containerRegistry: string;
+	readonly kubernetesCluster: string;
 	readonly keyVault: string;
+	readonly storageAccount: string;
 	readonly applicationInsights: string;
 	readonly triggers: {
 		readonly ci: {
