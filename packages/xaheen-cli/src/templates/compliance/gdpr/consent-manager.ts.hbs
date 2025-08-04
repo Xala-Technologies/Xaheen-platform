@@ -1,0 +1,659 @@
+/**
+ * GDPR Consent Manager
+ * 
+ * Manages user consent for data processing in compliance with GDPR requirements
+ * Implements granular consent, consent withdrawal, and consent refresh mechanisms
+ * 
+ * @compliance GDPR-compliant
+ * @privacy-by-design true
+ */
+
+import { consola } from 'consola';
+import type {
+  ConsentRecord,
+  ConsentType,
+  DataCategory,
+  GranularConsent,
+  ConsentValidationResult,
+  ConsentWithdrawalRequest
+} from '../types/gdpr/gdpr-types';
+
+export interface ConsentManagerConfig {
+  readonly consentTypes: readonly ConsentType[];
+  readonly dataCategories: readonly DataCategory[];
+  readonly consentRefreshPeriod: number; // in days
+  readonly enableGranularConsent: boolean;
+  readonly requireExplicitConsent: boolean;
+  readonly cookieConsentEnabled: boolean;
+  readonly marketingConsentEnabled: boolean;
+  readonly analyticsConsentEnabled: boolean;
+  readonly thirdPartyConsentEnabled: boolean;
+}
+
+export interface ConsentContext {
+  readonly userId: string;
+  readonly sessionId: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly timestamp: Date;
+  readonly source: 'web' | 'mobile' | 'api' | 'import';
+  readonly locale?: string;
+}
+
+export interface ConsentStatus {
+  readonly hasConsent: boolean;
+  readonly consentId?: string;
+  readonly grantedAt?: Date;
+  readonly expiresAt?: Date;
+  readonly granularConsents: GranularConsent[];
+  readonly needsRefresh: boolean;
+  readonly withdrawn: boolean;
+}
+
+export class ConsentManager {
+  private readonly config: ConsentManagerConfig;
+  private readonly consentStorage: Map<string, ConsentRecord> = new Map();
+  private readonly userConsentIndex: Map<string, Set<string>> = new Map();
+
+  constructor(config: ConsentManagerConfig) {
+    this.config = config;
+    this.initializeConsentManager();
+  }
+
+  /**
+   * Initialize consent manager
+   */
+  private initializeConsentManager(): void {
+    consola.info('Initializing GDPR Consent Manager', {
+      consentTypes: this.config.consentTypes,
+      granularConsent: this.config.enableGranularConsent,
+      explicitConsent: this.config.requireExplicitConsent
+    });
+
+    // Start consent refresh monitoring
+    this.startConsentMonitoring();
+  }
+
+  /**
+   * Request consent from user
+   */
+  async requestConsent(
+    context: ConsentContext,
+    purposes: string[],
+    dataCategories: DataCategory[],
+    granularOptions?: {
+      marketing?: boolean;
+      analytics?: boolean;
+      thirdParty?: boolean;
+      cookies?: {
+        necessary: boolean;
+        functional: boolean;
+        analytics: boolean;
+        marketing: boolean;
+      };
+    }
+  ): Promise<string> {
+    try {
+      // Validate consent request
+      this.validateConsentRequest(purposes, dataCategories);
+
+      const consentId = this.generateConsentId();
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + (this.config.consentRefreshPeriod * 24 * 60 * 60 * 1000));
+
+      const consentRecord: ConsentRecord = {
+        id: consentId,
+        userId: context.userId,
+        purposes,
+        dataCategories,
+        consentGiven: false, // Will be set to true when user actually consents
+        timestamp: now,
+        expiresAt,
+        method: this.config.requireExplicitConsent ? 'explicit' : 'informed',
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        source: context.source,
+        locale: context.locale,
+        marketing: granularOptions?.marketing || false,
+        analytics: granularOptions?.analytics || false,
+        thirdParty: granularOptions?.thirdParty || false,
+        withdrawn: false,
+        granularConsents: this.createGranularConsents(granularOptions),
+        metadata: {
+          sessionId: context.sessionId,
+          consentFlow: 'standard',
+          version: '1.0'
+        }
+      };
+
+      // Store consent record
+      this.storeConsentRecord(consentRecord);
+
+      consola.info('Consent requested', {
+        consentId,
+        userId: context.userId,
+        purposes,
+        dataCategories
+      });
+
+      return consentId;
+
+    } catch (error) {
+      consola.error('Failed to request consent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Grant consent
+   */
+  async grantConsent(
+    consentId: string,
+    userId: string,
+    granularChoices?: {
+      marketing?: boolean;
+      analytics?: boolean;
+      thirdParty?: boolean;
+      cookies?: {
+        necessary: boolean;
+        functional: boolean;
+        analytics: boolean;
+        marketing: boolean;
+      };
+    }
+  ): Promise<ConsentRecord> {
+    try {
+      const consentRecord = this.consentStorage.get(consentId);
+      
+      if (!consentRecord) {
+        throw new Error(`Consent record not found: ${consentId}`);
+      }
+
+      if (consentRecord.userId !== userId) {
+        throw new Error('User not authorized to grant this consent');
+      }
+
+      if (consentRecord.consentGiven) {
+        throw new Error('Consent already granted');
+      }
+
+      // Update consent record
+      const updatedRecord: ConsentRecord = {
+        ...consentRecord,
+        consentGiven: true,
+        grantedAt: new Date(),
+        marketing: granularChoices?.marketing ?? consentRecord.marketing,
+        analytics: granularChoices?.analytics ?? consentRecord.analytics,
+        thirdParty: granularChoices?.thirdParty ?? consentRecord.thirdParty,
+        granularConsents: this.updateGranularConsents(
+          consentRecord.granularConsents,
+          granularChoices
+        ),
+        metadata: {
+          ...consentRecord.metadata,
+          grantedAt: new Date().toISOString(),
+          granularChoices
+        }
+      };
+
+      this.storeConsentRecord(updatedRecord);
+
+      consola.info('Consent granted', {
+        consentId,
+        userId,
+        purposes: updatedRecord.purposes,
+        granularChoices
+      });
+
+      // Trigger consent granted hooks
+      await this.onConsentGranted(updatedRecord);
+
+      return updatedRecord;
+
+    } catch (error) {
+      consola.error('Failed to grant consent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Withdraw consent
+   */
+  async withdrawConsent(
+    withdrawalRequest: ConsentWithdrawalRequest
+  ): Promise<void> {
+    try {
+      const { consentId, userId, reason, specificPurposes, partialWithdrawal } = withdrawalRequest;
+      
+      const consentRecord = this.consentStorage.get(consentId);
+      
+      if (!consentRecord) {
+        throw new Error(`Consent record not found: ${consentId}`);
+      }
+
+      if (consentRecord.userId !== userId) {
+        throw new Error('User not authorized to withdraw this consent');
+      }
+
+      if (consentRecord.withdrawn) {
+        throw new Error('Consent already withdrawn');
+      }
+
+      let updatedRecord: ConsentRecord;
+
+      if (partialWithdrawal && specificPurposes) {
+        // Partial withdrawal - remove specific purposes
+        const remainingPurposes = consentRecord.purposes.filter(
+          purpose => !specificPurposes.includes(purpose)
+        );
+
+        if (remainingPurposes.length === 0) {
+          // If no purposes remain, this becomes a full withdrawal
+          updatedRecord = {
+            ...consentRecord,
+            withdrawn: true,
+            withdrawnAt: new Date(),
+            withdrawalReason: reason,
+            purposes: []
+          };
+        } else {
+          updatedRecord = {
+            ...consentRecord,
+            purposes: remainingPurposes,
+            metadata: {
+              ...consentRecord.metadata,
+              partialWithdrawal: {
+                withdrawnPurposes: specificPurposes,
+                withdrawnAt: new Date().toISOString(),
+                reason
+              }
+            }
+          };
+        }
+      } else {
+        // Full withdrawal
+        updatedRecord = {
+          ...consentRecord,
+          withdrawn: true,
+          withdrawnAt: new Date(),
+          withdrawalReason: reason,
+          marketing: false,
+          analytics: false,
+          thirdParty: false,
+          granularConsents: consentRecord.granularConsents.map(gc => ({
+            ...gc,
+            granted: false,
+            withdrawnAt: new Date()
+          }))
+        };
+      }
+
+      this.storeConsentRecord(updatedRecord);
+
+      consola.info('Consent withdrawn', {
+        consentId,
+        userId,
+        partialWithdrawal,
+        specificPurposes,
+        reason
+      });
+
+      // Trigger consent withdrawal hooks
+      await this.onConsentWithdrawn(updatedRecord, withdrawalRequest);
+
+    } catch (error) {
+      consola.error('Failed to withdraw consent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check consent status
+   */
+  checkConsentStatus(userId: string, purpose: string): ConsentStatus {
+    try {
+      const userConsents = this.getUserConsents(userId);
+      
+      const relevantConsent = userConsents.find(consent => 
+        consent.consentGiven && 
+        !consent.withdrawn &&
+        consent.purposes.includes(purpose)
+      );
+
+      if (!relevantConsent) {
+        return {
+          hasConsent: false,
+          granularConsents: [],
+          needsRefresh: false,
+          withdrawn: false
+        };
+      }
+
+      const now = new Date();
+      const needsRefresh = relevantConsent.expiresAt ? relevantConsent.expiresAt < now : false;
+
+      return {
+        hasConsent: true && !needsRefresh,
+        consentId: relevantConsent.id,
+        grantedAt: relevantConsent.grantedAt,
+        expiresAt: relevantConsent.expiresAt,
+        granularConsents: relevantConsent.granularConsents,
+        needsRefresh,
+        withdrawn: false
+      };
+
+    } catch (error) {
+      consola.error('Failed to check consent status:', error);
+      return {
+        hasConsent: false,
+        granularConsents: [],
+        needsRefresh: false,
+        withdrawn: false
+      };
+    }
+  }
+
+  /**
+   * Validate consent for specific processing
+   */
+  async validateConsent(
+    userId: string,
+    purpose: string,
+    dataCategory: DataCategory,
+    requiresExplicit: boolean = false
+  ): Promise<ConsentValidationResult> {
+    try {
+      const userConsents = this.getUserConsents(userId);
+      
+      const validConsents = userConsents.filter(consent => 
+        consent.consentGiven &&
+        !consent.withdrawn &&
+        consent.purposes.includes(purpose) &&
+        consent.dataCategories.includes(dataCategory)
+      );
+
+      if (validConsents.length === 0) {
+        return {
+          valid: false,
+          reason: 'No consent found for purpose and data category',
+          consentRequired: true,
+          suggestedActions: ['Request consent from user']
+        };
+      }
+
+      const latestConsent = validConsents.sort((a, b) => 
+        b.timestamp.getTime() - a.timestamp.getTime()
+      )[0];
+
+      // Check if consent method meets requirement
+      if (requiresExplicit && latestConsent.method !== 'explicit') {
+        return {
+          valid: false,
+          reason: 'Explicit consent required but not provided',
+          consentRequired: true,
+          suggestedActions: ['Request explicit consent from user']
+        };
+      }
+
+      // Check if consent is expired
+      const now = new Date();
+      if (latestConsent.expiresAt && latestConsent.expiresAt < now) {
+        return {
+          valid: false,
+          reason: 'Consent has expired',
+          consentRequired: true,
+          suggestedActions: ['Refresh consent from user']
+        };
+      }
+
+      return {
+        valid: true,
+        consentId: latestConsent.id,
+        grantedAt: latestConsent.grantedAt,
+        expiresAt: latestConsent.expiresAt,
+        method: latestConsent.method
+      };
+
+    } catch (error) {
+      consola.error('Failed to validate consent:', error);
+      return {
+        valid: false,
+        reason: 'Consent validation error',
+        consentRequired: true,
+        suggestedActions: ['Contact system administrator']
+      };
+    }
+  }
+
+  /**
+   * Get user consents
+   */
+  getUserConsents(userId: string): ConsentRecord[] {
+    const consentIds = this.userConsentIndex.get(userId) || new Set();
+    return Array.from(consentIds)
+      .map(id => this.consentStorage.get(id))
+      .filter((consent): consent is ConsentRecord => consent !== undefined);
+  }
+
+  /**
+   * Export user consent data (for data portability)
+   */
+  async exportUserConsentData(userId: string): Promise<{
+    userId: string;
+    consents: ConsentRecord[];
+    summary: {
+      totalConsents: number;
+      activeConsents: number;
+      withdrawnConsents: number;
+      expiredConsents: number;
+    };
+    exportedAt: Date;
+  }> {
+    const consents = this.getUserConsents(userId);
+    const now = new Date();
+
+    const activeConsents = consents.filter(c => 
+      c.consentGiven && !c.withdrawn && (!c.expiresAt || c.expiresAt > now)
+    );
+    const withdrawnConsents = consents.filter(c => c.withdrawn);
+    const expiredConsents = consents.filter(c => 
+      c.expiresAt && c.expiresAt < now && !c.withdrawn
+    );
+
+    return {
+      userId,
+      consents,
+      summary: {
+        totalConsents: consents.length,
+        activeConsents: activeConsents.length,
+        withdrawnConsents: withdrawnConsents.length,
+        expiredConsents: expiredConsents.length
+      },
+      exportedAt: new Date()
+    };
+  }
+
+  /**
+   * Delete user consent data (for right to erasure)
+   */
+  async deleteUserConsentData(userId: string): Promise<void> {
+    try {
+      const consentIds = this.userConsentIndex.get(userId) || new Set();
+      
+      // Remove all consent records for the user
+      for (const consentId of consentIds) {
+        this.consentStorage.delete(consentId);
+      }
+
+      // Remove user from index
+      this.userConsentIndex.delete(userId);
+
+      consola.info('User consent data deleted', {
+        userId,
+        deletedConsents: consentIds.size
+      });
+
+    } catch (error) {
+      consola.error('Failed to delete user consent data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Private helper methods
+   */
+
+  private validateConsentRequest(purposes: string[], dataCategories: DataCategory[]): void {
+    if (purposes.length === 0) {
+      throw new Error('At least one purpose must be specified');
+    }
+
+    if (dataCategories.length === 0) {
+      throw new Error('At least one data category must be specified');
+    }
+
+    // Check for special category data
+    const specialCategories = ['sensitive-data', 'special-category', 'biometric-data', 'health-data'];
+    const hasSpecialCategory = dataCategories.some(cat => specialCategories.includes(cat));
+
+    if (hasSpecialCategory && !this.config.requireExplicitConsent) {
+      throw new Error('Special category data requires explicit consent');
+    }
+  }
+
+  private createGranularConsents(options?: any): GranularConsent[] {
+    const granularConsents: GranularConsent[] = [];
+
+    if (this.config.marketingConsentEnabled) {
+      granularConsents.push({
+        id: 'marketing',
+        name: 'Marketing Communications',
+        description: 'Receive marketing emails and promotional content',
+        granted: options?.marketing || false,
+        required: false
+      });
+    }
+
+    if (this.config.analyticsConsentEnabled) {
+      granularConsents.push({
+        id: 'analytics',
+        name: 'Analytics and Performance',
+        description: 'Help improve our service through usage analytics',
+        granted: options?.analytics || false,
+        required: false
+      });
+    }
+
+    if (this.config.thirdPartyConsentEnabled) {
+      granularConsents.push({
+        id: 'third-party',
+        name: 'Third-party Integration',
+        description: 'Share data with trusted third-party services',
+        granted: options?.thirdParty || false,
+        required: false
+      });
+    }
+
+    if (this.config.cookieConsentEnabled && options?.cookies) {
+      Object.entries(options.cookies).forEach(([type, granted]) => {
+        granularConsents.push({
+          id: `cookie-${type}`,
+          name: `${type.charAt(0).toUpperCase() + type.slice(1)} Cookies`,
+          description: `Use ${type} cookies for website functionality`,
+          granted: Boolean(granted),
+          required: type === 'necessary'
+        });
+      });
+    }
+
+    return granularConsents;
+  }
+
+  private updateGranularConsents(
+    existing: GranularConsent[],
+    choices?: any
+  ): GranularConsent[] {
+    return existing.map(consent => {
+      const choice = choices?.[consent.id] ?? choices?.[consent.id.replace('cookie-', '')];
+      return {
+        ...consent,
+        granted: choice !== undefined ? Boolean(choice) : consent.granted,
+        updatedAt: choice !== undefined ? new Date() : consent.updatedAt
+      };
+    });
+  }
+
+  private storeConsentRecord(record: ConsentRecord): void {
+    this.consentStorage.set(record.id, record);
+    
+    // Update user index
+    const userConsents = this.userConsentIndex.get(record.userId) || new Set();
+    userConsents.add(record.id);
+    this.userConsentIndex.set(record.userId, userConsents);
+  }
+
+  private generateConsentId(): string {
+    return `consent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async onConsentGranted(consent: ConsentRecord): Promise<void> {
+    // Hook for consent granted events
+    // Could trigger analytics, notifications, etc.
+    consola.debug('Consent granted hook triggered', { consentId: consent.id });
+  }
+
+  private async onConsentWithdrawn(
+    consent: ConsentRecord,
+    withdrawalRequest: ConsentWithdrawalRequest
+  ): Promise<void> {
+    // Hook for consent withdrawal events
+    // Could trigger data deletion, processing halt, etc.
+    consola.debug('Consent withdrawn hook triggered', { 
+      consentId: consent.id,
+      partial: withdrawalRequest.partialWithdrawal
+    });
+  }
+
+  private startConsentMonitoring(): void {
+    // Start periodic monitoring for consent expiration
+    // In a real implementation, this would be handled by a background job
+    consola.debug('Consent monitoring started');
+  }
+}
+
+/**
+ * Default consent manager configuration
+ */
+export const defaultConsentManagerConfig: ConsentManagerConfig = {
+  consentTypes: [
+    {{#each consentTypes}}
+    '{{this}}',
+    {{/each}}
+  ] as ConsentType[],
+  dataCategories: [
+    {{#each dataCategories}}
+    '{{this}}',
+    {{/each}}
+  ] as DataCategory[],
+  consentRefreshPeriod: 365, // 1 year
+  enableGranularConsent: true,
+  requireExplicitConsent: {{#if (or (includes dataCategories 'sensitive-data') (includes dataCategories 'special-category'))}}true{{else}}false{{/if}},
+  cookieConsentEnabled: true,
+  marketingConsentEnabled: true,
+  analyticsConsentEnabled: true,
+  thirdPartyConsentEnabled: {{#if internationalTransfers}}true{{else}}false{{/if}}
+};
+
+/**
+ * Create consent manager instance
+ */
+export function createConsentManager(config: ConsentManagerConfig = defaultConsentManagerConfig): ConsentManager {
+  return new ConsentManager(config);
+}
+
+/**
+ * Singleton consent manager instance
+ */
+export const consentManager = createConsentManager();
+
+export default consentManager;

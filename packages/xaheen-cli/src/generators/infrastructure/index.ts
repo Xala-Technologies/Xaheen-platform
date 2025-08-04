@@ -1,17 +1,20 @@
 /**
  * Infrastructure Generator System
  * Complete DevOps and deployment infrastructure generation
- * Supports Docker, Kubernetes, CI/CD, and cloud platforms
+ * Supports Docker, Kubernetes, CI/CD, Terraform, and cloud platforms
  */
 
+import { TerraformGenerator } from "./terraform.generator.js";
+
 export interface InfrastructureGeneratorOptions {
-	readonly type: "docker" | "k8s" | "ci" | "deployment";
+	readonly type: "docker" | "k8s" | "ci" | "deployment" | "terraform";
 	readonly platform:
 		| "docker"
 		| "kubernetes"
 		| "github-actions"
 		| "azure-devops"
 		| "gitlab-ci"
+		| "terraform"
 		| "aws"
 		| "azure"
 		| "gcp";
@@ -72,8 +75,8 @@ export interface InfrastructureGeneratorResult {
 export interface GeneratedInfrastructureFile {
 	readonly path: string;
 	readonly content: string;
-	readonly type: "dockerfile" | "compose" | "k8s" | "ci" | "config" | "script";
-	readonly language: "dockerfile" | "yaml" | "json" | "bash" | "typescript";
+	readonly type: "dockerfile" | "compose" | "k8s" | "ci" | "config" | "script" | "terraform";
+	readonly language: "dockerfile" | "yaml" | "json" | "bash" | "typescript" | "hcl";
 }
 
 /**
@@ -122,6 +125,8 @@ function createInfrastructureGenerator(
 			return new CIGenerator();
 		case "deployment":
 			return new DeploymentGenerator();
+		case "terraform":
+			return new TerraformGenerator();
 		default:
 			throw new Error(`Unsupported infrastructure type: ${type}`);
 	}

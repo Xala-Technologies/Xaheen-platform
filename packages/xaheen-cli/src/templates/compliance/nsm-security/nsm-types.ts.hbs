@@ -1,0 +1,388 @@
+/**
+ * NSM Security Types
+ * 
+ * TypeScript type definitions for NSM (Norwegian Security Authority) compliance
+ * Classification: {{classification}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ */
+
+/**
+ * NSM Security Classification Levels
+ */
+export type NSMClassification = 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+
+/**
+ * Security audit levels
+ */
+export type SecurityAuditLevel = 'basic' | 'enhanced' | 'comprehensive' | 'maximum';
+
+/**
+ * Data handling requirements
+ */
+export interface DataHandlingRequirements {
+  readonly encryption: boolean;
+  readonly auditTrail: boolean;
+  readonly accessControl: boolean;
+  readonly dataRetention: number; // in days
+  readonly anonymization: boolean;
+  readonly backupEncryption: boolean;
+  readonly dataLocation: 'norway' | 'eu' | 'restricted';
+}
+
+/**
+ * UI security requirements
+ */
+export interface UISecurityRequirements {
+  readonly watermarks: boolean;
+  readonly classificationLabels: boolean;
+  readonly restrictedActions: readonly string[];
+  readonly sessionTimeout: number; // in minutes
+  readonly screenshotPrevention: boolean;
+  readonly printRestriction: boolean;
+  readonly copyPasteRestriction: boolean;
+}
+
+/**
+ * Development requirements for security
+ */
+export interface DevelopmentSecurityRequirements {
+  readonly codeReview: boolean;
+  readonly securityTesting: boolean;
+  readonly penetrationTesting: boolean;
+  readonly complianceValidation: boolean;
+  readonly staticAnalysis: boolean;
+  readonly dependencyScanning: boolean;
+}
+
+/**
+ * NSM Classification Metadata
+ */
+export interface NSMClassificationMetadata {
+  readonly level: NSMClassification;
+  readonly description: string;
+  readonly requirements: readonly string[];
+  readonly restrictions: readonly string[];
+  readonly auditLevel: SecurityAuditLevel;
+  readonly dataHandling: DataHandlingRequirements;
+  readonly uiRequirements: UISecurityRequirements;
+  readonly developmentRequirements: DevelopmentSecurityRequirements;
+  readonly internationalTransferAllowed: boolean;
+  readonly maximumRetentionDays: number;
+}
+
+/**
+ * Security context for operations
+ */
+export interface SecurityContext {
+  readonly userId: string;
+  readonly userClearance: NSMClassification;
+  readonly sessionId: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly timestamp: Date;
+  readonly location?: {
+    readonly country: string;
+    readonly region?: string;
+  };
+}
+
+/**
+ * Access control result
+ */
+export interface AccessControlResult {
+  readonly granted: boolean;
+  readonly classification: NSMClassification;
+  readonly userClearance: NSMClassification;
+  readonly reason: string;
+  readonly auditEventId: string;
+  readonly timestamp: Date;
+  readonly restrictions: readonly string[];
+  readonly sessionTimeout: number;
+  readonly additionalRequirements?: readonly string[];
+}
+
+/**
+ * Audit event types
+ */
+export type AuditEventType = 
+  | 'ACCESS_GRANTED'
+  | 'ACCESS_DENIED'
+  | 'CLASSIFICATION_CHECK'
+  | 'SECURITY_VIOLATION'
+  | 'DATA_ACCESS'
+  | 'DATA_MODIFICATION'
+  | 'DATA_EXPORT'
+  | 'LOGIN_ATTEMPT'
+  | 'SESSION_TIMEOUT'
+  | 'POLICY_VIOLATION';
+
+/**
+ * Security audit event
+ */
+export interface SecurityAuditEvent {
+  readonly eventId: string;
+  readonly eventType: AuditEventType;
+  readonly classification: NSMClassification;
+  readonly userId: string;
+  readonly resource: string;
+  readonly action: string;
+  readonly result: 'SUCCESS' | 'FAILURE' | 'DENIED';
+  readonly timestamp: Date;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly metadata: Record<string, unknown>;
+  readonly riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+/**
+ * Security policy configuration
+ */
+export interface SecurityPolicyConfig {
+  readonly classification: NSMClassification;
+  readonly passwordPolicy: {
+    readonly minLength: number;
+    readonly requireUppercase: boolean;
+    readonly requireLowercase: boolean;
+    readonly requireNumbers: boolean;
+    readonly requireSpecial: boolean;
+    readonly maxAge: number; // in days
+    readonly historyCount: number;
+  };
+  readonly sessionPolicy: {
+    readonly timeout: number; // in minutes
+    readonly maxConcurrent: number;
+    readonly requireMFA: boolean;
+    readonly ipRestriction: boolean;
+  };
+  readonly dataPolicy: {
+    readonly encryptionRequired: boolean;
+    readonly backupEncryption: boolean;
+    readonly auditAllAccess: boolean;
+    readonly retentionPeriod: number; // in days
+    readonly automaticDeletion: boolean;
+  };
+}
+
+/**
+ * Compliance validation result
+ */
+export interface ComplianceValidationResult {
+  readonly compliant: boolean;
+  readonly classification: NSMClassification;
+  readonly validatedAt: Date;
+  readonly issues: readonly ComplianceIssue[];
+  readonly recommendations: readonly string[];
+  readonly nextReviewDate: Date;
+}
+
+/**
+ * Compliance issue
+ */
+export interface ComplianceIssue {
+  readonly id: string;
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly category: string;
+  readonly description: string;
+  readonly requirement: string;
+  readonly remediation: string;
+  readonly dueDate?: Date;
+}
+
+/**
+ * Data classification result
+ */
+export interface DataClassificationResult {
+  readonly dataId: string;
+  readonly classification: NSMClassification;
+  readonly confidence: number; // 0-1
+  readonly reasoning: readonly string[];
+  readonly suggestedHandling: readonly string[];
+  readonly retentionPeriod: number;
+  readonly classifiedAt: Date;
+  readonly classifiedBy: string;
+}
+
+/**
+ * Security incident
+ */
+export interface SecurityIncident {
+  readonly incidentId: string;
+  readonly type: 'BREACH' | 'VIOLATION' | 'ANOMALY' | 'THREAT';
+  readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly classification: NSMClassification;
+  readonly description: string;
+  readonly affectedSystems: readonly string[];
+  readonly affectedData: readonly string[];
+  readonly detectedAt: Date;
+  readonly reportedAt: Date;
+  readonly status: 'OPEN' | 'INVESTIGATING' | 'CONTAINED' | 'RESOLVED' | 'CLOSED';
+  readonly assignedTo?: string;
+  readonly resolution?: string;
+  readonly lessonsLearned?: readonly string[];
+}
+
+/**
+ * Risk assessment
+ */
+export interface RiskAssessment {
+  readonly assessmentId: string;
+  readonly classification: NSMClassification;
+  readonly assetType: string;
+  readonly threatLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly vulnerability: string;
+  readonly impact: string;
+  readonly likelihood: string;
+  readonly riskScore: number; // 1-10
+  readonly mitigations: readonly string[];
+  readonly assessedAt: Date;
+  readonly assessedBy: string;
+  readonly reviewDate: Date;
+}
+
+/**
+ * Encryption configuration
+ */
+export interface EncryptionConfig {
+  readonly algorithm: string;
+  readonly keyLength: number;
+  readonly keyRotationPeriod: number; // in days
+  readonly encryptInTransit: boolean;
+  readonly encryptAtRest: boolean;
+  readonly hashAlgorithm: string;
+  readonly certificateValidityPeriod: number; // in days
+  {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+  readonly quantumResistant: boolean;
+  readonly hsmRequired: boolean;
+  {{/if}}
+}
+
+/**
+ * Monitor configuration
+ */
+export interface MonitoringConfig {
+  readonly realTimeMonitoring: boolean;
+  readonly alertThresholds: {
+    readonly failedLogins: number;
+    readonly suspiciousActivity: number;
+    readonly dataAccess: number;
+  };
+  readonly notificationChannels: readonly string[];
+  readonly retentionPeriod: number; // in days
+  readonly exportEnabled: boolean;
+}
+
+/**
+ * User clearance information
+ */
+export interface UserClearance {
+  readonly userId: string;
+  readonly clearanceLevel: NSMClassification;
+  readonly grantedAt: Date;
+  readonly expiresAt: Date;
+  readonly grantedBy: string;
+  readonly restrictions: readonly string[];
+  readonly additionalPermissions: readonly string[];
+  readonly backgroundCheckDate?: Date;
+  readonly trainingCompleted: readonly string[];
+}
+
+/**
+ * Data processing record (GDPR compliance)
+ */
+export interface DataProcessingRecord {
+  readonly recordId: string;
+  readonly classification: NSMClassification;
+  readonly dataCategories: readonly string[];
+  readonly processingPurpose: string;
+  readonly lawfulBasis: string;
+  readonly dataSubjects: string;
+  readonly recipients: readonly string[];
+  readonly internationalTransfers: boolean;
+  readonly retentionPeriod: number;
+  readonly securityMeasures: readonly string[];
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+/**
+ * Export current classification context
+ */
+export const CURRENT_CLASSIFICATION: NSMClassification = '{{classification}}' as NSMClassification;
+
+/**
+ * Export classification hierarchy
+ */
+export const CLASSIFICATION_HIERARCHY: Record<NSMClassification, number> = {
+  'OPEN': 0,
+  'RESTRICTED': 1,
+  'CONFIDENTIAL': 2,
+  'SECRET': 3
+} as const;
+
+/**
+ * Type guards for classification levels
+ */
+export const isSecretClassification = (classification: NSMClassification): boolean => 
+  classification === 'SECRET';
+
+export const isConfidentialClassification = (classification: NSMClassification): boolean => 
+  classification === 'CONFIDENTIAL';
+
+export const isRestrictedClassification = (classification: NSMClassification): boolean => 
+  classification === 'RESTRICTED';
+
+export const isOpenClassification = (classification: NSMClassification): boolean => 
+  classification === 'OPEN';
+
+export const isHighSecurityClassification = (classification: NSMClassification): boolean => 
+  classification === 'SECRET' || classification === 'CONFIDENTIAL';
+
+/**
+ * Utility function to compare classification levels
+ */
+export const compareClassifications = (
+  level1: NSMClassification, 
+  level2: NSMClassification
+): number => {
+  return CLASSIFICATION_HIERARCHY[level1] - CLASSIFICATION_HIERARCHY[level2];
+};
+
+/**
+ * Check if user has sufficient clearance for classification
+ */
+export const hasSufficientClearance = (
+  userClearance: NSMClassification,
+  requiredClassification: NSMClassification
+): boolean => {
+  return CLASSIFICATION_HIERARCHY[userClearance] >= CLASSIFICATION_HIERARCHY[requiredClassification];
+};
+
+/**
+ * Get maximum classification from array
+ */
+export const getMaxClassification = (classifications: NSMClassification[]): NSMClassification => {
+  return classifications.reduce((max, current) => 
+    compareClassifications(current, max) > 0 ? current : max,
+    'OPEN' as NSMClassification
+  );
+};
+
+/**
+ * Configuration constants for current classification
+ */
+export const CLASSIFICATION_CONFIG = {
+  CURRENT: CURRENT_CLASSIFICATION,
+  REQUIRES_ENCRYPTION: {{dataProtection.encryption}},
+  REQUIRES_AUDIT_TRAIL: {{dataProtection.auditTrail}},
+  REQUIRES_ACCESS_CONTROL: {{dataProtection.accessControl}},
+  SESSION_TIMEOUT_MINUTES: {{uiSecurity.sessionTimeout}},
+  WATERMARKS_ENABLED: {{uiSecurity.watermarks}},
+  RESTRICTED_ACTIONS: [
+    {{#each uiSecurity.restrictedActions}}
+    '{{this}}',
+    {{/each}}
+  ] as const,
+  AUDIT_LEVEL: '{{auditConfig.level}}' as SecurityAuditLevel
+} as const;

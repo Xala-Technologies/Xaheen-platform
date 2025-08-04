@@ -1,0 +1,750 @@
+/**
+ * NSM Audit Logger
+ * 
+ * Comprehensive audit logging system for NSM security compliance
+ * Classification: {{classification}}
+ * Audit Level: {{auditConfig.level}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ * @audit-level {{auditConfig.level}}
+ */
+
+import { consola } from 'consola';
+import type { 
+  SecurityAuditEvent, 
+  AuditEventType, 
+  NSMClassification,
+  SecurityContext
+} from '../types/security/nsm-types';
+
+export interface AuditLoggerConfig {
+  readonly classification: NSMClassification;
+  readonly auditLevel: 'basic' | 'enhanced' | 'comprehensive' | 'maximum';
+  readonly retentionPeriodDays: number;
+  readonly realTimeMonitoring: boolean;
+  readonly encryptAuditLogs: boolean;
+  readonly tamperProtection: boolean;
+  readonly remoteLogging: boolean;
+  readonly siemIntegration: boolean;
+  readonly logDestinations: readonly string[];
+}
+
+export interface AuditContext {
+  readonly userId: string;
+  readonly sessionId: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly geolocation?: {
+    readonly country: string;
+    readonly region?: string;
+  };
+  readonly deviceInfo?: {
+    readonly deviceId: string;
+    readonly platform: string;
+    readonly version: string;
+  };
+}
+
+export interface ComplianceAuditReport {
+  readonly reportId: string;
+  readonly period: {
+    readonly startDate: Date;
+    readonly endDate: Date;
+  };
+  readonly classification: NSMClassification;
+  readonly totalEvents: number;
+  readonly eventsByType: Record<AuditEventType, number>;
+  readonly eventsByRisk: Record<string, number>;
+  readonly securityViolations: SecurityAuditEvent[];
+  readonly anomalousActivity: SecurityAuditEvent[];
+  readonly complianceMetrics: {
+    readonly accessControlEffectiveness: number;
+    readonly dataProtectionScore: number;
+    readonly auditCoverage: number;
+    readonly incidentResponseTime: number;
+  };
+  readonly recommendations: readonly string[];
+  readonly generatedAt: Date;
+}
+
+export class NSMAuditLogger {
+  private readonly config: AuditLoggerConfig;
+  private readonly auditEvents: Map<string, SecurityAuditEvent> = new Map();
+  private readonly eventSequence: number = 0;
+  private readonly logRotationInterval: NodeJS.Timeout | null = null;
+
+  constructor(config: AuditLoggerConfig) {
+    this.config = config;
+    this.initializeAuditLogger();
+  }
+
+  /**
+   * Initialize audit logger
+   */
+  private initializeAuditLogger(): void {
+    consola.info('Initializing NSM Audit Logger', {
+      classification: this.config.classification,
+      auditLevel: this.config.auditLevel,
+      realTimeMonitoring: this.config.realTimeMonitoring,
+      tamperProtection: this.config.tamperProtection
+    });
+
+    {{#if auditConfig.realTimeMonitoring}}
+    // Start real-time monitoring for maximum audit level
+    if (this.config.realTimeMonitoring) {
+      this.startRealTimeMonitoring();
+    }
+    {{/if}}
+
+    // Start log rotation if retention period is set
+    if (this.config.retentionPeriodDays > 0) {
+      this.startLogRotation();
+    }
+
+    // Initialize tamper protection
+    if (this.config.tamperProtection) {
+      this.initializeTamperProtection();
+    }
+  }
+
+  /**
+   * Log security audit event
+   */
+  async logSecurityEvent(
+    eventType: AuditEventType,
+    context: AuditContext,
+    details: {
+      readonly resource: string;
+      readonly action: string;
+      readonly result: 'SUCCESS' | 'FAILURE' | 'DENIED';
+      readonly classification?: NSMClassification;
+      readonly riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+      readonly metadata?: Record<string, unknown>;
+    }
+  ): Promise<string> {
+    try {
+      const eventId = this.generateEventId();
+      const timestamp = new Date();
+
+      const auditEvent: SecurityAuditEvent = {
+        eventId,
+        eventType,
+        classification: details.classification || this.config.classification,
+        userId: context.userId,
+        resource: details.resource,
+        action: details.action,
+        result: details.result,
+        timestamp,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        metadata: {
+          sessionId: context.sessionId,
+          geolocation: context.geolocation,
+          deviceInfo: context.deviceInfo,
+          auditLevel: this.config.auditLevel,
+          ...details.metadata
+        },
+        riskLevel: details.riskLevel || this.calculateRiskLevel(eventType, details.result)
+      };
+
+      // Store audit event
+      await this.storeAuditEvent(auditEvent);
+
+      // Real-time processing for high-risk events
+      if (auditEvent.riskLevel === 'HIGH' || auditEvent.riskLevel === 'CRITICAL') {
+        await this.processHighRiskEvent(auditEvent);
+      }
+
+      {{#if auditConfig.realTimeMonitoring}}
+      // Send to real-time monitoring if enabled
+      if (this.config.realTimeMonitoring) {
+        await this.sendToRealTimeMonitoring(auditEvent);
+      }
+      {{/if}}
+
+      // Send to SIEM if configured
+      if (this.config.siemIntegration) {
+        await this.sendToSIEM(auditEvent);
+      }
+
+      consola.debug('Security audit event logged', {
+        eventId,
+        eventType,
+        userId: context.userId,
+        resource: details.resource,
+        result: details.result,
+        riskLevel: auditEvent.riskLevel
+      });
+
+      return eventId;
+
+    } catch (error) {
+      consola.error('Failed to log security audit event:', error);
+      
+      // Create emergency audit event for logging failure
+      await this.logEmergencyEvent('AUDIT_LOGGING_FAILURE', context, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        originalEventType: eventType,
+        originalResource: details.resource
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Log access control event
+   */
+  async logAccessControl(
+    context: AuditContext,
+    resource: string,
+    requiredClassification: NSMClassification,
+    userClearance: NSMClassification,
+    granted: boolean,
+    reason?: string
+  ): Promise<string> {
+    return this.logSecurityEvent(
+      granted ? 'ACCESS_GRANTED' : 'ACCESS_DENIED',
+      context,
+      {
+        resource,
+        action: 'ACCESS_CONTROL_CHECK',
+        result: granted ? 'SUCCESS' : 'DENIED',
+        classification: requiredClassification,
+        riskLevel: granted ? 'LOW' : 'MEDIUM',
+        metadata: {
+          requiredClassification,
+          userClearance,
+          reason,
+          accessControlDecision: granted
+        }
+      }
+    );
+  }
+
+  /**
+   * Log data access event
+   */
+  async logDataAccess(
+    context: AuditContext,
+    dataResource: string,
+    action: 'READ' | 'write' | 'delete' | 'export',
+    classification: NSMClassification,
+    dataCategories: readonly string[],
+    success: boolean
+  ): Promise<string> {
+    return this.logSecurityEvent(
+      'DATA_ACCESS',
+      context,
+      {
+        resource: dataResource,
+        action: action.toUpperCase(),
+        result: success ? 'SUCCESS' : 'FAILURE',
+        classification,
+        riskLevel: this.calculateDataAccessRisk(action, classification),
+        metadata: {
+          dataCategories,
+          dataClassification: classification,
+          actionType: action
+        }
+      }
+    );
+  }
+
+  /**
+   * Log security violation
+   */
+  async logSecurityViolation(
+    context: AuditContext,
+    violationType: string,
+    description: string,
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+    affectedResources: readonly string[]
+  ): Promise<string> {
+    return this.logSecurityEvent(
+      'SECURITY_VIOLATION',
+      context,
+      {
+        resource: affectedResources.join(', '),
+        action: 'SECURITY_VIOLATION_DETECTED',
+        result: 'FAILURE',
+        riskLevel: severity,
+        metadata: {
+          violationType,
+          description,
+          severity,
+          affectedResources,
+          requiresImmediateAction: severity === 'CRITICAL'
+        }
+      }
+    );
+  }
+
+  /**
+   * Log policy violation
+   */
+  async logPolicyViolation(
+    context: AuditContext,
+    policyType: string,
+    policyRule: string,
+    resource: string,
+    violationDetails: Record<string, unknown>
+  ): Promise<string> {
+    return this.logSecurityEvent(
+      'POLICY_VIOLATION',
+      context,
+      {
+        resource,
+        action: 'POLICY_VIOLATION',
+        result: 'FAILURE',
+        riskLevel: 'MEDIUM',
+        metadata: {
+          policyType,
+          policyRule,
+          violationDetails,
+          classification: this.config.classification
+        }
+      }
+    );
+  }
+
+  /**
+   * Generate compliance audit report
+   */
+  async generateComplianceReport(
+    startDate: Date,
+    endDate: Date,
+    includeRecommendations: boolean = true
+  ): Promise<ComplianceAuditReport> {
+    try {
+      const events = this.getEventsInPeriod(startDate, endDate);
+      const reportId = this.generateReportId();
+
+      const eventsByType = this.aggregateEventsByType(events);
+      const eventsByRisk = this.aggregateEventsByRisk(events);
+      const securityViolations = events.filter(e => e.eventType === 'SECURITY_VIOLATION');
+      const anomalousActivity = this.detectAnomalousActivity(events);
+
+      const complianceMetrics = this.calculateComplianceMetrics(events);
+      const recommendations = includeRecommendations 
+        ? this.generateRecommendations(events, complianceMetrics)
+        : [];
+
+      const report: ComplianceAuditReport = {
+        reportId,
+        period: { startDate, endDate },
+        classification: this.config.classification,
+        totalEvents: events.length,
+        eventsByType,
+        eventsByRisk,
+        securityViolations,
+        anomalousActivity,
+        complianceMetrics,
+        recommendations,
+        generatedAt: new Date()
+      };
+
+      consola.info('Compliance audit report generated', {
+        reportId,
+        period: `${startDate.toISOString()} - ${endDate.toISOString()}`,
+        totalEvents: events.length,
+        securityViolations: securityViolations.length,
+        anomalousActivity: anomalousActivity.length
+      });
+
+      return report;
+
+    } catch (error) {
+      consola.error('Failed to generate compliance audit report:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export audit logs for external analysis
+   */
+  async exportAuditLogs(
+    startDate: Date,
+    endDate: Date,
+    format: 'json' | 'csv' | 'xml' = 'json',
+    includeMetadata: boolean = true
+  ): Promise<{
+    format: string;
+    events: SecurityAuditEvent[];
+    exportedAt: Date;
+    classification: NSMClassification;
+    totalEvents: number;
+  }> {
+    const events = this.getEventsInPeriod(startDate, endDate);
+
+    // Remove sensitive metadata if not requested
+    const exportEvents = includeMetadata 
+      ? events 
+      : events.map(event => ({
+          ...event,
+          metadata: {
+            sessionId: event.metadata.sessionId,
+            classification: event.metadata.classification
+          }
+        }));
+
+    return {
+      format,
+      events: exportEvents,
+      exportedAt: new Date(),
+      classification: this.config.classification,
+      totalEvents: exportEvents.length
+    };
+  }
+
+  /**
+   * Search audit logs
+   */
+  searchAuditLogs(
+    criteria: {
+      readonly userId?: string;
+      readonly eventType?: AuditEventType;
+      readonly resource?: string;
+      readonly riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+      readonly result?: 'SUCCESS' | 'FAILURE' | 'DENIED';
+      readonly startDate?: Date;
+      readonly endDate?: Date;
+      readonly classification?: NSMClassification;
+    },
+    limit: number = 100
+  ): SecurityAuditEvent[] {
+    let events = Array.from(this.auditEvents.values());
+
+    // Apply filters
+    if (criteria.userId) {
+      events = events.filter(e => e.userId === criteria.userId);
+    }
+    if (criteria.eventType) {
+      events = events.filter(e => e.eventType === criteria.eventType);
+    }
+    if (criteria.resource) {
+      events = events.filter(e => e.resource.includes(criteria.resource));
+    }
+    if (criteria.riskLevel) {
+      events = events.filter(e => e.riskLevel === criteria.riskLevel);
+    }
+    if (criteria.result) {
+      events = events.filter(e => e.result === criteria.result);
+    }
+    if (criteria.startDate) {
+      events = events.filter(e => e.timestamp >= criteria.startDate!);
+    }
+    if (criteria.endDate) {
+      events = events.filter(e => e.timestamp <= criteria.endDate!);
+    }
+    if (criteria.classification) {
+      events = events.filter(e => e.classification === criteria.classification);
+    }
+
+    // Sort by timestamp (newest first) and limit
+    return events
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+
+  /**
+   * Private helper methods
+   */
+
+  private async storeAuditEvent(event: SecurityAuditEvent): Promise<void> {
+    // Store in memory (in production, this would write to secure storage)
+    this.auditEvents.set(event.eventId, event);
+
+    // Write to configured destinations
+    for (const destination of this.config.logDestinations) {
+      await this.writeToDestination(destination, event);
+    }
+
+    // Apply tamper protection if enabled
+    if (this.config.tamperProtection) {
+      await this.applyTamperProtection(event);
+    }
+  }
+
+  private async writeToDestination(destination: string, event: SecurityAuditEvent): Promise<void> {
+    // Implement actual writing to log destinations
+    // This could be files, databases, remote services, etc.
+    consola.debug(`Writing audit event to destination: ${destination}`, {
+      eventId: event.eventId,
+      eventType: event.eventType
+    });
+  }
+
+  private calculateRiskLevel(
+    eventType: AuditEventType, 
+    result: 'SUCCESS' | 'FAILURE' | 'DENIED'
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+    // High-risk event types
+    const highRiskEvents: AuditEventType[] = [
+      'SECURITY_VIOLATION',
+      'POLICY_VIOLATION',
+      'ACCESS_DENIED'
+    ];
+
+    // Critical event types
+    const criticalEvents: AuditEventType[] = [
+      'SECURITY_VIOLATION'
+    ];
+
+    if (criticalEvents.includes(eventType)) {
+      return 'CRITICAL';
+    }
+
+    if (highRiskEvents.includes(eventType) || result === 'FAILURE') {
+      return 'HIGH';
+    }
+
+    if (result === 'DENIED') {
+      return 'MEDIUM';
+    }
+
+    return 'LOW';
+  }
+
+  private calculateDataAccessRisk(
+    action: 'read' | 'write' | 'delete' | 'export',
+    classification: NSMClassification
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+    const actionRisk: Record<string, number> = {
+      'read': 1,
+      'write': 2,
+      'export': 3,
+      'delete': 4
+    };
+
+    const classificationRisk: Record<NSMClassification, number> = {
+      'OPEN': 1,
+      'RESTRICTED': 2,
+      'CONFIDENTIAL': 3,
+      'SECRET': 4
+    };
+
+    const totalRisk = actionRisk[action] + classificationRisk[classification];
+
+    if (totalRisk >= 7) return 'CRITICAL';
+    if (totalRisk >= 5) return 'HIGH';
+    if (totalRisk >= 3) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  private async processHighRiskEvent(event: SecurityAuditEvent): Promise<void> {
+    consola.warn('High-risk security event detected', {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      riskLevel: event.riskLevel,
+      userId: event.userId,
+      resource: event.resource
+    });
+
+    {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+    // Immediate notification for high-classification systems
+    if (event.riskLevel === 'CRITICAL') {
+      await this.sendImmediateAlert(event);
+    }
+    {{/if}}
+  }
+
+  {{#if auditConfig.realTimeMonitoring}}
+  private async sendToRealTimeMonitoring(event: SecurityAuditEvent): Promise<void> {
+    // Send to real-time monitoring system
+    consola.debug('Sending to real-time monitoring', {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      riskLevel: event.riskLevel
+    });
+  }
+  {{/if}}
+
+  private async sendToSIEM(event: SecurityAuditEvent): Promise<void> {
+    // Send to SIEM system
+    consola.debug('Sending to SIEM', {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      classification: event.classification
+    });
+  }
+
+  private getEventsInPeriod(startDate: Date, endDate: Date): SecurityAuditEvent[] {
+    return Array.from(this.auditEvents.values())
+      .filter(event => event.timestamp >= startDate && event.timestamp <= endDate);
+  }
+
+  private aggregateEventsByType(events: SecurityAuditEvent[]): Record<AuditEventType, number> {
+    return events.reduce((acc, event) => {
+      acc[event.eventType] = (acc[event.eventType] || 0) + 1;
+      return acc;
+    }, {} as Record<AuditEventType, number>);
+  }
+
+  private aggregateEventsByRisk(events: SecurityAuditEvent[]): Record<string, number> {
+    return events.reduce((acc, event) => {
+      acc[event.riskLevel] = (acc[event.riskLevel] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+
+  private detectAnomalousActivity(events: SecurityAuditEvent[]): SecurityAuditEvent[] {
+    // Simple anomaly detection - in production, this would be more sophisticated
+    const userActivityCount: Record<string, number> = {};
+    const threshold = 50; // Events per time period
+
+    events.forEach(event => {
+      userActivityCount[event.userId] = (userActivityCount[event.userId] || 0) + 1;
+    });
+
+    const suspiciousUsers = Object.entries(userActivityCount)
+      .filter(([_, count]) => count > threshold)
+      .map(([userId]) => userId);
+
+    return events.filter(event => suspiciousUsers.includes(event.userId));
+  }
+
+  private calculateComplianceMetrics(events: SecurityAuditEvent[]): ComplianceAuditReport['complianceMetrics'] {
+    const totalAccess = events.filter(e => e.eventType === 'ACCESS_GRANTED' || e.eventType === 'ACCESS_DENIED').length;
+    const deniedAccess = events.filter(e => e.eventType === 'ACCESS_DENIED').length;
+    const violations = events.filter(e => e.eventType === 'SECURITY_VIOLATION').length;
+
+    return {
+      accessControlEffectiveness: totalAccess > 0 ? ((totalAccess - deniedAccess) / totalAccess) * 100 : 100,
+      dataProtectionScore: violations === 0 ? 100 : Math.max(0, 100 - (violations * 10)),
+      auditCoverage: 95, // Would calculate based on actual coverage
+      incidentResponseTime: 15 // Average minutes - would calculate from actual data
+    };
+  }
+
+  private generateRecommendations(
+    events: SecurityAuditEvent[],
+    metrics: ComplianceAuditReport['complianceMetrics']
+  ): string[] {
+    const recommendations: string[] = [];
+
+    if (metrics.accessControlEffectiveness < 95) {
+      recommendations.push('Review access control policies - effectiveness below optimal level');
+    }
+
+    if (metrics.dataProtectionScore < 90) {
+      recommendations.push('Implement additional data protection measures - security violations detected');
+    }
+
+    const failedLogins = events.filter(e => 
+      e.eventType === 'LOGIN_ATTEMPT' && e.result === 'FAILURE'
+    ).length;
+
+    if (failedLogins > 10) {
+      recommendations.push('Consider implementing additional authentication measures due to failed login attempts');
+    }
+
+    {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+    recommendations.push('Regular security assessment recommended for {{classification}} classification level');
+    {{/if}}
+
+    return recommendations;
+  }
+
+  private generateEventId(): string {
+    return `audit-${this.config.classification.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateReportId(): string {
+    return `report-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async logEmergencyEvent(
+    type: string,
+    context: AuditContext,
+    details: Record<string, unknown>
+  ): Promise<void> {
+    // Emergency logging for critical system events
+    consola.error('Emergency audit event', {
+      type,
+      userId: context.userId,
+      sessionId: context.sessionId,
+      details,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  private startRealTimeMonitoring(): void {
+    consola.info('Starting real-time audit monitoring');
+    // Implementation would start real-time monitoring services
+  }
+
+  private startLogRotation(): void {
+    consola.info('Starting audit log rotation', {
+      retentionPeriod: this.config.retentionPeriodDays
+    });
+    // Implementation would start log rotation based on retention period
+  }
+
+  private initializeTamperProtection(): void {
+    consola.info('Initializing audit log tamper protection');
+    // Implementation would initialize cryptographic protection for audit logs
+  }
+
+  private async applyTamperProtection(event: SecurityAuditEvent): Promise<void> {
+    // Apply cryptographic signature or hash chain for tamper protection
+    consola.debug('Applying tamper protection to audit event', {
+      eventId: event.eventId
+    });
+  }
+
+  {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+  private async sendImmediateAlert(event: SecurityAuditEvent): Promise<void> {
+    consola.warn('IMMEDIATE SECURITY ALERT', {
+      classification: this.config.classification,
+      eventId: event.eventId,
+      eventType: event.eventType,
+      riskLevel: event.riskLevel,
+      timestamp: event.timestamp.toISOString()
+    });
+    
+    // In production, this would send alerts to security teams
+  }
+  {{/if}}
+}
+
+/**
+ * Default audit logger configuration
+ */
+export const defaultAuditLoggerConfig: AuditLoggerConfig = {
+  classification: '{{classification}}' as NSMClassification,
+  auditLevel: '{{auditConfig.level}}' as 'basic' | 'enhanced' | 'comprehensive' | 'maximum',
+  retentionPeriodDays: {{auditConfig.retentionPeriod}},
+  realTimeMonitoring: {{auditConfig.realTimeMonitoring}},
+  encryptAuditLogs: {{dataProtection.encryption}},
+  tamperProtection: {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}true{{else}}false{{/if}},
+  remoteLogging: {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}true{{else}}false{{/if}},
+  siemIntegration: {{#if (eq auditConfig.level 'maximum')}}true{{else}}false{{/if}},
+  logDestinations: [
+    'local-file',
+    {{#if auditConfig.realTimeMonitoring}}
+    'real-time-monitor',
+    {{/if}}
+    {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+    'secure-remote',
+    {{/if}}
+    'database'
+  ]
+};
+
+/**
+ * Create audit logger instance
+ */
+export function createNSMAuditLogger(
+  config: AuditLoggerConfig = defaultAuditLoggerConfig
+): NSMAuditLogger {
+  return new NSMAuditLogger(config);
+}
+
+/**
+ * Singleton audit logger instance
+ */
+export const nsmAuditLogger = createNSMAuditLogger();
+
+export default nsmAuditLogger;

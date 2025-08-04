@@ -1,0 +1,259 @@
+/**
+ * NSM Classification Banner Component
+ * 
+ * Displays security classification level according to NSM requirements
+ * Classification: {{classification}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ */
+
+import React, { useMemo } from 'react';
+import type { NSMClassification } from '../types/security/nsm-types';
+
+export interface ClassificationBannerProps {
+  readonly classification: NSMClassification;
+  readonly position?: 'top' | 'bottom' | 'both';
+  readonly showIcon?: boolean;
+  readonly showTimestamp?: boolean;
+  readonly compact?: boolean;
+  readonly customMessage?: string;
+}
+
+/**
+ * Classification Banner Component
+ * 
+ * Renders NSM-compliant classification banners with appropriate styling
+ * and security indicators based on classification level.
+ */
+export const ClassificationBanner = ({
+  classification = '{{classification}}' as NSMClassification,
+  position = 'top',
+  showIcon = true,
+  showTimestamp = false,
+  compact = false,
+  customMessage
+}: ClassificationBannerProps): JSX.Element => {
+  
+  const bannerConfig = useMemo(() => {
+    const configs = {
+      OPEN: {
+        bgColor: 'bg-green-600',
+        textColor: 'text-white',
+        borderColor: 'border-green-700',
+        icon: '📂',
+        message: 'OPEN CLASSIFICATION - Public Information'
+      },
+      RESTRICTED: {
+        bgColor: 'bg-blue-600',
+        textColor: 'text-white',
+        borderColor: 'border-blue-700',
+        icon: '🔒',
+        message: 'RESTRICTED CLASSIFICATION - Authorized Personnel Only'
+      },
+      CONFIDENTIAL: {
+        bgColor: 'bg-orange-600',
+        textColor: 'text-white',
+        borderColor: 'border-orange-700',
+        icon: '⚠️',
+        message: 'CONFIDENTIAL CLASSIFICATION - Special Handling Required'
+      },
+      SECRET: {
+        bgColor: 'bg-red-600',
+        textColor: 'text-white',
+        borderColor: 'border-red-700',
+        icon: '🚨',
+        message: 'SECRET CLASSIFICATION - National Security Information'
+      }
+    };
+
+    return configs[classification] || configs.OPEN;
+  }, [classification]);
+
+  const timestamp = useMemo(() => {
+    return new Date().toISOString();
+  }, []);
+
+  const renderBanner = (isTop: boolean = true) => (
+    <div
+      className={`
+        ${bannerConfig.bgColor} 
+        ${bannerConfig.textColor} 
+        ${bannerConfig.borderColor}
+        ${compact ? 'py-1 px-3' : 'py-3 px-6'}
+        ${isTop ? 'border-b-2' : 'border-t-2'}
+        flex items-center justify-center
+        font-bold text-center
+        shadow-lg
+        print:bg-black print:text-white
+        ${classification === 'SECRET' ? 'animate-pulse' : ''}
+      `}
+      role="banner"
+      aria-label={`Security classification: ${classification}`}
+      data-classification={classification}
+      data-testid="nsm-classification-banner"
+    >
+      <div className="flex items-center space-x-3 max-w-4xl">
+        {showIcon && (
+          <span 
+            className={`${compact ? 'text-lg' : 'text-2xl'} flex-shrink-0`}
+            role="img"
+            aria-label={`${classification} classification icon`}
+          >
+            {bannerConfig.icon}
+          </span>
+        )}
+        
+        <div className="flex-1 min-w-0">
+          <div className={`${compact ? 'text-sm' : 'text-lg'} font-extrabold tracking-wide`}>
+            {classification} CLASSIFICATION
+          </div>
+          
+          {!compact && (
+            <div className="text-sm opacity-90 mt-1">
+              {customMessage || bannerConfig.message}
+            </div>
+          )}
+        </div>
+
+        {showTimestamp && (
+          <div className={`${compact ? 'text-xs' : 'text-sm'} opacity-75 flex-shrink-0`}>
+            {timestamp}
+          </div>
+        )}
+
+        {{#if (eq classification 'SECRET')}}
+        {/* Additional security indicator for SECRET classification */}
+        <div className="flex-shrink-0">
+          <div className="w-3 h-3 bg-red-300 rounded-full animate-ping"></div>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+  );
+
+  try {
+    return (
+      <>
+        {(position === 'top' || position === 'both') && renderBanner(true)}
+        {(position === 'bottom' || position === 'both') && renderBanner(false)}
+      </>
+    );
+  } catch (error) {
+    console.error('ClassificationBanner render error:', error);
+    
+    // Fallback banner for security
+    return (
+      <div className="bg-red-600 text-white py-2 px-4 text-center font-bold">
+        SECURITY CLASSIFICATION ERROR - CONTACT ADMINISTRATOR
+      </div>
+    );
+  }
+};
+
+/**
+ * Classification Context Banner
+ * 
+ * Provides classification context with additional metadata
+ */
+export interface ClassificationContextBannerProps extends ClassificationBannerProps {
+  readonly userClearance?: NSMClassification;
+  readonly sessionTimeout?: number;
+  readonly restrictedActions?: readonly string[];
+}
+
+export const ClassificationContextBanner = ({
+  userClearance,
+  sessionTimeout,
+  restrictedActions = [],
+  ...bannerProps
+}: ClassificationContextBannerProps): JSX.Element => {
+  const hasInsufficientClearance = useMemo(() => {
+    if (!userClearance) return false;
+    
+    const levels: Record<NSMClassification, number> = {
+      'OPEN': 0,
+      'RESTRICTED': 1,
+      'CONFIDENTIAL': 2,
+      'SECRET': 3
+    };
+    
+    return levels[userClearance] < levels[bannerProps.classification];
+  }, [userClearance, bannerProps.classification]);
+
+  if (hasInsufficientClearance) {
+    return (
+      <div className="bg-red-700 text-white py-4 px-6 text-center">
+        <div className="font-bold text-lg mb-2">
+          🚫 ACCESS DENIED
+        </div>
+        <div className="text-sm">
+          Insufficient clearance: {userClearance} &lt; {bannerProps.classification}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <ClassificationBanner {...bannerProps} />
+      
+      {{#if uiSecurity.restrictedActions.length}}
+      {restrictedActions.length > 0 && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 text-sm">
+          <div className="font-semibold mb-1">Restricted Actions:</div>
+          <div className="space-x-2">
+            {restrictedActions.map((action, index) => (
+              <span
+                key={index}
+                className="inline-block bg-yellow-200 px-2 py-1 rounded text-xs font-medium"
+              >
+                {action.toUpperCase()}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {{/if}}
+
+      {sessionTimeout && sessionTimeout < 480 && (
+        <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-3 text-sm">
+          <div className="font-semibold">
+            ⏰ Enhanced Session Security: {Math.floor(sessionTimeout / 60)}h {sessionTimeout % 60}m timeout
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Hook for classification banner utilities
+ */
+export function useClassificationBanner(classification: NSMClassification) {
+  return useMemo(() => {
+    const isHighSecurity = classification === 'SECRET' || classification === 'CONFIDENTIAL';
+    
+    return {
+      classification,
+      isHighSecurity,
+      requiresWatermark: {{uiSecurity.watermarks}},
+      sessionTimeout: {{uiSecurity.sessionTimeout}},
+      restrictedActions: [
+        {{#each uiSecurity.restrictedActions}}
+        '{{this}}',
+        {{/each}}
+      ],
+      getBannerProps: (overrides = {}) => ({
+        classification,
+        position: isHighSecurity ? 'both' : 'top',
+        showIcon: true,
+        showTimestamp: isHighSecurity,
+        compact: false,
+        ...overrides
+      })
+    };
+  }, [classification]);
+}
+
+export default ClassificationBanner;

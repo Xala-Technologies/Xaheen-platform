@@ -1,0 +1,88 @@
+import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+{{#if (includes features "one-time-payment")}}
+import { VippsService } from './vipps/vipps.service';
+import { VippsWebhookController } from './vipps/vipps-webhook.controller';
+{{#if (includes features "payment-reconciliation")}}
+import { VippsReconciliationService } from './vipps/vipps-reconciliation.service';
+{{/if}}
+{{/if}}
+{{#if (includes features "document-delivery")}}
+import { DigipostService } from './digipost/digipost.service';
+{{#if (includes features "secure-document-storage")}}
+import { DigipostStorageService } from './digipost/digipost-storage.service';
+{{/if}}
+{{/if}}
+import { NorwegianComplianceService } from './norwegian-compliance.service';
+
+/**
+ * {{name}} Integration Module
+ * Norwegian Payment and Document Services Integration
+ * Environment: {{environment}}
+ * Features: {{#each features}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ */
+@Module({
+  imports: [
+    HttpModule.register({
+      timeout: 30000,
+      maxRedirects: 5,
+      // Norwegian compliance: Ensure HTTPS only
+      httpsAgent: {
+        rejectUnauthorized: true,
+      },
+    }),
+    ConfigModule,
+  ],
+  providers: [
+    // Norwegian Compliance Service
+    NorwegianComplianceService,
+    
+    {{#if (includes features "one-time-payment")}}
+    // Vipps Payment Services
+    VippsService,
+    {{#if (includes features "payment-reconciliation")}}
+    VippsReconciliationService,
+    {{/if}}
+    {{/if}}
+    
+    {{#if (includes features "document-delivery")}}
+    // Digipost Document Services
+    DigipostService,
+    {{#if (includes features "secure-document-storage")}}
+    DigipostStorageService,
+    {{/if}}
+    {{/if}}
+  ],
+  controllers: [
+    {{#if (includes features "webhook-notifications")}}
+    {{#if (includes features "one-time-payment")}}
+    VippsWebhookController,
+    {{/if}}
+    {{/if}}
+  ],
+  exports: [
+    // Export services for use in other modules
+    NorwegianComplianceService,
+    {{#if (includes features "one-time-payment")}}
+    VippsService,
+    {{#if (includes features "payment-reconciliation")}}
+    VippsReconciliationService,
+    {{/if}}
+    {{/if}}
+    {{#if (includes features "document-delivery")}}
+    DigipostService,
+    {{#if (includes features "secure-document-storage")}}
+    DigipostStorageService,
+    {{/if}}
+    {{/if}}
+  ],
+})
+export class {{pascalCase name}}IntegrationModule {
+  constructor() {
+    console.log('🇳🇴 {{name}} Norwegian Integration Module initialized');
+    console.log('Environment: {{environment}}');
+    console.log('Features enabled: {{#each features}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}');
+    console.log('Compliance: {{compliance.dataResidency}} data residency, {{compliance.documentClassification}} classification');
+  }
+}

@@ -1,0 +1,507 @@
+import { Injectable, Logger } from '@nestjs/common';
+import * as crypto from 'crypto';
+
+/**
+ * {{name}} Digipost Secure Document Storage Service
+ * Handles encrypted storage with Norwegian data residency compliance
+ * Environment: {{environment}}
+ * Classification: {{compliance.documentClassification}}
+ */
+@Injectable()
+export class DigipostStorageService {
+  private readonly logger = new Logger(DigipostStorageService.name);
+  private readonly encryptionAlgorithm = 'aes-256-gcm';
+
+  /**
+   * Store document securely with encryption
+   */
+  async storeSecurely(
+    document: DigipostDocument,
+    classification: DigipostClassification = '{{compliance.documentClassification}}'
+  ): Promise<DigipostStorageResult> {
+    try {
+      this.logger.log(`Storing document securely with classification: ${classification}`);
+
+      // Generate encryption key and metadata
+      const encryptionKey = this.generateEncryptionKey();
+      const storageId = this.generateStorageId();
+      
+      // Encrypt document content
+      const encryptedContent = this.encryptDocument(document.content, encryptionKey);
+      
+      // Calculate retention based on Norwegian regulations
+      const retentionDate = this.calculateRetentionDate(classification);
+      
+      // Generate checksum for integrity verification
+      const checksum = this.calculateChecksum(document.content);
+      
+      // Create storage metadata
+      const metadata: DigipostStorageMetadata = {
+        storageId,
+        originalFileName: document.fileName,
+        subject: document.subject,
+        classification,
+        encryptionAlgorithm: this.encryptionAlgorithm,
+        createdAt: new Date(),
+        retentionDate,
+        checksum,
+        contentType: this.getContentType(document.fileType),
+        dataResidency: '{{compliance.dataResidency}}',
+        auditRequired: {{compliance.auditLogging}},
+        gdprCompliant: {{compliance.gdpr}},
+      };
+
+      // Store encrypted document (in production, this would go to secure storage)
+      await this.persistEncryptedDocument(storageId, encryptedContent, metadata);
+
+      // Store encryption key securely (in production, use key management service)
+      await this.storeEncryptionKey(storageId, encryptionKey);
+
+      {{#if compliance.auditLogging}}
+      // Audit log
+      await this.auditDocumentStorage(storageId, classification, document.subject);
+      {{/if}}
+
+      this.logger.log(`Document stored securely: ${storageId}`);
+
+      return {
+        storageId,
+        encryptionKey,
+        retentionDate,
+        location: '{{compliance.dataResidency}}' as 'norway' | 'eu',
+        checksum,
+        metadata,
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to store document securely: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve and decrypt stored document
+   */
+  async retrieveDocument(storageId: string): Promise<DigipostRetrievedDocument> {
+    try {
+      this.logger.log(`Retrieving document: ${storageId}`);
+
+      // Get document metadata
+      const metadata = await this.getDocumentMetadata(storageId);
+      
+      // Check retention policy
+      if (metadata.retentionDate < new Date()) {
+        throw new Error('Document has exceeded retention period');
+      }
+
+      // Retrieve encryption key
+      const encryptionKey = await this.getEncryptionKey(storageId);
+      
+      // Retrieve encrypted content
+      const encryptedContent = await this.getEncryptedDocument(storageId);
+      
+      // Decrypt document
+      const decryptedContent = this.decryptDocument(encryptedContent, encryptionKey);
+      
+      // Verify integrity
+      const currentChecksum = this.calculateChecksum(decryptedContent);
+      if (currentChecksum !== metadata.checksum) {
+        throw new Error('Document integrity check failed');
+      }
+
+      {{#if compliance.auditLogging}}
+      // Audit log
+      await this.auditDocumentRetrieval(storageId, metadata.classification);
+      {{/if}}
+
+      this.logger.log(`Document retrieved successfully: ${storageId}`);
+
+      return {
+        content: decryptedContent,
+        metadata,
+        retrievedAt: new Date(),
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to retrieve document ${storageId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Search documents by criteria
+   */
+  async searchDocuments(query: DigipostSearchQuery): Promise<DigipostSearchResult[]> {
+    try {
+      this.logger.log(`Searching documents with query: ${JSON.stringify(query)}`);
+
+      // Build search criteria
+      const searchCriteria = this.buildSearchCriteria(query);
+      
+      // Execute search (in production, this would query your document index)
+      const results = await this.executeSearch(searchCriteria);
+      
+      // Filter results based on access permissions and classification
+      const filteredResults = results.filter(result => 
+        this.hasAccessPermission(result.metadata.classification)
+      );
+
+      this.logger.log(`Found ${filteredResults.length} documents matching search criteria`);
+
+      return filteredResults;
+    } catch (error: any) {
+      this.logger.error(`Document search failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete document (secure deletion)
+   */
+  async deleteDocument(storageId: string, reason: string): Promise<void> {
+    try {
+      this.logger.log(`Deleting document: ${storageId}, reason: ${reason}`);
+
+      // Get metadata before deletion for audit
+      const metadata = await this.getDocumentMetadata(storageId);
+
+      {{#if compliance.auditLogging}}
+      // Audit log before deletion
+      await this.auditDocumentDeletion(storageId, metadata.classification, reason);
+      {{/if}}
+
+      // Secure deletion of encrypted content
+      await this.secureDeleteEncryptedDocument(storageId);
+      
+      // Delete encryption key
+      await this.deleteEncryptionKey(storageId);
+      
+      // Delete metadata
+      await this.deleteDocumentMetadata(storageId);
+
+      this.logger.log(`Document deleted securely: ${storageId}`);
+    } catch (error: any) {
+      this.logger.error(`Failed to delete document ${storageId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up expired documents
+   */
+  async cleanupExpiredDocuments(): Promise<{
+    processed: number;
+    deleted: number;
+    errors: number;
+  }> {
+    this.logger.log('Starting cleanup of expired documents');
+
+    const stats = { processed: 0, deleted: 0, errors: 0 };
+
+    try {
+      // Find expired documents
+      const expiredDocuments = await this.findExpiredDocuments();
+      
+      for (const doc of expiredDocuments) {
+        stats.processed++;
+        
+        try {
+          await this.deleteDocument(doc.storageId, 'Automatic retention policy cleanup');
+          stats.deleted++;
+        } catch (error: any) {
+          this.logger.error(`Failed to delete expired document ${doc.storageId}: ${error.message}`);
+          stats.errors++;
+        }
+      }
+
+      this.logger.log(`Cleanup completed: ${stats.deleted} documents deleted, ${stats.errors} errors`);
+    } catch (error: any) {
+      this.logger.error(`Cleanup process failed: ${error.message}`, error.stack);
+    }
+
+    return stats;
+  }
+
+  /**
+   * Generate encryption key
+   */
+  private generateEncryptionKey(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  /**
+   * Encrypt document content
+   */
+  private encryptDocument(content: Buffer | string, key: string): DigipostEncryptedContent {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.encryptionAlgorithm, Buffer.from(key, 'hex'), iv);
+    
+    const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'base64');
+    
+    let encrypted = cipher.update(contentBuffer);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    
+    const authTag = cipher.getAuthTag();
+    
+    return {
+      encryptedData: encrypted,
+      iv: iv.toString('hex'),
+      authTag: authTag.toString('hex'),
+      algorithm: this.encryptionAlgorithm,
+    };
+  }
+
+  /**
+   * Decrypt document content
+   */
+  private decryptDocument(encryptedContent: DigipostEncryptedContent, key: string): Buffer {
+    const decipher = crypto.createDecipheriv(
+      encryptedContent.algorithm,
+      Buffer.from(key, 'hex'),
+      Buffer.from(encryptedContent.iv, 'hex')
+    );
+    
+    decipher.setAuthTag(Buffer.from(encryptedContent.authTag, 'hex'));
+    
+    let decrypted = decipher.update(encryptedContent.encryptedData);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    
+    return decrypted;
+  }
+
+  /**
+   * Calculate retention date based on Norwegian regulations
+   */
+  private calculateRetentionDate(classification: DigipostClassification): Date {
+    const retentionPeriods = {
+      OPEN: 5 * 365,        // 5 years
+      RESTRICTED: 7 * 365,  // 7 years
+      CONFIDENTIAL: 10 * 365, // 10 years
+      SECRET: 30 * 365,     // 30 years
+    };
+
+    const days = retentionPeriods[classification];
+    const retentionDate = new Date();
+    retentionDate.setDate(retentionDate.getDate() + days);
+    
+    return retentionDate;
+  }
+
+  /**
+   * Calculate document checksum for integrity verification
+   */
+  private calculateChecksum(content: Buffer | string): string {
+    const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'base64');
+    return crypto.createHash('sha256').update(contentBuffer).digest('hex');
+  }
+
+  /**
+   * Generate unique storage ID
+   */
+  private generateStorageId(): string {
+    const timestamp = Date.now().toString(36);
+    const random = crypto.randomBytes(8).toString('hex');
+    return `doc_${timestamp}_${random}`;
+  }
+
+  /**
+   * Get content type from file type
+   */
+  private getContentType(fileType: string): string {
+    const contentTypes: Record<string, string> = {
+      PDF: 'application/pdf',
+      PDF_A1: 'application/pdf',
+      PDF_A2: 'application/pdf',
+    };
+
+    return contentTypes[fileType] || 'application/octet-stream';
+  }
+
+  // Mock implementations for storage operations (replace with actual storage logic)
+  
+  private async persistEncryptedDocument(
+    storageId: string,
+    encryptedContent: DigipostEncryptedContent,
+    metadata: DigipostStorageMetadata
+  ): Promise<void> {
+    // In production, store in secure storage (e.g., encrypted cloud storage)
+    this.logger.debug(`Persisting encrypted document: ${storageId}`);
+  }
+
+  private async storeEncryptionKey(storageId: string, key: string): Promise<void> {
+    // In production, store in key management service (e.g., Azure Key Vault, AWS KMS)
+    this.logger.debug(`Storing encryption key for: ${storageId}`);
+  }
+
+  private async getDocumentMetadata(storageId: string): Promise<DigipostStorageMetadata> {
+    // Mock metadata - replace with actual database query
+    return {
+      storageId,
+      originalFileName: 'document.pdf',
+      subject: 'Test Document',
+      classification: 'OPEN' as DigipostClassification,
+      encryptionAlgorithm: this.encryptionAlgorithm,
+      createdAt: new Date(),
+      retentionDate: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000),
+      checksum: 'mock-checksum',
+      contentType: 'application/pdf',
+      dataResidency: '{{compliance.dataResidency}}',
+      auditRequired: {{compliance.auditLogging}},
+      gdprCompliant: {{compliance.gdpr}},
+    };
+  }
+
+  private async getEncryptionKey(storageId: string): Promise<string> {
+    // Mock key retrieval - replace with key management service
+    return 'mock-encryption-key';
+  }
+
+  private async getEncryptedDocument(storageId: string): Promise<DigipostEncryptedContent> {
+    // Mock encrypted content - replace with actual storage retrieval
+    return {
+      encryptedData: Buffer.from('mock-encrypted-data'),
+      iv: 'mock-iv',
+      authTag: 'mock-auth-tag',
+      algorithm: this.encryptionAlgorithm,
+    };
+  }
+
+  private buildSearchCriteria(query: DigipostSearchQuery): any {
+    // Build search criteria based on query parameters
+    return {
+      query: query.query,
+      classification: query.classification,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      tags: query.tags,
+    };
+  }
+
+  private async executeSearch(criteria: any): Promise<DigipostSearchResult[]> {
+    // Mock search results - replace with actual search implementation
+    return [];
+  }
+
+  private hasAccessPermission(classification: DigipostClassification): boolean {
+    // Implement access control based on user permissions and classification level
+    return true;
+  }
+
+  private async findExpiredDocuments(): Promise<Array<{ storageId: string }>> {
+    // Find documents that have exceeded their retention period
+    return [];
+  }
+
+  private async secureDeleteEncryptedDocument(storageId: string): Promise<void> {
+    // Implement secure deletion (multiple overwrites, etc.)
+    this.logger.debug(`Securely deleting document: ${storageId}`);
+  }
+
+  private async deleteEncryptionKey(storageId: string): Promise<void> {
+    // Delete encryption key from key management service
+    this.logger.debug(`Deleting encryption key for: ${storageId}`);
+  }
+
+  private async deleteDocumentMetadata(storageId: string): Promise<void> {
+    // Delete document metadata from database
+    this.logger.debug(`Deleting metadata for: ${storageId}`);
+  }
+
+  {{#if compliance.auditLogging}}
+  private async auditDocumentStorage(storageId: string, classification: DigipostClassification, subject: string): Promise<void> {
+    const auditEntry = {
+      action: 'DOCUMENT_STORED',
+      storageId,
+      classification,
+      subject,
+      timestamp: new Date().toISOString(),
+      dataResidency: '{{compliance.dataResidency}}',
+    };
+    
+    this.logger.log(`Audit: ${JSON.stringify(auditEntry)}`);
+  }
+
+  private async auditDocumentRetrieval(storageId: string, classification: DigipostClassification): Promise<void> {
+    const auditEntry = {
+      action: 'DOCUMENT_RETRIEVED',
+      storageId,
+      classification,
+      timestamp: new Date().toISOString(),
+    };
+    
+    this.logger.log(`Audit: ${JSON.stringify(auditEntry)}`);
+  }
+
+  private async auditDocumentDeletion(storageId: string, classification: DigipostClassification, reason: string): Promise<void> {
+    const auditEntry = {
+      action: 'DOCUMENT_DELETED',
+      storageId,
+      classification,
+      reason,
+      timestamp: new Date().toISOString(),
+    };
+    
+    this.logger.log(`Audit: ${JSON.stringify(auditEntry)}`);
+  }
+  {{/if}}
+}
+
+// Type definitions
+interface DigipostDocument {
+  subject: string;
+  fileType: string;
+  content: Buffer | string;
+  fileName: string;
+}
+
+type DigipostClassification = 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+
+interface DigipostStorageResult {
+  storageId: string;
+  encryptionKey: string;
+  retentionDate: Date;
+  location: 'norway' | 'eu';
+  checksum: string;
+  metadata: DigipostStorageMetadata;
+}
+
+interface DigipostStorageMetadata {
+  storageId: string;
+  originalFileName: string;
+  subject: string;
+  classification: DigipostClassification;
+  encryptionAlgorithm: string;
+  createdAt: Date;
+  retentionDate: Date;
+  checksum: string;
+  contentType: string;
+  dataResidency: string;
+  auditRequired: boolean;
+  gdprCompliant: boolean;
+}
+
+interface DigipostEncryptedContent {
+  encryptedData: Buffer;
+  iv: string;
+  authTag: string;
+  algorithm: string;
+}
+
+interface DigipostRetrievedDocument {
+  content: Buffer;
+  metadata: DigipostStorageMetadata;
+  retrievedAt: Date;
+}
+
+interface DigipostSearchQuery {
+  query?: string;
+  classification?: DigipostClassification;
+  dateFrom?: Date;
+  dateTo?: Date;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+interface DigipostSearchResult {
+  storageId: string;
+  metadata: DigipostStorageMetadata;
+}

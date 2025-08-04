@@ -1,0 +1,519 @@
+/**
+ * GDPR Compliance Service
+ * 
+ * Core service for managing GDPR (General Data Protection Regulation) compliance
+ * Lawful Basis: {{lawfulBasis}}
+ * Data Categories: {{#each dataCategories}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ * 
+ * @compliance GDPR-compliant
+ * @privacy-by-design true
+ */
+
+import { consola } from 'consola';
+import type {
+  GDPRLawfulBasis,
+  DataCategory,
+  DataSubjectRights,
+  ProcessingActivity,
+  ConsentRecord,
+  DataProcessingContext,
+  ComplianceValidationResult
+} from '../types/gdpr/gdpr-types';
+
+export interface GDPRServiceConfig {
+  readonly projectName: string;
+  readonly dataCategories: readonly DataCategory[];
+  readonly lawfulBasis: GDPRLawfulBasis;
+  readonly dataRetentionPeriod: number;
+  readonly dataProtectionOfficer?: {
+    readonly name: string;
+    readonly email: string;
+    readonly phone: string;
+  };
+  readonly privacyPolicyUrl: string;
+  readonly cookiePolicyUrl: string;
+  readonly dataSubjectRightsEnabled: DataSubjectRights;
+}
+
+export class GDPRComplianceService {
+  private readonly config: GDPRServiceConfig;
+  private readonly processingActivities: Map<string, ProcessingActivity> = new Map();
+  private readonly consentRecords: Map<string, ConsentRecord> = new Map();
+
+  constructor(config: GDPRServiceConfig) {
+    this.config = config;
+    this.initializeService();
+  }
+
+  /**
+   * Initialize GDPR service
+   */
+  private initializeService(): void {
+    consola.info('Initializing GDPR Compliance Service', {
+      project: this.config.projectName,
+      lawfulBasis: this.config.lawfulBasis,
+      dataCategories: this.config.dataCategories,
+      retentionPeriod: this.config.dataRetentionPeriod
+    });
+
+    // Validate configuration
+    this.validateConfiguration();
+
+    // Initialize processing activities
+    this.initializeProcessingActivities();
+  }
+
+  /**
+   * Validate GDPR configuration
+   */
+  private validateConfiguration(): void {
+    const issues: string[] = [];
+
+    // Check for special category data requirements
+    const specialCategories = ['sensitive-data', 'special-category', 'biometric-data', 'health-data'];
+    const hasSpecialCategory = this.config.dataCategories.some(category => 
+      specialCategories.includes(category)
+    );
+
+    if (hasSpecialCategory && this.config.lawfulBasis === 'legitimate-interests') {
+      issues.push('Special category data requires explicit consent or other specific lawful basis');
+    }
+
+    // Check retention period reasonableness
+    if (this.config.dataRetentionPeriod > 2555) { // > 7 years
+      issues.push('Long retention periods may violate storage minimisation principle');
+    }
+
+    // Check DPO requirement
+    if (hasSpecialCategory && !this.config.dataProtectionOfficer) {
+      issues.push('Processing special category data may require a Data Protection Officer');
+    }
+
+    if (issues.length > 0) {
+      consola.warn('GDPR Configuration Issues:', issues);
+    }
+  }
+
+  /**
+   * Initialize processing activities record
+   */
+  private initializeProcessingActivities(): void {
+    const baseActivity: ProcessingActivity = {
+      id: `${this.config.projectName}-main`,
+      name: `{{projectName}} Main Processing Activity`,
+      purpose: 'Core application functionality',
+      lawfulBasis: this.config.lawfulBasis,
+      dataCategories: [...this.config.dataCategories],
+      dataSubjects: 'Users and customers',
+      recipients: ['Internal systems'],
+      internationalTransfers: false,
+      retentionPeriod: this.config.dataRetentionPeriod,
+      securityMeasures: [
+        'Encryption at rest and in transit',
+        'Access controls and authentication',
+        'Regular security assessments',
+        'Staff training on data protection'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.processingActivities.set(baseActivity.id, baseActivity);
+  }
+
+  /**
+   * Register new processing activity
+   */
+  async registerProcessingActivity(activity: Omit<ProcessingActivity, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    try {
+      const id = `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const processingActivity: ProcessingActivity = {
+        ...activity,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Validate activity
+      await this.validateProcessingActivity(processingActivity);
+
+      this.processingActivities.set(id, processingActivity);
+
+      consola.info('Processing activity registered', {
+        id,
+        name: activity.name,
+        purpose: activity.purpose,
+        lawfulBasis: activity.lawfulBasis
+      });
+
+      return id;
+
+    } catch (error) {
+      consola.error('Failed to register processing activity:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate processing activity for GDPR compliance
+   */
+  private async validateProcessingActivity(activity: ProcessingActivity): Promise<void> {
+    const issues: string[] = [];
+
+    // Check lawful basis appropriateness
+    const specialCategories = ['sensitive-data', 'special-category', 'biometric-data', 'health-data'];
+    const hasSpecialCategory = activity.dataCategories.some(category => 
+      specialCategories.includes(category)
+    );
+
+    if (hasSpecialCategory) {
+      const validBases = ['consent', 'vital-interests', 'public-task'];
+      if (!validBases.includes(activity.lawfulBasis)) {
+        issues.push(`Special category data requires appropriate lawful basis: ${validBases.join(', ')}`);
+      }
+    }
+
+    // Check purpose limitation
+    if (!activity.purpose || activity.purpose.length < 10) {
+      issues.push('Processing purpose must be specific and clearly defined');
+    }
+
+    // Check data minimisation
+    if (activity.dataCategories.length === 0) {
+      issues.push('Data categories must be specified for processing activity');
+    }
+
+    // Check retention period
+    if (activity.retentionPeriod <= 0) {
+      issues.push('Retention period must be specified and justified');
+    }
+
+    if (issues.length > 0) {
+      throw new Error(`Processing activity validation failed: ${issues.join('; ')}`);
+    }
+  }
+
+  /**
+   * Record consent for data processing
+   */
+  async recordConsent(userId: string, consentData: {
+    purposes: string[];
+    dataCategories: DataCategory[];
+    marketing?: boolean;
+    analytics?: boolean;
+    thirdParty?: boolean;
+    metadata?: Record<string, unknown>;
+  }): Promise<string> {
+    try {
+      const consentId = `consent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const consentRecord: ConsentRecord = {
+        id: consentId,
+        userId,
+        purposes: consentData.purposes,
+        dataCategories: consentData.dataCategories,
+        consentGiven: true,
+        timestamp: new Date(),
+        method: 'explicit',
+        ipAddress: undefined, // Would be populated from request context
+        userAgent: undefined, // Would be populated from request context
+        marketing: consentData.marketing || false,
+        analytics: consentData.analytics || false,
+        thirdParty: consentData.thirdParty || false,
+        withdrawn: false,
+        metadata: consentData.metadata || {}
+      };
+
+      this.consentRecords.set(consentId, consentRecord);
+
+      consola.info('Consent recorded', {
+        consentId,
+        userId,
+        purposes: consentData.purposes,
+        dataCategories: consentData.dataCategories
+      });
+
+      return consentId;
+
+    } catch (error) {
+      consola.error('Failed to record consent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Withdraw consent
+   */
+  async withdrawConsent(userId: string, consentId: string, reason?: string): Promise<void> {
+    try {
+      const consentRecord = this.consentRecords.get(consentId);
+      
+      if (!consentRecord) {
+        throw new Error(`Consent record not found: ${consentId}`);
+      }
+
+      if (consentRecord.userId !== userId) {
+        throw new Error('User not authorized to withdraw this consent');
+      }
+
+      const updatedRecord: ConsentRecord = {
+        ...consentRecord,
+        withdrawn: true,
+        withdrawnAt: new Date(),
+        withdrawalReason: reason
+      };
+
+      this.consentRecords.set(consentId, updatedRecord);
+
+      consola.info('Consent withdrawn', {
+        consentId,
+        userId,
+        reason
+      });
+
+      // Trigger data processing halt for withdrawn consent
+      await this.handleConsentWithdrawal(consentRecord);
+
+    } catch (error) {
+      consola.error('Failed to withdraw consent:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle consent withdrawal by stopping related processing
+   */
+  private async handleConsentWithdrawal(consentRecord: ConsentRecord): Promise<void> {
+    // In a real implementation, this would:
+    // 1. Identify all processing activities that depend on this consent
+    // 2. Stop or modify those activities
+    // 3. Potentially trigger data deletion if no other lawful basis exists
+    // 4. Notify relevant systems and personnel
+    
+    consola.info('Processing consent withdrawal', {
+      consentId: consentRecord.id,
+      userId: consentRecord.userId,
+      affectedCategories: consentRecord.dataCategories
+    });
+  }
+
+  /**
+   * Validate current GDPR compliance status
+   */
+  async validateCompliance(): Promise<ComplianceValidationResult> {
+    try {
+      const issues: string[] = [];
+      const recommendations: string[] = [];
+
+      // Check processing activities
+      for (const [id, activity] of this.processingActivities) {
+        try {
+          await this.validateProcessingActivity(activity);
+        } catch (error) {
+          issues.push(`Processing activity ${id}: ${error instanceof Error ? error.message : 'Validation failed'}`);
+        }
+      }
+
+      // Check consent records
+      const activeConsents = Array.from(this.consentRecords.values()).filter(c => !c.withdrawn);
+      const expiredConsents = activeConsents.filter(c => {
+        const thirteenMonthsAgo = new Date();
+        thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
+        return c.timestamp < thirteenMonthsAgo;
+      });
+
+      if (expiredConsents.length > 0) {
+        recommendations.push(`${expiredConsents.length} consent records are over 13 months old and should be refreshed`);
+      }
+
+      // Check data retention
+      const longRetentionActivities = Array.from(this.processingActivities.values())
+        .filter(a => a.retentionPeriod > 2555); // > 7 years
+
+      if (longRetentionActivities.length > 0) {
+        recommendations.push('Review long retention periods for compliance with storage minimisation');
+      }
+
+      // Check special category data handling
+      const specialCategoryActivities = Array.from(this.processingActivities.values())
+        .filter(a => a.dataCategories.some(cat => 
+          ['sensitive-data', 'special-category', 'biometric-data', 'health-data'].includes(cat)
+        ));
+
+      if (specialCategoryActivities.length > 0) {
+        recommendations.push('Ensure additional safeguards are in place for special category data');
+      }
+
+      {{#if (not dataSubjectRights.rightToErasure)}}
+      issues.push('Right to erasure must be implemented for GDPR compliance');
+      {{/if}}
+
+      {{#if (not dataSubjectRights.rightToDataPortability)}}
+      recommendations.push('Consider implementing data portability for enhanced compliance');
+      {{/if}}
+
+      const result: ComplianceValidationResult = {
+        compliant: issues.length === 0,
+        validatedAt: new Date(),
+        issues,
+        recommendations,
+        summary: {
+          processingActivities: this.processingActivities.size,
+          activeConsents: activeConsents.length,
+          withdrawnConsents: Array.from(this.consentRecords.values()).filter(c => c.withdrawn).length,
+          specialCategoryProcessing: specialCategoryActivities.length
+        }
+      };
+
+      consola.info('GDPR compliance validation completed', {
+        compliant: result.compliant,
+        issueCount: issues.length,
+        recommendationCount: recommendations.length
+      });
+
+      return result;
+
+    } catch (error) {
+      consola.error('GDPR compliance validation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate processing activities report
+   */
+  async generateProcessingReport(): Promise<{
+    activities: ProcessingActivity[];
+    summary: {
+      totalActivities: number;
+      byLawfulBasis: Record<GDPRLawfulBasis, number>;
+      byDataCategory: Record<string, number>;
+      withInternationalTransfers: number;
+      averageRetentionPeriod: number;
+    };
+    generatedAt: Date;
+  }> {
+    const activities = Array.from(this.processingActivities.values());
+    
+    const byLawfulBasis = activities.reduce((acc, activity) => {
+      acc[activity.lawfulBasis] = (acc[activity.lawfulBasis] || 0) + 1;
+      return acc;
+    }, {} as Record<GDPRLawfulBasis, number>);
+
+    const byDataCategory = activities.reduce((acc, activity) => {
+      activity.dataCategories.forEach(category => {
+        acc[category] = (acc[category] || 0) + 1;
+      });
+      return acc;
+    }, {} as Record<string, number>);
+
+    const withInternationalTransfers = activities.filter(a => a.internationalTransfers).length;
+    const averageRetentionPeriod = activities.reduce((sum, a) => sum + a.retentionPeriod, 0) / activities.length;
+
+    return {
+      activities,
+      summary: {
+        totalActivities: activities.length,
+        byLawfulBasis,
+        byDataCategory,
+        withInternationalTransfers,
+        averageRetentionPeriod: Math.round(averageRetentionPeriod)
+      },
+      generatedAt: new Date()
+    };
+  }
+
+  /**
+   * Get processing activity by ID
+   */
+  getProcessingActivity(id: string): ProcessingActivity | undefined {
+    return this.processingActivities.get(id);
+  }
+
+  /**
+   * Get all processing activities
+   */
+  getAllProcessingActivities(): ProcessingActivity[] {
+    return Array.from(this.processingActivities.values());
+  }
+
+  /**
+   * Get consent record by ID
+   */
+  getConsentRecord(id: string): ConsentRecord | undefined {
+    return this.consentRecords.get(id);
+  }
+
+  /**
+   * Get consent records for user
+   */
+  getUserConsents(userId: string): ConsentRecord[] {
+    return Array.from(this.consentRecords.values())
+      .filter(consent => consent.userId === userId);
+  }
+
+  /**
+   * Check if user has valid consent for purpose
+   */
+  hasValidConsent(userId: string, purpose: string): boolean {
+    const userConsents = this.getUserConsents(userId);
+    return userConsents.some(consent => 
+      !consent.withdrawn && 
+      consent.purposes.includes(purpose)
+    );
+  }
+
+  /**
+   * Get service configuration
+   */
+  getConfiguration(): GDPRServiceConfig {
+    return { ...this.config };
+  }
+}
+
+/**
+ * Factory function to create GDPR service
+ */
+export function createGDPRService(config: GDPRServiceConfig): GDPRComplianceService {
+  return new GDPRComplianceService(config);
+}
+
+/**
+ * Default GDPR service configuration for {{projectName}}
+ */
+export const defaultGDPRConfig: GDPRServiceConfig = {
+  projectName: '{{projectName}}',
+  dataCategories: [
+    {{#each dataCategories}}
+    '{{this}}',
+    {{/each}}
+  ] as DataCategory[],
+  lawfulBasis: '{{lawfulBasis}}' as GDPRLawfulBasis,
+  dataRetentionPeriod: {{dataRetentionPeriod}},
+  {{#if organisationalMeasures.dataProtectionOfficer}}
+  dataProtectionOfficer: {
+    name: process.env.DPO_NAME || 'Data Protection Officer',
+    email: process.env.DPO_EMAIL || 'dpo@{{projectName}}.no',
+    phone: process.env.DPO_PHONE || '+47 xxx xxx xx'
+  },
+  {{/if}}
+  privacyPolicyUrl: '/privacy-policy',
+  cookiePolicyUrl: '/cookie-policy',
+  dataSubjectRightsEnabled: {
+    rightToAccess: {{dataSubjectRights.rightToAccess}},
+    rightToRectification: {{dataSubjectRights.rightToRectification}},
+    rightToErasure: {{dataSubjectRights.rightToErasure}},
+    rightToRestrictProcessing: {{dataSubjectRights.rightToRestrictProcessing}},
+    rightToDataPortability: {{dataSubjectRights.rightToDataPortability}},
+    rightToObject: {{dataSubjectRights.rightToObject}},
+    rightsAutomatedDecisionMaking: {{dataSubjectRights.rightsAutomatedDecisionMaking}}
+  }
+};
+
+/**
+ * Singleton GDPR service instance
+ */
+export const gdprService = createGDPRService(defaultGDPRConfig);
+
+export default gdprService;

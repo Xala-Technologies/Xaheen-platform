@@ -15,6 +15,19 @@ import { RESTAPIGenerator } from "./api/index.js";
 import { BackendGenerator } from "./backend/index.js";
 import { PrismaGenerator } from "./database/index.js";
 import { DockerGenerator } from "./infrastructure/index.js";
+// Pattern generators
+import { 
+  DDDPatternGenerator,
+  CleanArchitectureGenerator,
+  CQRSEventSourcingGenerator,
+  DependencyInjectionGenerator,
+  PATTERN_GENERATORS,
+  PatternGeneratorFactory,
+  getPatternGenerator,
+  isPatternGeneratorSupported,
+  getPatternHelp,
+  validatePatternOptions
+} from "./patterns/index.js";
 
 /**
  * Generator execution context
@@ -53,7 +66,7 @@ const GENERATOR_CATEGORIES = {
 	fullstack: ["scaffold", "crud", "auth", "feature"],
 
 	// Infrastructure generators
-	infrastructure: ["docker", "k8s", "ci", "deployment"],
+	infrastructure: ["docker", "k8s", "ci", "deployment", "terraform"],
 
 	// Integration generators
 	integration: ["webhook", "queue", "cron", "worker", "integration"],
@@ -63,6 +76,12 @@ const GENERATOR_CATEGORIES = {
 
 	// Configuration generators
 	config: ["config", "env", "docs"],
+
+	// Pattern generators
+	patterns: ["ddd", "clean-architecture", "cqrs", "event-sourcing", "di", "adapter"],
+
+	// Compliance generators
+	compliance: ["nsm-security", "gdpr-compliance"],
 } as const;
 
 /**
@@ -389,6 +408,189 @@ async function executeConfigGenerator(
 }
 
 /**
+ * Execute pattern generator
+ */
+async function executePatternGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options, projectInfo } = context;
+
+	// Extract pattern type from the name (e.g., "ddd:aggregate" -> "ddd")
+	const [patternType, subPattern] = name.includes(':') ? name.split(':', 2) : [type, name];
+
+	// Validate pattern generator exists
+	if (!isPatternGeneratorSupported(patternType)) {
+		return {
+			success: false,
+			message: `Unknown pattern generator: ${patternType}`,
+			error: `Pattern generator '${patternType}' is not supported. Available patterns: ${Object.keys(PATTERN_GENERATORS).join(', ')}`,
+		};
+	}
+
+	// Validate pattern options
+	const validationErrors = validatePatternOptions(`${patternType}:${subPattern}`, options);
+	if (validationErrors.length > 0) {
+		return {
+			success: false,
+			message: `Pattern validation failed`,
+			error: `Validation errors: ${validationErrors.join(', ')}`,
+		};
+	}
+
+	try {
+		// Create pattern generator instance
+		const generator = PatternGeneratorFactory.create(patternType, process.cwd());
+
+		// Execute pattern generation
+		const result = await generator.generate(subPattern || name, options, projectInfo);
+
+		// Add pattern-specific help information
+		const patternHelp = getPatternHelp(patternType);
+		if (patternHelp && result.success) {
+			result.nextSteps = [
+				...(result.nextSteps || []),
+				'',
+				'Pattern Documentation:',
+				`- ${patternHelp.description}`,
+				`- Available patterns: ${patternHelp.patterns.join(', ')}`,
+				'',
+				'Example commands:',
+				...patternHelp.examples.map(example => `  ${example}`),
+			];
+		}
+
+		return result;
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate pattern ${patternType}:${subPattern}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
+ * Execute compliance generator
+ */
+async function executeComplianceGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options } = context;
+
+	try {
+		switch (type) {
+			case "nsm-security":
+				const { generateNSMSecurity } = await import("./compliance/nsm-security.generator");
+				await generateNSMSecurity({
+					projectName: name,
+					classification: options.classification || 'RESTRICTED',
+					dataTypes: options.dataTypes || ['personal-data'],
+					retentionPeriod: options.retentionPeriod || 365,
+					userClearance: options.userClearance || 'RESTRICTED',
+					auditLevel: options.auditLevel || 'enhanced',
+					enableWatermarks: options.enableWatermarks || true,
+					sessionTimeout: options.sessionTimeout || 240,
+					internationalTransfer: options.internationalTransfer || false,
+					outputDir: context.options.outputDir || process.cwd()
+				});
+
+				return {
+					success: true,
+					message: `NSM Security implementation for '${name}' generated successfully`,
+					files: [
+						'src/security/nsm/security-config.ts',
+						'src/security/nsm/classification-service.ts',
+						'src/security/audit/audit-logger.ts',
+						'src/components/security/ClassificationBanner.tsx',
+						'src/components/security/SecurityWatermark.tsx',
+						'src/types/security/nsm-types.ts',
+						'docs/security/NSM-Security-Guide.md'
+					],
+					commands: [
+						'npm install consola',
+						'npm run type-check',
+						'npm run security:validate'
+					],
+					nextSteps: [
+						`Configure security classification level: ${options.classification || 'RESTRICTED'}`,
+						'Set up environment variables for encryption and audit logging',
+						'Review and customize security policies',
+						'Configure user clearance levels',
+						'Test security access controls',
+						'Set up monitoring and alerting for security events'
+					],
+				};
+
+			case "gdpr-compliance":
+				const { generateGDPRCompliance } = await import("./compliance/gdpr.generator");
+				await generateGDPRCompliance({
+					projectName: name,
+					dataCategories: options.dataCategories || ['personal-data'],
+					lawfulBasis: options.lawfulBasis || 'legitimate-interests',
+					consentTypes: options.consentTypes || ['informed', 'specific'],
+					dataRetentionPeriod: options.dataRetentionPeriod || 365,
+					enableRightToErasure: options.enableRightToErasure !== false,
+					enableDataPortability: options.enableDataPortability !== false,
+					enableRightToRectification: options.enableRightToRectification !== false,
+					appointDataProtectionOfficer: options.appointDataProtectionOfficer || false,
+					performDataProtectionImpactAssessment: options.performDataProtectionImpactAssessment || false,
+					enablePrivacyByDesign: options.enablePrivacyByDesign !== false,
+					enableConsentManagement: options.enableConsentManagement !== false,
+					enableAuditLogging: options.enableAuditLogging !== false,
+					internationalTransfers: options.internationalTransfers || false,
+					adequacyCountries: options.adequacyCountries || [],
+					bindingCorporateRules: options.bindingCorporateRules || false,
+					outputDir: context.options.outputDir || process.cwd()
+				});
+
+				return {
+					success: true,
+					message: `GDPR Compliance implementation for '${name}' generated successfully`,
+					files: [
+						'src/gdpr/services/gdpr-service.ts',
+						'src/gdpr/consent/consent-manager.ts',
+						'src/gdpr/data-subject-rights/data-subject-rights-service.ts',
+						'src/gdpr/workflows/data-deletion-workflow.ts',
+						'src/components/consent/ConsentBanner.tsx',
+						'src/components/privacy/PrivacyDashboard.tsx',
+						'src/types/gdpr/gdpr-types.ts',
+						'docs/gdpr/GDPR-Compliance-Guide.md'
+					],
+					commands: [
+						'npm install consola',
+						'npm run type-check',
+						'npm run gdpr:validate'
+					],
+					nextSteps: [
+						`Configure lawful basis for processing: ${options.lawfulBasis || 'legitimate-interests'}`,
+						'Set up consent management system',
+						'Configure data retention policies',
+						'Implement data subject rights procedures',
+						'Set up audit logging and monitoring',
+						'Create privacy policy and cookie policy',
+						'Configure data deletion workflows',
+						'Test GDPR compliance implementation'
+					],
+				};
+
+			default:
+				return {
+					success: false,
+					message: `Unknown compliance generator type: ${type}`,
+					error: `Compliance generator type '${type}' is not supported`,
+				};
+		}
+
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate compliance ${type}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
  * Main generator execution function
  */
 export async function executeFullStackGenerator(
@@ -432,11 +634,17 @@ export async function executeFullStackGenerator(
 				return await executeFullStackGenerator(context);
 
 			case "infrastructure":
-				const infraGenerator = createInfrastructureGenerator("docker");
-				return await infraGenerator.generate({
-					name: context.name,
+				const infraGenerator = createInfrastructureGenerator(type as any);
+				return await infraGenerator.generate(process.cwd(), {
 					type: type as any,
-					platform: context.options.platform || "kubernetes",
+					platform: context.options.platform || (type === "terraform" ? "terraform" : "kubernetes"),
+					environment: context.options.environment || "development",
+					services: context.options.services || [],
+					monitoring: context.options.monitoring || false,
+					logging: context.options.logging || false,
+					security: context.options.security || false,
+					scaling: context.options.scaling || false,
+					backup: context.options.backup || false,
 				});
 
 			case "integration":
@@ -447,6 +655,12 @@ export async function executeFullStackGenerator(
 
 			case "config":
 				return await executeConfigGenerator(context);
+
+			case "patterns":
+				return await executePatternGenerator(context);
+
+			case "compliance":
+				return await executeComplianceGenerator(context);
 
 			default:
 				return {
@@ -521,6 +735,7 @@ export function getGeneratorHelp(type: GeneratorType): string {
 		k8s: "Generate Kubernetes manifests with best practices",
 		ci: "Generate CI/CD pipeline configuration",
 		deployment: "Generate deployment scripts for cloud platforms",
+		terraform: "Generate Terraform infrastructure as code for AWS, Azure, and GCP",
 
 		// Integration
 		webhook: "Generate webhook handler with validation",
@@ -538,6 +753,18 @@ export function getGeneratorHelp(type: GeneratorType): string {
 		config: "Generate configuration module with validation",
 		env: "Generate environment configuration files",
 		docs: "Generate documentation with API specs",
+
+		// Patterns
+		ddd: "Generate Domain-Driven Design patterns (bounded contexts, aggregates, entities)",
+		"clean-architecture": "Generate Clean Architecture patterns (use cases, adapters, interfaces)",
+		cqrs: "Generate CQRS patterns (commands, queries, events, projections)",
+		"event-sourcing": "Generate Event Sourcing patterns (event store, snapshots, replay)",
+		di: "Generate Dependency Injection patterns (containers, services, adapters)",
+		adapter: "Generate Adapter patterns for external integrations",
+
+		// Compliance
+		"nsm-security": "Generate NSM-compliant security classifications and access controls",
+		"gdpr-compliance": "Generate GDPR-compliant data protection and privacy systems",
 	};
 
 	return helpTexts[type] || `Generate ${type} with best practices`;

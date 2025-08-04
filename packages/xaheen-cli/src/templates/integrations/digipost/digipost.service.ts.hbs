@@ -1,0 +1,659 @@
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import * as https from 'https';
+import * as fs from 'fs';
+
+/**
+ * {{name}} Digipost Service
+ * Norwegian digital mailbox integration with enterprise-grade features
+ * Environment: {{environment}}
+ * Features: {{#each features}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ */
+@Injectable()
+export class DigipostService {
+  private readonly logger = new Logger(DigipostService.name);
+  private readonly httpsAgent: https.Agent;
+
+  private readonly baseUrl = '{{#if (eq environment "production")}}https://api.digipost.no{{else}}https://api-test.digipost.no{{/if}}';
+  private readonly brokerId = process.env.DIGIPOST_BROKER_ID || '{{authentication.brokerId}}';
+
+  constructor(private readonly httpService: HttpService) {
+    this.httpsAgent = this.createHttpsAgent();
+  }
+
+  /**
+   * Send document to Norwegian recipient
+   * @param document The document to send
+   * @param recipient The recipient information
+   */
+  async sendDocument(
+    document: DigipostDocument,
+    recipient: DigipostRecipient
+  ): Promise<{
+    messageId: string;
+    status: 'sent' | 'queued';
+    estimatedDelivery?: Date;
+  }> {
+    try {
+      this.validateDocument(document);
+      this.validateNorwegianRecipient(recipient);
+
+      const message: DigipostMessage = {
+        recipient,
+        document,
+        deliveryOptions: {
+          primaryDocument: true,
+          deliveryMethod: recipient.deliveryMethod || 'DIGIPOST_WITH_PRINT_FALLBACK',
+        },
+      };
+
+      this.logger.log(`Sending document "${document.subject}" to ${recipient.identificationType}: ${this.maskIdentifier(recipient.identificationValue)}`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/documents`,
+          message,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Document sent successfully. Message ID: ${response.data.messageId}`);
+
+      return {
+        messageId: response.data.messageId,
+        status: 'sent',
+        estimatedDelivery: this.calculateEstimatedDelivery(),
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to send document: ${error.message}`, error.stack);
+      throw this.handleDigipostError(error);
+    }
+  }
+
+  {{#if (includes features "bulk-sending")}}
+  /**
+   * Send batch of documents
+   */
+  async sendBatch(batch: DigipostBatch): Promise<{
+    batchId: string;
+    totalMessages: number;
+    status: 'processing' | 'completed' | 'failed';
+  }> {
+    try {
+      if (batch.messages.length > 1000) {
+        throw new HttpException(
+          'Batch size exceeds maximum limit of 1000',
+          HttpStatus.BAD_REQUEST
+        );
+      }
+
+      // Validate all documents and recipients
+      batch.messages.forEach((message, index) => {
+        try {
+          this.validateDocument(message.document);
+          this.validateNorwegianRecipient(message.recipient);
+        } catch (error: any) {
+          throw new HttpException(
+            `Validation failed for message ${index + 1}: ${error.message}`,
+            HttpStatus.BAD_REQUEST
+          );
+        }
+      });
+
+      this.logger.log(`Sending batch with ${batch.messages.length} messages`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/batches`,
+          batch,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Batch sent successfully. Batch ID: ${response.data.batchId}`);
+
+      return {
+        batchId: response.data.batchId,
+        totalMessages: batch.messages.length,
+        status: 'processing',
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to send batch: ${error.message}`, error.stack);
+      throw this.handleDigipostError(error);
+    }
+  }
+  {{/if}}
+
+  {{#if (includes features "document-tracking")}}
+  /**
+   * Track document delivery status
+   */
+  async getDeliveryStatus(messageId: string): Promise<DigipostDeliveryStatus> {
+    try {
+      this.logger.log(`Fetching delivery status for message ${messageId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.baseUrl}/tracking/${messageId}`,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Delivery status retrieved: ${response.data.status}`);
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(`Failed to get delivery status for message ${messageId}: ${error.message}`);
+      throw this.handleDigipostError(error);
+    }
+  }
+  {{/if}}
+
+  {{#if (includes features "digital-signatures")}}
+  /**
+   * Create digital signature job
+   */
+  async createSignatureJob(signatureJob: DigipostSignatureJob): Promise<{
+    signatureJobId: string;
+    signatureUrl: string;
+    expiresAt: Date;
+  }> {
+    try {
+      this.validateDocument(signatureJob.document);
+      
+      // Validate Norwegian signers
+      signatureJob.signers.forEach((signer, index) => {
+        if (!this.isValidNorwegianSSN(signer.personalIdentificationNumber)) {
+          throw new HttpException(
+            `Invalid Norwegian SSN for signer ${index + 1}`,
+            HttpStatus.BAD_REQUEST
+          );
+        }
+      });
+
+      this.logger.log(`Creating signature job "${signatureJob.title}" with ${signatureJob.signers.length} signers`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/signatures`,
+          signatureJob,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Signature job created successfully: ${response.data.signatureJobId}`);
+
+      return {
+        signatureJobId: response.data.signatureJobId,
+        signatureUrl: response.data.signatureUrl,
+        expiresAt: new Date(response.data.expiresAt),
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to create signature job: ${error.message}`, error.stack);
+      throw this.handleDigipostError(error);
+    }
+  }
+
+  /**
+   * Get signature job status
+   */
+  async getSignatureJobStatus(signatureJobId: string): Promise<{
+    status: 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
+    completedSignatures: number;
+    totalSignatures: number;
+    signedDocument?: Buffer;
+  }> {
+    try {
+      this.logger.log(`Fetching signature job status: ${signatureJobId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.baseUrl}/signatures/${signatureJobId}/status`,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      return {
+        status: response.data.status,
+        completedSignatures: response.data.completedSignatures,
+        totalSignatures: response.data.totalSignatures,
+        signedDocument: response.data.signedDocument ? Buffer.from(response.data.signedDocument, 'base64') : undefined,
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to get signature job status: ${error.message}`);
+      throw this.handleDigipostError(error);
+    }
+  }
+  {{/if}}
+
+  {{#if (includes features "template-based-documents")}}
+  /**
+   * Generate document from template
+   */
+  async generateFromTemplate(
+    templateId: string,
+    parameters: Record<string, any>,
+    recipient: DigipostRecipient
+  ): Promise<{
+    messageId: string;
+    generatedDocument: DigipostDocument;
+  }> {
+    try {
+      this.validateNorwegianRecipient(recipient);
+
+      const templateRequest = {
+        templateId,
+        parameters,
+        recipient,
+      };
+
+      this.logger.log(`Generating document from template ${templateId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/templates/generate`,
+          templateRequest,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Document generated successfully from template`);
+
+      return {
+        messageId: response.data.messageId,
+        generatedDocument: response.data.document,
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to generate document from template: ${error.message}`);
+      throw this.handleDigipostError(error);
+    }
+  }
+  {{/if}}
+
+  {{#if (includes features "print-fallback")}}
+  /**
+   * Create print job for physical delivery
+   */
+  async createPrintJob(printJob: DigipostPrintJob): Promise<{
+    printJobId: string;
+    estimatedDelivery: Date;
+  }> {
+    try {
+      // Validate all documents
+      printJob.documents.forEach(doc => this.validateDocument(doc));
+      
+      // Validate recipients have physical addresses
+      printJob.recipients.forEach(recipient => {
+        if (!recipient.address) {
+          throw new HttpException(
+            'Physical address required for print delivery',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+      });
+
+      this.logger.log(`Creating print job with ${printJob.documents.length} documents for ${printJob.recipients.length} recipients`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/print`,
+          printJob,
+          {
+            headers: this.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }
+        )
+      );
+
+      this.logger.log(`Print job created successfully: ${response.data.printJobId}`);
+
+      return {
+        printJobId: response.data.printJobId,
+        estimatedDelivery: new Date(response.data.estimatedDelivery),
+      };
+    } catch (error: any) {
+      this.logger.error(`Failed to create print job: ${error.message}`);
+      throw this.handleDigipostError(error);
+    }
+  }
+  {{/if}}
+
+  /**
+   * Create HTTPS agent with client certificate
+   */
+  private createHttpsAgent(): https.Agent {
+    try {
+      const keyStorePath = process.env.DIGIPOST_KEYSTORE_PATH || '{{authentication.keyStore}}';
+      
+      if (fs.existsSync(keyStorePath)) {
+        // In production, properly parse the keystore (PKCS#12) and extract certificate
+        // For now, create basic HTTPS agent
+        return new https.Agent({
+          rejectUnauthorized: true,
+          keepAlive: true,
+          maxSockets: 10,
+        });
+      } else {
+        this.logger.warn(`Keystore file not found: ${keyStorePath}`);
+        return new https.Agent({
+          rejectUnauthorized: true,
+        });
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to create HTTPS agent: ${error.message}`);
+      throw new HttpException(
+        'Certificate configuration error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Get HTTP headers for Digipost API
+   */
+  private getHeaders(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': '{{name}}-digipost/1.0.0',
+      'X-Digipost-UserId': this.brokerId,
+      'X-Request-ID': this.generateRequestId(),
+      'X-TimeStamp': new Date().toISOString(),
+      'Accept-Language': 'nb-NO,en;q=0.8',
+    };
+  }
+
+  /**
+   * Validate document according to Norwegian standards
+   */
+  private validateDocument(document: DigipostDocument): void {
+    if (!document.subject || document.subject.trim().length === 0) {
+      throw new HttpException(
+        'Document subject is required',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const acceptedFormats = ['PDF', 'PDF_A1', 'PDF_A2'];
+    if (!acceptedFormats.includes(document.fileType)) {
+      throw new HttpException(
+        `Unsupported file type. Accepted formats: ${acceptedFormats.join(', ')}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    // Validate content size (50MB max)
+    const contentSize = Buffer.isBuffer(document.content) 
+      ? document.content.length 
+      : Buffer.from(document.content, 'base64').length;
+
+    if (contentSize > 50 * 1024 * 1024) {
+      throw new HttpException(
+        'Document size exceeds maximum limit of 50MB',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
+  /**
+   * Validate Norwegian recipient
+   */
+  private validateNorwegianRecipient(recipient: DigipostRecipient): void {
+    switch (recipient.identificationType) {
+      case 'PERSONAL_IDENTIFICATION_NUMBER':
+        if (!this.isValidNorwegianSSN(recipient.identificationValue)) {
+          throw new HttpException(
+            'Invalid Norwegian personal identification number',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        break;
+        
+      case 'ORGANIZATION_NUMBER':
+        if (!this.isValidNorwegianOrgNumber(recipient.identificationValue)) {
+          throw new HttpException(
+            'Invalid Norwegian organization number',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        break;
+        
+      case 'NAME_AND_ADDRESS':
+        if (!recipient.address || recipient.address.country !== 'NO') {
+          throw new HttpException(
+            'Norwegian address required for name and address delivery',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        break;
+    }
+  }
+
+  /**
+   * Validate Norwegian SSN (11 digits with control digits)
+   */
+  private isValidNorwegianSSN(ssn: string): boolean {
+    if (!/^\d{11}$/.test(ssn)) {
+      return false;
+    }
+
+    // Validate control digits using Norwegian algorithm
+    const weights1 = [3, 7, 6, 1, 8, 9, 4, 5, 2];
+    const weights2 = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+    let sum1 = 0;
+    for (let i = 0; i < 9; i++) {
+      sum1 += parseInt(ssn[i]) * weights1[i];
+    }
+    const control1 = (11 - (sum1 % 11)) % 11;
+
+    let sum2 = 0;
+    for (let i = 0; i < 9; i++) {
+      sum2 += parseInt(ssn[i]) * weights2[i];
+    }
+    sum2 += control1 * weights2[9];
+    const control2 = (11 - (sum2 % 11)) % 11;
+
+    return parseInt(ssn[9]) === control1 && parseInt(ssn[10]) === control2;
+  }
+
+  /**
+   * Validate Norwegian organization number (9 digits with control digit)
+   */
+  private isValidNorwegianOrgNumber(orgNumber: string): boolean {
+    if (!/^\d{9}$/.test(orgNumber)) {
+      return false;
+    }
+
+    const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+    let sum = 0;
+    
+    for (let i = 0; i < 8; i++) {
+      sum += parseInt(orgNumber[i]) * weights[i];
+    }
+    
+    const remainder = sum % 11;
+    const control = remainder === 0 ? 0 : 11 - remainder;
+    
+    return parseInt(orgNumber[8]) === control;
+  }
+
+  /**
+   * Calculate estimated delivery time for Norwegian addresses
+   */
+  private calculateEstimatedDelivery(): Date {
+    const now = new Date();
+    let deliveryDate = new Date(now);
+    
+    // Add 1-2 business days for digital delivery
+    let businessDaysToAdd = 1;
+    
+    while (businessDaysToAdd > 0) {
+      deliveryDate.setDate(deliveryDate.getDate() + 1);
+      
+      // Skip weekends (Saturday = 6, Sunday = 0)
+      if (deliveryDate.getDay() !== 0 && deliveryDate.getDay() !== 6) {
+        businessDaysToAdd--;
+      }
+    }
+    
+    return deliveryDate;
+  }
+
+  /**
+   * Generate unique request ID for tracing
+   */
+  private generateRequestId(): string {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    return `digipost_${timestamp}_${random}`;
+  }
+
+  /**
+   * Mask sensitive identifiers for logging
+   */
+  private maskIdentifier(identifier: string): string {
+    if (identifier.length <= 4) {
+      return '*'.repeat(identifier.length);
+    }
+    return identifier.slice(0, 2) + '*'.repeat(identifier.length - 4) + identifier.slice(-2);
+  }
+
+  /**
+   * Handle Digipost API errors with Norwegian context
+   */
+  private handleDigipostError(error: any): HttpException {
+    const digipostError = error.response?.data;
+    const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+
+    if (digipostError?.errorCode) {
+      switch (digipostError.errorCode) {
+        case 'RECIPIENT_NOT_FOUND':
+          return new HttpException('Mottaker ikke funnet', HttpStatus.NOT_FOUND);
+        case 'INVALID_DOCUMENT_FORMAT':
+          return new HttpException('Ugyldig dokumentformat', HttpStatus.BAD_REQUEST);
+        case 'DOCUMENT_TOO_LARGE':
+          return new HttpException('Dokumentet er for stort', HttpStatus.BAD_REQUEST);
+        case 'INSUFFICIENT_PRIVILEGES':
+          return new HttpException('Utilstrekkelige rettigheter', HttpStatus.FORBIDDEN);
+        default:
+          return new HttpException(
+            `Digipost feil: ${digipostError.errorMessage}`,
+            statusCode
+          );
+      }
+    }
+
+    return new HttpException(
+      error.message || 'Digipost integrasjonsfeil',
+      statusCode
+    );
+  }
+}
+
+// Type definitions for template usage
+interface DigipostDocument {
+  subject: string;
+  fileType: 'PDF' | 'PDF_A1' | 'PDF_A2';
+  content: Buffer | string;
+  fileName: string;
+  classification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+  metadata?: any;
+  deliveryTime?: Date;
+  authenticationRequired?: boolean;
+  smsNotification?: boolean;
+  emailNotification?: boolean;
+}
+
+interface DigipostRecipient {
+  identificationType: 'PERSONAL_IDENTIFICATION_NUMBER' | 'ORGANIZATION_NUMBER' | 'DIGIPOST_ADDRESS' | 'NAME_AND_ADDRESS';
+  identificationValue: string;
+  name?: string;
+  address?: DigipostAddress;
+  deliveryMethod?: 'DIGIPOST' | 'PRINT' | 'DIGIPOST_WITH_PRINT_FALLBACK';
+  printDetails?: any;
+}
+
+interface DigipostAddress {
+  name: string;
+  addressLine1: string;
+  addressLine2?: string;
+  postalCode: string;
+  city: string;
+  country: 'NO';
+}
+
+interface DigipostMessage {
+  messageId?: string;
+  recipient: DigipostRecipient;
+  document: DigipostDocument;
+  deliveryOptions?: any;
+  requestForRegistration?: boolean;
+}
+
+interface DigipostBatch {
+  batchId?: string;
+  messages: DigipostMessage[];
+  senderInfo: any;
+  batchOptions?: any;
+  createdAt?: Date;
+  status?: string;
+}
+
+interface DigipostDeliveryStatus {
+  messageId: string;
+  status: string;
+  deliveryTime?: Date;
+  readTime?: Date;
+  deliveryMethod: string;
+  recipient: DigipostRecipient;
+  trackingEvents: any[];
+}
+
+interface DigipostSignatureJob {
+  signatureJobId?: string;
+  title: string;
+  description?: string;
+  document: DigipostDocument;
+  signers: DigipostSigner[];
+  signatureType: string;
+  authenticationLevel: string;
+  completionDeadline?: Date;
+  signaturePackaging?: string;
+  notifications?: any;
+}
+
+interface DigipostSigner {
+  personalIdentificationNumber: string;
+  name?: string;
+  email?: string;
+  mobileNumber?: string;
+  order?: number;
+  required: boolean;
+}
+
+interface DigipostPrintJob {
+  printJobId?: string;
+  documents: DigipostDocument[];
+  recipients: DigipostRecipient[];
+  printOptions: any;
+  status?: string;
+}

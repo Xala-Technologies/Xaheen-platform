@@ -1,0 +1,365 @@
+import { 
+  Controller, 
+  Post, 
+  Body, 
+  Headers, 
+  HttpCode, 
+  HttpStatus,
+  Logger,
+  BadRequestException 
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { createHmac } from 'crypto';
+
+/**
+ * {{name}} Vipps Webhook Controller
+ * Handles webhook callbacks from Vipps with Norwegian compliance
+ * Environment: {{environment}}
+ */
+@ApiTags('Vipps Webhooks')
+@Controller('webhooks/vipps')
+export class VippsWebhookController {
+  private readonly logger = new Logger(VippsWebhookController.name);
+
+  @Post('payment')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Handle Vipps payment webhook' })
+  @ApiResponse({ status: 200, description: 'Webhook processed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid webhook signature or payload' })
+  async handlePaymentWebhook(
+    @Body() payload: VippsWebhookPayload,
+    @Headers('x-vipps-signature') signature: string,
+    @Headers('x-vipps-timestamp') timestamp: string
+  ): Promise<{ success: boolean }> {
+    this.logger.log(`Received Vipps webhook for order ${payload.orderId}`);
+
+    // Verify webhook signature for security
+    if (!this.verifyWebhookSignature(payload, signature, timestamp)) {
+      this.logger.error(`Invalid webhook signature for order ${payload.orderId}`);
+      throw new BadRequestException('Invalid webhook signature');
+    }
+
+    // Verify timestamp to prevent replay attacks
+    if (!this.verifyTimestamp(timestamp)) {
+      this.logger.error(`Webhook timestamp too old for order ${payload.orderId}`);
+      throw new BadRequestException('Webhook timestamp too old');
+    }
+
+    try {
+      await this.processWebhook(payload);
+      this.logger.log(`Webhook processed successfully for order ${payload.orderId}`);
+      
+      return { success: true };
+    } catch (error: any) {
+      this.logger.error(
+        `Webhook processing failed for order ${payload.orderId}: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  {{#if (includes features "recurring-payment")}}
+  @Post('recurring')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Handle Vipps recurring payment webhook' })
+  async handleRecurringWebhook(
+    @Body() payload: VippsRecurringWebhookPayload,
+    @Headers('x-vipps-signature') signature: string,
+    @Headers('x-vipps-timestamp') timestamp: string
+  ): Promise<{ success: boolean }> {
+    this.logger.log(`Received Vipps recurring webhook for agreement ${payload.agreementId}`);
+
+    if (!this.verifyWebhookSignature(payload, signature, timestamp)) {
+      throw new BadRequestException('Invalid webhook signature');
+    }
+
+    if (!this.verifyTimestamp(timestamp)) {
+      throw new BadRequestException('Webhook timestamp too old');
+    }
+
+    try {
+      await this.processRecurringWebhook(payload);
+      return { success: true };
+    } catch (error: any) {
+      this.logger.error(`Recurring webhook processing failed: ${error.message}`);
+      throw error;
+    }
+  }
+  {{/if}}
+
+  /**
+   * Process payment webhook events
+   */
+  private async processWebhook(payload: VippsWebhookPayload): Promise<void> {
+    switch (payload.eventType) {
+      case 'payment.update':
+        await this.handlePaymentUpdate(payload);
+        break;
+        
+      case 'payment.completed':
+        await this.handlePaymentCompleted(payload);
+        break;
+        
+      case 'payment.cancelled':
+        await this.handlePaymentCancelled(payload);
+        break;
+        
+      case 'payment.expired':
+        await this.handlePaymentExpired(payload);
+        break;
+        
+      case 'payment.refunded':
+        await this.handlePaymentRefunded(payload);
+        break;
+        
+      default:
+        this.logger.warn(`Unknown webhook event type: ${payload.eventType}`);
+    }
+  }
+
+  {{#if (includes features "recurring-payment")}}
+  /**
+   * Process recurring payment webhook events
+   */
+  private async processRecurringWebhook(payload: VippsRecurringWebhookPayload): Promise<void> {
+    switch (payload.eventType) {
+      case 'recurring.charge.completed':
+        await this.handleRecurringChargeCompleted(payload);
+        break;
+        
+      case 'recurring.charge.failed':
+        await this.handleRecurringChargeFailed(payload);
+        break;
+        
+      case 'recurring.agreement.stopped':
+        await this.handleRecurringAgreementStopped(payload);
+        break;
+        
+      default:
+        this.logger.warn(`Unknown recurring webhook event type: ${payload.eventType}`);
+    }
+  }
+  {{/if}}
+
+  /**
+   * Handle payment update events
+   */
+  private async handlePaymentUpdate(payload: VippsWebhookPayload): Promise<void> {
+    this.logger.log(`Payment updated for order ${payload.orderId}: ${payload.transactionInfo.status}`);
+    
+    // Update order status in database
+    // Send notifications if needed
+    // Log for audit trail
+    
+    // Example implementation:
+    // await this.orderService.updatePaymentStatus(payload.orderId, payload.transactionInfo.status);
+  }
+
+  /**
+   * Handle successful payment completion
+   */
+  private async handlePaymentCompleted(payload: VippsWebhookPayload): Promise<void> {
+    const orderId = payload.orderId;
+    const amount = payload.transactionInfo.amount;
+    
+    this.logger.log(`Payment completed for order ${orderId}, amount: ${amount} øre`);
+    
+    // Mark order as paid
+    // Send confirmation email to customer
+    // Update inventory if applicable
+    // Generate invoice
+    // Trigger fulfillment process
+    
+    // Example implementation:
+    // await this.orderService.markAsPaid(orderId, amount);
+    // await this.emailService.sendPaymentConfirmation(orderId);
+    // await this.inventoryService.reserveItems(orderId);
+  }
+
+  /**
+   * Handle payment cancellation
+   */
+  private async handlePaymentCancelled(payload: VippsWebhookPayload): Promise<void> {
+    const orderId = payload.orderId;
+    
+    this.logger.log(`Payment cancelled for order ${orderId}`);
+    
+    // Update order status to cancelled
+    // Release any reserved inventory
+    // Send cancellation notification
+    
+    // Example implementation:
+    // await this.orderService.cancelOrder(orderId);
+    // await this.inventoryService.releaseReservation(orderId);
+  }
+
+  /**
+   * Handle payment expiration
+   */
+  private async handlePaymentExpired(payload: VippsWebhookPayload): Promise<void> {
+    const orderId = payload.orderId;
+    
+    this.logger.log(`Payment expired for order ${orderId}`);
+    
+    // Mark order as expired
+    // Release inventory reservations
+    // Clean up any temporary data
+    
+    // Example implementation:
+    // await this.orderService.expireOrder(orderId);
+  }
+
+  /**
+   * Handle payment refund events
+   */
+  private async handlePaymentRefunded(payload: VippsWebhookPayload): Promise<void> {
+    const orderId = payload.orderId;
+    const refundAmount = payload.transactionInfo.amount;
+    
+    this.logger.log(`Payment refunded for order ${orderId}, amount: ${refundAmount} øre`);
+    
+    // Update order status
+    // Send refund confirmation
+    // Update accounting records
+    // Handle partial vs full refunds
+    
+    // Example implementation:
+    // await this.orderService.processRefund(orderId, refundAmount);
+    // await this.emailService.sendRefundConfirmation(orderId, refundAmount);
+  }
+
+  {{#if (includes features "recurring-payment")}}
+  /**
+   * Handle recurring charge completion
+   */
+  private async handleRecurringChargeCompleted(payload: VippsRecurringWebhookPayload): Promise<void> {
+    this.logger.log(`Recurring charge completed for agreement ${payload.agreementId}`);
+    
+    // Update subscription status
+    // Extend service period
+    // Send receipt
+    
+    // Example implementation:
+    // await this.subscriptionService.processPayment(payload.agreementId, payload.chargeId);
+  }
+
+  /**
+   * Handle recurring charge failure
+   */
+  private async handleRecurringChargeFailed(payload: VippsRecurringWebhookPayload): Promise<void> {
+    this.logger.log(`Recurring charge failed for agreement ${payload.agreementId}`);
+    
+    // Handle failed payment
+    // Send notification to customer
+    // Update retry logic
+    
+    // Example implementation:
+    // await this.subscriptionService.handleFailedPayment(payload.agreementId, payload.failureReason);
+  }
+
+  /**
+   * Handle recurring agreement stopped
+   */
+  private async handleRecurringAgreementStopped(payload: VippsRecurringWebhookPayload): Promise<void> {
+    this.logger.log(`Recurring agreement stopped: ${payload.agreementId}`);
+    
+    // Cancel subscription
+    // Send confirmation
+    // Update billing
+    
+    // Example implementation:
+    // await this.subscriptionService.cancelSubscription(payload.agreementId);
+  }
+  {{/if}}
+
+  /**
+   * Verify webhook signature using HMAC SHA-256
+   */
+  private verifyWebhookSignature(
+    payload: any,
+    signature: string,
+    timestamp: string
+  ): boolean {
+    const webhookSecret = process.env.VIPPS_WEBHOOK_SECRET || '{{webhookSecret}}';
+    
+    if (!webhookSecret) {
+      this.logger.warn('Webhook secret not configured - skipping signature verification');
+      return true; // In development, might skip verification
+    }
+
+    try {
+      const payloadString = JSON.stringify(payload);
+      const signaturePayload = `${timestamp}.${payloadString}`;
+      
+      const expectedSignature = createHmac('sha256', webhookSecret)
+        .update(signaturePayload)
+        .digest('hex');
+      
+      const providedSignature = signature.replace('sha256=', '');
+      
+      // Use constant-time comparison to prevent timing attacks
+      return this.constantTimeEqual(expectedSignature, providedSignature);
+    } catch (error: any) {
+      this.logger.error(`Webhook signature verification failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Verify webhook timestamp to prevent replay attacks
+   */
+  private verifyTimestamp(timestamp: string): boolean {
+    try {
+      const webhookTime = parseInt(timestamp, 10) * 1000; // Convert to milliseconds
+      const currentTime = Date.now();
+      const maxAge = 5 * 60 * 1000; // 5 minutes
+      
+      return (currentTime - webhookTime) <= maxAge;
+    } catch (error: any) {
+      this.logger.error(`Webhook timestamp verification failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Constant-time string comparison to prevent timing attacks
+   */
+  private constantTimeEqual(a: string, b: string): boolean {
+    if (a.length !== b.length) {
+      return false;
+    }
+    
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    
+    return result === 0;
+  }
+}
+
+// Webhook payload interfaces
+interface VippsWebhookPayload {
+  orderId: string;
+  eventType: 'payment.update' | 'payment.completed' | 'payment.cancelled' | 'payment.expired' | 'payment.refunded';
+  transactionInfo: {
+    amount: number;
+    status: string;
+    transactionId: string;
+    timeStamp: string;
+  };
+  shippingDetails?: any;
+  userDetails?: any;
+}
+
+{{#if (includes features "recurring-payment")}}
+interface VippsRecurringWebhookPayload {
+  agreementId: string;
+  chargeId?: string;
+  eventType: 'recurring.charge.completed' | 'recurring.charge.failed' | 'recurring.agreement.stopped';
+  amount?: number;
+  failureReason?: string;
+  timestamp: string;
+}
+{{/if}}

@@ -1,0 +1,247 @@
+/**
+ * NSM Security Configuration
+ * 
+ * Norwegian Security Authority (NSM) compliant security configuration
+ * Classification: {{classification}}
+ * Generated: {{timestamp}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ * @audit-level {{auditConfig.level}}
+ */
+
+import type { NSMClassification } from '../types/security/nsm-types';
+
+export interface NSMSecurityConfig {
+  readonly classification: NSMClassification;
+  readonly metadata: {
+    readonly level: NSMClassification;
+    readonly description: string;
+    readonly requirements: readonly string[];
+    readonly restrictions: readonly string[];
+    readonly auditLevel: string;
+  };
+  readonly dataHandling: {
+    readonly encryption: boolean;
+    readonly auditTrail: boolean;
+    readonly accessControl: boolean;
+    readonly dataRetention: number;
+    readonly anonymization: boolean;
+  };
+  readonly uiRequirements: {
+    readonly watermarks: boolean;
+    readonly classificationLabels: boolean;
+    readonly restrictedActions: readonly string[];
+    readonly sessionTimeout: number;
+  };
+  readonly developmentRequirements: {
+    readonly codeReview: boolean;
+    readonly securityTesting: boolean;
+    readonly penetrationTesting: boolean;
+    readonly complianceValidation: boolean;
+  };
+}
+
+/**
+ * NSM Security Configuration for {{projectName}}
+ * Classification Level: {{classification}}
+ */
+export const nsmSecurityConfig: NSMSecurityConfig = {
+  classification: '{{classification}}' as NSMClassification,
+  metadata: {
+    level: '{{classification}}' as NSMClassification,
+    description: '{{metadata.description}}',
+    requirements: [
+      {{#each metadata.requirements}}
+      '{{this}}',
+      {{/each}}
+    ],
+    restrictions: [
+      {{#each metadata.restrictions}}
+      '{{this}}',
+      {{/each}}
+    ],
+    auditLevel: '{{metadata.auditLevel}}'
+  },
+  dataHandling: {
+    encryption: {{dataProtection.encryption}},
+    auditTrail: {{dataProtection.auditTrail}},
+    accessControl: {{dataProtection.accessControl}},
+    dataRetention: {{dataProtection.retention}},
+    anonymization: {{dataProtection.anonymization}}
+  },
+  uiRequirements: {
+    watermarks: {{uiSecurity.watermarks}},
+    classificationLabels: {{uiSecurity.classificationLabels}},
+    restrictedActions: [
+      {{#each uiSecurity.restrictedActions}}
+      '{{this}}',
+      {{/each}}
+    ],
+    sessionTimeout: {{uiSecurity.sessionTimeout}}
+  },
+  developmentRequirements: {
+    codeReview: {{developmentGuidelines.codeReview}},
+    securityTesting: {{developmentGuidelines.securityTesting}},
+    penetrationTesting: {{developmentGuidelines.penetrationTesting}},
+    complianceValidation: {{developmentGuidelines.complianceValidation}}
+  }
+};
+
+/**
+ * Security headers for {{classification}} classification
+ */
+export const securityHeaders = {
+  {{#each complianceHeaders}}
+  '{{@key}}': '{{this}}',
+  {{/each}}
+};
+
+/**
+ * Get classification-specific security policies
+ */
+export function getSecurityPolicies(): Record<string, unknown> {
+  return {
+    contentSecurityPolicy: {
+      {{#if (eq classification 'SECRET')}}
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", "data:"],
+        'connect-src': ["'self'"],
+        'font-src': ["'self'"],
+        'object-src': ["'none'"],
+        'media-src': ["'self'"],
+        'frame-src': ["'none'"],
+        'worker-src': ["'none'"],
+        'frame-ancestors': ["'none'"],
+        'form-action': ["'self'"],
+        'base-uri': ["'self'"],
+        'manifest-src': ["'self'"]
+      }
+      {{else if (eq classification 'CONFIDENTIAL')}}
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-eval'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", "data:", "https:"],
+        'connect-src': ["'self'"],
+        'font-src': ["'self'"],
+        'object-src': ["'none'"],
+        'media-src': ["'self'"],
+        'frame-ancestors': ["'self'"],
+        'form-action': ["'self'"],
+        'base-uri': ["'self'"]
+      }
+      {{else if (eq classification 'RESTRICTED')}}
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", "data:", "https:"],
+        'connect-src': ["'self'", "https:"],
+        'font-src': ["'self'", "https:"],
+        'frame-ancestors': ["'self'"],
+        'form-action': ["'self'"]
+      }
+      {{else}}
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", "data:", "https:"],
+        'connect-src': ["'self'", "https:", "wss:"],
+        'font-src': ["'self'", "https:"],
+        'form-action': ["'self'"]
+      }
+      {{/if}}
+    },
+    {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+    strictTransportSecurity: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    },
+    {{/if}}
+    {{#if uiSecurity.watermarks}}
+    watermarkPolicy: {
+      enabled: true,
+      text: '{{classification}} CLASSIFICATION',
+      position: 'bottom-right',
+      opacity: 0.1
+    },
+    {{/if}}
+    sessionPolicy: {
+      timeout: {{uiSecurity.sessionTimeout}},
+      {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+      secure: true,
+      httpOnly: true,
+      sameSite: 'strict'
+      {{else}}
+      secure: true,
+      httpOnly: true,
+      sameSite: 'lax'
+      {{/if}}
+    }
+  };
+}
+
+/**
+ * Validate security configuration compliance
+ */
+export function validateSecurityCompliance(): {
+  compliant: boolean;
+  issues: string[];
+} {
+  const issues: string[] = [];
+
+  // Check encryption requirements
+  {{#if dataProtection.encryption}}
+  if (!process.env.ENCRYPTION_KEY) {
+    issues.push('Encryption key not configured for {{classification}} classification');
+  }
+  {{/if}}
+
+  // Check audit trail requirements
+  {{#if dataProtection.auditTrail}}
+  if (!process.env.AUDIT_LOG_ENDPOINT) {
+    issues.push('Audit logging not configured for {{classification}} classification');
+  }
+  {{/if}}
+
+  // Check access control
+  {{#if dataProtection.accessControl}}
+  if (!process.env.ACCESS_CONTROL_SERVICE) {
+    issues.push('Access control service not configured for {{classification}} classification');
+  }
+  {{/if}}
+
+  {{#if (eq classification 'SECRET')}}
+  // SECRET classification specific checks
+  if (!process.env.HSM_ENDPOINT) {
+    issues.push('Hardware Security Module not configured for SECRET classification');
+  }
+  
+  if (!process.env.QUANTUM_RESISTANT_CRYPTO) {
+    issues.push('Quantum-resistant cryptography not enabled for SECRET classification');
+  }
+  {{/if}}
+
+  {{#if (eq classification 'CONFIDENTIAL')}}
+  // CONFIDENTIAL classification specific checks
+  if (!process.env.MFA_PROVIDER) {
+    issues.push('Multi-factor authentication not configured for CONFIDENTIAL classification');
+  }
+  {{/if}}
+
+  return {
+    compliant: issues.length === 0,
+    issues
+  };
+}
+
+/**
+ * Export default configuration
+ */
+export default nsmSecurityConfig;

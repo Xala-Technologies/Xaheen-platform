@@ -1,0 +1,472 @@
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+
+/**
+ * {{name}} Norwegian Compliance Service
+ * Handles Norwegian regulatory compliance for payment and document integrations
+ * Environment: {{environment}}
+ */
+@Injectable()
+export class NorwegianComplianceService {
+  private readonly logger = new Logger(NorwegianComplianceService.name);
+
+  /**
+   * Validate Norwegian Social Security Number (Fødselsnummer)
+   */
+  validateNorwegianSSN(ssn: string): {
+    isValid: boolean;
+    errors: string[];
+    formatted?: string;
+  } {
+    const errors: string[] = [];
+
+    // Remove spaces and hyphens
+    const cleaned = ssn.replace(/[\s-]/g, '');
+
+    // Check length
+    if (cleaned.length !== 11) {
+      errors.push('Fødselsnummer må være 11 siffer');
+      return { isValid: false, errors };
+    }
+
+    // Check if all characters are digits
+    if (!/^\d{11}$/.test(cleaned)) {
+      errors.push('Fødselsnummer må kun inneholde tall');
+      return { isValid: false, errors };
+    }
+
+    // Validate birth date part (DDMMYY)
+    const day = parseInt(cleaned.substring(0, 2), 10);
+    const month = parseInt(cleaned.substring(2, 4), 10);
+    const year = parseInt(cleaned.substring(4, 6), 10);
+
+    if (day < 1 || day > 31) {
+      errors.push('Ugyldig dag i fødselsnummer');
+    }
+
+    if (month < 1 || month > 12) {
+      errors.push('Ugyldig måned i fødselsnummer');
+    }
+
+    // Validate control digits using Norwegian algorithm
+    const controlDigitsValid = this.validateNorwegianControlDigits(cleaned);
+    if (!controlDigitsValid) {
+      errors.push('Ugyldig kontrollsiffer i fødselsnummer');
+    }
+
+    const isValid = errors.length === 0;
+    const formatted = isValid ? `${cleaned.substring(0, 6)}-${cleaned.substring(6)}` : undefined;
+
+    return { isValid, errors, formatted };
+  }
+
+  /**
+   * Validate Norwegian Organization Number (Organisasjonsnummer)
+   */
+  validateNorwegianOrgNumber(orgNumber: string): {
+    isValid: boolean;
+    errors: string[];
+    formatted?: string;
+  } {
+    const errors: string[] = [];
+
+    // Remove spaces
+    const cleaned = orgNumber.replace(/\s/g, '');
+
+    // Check length
+    if (cleaned.length !== 9) {
+      errors.push('Organisasjonsnummer må være 9 siffer');
+      return { isValid: false, errors };
+    }
+
+    // Check if all characters are digits
+    if (!/^\d{9}$/.test(cleaned)) {
+      errors.push('Organisasjonsnummer må kun inneholde tall');
+      return { isValid: false, errors };
+    }
+
+    // Validate control digit
+    const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+    let sum = 0;
+    
+    for (let i = 0; i < 8; i++) {
+      sum += parseInt(cleaned[i]) * weights[i];
+    }
+    
+    const remainder = sum % 11;
+    const expectedControl = remainder === 0 ? 0 : 11 - remainder;
+    const actualControl = parseInt(cleaned[8]);
+
+    if (actualControl !== expectedControl) {
+      errors.push('Ugyldig kontrollsiffer i organisasjonsnummer');
+    }
+
+    const isValid = errors.length === 0;
+    const formatted = isValid ? `${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6)}` : undefined;
+
+    return { isValid, errors, formatted };
+  }
+
+  /**
+   * Validate Norwegian phone number
+   */
+  validateNorwegianPhoneNumber(phoneNumber: string): {
+    isValid: boolean;
+    errors: string[];
+    formatted?: string;
+  } {
+    const errors: string[] = [];
+
+    // Remove spaces, hyphens, and parentheses
+    let cleaned = phoneNumber.replace(/[\s\-()]/g, '');
+
+    // Handle different formats
+    if (cleaned.startsWith('0047')) {
+      cleaned = `+47${cleaned.substring(4)}`;
+    } else if (cleaned.startsWith('47') && cleaned.length === 10) {
+      cleaned = `+${cleaned}`;
+    } else if (!cleaned.startsWith('+47') && cleaned.length === 8) {
+      cleaned = `+47${cleaned}`;
+    }
+
+    // Validate Norwegian mobile number format
+    if (!/^\+47[4-9]\d{7}$/.test(cleaned)) {
+      errors.push('Ugyldig norsk mobilnummer. Må være 8 siffer og starte med 4-9');
+    }
+
+    const isValid = errors.length === 0;
+    const formatted = isValid ? `${cleaned.substring(0, 3)} ${cleaned.substring(3, 5)} ${cleaned.substring(5, 8)} ${cleaned.substring(8)}` : undefined;
+
+    return { isValid, errors, formatted };
+  }
+
+  /**
+   * Validate Norwegian postal code
+   */
+  validateNorwegianPostalCode(postalCode: string): {
+    isValid: boolean;
+    errors: string[];
+    city?: string;
+  } {
+    const errors: string[] = [];
+    const cleaned = postalCode.replace(/\s/g, '');
+
+    // Check format (4 digits)
+    if (!/^\d{4}$/.test(cleaned)) {
+      errors.push('Postnummer må være 4 siffer');
+      return { isValid: false, errors };
+    }
+
+    // Check valid range (0001-9999, but some ranges are not in use)
+    const code = parseInt(cleaned, 10);
+    if (code < 1 || code > 9999) {
+      errors.push('Ugyldig postnummer');
+    }
+
+    // In a real implementation, you would lookup the city from a postal code database
+    const city = this.lookupNorwegianCity(cleaned);
+    
+    if (!city && errors.length === 0) {
+      errors.push('Ukjent postnummer');
+    }
+
+    return { 
+      isValid: errors.length === 0, 
+      errors,
+      city: city || undefined 
+    };
+  }
+
+  /**
+   * Validate Norwegian bank account number (Kontonummer)
+   */
+  validateNorwegianBankAccount(accountNumber: string): {
+    isValid: boolean;
+    errors: string[];
+    formatted?: string;
+  } {
+    const errors: string[] = [];
+    const cleaned = accountNumber.replace(/[\s.]/g, '');
+
+    // Check length (11 digits)
+    if (cleaned.length !== 11) {
+      errors.push('Kontonummer må være 11 siffer');
+      return { isValid: false, errors };
+    }
+
+    // Check if all characters are digits
+    if (!/^\d{11}$/.test(cleaned)) {
+      errors.push('Kontonummer må kun inneholde tall');
+      return { isValid: false, errors };
+    }
+
+    // Validate using MOD11 algorithm
+    const weights = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let sum = 0;
+
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cleaned[i]) * weights[i];
+    }
+
+    const remainder = sum % 11;
+    const expectedControl = remainder === 0 ? 0 : 11 - remainder;
+    const actualControl = parseInt(cleaned[10]);
+
+    if (expectedControl === 10 || actualControl !== expectedControl) {
+      errors.push('Ugyldig kontrollsiffer i kontonummer');
+    }
+
+    const isValid = errors.length === 0;
+    const formatted = isValid ? `${cleaned.substring(0, 4)}.${cleaned.substring(4, 6)}.${cleaned.substring(6)}` : undefined;
+
+    return { isValid, errors, formatted };
+  }
+
+  /**
+   * Check GDPR compliance for data processing
+   */
+  validateGDPRCompliance(dataProcessing: GDPRDataProcessing): {
+    isCompliant: boolean;
+    issues: string[];
+    recommendations: string[];
+  } {
+    const issues: string[] = [];
+    const recommendations: string[] = [];
+
+    // Check for legal basis
+    if (!dataProcessing.legalBasis) {
+      issues.push('Mangler rettslig grunnlag for behandling av personopplysninger');
+      recommendations.push('Spesifiser rettslig grunnlag i henhold til GDPR artikkel 6');
+    }
+
+    // Check for purpose limitation
+    if (!dataProcessing.purpose || dataProcessing.purpose.trim().length === 0) {
+      issues.push('Mangler spesifisering av formål med databehandling');
+      recommendations.push('Definer klart formål for databehandlingen');
+    }
+
+    // Check data retention period
+    if (!dataProcessing.retentionPeriod) {
+      issues.push('Mangler oppbevaringsperiode for personopplysninger');
+      recommendations.push('Sett passende oppbevaringsperiode basert på formål');
+    }
+
+    // Check for consent if required
+    if (dataProcessing.requiresConsent && !dataProcessing.hasConsent) {
+      issues.push('Mangler samtykke fra registrerte person');
+      recommendations.push('Innhent eksplisitt samtykke før databehandling');
+    }
+
+    // Check data minimization
+    if (dataProcessing.dataTypes && dataProcessing.dataTypes.includes('sensitive')) {
+      if (!dataProcessing.hasSpecialCategoryJustification) {
+        issues.push('Behandling av sensitive personopplysninger krever særskilt hjemmel');
+        recommendations.push('Dokumenter hjemmel for behandling av sensitive opplysninger');
+      }
+    }
+
+    // Check data transfer outside EU/EEA
+    if (dataProcessing.dataTransferOutsideEU && !dataProcessing.hasTransferMechanism) {
+      issues.push('Overføring til tredjeland krever passende sikkerhetstiltak');
+      recommendations.push('Implementer passende overføringmekanisme (f.eks. standardavtaler)');
+    }
+
+    return {
+      isCompliant: issues.length === 0,
+      issues,
+      recommendations,
+    };
+  }
+
+  /**
+   * Generate audit log entry for compliance
+   */
+  generateComplianceAuditLog(
+    action: string,
+    dataSubject?: string,
+    legalBasis?: string,
+    purpose?: string
+  ): ComplianceAuditEntry {
+    return {
+      timestamp: new Date().toISOString(),
+      action,
+      dataSubject: dataSubject ? this.hashPersonalIdentifier(dataSubject) : undefined,
+      legalBasis,
+      purpose,
+      ipAddress: this.getCurrentIP(),
+      userAgent: this.getCurrentUserAgent(),
+      sessionId: this.getCurrentSessionId(),
+    };
+  }
+
+  /**
+   * Check if current time is within Norwegian business hours
+   */
+  isNorwegianBusinessHours(): boolean {
+    const now = new Date();
+    const norTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Oslo"}));
+    
+    const hour = norTime.getHours();
+    const dayOfWeek = norTime.getDay();
+    
+    // Monday = 1, Sunday = 0
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+    const isBusinessHour = hour >= 8 && hour < 17; // 08:00 - 17:00
+    
+    return isWeekday && isBusinessHour;
+  }
+
+  /**
+   * Get Norwegian holidays for a given year
+   */
+  getNorwegianHolidays(year: number): Date[] {
+    const holidays: Date[] = [];
+    
+    // Fixed holidays
+    holidays.push(new Date(year, 0, 1));   // New Year's Day
+    holidays.push(new Date(year, 4, 1));   // Labor Day
+    holidays.push(new Date(year, 4, 17));  // Constitution Day
+    holidays.push(new Date(year, 11, 25)); // Christmas Day
+    holidays.push(new Date(year, 11, 26)); // Boxing Day
+    
+    // Calculate Easter-dependent holidays
+    const easter = this.calculateEaster(year);
+    holidays.push(new Date(easter.getTime() - 3 * 24 * 60 * 60 * 1000)); // Maundy Thursday
+    holidays.push(new Date(easter.getTime() - 2 * 24 * 60 * 60 * 1000)); // Good Friday
+    holidays.push(easter); // Easter Sunday
+    holidays.push(new Date(easter.getTime() + 1 * 24 * 60 * 60 * 1000)); // Easter Monday
+    holidays.push(new Date(easter.getTime() + 39 * 24 * 60 * 60 * 1000)); // Ascension Day
+    holidays.push(new Date(easter.getTime() + 49 * 24 * 60 * 60 * 1000)); // Whit Sunday
+    holidays.push(new Date(easter.getTime() + 50 * 24 * 60 * 60 * 1000)); // Whit Monday
+    
+    return holidays.sort((a, b) => a.getTime() - b.getTime());
+  }
+
+  /**
+   * Calculate business days between two dates (Norwegian calendar)
+   */
+  calculateNorwegianBusinessDays(startDate: Date, endDate: Date): number {
+    const holidays = this.getNorwegianHolidays(startDate.getFullYear());
+    const holidaySet = new Set(holidays.map(h => h.toDateString()));
+    
+    let businessDays = 0;
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isHoliday = holidaySet.has(currentDate.toDateString());
+      
+      if (!isWeekend && !isHoliday) {
+        businessDays++;
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return businessDays;
+  }
+
+  // Private helper methods
+
+  private validateNorwegianControlDigits(ssn: string): boolean {
+    const weights1 = [3, 7, 6, 1, 8, 9, 4, 5, 2];
+    const weights2 = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+    let sum1 = 0;
+    for (let i = 0; i < 9; i++) {
+      sum1 += parseInt(ssn[i]) * weights1[i];
+    }
+    const control1 = (11 - (sum1 % 11)) % 11;
+    if (control1 === 10) return false;
+
+    let sum2 = 0;
+    for (let i = 0; i < 9; i++) {
+      sum2 += parseInt(ssn[i]) * weights2[i];
+    }
+    sum2 += control1 * weights2[9];
+    const control2 = (11 - (sum2 % 11)) % 11;
+    if (control2 === 10) return false;
+
+    return parseInt(ssn[9]) === control1 && parseInt(ssn[10]) === control2;
+  }
+
+  private lookupNorwegianCity(postalCode: string): string | null {
+    // Simplified city lookup - in production, use complete postal code database
+    const cities: Record<string, string> = {
+      '0001': 'Oslo',
+      '0010': 'Oslo',
+      '0051': 'Oslo',
+      '5020': 'Bergen',
+      '7010': 'Trondheim',
+      '4010': 'Stavanger',
+      '9005': 'Tromsø',
+    };
+    
+    return cities[postalCode] || null;
+  }
+
+  private calculateEaster(year: number): Date {
+    // Simplified Easter calculation (Gregorian calendar)
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    
+    return new Date(year, month - 1, day);
+  }
+
+  private hashPersonalIdentifier(identifier: string): string {
+    // Hash personal identifiers for audit logs to protect privacy
+    const crypto = require('crypto');
+    return crypto.createHash('sha256').update(identifier).digest('hex').substring(0, 16);
+  }
+
+  private getCurrentIP(): string {
+    // In a real implementation, extract from request context
+    return '0.0.0.0';
+  }
+
+  private getCurrentUserAgent(): string {
+    // In a real implementation, extract from request context
+    return 'unknown';
+  }
+
+  private getCurrentSessionId(): string {
+    // In a real implementation, get current session ID
+    return 'unknown';
+  }
+}
+
+// Type definitions
+interface GDPRDataProcessing {
+  legalBasis?: string;
+  purpose?: string;
+  retentionPeriod?: number; // days
+  requiresConsent?: boolean;
+  hasConsent?: boolean;
+  dataTypes?: string[];
+  hasSpecialCategoryJustification?: boolean;
+  dataTransferOutsideEU?: boolean;
+  hasTransferMechanism?: boolean;
+}
+
+interface ComplianceAuditEntry {
+  timestamp: string;
+  action: string;
+  dataSubject?: string; // Hashed
+  legalBasis?: string;
+  purpose?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  sessionId?: string;
+}

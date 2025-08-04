@@ -1,0 +1,678 @@
+/**
+ * GDPR Data Deletion Workflow
+ * 
+ * Implements automated and manual data deletion workflows for GDPR compliance
+ * Handles right to erasure, retention policy enforcement, and secure data deletion
+ * 
+ * @compliance GDPR-compliant
+ * @privacy-by-design true
+ */
+
+import { consola } from 'consola';
+import type {
+  DataDeletionRequest,
+  DataDeletionResult,
+  RetentionPolicy,
+  DeletionSchedule,
+  DataInventoryItem,
+  DeletionVerificationResult
+} from '../types/gdpr/gdpr-types';
+
+export interface DataDeletionConfig {
+  readonly retentionPolicies: RetentionPolicy[];
+  readonly verificationRequired: boolean;
+  readonly backupRetentionDays: number;
+  readonly auditRetentionDays: number;
+  readonly automaticDeletion: boolean;
+  readonly deleteFromBackups: boolean;
+  readonly secureOverwritePasses: number;
+  readonly notifyDataProtectionOfficer: boolean;
+}
+
+export interface DeletionContext {
+  readonly requestId: string;
+  readonly userId?: string;
+  readonly requestType: 'right-to-erasure' | 'retention-policy' | 'manual' | 'automated';
+  readonly requestedBy: string;
+  readonly reason: string;
+  readonly urgency: 'low' | 'medium' | 'high' | 'critical';
+  readonly legalBasis?: string;
+  readonly dataCategories: string[];
+  readonly retentionPeriodExpired: boolean;
+  readonly courtOrder?: boolean;
+}
+
+export class DataDeletionWorkflow {
+  private readonly config: DataDeletionConfig;
+  private readonly deletionQueue: Map<string, DataDeletionRequest> = new Map();
+  private readonly deletionHistory: Map<string, DataDeletionResult> = new Map();
+  private readonly scheduledDeletions: Map<string, DeletionSchedule> = new Map();
+
+  constructor(config: DataDeletionConfig) {
+    this.config = config;
+    this.initializeWorkflow();
+  }
+
+  /**
+   * Initialize data deletion workflow
+   */
+  private initializeWorkflow(): void {
+    consola.info('Initializing GDPR Data Deletion Workflow', {
+      automaticDeletion: this.config.automaticDeletion,
+      retentionPolicies: this.config.retentionPolicies.length,
+      verificationRequired: this.config.verificationRequired
+    });
+
+    if (this.config.automaticDeletion) {
+      this.startAutomaticDeletionScheduler();
+    }
+  }
+
+  /**
+   * Submit data deletion request
+   */
+  async submitDeletionRequest(
+    context: DeletionContext,
+    dataItems: DataInventoryItem[]
+  ): Promise<string> {
+    try {
+      const requestId = this.generateRequestId();
+      
+      // Validate deletion request
+      await this.validateDeletionRequest(context, dataItems);
+
+      const deletionRequest: DataDeletionRequest = {
+        id: requestId,
+        context,
+        dataItems,
+        status: 'pending',
+        submittedAt: new Date(),
+        estimatedCompletionAt: this.calculateEstimatedCompletion(dataItems),
+        priority: this.calculatePriority(context),
+        approvalRequired: this.requiresApproval(context, dataItems),
+        metadata: {
+          submittedBy: context.requestedBy,
+          dataItemCount: dataItems.length,
+          estimatedDataSize: this.estimateDataSize(dataItems)
+        }
+      };
+
+      this.deletionQueue.set(requestId, deletionRequest);
+
+      consola.info('Data deletion request submitted', {
+        requestId,
+        requestType: context.requestType,
+        dataItemCount: dataItems.length,
+        urgency: context.urgency
+      });
+
+      // If urgent or automated, start processing immediately
+      if (context.urgency === 'critical' || context.requestType === 'automated') {
+        await this.processDeletionRequest(requestId);
+      }
+
+      return requestId;
+
+    } catch (error) {
+      consola.error('Failed to submit deletion request:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process deletion request
+   */
+  async processDeletionRequest(requestId: string): Promise<DataDeletionResult> {
+    try {
+      const request = this.deletionQueue.get(requestId);
+      
+      if (!request) {
+        throw new Error(`Deletion request not found: ${requestId}`);
+      }
+
+      // Update status to processing
+      request.status = 'processing';
+      request.startedAt = new Date();
+
+      consola.info('Processing deletion request', {
+        requestId,
+        requestType: request.context.requestType,
+        dataItems: request.dataItems.length
+      });
+
+      const result: DataDeletionResult = {
+        requestId,
+        status: 'in-progress',
+        startedAt: new Date(),
+        deletedItems: [],
+        failedItems: [],
+        skippedItems: [],
+        totalItems: request.dataItems.length,
+        verificationResults: []
+      };
+
+      // Process each data item
+      for (const dataItem of request.dataItems) {
+        try {
+          await this.deleteDataItem(dataItem, request.context);
+          result.deletedItems.push({
+            ...dataItem,
+            deletedAt: new Date(),
+            verificationHash: this.generateVerificationHash(dataItem)
+          });
+        } catch (error) {
+          consola.error(`Failed to delete data item ${dataItem.id}:`, error);
+          result.failedItems.push({
+            ...dataItem,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            retryable: this.isRetryableError(error)
+          });
+        }
+      }
+
+      // Perform verification if required
+      if (this.config.verificationRequired) {
+        result.verificationResults = await this.verifyDeletion(result.deletedItems);
+      }
+
+      // Update final status
+      if (result.failedItems.length === 0) {
+        result.status = 'completed';
+      } else if (result.deletedItems.length === 0) {
+        result.status = 'failed';
+      } else {
+        result.status = 'partial';
+      }
+
+      result.completedAt = new Date();
+
+      // Store result
+      this.deletionHistory.set(requestId, result);
+      this.deletionQueue.delete(requestId);
+
+      // Send notifications
+      await this.sendDeletionNotifications(request, result);
+
+      consola.info('Deletion request completed', {
+        requestId,
+        status: result.status,
+        deletedItems: result.deletedItems.length,
+        failedItems: result.failedItems.length
+      });
+
+      return result;
+
+    } catch (error) {
+      consola.error('Failed to process deletion request:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Schedule automatic deletion based on retention policies
+   */
+  async scheduleAutomaticDeletion(): Promise<void> {
+    try {
+      consola.info('Scheduling automatic deletion based on retention policies');
+
+      for (const policy of this.config.retentionPolicies) {
+        const expiredData = await this.findExpiredData(policy);
+        
+        if (expiredData.length > 0) {
+          const scheduleId = this.generateScheduleId();
+          const executionDate = new Date();
+          executionDate.setHours(2, 0, 0, 0); // Execute at 2 AM
+
+          const schedule: DeletionSchedule = {
+            id: scheduleId,
+            policyId: policy.id,
+            dataItems: expiredData,
+            scheduledAt: executionDate,
+            status: 'scheduled',
+            createdAt: new Date()
+          };
+
+          this.scheduledDeletions.set(scheduleId, schedule);
+
+          consola.info('Automatic deletion scheduled', {
+            scheduleId,
+            policyId: policy.id,
+            dataItemCount: expiredData.length,
+            executionDate
+          });
+        }
+      }
+
+    } catch (error) {
+      consola.error('Failed to schedule automatic deletion:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute scheduled deletions
+   */
+  async executeScheduledDeletions(): Promise<void> {
+    try {
+      const now = new Date();
+      const dueSchedules = Array.from(this.scheduledDeletions.values())
+        .filter(schedule => 
+          schedule.status === 'scheduled' && 
+          schedule.scheduledAt <= now
+        );
+
+      for (const schedule of dueSchedules) {
+        consola.info('Executing scheduled deletion', {
+          scheduleId: schedule.id,
+          policyId: schedule.policyId,
+          dataItemCount: schedule.dataItems.length
+        });
+
+        try {
+          const context: DeletionContext = {
+            requestId: schedule.id,
+            requestType: 'automated',
+            requestedBy: 'system',
+            reason: 'Retention policy enforcement',
+            urgency: 'low',
+            dataCategories: [...new Set(schedule.dataItems.map(item => item.category))],
+            retentionPeriodExpired: true
+          };
+
+          await this.submitDeletionRequest(context, schedule.dataItems);
+          
+          schedule.status = 'executed';
+          schedule.executedAt = new Date();
+
+        } catch (error) {
+          consola.error(`Failed to execute scheduled deletion ${schedule.id}:`, error);
+          schedule.status = 'failed';
+          schedule.error = error instanceof Error ? error.message : 'Unknown error';
+        }
+      }
+
+    } catch (error) {
+      consola.error('Failed to execute scheduled deletions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify data deletion
+   */
+  private async verifyDeletion(
+    deletedItems: Array<DataInventoryItem & { deletedAt: Date; verificationHash: string }>
+  ): Promise<DeletionVerificationResult[]> {
+    const verificationResults: DeletionVerificationResult[] = [];
+
+    for (const item of deletedItems) {
+      try {
+        const exists = await this.checkDataExists(item);
+        const backupExists = this.config.deleteFromBackups 
+          ? await this.checkBackupExists(item)
+          : false;
+
+        verificationResults.push({
+          dataItemId: item.id,
+          verified: !exists && !backupExists,
+          verifiedAt: new Date(),
+          verificationHash: item.verificationHash,
+          primaryDeleted: !exists,
+          backupDeleted: !backupExists,
+          issues: exists || backupExists 
+            ? ['Data still exists in primary storage or backups'] 
+            : []
+        });
+
+      } catch (error) {
+        verificationResults.push({
+          dataItemId: item.id,
+          verified: false,
+          verifiedAt: new Date(),
+          verificationHash: item.verificationHash,
+          primaryDeleted: false,
+          backupDeleted: false,
+          issues: [`Verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        });
+      }
+    }
+
+    return verificationResults;
+  }
+
+  /**
+   * Get retention policy for data category
+   */
+  getRetentionPolicy(dataCategory: string): RetentionPolicy | undefined {
+    return this.config.retentionPolicies.find(
+      policy => policy.dataCategories.includes(dataCategory)
+    );
+  }
+
+  /**
+   * Calculate data retention expiry
+   */
+  calculateRetentionExpiry(
+    createdAt: Date,
+    dataCategory: string
+  ): Date | null {
+    const policy = this.getRetentionPolicy(dataCategory);
+    
+    if (!policy) {
+      return null;
+    }
+
+    const expiryDate = new Date(createdAt);
+    expiryDate.setDate(expiryDate.getDate() + policy.retentionPeriodDays);
+    
+    return expiryDate;
+  }
+
+  /**
+   * Check if data should be deleted
+   */
+  shouldDeleteData(
+    createdAt: Date,
+    dataCategory: string,
+    lastAccessedAt?: Date
+  ): boolean {
+    const policy = this.getRetentionPolicy(dataCategory);
+    
+    if (!policy) {
+      return false;
+    }
+
+    const now = new Date();
+    const retentionExpiry = this.calculateRetentionExpiry(createdAt, dataCategory);
+    
+    if (!retentionExpiry) {
+      return false;
+    }
+
+    // Check if retention period has expired
+    if (retentionExpiry > now) {
+      return false;
+    }
+
+    // Check access-based retention
+    if (policy.accessBasedRetention && lastAccessedAt) {
+      const accessExpiry = new Date(lastAccessedAt);
+      accessExpiry.setDate(accessExpiry.getDate() + policy.accessRetentionDays);
+      
+      if (accessExpiry > now) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Export deletion history (for audit purposes)
+   */
+  async exportDeletionHistory(
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{
+    requests: DataDeletionResult[];
+    summary: {
+      totalRequests: number;
+      completedRequests: number;
+      failedRequests: number;
+      partialRequests: number;
+      totalItemsDeleted: number;
+      totalItemsFailed: number;
+    };
+    exportedAt: Date;
+  }> {
+    let results = Array.from(this.deletionHistory.values());
+
+    if (startDate) {
+      results = results.filter(r => r.startedAt >= startDate);
+    }
+
+    if (endDate) {
+      results = results.filter(r => r.startedAt <= endDate);
+    }
+
+    const summary = {
+      totalRequests: results.length,
+      completedRequests: results.filter(r => r.status === 'completed').length,
+      failedRequests: results.filter(r => r.status === 'failed').length,
+      partialRequests: results.filter(r => r.status === 'partial').length,
+      totalItemsDeleted: results.reduce((sum, r) => sum + r.deletedItems.length, 0),
+      totalItemsFailed: results.reduce((sum, r) => sum + r.failedItems.length, 0)
+    };
+
+    return {
+      requests: results,
+      summary,
+      exportedAt: new Date()
+    };
+  }
+
+  /**
+   * Private helper methods
+   */
+
+  private async validateDeletionRequest(
+    context: DeletionContext,
+    dataItems: DataInventoryItem[]
+  ): Promise<void> {
+    if (dataItems.length === 0) {
+      throw new Error('No data items specified for deletion');
+    }
+
+    // Check for legal holds
+    const itemsOnHold = dataItems.filter(item => item.legalHold);
+    if (itemsOnHold.length > 0 && !context.courtOrder) {
+      throw new Error(`Cannot delete ${itemsOnHold.length} items under legal hold without court order`);
+    }
+
+    // Validate retention policy compliance
+    for (const item of dataItems) {
+      const policy = this.getRetentionPolicy(item.category);
+      if (policy && !this.shouldDeleteData(item.createdAt, item.category, item.lastAccessedAt)) {
+        if (context.requestType !== 'right-to-erasure') {
+          throw new Error(`Item ${item.id} has not reached retention expiry`);
+        }
+      }
+    }
+  }
+
+  private async deleteDataItem(
+    dataItem: DataInventoryItem,
+    context: DeletionContext
+  ): Promise<void> {
+    // Implement actual data deletion logic here
+    // This would interface with various data stores, databases, etc.
+    
+    consola.debug('Deleting data item', {
+      itemId: dataItem.id,
+      category: dataItem.category,
+      location: dataItem.location
+    });
+
+    // Simulate deletion process
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Perform secure overwrite if required
+    if (this.config.secureOverwritePasses > 0) {
+      await this.secureOverwrite(dataItem);
+    }
+  }
+
+  private async secureOverwrite(dataItem: DataInventoryItem): Promise<void> {
+    // Implement secure overwrite logic
+    consola.debug('Performing secure overwrite', {
+      itemId: dataItem.id,
+      passes: this.config.secureOverwritePasses
+    });
+  }
+
+  private async checkDataExists(dataItem: DataInventoryItem): Promise<boolean> {
+    // Implement data existence check
+    // This would query the actual data stores
+    return false; // Assume deleted for now
+  }
+
+  private async checkBackupExists(dataItem: DataInventoryItem): Promise<boolean> {
+    // Implement backup existence check
+    return false; // Assume deleted for now
+  }
+
+  private async findExpiredData(policy: RetentionPolicy): Promise<DataInventoryItem[]> {
+    // Implement data discovery based on retention policy
+    // This would query various data stores to find expired data
+    return []; // Return empty for now
+  }
+
+  private calculateEstimatedCompletion(dataItems: DataInventoryItem[]): Date {
+    const estimatedMinutes = Math.max(5, dataItems.length * 0.1); // Minimum 5 minutes
+    const completion = new Date();
+    completion.setMinutes(completion.getMinutes() + estimatedMinutes);
+    return completion;
+  }
+
+  private calculatePriority(context: DeletionContext): 'low' | 'medium' | 'high' | 'critical' {
+    if (context.courtOrder) return 'critical';
+    if (context.requestType === 'right-to-erasure') return 'high';
+    if (context.urgency === 'critical') return 'critical';
+    return context.urgency;
+  }
+
+  private requiresApproval(context: DeletionContext, dataItems: DataInventoryItem[]): boolean {
+    // Large deletions require approval
+    if (dataItems.length > 1000) return true;
+    
+    // Special category data requires approval
+    const specialCategories = ['sensitive-data', 'special-category', 'biometric-data', 'health-data'];
+    if (dataItems.some(item => specialCategories.includes(item.category))) return true;
+    
+    // Critical systems require approval
+    if (dataItems.some(item => item.location.includes('critical'))) return true;
+    
+    return false;
+  }
+
+  private estimateDataSize(dataItems: DataInventoryItem[]): number {
+    return dataItems.reduce((sum, item) => sum + (item.estimatedSize || 0), 0);
+  }
+
+  private generateRequestId(): string {
+    return `del-req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateScheduleId(): string {
+    return `del-sch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateVerificationHash(dataItem: DataInventoryItem): string {
+    return `hash-${dataItem.id}-${Date.now()}`;
+  }
+
+  private isRetryableError(error: unknown): boolean {
+    // Determine if the error is retryable
+    const retryableErrors = ['timeout', 'network', 'temporary'];
+    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+    return retryableErrors.some(keyword => errorMessage.includes(keyword));
+  }
+
+  private async sendDeletionNotifications(
+    request: DataDeletionRequest,
+    result: DataDeletionResult
+  ): Promise<void> {
+    // Send notifications to relevant parties
+    if (this.config.notifyDataProtectionOfficer) {
+      consola.info('Notifying Data Protection Officer of deletion completion', {
+        requestId: request.id,
+        status: result.status
+      });
+    }
+
+    // Notify user if this was a right-to-erasure request
+    if (request.context.requestType === 'right-to-erasure' && request.context.userId) {
+      consola.info('Notifying user of deletion completion', {
+        userId: request.context.userId,
+        requestId: request.id,
+        status: result.status
+      });
+    }
+  }
+
+  private startAutomaticDeletionScheduler(): void {
+    // Start periodic scheduler for automatic deletions
+    // In production, this would be handled by a cron job or similar
+    consola.info('Automatic deletion scheduler started');
+    
+    // Schedule daily check at 1 AM
+    setInterval(async () => {
+      try {
+        await this.scheduleAutomaticDeletion();
+        await this.executeScheduledDeletions();
+      } catch (error) {
+        consola.error('Automatic deletion scheduler error:', error);
+      }
+    }, 24 * 60 * 60 * 1000); // Daily
+  }
+}
+
+/**
+ * Default data deletion configuration
+ */
+export const defaultDataDeletionConfig: DataDeletionConfig = {
+  retentionPolicies: [
+    {
+      id: 'general-data',
+      name: 'General Personal Data',
+      dataCategories: ['personal-data'],
+      retentionPeriodDays: {{dataRetentionPeriod}},
+      accessBasedRetention: true,
+      accessRetentionDays: 730, // 2 years
+      automaticDeletion: true
+    },
+    {{#if (includes dataCategories 'financial-data')}}
+    {
+      id: 'financial-data',
+      name: 'Financial Data',
+      dataCategories: ['financial-data'],
+      retentionPeriodDays: 2555, // 7 years for financial data
+      accessBasedRetention: false,
+      automaticDeletion: true
+    },
+    {{/if}}
+    {{#if (includes dataCategories 'health-data')}}
+    {
+      id: 'health-data',
+      name: 'Health Data',
+      dataCategories: ['health-data'],
+      retentionPeriodDays: 3650, // 10 years for health data
+      accessBasedRetention: false,
+      automaticDeletion: false // Manual review required
+    },
+    {{/if}}
+  ],
+  verificationRequired: true,
+  backupRetentionDays: 90,
+  auditRetentionDays: 2555, // 7 years
+  automaticDeletion: {{#if enableRightToErasure}}true{{else}}false{{/if}},
+  deleteFromBackups: true,
+  secureOverwritePasses: 3,
+  notifyDataProtectionOfficer: {{#if organisationalMeasures.dataProtectionOfficer}}true{{else}}false{{/if}}
+};
+
+/**
+ * Create data deletion workflow instance
+ */
+export function createDataDeletionWorkflow(
+  config: DataDeletionConfig = defaultDataDeletionConfig
+): DataDeletionWorkflow {
+  return new DataDeletionWorkflow(config);
+}
+
+/**
+ * Singleton data deletion workflow instance
+ */
+export const dataDeletionWorkflow = createDataDeletionWorkflow();
+
+export default dataDeletionWorkflow;

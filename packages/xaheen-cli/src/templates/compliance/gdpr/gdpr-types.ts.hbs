@@ -1,0 +1,588 @@
+/**
+ * GDPR Types
+ * 
+ * TypeScript type definitions for GDPR (General Data Protection Regulation) compliance
+ * Lawful Basis: {{lawfulBasis}}
+ * Data Categories: {{#each dataCategories}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ * 
+ * @compliance GDPR-compliant
+ * @privacy-by-design true
+ */
+
+/**
+ * GDPR Lawful Basis for Processing (Article 6)
+ */
+export type GDPRLawfulBasis = 
+  | 'consent'
+  | 'contract'
+  | 'legal-obligation'
+  | 'vital-interests'
+  | 'public-task'
+  | 'legitimate-interests';
+
+/**
+ * Special Category Lawful Basis (Article 9)
+ */
+export type SpecialCategoryLawfulBasis =
+  | 'explicit-consent'
+  | 'employment'
+  | 'vital-interests'
+  | 'non-profit-activities'
+  | 'public-by-data-subject'
+  | 'legal-claims'
+  | 'substantial-public-interest'
+  | 'healthcare'
+  | 'public-health'
+  | 'archiving-research';
+
+/**
+ * Data Categories
+ */
+export type DataCategory = 
+  | 'personal-data'
+  | 'sensitive-data'
+  | 'special-category'
+  | 'criminal-data'
+  | 'biometric-data'
+  | 'health-data'
+  | 'financial-data'
+  | 'location-data'
+  | 'behavioral-data'
+  | 'communication-data';
+
+/**
+ * Consent Types
+ */
+export type ConsentType = 
+  | 'explicit'
+  | 'informed'
+  | 'freely-given'
+  | 'specific'
+  | 'unambiguous'
+  | 'granular';
+
+/**
+ * Data Subject Rights
+ */
+export interface DataSubjectRights {
+  readonly rightToAccess: boolean;
+  readonly rightToRectification: boolean;
+  readonly rightToErasure: boolean;
+  readonly rightToRestrictProcessing: boolean;
+  readonly rightToDataPortability: boolean;
+  readonly rightToObject: boolean;
+  readonly rightsAutomatedDecisionMaking: boolean;
+}
+
+/**
+ * Processing Activity Record
+ */
+export interface ProcessingActivity {
+  readonly id: string;
+  readonly name: string;
+  readonly purpose: string;
+  readonly lawfulBasis: GDPRLawfulBasis;
+  readonly specialCategoryBasis?: SpecialCategoryLawfulBasis;
+  readonly dataCategories: readonly DataCategory[];
+  readonly dataSubjects: string;
+  readonly recipients: readonly string[];
+  readonly internationalTransfers: boolean;
+  readonly adequacyDecision?: boolean;
+  readonly safeguards?: readonly string[];
+  readonly retentionPeriod: number; // in days
+  readonly securityMeasures: readonly string[];
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly dataProtectionImpactAssessment?: boolean;
+  readonly consultationWithSupervisoryAuthority?: boolean;
+}
+
+/**
+ * Consent Record
+ */
+export interface ConsentRecord {
+  readonly id: string;
+  readonly userId: string;
+  readonly purposes: readonly string[];
+  readonly dataCategories: readonly DataCategory[];
+  readonly consentGiven: boolean;
+  readonly timestamp: Date;
+  readonly expiresAt?: Date;
+  readonly method: 'explicit' | 'informed' | 'implied';
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly source: 'web' | 'mobile' | 'api' | 'import';
+  readonly locale?: string;
+  readonly grantedAt?: Date;
+  readonly marketing: boolean;
+  readonly analytics: boolean;
+  readonly thirdParty: boolean;
+  readonly withdrawn: boolean;
+  readonly withdrawnAt?: Date;
+  readonly withdrawalReason?: string;
+  readonly granularConsents: readonly GranularConsent[];
+  readonly metadata: Record<string, unknown>;
+}
+
+/**
+ * Granular Consent
+ */
+export interface GranularConsent {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly granted: boolean;
+  readonly required: boolean;
+  readonly updatedAt?: Date;
+  readonly withdrawnAt?: Date;
+}
+
+/**
+ * Consent Validation Result
+ */
+export interface ConsentValidationResult {
+  readonly valid: boolean;
+  readonly consentId?: string;
+  readonly grantedAt?: Date;
+  readonly expiresAt?: Date;
+  readonly method?: 'explicit' | 'informed' | 'implied';
+  readonly reason?: string;
+  readonly consentRequired?: boolean;
+  readonly suggestedActions?: readonly string[];
+}
+
+/**
+ * Consent Withdrawal Request
+ */
+export interface ConsentWithdrawalRequest {
+  readonly consentId: string;
+  readonly userId: string;
+  readonly reason?: string;
+  readonly partialWithdrawal?: boolean;
+  readonly specificPurposes?: readonly string[];
+  readonly requestedAt: Date;
+  readonly requestMethod: 'web' | 'email' | 'phone' | 'letter';
+}
+
+/**
+ * Data Processing Context
+ */
+export interface DataProcessingContext {
+  readonly processingId: string;
+  readonly activityId: string;
+  readonly userId?: string;
+  readonly dataCategories: readonly DataCategory[];
+  readonly purpose: string;
+  readonly lawfulBasis: GDPRLawfulBasis;
+  readonly consentRequired: boolean;
+  readonly consentId?: string;
+  readonly internationalTransfer: boolean;
+  readonly automaticDecisionMaking: boolean;
+  readonly profiling: boolean;
+  readonly timestamp: Date;
+}
+
+/**
+ * Data Subject Request
+ */
+export interface DataSubjectRequest {
+  readonly id: string;
+  readonly userId: string;
+  readonly requestType: 'access' | 'rectification' | 'erasure' | 'restriction' | 'portability' | 'objection';
+  readonly status: 'pending' | 'processing' | 'completed' | 'rejected' | 'partially-completed';
+  readonly submittedAt: Date;
+  readonly dueDate: Date; // Within 30 days typically
+  readonly completedAt?: Date;
+  readonly requestDetails: string;
+  readonly identityVerified: boolean;
+  readonly verificationMethod?: string;
+  readonly processingNotes?: string;
+  readonly rejectionReason?: string;
+  readonly attachments?: readonly string[];
+  readonly communicationHistory: readonly RequestCommunication[];
+}
+
+/**
+ * Request Communication
+ */
+export interface RequestCommunication {
+  readonly id: string;
+  readonly timestamp: Date;
+  readonly direction: 'inbound' | 'outbound';
+  readonly method: 'email' | 'phone' | 'letter' | 'in-person' | 'web';
+  readonly summary: string;
+  readonly attachments?: readonly string[];
+}
+
+/**
+ * Data Inventory Item
+ */
+export interface DataInventoryItem {
+  readonly id: string;
+  readonly category: DataCategory;
+  readonly description: string;
+  readonly location: string;
+  readonly system: string;
+  readonly format: string;
+  readonly estimatedSize?: number; // in bytes
+  readonly createdAt: Date;
+  readonly lastAccessedAt?: Date;
+  readonly lastModifiedAt?: Date;
+  readonly encryptionStatus: 'encrypted' | 'not-encrypted' | 'partially-encrypted';
+  readonly backupLocations: readonly string[];
+  readonly retentionPeriod?: number; // in days
+  readonly legalHold: boolean;
+  readonly dataSubjects: readonly string[];
+  readonly processingActivities: readonly string[];
+}
+
+/**
+ * Data Deletion Request
+ */
+export interface DataDeletionRequest {
+  readonly id: string;
+  readonly context: DeletionContext;
+  readonly dataItems: readonly DataInventoryItem[];
+  readonly status: 'pending' | 'approved' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  readonly submittedAt: Date;
+  readonly startedAt?: Date;
+  readonly estimatedCompletionAt: Date;
+  readonly priority: 'low' | 'medium' | 'high' | 'critical';
+  readonly approvalRequired: boolean;
+  readonly approvedBy?: string;
+  readonly approvedAt?: Date;
+  readonly metadata: Record<string, unknown>;
+}
+
+/**
+ * Deletion Context
+ */
+export interface DeletionContext {
+  readonly requestId: string;
+  readonly userId?: string;
+  readonly requestType: 'right-to-erasure' | 'retention-policy' | 'manual' | 'automated';
+  readonly requestedBy: string;
+  readonly reason: string;
+  readonly urgency: 'low' | 'medium' | 'high' | 'critical';
+  readonly legalBasis?: string;
+  readonly dataCategories: readonly string[];
+  readonly retentionPeriodExpired: boolean;
+  readonly courtOrder?: boolean;
+}
+
+/**
+ * Data Deletion Result
+ */
+export interface DataDeletionResult {
+  readonly requestId: string;
+  readonly status: 'in-progress' | 'completed' | 'failed' | 'partial';
+  readonly startedAt: Date;
+  readonly completedAt?: Date;
+  readonly deletedItems: readonly (DataInventoryItem & { deletedAt: Date; verificationHash: string })[];
+  readonly failedItems: readonly (DataInventoryItem & { error: string; retryable: boolean })[];
+  readonly skippedItems: readonly (DataInventoryItem & { reason: string })[];
+  readonly totalItems: number;
+  readonly verificationResults: readonly DeletionVerificationResult[];
+}
+
+/**
+ * Deletion Verification Result
+ */
+export interface DeletionVerificationResult {
+  readonly dataItemId: string;
+  readonly verified: boolean;
+  readonly verifiedAt: Date;
+  readonly verificationHash: string;
+  readonly primaryDeleted: boolean;
+  readonly backupDeleted: boolean;
+  readonly issues: readonly string[];
+}
+
+/**
+ * Retention Policy
+ */
+export interface RetentionPolicy {
+  readonly id: string;
+  readonly name: string;
+  readonly dataCategories: readonly DataCategory[];
+  readonly retentionPeriodDays: number;
+  readonly accessBasedRetention: boolean;
+  readonly accessRetentionDays: number;
+  readonly automaticDeletion: boolean;
+  readonly reviewRequired: boolean;
+  readonly legalRequirement?: string;
+  readonly businessJustification?: string;
+}
+
+/**
+ * Deletion Schedule
+ */
+export interface DeletionSchedule {
+  readonly id: string;
+  readonly policyId: string;
+  readonly dataItems: readonly DataInventoryItem[];
+  readonly scheduledAt: Date;
+  readonly status: 'scheduled' | 'executed' | 'failed' | 'cancelled';
+  readonly executedAt?: Date;
+  readonly createdAt: Date;
+  readonly error?: string;
+}
+
+/**
+ * Privacy Policy
+ */
+export interface PrivacyPolicy {
+  readonly id: string;
+  readonly version: string;
+  readonly effectiveDate: Date;
+  readonly sections: readonly PolicySection[];
+  readonly dataCategories: readonly DataCategory[];
+  readonly lawfulBases: readonly GDPRLawfulBasis[];
+  readonly retentionPeriods: Record<DataCategory, number>;
+  readonly dataSubjectRights: DataSubjectRights;
+  readonly contactInfo: ContactInformation;
+  readonly updatedAt: Date;
+}
+
+/**
+ * Policy Section
+ */
+export interface PolicySection {
+  readonly id: string;
+  readonly title: string;
+  readonly content: string;
+  readonly subsections?: readonly PolicySection[];
+  readonly order: number;
+}
+
+/**
+ * Contact Information
+ */
+export interface ContactInformation {
+  readonly dataController: ContactDetails;
+  readonly dataProtectionOfficer?: ContactDetails;
+  readonly supervisoryAuthority: ContactDetails;
+}
+
+/**
+ * Contact Details
+ */
+export interface ContactDetails {
+  readonly name: string;
+  readonly organization?: string;
+  readonly email: string;
+  readonly phone?: string;
+  readonly address?: Address;
+}
+
+/**
+ * Address
+ */
+export interface Address {
+  readonly street: string;
+  readonly city: string;
+  readonly postalCode: string;
+  readonly country: string;
+}
+
+/**
+ * Compliance Validation Result
+ */
+export interface ComplianceValidationResult {
+  readonly compliant: boolean;
+  readonly validatedAt: Date;
+  readonly issues: readonly string[];
+  readonly recommendations: readonly string[];
+  readonly summary: ComplianceSummary;
+}
+
+/**
+ * Compliance Summary
+ */
+export interface ComplianceSummary {
+  readonly processingActivities: number;
+  readonly activeConsents: number;
+  readonly withdrawnConsents: number;
+  readonly specialCategoryProcessing: number;
+}
+
+/**
+ * Data Breach Incident
+ */
+export interface DataBreachIncident {
+  readonly id: string;
+  readonly detectedAt: Date;
+  readonly reportedAt?: Date;
+  readonly status: 'detected' | 'contained' | 'investigated' | 'resolved' | 'reported-to-authority';
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+  readonly affectedDataCategories: readonly DataCategory[];
+  readonly affectedDataSubjects: number;
+  readonly breachType: 'confidentiality' | 'integrity' | 'availability';
+  readonly description: string;
+  readonly cause: string;
+  readonly containmentMeasures: readonly string[];
+  readonly notificationRequired: boolean;
+  readonly authorityNotified: boolean;
+  readonly dataSubjectsNotified: boolean;
+  readonly riskAssessment: BreachRiskAssessment;
+  readonly remedialActions: readonly string[];
+  readonly responsibleParty: string;
+}
+
+/**
+ * Breach Risk Assessment
+ */
+export interface BreachRiskAssessment {
+  readonly riskLevel: 'low' | 'medium' | 'high';
+  readonly likelihood: 'unlikely' | 'possible' | 'likely' | 'very-likely';
+  readonly impact: 'minimal' | 'limited' | 'significant' | 'severe';
+  readonly factors: readonly string[];
+  readonly mitigatingCircumstances?: readonly string[];
+}
+
+/**
+ * Privacy Impact Assessment
+ */
+export interface PrivacyImpactAssessment {
+  readonly id: string;
+  readonly processingActivityId: string;
+  readonly conductedAt: Date;
+  readonly conductedBy: string;
+  readonly status: 'draft' | 'under-review' | 'approved' | 'rejected';
+  readonly riskLevel: 'low' | 'medium' | 'high';
+  readonly necessityAssessment: string;
+  readonly proportionalityAssessment: string;
+  readonly risksToRights: readonly IdentifiedRisk[];
+  readonly mitigationMeasures: readonly MitigationMeasure[];
+  readonly consultationRequired: boolean;
+  readonly consultationCompleted?: boolean;
+  readonly approvedBy?: string;
+  readonly approvedAt?: Date;
+  readonly reviewDate: Date;
+}
+
+/**
+ * Identified Risk
+ */
+export interface IdentifiedRisk {
+  readonly id: string;
+  readonly description: string;
+  readonly likelihood: 'low' | 'medium' | 'high';
+  readonly impact: 'low' | 'medium' | 'high';
+  readonly riskLevel: 'low' | 'medium' | 'high';
+  readonly affectedRights: readonly string[];
+}
+
+/**
+ * Mitigation Measure
+ */
+export interface MitigationMeasure {
+  readonly id: string;
+  readonly riskId: string;
+  readonly description: string;
+  readonly implementation: 'technical' | 'organizational' | 'legal';
+  readonly status: 'planned' | 'in-progress' | 'implemented' | 'verified';
+  readonly implementedAt?: Date;
+  readonly effectiveness: 'low' | 'medium' | 'high';
+}
+
+/**
+ * Current GDPR Configuration
+ */
+export const GDPR_CONFIG = {
+  PROJECT_NAME: '{{projectName}}',
+  LAWFUL_BASIS: '{{lawfulBasis}}' as GDPRLawfulBasis,
+  DATA_CATEGORIES: [
+    {{#each dataCategories}}
+    '{{this}}',
+    {{/each}}
+  ] as readonly DataCategory[],
+  DATA_RETENTION_PERIOD: {{dataRetentionPeriod}},
+  DATA_SUBJECT_RIGHTS: {
+    rightToAccess: {{dataSubjectRights.rightToAccess}},
+    rightToRectification: {{dataSubjectRights.rightToRectification}},
+    rightToErasure: {{dataSubjectRights.rightToErasure}},
+    rightToRestrictProcessing: {{dataSubjectRights.rightToRestrictProcessing}},
+    rightToDataPortability: {{dataSubjectRights.rightToDataPortability}},
+    rightToObject: {{dataSubjectRights.rightToObject}},
+    rightsAutomatedDecisionMaking: {{dataSubjectRights.rightsAutomatedDecisionMaking}}
+  } as DataSubjectRights,
+  PRIVACY_PRINCIPLES: {
+    lawfulness: {{privacyPrinciples.lawfulness}},
+    fairness: {{privacyPrinciples.fairness}},
+    transparency: {{privacyPrinciples.transparency}},
+    purposeLimitation: {{privacyPrinciples.purposeLimitation}},
+    dataMinimisation: {{privacyPrinciples.dataMinimisation}},
+    accuracy: {{privacyPrinciples.accuracy}},
+    storageMinimisation: {{privacyPrinciples.storageMinimisation}},
+    integrityConfidentiality: {{privacyPrinciples.integrityConfidentiality}},
+    accountability: {{privacyPrinciples.accountability}}
+  }
+} as const;
+
+/**
+ * Type guards and utility functions
+ */
+
+export const isSpecialCategoryData = (category: DataCategory): boolean => {
+  const specialCategories: DataCategory[] = [
+    'sensitive-data',
+    'special-category',
+    'biometric-data',
+    'health-data'
+  ];
+  return specialCategories.includes(category);
+};
+
+export const requiresExplicitConsent = (categories: readonly DataCategory[]): boolean => {
+  return categories.some(isSpecialCategoryData);
+};
+
+export const isHighRiskProcessing = (activity: ProcessingActivity): boolean => {
+  return (
+    isSpecialCategoryData(activity.dataCategories[0]) ||
+    activity.internationalTransfers ||
+    activity.dataCategories.includes('criminal-data') ||
+    activity.retentionPeriod > 2555 // > 7 years
+  );
+};
+
+export const getDefaultRetentionPeriod = (category: DataCategory): number => {
+  const retentionPeriods: Record<DataCategory, number> = {
+    'personal-data': {{dataRetentionPeriod}},
+    'sensitive-data': 2555, // 7 years
+    'special-category': 2555, // 7 years
+    'criminal-data': 3650, // 10 years
+    'biometric-data': 1825, // 5 years
+    'health-data': 3650, // 10 years
+    'financial-data': 2555, // 7 years
+    'location-data': 365, // 1 year
+    'behavioral-data': 730, // 2 years
+    'communication-data': 365 // 1 year
+  };
+  
+  return retentionPeriods[category] || {{dataRetentionPeriod}};
+};
+
+export const isConsentRequired = (lawfulBasis: GDPRLawfulBasis): boolean => {
+  return lawfulBasis === 'consent';
+};
+
+export const isConsentWithdrawable = (lawfulBasis: GDPRLawfulBasis): boolean => {
+  return lawfulBasis === 'consent';
+};
+
+export const getRequiredNotificationPeriod = (requestType: DataSubjectRequest['requestType']): number => {
+  // Return number of days for response
+  switch (requestType) {
+    case 'access':
+    case 'rectification':
+    case 'erasure':
+    case 'restriction':
+    case 'portability':
+    case 'objection':
+      return 30; // 1 month as per GDPR
+    default:
+      return 30;
+  }
+};

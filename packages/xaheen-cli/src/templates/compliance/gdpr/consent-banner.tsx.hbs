@@ -1,0 +1,590 @@
+/**
+ * GDPR Consent Banner Component
+ * 
+ * Displays GDPR-compliant consent banner with granular consent options
+ * Lawful Basis: {{lawfulBasis}}
+ * Data Categories: {{#each dataCategories}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ * 
+ * @compliance GDPR-compliant
+ * @privacy-by-design true
+ */
+
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import type { 
+  ConsentRecord, 
+  DataCategory, 
+  GranularConsent,
+  ConsentType
+} from '../types/gdpr/gdpr-types';
+
+export interface ConsentBannerProps {
+  readonly onConsentGiven?: (consent: ConsentDecision) => void;
+  readonly onConsentRejected?: () => void;
+  readonly showManageButton?: boolean;
+  readonly position?: 'top' | 'bottom';
+  readonly theme?: 'light' | 'dark';
+  readonly language?: 'en' | 'nb' | 'nn';
+  readonly compactMode?: boolean;
+  readonly showLegalBasis?: boolean;
+  readonly customContent?: {
+    readonly title?: string;
+    readonly description?: string;
+    readonly privacyPolicyUrl?: string;
+    readonly cookiePolicyUrl?: string;
+  };
+}
+
+export interface ConsentDecision {
+  readonly acceptAll: boolean;
+  readonly granularChoices: {
+    readonly necessary: boolean;
+    readonly functional: boolean;
+    readonly analytics: boolean;
+    readonly marketing: boolean;
+    readonly thirdParty: boolean;
+  };
+  readonly timestamp: Date;
+  readonly method: 'explicit' | 'informed';
+}
+
+/**
+ * GDPR Consent Banner Component
+ * 
+ * Renders a compliant consent banner that allows users to make informed
+ * decisions about data processing with granular control options.
+ */
+export const ConsentBanner = ({
+  onConsentGiven,
+  onConsentRejected,
+  showManageButton = true,
+  position = 'bottom',
+  theme = 'light',
+  language = 'en',
+  compactMode = false,
+  showLegalBasis = true,
+  customContent
+}: ConsentBannerProps): JSX.Element => {
+  const [showDetails, setShowDetails] = useState(!compactMode);
+  const [granularChoices, setGranularChoices] = useState({
+    necessary: true, // Always required
+    functional: false,
+    analytics: false,
+    marketing: false,
+    thirdParty: false
+  });
+
+  // Content translations
+  const content = useMemo(() => {
+    const translations = {
+      en: {
+        title: customContent?.title || 'We value your privacy',
+        description: customContent?.description || 
+          `We use cookies and similar technologies to enhance your experience, analyze usage, and provide personalized content. You can manage your preferences below.`,
+        acceptAll: 'Accept All',
+        rejectAll: 'Reject All',
+        savePreferences: 'Save Preferences',
+        managePreferences: 'Manage Preferences',
+        showDetails: 'Show Details',
+        hideDetails: 'Hide Details',
+        necessary: 'Necessary',
+        functional: 'Functional',
+        analytics: 'Analytics',
+        marketing: 'Marketing',
+        thirdParty: 'Third Party',
+        necessaryDesc: 'Essential for website functionality and security',
+        functionalDesc: 'Enhance your experience with personalized features',
+        analyticsDesc: 'Help us understand how you use our service',
+        marketingDesc: 'Show you relevant advertisements and communications',
+        thirdPartyDesc: 'Share data with trusted partners for enhanced services',
+        lawfulBasis: 'Lawful Basis',
+        dataCategories: 'Data Categories',
+        retention: 'Data Retention',
+        rights: 'Your Rights',
+        privacyPolicy: 'Privacy Policy',
+        cookiePolicy: 'Cookie Policy'
+      },
+      nb: {
+        title: customContent?.title || 'Vi respekterer ditt personvern',
+        description: customContent?.description || 
+          `Vi bruker informasjonskapsler og lignende teknologier for å forbedre din opplevelse, analysere bruk og tilby personlig tilpasset innhold. Du kan administrere dine preferanser nedenfor.`,
+        acceptAll: 'Godta alle',
+        rejectAll: 'Avvis alle',
+        savePreferences: 'Lagre preferanser',
+        managePreferences: 'Administrer preferanser',
+        showDetails: 'Vis detaljer',
+        hideDetails: 'Skjul detaljer',
+        necessary: 'Nødvendige',
+        functional: 'Funksjonelle',
+        analytics: 'Analyse',
+        marketing: 'Markedsføring',
+        thirdParty: 'Tredjeparter',
+        necessaryDesc: 'Nødvendig for nettstedets funksjonalitet og sikkerhet',
+        functionalDesc: 'Forbedrer opplevelsen med personlige funksjoner',
+        analyticsDesc: 'Hjelper oss å forstå hvordan du bruker tjenesten vår',
+        marketingDesc: 'Viser deg relevante annonser og kommunikasjon',
+        thirdPartyDesc: 'Deler data med pålitelige partnere for forbedrede tjenester',
+        lawfulBasis: 'Rettslig grunnlag',
+        dataCategories: 'Datakategorier',
+        retention: 'Datalagring',
+        rights: 'Dine rettigheter',
+        privacyPolicy: 'Personvernerklæring',
+        cookiePolicy: 'Informasjonskapsler'
+      },
+      nn: {
+        title: customContent?.title || 'Vi respekterer personvernet ditt',
+        description: customContent?.description || 
+          `Vi brukar informasjonskapslar og liknande teknologiar for å forbetre opplevinga di, analysere bruk og tilby personleg tilpassa innhald. Du kan administrere preferansane dine nedanfor.`,
+        acceptAll: 'Godta alle',
+        rejectAll: 'Avvis alle',
+        savePreferences: 'Lagre preferansar',
+        managePreferences: 'Administrer preferansar',
+        showDetails: 'Vis detaljar',
+        hideDetails: 'Skjul detaljar',
+        necessary: 'Nødvendige',
+        functional: 'Funksjonelle',
+        analytics: 'Analyse',
+        marketing: 'Marknadsføring',
+        thirdParty: 'Tredjepartar',
+        necessaryDesc: 'Nødvendig for nettstadets funksjonalitet og tryggleik',
+        functionalDesc: 'Forbetrar opplevinga med personlege funksjonar',
+        analyticsDesc: 'Hjelper oss å forstå korleis du brukar tenesta vår',
+        marketingDesc: 'Viser deg relevante annonsar og kommunikasjon',
+        thirdPartyDesc: 'Deler data med pålitelege partnarar for forbedra tenester',
+        lawfulBasis: 'Rettslege grunnlag',
+        dataCategories: 'Datakategoriar',
+        retention: 'Datalagring',
+        rights: 'Rettane dine',
+        privacyPolicy: 'Personvernerklæring',
+        cookiePolicy: 'Informasjonskapslar'
+      }
+    };
+
+    return translations[language];
+  }, [language, customContent]);
+
+  /**
+   * Handle accept all consent
+   */
+  const handleAcceptAll = useCallback(() => {
+    const decision: ConsentDecision = {
+      acceptAll: true,
+      granularChoices: {
+        necessary: true,
+        functional: true,
+        analytics: true,
+        marketing: true,
+        thirdParty: true
+      },
+      timestamp: new Date(),
+      method: 'explicit'
+    };
+
+    onConsentGiven?.(decision);
+  }, [onConsentGiven]);
+
+  /**
+   * Handle reject all consent
+   */
+  const handleRejectAll = useCallback(() => {
+    const decision: ConsentDecision = {
+      acceptAll: false,
+      granularChoices: {
+        necessary: true, // Always required
+        functional: false,
+        analytics: false,
+        marketing: false,
+        thirdParty: false
+      },
+      timestamp: new Date(),
+      method: 'explicit'
+    };
+
+    onConsentGiven?.(decision);
+    onConsentRejected?.();
+  }, [onConsentGiven, onConsentRejected]);
+
+  /**
+   * Handle save preferences
+   */
+  const handleSavePreferences = useCallback(() => {
+    const decision: ConsentDecision = {
+      acceptAll: false,
+      granularChoices,
+      timestamp: new Date(),
+      method: 'explicit'
+    };
+
+    onConsentGiven?.(decision);
+  }, [granularChoices, onConsentGiven]);
+
+  /**
+   * Handle granular choice change
+   */
+  const handleGranularChange = useCallback((
+    category: keyof ConsentDecision['granularChoices'],
+    value: boolean
+  ) => {
+    if (category === 'necessary') return; // Cannot disable necessary
+
+    setGranularChoices(prev => ({
+      ...prev,
+      [category]: value
+    }));
+  }, []);
+
+  const positionClasses = position === 'top' 
+    ? 'top-0 border-b' 
+    : 'bottom-0 border-t';
+
+  const themeClasses = theme === 'dark'
+    ? 'bg-gray-900 text-white border-gray-700'
+    : 'bg-white text-gray-900 border-gray-200';
+
+  try {
+    return (
+      <div
+        className={`
+          fixed left-0 right-0 z-50 
+          ${positionClasses} 
+          ${themeClasses}
+          shadow-lg max-h-screen overflow-y-auto
+        `}
+        role="banner"
+        aria-label="Cookie consent banner"
+        data-testid="gdpr-consent-banner"
+      >
+        <div className="max-w-7xl mx-auto p-4 lg:p-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg lg:text-xl font-semibold mb-2">
+                {content.title}
+              </h2>
+              
+              <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 mb-4">
+                {content.description}
+              </p>
+
+              {/* Legal Information */}
+              {showLegalBasis && (
+                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <strong>{content.lawfulBasis}:</strong> {{lawfulBasis}}
+                    </div>
+                    <div>
+                      <strong>{content.dataCategories}:</strong> {{#each dataCategories}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+                    </div>
+                    <div>
+                      <strong>{content.retention}:</strong> {{dataRetentionPeriod}} days
+                    </div>
+                    <div>
+                      <strong>{content.rights}:</strong> Access, rectification, erasure{{#if dataSubjectRights.rightToDataPortability}}, portability{{/if}}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <a 
+                      href={customContent?.privacyPolicyUrl || '/privacy-policy'}
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {content.privacyPolicy}
+                    </a>
+                    <a 
+                      href={customContent?.cookiePolicyUrl || '/cookie-policy'}
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {content.cookiePolicy}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Granular Consent Options */}
+              {showDetails && (
+                <div className="mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Necessary */}
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="consent-necessary"
+                        checked={granularChoices.necessary}
+                        disabled={true}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-describedby="consent-necessary-desc"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label 
+                          htmlFor="consent-necessary" 
+                          className="text-sm font-medium text-gray-900 dark:text-white cursor-not-allowed"
+                        >
+                          {content.necessary} (Required)
+                        </label>
+                        <p 
+                          id="consent-necessary-desc"
+                          className="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                        >
+                          {content.necessaryDesc}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Functional */}
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="consent-functional"
+                        checked={granularChoices.functional}
+                        onChange={(e) => handleGranularChange('functional', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-describedby="consent-functional-desc"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label 
+                          htmlFor="consent-functional" 
+                          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                        >
+                          {content.functional}
+                        </label>
+                        <p 
+                          id="consent-functional-desc"
+                          className="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                        >
+                          {content.functionalDesc}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Analytics */}
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="consent-analytics"
+                        checked={granularChoices.analytics}
+                        onChange={(e) => handleGranularChange('analytics', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-describedby="consent-analytics-desc"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label 
+                          htmlFor="consent-analytics" 
+                          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                        >
+                          {content.analytics}
+                        </label>
+                        <p 
+                          id="consent-analytics-desc"
+                          className="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                        >
+                          {content.analyticsDesc}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Marketing */}
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="consent-marketing"
+                        checked={granularChoices.marketing}
+                        onChange={(e) => handleGranularChange('marketing', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-describedby="consent-marketing-desc"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label 
+                          htmlFor="consent-marketing" 
+                          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                        >
+                          {content.marketing}
+                        </label>
+                        <p 
+                          id="consent-marketing-desc"
+                          className="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                        >
+                          {content.marketingDesc}
+                        </p>
+                      </div>
+                    </div>
+
+                    {{#if internationalTransfers}}
+                    {/* Third Party */}
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        id="consent-third-party"
+                        checked={granularChoices.thirdParty}
+                        onChange={(e) => handleGranularChange('thirdParty', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-describedby="consent-third-party-desc"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label 
+                          htmlFor="consent-third-party" 
+                          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                        >
+                          {content.thirdParty}
+                        </label>
+                        <p 
+                          id="consent-third-party-desc"
+                          className="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                        >
+                          {content.thirdPartyDesc}
+                        </p>
+                      </div>
+                    </div>
+                    {{/if}}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex-shrink-0">
+              <div className="flex flex-col sm:flex-row gap-2 lg:flex-col lg:w-48">
+                <button
+                  onClick={handleAcceptAll}
+                  className="h-12 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-md"
+                  aria-label="Accept all cookies and data processing"
+                >
+                  {content.acceptAll}
+                </button>
+
+                <button
+                  onClick={handleRejectAll}
+                  className="h-12 px-6 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                  aria-label="Reject all non-essential cookies and data processing"
+                >
+                  {content.rejectAll}
+                </button>
+
+                {showDetails && (
+                  <button
+                    onClick={handleSavePreferences}
+                    className="h-12 px-6 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors shadow-md"
+                    aria-label="Save current consent preferences"
+                  >
+                    {content.savePreferences}
+                  </button>
+                )}
+
+                {showManageButton && (
+                  <button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="h-12 px-6 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                    aria-label={showDetails ? "Hide consent details" : "Show consent details"}
+                    aria-expanded={showDetails}
+                  >
+                    {showDetails ? content.hideDetails : content.showDetails}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress indicator for mobile */}
+        <div className="lg:hidden h-1 bg-gray-200 dark:bg-gray-700">
+          <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('ConsentBanner render error:', error);
+    
+    // Fallback consent banner
+    return (
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-red-600 text-white p-4 text-center">
+        <div className="font-bold mb-2">Cookie Consent Error</div>
+        <div className="text-sm">Please contact support or refresh the page</div>
+      </div>
+    );
+  }
+};
+
+/**
+ * Hook for consent banner management
+ */
+export function useConsentBanner() {
+  const [consentGiven, setConsentGiven] = useState<ConsentDecision | null>(null);
+  const [showBanner, setShowBanner] = useState(true);
+
+  useEffect(() => {
+    // Check for existing consent in localStorage
+    const existingConsent = localStorage.getItem('gdpr-consent');
+    if (existingConsent) {
+      try {
+        const consent = JSON.parse(existingConsent);
+        const consentDate = new Date(consent.timestamp);
+        const thirteenMonthsAgo = new Date();
+        thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
+
+        if (consentDate > thirteenMonthsAgo) {
+          setConsentGiven(consent);
+          setShowBanner(false);
+        }
+      } catch (error) {
+        console.error('Error parsing stored consent:', error);
+      }
+    }
+  }, []);
+
+  const handleConsentGiven = useCallback((decision: ConsentDecision) => {
+    setConsentGiven(decision);
+    setShowBanner(false);
+    
+    // Store consent in localStorage
+    localStorage.setItem('gdpr-consent', JSON.stringify(decision));
+    
+    // Trigger consent event for analytics/tracking systems
+    window.dispatchEvent(new CustomEvent('gdpr-consent-given', {
+      detail: decision
+    }));
+  }, []);
+
+  const handleConsentRejected = useCallback(() => {
+    setShowBanner(false);
+    
+    // Store rejection
+    const rejection = {
+      acceptAll: false,
+      granularChoices: {
+        necessary: true,
+        functional: false,
+        analytics: false,
+        marketing: false,
+        thirdParty: false
+      },
+      timestamp: new Date(),
+      method: 'explicit' as const
+    };
+    
+    localStorage.setItem('gdpr-consent', JSON.stringify(rejection));
+    
+    // Trigger rejection event
+    window.dispatchEvent(new CustomEvent('gdpr-consent-rejected', {
+      detail: rejection
+    }));
+  }, []);
+
+  const resetConsent = useCallback(() => {
+    localStorage.removeItem('gdpr-consent');
+    setConsentGiven(null);
+    setShowBanner(true);
+  }, []);
+
+  return {
+    consentGiven,
+    showBanner,
+    handleConsentGiven,
+    handleConsentRejected,
+    resetConsent
+  };
+}
+
+export default ConsentBanner;

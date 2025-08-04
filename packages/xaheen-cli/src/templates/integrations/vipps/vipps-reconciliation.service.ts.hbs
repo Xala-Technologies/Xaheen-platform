@@ -1,0 +1,346 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { VippsService } from './vipps.service';
+
+/**
+ * {{name}} Vipps Payment Reconciliation Service
+ * Handles financial reconciliation and reporting for Norwegian compliance
+ * Environment: {{environment}}
+ */
+@Injectable()
+export class VippsReconciliationService {
+  private readonly logger = new Logger(VippsReconciliationService.name);
+
+  constructor(private readonly vippsService: VippsService) {}
+
+  /**
+   * Generate daily reconciliation report
+   */
+  async generateDailyReport(date: Date): Promise<VippsReconciliationReport> {
+    this.logger.log(`Generating daily reconciliation report for ${date.toISOString().split('T')[0]}`);
+    
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const transactions = await this.getTransactionsForPeriod(startOfDay, endOfDay);
+    
+    const report: VippsReconciliationReport = {
+      reportId: this.generateReportId('DAILY', date),
+      merchantSerialNumber: process.env.VIPPS_MSN || '{{authentication.merchantSerialNumber}}',
+      reportDate: date.toISOString().split('T')[0],
+      reportType: 'DAILY',
+      totalTransactions: transactions.length,
+      totalAmount: transactions.reduce((sum, tx) => sum + tx.amount, 0),
+      totalFees: transactions.reduce((sum, tx) => sum + tx.fee, 0),
+      netAmount: transactions.reduce((sum, tx) => sum + tx.netAmount, 0),
+      transactions,
+      currency: 'NOK',
+      generatedAt: new Date(),
+    };
+
+    this.logger.log(`Daily report generated: ${report.totalTransactions} transactions, ${report.netAmount / 100} NOK net`);
+    
+    return report;
+  }
+
+  /**
+   * Validate settlement against Vipps reports
+   */
+  async validateSettlement(
+    settlementDate: Date,
+    expectedAmount: number // Amount in øre
+  ): Promise<{
+    isValid: boolean;
+    actualAmount: number;
+    difference: number;
+    discrepancies: SettlementDiscrepancy[];
+  }> {
+    this.logger.log(`Validating settlement for ${settlementDate.toISOString().split('T')[0]}`);
+    
+    const report = await this.generateDailyReport(settlementDate);
+    const actualAmount = report.netAmount;
+    const difference = actualAmount - expectedAmount;
+    
+    const discrepancies: SettlementDiscrepancy[] = [];
+    
+    if (Math.abs(difference) > 0) {
+      discrepancies.push({
+        type: 'amount_mismatch',
+        description: `Forventet ${expectedAmount / 100} NOK, faktisk ${actualAmount / 100} NOK`,
+        amount: difference,
+        severity: Math.abs(difference) > 1000 ? 'high' : 'low', // 10 NOK threshold
+      });
+    }
+
+    // Check for missing transactions
+    const missingTransactions = await this.findMissingTransactions(settlementDate);
+    if (missingTransactions.length > 0) {
+      discrepancies.push({
+        type: 'missing_transaction',
+        description: `${missingTransactions.length} manglende transaksjoner`,
+        amount: missingTransactions.reduce((sum, tx) => sum + tx.amount, 0),
+        severity: 'medium',
+      });
+    }
+
+    // Check for duplicate transactions
+    const duplicateTransactions = await this.findDuplicateTransactions(settlementDate);
+    if (duplicateTransactions.length > 0) {
+      discrepancies.push({
+        type: 'extra_transaction',
+        description: `${duplicateTransactions.length} duplikate transaksjoner`,
+        amount: duplicateTransactions.reduce((sum, tx) => sum + tx.amount, 0),
+        severity: 'medium',
+      });
+    }
+
+    // Validate fees
+    const feeDiscrepancy = await this.validateFees(report);
+    if (feeDiscrepancy) {
+      discrepancies.push(feeDiscrepancy);
+    }
+
+    return {
+      isValid: discrepancies.length === 0,
+      actualAmount,
+      difference,
+      discrepancies,
+    };
+  }
+
+  /**
+   * Generate monthly reconciliation summary
+   */
+  async generateMonthlyReport(year: number, month: number): Promise<VippsMonthlyReport> {
+    this.logger.log(`Generating monthly reconciliation report for ${year}-${month.toString().padStart(2, '0')}`);
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0); // Last day of month
+
+    const dailyReports: VippsReconciliationReport[] = [];
+    const currentDate = new Date(startDate);
+
+    // Generate daily reports for the entire month
+    while (currentDate <= endDate) {
+      const dailyReport = await this.generateDailyReport(new Date(currentDate));
+      dailyReports.push(dailyReport);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    const monthlyReport: VippsMonthlyReport = {
+      reportId: this.generateReportId('MONTHLY', startDate),
+      year,
+      month,
+      merchantSerialNumber: process.env.VIPPS_MSN || '{{authentication.merchantSerialNumber}}',
+      totalTransactions: dailyReports.reduce((sum, report) => sum + report.totalTransactions, 0),
+      totalAmount: dailyReports.reduce((sum, report) => sum + report.totalAmount, 0),
+      totalFees: dailyReports.reduce((sum, report) => sum + report.totalFees, 0),
+      netAmount: dailyReports.reduce((sum, report) => sum + report.netAmount, 0),
+      averageDailyAmount: dailyReports.reduce((sum, report) => sum + report.netAmount, 0) / dailyReports.length,
+      currency: 'NOK',
+      dailyReports,
+      generatedAt: new Date(),
+    };
+
+    this.logger.log(`Monthly report generated: ${monthlyReport.totalTransactions} transactions, ${monthlyReport.netAmount / 100} NOK net`);
+
+    return monthlyReport;
+  }
+
+  /**
+   * Export reconciliation data for accounting systems
+   */
+  async exportToAccountingFormat(
+    report: VippsReconciliationReport,
+    format: 'CSV' | 'XML' | 'JSON' = 'CSV'
+  ): Promise<string> {
+    this.logger.log(`Exporting reconciliation report to ${format} format`);
+
+    switch (format) {
+      case 'CSV':
+        return this.exportToCSV(report);
+      case 'XML':
+        return this.exportToXML(report);
+      case 'JSON':
+        return JSON.stringify(report, null, 2);
+      default:
+        throw new Error(`Unsupported export format: ${format}`);
+    }
+  }
+
+  /**
+   * Get transactions for specific time period
+   */
+  private async getTransactionsForPeriod(
+    startDate: Date,
+    endDate: Date
+  ): Promise<VippsReconciliationTransaction[]> {
+    // This would typically query your transaction database
+    // For now, return sample data structure
+    
+    const transactions: VippsReconciliationTransaction[] = [];
+    
+    // In a real implementation, you would:
+    // 1. Query your database for transactions in the date range
+    // 2. Fetch corresponding Vipps transaction details
+    // 3. Calculate fees and net amounts
+    // 4. Return structured transaction data
+    
+    return transactions;
+  }
+
+  /**
+   * Find missing transactions by comparing with Vipps settlement data
+   */
+  private async findMissingTransactions(date: Date): Promise<VippsReconciliationTransaction[]> {
+    // Compare local transactions with Vipps settlement data
+    // Return transactions that are in Vipps but missing locally
+    return [];
+  }
+
+  /**
+   * Find duplicate transactions
+   */
+  private async findDuplicateTransactions(date: Date): Promise<VippsReconciliationTransaction[]> {
+    // Find transactions that appear multiple times
+    return [];
+  }
+
+  /**
+   * Validate fees against expected rates
+   */
+  private async validateFees(report: VippsReconciliationReport): Promise<SettlementDiscrepancy | null> {
+    // Validate that fees match expected Vipps fee structure
+    // Return discrepancy if fees don't match
+    return null;
+  }
+
+  /**
+   * Generate report ID
+   */
+  private generateReportId(type: string, date: Date): string {
+    const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
+    return `${type}_${dateStr}_${Date.now().toString().substring(-4)}`;
+  }
+
+  /**
+   * Export report to CSV format
+   */
+  private exportToCSV(report: VippsReconciliationReport): string {
+    const headers = [
+      'Order ID',
+      'Transaction ID', 
+      'Amount (øre)',
+      'Fee (øre)',
+      'Net Amount (øre)',
+      'Timestamp',
+      'Status',
+      'Operation'
+    ];
+
+    const csvLines = [headers.join(',')];
+
+    report.transactions.forEach(tx => {
+      const line = [
+        tx.orderId,
+        tx.transactionId,
+        tx.amount.toString(),
+        tx.fee.toString(),
+        tx.netAmount.toString(),
+        tx.timestamp,
+        tx.status,
+        tx.operation
+      ].join(',');
+      
+      csvLines.push(line);
+    });
+
+    return csvLines.join('\n');
+  }
+
+  /**
+   * Export report to XML format for Norwegian accounting systems
+   */
+  private exportToXML(report: VippsReconciliationReport): string {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<VippsReconciliationReport>
+  <ReportId>${report.reportId}</ReportId>
+  <MerchantSerialNumber>${report.merchantSerialNumber}</MerchantSerialNumber>
+  <ReportDate>${report.reportDate}</ReportDate>
+  <ReportType>${report.reportType}</ReportType>
+  <Currency>${report.currency}</Currency>
+  <Summary>
+    <TotalTransactions>${report.totalTransactions}</TotalTransactions>
+    <TotalAmount>${report.totalAmount}</TotalAmount>
+    <TotalFees>${report.totalFees}</TotalFees>
+    <NetAmount>${report.netAmount}</NetAmount>
+  </Summary>
+  <Transactions>
+    ${report.transactions.map(tx => `
+    <Transaction>
+      <OrderId>${tx.orderId}</OrderId>
+      <TransactionId>${tx.transactionId}</TransactionId>
+      <Amount>${tx.amount}</Amount>
+      <Fee>${tx.fee}</Fee>
+      <NetAmount>${tx.netAmount}</NetAmount>
+      <Timestamp>${tx.timestamp}</Timestamp>
+      <Status>${tx.status}</Status>
+      <Operation>${tx.operation}</Operation>
+    </Transaction>`).join('')}
+  </Transactions>
+  <GeneratedAt>${report.generatedAt?.toISOString()}</GeneratedAt>
+</VippsReconciliationReport>`;
+
+    return xml;
+  }
+}
+
+// Type definitions
+interface VippsReconciliationReport {
+  reportId: string;
+  merchantSerialNumber: string;
+  reportDate: string;
+  reportType: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  totalTransactions: number;
+  totalAmount: number;
+  totalFees: number;
+  netAmount: number;
+  currency: 'NOK';
+  transactions: VippsReconciliationTransaction[];
+  generatedAt?: Date;
+}
+
+interface VippsReconciliationTransaction {
+  orderId: string;
+  transactionId: string;
+  amount: number; // Amount in øre
+  fee: number; // Fee in øre
+  netAmount: number; // Net amount in øre
+  timestamp: string;
+  status: string;
+  operation: string;
+}
+
+interface VippsMonthlyReport {
+  reportId: string;
+  year: number;
+  month: number;
+  merchantSerialNumber: string;
+  totalTransactions: number;
+  totalAmount: number;
+  totalFees: number;
+  netAmount: number;
+  averageDailyAmount: number;
+  currency: 'NOK';
+  dailyReports: VippsReconciliationReport[];
+  generatedAt: Date;
+}
+
+interface SettlementDiscrepancy {
+  type: 'amount_mismatch' | 'missing_transaction' | 'extra_transaction' | 'fee_mismatch';
+  description: string;
+  amount: number; // Amount in øre
+  severity: 'low' | 'medium' | 'high';
+}

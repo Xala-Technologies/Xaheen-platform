@@ -1,0 +1,326 @@
+/**
+ * NSM Security Watermark Component
+ * 
+ * Renders security classification watermarks for NSM compliance
+ * Classification: {{classification}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ */
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { NSMClassification } from '../types/security/nsm-types';
+
+export interface SecurityWatermarkProps {
+  readonly classification: NSMClassification;
+  readonly position?: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'diagonal';
+  readonly opacity?: number;
+  readonly fontSize?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly rotation?: number;
+  readonly spacing?: 'tight' | 'normal' | 'wide';
+  readonly showTimestamp?: boolean;
+  readonly customText?: string;
+  readonly zIndex?: number;
+}
+
+/**
+ * Security Watermark Component
+ * 
+ * Renders NSM-compliant security watermarks that overlay content
+ * to indicate classification level and prevent unauthorized disclosure.
+ */
+export const SecurityWatermark = ({
+  classification = '{{classification}}' as NSMClassification,
+  position = 'diagonal',
+  opacity = 0.1,
+  fontSize = 'lg',
+  rotation = -45,
+  spacing = 'normal',
+  showTimestamp = {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}true{{else}}false{{/if}},
+  customText,
+  zIndex = 1000
+}: SecurityWatermarkProps): JSX.Element => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Update dimensions on window resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { offsetWidth, offsetHeight } = containerRef.current;
+        setDimensions({ width: offsetWidth, height: offsetHeight });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  const watermarkConfig = useMemo(() => {
+    const configs = {
+      OPEN: {
+        color: 'text-green-600',
+        text: 'OPEN',
+        intensity: 0.05
+      },
+      RESTRICTED: {
+        color: 'text-blue-600',
+        text: 'RESTRICTED',
+        intensity: 0.08
+      },
+      CONFIDENTIAL: {
+        color: 'text-orange-600',
+        text: 'CONFIDENTIAL',
+        intensity: 0.12
+      },
+      SECRET: {
+        color: 'text-red-600',
+        text: 'SECRET',
+        intensity: 0.15
+      }
+    };
+
+    return configs[classification] || configs.OPEN;
+  }, [classification]);
+
+  const fontSizeClasses = {
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
+    xl: 'text-xl'
+  };
+
+  const spacingValues = {
+    tight: 50,
+    normal: 80,
+    wide: 120
+  };
+
+  const positionClasses = {
+    center: 'inset-0 flex items-center justify-center',
+    'top-left': 'top-4 left-4',
+    'top-right': 'top-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'bottom-right': 'bottom-4 right-4',
+    diagonal: 'inset-0'
+  };
+
+  const watermarkText = customText || watermarkConfig.text;
+  const effectiveOpacity = Math.min(opacity, watermarkConfig.intensity);
+  const spacingValue = spacingValues[spacing];
+
+  const timestamp = useMemo(() => {
+    return new Date().toLocaleDateString('nb-NO', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }, []);
+
+  const renderSingleWatermark = (x: number = 0, y: number = 0, index: number = 0) => (
+    <div
+      key={`watermark-${index}`}
+      className={`
+        absolute select-none pointer-events-none
+        ${watermarkConfig.color}
+        ${fontSizeClasses[fontSize]}
+        font-bold tracking-wider
+      `}
+      style={{
+        left: `${x}px`,
+        top: `${y}px`,
+        opacity: effectiveOpacity,
+        transform: `rotate(${rotation}deg)`,
+        transformOrigin: 'center',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
+      }}
+      aria-hidden="true"
+    >
+      <div className="whitespace-nowrap">
+        {watermarkText}
+        {showTimestamp && (
+          <div className="text-xs opacity-75 mt-1">
+            {timestamp}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderDiagonalWatermarks(): JSX.Element[] => {
+    if (!dimensions.width || !dimensions.height) return [];
+
+    const watermarks: JSX.Element[] = [];
+    let index = 0;
+
+    // Calculate how many watermarks fit diagonally
+    const cols = Math.ceil(dimensions.width / spacingValue) + 2;
+    const rows = Math.ceil(dimensions.height / spacingValue) + 2;
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * spacingValue - spacingValue;
+        const y = row * spacingValue - spacingValue;
+        
+        watermarks.push(renderSingleWatermark(x, y, index++));
+      }
+    }
+
+    return watermarks;
+  };
+
+  {{#if (not uiSecurity.watermarks)}}
+  // Watermarks disabled for this classification level
+  return <></>;
+  {{/if}}
+
+  try {
+    return (
+      <div
+        ref={containerRef}
+        className={`
+          fixed inset-0 pointer-events-none select-none
+          print:opacity-100 print:text-black
+        `}
+        style={{ zIndex }}
+        data-classification={classification}
+        data-testid="nsm-security-watermark"
+        role="img"
+        aria-label={`Security watermark: ${classification} classification`}
+      >
+        <div className={`absolute ${positionClasses[position]}`}>
+          {position === 'diagonal' ? (
+            renderDiagonalWatermarks()
+          ) : (
+            renderSingleWatermark()
+          )}
+        </div>
+
+        {{#if (eq classification 'SECRET')}}
+        {/* Additional security indicators for SECRET classification */}
+        <div className="fixed top-0 right-0 m-4 text-red-600 text-xs font-mono opacity-20 pointer-events-none">
+          SEC-{Math.floor(Date.now() / 1000)}
+        </div>
+        {{/if}}
+
+        {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+        {/* Security monitoring indicator */}
+        <div className="fixed bottom-0 left-0 m-4 text-xs opacity-10 pointer-events-none font-mono">
+          NSM-MONITORED
+        </div>
+        {{/if}}
+      </div>
+    );
+  } catch (error) {
+    console.error('SecurityWatermark render error:', error);
+    
+    // Fallback watermark for security
+    return (
+      <div 
+        className="fixed inset-0 pointer-events-none select-none flex items-center justify-center"
+        style={{ zIndex }}
+      >
+        <div 
+          className="text-red-600 text-lg font-bold opacity-20"
+          style={{ transform: `rotate(${rotation}deg)` }}
+        >
+          SECURITY ERROR
+        </div>
+      </div>
+    );
+  }
+};
+
+/**
+ * Conditional Security Watermark
+ * 
+ * Only renders watermark if required by classification level
+ */
+export interface ConditionalSecurityWatermarkProps extends SecurityWatermarkProps {
+  readonly enabled?: boolean;
+}
+
+export const ConditionalSecurityWatermark = ({
+  enabled = {{uiSecurity.watermarks}},
+  ...props
+}: ConditionalSecurityWatermarkProps): JSX.Element => {
+  if (!enabled) {
+    return <></>;
+  }
+
+  return <SecurityWatermark {...props} />;
+};
+
+/**
+ * Document Security Watermark
+ * 
+ * Specialized watermark for document/print contexts
+ */
+export const DocumentSecurityWatermark = ({
+  classification = '{{classification}}' as NSMClassification,
+  documentId,
+  userInfo
+}: {
+  readonly classification?: NSMClassification;
+  readonly documentId?: string;
+  readonly userInfo?: string;
+}): JSX.Element => {
+  const timestamp = useMemo(() => {
+    return new Date().toISOString();
+  }, []);
+
+  return (
+    <>
+      <SecurityWatermark
+        classification={classification}
+        position="diagonal"
+        opacity={0.08}
+        fontSize="md"
+        spacing="wide"
+        showTimestamp={true}
+      />
+      
+      {/* Document metadata watermark */}
+      <div className="fixed bottom-0 right-0 m-4 text-xs opacity-30 pointer-events-none font-mono print:opacity-100">
+        <div>DOC: {documentId || 'UNKNOWN'}</div>
+        <div>USER: {userInfo || 'ANONYMOUS'}</div>
+        <div>TIME: {timestamp}</div>
+        <div>CLASS: {classification}</div>
+      </div>
+    </>
+  );
+};
+
+/**
+ * Hook for watermark utilities
+ */
+export function useSecurityWatermark(classification: NSMClassification) {
+  return useMemo(() => {
+    const isWatermarkRequired = {{uiSecurity.watermarks}};
+    const isHighSecurity = classification === 'SECRET' || classification === 'CONFIDENTIAL';
+    
+    return {
+      classification,
+      isRequired: isWatermarkRequired,
+      isHighSecurity,
+      getWatermarkProps: (overrides = {}) => ({
+        classification,
+        position: isHighSecurity ? 'diagonal' : 'bottom-right',
+        opacity: isHighSecurity ? 0.12 : 0.08,
+        fontSize: isHighSecurity ? 'lg' : 'md',
+        showTimestamp: isHighSecurity,
+        spacing: isHighSecurity ? 'normal' : 'wide',
+        ...overrides
+      })
+    };
+  }, [classification]);
+}
+
+export default SecurityWatermark;

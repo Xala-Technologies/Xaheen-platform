@@ -1,0 +1,386 @@
+/**
+ * NSM Classification Service
+ * 
+ * Service for managing NSM security classifications and access control
+ * Classification: {{classification}}
+ * 
+ * @security-classification {{classification}}
+ * @compliance NSM-compliant
+ * @audit-level {{auditConfig.level}}
+ */
+
+import { consola } from 'consola';
+import type { NSMClassification, SecurityContext, AccessControlResult } from '../types/security/nsm-types';
+import { nsmSecurityConfig } from './security-config';
+
+export interface ClassificationContext {
+  readonly userId: string;
+  readonly userClearance: NSMClassification;
+  readonly requestedResource: string;
+  readonly requiredClassification: NSMClassification;
+  readonly timestamp: Date;
+  readonly sessionId: string;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+}
+
+export interface AuditEvent {
+  readonly eventId: string;
+  readonly eventType: 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'CLASSIFICATION_CHECK' | 'SECURITY_VIOLATION';
+  readonly userId: string;
+  readonly classification: NSMClassification;
+  readonly resource: string;
+  readonly timestamp: Date;
+  readonly metadata: Record<string, unknown>;
+}
+
+export class NSMClassificationService {
+  private readonly auditEvents: AuditEvent[] = [];
+  private readonly classification: NSMClassification = '{{classification}}' as NSMClassification;
+
+  constructor() {
+    this.logAuditEvent({
+      eventId: this.generateEventId(),
+      eventType: 'CLASSIFICATION_CHECK',
+      userId: 'system',
+      classification: this.classification,
+      resource: 'service-initialization',
+      timestamp: new Date(),
+      metadata: {
+        serviceClass: 'NSMClassificationService',
+        configuredClassification: this.classification
+      }
+    });
+  }
+
+  /**
+   * Validate user access to classified resource
+   */
+  async validateAccess(context: ClassificationContext): Promise<AccessControlResult> {
+    try {
+      const canAccess = this.checkClearanceLevel(
+        context.userClearance,
+        context.requiredClassification
+      );
+
+      const result: AccessControlResult = {
+        granted: canAccess,
+        classification: context.requiredClassification,
+        userClearance: context.userClearance,
+        reason: canAccess 
+          ? 'Sufficient clearance level' 
+          : `Insufficient clearance: ${context.userClearance} < ${context.requiredClassification}`,
+        auditEventId: this.generateEventId(),
+        timestamp: new Date(),
+        restrictions: canAccess ? this.getClassificationRestrictions(context.requiredClassification) : [],
+        sessionTimeout: nsmSecurityConfig.uiRequirements.sessionTimeout
+      };
+
+      // Log audit event
+      this.logAuditEvent({
+        eventId: result.auditEventId,
+        eventType: canAccess ? 'ACCESS_GRANTED' : 'ACCESS_DENIED',
+        userId: context.userId,
+        classification: context.requiredClassification,
+        resource: context.requestedResource,
+        timestamp: result.timestamp,
+        metadata: {
+          userClearance: context.userClearance,
+          sessionId: context.sessionId,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          reason: result.reason
+        }
+      });
+
+      {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+      // Additional security measures for high classifications
+      if (canAccess && (context.requiredClassification === 'SECRET' || context.requiredClassification === 'CONFIDENTIAL')) {
+        await this.performEnhancedSecurityChecks(context);
+      }
+      {{/if}}
+
+      return result;
+
+    } catch (error) {
+      consola.error('NSM Classification Service error:', error);
+      
+      const errorEventId = this.generateEventId();
+      this.logAuditEvent({
+        eventId: errorEventId,
+        eventType: 'SECURITY_VIOLATION',
+        userId: context.userId,
+        classification: context.requiredClassification,
+        resource: context.requestedResource,
+        timestamp: new Date(),
+        metadata: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        }
+      });
+
+      return {
+        granted: false,
+        classification: context.requiredClassification,
+        userClearance: context.userClearance,
+        reason: 'Security service error',
+        auditEventId: errorEventId,
+        timestamp: new Date(),
+        restrictions: [],
+        sessionTimeout: 0
+      };
+    }
+  }
+
+  /**
+   * Check if user clearance level is sufficient for required classification
+   */
+  private checkClearanceLevel(userClearance: NSMClassification, requiredClassification: NSMClassification): boolean {
+    const levels: Record<NSMClassification, number> = {
+      'OPEN': 0,
+      'RESTRICTED': 1,
+      'CONFIDENTIAL': 2,
+      'SECRET': 3
+    };
+
+    const userLevel = levels[userClearance];
+    const requiredLevel = levels[requiredClassification];
+
+    return userLevel >= requiredLevel;
+  }
+
+  /**
+   * Get classification-specific restrictions
+   */
+  private getClassificationRestrictions(classification: NSMClassification): string[] {
+    const baseRestrictions: string[] = [];
+
+    switch (classification) {
+      case 'SECRET':
+        baseRestrictions.push(
+          'no-international-transfer',
+          'segregated-systems-only',
+          'continuous-monitoring',
+          'physical-security-required',
+          'top-secret-clearance-required'
+        );
+        break;
+      case 'CONFIDENTIAL':
+        baseRestrictions.push(
+          'authorized-personnel-only',
+          'no-international-transfer-without-approval',
+          'special-handling-required',
+          'background-check-required'
+        );
+        break;
+      case 'RESTRICTED':
+        baseRestrictions.push(
+          'authenticated-users-only',
+          'internal-network-only',
+          'no-public-access'
+        );
+        break;
+      case 'OPEN':
+        // No additional restrictions for OPEN classification
+        break;
+    }
+
+    // Add UI restrictions from configuration
+    if (nsmSecurityConfig.uiRequirements.restrictedActions.length > 0) {
+      baseRestrictions.push(
+        ...nsmSecurityConfig.uiRequirements.restrictedActions.map(
+          action => `no-${action}`
+        )
+      );
+    }
+
+    return baseRestrictions;
+  }
+
+  {{#if (or (eq classification 'SECRET') (eq classification 'CONFIDENTIAL'))}}
+  /**
+   * Perform enhanced security checks for high-classification access
+   */
+  private async performEnhancedSecurityChecks(context: ClassificationContext): Promise<void> {
+    // Check for concurrent sessions
+    const concurrentSessions = await this.checkConcurrentSessions(context.userId);
+    if (concurrentSessions > 1) {
+      consola.warn(`Multiple concurrent sessions detected for user ${context.userId}`);
+    }
+
+    // Check for unusual access patterns
+    const recentAccess = this.getRecentAccessEvents(context.userId);
+    if (this.detectUnusualAccessPattern(recentAccess)) {
+      consola.warn(`Unusual access pattern detected for user ${context.userId}`);
+    }
+
+    {{#if (eq classification 'SECRET')}}
+    // SECRET classification: Check for air-gapped network
+    if (!this.isAirGappedNetwork(context.ipAddress)) {
+      consola.warn(`SECRET classification access from non-air-gapped network: ${context.ipAddress}`);
+    }
+    {{/if}}
+  }
+
+  /**
+   * Check for concurrent user sessions
+   */
+  private async checkConcurrentSessions(userId: string): Promise<number> {
+    // This would integrate with session management system
+    // For now, return mock value
+    return 1;
+  }
+
+  /**
+   * Get recent access events for user
+   */
+  private getRecentAccessEvents(userId: string): AuditEvent[] {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    return this.auditEvents.filter(
+      event => event.userId === userId && event.timestamp > oneHourAgo
+    );
+  }
+
+  /**
+   * Detect unusual access patterns
+   */
+  private detectUnusualAccessPattern(events: AuditEvent[]): boolean {
+    // Simple heuristic: more than 10 access attempts in last hour
+    return events.length > 10;
+  }
+
+  {{#if (eq classification 'SECRET')}}
+  /**
+   * Check if network is air-gapped (for SECRET classification)
+   */
+  private isAirGappedNetwork(ipAddress?: string): boolean {
+    if (!ipAddress) return false;
+    
+    // Check if IP is in air-gapped network ranges
+    // This would be configured based on organization's network topology
+    const airGappedRanges = [
+      '10.0.0.0/8',
+      '172.16.0.0/12',
+      '192.168.0.0/16'
+    ];
+    
+    // Simplified check - in production, use proper IP range validation
+    return airGappedRanges.some(range => ipAddress.startsWith(range.split('.')[0]));
+  }
+  {{/if}}
+  {{/if}}
+
+  /**
+   * Log audit event
+   */
+  private logAuditEvent(event: AuditEvent): void {
+    this.auditEvents.push(event);
+    
+    {{#if auditConfig.realTimeMonitoring}}
+    // Real-time monitoring for maximum audit level
+    this.sendToSecurityMonitoring(event);
+    {{/if}}
+
+    consola.info(`NSM Audit Event: ${event.eventType}`, {
+      eventId: event.eventId,
+      userId: event.userId,
+      classification: event.classification,
+      resource: event.resource,
+      timestamp: event.timestamp.toISOString()
+    });
+  }
+
+  {{#if auditConfig.realTimeMonitoring}}
+  /**
+   * Send audit event to security monitoring system
+   */
+  private sendToSecurityMonitoring(event: AuditEvent): void {
+    // This would integrate with security monitoring system (SIEM)
+    // For now, just log at higher level
+    if (event.eventType === 'ACCESS_DENIED' || event.eventType === 'SECURITY_VIOLATION') {
+      consola.warn('Security event requires immediate attention:', event);
+    }
+  }
+  {{/if}}
+
+  /**
+   * Generate unique event ID
+   */
+  private generateEventId(): string {
+    return `nsm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Get current classification level
+   */
+  getClassificationLevel(): NSMClassification {
+    return this.classification;
+  }
+
+  /**
+   * Get security configuration
+   */
+  getSecurityConfiguration() {
+    return nsmSecurityConfig;
+  }
+
+  /**
+   * Get audit events (for reporting)
+   */
+  getAuditEvents(startDate?: Date, endDate?: Date): AuditEvent[] {
+    let events = [...this.auditEvents];
+
+    if (startDate) {
+      events = events.filter(event => event.timestamp >= startDate);
+    }
+
+    if (endDate) {
+      events = events.filter(event => event.timestamp <= endDate);
+    }
+
+    return events;
+  }
+
+  /**
+   * Export audit report
+   */
+  async generateAuditReport(startDate: Date, endDate: Date): Promise<{
+    reportId: string;
+    period: { start: Date; end: Date };
+    classification: NSMClassification;
+    summary: {
+      totalEvents: number;
+      accessGranted: number;
+      accessDenied: number;
+      securityViolations: number;
+    };
+    events: AuditEvent[];
+    timestamp: Date;
+  }> {
+    const events = this.getAuditEvents(startDate, endDate);
+    
+    return {
+      reportId: this.generateEventId(),
+      period: { start: startDate, end: endDate },
+      classification: this.classification,
+      summary: {
+        totalEvents: events.length,
+        accessGranted: events.filter(e => e.eventType === 'ACCESS_GRANTED').length,
+        accessDenied: events.filter(e => e.eventType === 'ACCESS_DENIED').length,
+        securityViolations: events.filter(e => e.eventType === 'SECURITY_VIOLATION').length
+      },
+      events,
+      timestamp: new Date()
+    };
+  }
+}
+
+/**
+ * Singleton instance
+ */
+export const nsmClassificationService = new NSMClassificationService();
+
+/**
+ * Export default service
+ */
+export default nsmClassificationService;

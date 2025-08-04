@@ -1,0 +1,429 @@
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+
+/**
+ * {{name}} Vipps Payment Service
+ * Norwegian mobile payment integration with enterprise-grade features
+ * Environment: {{environment}}
+ * Features: {{#each features}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+ */
+@Injectable()
+export class VippsService {
+  private readonly logger = new Logger(VippsService.name);
+  private accessToken: string | null = null;
+  private tokenExpiry: Date | null = null;
+
+  private readonly baseUrl = '{{#if (eq environment "production")}}https://api.vipps.no{{else}}https://apitest.vipps.no{{/if}}';
+  private readonly merchantSerialNumber = process.env.VIPPS_MSN || '{{authentication.merchantSerialNumber}}';
+  private readonly subscriptionKey = process.env.VIPPS_SUBSCRIPTION_KEY || '{{authentication.subscriptionKey}}';
+  private readonly clientId = process.env.VIPPS_CLIENT_ID || '{{authentication.clientId}}';
+  private readonly clientSecret = process.env.VIPPS_CLIENT_SECRET || '';
+
+  constructor(private readonly httpService: HttpService) {}
+
+  /**
+   * Get valid access token from Vipps
+   */
+  private async getAccessToken(): Promise<string> {
+    if (this.accessToken && this.tokenExpiry && this.tokenExpiry > new Date()) {
+      return this.accessToken;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/accesstoken/get`,
+          {},
+          {
+            headers: {
+              'client_id': this.clientId,
+              'client_secret': this.clientSecret,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+
+      this.accessToken = response.data.access_token;
+      this.tokenExpiry = new Date(Date.now() + response.data.expires_in * 1000);
+      
+      this.logger.log('Vipps access token refreshed successfully');
+      return this.accessToken;
+    } catch (error: any) {
+      this.logger.error('Failed to get Vipps access token', error.stack);
+      throw new HttpException(
+        'Vipps authentication failed',
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+  }
+
+  /**
+   * Initiate Vipps payment
+   * @param amount Amount in Norwegian Kroner (NOK)
+   * @param mobileNumber Norwegian mobile number
+   * @param transactionText Description of the transaction
+   * @param orderId Optional order ID
+   */
+  async initiatePayment(
+    amount: number,
+    mobileNumber: string,
+    transactionText: string,
+    orderId?: string
+  ): Promise<{
+    orderId: string;
+    url: string;
+    expiresAt?: string;
+  }> {
+    try {
+      this.validateAmount(amount);
+      const formattedPhone = this.formatNorwegianPhoneNumber(mobileNumber);
+      const validOrderId = orderId || this.generateOrderId();
+      const token = await this.getAccessToken();
+
+      const paymentRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber,
+          callbackPrefix: process.env.VIPPS_CALLBACK_PREFIX || '{{callbackPrefix}}',
+          fallBack: process.env.VIPPS_FALLBACK_URL || '{{fallbackUrl}}',
+          paymentType: 'eComm Regular Payment',
+        },
+        customerInfo: {
+          mobileNumber: formattedPhone,
+        },
+        transaction: {
+          orderId: validOrderId,
+          amount: this.convertToOre(amount),
+          transactionText: this.validateTransactionText(transactionText),
+          timeStamp: new Date().toISOString(),
+        },
+      };
+
+      this.logger.log(`Initiating Vipps payment for order ${validOrderId}, amount: ${amount} NOK`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/ecomm/v2/payments`,
+          paymentRequest,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+              'Merchant-Serial-Number': this.merchantSerialNumber,
+              'Vipps-System-Name': '{{name}}',
+              'Vipps-System-Version': '1.0.0',
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+
+      this.logger.log(`Vipps payment initiated successfully for order ${validOrderId}`);
+
+      return {
+        orderId: validOrderId,
+        url: response.data.url,
+        expiresAt: response.data.expiresAt,
+      };
+    } catch (error: any) {
+      this.logger.error(`Vipps payment initiation failed: ${error.message}`, error.stack);
+      throw this.handleVippsError(error);
+    }
+  }
+
+  {{#if (includes features "capture-later")}}
+  /**
+   * Capture payment (settle the transaction)
+   */
+  async capturePayment(orderId: string, amount?: number): Promise<void> {
+    try {
+      const token = await this.getAccessToken();
+      const captureRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber,
+        },
+        transaction: {
+          amount: amount ? this.convertToOre(amount) : undefined,
+          transactionText: `Capture for order ${orderId}`,
+        },
+      };
+
+      this.logger.log(`Capturing Vipps payment for order ${orderId}${amount ? `, amount: ${amount} NOK` : ' (full amount)'}`);
+
+      await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/ecomm/v2/payments/${orderId}/capture`,
+          captureRequest,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+
+      this.logger.log(`Vipps payment captured successfully for order ${orderId}`);
+    } catch (error: any) {
+      this.logger.error(`Vipps payment capture failed for order ${orderId}: ${error.message}`, error.stack);
+      throw this.handleVippsError(error);
+    }
+  }
+  {{/if}}
+
+  {{#if (includes features "refunds")}}
+  /**
+   * Refund payment
+   */
+  async refundPayment(
+    orderId: string,
+    amount: number,
+    refundText: string
+  ): Promise<void> {
+    try {
+      this.validateAmount(amount);
+      const token = await this.getAccessToken();
+
+      const refundRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber,
+        },
+        transaction: {
+          amount: this.convertToOre(amount),
+          transactionText: this.validateTransactionText(refundText),
+        },
+      };
+
+      this.logger.log(`Refunding Vipps payment for order ${orderId}, amount: ${amount} NOK`);
+
+      await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/ecomm/v2/payments/${orderId}/refund`,
+          refundRequest,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+              'X-Request-Id': uuidv4(),
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+
+      this.logger.log(`Vipps payment refunded successfully for order ${orderId}`);
+    } catch (error: any) {
+      this.logger.error(`Vipps payment refund failed for order ${orderId}: ${error.message}`, error.stack);
+      throw this.handleVippsError(error);
+    }
+  }
+  {{/if}}
+
+  /**
+   * Get payment details and transaction history
+   */
+  async getPaymentDetails(orderId: string): Promise<any> {
+    try {
+      const token = await this.getAccessToken();
+
+      this.logger.log(`Fetching Vipps payment details for order ${orderId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.baseUrl}/ecomm/v2/payments/${orderId}/details`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+            },
+          }
+        )
+      );
+
+      this.logger.log(`Vipps payment details retrieved successfully for order ${orderId}`);
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(`Failed to get Vipps payment details for order ${orderId}: ${error.message}`, error.stack);
+      throw this.handleVippsError(error);
+    }
+  }
+
+  /**
+   * Cancel payment (void before capture)
+   */
+  async cancelPayment(orderId: string, transactionText?: string): Promise<void> {
+    try {
+      const token = await this.getAccessToken();
+      const cancelRequest = {
+        merchantInfo: {
+          merchantSerialNumber: this.merchantSerialNumber,
+        },
+        transaction: {
+          transactionText: transactionText || `Cancelled order ${orderId}`,
+        },
+      };
+
+      this.logger.log(`Cancelling Vipps payment for order ${orderId}`);
+
+      await firstValueFrom(
+        this.httpService.put(
+          `${this.baseUrl}/ecomm/v2/payments/${orderId}/cancel`,
+          cancelRequest,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+
+      this.logger.log(`Vipps payment cancelled successfully for order ${orderId}`);
+    } catch (error: any) {
+      this.logger.error(`Vipps payment cancellation failed for order ${orderId}: ${error.message}`, error.stack);
+      throw this.handleVippsError(error);
+    }
+  }
+
+  /**
+   * Format Norwegian phone number for Vipps
+   */
+  private formatNorwegianPhoneNumber(phoneNumber: string): string {
+    // Remove spaces and special characters
+    let cleaned = phoneNumber.replace(/[\s\-()]/g, '');
+    
+    // Add country code if not present
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('47')) {
+        cleaned = `+${cleaned}`;
+      } else if (cleaned.startsWith('00')) {
+        cleaned = `+${cleaned.substring(2)}`;
+      } else {
+        cleaned = `+47${cleaned}`;
+      }
+    }
+    
+    // Validate Norwegian phone number format
+    if (!/^\+47\d{8}$/.test(cleaned)) {
+      throw new HttpException(
+        `Invalid Norwegian phone number format: ${phoneNumber}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    
+    return cleaned;
+  }
+
+  /**
+   * Validate amount according to Norwegian regulations
+   */
+  private validateAmount(amount: number): void {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new HttpException(
+        'Amount must be a positive integer representing NOK',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const amountInOre = this.convertToOre(amount);
+    
+    if (amountInOre < 100) { // 1 NOK minimum
+      throw new HttpException(
+        'Amount too small. Minimum amount is 1 NOK',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    if (amountInOre > 100000000) { // 1,000,000 NOK maximum
+      throw new HttpException(
+        'Amount too large. Maximum amount is 1,000,000 NOK',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
+  /**
+   * Convert NOK to øre (Norwegian currency subdivision)
+   */
+  private convertToOre(nokAmount: number): number {
+    return Math.round(nokAmount * 100);
+  }
+
+  /**
+   * Validate transaction text for Norwegian compliance
+   */
+  private validateTransactionText(text: string): string {
+    if (!text || text.trim().length === 0) {
+      throw new HttpException(
+        'Transaction text is required',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const trimmed = text.trim();
+    
+    if (trimmed.length > 100) {
+      throw new HttpException(
+        'Transaction text cannot exceed 100 characters',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Generate unique order ID with Norwegian format
+   */
+  private generateOrderId(): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    return `NO-${timestamp}-${random}`;
+  }
+
+  /**
+   * Handle Vipps API errors with Norwegian context
+   */
+  private handleVippsError(error: any): HttpException {
+    const vippsError = error.response?.data;
+    const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+
+    if (vippsError?.errorCode) {
+      switch (vippsError.errorCode) {
+        case 'payment.not.found':
+          return new HttpException('Betaling ikke funnet', HttpStatus.NOT_FOUND);
+        case 'invalid.request':
+          return new HttpException(
+            `Ugyldig forespørsel: ${vippsError.errorMessage}`,
+            HttpStatus.BAD_REQUEST
+          );
+        case 'unauthorized':
+          return new HttpException('Ikke autorisert', HttpStatus.UNAUTHORIZED);
+        case 'insufficient.funds':
+          return new HttpException('Utilstrekkelige midler', HttpStatus.PAYMENT_REQUIRED);
+        case 'payment.expired':
+          return new HttpException('Betalingen har utløpt', HttpStatus.GONE);
+        case 'merchant.not.allowed.for.ecomm':
+          return new HttpException(
+            'Forhandler ikke tillatt for e-handelsbetalinger',
+            HttpStatus.FORBIDDEN
+          );
+        default:
+          return new HttpException(
+            `Vipps feil: ${vippsError.errorMessage}`,
+            statusCode
+          );
+      }
+    }
+
+    return new HttpException(
+      error.message || 'Vipps integrasjonsfeil',
+      statusCode
+    );
+  }
+}
