@@ -930,5 +930,5 @@ export const createDefaultWatcherHooks = (): readonly WatchHook[] => [
   },
 ];
 
-export { DocumentationWatcherService };
+// DocumentationWatcherService already exported above
 export type { WatcherConfig, WatchEvent, ProcessingJob, WatcherStats };

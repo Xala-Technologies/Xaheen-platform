@@ -127,6 +127,15 @@ const GENERATOR_CATEGORIES = {
 
 	// Compliance generators
 	compliance: ["nsm-security", "gdpr-compliance"],
+
+	// SaaS Administration generators
+	"saas-admin": ["tenant-management", "user-management", "rbac", "analytics"],
+
+	// Multi-tenancy generators
+	"multi-tenancy": ["multi-tenant", "single-tenant", "tenant-isolation", "tenant-auth"],
+
+	// Subscription generators
+	subscription: ["subscription-plans", "billing", "license-management", "usage-tracking"],
 } as const;
 
 /**
@@ -911,6 +920,203 @@ async function executeDevOpsGenerator(
 }
 
 /**
+ * Execute SaaS Administration generator
+ */
+async function executeSaaSAdminGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options } = context;
+
+	try {
+		switch (type) {
+			case "tenant-management":
+				const { SaaSAdminPortalGenerator } = await import("./saas-admin/index");
+				const adminGenerator = new SaaSAdminPortalGenerator();
+				const result = await adminGenerator.generate({
+					name,
+					framework: options.framework || "nextjs",
+					backend: options.backend || "nestjs",
+					database: options.database || "postgresql",
+					features: options.features || ["tenant-dashboard", "user-management", "analytics"],
+					authentication: options.authentication || "jwt",
+					analytics: options.analytics || "custom",
+					tenantModel: options.tenantModel || "multi-tenant",
+					rbacModel: options.rbacModel || "role-based",
+				});
+
+				return {
+					success: true,
+					message: `SaaS Admin Portal '${name}' generated successfully`,
+					files: result.files,
+					commands: result.commands,
+					nextSteps: result.nextSteps,
+				};
+
+			default:
+				return {
+					success: false,
+					message: `Unknown SaaS admin generator type: ${type}`,
+					error: `SaaS admin generator type '${type}' is not supported`,
+				};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate SaaS admin ${type}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
+ * Execute Multi-Tenancy generator
+ */
+async function executeMultiTenancyGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options } = context;
+
+	try {
+		switch (type) {
+			case "multi-tenant":
+				const { MultiTenantGenerator } = await import("./multi-tenancy/index");
+				const multiTenantGenerator = new MultiTenantGenerator();
+				const result = await multiTenantGenerator.generate({
+					name,
+					isolationLevel: options.isolationLevel || "schema",
+					database: options.database || "postgresql",
+					backend: options.backend || "nestjs",
+					authentication: options.authentication || "jwt",
+					features: options.features || ["tenant-isolation", "tenant-specific-config"],
+					tenantDiscovery: options.tenantDiscovery || "subdomain",
+					caching: options.caching || "redis",
+					monitoring: options.monitoring !== false,
+					compliance: options.compliance || [],
+				});
+
+				return {
+					success: true,
+					message: `Multi-Tenant Application '${name}' generated successfully`,
+					files: result.files,
+					commands: result.commands,
+					nextSteps: result.nextSteps,
+				};
+
+			case "single-tenant":
+				const { SingleTenantGenerator } = await import("./multi-tenancy/index");
+				const singleTenantGenerator = new SingleTenantGenerator();
+				const singleResult = await singleTenantGenerator.generate({
+					name,
+					tenantId: options.tenantId || name,
+					database: options.database || "postgresql",
+					backend: options.backend || "nestjs",
+					infrastructure: options.infrastructure || "kubernetes",
+					features: options.features || ["dedicated-infrastructure", "enhanced-security"],
+					customization: options.customization || { branding: true, themes: true, features: true, integrations: true, workflows: true },
+					backup: options.backup || { frequency: "daily", retention: 30, encryption: true, crossRegion: false, pointInTime: true },
+					monitoring: options.monitoring !== false,
+				});
+
+				return {
+					success: true,
+					message: `Single-Tenant Application '${name}' generated successfully`,
+					files: singleResult.files,
+					commands: singleResult.commands,
+					nextSteps: singleResult.nextSteps,
+				};
+
+			default:
+				return {
+					success: false,
+					message: `Unknown multi-tenancy generator type: ${type}`,
+					error: `Multi-tenancy generator type '${type}' is not supported`,
+				};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate multi-tenancy ${type}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
+ * Execute Subscription generator
+ */
+async function executeSubscriptionGenerator(
+	context: GeneratorContext,
+): Promise<GeneratorResult> {
+	const { type, name, options } = context;
+
+	try {
+		switch (type) {
+			case "subscription-plans":
+			case "billing":
+				const { SubscriptionManagementGenerator } = await import("./subscription/index");
+				const subscriptionGenerator = new SubscriptionManagementGenerator();
+				const result = await subscriptionGenerator.generate({
+					name,
+					billingProvider: options.billingProvider || "stripe",
+					subscriptionModel: options.subscriptionModel || "tiered",
+					billingCycle: options.billingCycle || "monthly",
+					features: options.features || ["plans", "billing", "invoicing", "usage-tracking"],
+					currencies: options.currencies || ["USD", "EUR", "NOK"],
+					taxHandling: options.taxHandling || { enabled: true, inclusive: false, regionBased: true },
+					dunningManagement: options.dunningManagement !== false,
+					prorationHandling: options.prorationHandling !== false,
+					freeTrial: options.freeTrial || { enabled: true, duration: 14, durationUnit: "days", requiresCreditCard: false, autoConvert: true },
+					webhookHandling: options.webhookHandling !== false,
+				});
+
+				return {
+					success: true,
+					message: `Subscription Management System '${name}' generated successfully`,
+					files: result.files,
+					commands: result.commands,
+					nextSteps: result.nextSteps,
+				};
+
+			case "license-management":
+				const { LicenseManagementGenerator } = await import("./subscription/index");
+				const licenseGenerator = new LicenseManagementGenerator();
+				const licenseResult = await licenseGenerator.generate({
+					name,
+					licenseModel: options.licenseModel || "seat-based",
+					enforcement: options.enforcement || "server-side",
+					validation: options.validation || { frequency: "real-time", encryption: "aes256", signature: true, offline: false },
+					features: options.features || ["key-generation", "validation", "enforcement", "audit-trail"],
+					restrictions: options.restrictions || [],
+					reporting: options.reporting !== false,
+					analytics: options.analytics !== false,
+					compliance: options.compliance || [],
+				});
+
+				return {
+					success: true,
+					message: `License Management System '${name}' generated successfully`,
+					files: licenseResult.files,
+					commands: licenseResult.commands,
+					nextSteps: licenseResult.nextSteps,
+				};
+
+			default:
+				return {
+					success: false,
+					message: `Unknown subscription generator type: ${type}`,
+					error: `Subscription generator type '${type}' is not supported`,
+				};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: `Failed to generate subscription ${type}: ${error instanceof Error ? error.message : "Unknown error"}`,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
  * Execute compliance generator
  */
 async function executeComplianceGenerator(
@@ -1114,6 +1320,15 @@ export async function executeFullStackGenerator(
 			case "compliance":
 				return await executeComplianceGenerator(context);
 
+			case "saas-admin":
+				return await executeSaaSAdminGenerator(context);
+
+			case "multi-tenancy":
+				return await executeMultiTenancyGenerator(context);
+
+			case "subscription":
+				return await executeSubscriptionGenerator(context);
+
 			default:
 				return {
 					success: false,
@@ -1232,6 +1447,24 @@ export function getGeneratorHelp(type: GeneratorType): string {
 			"Generate NSM-compliant security classifications and access controls",
 		"gdpr-compliance":
 			"Generate GDPR-compliant data protection and privacy systems",
+
+		// SaaS Administration
+		"tenant-management": "Generate comprehensive SaaS admin portal with tenant management, RBAC, and analytics",
+		"user-management": "Generate user management systems with role-based access control",
+		"rbac": "Generate role-based access control systems with hierarchical permissions",
+		"analytics": "Generate SaaS analytics dashboards with tenant-specific metrics",
+
+		// Multi-tenancy
+		"multi-tenant": "Generate multi-tenant architecture with database isolation and tenant-aware authentication",
+		"single-tenant": "Generate single-tenant architecture with dedicated infrastructure and enhanced security",
+		"tenant-isolation": "Generate tenant isolation strategies with database, schema, or row-level security",
+		"tenant-auth": "Generate tenant-aware authentication systems with multi-factor support",
+
+		// Subscription
+		"subscription-plans": "Generate subscription management system with billing provider integration",
+		"billing": "Generate comprehensive billing system with usage tracking and dunning management",
+		"license-management": "Generate license management system with key generation, validation, and enforcement",
+		"usage-tracking": "Generate usage tracking and metering systems with real-time analytics",
 	};
 
 	return helpTexts[type] || `Generate ${type} with best practices`;

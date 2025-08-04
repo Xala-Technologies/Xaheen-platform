@@ -98,12 +98,12 @@ jobs:
     runs-on: {{runs_on}}
     {{#if needs}}
     needs: 
-      {{#if (eq (typeof needs) "string")}}
-      - {{needs}}
-      {{else}}
+      {{#if needs.length}}
       {{#each needs}}
       - {{this}}
       {{/each}}
+      {{else}}
+      - {{needs}}
       {{/if}}
     {{/if}}
     {{#if if}}

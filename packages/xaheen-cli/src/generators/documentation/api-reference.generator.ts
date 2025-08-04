@@ -1,5 +1,5 @@
 import { BaseGenerator } from "../base.generator";
-import { TemplateManager } from "../../services/templates/template-loader";
+import { TemplateLoader } from "../../services/templates/template-loader";
 import { ProjectAnalyzer } from "../../services/analysis/project-analyzer";
 import type {
 	DocumentationGeneratorOptions,
@@ -96,12 +96,12 @@ export interface CodeSample {
 }
 
 export class APIReferenceGenerator extends BaseGenerator<APIReferenceGeneratorOptions> {
-	private readonly templateManager: TemplateManager;
+	private readonly templateLoader: TemplateLoader;
 	private readonly analyzer: ProjectAnalyzer;
 
 	constructor() {
 		super();
-		this.templateManager = new TemplateManager();
+		this.templateLoader = new TemplateLoader();
 		this.analyzer = new ProjectAnalyzer();
 	}
 

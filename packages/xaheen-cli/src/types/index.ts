@@ -6,6 +6,7 @@ export interface CLICommand {
 	domain: string;
 	action: string;
 	target?: string;
+	arguments: Record<string, any>;
 	options: Record<string, any>;
 }
 
@@ -35,6 +36,8 @@ export type CLIDomain =
 	| "validate" // Validation
 	| "build" // Build commands
 	| "mcp" // Model Context Protocol
+	| "docs" // Documentation generation
+	| "security" // Security audit and compliance
 	| "help"; // Help system
 
 export type CLIAction =
@@ -67,7 +70,14 @@ export type CLIAction =
 	| "code"
 	| "fix-tests"
 	| "norwegian"
-	| "index";
+	| "index"
+	// Documentation-specific actions
+	| "portal"
+	| "onboarding"
+	| "watch"
+	// Security-specific actions
+	| "audit"
+	| "compliance";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({

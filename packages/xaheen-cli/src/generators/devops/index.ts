@@ -10,6 +10,16 @@ export { AzureDevOpsGenerator } from "./azure-devops.generator";
 export { GitLabCIGenerator } from "./gitlab-ci.generator";
 export { MonitoringGenerator } from "./monitoring.generator";
 export { SecurityGenerator } from "./security.generator";
+export { AutoScalingGenerator } from "./autoscaling.generator";
+export { ServerlessScalingGenerator } from "./serverless-scaling.generator";
+
+export type {
+	AutoScalingOptions,
+} from "./autoscaling.generator";
+
+export type {
+	ServerlessScalingOptions,
+} from "./serverless-scaling.generator";
 
 export type {
 	DockerGeneratorOptions,
@@ -123,6 +133,14 @@ export class DevOpsGeneratorFactory {
 
 	static createSecurityGenerator() {
 		return new SecurityGenerator();
+	}
+
+	static createAutoScalingGenerator() {
+		return new AutoScalingGenerator();
+	}
+
+	static createServerlessScalingGenerator() {
+		return new ServerlessScalingGenerator();
 	}
 
 	static getSupportedPlatforms() {

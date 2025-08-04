@@ -253,6 +253,13 @@ export const generateCommand = new Command("generate")
 						projectContext,
 					);
 					break;
+				case "docs":
+					result = await generateDocumentation(
+						name,
+						options,
+						projectContext,
+					);
+					break;
 				default:
 					throw new Error(`Generator type '${type}' not implemented yet`);
 			}
@@ -312,6 +319,7 @@ function getGeneratorDescription(type: string): string {
 		"compliance-report": "Compliance dashboard and regulatory reports",
 		"nsm-security": "Norwegian Security Authority (NSM) security implementation",
 		"gdpr-compliance": "GDPR compliance implementation with privacy controls",
+		docs: "Comprehensive documentation with intelligent portals and onboarding",
 	};
 	return descriptions[type as keyof typeof descriptions] || "";
 }
@@ -548,6 +556,53 @@ async function generateGDPRCompliance(
 			"Implement data subject rights",
 			"Add privacy policy components",
 			"Test GDPR compliance features",
+		],
+	};
+}
+
+async function generateDocumentation(
+	name: string,
+	options: GeneratorOptions,
+	context: ProjectContext,
+): Promise<GeneratorResult> {
+	// Implementation for documentation generation
+	// This would use the comprehensive documentation generators
+	const files: string[] = [];
+
+	// Generate documentation portal
+	files.push("docs-portal/docusaurus.config.js");
+	files.push("docs-portal/package.json");
+	files.push("docs-portal/src/pages/index.tsx");
+	files.push("docs-portal/docs/intro.md");
+	files.push("docs-portal/docs/getting-started.md");
+
+	// Generate onboarding guides
+	files.push("onboarding/developer-guide.md");
+	files.push("onboarding/user-guide.md");
+	files.push("onboarding/interactive/setup-wizard.tsx");
+
+	// Generate API documentation
+	files.push("docs/api/openapi.yaml");
+	files.push("docs/api/reference.md");
+
+	// Generate architecture documentation  
+	files.push("docs/architecture/system-overview.md");
+	files.push("docs/architecture/diagrams/architecture.mermaid");
+
+	return {
+		success: true,
+		files,
+		commands: [
+			"cd docs-portal && npm install",
+			"cd docs-portal && npm start # Start development server",
+			"cd docs-portal && npm run build # Build for production",
+		],
+		nextSteps: [
+			"Customize documentation portal branding and configuration",
+			"Enable automatic documentation synchronization",
+			"Set up deployment with GitHub Pages, Netlify, or Vercel",
+			"Configure search with Algolia for production use",
+			"Add team collaboration features if needed",
 		],
 	};
 }

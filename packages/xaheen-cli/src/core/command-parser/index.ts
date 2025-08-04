@@ -423,6 +423,41 @@ export class CommandParser {
 				handler: this.handleAIIndex.bind(this),
 			},
 
+			// Documentation domain routes  
+			{
+				pattern: "docs generate [type]",
+				domain: "docs",
+				action: "generate",
+				handler: this.handleDocsGenerate.bind(this),
+				legacy: {
+					xaheen: ["generate docs", "docs"],
+				},
+			},
+			{
+				pattern: "docs portal",
+				domain: "docs",
+				action: "portal",
+				handler: this.handleDocsPortal.bind(this),
+			},
+			{
+				pattern: "docs onboarding",
+				domain: "docs",
+				action: "onboarding",
+				handler: this.handleDocsOnboarding.bind(this),
+			},
+			{
+				pattern: "docs sync",
+				domain: "docs",
+				action: "sync",
+				handler: this.handleDocsSync.bind(this),
+			},
+			{
+				pattern: "docs watch",
+				domain: "docs",
+				action: "watch",
+				handler: this.handleDocsWatch.bind(this),
+			},
+
 			// Security domain routes
 			{
 				pattern: "security-audit",
@@ -554,6 +589,7 @@ export class CommandParser {
 							domain: route.domain,
 							action: route.action,
 							target,
+							arguments: { target },
 							options,
 						};
 
@@ -1055,6 +1091,112 @@ export class CommandParser {
 
 		// Parse and execute the compliance report command
 		await complianceReportCommand.parseAsync(argv.slice(2));
+	}
+
+	// Documentation domain handlers
+	private async handleDocsGenerate(command: CLICommand): Promise<void> {
+		const { docsCommand } = await import("../../commands/docs.js");
+		// Create a mock argv array for the docs generate command
+		const argv = ['node', 'xaheen', 'docs'];
+		
+		// Add type if specified
+		if (command.arguments.type) {
+			argv.push('--type', command.arguments.type);
+		}
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the docs command
+		await docsCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDocsPortal(command: CLICommand): Promise<void> {
+		const { docsCommand } = await import("../../commands/docs.js");
+		// Create a mock argv array for the docs portal command
+		const argv = ['node', 'xaheen', 'docs', '--portal'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the docs portal command
+		await docsCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDocsOnboarding(command: CLICommand): Promise<void> {
+		const { docsCommand } = await import("../../commands/docs.js");
+		// Create a mock argv array for the docs onboarding command
+		const argv = ['node', 'xaheen', 'docs', '--onboarding'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the docs onboarding command
+		await docsCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDocsSync(command: CLICommand): Promise<void> {
+		const { docsCommand } = await import("../../commands/docs.js");
+		// Create a mock argv array for the docs sync command
+		const argv = ['node', 'xaheen', 'docs', '--sync'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the docs sync command
+		await docsCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDocsWatch(command: CLICommand): Promise<void> {
+		const { docsCommand } = await import("../../commands/docs.js");
+		// Create a mock argv array for the docs watch command
+		const argv = ['node', 'xaheen', 'docs', '--watch'];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the docs watch command
+		await docsCommand.parseAsync(argv.slice(2));
 	}
 
 	public async parse(args?: string[]): Promise<void> {

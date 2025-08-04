@@ -2522,7 +2522,7 @@ export const AssessmentRunner = ({ assessment, onComplete, onSkip }: AssessmentR
                 >
                   <input
                     type="radio"
-                    name={`question-\${currentQuestion}`}
+                    name={\`question-\${currentQuestion}\`}
                     checked={answers[currentQuestion] === index}
                     onChange={() => handleAnswer(currentQuestion, index)}
                     style={{ marginRight: '0.5rem' }}

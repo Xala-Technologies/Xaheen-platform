@@ -1,5 +1,5 @@
 import { BaseGenerator } from '../base.generator';
-import { TemplateManager } from '../../services/templates/template-loader';
+import { TemplateLoader } from '../../services/templates/template-loader';
 import { ProjectAnalyzer } from '../../services/analysis/project-analyzer';
 import type { DocumentationGeneratorOptions, DocumentationResult } from './index';
 
@@ -379,12 +379,12 @@ export interface PromotionCriteria {
 }
 
 export class DeploymentGuideGenerator extends BaseGenerator<DeploymentGuideGeneratorOptions> {
-  private readonly templateManager: TemplateManager;
+  private readonly templateLoader: TemplateLoader;
   private readonly analyzer: ProjectAnalyzer;
 
   constructor() {
     super();
-    this.templateManager = new TemplateManager();
+    this.templateLoader = new TemplateLoader();
     this.analyzer = new ProjectAnalyzer();
   }
 
@@ -663,7 +663,7 @@ export class DeploymentGuideGenerator extends BaseGenerator<DeploymentGuideGener
       
       networkSecuritySetup: this.generateNetworkSecuritySetup(options.security.networkSecurity),
       
-      secretsManagement: this.generateSecrets Management(),
+      secretsManagement: this.generateSecretsManagement(),
       certificateManagement: this.generateCertificateManagement(),
       
       vulnerabilityScanning: this.generateVulnerabilityScanning(),
