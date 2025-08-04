@@ -1,6 +1,7 @@
 import { BaseGenerator } from '../base.generator';
-import { TemplateManager } from '../../services/templates/template-loader';
+import { TemplateLoader as TemplateManager } from '../../services/templates/template-loader';
 import { ProjectAnalyzer } from '../../services/analysis/project-analyzer';
+import * as fs from 'fs-extra';
 
 export interface GitLabCIGeneratorOptions {
   readonly projectName: string;
@@ -143,7 +144,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     try {
       await this.validateOptions(options);
       
-      const projectContext = await this.analyzer.analyze(process.cwd());
+      const projectContext = await this.analyzer.analyzeProject(process.cwd());
       
       // Generate main GitLab CI configuration
       await this.generateMainPipeline(options, projectContext);
@@ -183,7 +184,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     }
   }
 
-  private async validateOptions(options: GitLabCIGeneratorOptions): Promise<void> {
+  protected async validateOptions(options: GitLabCIGeneratorOptions): Promise<void> {
     if (!options.projectName) {
       throw new Error('Project name is required');
     }
@@ -224,15 +225,15 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       jobs: await this.generatePipelineJobs(options, projectContext)
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/gitlab-ci.yml.hbs',
-      '.gitlab-ci.yml',
       pipeline
     );
+    await fs.writeFile('.gitlab-ci.yml', rendered);
   }
 
   private async generateSecurityPipeline(options: GitLabCIGeneratorOptions): Promise<void> {
-    const securityJobs = {};
+    const securityJobs: Record<string, any> = {};
 
     if (options.enableSAST) {
       securityJobs['sast'] = {
@@ -302,11 +303,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       ...securityJobs
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/security-pipeline.yml.hbs',
-      '.gitlab/ci/security.yml',
       securityPipeline
     );
+    await fs.writeFile('.gitlab/ci/security.yml', rendered);
   }
 
   private async generateAutoDevOpsPipeline(options: GitLabCIGeneratorOptions): Promise<void> {
@@ -321,15 +322,15 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
         POSTGRES_DB: '$CI_ENVIRONMENT_SLUG',
         POSTGRES_USER: 'user',
         POSTGRES_PASSWORD: 'testing-password',
-        K8S_SECRET_*: 'base64-encoded-value'
+        'K8S_SECRET_*': 'base64-encoded-value'
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/auto-devops.yml.hbs',
-      '.gitlab/ci/auto-devops.yml',
       autoDevOps
     );
+    await fs.writeFile('.gitlab/ci/auto-devops.yml', rendered);
   }
 
   private async generateIncludeTemplates(options: GitLabCIGeneratorOptions): Promise<void> {
@@ -353,11 +354,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/templates/build.yml.hbs',
-      '.gitlab/ci/build.yml',
       buildTemplate
     );
+    await fs.writeFile('.gitlab/ci/build.yml', rendered);
 
     // Test template
     const testTemplate = {
@@ -386,11 +387,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const renderedTest = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/templates/test.yml.hbs',
-      '.gitlab/ci/test.yml',
       testTemplate
     );
+    await fs.writeFile('.gitlab/ci/test.yml', renderedTest);
 
     // Deploy template
     const deployTemplate = {
@@ -398,12 +399,12 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
         stage: 'deploy',
         image: 'registry.gitlab.com/gitlab-org/kubectl-utils:latest',
         before_script: [
-          'kubectl version --client'
-        ],
+          'apt-get update -qq && apt-get install -y -qq git'
+        ] as readonly string[],
         script: [
           'kubectl apply -f k8s/',
           'kubectl rollout status deployment/$CI_PROJECT_NAME'
-        ],
+        ] as readonly string[],
         environment: {
           name: '$ENVIRONMENT_NAME',
           url: '$ENVIRONMENT_URL'
@@ -417,11 +418,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const renderedDeploy = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/templates/deploy.yml.hbs',
-      '.gitlab/ci/deploy.yml',
       deployTemplate
     );
+    await fs.writeFile('.gitlab/ci/deploy.yml', renderedDeploy);
   }
 
   private async generateDockerConfiguration(options: GitLabCIGeneratorOptions): Promise<void> {
@@ -429,7 +430,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       'docker:build': {
         stage: 'build',
         image: 'docker:24.0.5',
-        services: ['docker:24.0.5-dind'],
+        services: [{ name: "docker:24.0.5-dind" }],
         variables: {
           DOCKER_HOST: 'tcp://docker:2376',
           DOCKER_TLS_CERTDIR: '/certs',
@@ -438,13 +439,13 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
         },
         before_script: [
           'docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY'
-        ],
+        ] as readonly string[],
         script: [
           'docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .',
           'docker build -t $CI_REGISTRY_IMAGE:latest .',
           'docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA',
           'docker push $CI_REGISTRY_IMAGE:latest'
-        ],
+        ] as readonly string[],
         rules: [
           {
             if: '$CI_COMMIT_BRANCH == "main"'
@@ -454,7 +455,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       'docker:scan': {
         stage: 'test',
         image: 'docker:24.0.5',
-        services: ['docker:24.0.5-dind'],
+        services: [{ name: "docker:24.0.5-dind" }],
         variables: {
           DOCKER_HOST: 'tcp://docker:2376',
           DOCKER_TLS_CERTDIR: '/certs',
@@ -463,14 +464,14 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
         },
         before_script: [
           'docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY'
-        ],
+        ] as readonly string[],
         script: [
           'docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA',
           'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --format json --output trivy-report.json $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA'
-        ],
+        ] as readonly string[],
         artifacts: {
           reports: {
-            container_scanning: 'trivy-report.json'
+            dependency_scanning: ['gl-dependency-scanning-report.json']
           },
           expire_in: '1 week'
         },
@@ -478,11 +479,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/docker.yml.hbs',
-      '.gitlab/ci/docker.yml',
       dockerJobs
     );
+    await fs.writeFile('.gitlab/ci/docker.yml', rendered);
   }
 
   private async generatePagesConfiguration(options: GitLabCIGeneratorOptions): Promise<void> {
@@ -490,7 +491,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       pages: {
         stage: 'deploy',
         image: this.getRuntimeImage(options.runtime, options.images),
-        script: this.getPagesScript(options),
+        script: this.getPagesScript(options) as readonly string[],
         artifacts: {
           paths: ['public'],
           expire_in: '1 day'
@@ -503,11 +504,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       }
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/pages.yml.hbs',
-      '.gitlab/ci/pages.yml',
       pagesJob
     );
+    await fs.writeFile('.gitlab/ci/pages.yml', rendered);
   }
 
   private async generateDeploymentConfigurations(options: GitLabCIGeneratorOptions): Promise<void> {
@@ -522,17 +523,17 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
             deployment_tier: env.deployment_tier,
             auto_stop_in: env.auto_stop_in
           },
-          script: this.getDeploymentScript(options, env),
+          script: this.getDeploymentScript(options, env) as readonly string[],
           rules: this.getDeploymentRules(options, env),
           resource_group: env.name
         }
       };
 
-      await this.templateManager.renderTemplate(
+      const rendered = await this.templateManager.renderTemplate(
         'devops/gitlab-ci/deploy-env.yml.hbs',
-        `.gitlab/ci/deploy-${env.name}.yml`,
         deploymentJob
       );
+      await fs.writeFile(`.gitlab/ci/deploy-${env.name}.yml`, rendered);
     }
   }
 
@@ -554,11 +555,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       ...options.variables
     };
 
-    await this.templateManager.renderTemplate(
+    const rendered = await this.templateManager.renderTemplate(
       'devops/gitlab-ci/variables.yml.hbs',
-      '.gitlab/ci/variables.yml',
-      { variables }
+      variables
     );
+    await fs.writeFile('.gitlab/ci/variables.yml', rendered);
   }
 
   private generateGlobalVariables(options: GitLabCIGeneratorOptions): Record<string, string> {
@@ -593,17 +594,20 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       jobs.build = {
         stage: 'build',
         image: this.getRuntimeImage(options.runtime, options.images),
-        before_script: this.getBuildBeforeScript(options),
-        script: this.getBuildScript(options),
+        before_script: this.getBuildBeforeScript(options) as readonly string[],
+        script: this.getBuildScript(options) as readonly string[],
         artifacts: {
           name: '$CI_COMMIT_REF_SLUG-build',
           paths: [this.getBuildOutputPath(options)],
-          expire_in: '1 week'
+          expire_in: '1 week',
+          reports: {},
+          when: 'on_success'
         },
         cache: {
           key: '$CI_COMMIT_REF_SLUG-build',
           paths: this.getCachePaths(options),
-          policy: 'pull-push'
+          policy: 'pull-push',
+          when: 'on_success'
         }
       };
     }
@@ -613,8 +617,8 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       jobs.test = {
         stage: 'test',
         image: this.getRuntimeImage(options.runtime, options.images),
-        before_script: this.getTestBeforeScript(options),
-        script: this.getTestScript(options),
+        before_script: this.getTestBeforeScript(options) as readonly string[],
+        script: this.getTestScript(options) as readonly string[],
         artifacts: {
           reports: {
             junit: ['**/test-results.xml'],
@@ -624,14 +628,16 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
             }
           },
           paths: ['coverage/'],
-          expire_in: '1 week'
+          expire_in: '1 week',
+          name: '$CI_COMMIT_REF_SLUG-test',
+          when: 'on_success'
         },
-        coverage: '/Lines\\s*:\\s*(\\d+(?:\\.\\d+)?)%/',
         dependencies: ['build'],
         cache: {
           key: '$CI_COMMIT_REF_SLUG-test',
           paths: this.getCachePaths(options),
-          policy: 'pull'
+          policy: 'pull',
+          when: 'on_success'
         }
       };
     }
@@ -641,18 +647,21 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       jobs.code_quality = {
         stage: 'test',
         image: 'docker:stable',
-        services: ['docker:stable-dind'],
+        services: [{ name: "docker:stable-dind" }],
         variables: {
           DOCKER_DRIVER: 'overlay2'
         },
         script: [
           'docker run --env SOURCE_CODE="$PWD" --volume "$PWD":/code --volume /var/run/docker.sock:/var/run/docker.sock "registry.gitlab.com/gitlab-org/ci-cd/codequality:latest" /code'
-        ],
+        ] as readonly string[],
         artifacts: {
           reports: {
-            codequality: 'gl-code-quality-report.json'
+            license_scanning: ['gl-license-scanning-report.json']
           },
-          expire_in: '1 week'
+          name: '$CI_COMMIT_REF_SLUG-code-quality',
+          paths: ['gl-code-quality-report.json'],
+          expire_in: '1 week',
+          when: 'on_success'
         },
         rules: [
           {
@@ -671,19 +680,21 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       jobs.performance = {
         stage: 'performance',
         image: 'docker:stable',
-        services: ['docker:stable-dind'],
+        services: [{ name: "docker:stable-dind" }],
         variables: {
           DOCKER_DRIVER: 'overlay2'
         },
         script: [
           'docker run --shm-size=1g --rm -v "$(pwd)":/sitespeed.io sitespeedio/sitespeed.io:14.1.0 --plugins.add ./lib/lighthouse.js --outputFolder output https://example.com'
-        ],
+        ] as readonly string[],
         artifacts: {
           reports: {
-            performance: 'performance.json'
+            performance: ['performance.json']
           },
+          name: '$CI_COMMIT_REF_SLUG-performance',
           paths: ['output/'],
-          expire_in: '1 week'
+          expire_in: '1 week',
+          when: 'on_success'
         },
         rules: [
           {
@@ -704,7 +715,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
           stage: 'deploy',
           image: 'registry.gitlab.com/gitlab-org/kubectl-utils:latest',
           environment: env,
-          script: this.getDeploymentScript(options, env),
+          script: this.getDeploymentScript(options, env) as readonly string[],
           dependencies: ['build'],
           rules: this.getDeploymentRules(options, env),
           resource_group: env.name
@@ -725,10 +736,10 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
       php: images.php || 'php:8.2-cli-alpine',
       rust: images.rust || 'rust:1.75-slim'
     };
-    return runtimeImages[runtime] || images.default;
+    return (runtimeImages as Record<string, string>)[runtime] || images.default;
   }
 
-  private getBuildBeforeScript(options: GitLabCIGeneratorOptions): string[] {
+  private getBuildBeforeScript(options: GitLabCIGeneratorOptions): readonly string[] {
     const scripts = {
       node: ['node --version', 'npm --version'],
       python: ['python --version', 'pip --version'],
@@ -741,7 +752,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     return scripts[options.runtime] || [];
   }
 
-  private getBuildScript(options: GitLabCIGeneratorOptions): string[] {
+  private getBuildScript(options: GitLabCIGeneratorOptions): readonly string[] {
     const installCommands = {
       npm: 'npm ci',
       yarn: 'yarn install --frozen-lockfile',
@@ -772,11 +783,11 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     ];
   }
 
-  private getTestBeforeScript(options: GitLabCIGeneratorOptions): string[] {
+  private getTestBeforeScript(options: GitLabCIGeneratorOptions): readonly string[] {
     return this.getBuildBeforeScript(options);
   }
 
-  private getTestScript(options: GitLabCIGeneratorOptions): string[] {
+  private getTestScript(options: GitLabCIGeneratorOptions): readonly string[] {
     const installCommands = {
       npm: 'npm ci',
       yarn: 'yarn install --frozen-lockfile',
@@ -807,7 +818,7 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     ];
   }
 
-  private getPagesScript(options: GitLabCIGeneratorOptions): string[] {
+  private getPagesScript(options: GitLabCIGeneratorOptions): readonly string[] {
     const scripts = {
       web: [
         'npm ci',
@@ -824,10 +835,10 @@ export class GitLabCIGenerator extends BaseGenerator<GitLabCIGeneratorOptions> {
     return scripts[options.projectType] || [
       'mkdir public',
       'echo "Hello World" > public/index.html'
-    ];
+    ] as readonly string[];
   }
 
-  private getDeploymentScript(options: GitLabCIGeneratorOptions, env: GitLabEnvironment): string[] {
+  private getDeploymentScript(options: GitLabCIGeneratorOptions, env: GitLabEnvironment): readonly string[] {
     const scripts = [
       'echo "Deploying to ' + env.name + '"',
       'kubectl version --client'

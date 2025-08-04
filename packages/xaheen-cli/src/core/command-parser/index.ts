@@ -396,6 +396,32 @@ export class CommandParser {
 				action: "show",
 				handler: this.handleAliases.bind(this),
 			},
+
+			// AI domain routes (Codebuff integration)
+			{
+				pattern: "ai code <prompt>",
+				domain: "ai",
+				action: "code",
+				handler: this.handleAICode.bind(this),
+			},
+			{
+				pattern: "ai fix-tests",
+				domain: "ai",
+				action: "fix-tests",
+				handler: this.handleAIFixTests.bind(this),
+			},
+			{
+				pattern: "ai norwegian <prompt>",
+				domain: "ai",
+				action: "norwegian",
+				handler: this.handleAINorwegian.bind(this),
+			},
+			{
+				pattern: "ai index",
+				domain: "ai",
+				action: "index",
+				handler: this.handleAIIndex.bind(this),
+			},
 		];
 
 		// Register routes
@@ -893,6 +919,46 @@ export class CommandParser {
 		const { default: MakeDomain } = await import("../../domains/make/index.js");
 		const domain = new MakeDomain();
 		await domain.execute(command);
+	}
+
+	// AI Command Handlers (Codebuff integration)
+	private async handleAICode(command: CLICommand): Promise<void> {
+		const { codebuffCommand } = await import("../../commands/ai.js");
+		const prompt = command.target || '';
+		await codebuffCommand(prompt, {
+			model: command.options.model,
+			dryRun: command.options.dryRun,
+			autoCommit: !command.options.noAutoCommit,
+			interactive: !command.options.noInteractive,
+			index: command.options.index
+		});
+	}
+
+	private async handleAIFixTests(command: CLICommand): Promise<void> {
+		const { fixTestsCommand } = await import("../../commands/ai.js");
+		await fixTestsCommand({
+			model: command.options.model,
+			dryRun: command.options.dryRun,
+			autoCommit: !command.options.noAutoCommit,
+			interactive: !command.options.noInteractive
+		});
+	}
+
+	private async handleAINorwegian(command: CLICommand): Promise<void> {
+		const { norwegianComplianceCommand } = await import("../../commands/ai.js");
+		const prompt = command.target || '';
+		await norwegianComplianceCommand(prompt, {
+			model: command.options.model,
+			dryRun: command.options.dryRun,
+			autoCommit: !command.options.noAutoCommit,
+			interactive: !command.options.noInteractive,
+			index: command.options.index
+		});
+	}
+
+	private async handleAIIndex(command: CLICommand): Promise<void> {
+		const { createCodebuffIndex } = await import("../../lib/patch-utils.js");
+		await createCodebuffIndex(process.cwd());
 	}
 
 	public async parse(args?: string[]): Promise<void> {

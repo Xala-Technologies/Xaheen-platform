@@ -62,7 +62,12 @@ export type CLIAction =
 	// Help-specific actions
 	| "show"
 	| "search"
-	| "examples";
+	| "examples"
+	// AI-specific actions
+	| "code"
+	| "fix-tests"
+	| "norwegian"
+	| "index";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({
