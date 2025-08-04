@@ -31,28 +31,28 @@ export interface GenerationSession {
 	readonly template: string;
 	readonly config: any;
 	readonly status: 'running' | 'completed' | 'failed' | 'cancelled';
-	readonly metrics: GenerationMetrics;
-	readonly logs: readonly LogEntry[];
-	readonly errors: readonly ErrorEntry[];
-	readonly warnings: readonly WarningEntry[];
+	metrics: GenerationMetrics;
+	logs: LogEntry[];
+	errors: ErrorEntry[];
+	warnings: WarningEntry[];
 	readonly trace: readonly TraceEntry[];
 	readonly performance: PerformanceMetrics;
 	readonly resourceUsage: ResourceUsage;
 }
 
 export interface GenerationMetrics {
-	readonly filesGenerated: number;
-	readonly linesOfCode: number;
-	readonly templatesProcessed: number;
-	readonly dependenciesResolved: number;
-	readonly validationErrors: number;
-	readonly warningsCount: number;
-	readonly executionTimeMs: number;
-	readonly memoryUsedBytes: number;
-	readonly peakMemoryBytes: number;
-	readonly cpuUsagePercent: number;
-	readonly diskIOBytes: number;
-	readonly networkRequestsCount: number;
+	filesGenerated: number;
+	linesOfCode: number;
+	templatesProcessed: number;
+	dependenciesResolved: number;
+	validationErrors: number;
+	warningsCount: number;
+	executionTimeMs: number;
+	memoryUsedBytes: number;
+	peakMemoryBytes: number;
+	cpuUsagePercent: number;
+	diskIOBytes: number;
+	networkRequestsCount: number;
 }
 
 export interface LogEntry {
@@ -100,16 +100,16 @@ export interface PerformanceMetrics {
 	readonly fileIOTime: number;
 	readonly validationTime: number;
 	readonly dependencyResolutionTime: number;
-	readonly phases: readonly PhaseMetrics[];
+	phases: PhaseMetrics[];
 }
 
 export interface PhaseMetrics {
 	readonly name: string;
 	readonly startTime: number;
-	readonly endTime: number;
-	readonly duration: number;
-	readonly memoryDelta: number;
-	readonly operations: number;
+	endTime: number;
+	duration: number;
+	memoryDelta: number;
+	operations: number;
 }
 
 export interface ResourceUsage {

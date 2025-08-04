@@ -27,7 +27,7 @@ export interface TracingConfig {
 	readonly enabled: boolean;
 	readonly spanProcessors: readonly SpanProcessorConfig[];
 	readonly spanExporters: readonly string[];
-	readonly customInstrumentation: readonly CustomInstrumentationConfig[];
+	readonly customInstrumentation: readonly ManualInstrumentationConfig[];
 	readonly traceIdRatio: number;
 	readonly maxSpansPerTrace: number;
 	readonly linkCount: number;
@@ -45,7 +45,7 @@ export interface MetricsConfig {
 	readonly readers: readonly MetricReaderConfig[];
 	readonly views: readonly MetricViewConfig[];
 	readonly instruments: readonly CustomMetricConfig[];
-	readonly aggregation: AggregationConfig;
+	readonly aggregation: Record<string, any>;
 }
 
 export interface MetricReaderConfig {
@@ -1211,7 +1211,7 @@ spec:
 	}
 
 	private generatePackageDependencies(config: OpenTelemetryConfig): Record<string, string> {
-		const baseDependencies = {
+		const baseDependencies: Record<string, string> = {
 			"@opentelemetry/api": "^1.7.0",
 			"@opentelemetry/sdk-node": "^0.45.0",
 			"@opentelemetry/resources": "^1.18.0",
