@@ -1,0 +1,57 @@
+{
+  "name": "{{name}}",
+  "dockerFile": "{{dockerFile}}",
+  {{#if context}}
+  "context": "{{context}}",
+  {{/if}}
+  {{#if target}}
+  "target": "{{target}}",
+  {{/if}}
+  {{#if mounts}}
+  "mounts": [
+    {{#each mounts}}
+    "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  {{/if}}
+  {{#if customizations}}
+  "customizations": {
+    {{#if customizations.vscode}}
+    "vscode": {
+      {{#if customizations.vscode.extensions}}
+      "extensions": [
+        {{#each customizations.vscode.extensions}}
+        "{{this}}"{{#unless @last}},{{/unless}}
+        {{/each}}
+      ],
+      {{/if}}
+      {{#if customizations.vscode.settings}}
+      "settings": {
+        {{#each customizations.vscode.settings}}
+        "{{@key}}": "{{this}}"{{#unless @last}},{{/unless}}
+        {{/each}}
+      }
+      {{/if}}
+    }
+    {{/if}}
+  },
+  {{/if}}
+  {{#if forwardPorts}}
+  "forwardPorts": [
+    {{#each forwardPorts}}
+    {{this}}{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  {{/if}}
+  {{#if postCreateCommand}}
+  "postCreateCommand": "{{postCreateCommand}}",
+  {{/if}}
+  {{#if remoteUser}}
+  "remoteUser": "{{remoteUser}}",
+  {{/if}}
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}

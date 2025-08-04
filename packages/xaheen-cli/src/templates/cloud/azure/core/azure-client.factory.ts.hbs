@@ -1,0 +1,401 @@
+/**
+ * Azure Client Factory
+ * 
+ * Centralized factory for creating Azure service clients with proper authentication,
+ * connection pooling, retry policies, and monitoring integration.
+ */
+
+import { DefaultAzureCredential, ClientSecretCredential, ManagedIdentityCredential } from '@azure/identity';
+import { SecretClient } from '@azure/keyvault-secrets';
+import { ServiceBusClient } from '@azure/service-bus';
+import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
+import { CosmosClient } from '@azure/cosmos';
+import { SearchClient, SearchIndexClient, AzureKeyCredential } from '@azure/search-documents';
+import { ApplicationInsightsClient } from '../monitoring/application-insights.client';
+import { LogAnalyticsClient } from '../monitoring/log-analytics.client';
+import azureConfig, { AzureConfig } from '../configs/azure.config';
+import { AzureClientError, AzureCredentialError, AzureServiceError } from '../types/azure.types';
+import { Logger } from '../utils/logger';
+
+export interface AzureClientOptions {
+  readonly useDefaultCredential?: boolean;
+  readonly clientId?: string;
+  readonly clientSecret?: string;
+  readonly tenantId?: string;
+  readonly retryOptions?: {
+    readonly maxRetries: number;
+    readonly retryDelayInMs: number;
+    readonly maxRetryDelayInMs: number;
+  };
+  readonly timeout?: number;
+}
+
+export class AzureClientFactory {
+  private readonly logger: Logger;
+  private readonly config: AzureConfig;
+  private readonly credential: DefaultAzureCredential | ClientSecretCredential | ManagedIdentityCredential;
+  private readonly clientCache: Map<string, any> = new Map();
+
+  constructor(config: AzureConfig = azureConfig, options: AzureClientOptions = {}) {
+    this.config = config;
+    this.logger = new Logger('AzureClientFactory');
+    
+    try {
+      this.credential = this.createCredential(options);
+      this.logger.info('Azure client factory initialized successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to initialize Azure client factory', { error: errorMessage });
+      throw new AzureCredentialError(`Failed to create Azure credential: ${errorMessage}`);
+    }
+  }
+
+  private createCredential(options: AzureClientOptions): DefaultAzureCredential | ClientSecretCredential | ManagedIdentityCredential {
+    try {
+      // Use managed identity in production Azure environments
+      if (this.config.security.managedIdentity && this.config.environment === 'production') {
+        this.logger.info('Using Managed Identity credential');
+        return new ManagedIdentityCredential();
+      }
+
+      // Use client secret credential if provided
+      if (options.clientId && options.clientSecret && options.tenantId) {
+        this.logger.info('Using Client Secret credential');
+        return new ClientSecretCredential(
+          options.tenantId,
+          options.clientId,
+          options.clientSecret
+        );
+      }
+
+      // Default to DefaultAzureCredential which tries multiple authentication methods
+      this.logger.info('Using Default Azure credential');
+      return new DefaultAzureCredential({
+        {{#if enableDiagnostics}}
+        loggingOptions: {
+          logLevel: 'info'
+        }
+        {{/if}}
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Azure credential', { error: errorMessage });
+      throw new AzureCredentialError(`Failed to create credential: ${errorMessage}`);
+    }
+  }
+
+  async createKeyVaultClient(vaultUrl?: string): Promise<SecretClient> {
+    const cacheKey = `keyvault-${vaultUrl || this.config.services.keyVault.name}`;
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!this.config.services.keyVault.enabled) {
+        throw new AzureServiceError('Key Vault service is not enabled in configuration');
+      }
+
+      const keyVaultUrl = vaultUrl || this.config.services.keyVault.url || 
+        `https://${this.config.services.keyVault.name}.vault.azure.net/`;
+
+      const client = new SecretClient(keyVaultUrl, this.credential);
+      
+      // Test the connection
+      await this.testKeyVaultConnection(client);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Key Vault client created successfully', { vaultUrl: keyVaultUrl });
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Key Vault client', { error: errorMessage, vaultUrl });
+      throw new AzureClientError(`Failed to create Key Vault client: ${errorMessage}`);
+    }
+  }
+
+  async createServiceBusClient(connectionString?: string): Promise<ServiceBusClient> {
+    const cacheKey = `servicebus-${this.config.services.servicebus.namespace}`;
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!this.config.services.servicebus.enabled) {
+        throw new AzureServiceError('Service Bus service is not enabled in configuration');
+      }
+
+      const connString = connectionString || this.config.services.servicebus.connectionString;
+      if (!connString) {
+        throw new AzureServiceError('Service Bus connection string is not configured');
+      }
+
+      const client = new ServiceBusClient(connString);
+      
+      // Test the connection
+      await this.testServiceBusConnection(client);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Service Bus client created successfully', { 
+        namespace: this.config.services.servicebus.namespace 
+      });
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Service Bus client', { error: errorMessage });
+      throw new AzureClientError(`Failed to create Service Bus client: ${errorMessage}`);
+    }
+  }
+
+  async createBlobStorageClient(accountName?: string): Promise<BlobServiceClient> {
+    const storageAccount = accountName || this.config.services.storage.accountName;
+    const cacheKey = `blob-storage-${storageAccount}`;
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!storageAccount) {
+        throw new AzureServiceError('Storage account name is not configured');
+      }
+
+      const accountUrl = `https://${storageAccount}.blob.core.windows.net`;
+      const client = new BlobServiceClient(accountUrl, this.credential);
+      
+      // Test the connection
+      await this.testBlobStorageConnection(client);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Blob Storage client created successfully', { accountName: storageAccount });
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Blob Storage client', { error: errorMessage, accountName });
+      throw new AzureClientError(`Failed to create Blob Storage client: ${errorMessage}`);
+    }
+  }
+
+  async createCosmosClient(endpoint?: string): Promise<CosmosClient> {
+    const cacheKey = `cosmos-${endpoint || 'default'}`;
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      const cosmosEndpoint = endpoint || process.env.AZURE_COSMOSDB_ENDPOINT;
+      if (!cosmosEndpoint) {
+        throw new AzureServiceError('Cosmos DB endpoint is not configured');
+      }
+
+      const client = new CosmosClient({
+        endpoint: cosmosEndpoint,
+        aadCredentials: this.credential,
+        connectionPolicy: {
+          requestTimeout: 30000,
+          retryOptions: {
+            maxRetryAttemptCount: 3,
+            fixedRetryIntervalInMilliseconds: 1000,
+            maxWaitTimeInSeconds: 30
+          }
+        }
+      });
+      
+      // Test the connection
+      await this.testCosmosConnection(client);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Cosmos DB client created successfully', { endpoint: cosmosEndpoint });
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Cosmos DB client', { error: errorMessage, endpoint });
+      throw new AzureClientError(`Failed to create Cosmos DB client: ${errorMessage}`);
+    }
+  }
+
+  async createSearchClient<T>(indexName: string, endpoint?: string): Promise<SearchClient<T>> {
+    const searchEndpoint = endpoint || process.env.AZURE_SEARCH_ENDPOINT;
+    const cacheKey = `search-${searchEndpoint}-${indexName}`;
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!searchEndpoint) {
+        throw new AzureServiceError('Search service endpoint is not configured');
+      }
+
+      // Use key-based authentication for Search service
+      const adminKey = process.env.AZURE_SEARCH_ADMIN_KEY;
+      if (!adminKey) {
+        throw new AzureServiceError('Search service admin key is not configured');
+      }
+
+      const credential = new AzureKeyCredential(adminKey);
+      const client = new SearchClient<T>(searchEndpoint, indexName, credential);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Search client created successfully', { endpoint: searchEndpoint, indexName });
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Search client', { error: errorMessage, endpoint, indexName });
+      throw new AzureClientError(`Failed to create Search client: ${errorMessage}`);
+    }
+  }
+
+  {{#if enableDiagnostics}}
+  async createApplicationInsightsClient(): Promise<ApplicationInsightsClient> {
+    const cacheKey = 'application-insights';
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!this.config.monitoring.applicationInsights.enabled) {
+        throw new AzureServiceError('Application Insights is not enabled in configuration');
+      }
+
+      const client = new ApplicationInsightsClient(this.config);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Application Insights client created successfully');
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Application Insights client', { error: errorMessage });
+      throw new AzureClientError(`Failed to create Application Insights client: ${errorMessage}`);
+    }
+  }
+
+  async createLogAnalyticsClient(): Promise<LogAnalyticsClient> {
+    const cacheKey = 'log-analytics';
+    
+    if (this.clientCache.has(cacheKey)) {
+      return this.clientCache.get(cacheKey);
+    }
+
+    try {
+      if (!this.config.monitoring.logAnalytics.enabled) {
+        throw new AzureServiceError('Log Analytics is not enabled in configuration');
+      }
+
+      const client = new LogAnalyticsClient(this.config);
+      
+      this.clientCache.set(cacheKey, client);
+      this.logger.info('Log Analytics client created successfully');
+      
+      return client;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to create Log Analytics client', { error: errorMessage });
+      throw new AzureClientError(`Failed to create Log Analytics client: ${errorMessage}`);
+    }
+  }
+  {{/if}}
+
+  // Health check methods
+  private async testKeyVaultConnection(client: SecretClient): Promise<void> {
+    try {
+      // Try to list secrets (this will work even if vault is empty)
+      const secretIterator = client.listPropertiesOfSecrets();
+      await secretIterator.next();
+    } catch (error) {
+      throw new AzureServiceError(`Key Vault connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  private async testServiceBusConnection(client: ServiceBusClient): Promise<void> {
+    try {
+      // Try to create an admin client to test the connection
+      const adminClient = client.createReceiver('test-queue', 'peekLock');
+      await adminClient.close();
+    } catch (error) {
+      // This is expected if the queue doesn't exist, but it confirms connectivity
+      if (error instanceof Error && !error.message.includes('does not exist')) {
+        throw new AzureServiceError(`Service Bus connection test failed: ${error.message}`);
+      }
+    }
+  }
+
+  private async testBlobStorageConnection(client: BlobServiceClient): Promise<void> {
+    try {
+      // Try to get account info to test the connection
+      await client.getAccountInfo();
+    } catch (error) {
+      throw new AzureServiceError(`Blob Storage connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  private async testCosmosConnection(client: CosmosClient): Promise<void> {
+    try {
+      // Try to read databases to test the connection
+      const { resources } = await client.databases.readAll().fetchNext();
+      this.logger.debug(`Cosmos DB connection test successful. Found ${resources.length} databases`);
+    } catch (error) {
+      throw new AzureServiceError(`Cosmos DB connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  // Cleanup method to close all cached clients
+  async cleanup(): Promise<void> {
+    try {
+      const cleanupPromises: Promise<void>[] = [];
+
+      for (const [key, client] of this.clientCache.entries()) {
+        if (client && typeof client.close === 'function') {
+          cleanupPromises.push(
+            client.close().catch((error: Error) => {
+              this.logger.warn(`Failed to close client ${key}`, { error: error.message });
+            })
+          );
+        }
+      }
+
+      await Promise.allSettled(cleanupPromises);
+      this.clientCache.clear();
+      
+      this.logger.info('Azure client factory cleanup completed');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to cleanup Azure client factory', { error: errorMessage });
+      throw new AzureClientError(`Cleanup failed: ${errorMessage}`);
+    }
+  }
+
+  // Get configuration
+  getConfig(): AzureConfig {
+    return this.config;
+  }
+
+  // Get credential for advanced usage
+  getCredential(): DefaultAzureCredential | ClientSecretCredential | ManagedIdentityCredential {
+    return this.credential;
+  }
+}
+
+// Singleton instance for global usage
+export const azureClientFactory = new AzureClientFactory();
+
+// Export individual client creation functions for convenience
+export const createKeyVaultClient = (vaultUrl?: string) => azureClientFactory.createKeyVaultClient(vaultUrl);
+export const createServiceBusClient = (connectionString?: string) => azureClientFactory.createServiceBusClient(connectionString);
+export const createBlobStorageClient = (accountName?: string) => azureClientFactory.createBlobStorageClient(accountName);
+export const createCosmosClient = (endpoint?: string) => azureClientFactory.createCosmosClient(endpoint);
+export const createSearchClient = <T>(indexName: string, endpoint?: string) => azureClientFactory.createSearchClient<T>(indexName, endpoint);
+
+{{#if enableDiagnostics}}
+export const createApplicationInsightsClient = () => azureClientFactory.createApplicationInsightsClient();
+export const createLogAnalyticsClient = () => azureClientFactory.createLogAnalyticsClient();
+{{/if}}

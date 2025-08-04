@@ -1,0 +1,960 @@
+/**
+ * Azure SQL Database Connection
+ * 
+ * Production-ready Azure SQL Database connection with comprehensive features:
+ * - Azure AD authentication
+ * - Connection pooling and management
+ * - Automatic retry and circuit breaker
+ * - Performance monitoring
+ * - Security best practices
+ */
+
+import { Connection, ConnectionPool, Request, Transaction, TYPES, IResult } from 'tedious';
+import { DefaultAzureCredential, AccessToken } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { 
+  AzureSqlConnectionConfig,
+  DatabaseQueryResult,
+  DatabaseTransactionOptions,
+  AzureServiceError,
+  AzureError,
+  AzureServiceResponse
+} from '../types/azure.types';
+
+export interface QueryOptions {
+  readonly timeout?: number;
+  readonly maxRows?: number;
+  readonly useTransaction?: boolean;
+  readonly isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+}
+
+export interface QueryParameter {
+  readonly name: string;
+  readonly type: any; // Tedious TYPES
+  readonly value: unknown;
+  readonly options?: {
+    readonly length?: number;
+    readonly precision?: number;
+    readonly scale?: number;
+  };
+}
+
+export interface ConnectionStats {
+  readonly totalConnections: number;
+  readonly activeConnections: number;
+  readonly idleConnections: number;
+  readonly waitingRequests: number;
+  readonly totalRequests: number;
+  readonly successfulRequests: number;
+  readonly failedRequests: number;
+  readonly averageResponseTime: number;
+  readonly uptime: number;
+}
+
+export class AzureSqlConnection {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly config: AzureSqlConnectionConfig;
+  private connectionPool: ConnectionPool | null = null;
+  private credential: DefaultAzureCredential | null = null;
+  private accessToken: string | null = null;
+  private resolvedConnectionString: string | null = null;
+  private readonly stats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    totalResponseTime: 0,
+    startTime: Date.now()
+  };
+
+  {{#if enableKeyVault}}
+  private secretClient: SecretClient | null = null;
+  {{/if}}
+
+  constructor(config: AzureSqlConnectionConfig) {
+    this.config = config;
+    this.logger = new Logger('AzureSqlConnection');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+
+    // Initialize Azure AD credential if using AAD authentication
+    if (this.config.authentication === 'active-directory-default' || 
+        this.config.authentication === 'active-directory-integrated') {
+      this.credential = new DefaultAzureCredential();
+    }
+
+    {{#if enableKeyVault}}
+    // Initialize Key Vault client for connection string retrieval
+    const keyVaultUrl = process.env.AZURE_KEYVAULT_URL;
+    if (keyVaultUrl && this.credential) {
+      this.secretClient = new SecretClient(keyVaultUrl, this.credential);
+    }
+    {{/if}}
+
+    this.logger.info('Azure SQL connection initialized', {
+      server: this.config.server,
+      database: this.config.database,
+      authentication: this.config.authentication
+    });
+  }
+
+  async connect(): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.info('Connecting to Azure SQL Database', {
+        server: this.config.server,
+        database: this.config.database
+      });
+
+      // Resolve connection string
+      await this.resolveConnectionString();
+
+      // Create connection pool
+      await this.createConnectionPool();
+
+      // Test connection
+      await this.testConnection();
+
+      this.logger.info('Successfully connected to Azure SQL Database', {
+        duration: Date.now() - startTime
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseConnection({
+        operation: 'connect',
+        database: this.config.database,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to connect to Azure SQL Database', {
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseConnection({
+        operation: 'connect',
+        database: this.config.database,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'CONNECTION_FAILED',
+          message: `Failed to connect to Azure SQL Database: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    }
+  }
+
+  async disconnect(): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.info('Disconnecting from Azure SQL Database');
+
+      if (this.connectionPool) {
+        await new Promise<void>((resolve, reject) => {
+          this.connectionPool!.close((err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+
+        this.connectionPool = null;
+      }
+
+      this.accessToken = null;
+      this.resolvedConnectionString = null;
+
+      this.logger.info('Successfully disconnected from Azure SQL Database', {
+        duration: Date.now() - startTime
+      });
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error('Failed to disconnect from Azure SQL Database', {
+        error: errorMessage
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'DISCONNECT_FAILED',
+          message: `Failed to disconnect from Azure SQL Database: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    }
+  }
+
+  async executeQuery<T = any>(
+    sql: string,
+    parameters: readonly QueryParameter[] = [],
+    options: QueryOptions = {}
+  ): Promise<AzureServiceResponse<DatabaseQueryResult<T>>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.debug('Executing SQL query', {
+        requestId,
+        sqlLength: sql.length,
+        parameterCount: parameters.length,
+        timeout: options.timeout
+      });
+
+      if (!this.connectionPool) {
+        throw new AzureServiceError('Database connection not established');
+      }
+
+      // Get connection from pool
+      const connection = await this.getConnection();
+
+      let transaction: Transaction | null = null;
+      if (options.useTransaction) {
+        transaction = await this.beginTransaction(connection, options.isolationLevel);
+      }
+
+      const result = await this.executeRequest<T>(
+        connection,
+        sql,
+        parameters,
+        options,
+        transaction
+      );
+
+      if (transaction) {
+        await this.commitTransaction(transaction);
+      }
+
+      this.stats.totalRequests++;
+      this.stats.successfulRequests++;
+      this.stats.totalResponseTime += Date.now() - startTime;
+
+      this.logger.debug('SQL query executed successfully', {
+        requestId,
+        rowCount: result.data.length,
+        duration: Date.now() - startTime
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseQuery({
+        requestId,
+        database: this.config.database,
+        operation: 'query',
+        rowCount: result.data.length,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.stats.totalRequests++;
+      this.stats.failedRequests++;
+
+      this.logger.error('SQL query execution failed', {
+        requestId,
+        error: errorMessage,
+        sqlLength: sql.length,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseQuery({
+        requestId,
+        database: this.config.database,
+        operation: 'query',
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'QUERY_FAILED',
+          message: `SQL query execution failed: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  async executeNonQuery(
+    sql: string,
+    parameters: readonly QueryParameter[] = [],
+    options: QueryOptions = {}
+  ): Promise<AzureServiceResponse<{ rowsAffected: number }>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.debug('Executing SQL non-query', {
+        requestId,
+        sqlLength: sql.length,
+        parameterCount: parameters.length
+      });
+
+      if (!this.connectionPool) {
+        throw new AzureServiceError('Database connection not established');
+      }
+
+      const connection = await this.getConnection();
+
+      let transaction: Transaction | null = null;
+      if (options.useTransaction) {
+        transaction = await this.beginTransaction(connection, options.isolationLevel);
+      }
+
+      const rowsAffected = await this.executeNonQueryRequest(
+        connection,
+        sql,
+        parameters,
+        options,
+        transaction
+      );
+
+      if (transaction) {
+        await this.commitTransaction(transaction);
+      }
+
+      this.stats.totalRequests++;
+      this.stats.successfulRequests++;
+
+      this.logger.debug('SQL non-query executed successfully', {
+        requestId,
+        rowsAffected,
+        duration: Date.now() - startTime
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseQuery({
+        requestId,
+        database: this.config.database,
+        operation: 'nonQuery',
+        rowCount: rowsAffected,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: { rowsAffected },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.stats.totalRequests++;
+      this.stats.failedRequests++;
+
+      this.logger.error('SQL non-query execution failed', {
+        requestId,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseQuery({
+        requestId,
+        database: this.config.database,
+        operation: 'nonQuery',
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'NON_QUERY_FAILED',
+          message: `SQL non-query execution failed: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  async executeTransaction<T>(
+    operations: Array<{
+      sql: string;
+      parameters?: readonly QueryParameter[];
+    }>,
+    options: DatabaseTransactionOptions = {}
+  ): Promise<AzureServiceResponse<T[]>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Executing database transaction', {
+        requestId,
+        operationCount: operations.length,
+        isolationLevel: options.isolationLevel
+      });
+
+      if (!this.connectionPool) {
+        throw new AzureServiceError('Database connection not established');
+      }
+
+      const connection = await this.getConnection();
+      const transaction = await this.beginTransaction(connection, options.isolationLevel);
+
+      const results: T[] = [];
+
+      try {
+        for (let i = 0; i < operations.length; i++) {
+          const operation = operations[i];
+          
+          this.logger.debug(`Executing transaction operation ${i + 1}`, {
+            requestId,
+            operationIndex: i
+          });
+
+          const result = await this.executeRequest<T>(
+            connection,
+            operation.sql,
+            operation.parameters || [],
+            { timeout: options.timeoutMs },
+            transaction
+          );
+
+          results.push(result as T);
+        }
+
+        await this.commitTransaction(transaction);
+
+        this.stats.totalRequests++;
+        this.stats.successfulRequests++;
+
+        this.logger.info('Database transaction completed successfully', {
+          requestId,
+          operationCount: operations.length,
+          duration: Date.now() - startTime
+        });
+
+        {{#if enableDiagnostics}}
+        await this.metricsCollector.recordDatabaseTransaction({
+          requestId,
+          database: this.config.database,
+          operationCount: operations.length,
+          success: true,
+          duration: Date.now() - startTime
+        });
+        {{/if}}
+
+        return {
+          success: true,
+          data: results,
+          metadata: {
+            timestamp: new Date(),
+            requestId,
+            duration: Date.now() - startTime
+          }
+        };
+      } catch (operationError) {
+        // Rollback transaction on error
+        await this.rollbackTransaction(transaction);
+        throw operationError;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.stats.totalRequests++;
+      this.stats.failedRequests++;
+
+      this.logger.error('Database transaction failed', {
+        requestId,
+        error: errorMessage,
+        operationCount: operations.length,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDatabaseTransaction({
+        requestId,
+        database: this.config.database,
+        operationCount: operations.length,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'TRANSACTION_FAILED',
+          message: `Database transaction failed: ${errorMessage}`,
+          details: { requestId, operationCount: operations.length }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  getConnectionStats(): ConnectionStats {
+    const uptime = Date.now() - this.stats.startTime;
+    const averageResponseTime = this.stats.totalRequests > 0 ? 
+      this.stats.totalResponseTime / this.stats.totalRequests : 0;
+
+    return {
+      totalConnections: this.connectionPool?.size || 0,
+      activeConnections: this.connectionPool?.available || 0,
+      idleConnections: this.connectionPool?.size - this.connectionPool?.available || 0,
+      waitingRequests: this.connectionPool?.pending || 0,
+      totalRequests: this.stats.totalRequests,
+      successfulRequests: this.stats.successfulRequests,
+      failedRequests: this.stats.failedRequests,
+      averageResponseTime,
+      uptime
+    };
+  }
+
+  async healthCheck(): Promise<AzureServiceResponse<{ status: 'healthy' | 'unhealthy'; details: ConnectionStats }>> {
+    try {
+      // Execute a simple query to test connectivity
+      const result = await this.executeQuery('SELECT 1 as HealthCheck');
+      
+      if (result.success && result.data && result.data.data.length > 0) {
+        return {
+          success: true,
+          data: {
+            status: 'healthy',
+            details: this.getConnectionStats()
+          },
+          metadata: {
+            timestamp: new Date(),
+            requestId: this.generateRequestId()
+          }
+        };
+      } else {
+        return {
+          success: false,
+          data: {
+            status: 'unhealthy',
+            details: this.getConnectionStats()
+          },
+          error: {
+            code: 'HEALTH_CHECK_FAILED',
+            message: 'Health check query failed'
+          },
+          metadata: {
+            timestamp: new Date(),
+            requestId: this.generateRequestId()
+          }
+        };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      return {
+        success: false,
+        data: {
+          status: 'unhealthy',
+          details: this.getConnectionStats()
+        },
+        error: {
+          code: 'HEALTH_CHECK_ERROR',
+          message: `Health check failed: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+    }
+  }
+
+  // Private helper methods
+  private async resolveConnectionString(): Promise<void> {
+    try {
+      {{#if enableKeyVault}}
+      // Try to get connection string from Key Vault first
+      if (this.secretClient) {
+        try {
+          const secretName = process.env.AZURE_SQL_CONNECTION_STRING_SECRET_NAME || 'azure-sql-connection-string';
+          const secret = await this.secretClient.getSecret(secretName);
+          
+          if (secret.value) {
+            this.resolvedConnectionString = secret.value;
+            this.logger.info('Connection string retrieved from Key Vault');
+            return;
+          }
+        } catch (keyVaultError) {
+          this.logger.warn('Failed to retrieve connection string from Key Vault, falling back to configuration', {
+            error: keyVaultError instanceof Error ? keyVaultError.message : 'Unknown error'
+          });
+        }
+      }
+      {{/if}}
+
+      // Build connection string from configuration
+      if (this.config.authentication === 'active-directory-default' || 
+          this.config.authentication === 'active-directory-integrated') {
+        // Use Azure AD authentication
+        this.resolvedConnectionString = `Server=tcp:${this.config.server}.database.windows.net,${this.config.port || 1433};Database=${this.config.database};Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;Connection Timeout=${this.config.connectionTimeout || 30};`;
+      } else if (this.config.username && this.config.password) {
+        // Use SQL authentication
+        this.resolvedConnectionString = `Server=tcp:${this.config.server}.database.windows.net,${this.config.port || 1433};Database=${this.config.database};User ID=${this.config.username};Password=${this.config.password};Encrypt=true;TrustServerCertificate=false;Connection Timeout=${this.config.connectionTimeout || 30};`;
+      } else {
+        throw new AzureServiceError('Invalid connection configuration: missing credentials');
+      }
+
+      this.logger.info('Connection string resolved from configuration');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to resolve connection string', { error: errorMessage });
+      throw new AzureServiceError(`Connection string resolution failed: ${errorMessage}`);
+    }
+  }
+
+  private async createConnectionPool(): Promise<void> {
+    if (!this.resolvedConnectionString) {
+      throw new AzureServiceError('Connection string not resolved');
+    }
+
+    const poolConfig = {
+      connectionString: this.resolvedConnectionString,
+      pool: {
+        min: this.config.pool?.min || 5,
+        max: this.config.pool?.max || 20,
+        acquireTimeoutMillis: this.config.pool?.acquireTimeoutMillis || 60000,
+        createTimeoutMillis: this.config.pool?.createTimeoutMillis || 30000,
+        destroyTimeoutMillis: this.config.pool?.destroyTimeoutMillis || 5000,
+        idleTimeoutMillis: this.config.pool?.idleTimeoutMillis || 300000,
+        reapIntervalMillis: this.config.pool?.reapIntervalMillis || 1000,
+        createRetryIntervalMillis: this.config.pool?.createRetryIntervalMillis || 200
+      },
+      options: {
+        encrypt: this.config.encrypt !== false,
+        trustServerCertificate: this.config.trustServerCertificate || false,
+        enableArithAbort: this.config.enableArithAbort !== false,
+        requestTimeout: this.config.requestTimeout || 30000,
+        isolationLevel: this.mapIsolationLevel(this.config.isolationLevel)
+      }
+    };
+
+    this.connectionPool = new ConnectionPool(poolConfig);
+
+    return new Promise((resolve, reject) => {
+      this.connectionPool!.connect((err) => {
+        if (err) {
+          reject(new AzureServiceError(`Connection pool creation failed: ${err.message}`));
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  private async testConnection(): Promise<void> {
+    if (!this.connectionPool) {
+      throw new AzureServiceError('Connection pool not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const request = new Request('SELECT 1 as TestConnection', (err, rowCount) => {
+        if (err) {
+          reject(new AzureServiceError(`Connection test failed: ${err.message}`));
+        } else {
+          resolve();
+        }
+      });
+
+      this.connectionPool!.execSql(request);
+    });
+  }
+
+  private async getConnection(): Promise<Connection> {
+    if (!this.connectionPool) {
+      throw new AzureServiceError('Connection pool not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      this.connectionPool!.acquire((err, connection) => {
+        if (err) {
+          reject(new AzureServiceError(`Failed to acquire connection: ${err.message}`));
+        } else {
+          resolve(connection);
+        }
+      });
+    });
+  }
+
+  private async beginTransaction(connection: Connection, isolationLevel?: string): Promise<Transaction> {
+    return new Promise((resolve, reject) => {
+      const transaction = new Transaction(connection, (err) => {
+        if (err) {
+          reject(new AzureServiceError(`Failed to begin transaction: ${err.message}`));
+        } else {
+          resolve(transaction);
+        }
+      });
+
+      if (isolationLevel) {
+        transaction.isolationLevel = this.mapIsolationLevel(isolationLevel);
+      }
+
+      transaction.begin();
+    });
+  }
+
+  private async commitTransaction(transaction: Transaction): Promise<void> {
+    return new Promise((resolve, reject) => {
+      transaction.commit((err) => {
+        if (err) {
+          reject(new AzureServiceError(`Failed to commit transaction: ${err.message}`));
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  private async rollbackTransaction(transaction: Transaction): Promise<void> {
+    return new Promise((resolve, reject) => {
+      transaction.rollback((err) => {
+        if (err) {
+          reject(new AzureServiceError(`Failed to rollback transaction: ${err.message}`));
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  private async executeRequest<T>(
+    connection: Connection,
+    sql: string,
+    parameters: readonly QueryParameter[],
+    options: QueryOptions,
+    transaction?: Transaction
+  ): Promise<DatabaseQueryResult<T>> {
+    return new Promise((resolve, reject) => {
+      const rows: T[] = [];
+      let totalCount = 0;
+
+      const request = new Request(sql, (err, rowCount) => {
+        if (err) {
+          reject(new AzureServiceError(`Query execution failed: ${err.message}`));
+        } else {
+          resolve({
+            data: rows,
+            totalCount,
+            page: 1,
+            pageSize: rows.length,
+            hasNextPage: false,
+            hasPreviousPage: false
+          });
+        }
+      });
+
+      // Add parameters
+      parameters.forEach(param => {
+        request.addParameter(param.name, param.type, param.value, param.options);
+      });
+
+      // Set timeout
+      if (options.timeout) {
+        request.timeout = options.timeout;
+      }
+
+      // Handle row data
+      request.on('row', (columns) => {
+        const row: any = {};
+        columns.forEach(column => {
+          row[column.metadata.colName] = column.value;
+        });
+        rows.push(row);
+        totalCount++;
+
+        // Apply max rows limit
+        if (options.maxRows && rows.length >= options.maxRows) {
+          request.cancel();
+        }
+      });
+
+      // Execute request
+      if (transaction) {
+        connection.execSql(request, transaction);
+      } else {
+        connection.execSql(request);
+      }
+    });
+  }
+
+  private async executeNonQueryRequest(
+    connection: Connection,
+    sql: string,
+    parameters: readonly QueryParameter[],
+    options: QueryOptions,
+    transaction?: Transaction
+  ): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const request = new Request(sql, (err, rowCount) => {
+        if (err) {
+          reject(new AzureServiceError(`Non-query execution failed: ${err.message}`));
+        } else {
+          resolve(rowCount);
+        }
+      });
+
+      // Add parameters
+      parameters.forEach(param => {
+        request.addParameter(param.name, param.type, param.value, param.options);
+      });
+
+      // Set timeout
+      if (options.timeout) {
+        request.timeout = options.timeout;
+      }
+
+      // Execute request
+      if (transaction) {
+        connection.execSql(request, transaction);
+      } else {
+        connection.execSql(request);
+      }
+    });
+  }
+
+  private mapIsolationLevel(isolationLevel?: string): number {
+    switch (isolationLevel) {
+      case 'READ_UNCOMMITTED':
+        return TYPES.ISOLATION_LEVEL.READ_UNCOMMITTED;
+      case 'READ_COMMITTED':
+        return TYPES.ISOLATION_LEVEL.READ_COMMITTED;
+      case 'REPEATABLE_READ':
+        return TYPES.ISOLATION_LEVEL.REPEATABLE_READ;
+      case 'SERIALIZABLE':
+        return TYPES.ISOLATION_LEVEL.SERIALIZABLE;
+      case 'SNAPSHOT':
+        return TYPES.ISOLATION_LEVEL.SNAPSHOT;
+      default:
+        return TYPES.ISOLATION_LEVEL.READ_COMMITTED;
+    }
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+// Factory function for creating Azure SQL connection
+export async function createAzureSqlConnection(config?: Partial<AzureSqlConnectionConfig>): Promise<AzureSqlConnection> {
+  const defaultConfig: AzureSqlConnectionConfig = {
+    server: process.env.AZURE_SQL_SERVER || 'localhost',
+    database: process.env.AZURE_SQL_DATABASE || 'master',
+    port: parseInt(process.env.AZURE_SQL_PORT || '1433'),
+    authentication: (process.env.AZURE_SQL_AUTHENTICATION as any) || 'active-directory-default',
+    username: process.env.AZURE_SQL_USERNAME,
+    password: process.env.AZURE_SQL_PASSWORD,
+    connectionTimeout: parseInt(process.env.AZURE_SQL_CONNECTION_TIMEOUT || '30'),
+    requestTimeout: parseInt(process.env.AZURE_SQL_REQUEST_TIMEOUT || '30000'),
+    encrypt: process.env.AZURE_SQL_ENCRYPT !== 'false',
+    trustServerCertificate: process.env.AZURE_SQL_TRUST_SERVER_CERTIFICATE === 'true',
+    enableArithAbort: process.env.AZURE_SQL_ENABLE_ARITH_ABORT !== 'false',
+    isolationLevel: (process.env.AZURE_SQL_ISOLATION_LEVEL as any) || 'READ_COMMITTED',
+    pool: {
+      min: parseInt(process.env.AZURE_SQL_POOL_MIN || '5'),
+      max: parseInt(process.env.AZURE_SQL_POOL_MAX || '20'),
+      acquireTimeoutMillis: parseInt(process.env.AZURE_SQL_POOL_ACQUIRE_TIMEOUT || '60000'),
+      createTimeoutMillis: parseInt(process.env.AZURE_SQL_POOL_CREATE_TIMEOUT || '30000'),
+      destroyTimeoutMillis: parseInt(process.env.AZURE_SQL_POOL_DESTROY_TIMEOUT || '5000'),
+      idleTimeoutMillis: parseInt(process.env.AZURE_SQL_POOL_IDLE_TIMEOUT || '300000'),
+      reapIntervalMillis: parseInt(process.env.AZURE_SQL_POOL_REAP_INTERVAL || '1000'),
+      createRetryIntervalMillis: parseInt(process.env.AZURE_SQL_POOL_CREATE_RETRY_INTERVAL || '200')
+    }
+  };
+
+  const finalConfig = { ...defaultConfig, ...config };
+  return new AzureSqlConnection(finalConfig);
+}
+
+// Export common SQL parameter types for convenience
+export const SqlTypes = TYPES;

@@ -1,0 +1,179 @@
+/**
+ * {{projectName}} Cloud Functions
+ * Entry point for Google Cloud Functions
+ */
+
+import { Request, Response } from 'express';
+import { logger } from './utils/logger';
+import { validateRequest } from './middleware/validation';
+import { errorHandler } from './middleware/error-handler';
+import { corsHandler } from './middleware/cors';
+import { rateLimiter } from './middleware/rate-limiter';
+
+{{#each triggers}}
+{{#if (eq type 'httpsTrigger')}}
+/**
+ * {{name}} HTTP Cloud Function
+ * {{description}}
+ */
+export const {{name}} = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Apply middleware
+    await corsHandler(req, res);
+    await rateLimiter(req, res);
+    
+    // Validate request
+    const validatedData = await validateRequest(req, {
+      method: '{{method}}',
+      schema: '{{schema}}'
+    });
+
+    logger.info('{{name}} function invoked', {
+      method: req.method,
+      path: req.path,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    });
+
+    // Function logic here
+    const result = await process{{capitalize name}}(validatedData, req);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    await errorHandler(error, req, res);
+  }
+};
+
+/**
+ * Process {{name}} business logic
+ */
+async function process{{capitalize name}}(data: any, req: Request): Promise<any> {
+  // TODO: Implement your business logic here
+  logger.info('Processing {{name}} with data:', data);
+  
+  return {
+    message: '{{name}} processed successfully',
+    requestId: req.get('X-Request-ID') || 'unknown'
+  };
+}
+
+{{/if}}
+{{#if (eq type 'eventTrigger')}}
+/**
+ * {{name}} Event-driven Cloud Function
+ * Triggered by: {{eventType}}
+ * Resource: {{resource}}
+ */
+export const {{name}} = async (data: any, context: any): Promise<void> => {
+  try {
+    logger.info('{{name}} event function triggered', {
+      eventType: context.eventType,
+      resource: context.resource,
+      timestamp: context.timestamp,
+      eventId: context.eventId
+    });
+
+    // Process event data
+    await process{{capitalize name}}Event(data, context);
+
+    logger.info('{{name}} event processed successfully', {
+      eventId: context.eventId
+    });
+
+  } catch (error) {
+    logger.error('Error processing {{name}} event', {
+      error: error.message,
+      eventId: context.eventId,
+      stack: error.stack
+    });
+    throw error; // Re-throw to trigger retry
+  }
+};
+
+/**
+ * Process {{name}} event business logic
+ */
+async function process{{capitalize name}}Event(data: any, context: any): Promise<void> {
+  // TODO: Implement your event processing logic here
+  logger.info('Processing {{name}} event with data:', {
+    data,
+    context: {
+      eventType: context.eventType,
+      resource: context.resource
+    }
+  });
+}
+
+{{/if}}
+{{#if (eq type 'scheduleFunction')}}
+/**
+ * {{name}} Scheduled Cloud Function
+ * Schedule: {{schedule}}
+ * Timezone: {{timeZone}}
+ */
+export const {{name}} = async (context: any): Promise<void> => {
+  try {
+    logger.info('{{name}} scheduled function started', {
+      schedule: '{{schedule}}',
+      timestamp: new Date().toISOString(),
+      executionId: context.eventId
+    });
+
+    // Execute scheduled task
+    await execute{{capitalize name}}Task(context);
+
+    logger.info('{{name}} scheduled function completed', {
+      executionId: context.eventId
+    });
+
+  } catch (error) {
+    logger.error('Error in {{name}} scheduled function', {
+      error: error.message,
+      executionId: context.eventId,
+      stack: error.stack
+    });
+    throw error;
+  }
+};
+
+/**
+ * Execute {{name}} scheduled task
+ */
+async function execute{{capitalize name}}Task(context: any): Promise<void> {
+  // TODO: Implement your scheduled task logic here
+  logger.info('Executing {{name}} scheduled task', {
+    executionId: context.eventId
+  });
+}
+
+{{/if}}
+{{/each}}
+
+/**
+ * Health check endpoint
+ */
+export const healthCheck = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const health = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: process.env.K_REVISION || '1.0.0',
+      environment: process.env.NODE_ENV || 'production',
+      uptime: process.uptime(),
+      memory: process.memoryUsage()
+    };
+
+    res.status(200).json(health);
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+};

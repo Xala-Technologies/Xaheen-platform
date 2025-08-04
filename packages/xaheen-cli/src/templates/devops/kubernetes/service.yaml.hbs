@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{manifest.metadata.name}}
+  namespace: {{manifest.metadata.namespace}}
+  labels:
+    {{#each manifest.metadata.labels}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{#if manifest.metadata.annotations}}
+  annotations:
+    {{#each manifest.metadata.annotations}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{/if}}
+spec:
+  type: {{manifest.spec.type}}
+  {{#if manifest.spec.ports}}
+  ports:
+  {{#each manifest.spec.ports}}
+  - port: {{port}}
+    targetPort: {{targetPort}}
+    protocol: {{protocol}}
+    name: {{name}}
+    {{#if nodePort}}
+    nodePort: {{nodePort}}
+    {{/if}}
+  {{/each}}
+  {{/if}}
+  selector:
+    {{#each manifest.spec.selector}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{#if manifest.spec.sessionAffinity}}
+  sessionAffinity: {{manifest.spec.sessionAffinity}}
+  {{/if}}
+  {{#if manifest.spec.loadBalancerIP}}
+  loadBalancerIP: {{manifest.spec.loadBalancerIP}}
+  {{/if}}
+  {{#if manifest.spec.externalIPs}}
+  externalIPs:
+  {{#each manifest.spec.externalIPs}}
+  - {{this}}
+  {{/each}}
+  {{/if}}

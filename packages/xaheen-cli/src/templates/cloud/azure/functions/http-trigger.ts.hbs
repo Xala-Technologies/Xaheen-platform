@@ -1,0 +1,508 @@
+/**
+ * Azure HTTP Trigger Function
+ * 
+ * Production-ready HTTP trigger function with comprehensive error handling,
+ * security, monitoring, and integration with Azure services.
+ */
+
+import { AzureFunction, Context, HttpRequest } from '@azure/functions';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+{{#if enableServiceBus}}
+import { ServiceBusClient } from '@azure/service-bus';
+{{/if}}
+import { validateRequest, sanitizeInput } from '../utils/function-utils';
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { HealthChecker } from '../utils/health-checker';
+import { RateLimiter } from '../utils/rate-limiter';
+import { 
+  AzureFunctionRequest, 
+  AzureFunctionResponse, 
+  AzureServiceResponse,
+  AzureError,
+  AzureServiceError 
+} from '../types/azure.types';
+
+// Initialize services
+const logger = new Logger('HttpTrigger');
+const metricsCollector = new MetricsCollector();
+const healthChecker = new HealthChecker();
+const rateLimiter = new RateLimiter();
+const credential = new DefaultAzureCredential();
+
+{{#if enableKeyVault}}
+let secretClient: SecretClient | null = null;
+{{/if}}
+{{#if enableServiceBus}}
+let serviceBusClient: ServiceBusClient | null = null;
+{{/if}}
+
+// Request/Response interfaces
+interface HttpTriggerRequest {
+  readonly action: string;
+  readonly data?: unknown;
+  readonly correlationId?: string;
+}
+
+interface HttpTriggerSuccessResponse {
+  readonly success: true;
+  readonly data: unknown;
+  readonly correlationId: string;
+  readonly timestamp: string;
+}
+
+interface HttpTriggerErrorResponse {
+  readonly success: false;
+  readonly error: {
+    readonly code: string;
+    readonly message: string;
+    readonly details?: Record<string, unknown>;
+  };
+  readonly correlationId: string;
+  readonly timestamp: string;
+}
+
+type HttpTriggerResponse = HttpTriggerSuccessResponse | HttpTriggerErrorResponse;
+
+const httpTrigger: AzureFunction = async (context: Context, req: HttpRequest): Promise<void> => {
+  const startTime = Date.now();
+  const correlationId = req.headers?.['x-correlation-id'] || context.invocationId;
+  const requestId = context.invocationId;
+
+  // Initialize context logging
+  logger.setContext({ 
+    requestId, 
+    correlationId, 
+    functionName: context.functionName 
+  });
+
+  logger.info('HTTP trigger function started', {
+    method: req.method,
+    url: req.url,
+    userAgent: req.headers?.['user-agent'],
+    contentLength: req.headers?.['content-length']
+  });
+
+  try {
+    // Health check endpoint
+    if (req.url?.includes('/health')) {
+      const healthStatus = await healthChecker.check();
+      context.res = createSuccessResponse(healthStatus, correlationId);
+      return;
+    }
+
+    // Rate limiting
+    const clientIp = req.headers?.['x-forwarded-for']?.split(',')[0] || 
+                     req.headers?.['x-client-ip'] || 
+                     req.headers?.['x-real-ip'] || 
+                     'unknown';
+    
+    const isRateLimited = await rateLimiter.isLimited(clientIp);
+    if (isRateLimited) {
+      context.res = createErrorResponse(
+        'RATE_LIMIT_EXCEEDED',
+        'Rate limit exceeded. Please try again later.',
+        429,
+        correlationId
+      );
+      return;
+    }
+
+    // Validate request method
+    if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method || '')) {
+      context.res = createErrorResponse(
+        'METHOD_NOT_ALLOWED',
+        `Method ${req.method} is not allowed`,
+        405,
+        correlationId
+      );
+      return;
+    }
+
+    // Initialize Azure services if not already done
+    await initializeServices();
+
+    // Parse and validate request
+    const requestData = await parseRequest(req);
+    const validationResult = validateRequest(requestData);
+    
+    if (!validationResult.isValid) {
+      context.res = createErrorResponse(
+        'INVALID_REQUEST',
+        'Request validation failed',
+        400,
+        correlationId,
+        { validationErrors: validationResult.errors }
+      );
+      return;
+    }
+
+    // Sanitize input
+    const sanitizedData = sanitizeInput(requestData);
+
+    // Process request based on action
+    const result = await processRequest(sanitizedData, context);
+
+    // Record metrics
+    const duration = Date.now() - startTime;
+    await metricsCollector.recordHttpRequest({
+      method: req.method || 'UNKNOWN',
+      statusCode: 200,
+      duration,
+      correlationId
+    });
+
+    // Create success response
+    context.res = createSuccessResponse(result, correlationId);
+
+    logger.info('HTTP trigger function completed successfully', {
+      duration,
+      action: sanitizedData.action
+    });
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    // Record error metrics
+    await metricsCollector.recordHttpRequest({
+      method: req.method || 'UNKNOWN',
+      statusCode: error instanceof AzureError ? error.statusCode || 500 : 500,
+      duration,
+      correlationId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+
+    // Log error
+    logger.error('HTTP trigger function failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      duration
+    });
+
+    // Create error response
+    if (error instanceof AzureError) {
+      context.res = createErrorResponse(
+        error.code || 'AZURE_ERROR',
+        error.message,
+        error.statusCode || 500,
+        correlationId,
+        error.details
+      );
+    } else if (error instanceof Error) {
+      context.res = createErrorResponse(
+        'INTERNAL_ERROR',
+        'An internal error occurred',
+        500,
+        correlationId,
+        { originalError: error.message }
+      );
+    } else {
+      context.res = createErrorResponse(
+        'UNKNOWN_ERROR',
+        'An unknown error occurred',
+        500,
+        correlationId
+      );
+    }
+  }
+};
+
+async function initializeServices(): Promise<void> {
+  try {
+    {{#if enableKeyVault}}
+    if (!secretClient) {
+      const keyVaultUrl = process.env.AZURE_KEYVAULT_URL;
+      if (keyVaultUrl) {
+        secretClient = new SecretClient(keyVaultUrl, credential);
+        logger.info('Key Vault client initialized');
+      }
+    }
+    {{/if}}
+
+    {{#if enableServiceBus}}
+    if (!serviceBusClient) {
+      const serviceBusConnectionString = process.env.AZURE_SERVICEBUS_CONNECTION_STRING;
+      if (serviceBusConnectionString) {
+        serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
+        logger.info('Service Bus client initialized');
+      }
+    }
+    {{/if}}
+  } catch (error) {
+    logger.error('Failed to initialize Azure services', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Service initialization failed');
+  }
+}
+
+async function parseRequest(req: HttpRequest): Promise<HttpTriggerRequest> {
+  try {
+    let requestData: HttpTriggerRequest;
+
+    if (req.method === 'GET') {
+      requestData = {
+        action: req.query?.action || 'get',
+        data: req.query,
+        correlationId: req.headers?.['x-correlation-id']
+      };
+    } else {
+      const body = req.body;
+      
+      if (typeof body === 'string') {
+        try {
+          const parsed = JSON.parse(body);
+          requestData = {
+            action: parsed.action || 'post',
+            data: parsed.data,
+            correlationId: req.headers?.['x-correlation-id'] || parsed.correlationId
+          };
+        } catch {
+          throw new AzureError('Invalid JSON in request body', 'INVALID_JSON', 400);
+        }
+      } else if (typeof body === 'object' && body !== null) {
+        requestData = {
+          action: (body as any).action || 'post',
+          data: (body as any).data,
+          correlationId: req.headers?.['x-correlation-id'] || (body as any).correlationId
+        };
+      } else {
+        requestData = {
+          action: 'post',
+          data: body,
+          correlationId: req.headers?.['x-correlation-id']
+        };
+      }
+    }
+
+    return requestData;
+  } catch (error) {
+    if (error instanceof AzureError) {
+      throw error;
+    }
+    throw new AzureError('Failed to parse request', 'PARSE_ERROR', 400);
+  }
+}
+
+async function processRequest(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  logger.info('Processing request', { action: request.action });
+
+  switch (request.action) {
+    case 'get':
+      return await handleGetRequest(request, context);
+    
+    case 'post':
+    case 'create':
+      return await handlePostRequest(request, context);
+    
+    case 'put':
+    case 'update':
+      return await handlePutRequest(request, context);
+    
+    case 'delete':
+      return await handleDeleteRequest(request, context);
+    
+    case 'ping':
+      return { message: 'pong', timestamp: new Date().toISOString() };
+    
+    {{#if enableKeyVault}}
+    case 'get-secret':
+      return await handleGetSecret(request, context);
+    {{/if}}
+    
+    {{#if enableServiceBus}}
+    case 'send-message':
+      return await handleSendMessage(request, context);
+    {{/if}}
+    
+    default:
+      throw new AzureError(`Unsupported action: ${request.action}`, 'UNSUPPORTED_ACTION', 400);
+  }
+}
+
+async function handleGetRequest(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  // Implement your GET logic here
+  return {
+    message: 'GET request processed successfully',
+    data: request.data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+async function handlePostRequest(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  // Implement your POST logic here
+  return {
+    message: 'POST request processed successfully',
+    data: request.data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+async function handlePutRequest(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  // Implement your PUT logic here
+  return {
+    message: 'PUT request processed successfully',
+    data: request.data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+async function handleDeleteRequest(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  // Implement your DELETE logic here
+  return {
+    message: 'DELETE request processed successfully',
+    data: request.data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+{{#if enableKeyVault}}
+async function handleGetSecret(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  if (!secretClient) {
+    throw new AzureServiceError('Key Vault client not initialized');
+  }
+
+  const secretName = (request.data as any)?.secretName;
+  if (!secretName || typeof secretName !== 'string') {
+    throw new AzureError('Secret name is required', 'MISSING_SECRET_NAME', 400);
+  }
+
+  try {
+    const secret = await secretClient.getSecret(secretName);
+    
+    return {
+      message: 'Secret retrieved successfully',
+      secretName: secret.name,
+      secretVersion: secret.properties.version,
+      hasValue: !!secret.value,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to retrieve secret from Key Vault', {
+      secretName,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Failed to retrieve secret');
+  }
+}
+{{/if}}
+
+{{#if enableServiceBus}}
+async function handleSendMessage(request: HttpTriggerRequest, context: Context): Promise<unknown> {
+  if (!serviceBusClient) {
+    throw new AzureServiceError('Service Bus client not initialized');
+  }
+
+  const { queueName, message } = request.data as any;
+  if (!queueName || !message) {
+    throw new AzureError('Queue name and message are required', 'MISSING_PARAMETERS', 400);
+  }
+
+  try {
+    const sender = serviceBusClient.createSender(queueName);
+    
+    await sender.sendMessages({
+      body: message,
+      correlationId: request.correlationId,
+      messageId: context.invocationId,
+      timeToLive: 24 * 60 * 60 * 1000, // 24 hours
+      userProperties: {
+        source: 'http-trigger',
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    await sender.close();
+
+    return {
+      message: 'Message sent successfully',
+      queueName,
+      messageId: context.invocationId,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to send message to Service Bus', {
+      queueName,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Failed to send message');
+  }
+}
+{{/if}}
+
+function createSuccessResponse(data: unknown, correlationId: string): AzureFunctionResponse {
+  return {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Correlation-Id': correlationId,
+      'X-Request-Id': correlationId,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
+    body: {
+      success: true,
+      data,
+      correlationId,
+      timestamp: new Date().toISOString()
+    } as HttpTriggerSuccessResponse
+  };
+}
+
+function createErrorResponse(
+  code: string,
+  message: string,
+  status: number = 500,
+  correlationId: string,
+  details?: Record<string, unknown>
+): AzureFunctionResponse {
+  return {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Correlation-Id': correlationId,
+      'X-Request-Id': correlationId,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
+    body: {
+      success: false,
+      error: {
+        code,
+        message,
+        details
+      },
+      correlationId,
+      timestamp: new Date().toISOString()
+    } as HttpTriggerErrorResponse
+  };
+}
+
+// Graceful shutdown handling
+process.on('SIGTERM', async () => {
+  logger.info('Received SIGTERM, shutting down gracefully');
+  
+  try {
+    {{#if enableServiceBus}}
+    if (serviceBusClient) {
+      await serviceBusClient.close();
+    }
+    {{/if}}
+    
+    await metricsCollector.flush();
+    logger.info('Graceful shutdown completed');
+  } catch (error) {
+    logger.error('Error during graceful shutdown', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+  
+  process.exit(0);
+});
+
+export default httpTrigger;

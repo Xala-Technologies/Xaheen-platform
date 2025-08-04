@@ -1,0 +1,426 @@
+/**
+ * Error Handler Middleware
+ * Centralized error handling for Cloud Functions
+ */
+
+import { Request, Response } from 'express';
+import { logger } from '../utils/logger';
+import { ValidationError } from './validation';
+
+export interface AppError extends Error {
+  statusCode?: number;
+  code?: string;
+  details?: any;
+  isOperational?: boolean;
+}
+
+/**
+ * Error types
+ */
+export enum ErrorType {
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
+  AUTHORIZATION_ERROR = 'AUTHORIZATION_ERROR',
+  NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
+  CONFLICT_ERROR = 'CONFLICT_ERROR',
+  RATE_LIMIT_ERROR = 'RATE_LIMIT_ERROR',
+  EXTERNAL_SERVICE_ERROR = 'EXTERNAL_SERVICE_ERROR',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR'
+}
+
+/**
+ * Custom error classes
+ */
+export class AuthenticationError extends Error implements AppError {
+  statusCode = 401;
+  code = ErrorType.AUTHENTICATION_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Authentication required') {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
+export class AuthorizationError extends Error implements AppError {
+  statusCode = 403;
+  code = ErrorType.AUTHORIZATION_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Insufficient permissions') {
+    super(message);
+    this.name = 'AuthorizationError';
+  }
+}
+
+export class NotFoundError extends Error implements AppError {
+  statusCode = 404;
+  code = ErrorType.NOT_FOUND_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Resource not found') {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class ConflictError extends Error implements AppError {
+  statusCode = 409;
+  code = ErrorType.CONFLICT_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Resource conflict') {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
+export class RateLimitError extends Error implements AppError {
+  statusCode = 429;
+  code = ErrorType.RATE_LIMIT_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Rate limit exceeded') {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
+export class ExternalServiceError extends Error implements AppError {
+  statusCode = 502;
+  code = ErrorType.EXTERNAL_SERVICE_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'External service error', public service?: string) {
+    super(message);
+    this.name = 'ExternalServiceError';
+  }
+}
+
+export class DatabaseError extends Error implements AppError {
+  statusCode = 500;
+  code = ErrorType.DATABASE_ERROR;
+  isOperational = true;
+
+  constructor(message: string = 'Database error') {
+    super(message);
+    this.name = 'DatabaseError';
+  }
+}
+
+/**
+ * Main error handler middleware
+ */
+export async function errorHandler(
+  error: Error | AppError | ValidationError,
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    // Extract error information
+    const {
+      statusCode,
+      message,
+      code,
+      details,
+      stack,
+      isOperational
+    } = extractErrorInfo(error);
+
+    // Log the error
+    await logError(error, req, {
+      statusCode,
+      code,
+      isOperational,
+      userAgent: req.get('User-Agent'),
+      ip: req.ip,
+      url: req.url,
+      method: req.method
+    });
+
+    // Send error response
+    const errorResponse = createErrorResponse(error, {
+      statusCode,
+      message,
+      code,
+      details,
+      includeStack: process.env.NODE_ENV === 'development'
+    });
+
+    res.status(statusCode).json(errorResponse);
+
+    // Report critical errors to monitoring
+    if (statusCode >= 500) {
+      await reportCriticalError(error, req);
+    }
+
+  } catch (handlerError) {
+    // Fallback error handling
+    logger.error('Error in error handler', {
+      originalError: error.message,
+      handlerError: handlerError.message,
+      stack: handlerError.stack
+    });
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred',
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+}
+
+/**
+ * Extract error information
+ */
+function extractErrorInfo(error: any): {
+  statusCode: number;
+  message: string;
+  code: string;
+  details?: any;
+  stack?: string;
+  isOperational: boolean;
+} {
+  // Validation errors
+  if (error.details && Array.isArray(error.details)) {
+    return {
+      statusCode: 400,
+      message: 'Validation failed',
+      code: ErrorType.VALIDATION_ERROR,
+      details: error.details.map((detail: any) => ({
+        field: detail.path?.join('.'),
+        message: detail.message,
+        value: detail.context?.value
+      })),
+      stack: error.stack,
+      isOperational: true
+    };
+  }
+
+  // Custom app errors
+  if (error.statusCode && error.code) {
+    return {
+      statusCode: error.statusCode,
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      stack: error.stack,
+      isOperational: error.isOperational || false
+    };
+  }
+
+  // Firebase/GCP specific errors
+  if (error.code) {
+    const statusCode = mapFirebaseErrorToHttpStatus(error.code);
+    return {
+      statusCode,
+      message: error.message || 'Firebase error',
+      code: error.code,
+      details: error.details,
+      stack: error.stack,
+      isOperational: true
+    };
+  }
+
+  // HTTP errors
+  if (error.status || error.statusCode) {
+    return {
+      statusCode: error.status || error.statusCode,
+      message: error.message || 'HTTP error',
+      code: error.code || 'HTTP_ERROR',
+      stack: error.stack,
+      isOperational: false
+    };
+  }
+
+  // Generic errors
+  return {
+    statusCode: 500,
+    message: error.message || 'Internal server error',
+    code: ErrorType.INTERNAL_SERVER_ERROR,
+    stack: error.stack,
+    isOperational: false
+  };
+}
+
+/**
+ * Create error response
+ */
+function createErrorResponse(
+  error: any,
+  options: {
+    statusCode: number;
+    message: string;
+    code: string;
+    details?: any;
+    includeStack?: boolean;
+  }
+): any {
+  const { statusCode, message, code, details, includeStack } = options;
+
+  const response: any = {
+    success: false,
+    error: {
+      code,
+      message,
+      timestamp: new Date().toISOString()
+    }
+  };
+
+  // Add details for validation errors
+  if (details && statusCode === 400) {
+    response.error.details = details;
+  }
+
+  // Add stack trace in development
+  if (includeStack && error.stack) {
+    response.error.stack = error.stack;
+  }
+
+  // Add request ID if available
+  const requestId = process.env.X_REQUEST_ID;
+  if (requestId) {
+    response.error.requestId = requestId;
+  }
+
+  return response;
+}
+
+/**
+ * Log error with appropriate level
+ */
+async function logError(
+  error: any,
+  req: Request,
+  metadata: Record<string, any>
+): Promise<void> {
+  const { statusCode, isOperational } = metadata;
+
+  if (statusCode >= 500 || !isOperational) {
+    logger.error('Critical error occurred', {
+      error: error.message,
+      stack: error.stack,
+      ...metadata
+    });
+  } else if (statusCode >= 400) {
+    logger.warn('Client error occurred', {
+      error: error.message,
+      ...metadata
+    });
+  } else {
+    logger.info('Handled error occurred', {
+      error: error.message,
+      ...metadata
+    });
+  }
+}
+
+/**
+ * Report critical errors to monitoring
+ */
+async function reportCriticalError(error: any, req: Request): Promise<void> {
+  try {
+    // In production, you would send to error reporting service
+    // like Google Cloud Error Reporting, Sentry, etc.
+    
+    if (process.env.NODE_ENV === 'production') {
+      // Example: Google Cloud Error Reporting
+      // const { ErrorReporting } = require('@google-cloud/error-reporting');
+      // const errors = new ErrorReporting();
+      // errors.report(error);
+    }
+
+    // Send to monitoring/alerting
+    logger.critical('Critical error reported', {
+      error: error.message,
+      stack: error.stack,
+      url: req.url,
+      method: req.method,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (reportError) {
+    logger.error('Failed to report critical error', {
+      originalError: error.message,
+      reportError: reportError.message
+    });
+  }
+}
+
+/**
+ * Map Firebase error codes to HTTP status codes
+ */
+function mapFirebaseErrorToHttpStatus(firebaseCode: string): number {
+  const errorMap: Record<string, number> = {
+    'permission-denied': 403,
+    'unauthenticated': 401,
+    'not-found': 404,
+    'already-exists': 409,
+    'resource-exhausted': 429,
+    'failed-precondition': 412,
+    'out-of-range': 400,
+    'invalid-argument': 400,
+    'deadline-exceeded': 408,
+    'unavailable': 503,
+    'data-loss': 500,
+    'unknown': 500,
+    'internal': 500,
+    'unimplemented': 501,
+    'cancelled': 499
+  };
+
+  return errorMap[firebaseCode] || 500;
+}
+
+/**
+ * Express error middleware wrapper
+ */
+export function expressErrorHandler(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: any
+): void {
+  errorHandler(err, req, res).catch(() => {
+    // Final fallback
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred',
+        timestamp: new Date().toISOString()
+      }
+    });
+  });
+}
+
+/**
+ * Async wrapper for route handlers
+ */
+export function asyncHandler(
+  fn: (req: Request, res: Response, next?: any) => Promise<any>
+) {
+  return (req: Request, res: Response, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(error => {
+      errorHandler(error, req, res);
+    });
+  };
+}
+
+/**
+ * Create specific error instances
+ */
+export const createError = {
+  authentication: (message?: string) => new AuthenticationError(message),
+  authorization: (message?: string) => new AuthorizationError(message),
+  notFound: (message?: string) => new NotFoundError(message),
+  conflict: (message?: string) => new ConflictError(message),
+  rateLimit: (message?: string) => new RateLimitError(message),
+  externalService: (message?: string, service?: string) => new ExternalServiceError(message, service),
+  database: (message?: string) => new DatabaseError(message)
+};

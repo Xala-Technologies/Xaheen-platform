@@ -1,0 +1,327 @@
+/**
+ * CORS Middleware
+ * Cross-Origin Resource Sharing configuration for Cloud Functions
+ */
+
+import { Request, Response } from 'express';
+import { logger } from '../utils/logger';
+
+export interface CORSOptions {
+  origin?: string | string[] | ((origin: string) => boolean);
+  methods?: string[];
+  allowedHeaders?: string[];
+  exposedHeaders?: string[];
+  credentials?: boolean;
+  maxAge?: number;
+  preflightContinue?: boolean;
+  optionsSuccessStatus?: number;
+}
+
+/**
+ * Default CORS configuration
+ */
+const defaultOptions: CORSOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://{{projectName}}.com']
+    : true, // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'X-API-Key',
+    'X-Request-ID',
+    'X-Correlation-ID',
+    'User-Agent',
+    'Cache-Control'
+  ],
+  exposedHeaders: [
+    'X-Request-ID',
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+    'X-RateLimit-Reset'
+  ],
+  credentials: true,
+  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 204
+};
+
+/**
+ * CORS middleware for Cloud Functions
+ */
+export async function corsHandler(
+  req: Request,
+  res: Response,
+  options: CORSOptions = {}
+): Promise<void> {
+  const config = { ...defaultOptions, ...options };
+  
+  try {
+    // Get the origin from the request
+    const origin = req.get('Origin') || req.get('Referer') || '';
+    
+    // Set origin header
+    if (config.origin) {
+      const allowedOrigin = getAllowedOrigin(origin, config.origin);
+      if (allowedOrigin) {
+        res.set('Access-Control-Allow-Origin', allowedOrigin);
+        res.set('Vary', 'Origin');
+      }
+    }
+
+    // Set credentials header
+    if (config.credentials) {
+      res.set('Access-Control-Allow-Credentials', 'true');
+    }
+
+    // Set exposed headers
+    if (config.exposedHeaders && config.exposedHeaders.length > 0) {
+      res.set('Access-Control-Expose-Headers', config.exposedHeaders.join(', '));
+    }
+
+    // Handle preflight OPTIONS requests
+    if (req.method === 'OPTIONS') {
+      // Set allowed methods
+      if (config.methods && config.methods.length > 0) {
+        res.set('Access-Control-Allow-Methods', config.methods.join(', '));
+      }
+
+      // Set allowed headers
+      if (config.allowedHeaders && config.allowedHeaders.length > 0) {
+        res.set('Access-Control-Allow-Headers', config.allowedHeaders.join(', '));
+      }
+
+      // Set max age for preflight cache
+      if (config.maxAge) {
+        res.set('Access-Control-Max-Age', config.maxAge.toString());
+      }
+
+      // Send preflight response
+      const status = config.optionsSuccessStatus || 204;
+      res.status(status).end();
+      
+      logger.debug('CORS preflight request handled', {
+        origin,
+        method: req.method,
+        requestedHeaders: req.get('Access-Control-Request-Headers'),
+        requestedMethod: req.get('Access-Control-Request-Method')
+      });
+      
+      return;
+    }
+
+    // Log CORS handling for actual requests
+    logger.debug('CORS headers set for request', {
+      origin,
+      method: req.method,
+      allowedOrigin: res.get('Access-Control-Allow-Origin')
+    });
+
+  } catch (error) {
+    logger.error('Error handling CORS', {
+      error: error.message,
+      origin,
+      method: req.method
+    });
+    throw error;
+  }
+}
+
+/**
+ * Get allowed origin based on configuration
+ */
+function getAllowedOrigin(
+  requestOrigin: string,
+  allowedOrigins: string | string[] | ((origin: string) => boolean)
+): string | null {
+  // If no origin in request (same-origin or server-to-server)
+  if (!requestOrigin) {
+    return '*';
+  }
+
+  // If origin is a function, call it
+  if (typeof allowedOrigins === 'function') {
+    return allowedOrigins(requestOrigin) ? requestOrigin : null;
+  }
+
+  // If origin is a string
+  if (typeof allowedOrigins === 'string') {
+    if (allowedOrigins === '*') {
+      return '*';
+    }
+    return allowedOrigins === requestOrigin ? requestOrigin : null;
+  }
+
+  // If origin is an array
+  if (Array.isArray(allowedOrigins)) {
+    // Check for wildcard
+    if (allowedOrigins.includes('*')) {
+      return '*';
+    }
+    
+    // Check for exact match
+    if (allowedOrigins.includes(requestOrigin)) {
+      return requestOrigin;
+    }
+    
+    // Check for pattern matches
+    for (const pattern of allowedOrigins) {
+      if (pattern.includes('*')) {
+        const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+        if (regex.test(requestOrigin)) {
+          return requestOrigin;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Create CORS middleware with custom options
+ */
+export function createCORSMiddleware(options: CORSOptions = {}) {
+  return async (req: Request, res: Response, next?: any) => {
+    try {
+      await corsHandler(req, res, options);
+      if (req.method !== 'OPTIONS' && next) {
+        next();
+      }
+    } catch (error) {
+      if (next) {
+        next(error);
+      } else {
+        throw error;
+      }
+    }
+  };
+}
+
+/**
+ * Strict CORS configuration for production
+ */
+export const strictCORS: CORSOptions = {
+  origin: [
+    'https://{{projectName}}.com',
+    'https://www.{{projectName}}.com',
+    'https://app.{{projectName}}.com',
+    'https://admin.{{projectName}}.com'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-API-Key',
+    'X-Request-ID'
+  ],
+  credentials: true,
+  maxAge: 300 // 5 minutes
+};
+
+/**
+ * Development CORS configuration
+ */
+export const developmentCORS: CORSOptions = {
+  origin: true, // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+  allowedHeaders: ['*'],
+  credentials: true,
+  maxAge: 86400
+};
+
+/**
+ * API-only CORS configuration
+ */
+export const apiCORS: CORSOptions = {
+  origin: false, // No browser CORS
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-API-Key',
+    'User-Agent'
+  ],
+  credentials: false,
+  maxAge: 3600
+};
+
+/**
+ * Webhook CORS configuration
+ */
+export const webhookCORS: CORSOptions = {
+  origin: false, // No browser access
+  methods: ['POST'],
+  allowedHeaders: [
+    'Content-Type',
+    'X-Signature',
+    'X-Hub-Signature',
+    'User-Agent'
+  ],
+  credentials: false
+};
+
+/**
+ * Get CORS configuration based on environment
+ */
+export function getCORSConfig(environment?: string): CORSOptions {
+  switch (environment || process.env.NODE_ENV) {
+    case 'production':
+      return strictCORS;
+    case 'development':
+    case 'test':
+      return developmentCORS;
+    default:
+      return defaultOptions;
+  }
+}
+
+/**
+ * Validate origin against allowed patterns
+ */
+export function isOriginAllowed(
+  origin: string,
+  allowedOrigins: string[]
+): boolean {
+  if (!origin) return false;
+  
+  for (const allowed of allowedOrigins) {
+    if (allowed === '*') return true;
+    if (allowed === origin) return true;
+    
+    // Pattern matching
+    if (allowed.includes('*')) {
+      const regex = new RegExp(allowed.replace(/\*/g, '.*'));
+      if (regex.test(origin)) return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Security headers middleware (complementary to CORS)
+ */
+export function securityHeaders(req: Request, res: Response, next?: any): void {
+  // Remove sensitive headers
+  res.removeHeader('X-Powered-By');
+  
+  // Security headers
+  res.set({
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; child-src 'none'; worker-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+  });
+
+  // Request ID for tracing
+  const requestId = req.get('X-Request-ID') || require('uuid').v4();
+  res.set('X-Request-ID', requestId);
+  
+  if (next) {
+    next();
+  }
+}

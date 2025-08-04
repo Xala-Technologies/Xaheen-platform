@@ -1,0 +1,72 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": {{#if enableDiagnostics}}true{{else}}false{{/if}},
+        "maxTelemetryItemsPerSecond": {{#if (eq environment 'production')}}20{{else}}5{{/if}},
+        "evaluationInterval": "01:00:00",
+        "initialSamplingPercentage": {{#if (eq environment 'production')}}100.0{{else}}100.0{{/if}},
+        "samplingPercentageIncreaseTimeout": "00:00:01",
+        "samplingPercentageDecreaseTimeout": "00:00:01",
+        "minSamplingPercentage": 0.1,
+        "maxSamplingPercentage": 100.0,
+        "movingAverageRatio": 0.25,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetrics": {{#if enableDiagnostics}}true{{else}}false{{/if}},
+      "enableDependencyTracking": {{#if enableDiagnostics}}true{{else}}false{{/if}},
+      "enablePerformanceCountersCollection": {{#if enableDiagnostics}}true{{else}}false{{/if}},
+      "httpAutoCollectionOptions": {
+        "enableHttpTriggerExtendedInfoCollection": {{#if enableDiagnostics}}true{{else}}false{{/if}},
+        "enableW3CDistributedTracing": true,
+        "enableResponseHeaderInjection": true
+      }
+    }
+  },
+  "functionTimeout": "{{#if (eq environment 'production')}}00:10:00{{else}}00:05:00{{/if}}",
+  "healthMonitor": {
+    "enabled": true,
+    "healthCheckInterval": "00:00:10",
+    "healthCheckWindow": "00:02:00",
+    "healthCheckThreshold": 6,
+    "counterThreshold": 0.80
+  },
+  "singleton": {
+    "lockPeriod": "00:00:15",
+    "listenerLockPeriod": "00:01:00",
+    "listenerLockRecoveryPollingInterval": "00:01:00",
+    "lockAcquisitionTimeout": "00:01:00",
+    "lockAcquisitionPollingInterval": "00:00:03"
+  },
+  "watchDirectories": [
+    "Shared"
+  ],
+  "managedDependency": {
+    "enabled": true
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
+  },
+  "concurrency": {
+    "dynamicConcurrencyEnabled": true,
+    "snapshotPersistenceEnabled": true
+  },
+  "retry": {
+    "strategy": "exponentialBackoff",
+    "maxRetryCount": {{#if (eq environment 'production')}}5{{else}}3{{/if}},
+    "minimumInterval": "00:00:01",
+    "maximumInterval": "00:15:00"
+  },
+  "customHandler": {
+    "description": {
+      "defaultExecutablePath": "node",
+      "workingDirectory": "",
+      "arguments": [
+        "dist/index.js"
+      ]
+    },
+    "enableForwardingHttpRequest": false
+  }
+}

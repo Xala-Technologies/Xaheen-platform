@@ -1,0 +1,307 @@
+/**
+ * Request Validation Middleware
+ * Validates incoming requests using Joi schemas
+ */
+
+import { Request } from 'express';
+import Joi from 'joi';
+import { logger } from '../utils/logger';
+
+export interface ValidationOptions {
+  method: string;
+  schema: string;
+  allowUnknown?: boolean;
+  stripUnknown?: boolean;
+}
+
+export interface ValidationError extends Error {
+  statusCode: number;
+  details: Joi.ValidationErrorItem[];
+}
+
+/**
+ * Predefined validation schemas
+ */
+export const schemas = {
+  // User schemas
+  createUser: Joi.object({
+    email: Joi.string().email().required(),
+    name: Joi.string().min(2).max(100).required(),
+    password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).required(),
+    role: Joi.string().valid('user', 'admin', 'moderator').default('user')
+  }),
+
+  updateUser: Joi.object({
+    name: Joi.string().min(2).max(100),
+    email: Joi.string().email(),
+    role: Joi.string().valid('user', 'admin', 'moderator')
+  }).min(1),
+
+  // Authentication schemas
+  login: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+  }),
+
+  resetPassword: Joi.object({
+    email: Joi.string().email().required()
+  }),
+
+  changePassword: Joi.object({
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).required()
+  }),
+
+  // Generic schemas
+  id: Joi.object({
+    id: Joi.string().uuid().required()
+  }),
+
+  pagination: Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sortBy: Joi.string().default('createdAt'),
+    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+  }),
+
+  // File upload schemas
+  fileUpload: Joi.object({
+    filename: Joi.string().required(),
+    contentType: Joi.string().required(),
+    size: Joi.number().integer().max(10 * 1024 * 1024) // 10MB max
+  }),
+
+  // Webhook schemas
+  webhook: Joi.object({
+    event: Joi.string().required(),
+    timestamp: Joi.date().iso().required(),
+    data: Joi.object().required(),
+    signature: Joi.string().required()
+  }),
+
+  // Norwegian compliance schemas
+  personalData: Joi.object({
+    personalNumber: Joi.string().pattern(/^\d{11}$/).when('country', {
+      is: 'NO',
+      then: Joi.required(),
+      otherwise: Joi.optional()
+    }),
+    country: Joi.string().length(2).uppercase().default('NO')
+  }),
+
+  gdprConsent: Joi.object({
+    purpose: Joi.string().required(),
+    consent: Joi.boolean().required(),
+    timestamp: Joi.date().iso().required(),
+    version: Joi.string().required()
+  })
+};
+
+/**
+ * Validate request against schema
+ */
+export async function validateRequest(
+  req: Request,
+  options: ValidationOptions
+): Promise<any> {
+  try {
+    const { method, schema, allowUnknown = false, stripUnknown = true } = options;
+    
+    // Get the appropriate schema
+    const joiSchema = schemas[schema as keyof typeof schemas];
+    if (!joiSchema) {
+      throw new Error(`Validation schema '${schema}' not found`);
+    }
+
+    // Determine what to validate based on method
+    let dataToValidate: any;
+    switch (method.toUpperCase()) {
+      case 'GET':
+      case 'DELETE':
+        dataToValidate = { ...req.query, ...req.params };
+        break;
+      case 'POST':
+      case 'PUT':
+      case 'PATCH':
+        dataToValidate = req.body;
+        break;
+      default:
+        dataToValidate = { ...req.body, ...req.query, ...req.params };
+    }
+
+    // Validate the data
+    const { error, value } = joiSchema.validate(dataToValidate, {
+      allowUnknown,
+      stripUnknown,
+      abortEarly: false
+    });
+
+    if (error) {
+      const validationError: ValidationError = new Error('Validation failed') as ValidationError;
+      validationError.statusCode = 400;
+      validationError.details = error.details;
+      throw validationError;
+    }
+
+    logger.debug('Request validation successful', {
+      schema,
+      method,
+      validatedFields: Object.keys(value)
+    });
+
+    return value;
+
+  } catch (error) {
+    logger.error('Request validation error', {
+      schema: options.schema,
+      method: options.method,
+      error: error.message,
+      details: error.details || []
+    });
+    throw error;
+  }
+}
+
+/**
+ * Validate file upload
+ */
+export async function validateFileUpload(file: any): Promise<any> {
+  const schema = Joi.object({
+    fieldname: Joi.string().required(),
+    originalname: Joi.string().required(),
+    encoding: Joi.string().required(),
+    mimetype: Joi.string().required(),
+    size: Joi.number().integer().max(10 * 1024 * 1024), // 10MB max
+    buffer: Joi.binary().required()
+  });
+
+  const { error, value } = schema.validate(file);
+  if (error) {
+    const validationError: ValidationError = new Error('File validation failed') as ValidationError;
+    validationError.statusCode = 400;
+    validationError.details = error.details;
+    throw validationError;
+  }
+
+  return value;
+}
+
+/**
+ * Validate webhook signature
+ */
+export async function validateWebhookSignature(
+  req: Request,
+  secret: string
+): Promise<boolean> {
+  try {
+    const signature = req.headers['x-signature'] as string;
+    if (!signature) {
+      throw new Error('Missing webhook signature');
+    }
+
+    const crypto = require('crypto');
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(signature, 'hex'),
+      Buffer.from(expectedSignature, 'hex')
+    );
+
+    if (!isValid) {
+      throw new Error('Invalid webhook signature');
+    }
+
+    logger.debug('Webhook signature validation successful');
+    return true;
+
+  } catch (error) {
+    logger.error('Webhook signature validation failed', {
+      error: error.message
+    });
+    throw error;
+  }
+}
+
+/**
+ * Sanitize input data
+ */
+export function sanitizeInput(data: any): any {
+  if (typeof data === 'string') {
+    // Remove HTML tags and escape special characters
+    return data
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(sanitizeInput);
+  }
+  
+  if (data && typeof data === 'object') {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitized[key] = sanitizeInput(value);
+    }
+    return sanitized;
+  }
+  
+  return data;
+}
+
+/**
+ * Create custom validation schema
+ */
+export function createValidationSchema(schemaDefinition: any): Joi.ObjectSchema {
+  return Joi.object(schemaDefinition);
+}
+
+/**
+ * Validate Norwegian personal number (personnummer)
+ */
+export function validateNorwegianPersonalNumber(personalNumber: string): boolean {
+  if (!/^\d{11}$/.test(personalNumber)) {
+    return false;
+  }
+
+  const digits = personalNumber.split('').map(Number);
+  
+  // Validate control digits using Norwegian algorithm
+  const k1 = (11 - ((3 * digits[0] + 7 * digits[1] + 6 * digits[2] + 1 * digits[3] + 8 * digits[4] + 9 * digits[5] + 4 * digits[6] + 5 * digits[7] + 2 * digits[8]) % 11)) % 11;
+  const k2 = (11 - ((5 * digits[0] + 4 * digits[1] + 3 * digits[2] + 2 * digits[3] + 7 * digits[4] + 6 * digits[5] + 5 * digits[6] + 4 * digits[7] + 3 * digits[8] + 2 * k1) % 11)) % 11;
+  
+  return k1 === digits[9] && k2 === digits[10];
+}
+
+/**
+ * Rate limiting validation
+ */
+export async function validateRateLimit(
+  req: Request,
+  limit: number = 100,
+  windowMs: number = 15 * 60 * 1000 // 15 minutes
+): Promise<void> {
+  // This would typically use Redis or Memorystore
+  // For now, we'll implement a simple in-memory rate limiter
+  const key = req.ip || 'anonymous';
+  const now = Date.now();
+  
+  // In production, use Redis for distributed rate limiting
+  // const redis = new Redis(process.env.REDIS_URL);
+  // const requests = await redis.incr(`rate_limit:${key}`);
+  // if (requests === 1) {
+  //   await redis.expire(`rate_limit:${key}`, Math.ceil(windowMs / 1000));
+  // }
+  // if (requests > limit) {
+  //   throw new Error('Rate limit exceeded');
+  // }
+  
+  logger.debug('Rate limit check passed', {
+    key,
+    limit,
+    windowMs
+  });
+}

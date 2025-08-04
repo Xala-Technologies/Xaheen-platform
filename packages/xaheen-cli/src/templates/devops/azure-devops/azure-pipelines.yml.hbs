@@ -1,0 +1,191 @@
+name: {{name}}
+
+trigger:
+  {{#if trigger.branches}}
+  branches:
+    include:
+      {{#each trigger.branches.include}}
+      - {{this}}
+      {{/each}}
+    {{#if trigger.branches.exclude}}
+    exclude:
+      {{#each trigger.branches.exclude}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+  {{#if trigger.paths}}
+  paths:
+    {{#if trigger.paths.include}}
+    include:
+      {{#each trigger.paths.include}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    {{#if trigger.paths.exclude}}
+    exclude:
+      {{#each trigger.paths.exclude}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+
+{{#if pr}}
+pr:
+  {{#if pr.branches}}
+  branches:
+    include:
+      {{#each pr.branches.include}}
+      - {{this}}
+      {{/each}}
+  {{/if}}
+  {{#if pr.paths}}
+  paths:
+    {{#if pr.paths.include}}
+    include:
+      {{#each pr.paths.include}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+  {{#if pr.drafts}}
+  drafts: {{pr.drafts}}
+  {{/if}}
+{{/if}}
+
+{{#if schedules}}
+schedules:
+{{#each schedules}}
+- cron: "{{cron}}"
+  displayName: {{displayName}}
+  branches:
+    include:
+      {{#each branches.include}}
+      - {{this}}
+      {{/each}}
+  always: {{always}}
+{{/each}}
+{{/if}}
+
+{{#if variables}}
+variables:
+{{#each variables}}
+{{#if name}}
+- name: {{name}}
+  value: {{value}}
+{{/if}}
+{{#if group}}
+- group: {{group}}
+{{/if}}
+{{#if template}}
+- template: {{template}}
+{{/if}}
+{{/each}}
+{{/if}}
+
+{{#if pool}}
+pool:
+  {{#if pool.name}}
+  name: {{pool.name}}
+  {{/if}}
+  {{#if pool.vmImage}}
+  vmImage: {{pool.vmImage}}
+  {{/if}}
+{{/if}}
+
+stages:
+{{#each stages}}
+- stage: {{stage}}
+  displayName: {{displayName}}
+  {{#if dependsOn}}
+  dependsOn:
+    {{#each dependsOn}}
+    - {{this}}
+    {{/each}}
+  {{/if}}
+  {{#if condition}}
+  condition: {{condition}}
+  {{/if}}
+  jobs:
+  {{#each jobs}}
+  - job: {{job}}
+    displayName: {{displayName}}
+    {{#if pool}}
+    pool:
+      {{#if pool.name}}
+      name: {{pool.name}}
+      {{/if}}
+      {{#if pool.vmImage}}
+      vmImage: {{pool.vmImage}}
+      {{/if}}
+    {{/if}}
+    {{#if dependsOn}}
+    dependsOn:
+      {{#each dependsOn}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    {{#if condition}}
+    condition: {{condition}}
+    {{/if}}
+    {{#if strategy}}
+    strategy:
+      {{#if strategy.matrix}}
+      matrix:
+        {{#each strategy.matrix}}
+        {{@key}}:
+          {{#each this}}
+          {{@key}}: {{this}}
+          {{/each}}
+        {{/each}}
+      {{/if}}
+    {{/if}}
+    steps:
+    {{#each steps}}
+    {{#if task}}
+    - task: {{task}}
+      displayName: {{displayName}}
+      {{#if inputs}}
+      inputs:
+        {{#each inputs}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+      {{#if env}}
+      env:
+        {{#each env}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+      {{#if condition}}
+      condition: {{condition}}
+      {{/if}}
+      {{#if continueOnError}}
+      continueOnError: {{continueOnError}}
+      {{/if}}
+      {{#if timeoutInMinutes}}
+      timeoutInMinutes: {{timeoutInMinutes}}
+      {{/if}}
+    {{/if}}
+    {{#if script}}
+    - script: {{script}}
+      displayName: {{displayName}}
+      {{#if env}}
+      env:
+        {{#each env}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+      {{#if condition}}
+      condition: {{condition}}
+      {{/if}}
+      {{#if continueOnError}}
+      continueOnError: {{continueOnError}}
+      {{/if}}
+      {{#if timeoutInMinutes}}
+      timeoutInMinutes: {{timeoutInMinutes}}
+      {{/if}}
+    {{/if}}
+    {{/each}}
+  {{/each}}
+{{/each}}

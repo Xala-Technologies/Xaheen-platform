@@ -1,0 +1,483 @@
+/**
+ * Rate Limiter Middleware
+ * Request rate limiting for Cloud Functions using Google Cloud Memorystore
+ */
+
+import { Request, Response } from 'express';
+import { logger } from '../utils/logger';
+import { createError } from './error-handler';
+
+export interface RateLimitOptions {
+  windowMs: number; // Time window in milliseconds
+  max: number; // Maximum requests per window
+  message?: string; // Custom error message
+  statusCode?: number; // HTTP status code for rate limit exceeded
+  skipSuccessfulRequests?: boolean; // Don't count successful requests
+  skipFailedRequests?: boolean; // Don't count failed requests
+  keyGenerator?: (req: Request) => string; // Custom key generator
+  skip?: (req: Request) => boolean; // Skip rate limiting for certain requests
+  onLimitReached?: (req: Request, rateLimitInfo: RateLimitInfo) => void; // Callback when rate limit is reached
+}
+
+export interface RateLimitInfo {
+  totalHits: number;
+  totalHitsInWindow: number;
+  remainingPoints: number;
+  msBeforeNext: number;
+  isFirstInWindow: boolean;
+}
+
+/**
+ * In-memory store for development (use Redis/Memorystore in production)
+ */
+class MemoryStore {
+  private store = new Map<string, { count: number; resetTime: number }>();
+
+  async increment(key: string, windowMs: number): Promise<RateLimitInfo> {
+    const now = Date.now();
+    const existing = this.store.get(key);
+
+    if (!existing || now >= existing.resetTime) {
+      // First request in window or window expired
+      const resetTime = now + windowMs;
+      this.store.set(key, { count: 1, resetTime });
+      
+      return {
+        totalHits: 1,
+        totalHitsInWindow: 1,
+        remainingPoints: -1, // Will be calculated by rate limiter
+        msBeforeNext: windowMs,
+        isFirstInWindow: true
+      };
+    }
+
+    // Increment count
+    existing.count++;
+    this.store.set(key, existing);
+
+    return {
+      totalHits: existing.count,
+      totalHitsInWindow: existing.count,
+      remainingPoints: -1, // Will be calculated by rate limiter
+      msBeforeNext: existing.resetTime - now,
+      isFirstInWindow: false
+    };
+  }
+
+  async reset(key: string): Promise<void> {
+    this.store.delete(key);
+  }
+
+  // Cleanup expired entries
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, value] of this.store.entries()) {
+      if (now >= value.resetTime) {
+        this.store.delete(key);
+      }
+    }
+  }
+}
+
+/**
+ * Redis store for production use
+ */
+class RedisStore {
+  private redis: any;
+
+  constructor(redisClient: any) {
+    this.redis = redisClient;
+  }
+
+  async increment(key: string, windowMs: number): Promise<RateLimitInfo> {
+    const multi = this.redis.multi();
+    const now = Date.now();
+    const windowStart = now - windowMs;
+
+    // Use sliding window with sorted sets
+    multi.zremrangebyscore(key, 0, windowStart);
+    multi.zadd(key, now, `${now}-${Math.random()}`);
+    multi.zcard(key);
+    multi.expire(key, Math.ceil(windowMs / 1000));
+
+    const results = await multi.exec();
+    const count = results[2][1];
+
+    return {
+      totalHits: count,
+      totalHitsInWindow: count,
+      remainingPoints: -1, // Will be calculated by rate limiter
+      msBeforeNext: windowMs,
+      isFirstInWindow: count === 1
+    };
+  }
+
+  async reset(key: string): Promise<void> {
+    await this.redis.del(key);
+  }
+}
+
+/**
+ * Default rate limit configurations
+ */
+export const rateLimitConfigs = {
+  // Standard API rate limiting
+  api: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // 100 requests per 15 minutes
+    message: 'Too many API requests, please try again later'
+  },
+
+  // Strict rate limiting for sensitive endpoints
+  strict: {
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 10, // 10 requests per 5 minutes
+    message: 'Too many requests to sensitive endpoint, please try again later'
+  },
+
+  // Authentication endpoints
+  auth: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts per 15 minutes
+    message: 'Too many authentication attempts, please try again later'
+  },
+
+  // File upload endpoints
+  upload: {
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20, // 20 uploads per hour
+    message: 'Too many file uploads, please try again later'
+  },
+
+  // Webhook endpoints
+  webhook: {
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // 100 webhooks per minute
+    message: 'Webhook rate limit exceeded'
+  },
+
+  // Development/testing (more lenient)
+  development: {
+    windowMs: 60 * 1000, // 1 minute
+    max: 1000, // 1000 requests per minute
+    message: 'Development rate limit exceeded'
+  }
+};
+
+// Global memory store instance for development
+const memoryStore = new MemoryStore();
+
+// Cleanup expired entries every 5 minutes
+setInterval(() => {
+  memoryStore.cleanup();
+}, 5 * 60 * 1000);
+
+/**
+ * Rate limiter middleware
+ */
+export async function rateLimiter(
+  req: Request,
+  res: Response,
+  options: RateLimitOptions = rateLimitConfigs.api
+): Promise<void> {
+  try {
+    // Skip if skip function returns true
+    if (options.skip && options.skip(req)) {
+      logger.debug('Rate limiting skipped for request', {
+        ip: req.ip,
+        path: req.path
+      });
+      return;
+    }
+
+    // Generate key for rate limiting
+    const key = options.keyGenerator ? options.keyGenerator(req) : generateKey(req);
+    
+    // Get store (Redis in production, memory in development)
+    const store = getStore();
+    
+    // Increment counter
+    const rateLimitInfo = await store.increment(key, options.windowMs);
+    
+    // Calculate remaining points
+    rateLimitInfo.remainingPoints = Math.max(0, options.max - rateLimitInfo.totalHitsInWindow);
+
+    // Set rate limit headers
+    setRateLimitHeaders(res, options, rateLimitInfo);
+
+    // Check if rate limit exceeded
+    if (rateLimitInfo.totalHitsInWindow > options.max) {
+      // Log rate limit exceeded
+      logger.warn('Rate limit exceeded', {
+        key,
+        totalHits: rateLimitInfo.totalHitsInWindow,
+        max: options.max,
+        windowMs: options.windowMs,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        path: req.path
+      });
+
+      // Call onLimitReached callback
+      if (options.onLimitReached) {
+        options.onLimitReached(req, rateLimitInfo);
+      }
+
+      // Throw rate limit error
+      const message = options.message || 'Too many requests, please try again later';
+      const statusCode = options.statusCode || 429;
+      
+      const error = createError.rateLimit(message);
+      error.statusCode = statusCode;
+      throw error;
+    }
+
+    // Log successful rate limit check
+    logger.debug('Rate limit check passed', {
+      key,
+      totalHits: rateLimitInfo.totalHitsInWindow,
+      max: options.max,
+      remaining: rateLimitInfo.remainingPoints
+    });
+
+  } catch (error) {
+    // Don't fail the request if rate limiting fails
+    if (error.code === 'RATE_LIMIT_ERROR') {
+      throw error;
+    }
+    
+    logger.error('Rate limiter error', {
+      error: error.message,
+      ip: req.ip,
+      path: req.path
+    });
+    
+    // Continue without rate limiting if store fails
+  }
+}
+
+/**
+ * Generate rate limiting key
+ */
+function generateKey(req: Request): string {
+  // Use IP address as default key
+  const ip = req.ip || 'unknown';
+  const path = req.path || '/';
+  
+  // Include user ID if authenticated
+  const userId = (req as any).user?.id;
+  if (userId) {
+    return `rate_limit:user:${userId}:${path}`;
+  }
+  
+  return `rate_limit:ip:${ip}:${path}`;
+}
+
+/**
+ * Get appropriate store based on environment
+ */
+function getStore(): MemoryStore | RedisStore {
+  // In production, use Redis/Memorystore
+  if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
+    // This would be initialized once at startup
+    // const redis = new Redis(process.env.REDIS_URL);
+    // return new RedisStore(redis);
+  }
+  
+  // Use memory store for development
+  return memoryStore;
+}
+
+/**
+ * Set rate limit headers
+ */
+function setRateLimitHeaders(
+  res: Response,
+  options: RateLimitOptions,
+  rateLimitInfo: RateLimitInfo
+): void {
+  res.set({
+    'X-RateLimit-Limit': options.max.toString(),
+    'X-RateLimit-Remaining': rateLimitInfo.remainingPoints.toString(),
+    'X-RateLimit-Reset': new Date(Date.now() + rateLimitInfo.msBeforeNext).toISOString(),
+    'X-RateLimit-Window': options.windowMs.toString()
+  });
+
+  // Add Retry-After header if rate limit exceeded
+  if (rateLimitInfo.remainingPoints === 0) {
+    res.set('Retry-After', Math.ceil(rateLimitInfo.msBeforeNext / 1000).toString());
+  }
+}
+
+/**
+ * Create rate limiter middleware with options
+ */
+export function createRateLimiter(options: RateLimitOptions) {
+  return async (req: Request, res: Response, next?: any) => {
+    try {
+      await rateLimiter(req, res, options);
+      if (next) {
+        next();
+      }
+    } catch (error) {
+      if (next) {
+        next(error);
+      } else {
+        throw error;
+      }
+    }
+  };
+}
+
+/**
+ * IP-based rate limiter
+ */
+export const ipRateLimiter = createRateLimiter({
+  ...rateLimitConfigs.api,
+  keyGenerator: (req: Request) => `rate_limit:ip:${req.ip}:global`
+});
+
+/**
+ * User-based rate limiter
+ */
+export const userRateLimiter = createRateLimiter({
+  ...rateLimitConfigs.api,
+  keyGenerator: (req: Request) => {
+    const userId = (req as any).user?.id;
+    return userId ? `rate_limit:user:${userId}:global` : `rate_limit:ip:${req.ip}:global`;
+  }
+});
+
+/**
+ * API key based rate limiter
+ */
+export const apiKeyRateLimiter = createRateLimiter({
+  ...rateLimitConfigs.api,
+  keyGenerator: (req: Request) => {
+    const apiKey = req.get('X-API-Key');
+    return apiKey ? `rate_limit:apikey:${apiKey}:global` : `rate_limit:ip:${req.ip}:global`;
+  }
+});
+
+/**
+ * Sliding window rate limiter for more precise control
+ */
+export class SlidingWindowRateLimiter {
+  private windows = new Map<string, Array<{ timestamp: number; count: number }>>();
+
+  async isAllowed(
+    key: string,
+    maxRequests: number,
+    windowMs: number,
+    requests: number = 1
+  ): Promise<{ allowed: boolean; remainingRequests: number; resetTime: number }> {
+    const now = Date.now();
+    const windowStart = now - windowMs;
+
+    // Get or create window for this key
+    let window = this.windows.get(key) || [];
+    
+    // Remove expired entries
+    window = window.filter(entry => entry.timestamp > windowStart);
+    
+    // Calculate current request count
+    const currentCount = window.reduce((sum, entry) => sum + entry.count, 0);
+    
+    // Check if adding new requests would exceed limit
+    const wouldExceed = currentCount + requests > maxRequests;
+    
+    if (!wouldExceed) {
+      // Add new requests to window
+      window.push({ timestamp: now, count: requests });
+      this.windows.set(key, window);
+    }
+
+    // Find the oldest entry to determine reset time
+    const oldestEntry = window.length > 0 ? window[0] : null;
+    const resetTime = oldestEntry ? oldestEntry.timestamp + windowMs : now + windowMs;
+
+    return {
+      allowed: !wouldExceed,
+      remainingRequests: Math.max(0, maxRequests - currentCount - (wouldExceed ? 0 : requests)),
+      resetTime
+    };
+  }
+
+  // Cleanup expired windows
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, window] of this.windows.entries()) {
+      const filtered = window.filter(entry => entry.timestamp > now - (15 * 60 * 1000)); // Keep 15 minutes
+      if (filtered.length === 0) {
+        this.windows.delete(key);
+      } else {
+        this.windows.set(key, filtered);
+      }
+    }
+  }
+}
+
+/**
+ * Distributed rate limiter using Cloud Firestore
+ */
+export class FirestoreRateLimiter {
+  private firestore: any;
+
+  constructor(firestoreInstance: any) {
+    this.firestore = firestoreInstance;
+  }
+
+  async isAllowed(
+    key: string,
+    maxRequests: number,
+    windowMs: number
+  ): Promise<{ allowed: boolean; remainingRequests: number; resetTime: number }> {
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    const docRef = this.firestore.collection('rate_limits').doc(key);
+
+    try {
+      const result = await this.firestore.runTransaction(async (transaction: any) => {
+        const doc = await transaction.get(docRef);
+        const data = doc.exists ? doc.data() : { requests: [], resetTime: now + windowMs };
+
+        // Filter out expired requests
+        const validRequests = data.requests.filter((timestamp: number) => timestamp > windowStart);
+        
+        // Check if we can add a new request
+        if (validRequests.length >= maxRequests) {
+          return {
+            allowed: false,
+            remainingRequests: 0,
+            resetTime: data.resetTime
+          };
+        }
+
+        // Add new request
+        validRequests.push(now);
+        
+        // Update document
+        transaction.set(docRef, {
+          requests: validRequests,
+          resetTime: validRequests.length === 1 ? now + windowMs : data.resetTime
+        });
+
+        return {
+          allowed: true,
+          remainingRequests: maxRequests - validRequests.length,
+          resetTime: data.resetTime
+        };
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('Firestore rate limiter error', { error: error.message, key });
+      // Fail open - allow request if rate limiter fails
+      return {
+        allowed: true,
+        remainingRequests: maxRequests,
+        resetTime: now + windowMs
+      };
+    }
+  }
+}

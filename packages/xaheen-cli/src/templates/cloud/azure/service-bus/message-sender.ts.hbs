@@ -1,0 +1,783 @@
+/**
+ * Azure Service Bus Message Sender
+ * 
+ * Specialized message sender with advanced features like message scheduling,
+ * batch processing, message templating, and comprehensive error handling.
+ */
+
+import { ServiceBusMessage, ServiceBusSender } from '@azure/service-bus';
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { AzureServiceBusClient } from './service-bus.client';
+import { 
+  AzureServiceResponse,
+  AzureServiceError,
+  AzureError
+} from '../types/azure.types';
+
+export interface MessageTemplate {
+  readonly name: string;
+  readonly subject: string;
+  readonly contentType: string;
+  readonly timeToLiveInMs?: number;
+  readonly bodyTemplate: string;
+  readonly requiredProperties: readonly string[];
+  readonly defaultProperties?: Record<string, unknown>;
+}
+
+export interface ScheduledMessage {
+  readonly messageId: string;
+  readonly queueOrTopicName: string;
+  readonly body: unknown;
+  readonly scheduledEnqueueTime: Date;
+  readonly correlationId?: string;
+  readonly userProperties?: Record<string, unknown>;
+}
+
+export interface MessageSendResult {
+  readonly messageId: string;
+  readonly correlationId: string;
+  readonly queueOrTopicName: string;
+  readonly sentAt: Date;
+  readonly sequenceNumber?: bigint;
+  readonly scheduledEnqueueTime?: Date;
+}
+
+export interface BatchSendResult {
+  readonly batchId: string;
+  readonly queueOrTopicName: string;
+  readonly messagesSent: number;
+  readonly messagesSkipped: number;
+  readonly sentAt: Date;
+  readonly results: readonly MessageSendResult[];
+  readonly errors: readonly { messageIndex: number; error: string }[];
+}
+
+export class MessageSender {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly serviceBusClient: AzureServiceBusClient;
+  private readonly messageTemplates: Map<string, MessageTemplate> = new Map();
+
+  constructor(serviceBusClient: AzureServiceBusClient) {
+    this.serviceBusClient = serviceBusClient;
+    this.logger = new Logger('MessageSender');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+
+    // Register default message templates
+    this.registerDefaultTemplates();
+  }
+
+  // Template management
+  registerTemplate(template: MessageTemplate): void {
+    this.messageTemplates.set(template.name, template);
+    this.logger.info('Message template registered', { 
+      templateName: template.name,
+      subject: template.subject
+    });
+  }
+
+  getTemplate(name: string): MessageTemplate | undefined {
+    return this.messageTemplates.get(name);
+  }
+
+  listTemplates(): readonly MessageTemplate[] {
+    return Array.from(this.messageTemplates.values());
+  }
+
+  // Message sending with templates
+  async sendMessageFromTemplate(
+    queueOrTopicName: string,
+    templateName: string,
+    templateData: Record<string, unknown>,
+    options?: {
+      readonly correlationId?: string;
+      readonly sessionId?: string;
+      readonly partitionKey?: string;
+      readonly scheduledEnqueueTime?: Date;
+      readonly additionalProperties?: Record<string, unknown>;
+    }
+  ): Promise<AzureServiceResponse<MessageSendResult>> {
+    const startTime = Date.now();
+    const correlationId = options?.correlationId || this.generateCorrelationId();
+
+    try {
+      this.logger.info('Sending message from template', {
+        queueOrTopicName,
+        templateName,
+        correlationId
+      });
+
+      const template = this.messageTemplates.get(templateName);
+      if (!template) {
+        throw new AzureError(
+          `Message template '${templateName}' not found`,
+          'TEMPLATE_NOT_FOUND',
+          404
+        );
+      }
+
+      // Validate required properties
+      const missingProperties = template.requiredProperties.filter(
+        prop => !(prop in templateData)
+      );
+
+      if (missingProperties.length > 0) {
+        throw new AzureError(
+          `Missing required template properties: ${missingProperties.join(', ')}`,
+          'MISSING_TEMPLATE_PROPERTIES',
+          400,
+          { missingProperties }
+        );
+      }
+
+      // Merge template data with defaults
+      const mergedData = {
+        ...template.defaultProperties,
+        ...templateData
+      };
+
+      // Render template body
+      const messageBody = this.renderTemplate(template.bodyTemplate, mergedData);
+
+      // Send message
+      const sendResult = await this.serviceBusClient.sendMessage(
+        queueOrTopicName,
+        messageBody,
+        {
+          correlationId,
+          sessionId: options?.sessionId,
+          partitionKey: options?.partitionKey,
+          timeToLiveInMs: template.timeToLiveInMs,
+          scheduledEnqueueTime: options?.scheduledEnqueueTime,
+          subject: template.subject,
+          contentType: template.contentType,
+          userProperties: {
+            templateName,
+            templateVersion: '1.0',
+            ...options?.additionalProperties
+          }
+        }
+      );
+
+      if (!sendResult.success) {
+        throw new AzureServiceError(
+          sendResult.error?.message || 'Failed to send message',
+          sendResult.error?.code
+        );
+      }
+
+      const result: MessageSendResult = {
+        messageId: sendResult.data!.messageId,
+        correlationId,
+        queueOrTopicName,
+        sentAt: new Date(),
+        scheduledEnqueueTime: options?.scheduledEnqueueTime
+      };
+
+      this.logger.info('Message sent successfully from template', {
+        templateName,
+        messageId: result.messageId,
+        correlationId,
+        duration: Date.now() - startTime
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordMessageTemplate({
+        templateName,
+        queueOrTopicName,
+        messageId: result.messageId,
+        correlationId,
+        success: true,
+        processingTime: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to send message from template', {
+        templateName,
+        queueOrTopicName,
+        correlationId,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordMessageTemplate({
+        templateName,
+        queueOrTopicName,
+        correlationId,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: error instanceof AzureError ? error.code || 'TEMPLATE_SEND_FAILED' : 'TEMPLATE_SEND_FAILED',
+          message: `Failed to send message from template '${templateName}': ${errorMessage}`,
+          details: { templateName, correlationId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration
+        }
+      };
+    }
+  }
+
+  // Scheduled message operations
+  async scheduleMessage(
+    queueOrTopicName: string,
+    messageBody: unknown,
+    scheduledEnqueueTime: Date,
+    options?: {
+      readonly correlationId?: string;
+      readonly sessionId?: string;
+      readonly partitionKey?: string;
+      readonly subject?: string;
+      readonly contentType?: string;
+      readonly timeToLiveInMs?: number;
+      readonly userProperties?: Record<string, unknown>;
+    }
+  ): Promise<AzureServiceResponse<{ messageId: string; sequenceNumber: bigint }>> {
+    const startTime = Date.now();
+    const correlationId = options?.correlationId || this.generateCorrelationId();
+
+    try {
+      this.logger.info('Scheduling message', {
+        queueOrTopicName,
+        scheduledEnqueueTime: scheduledEnqueueTime.toISOString(),
+        correlationId
+      });
+
+      // Validate schedule time
+      if (scheduledEnqueueTime <= new Date()) {
+        throw new AzureError(
+          'Scheduled enqueue time must be in the future',
+          'INVALID_SCHEDULE_TIME',
+          400
+        );
+      }
+
+      const sendResult = await this.serviceBusClient.sendMessage(
+        queueOrTopicName,
+        messageBody,
+        {
+          correlationId,
+          sessionId: options?.sessionId,
+          partitionKey: options?.partitionKey,
+          scheduledEnqueueTime,
+          subject: options?.subject,
+          contentType: options?.contentType || 'application/json',
+          timeToLiveInMs: options?.timeToLiveInMs,
+          userProperties: {
+            scheduled: true,
+            scheduledAt: new Date().toISOString(),
+            ...options?.userProperties
+          }
+        }
+      );
+
+      if (!sendResult.success) {
+        throw new AzureServiceError(
+          sendResult.error?.message || 'Failed to schedule message',
+          sendResult.error?.code
+        );
+      }
+
+      this.logger.info('Message scheduled successfully', {
+        messageId: sendResult.data!.messageId,
+        correlationId,
+        scheduledEnqueueTime: scheduledEnqueueTime.toISOString(),
+        duration: Date.now() - startTime
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordScheduledMessage({
+        queueOrTopicName,
+        messageId: sendResult.data!.messageId,
+        correlationId,
+        scheduledEnqueueTime,
+        success: true,
+        processingTime: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: {
+          messageId: sendResult.data!.messageId,
+          sequenceNumber: BigInt(0) // This would come from the actual Service Bus response
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to schedule message', {
+        queueOrTopicName,
+        correlationId,
+        scheduledEnqueueTime: scheduledEnqueueTime.toISOString(),
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordScheduledMessage({
+        queueOrTopicName,
+        correlationId,
+        scheduledEnqueueTime,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: error instanceof AzureError ? error.code || 'MESSAGE_SCHEDULE_FAILED' : 'MESSAGE_SCHEDULE_FAILED',
+          message: `Failed to schedule message: ${errorMessage}`,
+          details: { correlationId, scheduledEnqueueTime: scheduledEnqueueTime.toISOString() }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration
+        }
+      };
+    }
+  }
+
+  // Batch message operations with error handling
+  async sendBatchWithErrorHandling(
+    queueOrTopicName: string,
+    messages: Array<{
+      body: unknown;
+      correlationId?: string;
+      sessionId?: string;
+      partitionKey?: string;
+      subject?: string;
+      userProperties?: Record<string, unknown>;
+    }>,
+    options?: {
+      readonly maxBatchSize?: number;
+      readonly continueOnError?: boolean;
+      readonly validateMessages?: boolean;
+    }
+  ): Promise<AzureServiceResponse<BatchSendResult>> {
+    const startTime = Date.now();
+    const batchId = this.generateRequestId();
+    const maxBatchSize = options?.maxBatchSize || 100;
+    const continueOnError = options?.continueOnError ?? true;
+    const validateMessages = options?.validateMessages ?? true;
+
+    try {
+      this.logger.info('Sending batch with error handling', {
+        queueOrTopicName,
+        messageCount: messages.length,
+        batchId,
+        maxBatchSize,
+        continueOnError
+      });
+
+      const results: MessageSendResult[] = [];
+      const errors: Array<{ messageIndex: number; error: string }> = [];
+      let messagesSkipped = 0;
+
+      // Validate messages if requested
+      if (validateMessages) {
+        for (let i = 0; i < messages.length; i++) {
+          const validation = this.validateMessage(messages[i]);
+          if (!validation.isValid) {
+            errors.push({
+              messageIndex: i,
+              error: `Validation failed: ${validation.errors.join(', ')}`
+            });
+            
+            if (!continueOnError) {
+              break;
+            }
+            messagesSkipped++;
+          }
+        }
+      }
+
+      // Process messages in batches
+      for (let i = 0; i < messages.length; i += maxBatchSize) {
+        if (!continueOnError && errors.length > 0) {
+          break;
+        }
+
+        const batch = messages.slice(i, i + maxBatchSize);
+        const validBatch = batch.filter((_, index) => {
+          const globalIndex = i + index;
+          return !errors.some(e => e.messageIndex === globalIndex);
+        });
+
+        if (validBatch.length === 0) {
+          continue;
+        }
+
+        try {
+          const batchMessages = validBatch.map(msg => ({
+            body: msg.body,
+            options: {
+              correlationId: msg.correlationId || this.generateCorrelationId(),
+              sessionId: msg.sessionId,
+              partitionKey: msg.partitionKey,
+              subject: msg.subject,
+              contentType: 'application/json',
+              userProperties: {
+                batchId,
+                batchIndex: i,
+                ...msg.userProperties
+              }
+            }
+          }));
+
+          const batchResult = await this.serviceBusClient.sendBatchMessages(
+            queueOrTopicName,
+            batchMessages
+          );
+
+          if (batchResult.success) {
+            // Add successful results
+            for (let j = 0; j < validBatch.length; j++) {
+              results.push({
+                messageId: this.generateMessageId(),
+                correlationId: batchMessages[j].options.correlationId!,
+                queueOrTopicName,
+                sentAt: new Date()
+              });
+            }
+          } else {
+            // Handle batch failure
+            for (let j = 0; j < validBatch.length; j++) {
+              const globalIndex = i + j;
+              errors.push({
+                messageIndex: globalIndex,
+                error: batchResult.error?.message || 'Batch send failed'
+              });
+            }
+
+            if (!continueOnError) {
+              break;
+            }
+          }
+        } catch (batchError) {
+          // Handle individual batch error
+          for (let j = 0; j < validBatch.length; j++) {
+            const globalIndex = i + j;
+            errors.push({
+              messageIndex: globalIndex,
+              error: batchError instanceof Error ? batchError.message : 'Unknown batch error'
+            });
+          }
+
+          if (!continueOnError) {
+            break;
+          }
+        }
+      }
+
+      const batchResult: BatchSendResult = {
+        batchId,
+        queueOrTopicName,
+        messagesSent: results.length,
+        messagesSkipped,
+        sentAt: new Date(),
+        results,
+        errors
+      };
+
+      const duration = Date.now() - startTime;
+      const isSuccess = errors.length === 0 || (continueOnError && results.length > 0);
+
+      this.logger.info('Batch send completed', {
+        batchId,
+        messagesSent: results.length,
+        messagesSkipped,
+        errorsCount: errors.length,
+        success: isSuccess,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordBatchSend({
+        batchId,
+        queueOrTopicName,
+        messagesSent: results.length,
+        messagesSkipped,
+        errorsCount: errors.length,
+        success: isSuccess,
+        processingTime: duration
+      });
+      {{/if}}
+
+      return {
+        success: isSuccess,
+        data: batchResult,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Batch send failed', {
+        batchId,
+        queueOrTopicName,
+        messageCount: messages.length,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordBatchSend({
+        batchId,
+        queueOrTopicName,
+        messagesSent: 0,
+        messagesSkipped: messages.length,
+        errorsCount: 1,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'BATCH_SEND_FAILED',
+          message: `Batch send failed: ${errorMessage}`,
+          details: { batchId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    }
+  }
+
+  // Priority message sending
+  async sendPriorityMessage(
+    queueOrTopicName: string,
+    messageBody: unknown,
+    priority: 'low' | 'normal' | 'high' | 'critical',
+    options?: {
+      readonly correlationId?: string;
+      readonly sessionId?: string;
+      readonly subject?: string;
+      readonly userProperties?: Record<string, unknown>;
+    }
+  ): Promise<AzureServiceResponse<MessageSendResult>> {
+    const priorityConfig = {
+      low: { timeToLiveInMs: 7 * 24 * 60 * 60 * 1000, priority: 0 }, // 7 days
+      normal: { timeToLiveInMs: 3 * 24 * 60 * 60 * 1000, priority: 5 }, // 3 days
+      high: { timeToLiveInMs: 24 * 60 * 60 * 1000, priority: 8 }, // 1 day
+      critical: { timeToLiveInMs: 60 * 60 * 1000, priority: 10 } // 1 hour
+    };
+
+    const config = priorityConfig[priority];
+
+    return await this.serviceBusClient.sendMessage(
+      queueOrTopicName,
+      messageBody,
+      {
+        correlationId: options?.correlationId,
+        sessionId: options?.sessionId,
+        subject: options?.subject || `Priority-${priority}`,
+        contentType: 'application/json',
+        timeToLiveInMs: config.timeToLiveInMs,
+        userProperties: {
+          priority,
+          priorityLevel: config.priority,
+          sentAt: new Date().toISOString(),
+          ...options?.userProperties
+        }
+      }
+    ).then(result => {
+      if (result.success) {
+        return {
+          ...result,
+          data: {
+            messageId: result.data!.messageId,
+            correlationId: options?.correlationId || 'unknown',
+            queueOrTopicName,
+            sentAt: new Date()
+          } as MessageSendResult
+        };
+      }
+      return result as AzureServiceResponse<MessageSendResult>;
+    });
+  }
+
+  // Helper methods
+  private renderTemplate(template: string, data: Record<string, unknown>): string {
+    return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+      return data[key]?.toString() || match;
+    });
+  }
+
+  private validateMessage(message: {
+    body: unknown;
+    correlationId?: string;
+    sessionId?: string;
+    partitionKey?: string;
+    subject?: string;
+    userProperties?: Record<string, unknown>;
+  }): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (message.body === undefined || message.body === null) {
+      errors.push('Message body is required');
+    }
+
+    if (message.correlationId && typeof message.correlationId !== 'string') {
+      errors.push('correlationId must be a string');
+    }
+
+    if (message.sessionId && typeof message.sessionId !== 'string') {
+      errors.push('sessionId must be a string');
+    }
+
+    if (message.partitionKey && typeof message.partitionKey !== 'string') {
+      errors.push('partitionKey must be a string');
+    }
+
+    if (message.subject && typeof message.subject !== 'string') {
+      errors.push('subject must be a string');
+    }
+
+    // Check message size
+    try {
+      const messageSize = JSON.stringify(message).length;
+      if (messageSize > 256 * 1024) { // 256KB limit
+        errors.push(`Message size ${messageSize} exceeds 256KB limit`);
+      }
+    } catch {
+      errors.push('Message is not JSON serializable');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  private registerDefaultTemplates(): void {
+    // User notification template
+    this.registerTemplate({
+      name: 'user-notification',
+      subject: 'UserNotification',
+      contentType: 'application/json',
+      timeToLiveInMs: 24 * 60 * 60 * 1000, // 24 hours
+      bodyTemplate: JSON.stringify({
+        type: 'notification',
+        userId: '{{userId}}',
+        title: '{{title}}',
+        message: '{{message}}',
+        notificationType: '{{notificationType}}',
+        timestamp: '{{timestamp}}'
+      }),
+      requiredProperties: ['userId', 'title', 'message', 'notificationType'],
+      defaultProperties: {
+        timestamp: new Date().toISOString(),
+        priority: 'normal'
+      }
+    });
+
+    // Order processing template
+    this.registerTemplate({
+      name: 'order-processing',
+      subject: 'OrderProcessing',
+      contentType: 'application/json',
+      timeToLiveInMs: 60 * 60 * 1000, // 1 hour
+      bodyTemplate: JSON.stringify({
+        type: 'order',
+        orderId: '{{orderId}}',
+        userId: '{{userId}}',
+        action: '{{action}}',
+        totalAmount: '{{totalAmount}}',
+        currency: '{{currency}}',
+        items: '{{items}}',
+        timestamp: '{{timestamp}}'
+      }),
+      requiredProperties: ['orderId', 'userId', 'action'],
+      defaultProperties: {
+        timestamp: new Date().toISOString(),
+        currency: 'USD'
+      }
+    });
+
+    // System alert template
+    this.registerTemplate({
+      name: 'system-alert',
+      subject: 'SystemAlert',
+      contentType: 'application/json',
+      timeToLiveInMs: 30 * 60 * 1000, // 30 minutes
+      bodyTemplate: JSON.stringify({
+        type: 'alert',
+        severity: '{{severity}}',
+        component: '{{component}}',
+        message: '{{message}}',
+        details: '{{details}}',
+        timestamp: '{{timestamp}}'
+      }),
+      requiredProperties: ['severity', 'component', 'message'],
+      defaultProperties: {
+        timestamp: new Date().toISOString(),
+        severity: 'warning'
+      }
+    });
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateCorrelationId(): string {
+    return `corr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateMessageId(): string {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}

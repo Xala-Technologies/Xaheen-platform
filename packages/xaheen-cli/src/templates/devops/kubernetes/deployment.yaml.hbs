@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{manifest.metadata.name}}
+  namespace: {{manifest.metadata.namespace}}
+  labels:
+    {{#each manifest.metadata.labels}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{#if manifest.metadata.annotations}}
+  annotations:
+    {{#each manifest.metadata.annotations}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{/if}}
+spec:
+  replicas: {{manifest.spec.replicas}}
+  selector:
+    matchLabels:
+      {{#each manifest.spec.selector.matchLabels}}
+      {{@key}}: {{this}}
+      {{/each}}
+  template:
+    metadata:
+      labels:
+        {{#each manifest.spec.template.metadata.labels}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{#if manifest.spec.template.metadata.annotations}}
+      annotations:
+        {{#each manifest.spec.template.metadata.annotations}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+    spec:
+      {{#if manifest.spec.template.spec.serviceAccountName}}
+      serviceAccountName: {{manifest.spec.template.spec.serviceAccountName}}
+      {{/if}}
+      {{#if manifest.spec.template.spec.securityContext}}
+      securityContext:
+        {{#if manifest.spec.template.spec.securityContext.runAsNonRoot}}
+        runAsNonRoot: {{manifest.spec.template.spec.securityContext.runAsNonRoot}}
+        {{/if}}
+        {{#if manifest.spec.template.spec.securityContext.runAsUser}}
+        runAsUser: {{manifest.spec.template.spec.securityContext.runAsUser}}
+        {{/if}}
+        {{#if manifest.spec.template.spec.securityContext.fsGroup}}
+        fsGroup: {{manifest.spec.template.spec.securityContext.fsGroup}}
+        {{/if}}
+      {{/if}}
+      containers:
+      {{#each manifest.spec.template.spec.containers}}
+      - name: {{name}}
+        image: {{image}}
+        imagePullPolicy: {{imagePullPolicy}}
+        {{#if ports}}
+        ports:
+        {{#each ports}}
+        - name: {{name}}
+          containerPort: {{containerPort}}
+          protocol: {{protocol}}
+        {{/each}}
+        {{/if}}
+        {{#if env}}
+        env:
+        {{#each env}}
+        - name: {{name}}
+          {{#if value}}
+          value: "{{value}}"
+          {{/if}}
+          {{#if valueFrom}}
+          valueFrom:
+            {{#if valueFrom.configMapKeyRef}}
+            configMapKeyRef:
+              name: {{valueFrom.configMapKeyRef.name}}
+              key: {{valueFrom.configMapKeyRef.key}}
+            {{/if}}
+            {{#if valueFrom.secretKeyRef}}
+            secretKeyRef:
+              name: {{valueFrom.secretKeyRef.name}}
+              key: {{valueFrom.secretKeyRef.key}}
+            {{/if}}
+          {{/if}}
+        {{/each}}
+        {{/if}}
+        {{#if resources}}
+        resources:
+          {{#if resources.requests}}
+          requests:
+            {{#each resources.requests}}
+            {{@key}}: {{this}}
+            {{/each}}
+          {{/if}}
+          {{#if resources.limits}}
+          limits:
+            {{#each resources.limits}}
+            {{@key}}: {{this}}
+            {{/each}}
+          {{/if}}
+        {{/if}}
+        {{#if livenessProbe}}
+        livenessProbe:
+          {{#if livenessProbe.httpGet}}
+          httpGet:
+            path: {{livenessProbe.httpGet.path}}
+            port: {{livenessProbe.httpGet.port}}
+          {{/if}}
+          initialDelaySeconds: {{livenessProbe.initialDelaySeconds}}
+          periodSeconds: {{livenessProbe.periodSeconds}}
+        {{/if}}
+        {{#if readinessProbe}}
+        readinessProbe:
+          {{#if readinessProbe.httpGet}}
+          httpGet:
+            path: {{readinessProbe.httpGet.path}}
+            port: {{readinessProbe.httpGet.port}}
+          {{/if}}
+          initialDelaySeconds: {{readinessProbe.initialDelaySeconds}}
+          periodSeconds: {{readinessProbe.periodSeconds}}
+        {{/if}}
+        {{#if volumeMounts}}
+        volumeMounts:
+        {{#each volumeMounts}}
+        - name: {{name}}
+          mountPath: {{mountPath}}
+          {{#if readOnly}}
+          readOnly: {{readOnly}}
+          {{/if}}
+        {{/each}}
+        {{/if}}
+        {{#if securityContext}}
+        securityContext:
+          {{#if securityContext.allowPrivilegeEscalation}}
+          allowPrivilegeEscalation: {{securityContext.allowPrivilegeEscalation}}
+          {{/if}}
+          {{#if securityContext.readOnlyRootFilesystem}}
+          readOnlyRootFilesystem: {{securityContext.readOnlyRootFilesystem}}
+          {{/if}}
+          {{#if securityContext.capabilities}}
+          capabilities:
+            {{#if securityContext.capabilities.drop}}
+            drop:
+            {{#each securityContext.capabilities.drop}}
+            - {{this}}
+            {{/each}}
+            {{/if}}
+          {{/if}}
+        {{/if}}
+      {{/each}}
+      {{#if manifest.spec.template.spec.volumes}}
+      volumes:
+      {{#each manifest.spec.template.spec.volumes}}
+      - name: {{name}}
+        {{#if emptyDir}}
+        emptyDir: {}
+        {{/if}}
+        {{#if configMap}}
+        configMap:
+          name: {{configMap.name}}
+        {{/if}}
+        {{#if secret}}
+        secret:
+          secretName: {{secret.secretName}}
+        {{/if}}
+        {{#if persistentVolumeClaim}}
+        persistentVolumeClaim:
+          claimName: {{persistentVolumeClaim.claimName}}
+        {{/if}}
+      {{/each}}
+      {{/if}}

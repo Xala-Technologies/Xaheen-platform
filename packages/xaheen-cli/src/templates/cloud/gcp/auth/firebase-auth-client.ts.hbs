@@ -1,0 +1,987 @@
+/**
+ * Firebase Authentication Client
+ * Secure authentication system for {{projectName}}
+ * Includes Norwegian BankID integration and GDPR compliance
+ */
+
+import {
+  initializeApp,
+  getApps,
+  FirebaseApp,
+  FirebaseOptions
+} from 'firebase/app';
+import {
+  getAuth,
+  Auth,
+  User,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  updatePassword,
+  updateProfile,
+  deleteUser,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  TwitterAuthProvider,
+  GithubAuthProvider,
+  OAuthProvider,
+  PhoneAuthProvider,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  linkWithCredential,
+  unlink,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  AuthError,
+  UserCredential,
+  ConfirmationResult,
+  AuthProvider,
+  ParsedToken,
+  ActionCodeSettings,
+  IdTokenResult,
+  MultiFactorResolver,
+  MultiFactorError,
+  PhoneMultiFactorGenerator,
+  getMultiFactorResolver
+} from 'firebase/auth';
+import { logger } from '../functions/src/utils/logger';
+
+export interface AuthConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  enableMultiTenant?: boolean;
+  tenantId?: string;
+  enableMFA?: boolean;
+  enablePhoneAuth?: boolean;
+  enableAnonymousAuth?: boolean;
+  persistAuth?: boolean;
+  sessionTimeout?: number; // minutes
+  requireEmailVerification?: boolean;
+  passwordPolicy?: PasswordPolicy;
+  gdprCompliance?: GDPRConfig;
+  norwegianIntegration?: NorwegianAuthConfig;
+}
+
+export interface PasswordPolicy {
+  minLength: number;
+  requireUppercase: boolean;
+  requireLowercase: boolean;
+  requireNumbers: boolean;
+  requireSpecialChars: boolean;
+  preventCommonPasswords: boolean;
+  maxAge?: number; // days
+}
+
+export interface GDPRConfig {
+  requireConsent: boolean;
+  consentVersion: string;
+  dataRetentionDays: number;
+  enableDataExport: boolean;
+  enableDataDeletion: boolean;
+  enableRightToRectification: boolean;
+}
+
+export interface NorwegianAuthConfig {
+  enableBankID: boolean;
+  bankIdEnvironment: 'test' | 'production';
+  bankIdClientId?: string;
+  enableVippsLogin: boolean;
+  vippsClientId?: string;
+  requireNorwegianPersonalNumber: boolean;
+}
+
+export interface UserProfile {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  phoneNumber: string | null;
+  emailVerified: boolean;
+  isAnonymous: boolean;
+  createdAt: Date | null;
+  lastLoginAt: Date | null;
+  customClaims?: Record<string, any>;
+  providerData: UserProviderInfo[];
+  mfaEnabled: boolean;
+  norwegianPersonalNumber?: string;
+  gdprConsent?: GDPRConsent;
+}
+
+export interface UserProviderInfo {
+  providerId: string;
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  phoneNumber: string | null;
+  photoURL: string | null;
+}
+
+export interface GDPRConsent {
+  granted: boolean;
+  version: string;
+  timestamp: Date;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+export interface SignInOptions {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+  mfaRequired?: boolean;
+}
+
+export interface SignUpOptions {
+  email: string;
+  password: string;
+  displayName?: string;
+  phoneNumber?: string;
+  personalNumber?: string; // Norwegian personal number
+  gdprConsent: GDPRConsent;
+  sendEmailVerification?: boolean;
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: UserProfile;
+  requiresMFA?: boolean;
+  mfaResolver?: MultiFactorResolver;
+  error?: string;
+  errorCode?: string;
+}
+
+export interface MFASetupResult {
+  success: boolean;
+  verificationId?: string;
+  error?: string;
+}
+
+/**
+ * Firebase Auth Client Class
+ */
+export class FirebaseAuthClient {
+  private app: FirebaseApp;
+  private auth: Auth;
+  private config: AuthConfig;
+  private recaptchaVerifier?: RecaptchaVerifier;
+
+  constructor(config: AuthConfig) {
+    this.config = config;
+
+    // Initialize Firebase app
+    const firebaseConfig: FirebaseOptions = {
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId
+    };
+
+    this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    this.auth = getAuth(this.app);
+
+    // Configure multi-tenant if enabled
+    if (config.enableMultiTenant && config.tenantId) {
+      this.auth.tenantId = config.tenantId;
+    }
+
+    // Set language code for Norwegian users
+    this.auth.languageCode = 'no';
+
+    // Initialize session management
+    this.initializeSessionManagement();
+
+    logger.info('Firebase Auth client initialized', {
+      projectId: config.projectId,
+      multiTenant: config.enableMultiTenant,
+      mfaEnabled: config.enableMFA
+    });
+  }
+
+  /**
+   * Initialize session management and timeout
+   */
+  private initializeSessionManagement(): void {
+    if (this.config.sessionTimeout) {
+      let sessionTimer: NodeJS.Timeout;
+
+      onAuthStateChanged(this.auth, (user) => {
+        if (user) {
+          // Reset session timer
+          if (sessionTimer) {
+            clearTimeout(sessionTimer);
+          }
+
+          sessionTimer = setTimeout(async () => {
+            logger.info('Session timeout, signing out user', { uid: user.uid });
+            await this.signOut();
+          }, this.config.sessionTimeout! * 60 * 1000);
+        } else {
+          // Clear session timer when user signs out
+          if (sessionTimer) {
+            clearTimeout(sessionTimer);
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Sign in with email and password
+   */
+  async signInWithEmail(options: SignInOptions): Promise<AuthResult> {
+    try {
+      const credential = await signInWithEmailAndPassword(
+        this.auth,
+        options.email,
+        options.password
+      );
+
+      // Check if email verification is required
+      if (this.config.requireEmailVerification && !credential.user.emailVerified) {
+        await this.signOut();
+        return {
+          success: false,
+          error: 'Email verification required. Please check your email.',
+          errorCode: 'auth/email-not-verified'
+        };
+      }
+
+      const userProfile = await this.getUserProfile(credential.user);
+
+      // Log successful sign in
+      logger.info('User signed in successfully', {
+        uid: credential.user.uid,
+        email: credential.user.email,
+        provider: 'email'
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'signIn');
+    }
+  }
+
+  /**
+   * Sign up with email and password
+   */
+  async signUpWithEmail(options: SignUpOptions): Promise<AuthResult> {
+    try {
+      // Validate password policy
+      if (!this.validatePassword(options.password)) {
+        return {
+          success: false,
+          error: 'Password does not meet security requirements',
+          errorCode: 'auth/weak-password'
+        };
+      }
+
+      // Validate Norwegian personal number if required
+      if (this.config.norwegianIntegration?.requireNorwegianPersonalNumber && options.personalNumber) {
+        if (!this.validateNorwegianPersonalNumber(options.personalNumber)) {
+          return {
+            success: false,
+            error: 'Invalid Norwegian personal number',
+            errorCode: 'auth/invalid-personal-number'
+          };
+        }
+      }
+
+      // Check GDPR consent
+      if (this.config.gdprCompliance?.requireConsent && !options.gdprConsent.granted) {
+        return {
+          success: false,
+          error: 'GDPR consent is required',
+          errorCode: 'auth/gdpr-consent-required'
+        };
+      }
+
+      const credential = await createUserWithEmailAndPassword(
+        this.auth,
+        options.email,
+        options.password
+      );
+
+      // Update user profile
+      if (options.displayName) {
+        await updateProfile(credential.user, {
+          displayName: options.displayName
+        });
+      }
+
+      // Send email verification if enabled
+      if (options.sendEmailVerification !== false) {
+        await this.sendEmailVerification(credential.user);
+      }
+
+      // Store additional user data (Norwegian personal number, GDPR consent)
+      await this.storeUserMetadata(credential.user.uid, {
+        personalNumber: options.personalNumber,
+        gdprConsent: options.gdprConsent,
+        phoneNumber: options.phoneNumber
+      });
+
+      const userProfile = await this.getUserProfile(credential.user);
+
+      logger.info('User signed up successfully', {
+        uid: credential.user.uid,
+        email: credential.user.email
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'signUp');
+    }
+  }
+
+  /**
+   * Sign in with Google
+   */
+  async signInWithGoogle(): Promise<AuthResult> {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+
+      const credential = await signInWithPopup(this.auth, provider);
+      const userProfile = await this.getUserProfile(credential.user);
+
+      logger.info('User signed in with Google', {
+        uid: credential.user.uid,
+        email: credential.user.email
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'googleSignIn');
+    }
+  }
+
+  /**
+   * Sign in with Norwegian BankID
+   */
+  async signInWithBankID(): Promise<AuthResult> {
+    try {
+      if (!this.config.norwegianIntegration?.enableBankID) {
+        return {
+          success: false,
+          error: 'BankID is not enabled',
+          errorCode: 'auth/bankid-disabled'
+        };
+      }
+
+      // Create custom OIDC provider for BankID
+      const provider = new OAuthProvider('oidc.bankid');
+      provider.addScope('openid');
+      provider.addScope('profile');
+      provider.addScope('personal_number');
+
+      provider.setCustomParameters({
+        client_id: this.config.norwegianIntegration.bankIdClientId,
+        response_type: 'code',
+        scope: 'openid profile personal_number',
+        acr_values: 'Level3' // Require high security level
+      });
+
+      const credential = await signInWithPopup(this.auth, provider);
+      
+      // Extract Norwegian personal number from ID token
+      const idTokenResult = await credential.user.getIdTokenResult();
+      const personalNumber = idTokenResult.claims['personal_number'] as string;
+
+      // Store BankID metadata
+      await this.storeUserMetadata(credential.user.uid, {
+        personalNumber,
+        bankIdVerified: true,
+        bankIdLevel: 'Level3'
+      });
+
+      const userProfile = await this.getUserProfile(credential.user);
+
+      logger.info('User signed in with BankID', {
+        uid: credential.user.uid,
+        personalNumber: personalNumber ? '***masked***' : undefined
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'bankIdSignIn');
+    }
+  }
+
+  /**
+   * Sign in with Vipps
+   */
+  async signInWithVipps(): Promise<AuthResult> {
+    try {
+      if (!this.config.norwegianIntegration?.enableVippsLogin) {
+        return {
+          success: false,
+          error: 'Vipps login is not enabled',
+          errorCode: 'auth/vipps-disabled'
+        };
+      }
+
+      const provider = new OAuthProvider('oidc.vipps');
+      provider.addScope('openid');
+      provider.addScope('profile');
+      provider.addScope('phone');
+
+      provider.setCustomParameters({
+        client_id: this.config.norwegianIntegration.vippsClientId
+      });
+
+      const credential = await signInWithPopup(this.auth, provider);
+      const userProfile = await this.getUserProfile(credential.user);
+
+      logger.info('User signed in with Vipps', {
+        uid: credential.user.uid,
+        phoneNumber: credential.user.phoneNumber ? '***masked***' : undefined
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'vippsSignIn');
+    }
+  }
+
+  /**
+   * Sign in with phone number
+   */
+  async signInWithPhoneNumber(phoneNumber: string): Promise<{ verificationId: string } | AuthResult> {
+    try {
+      if (!this.config.enablePhoneAuth) {
+        return {
+          success: false,
+          error: 'Phone authentication is not enabled',
+          errorCode: 'auth/phone-auth-disabled'
+        };
+      }
+
+      // Initialize reCAPTCHA if not already done
+      if (!this.recaptchaVerifier) {
+        this.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+          size: 'normal',
+          callback: () => {
+            logger.info('reCAPTCHA solved');
+          },
+          'expired-callback': () => {
+            logger.warn('reCAPTCHA expired');
+          }
+        }, this.auth);
+      }
+
+      const confirmationResult = await signInWithPhoneNumber(
+        this.auth,
+        phoneNumber,
+        this.recaptchaVerifier
+      );
+
+      return { verificationId: confirmationResult.verificationId };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'phoneSignIn');
+    }
+  }
+
+  /**
+   * Verify phone number with SMS code
+   */
+  async verifyPhoneNumber(verificationId: string, code: string): Promise<AuthResult> {
+    try {
+      const credential = PhoneAuthProvider.credential(verificationId, code);
+      const result = await signInWithCredential(this.auth, credential);
+      
+      const userProfile = await this.getUserProfile(result.user);
+
+      logger.info('Phone number verified successfully', {
+        uid: result.user.uid,
+        phoneNumber: result.user.phoneNumber ? '***masked***' : undefined
+      });
+
+      return {
+        success: true,
+        user: userProfile
+      };
+
+    } catch (error) {
+      return this.handleAuthError(error as AuthError, 'phoneVerification');
+    }
+  }
+
+  /**
+   * Setup Multi-Factor Authentication
+   */
+  async setupMFA(phoneNumber: string): Promise<MFASetupResult> {
+    try {
+      if (!this.config.enableMFA) {
+        return {
+          success: false,
+          error: 'MFA is not enabled'
+        };
+      }
+
+      const user = this.getCurrentUser();
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not authenticated'
+        };
+      }
+
+      // Initialize reCAPTCHA for MFA setup
+      if (!this.recaptchaVerifier) {
+        this.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, this.auth);
+      }
+
+      const multiFactorSession = await user.multiFactor.getSession();
+      const phoneAuthCredential = PhoneAuthProvider.credential(phoneNumber, this.recaptchaVerifier);
+      const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(phoneAuthCredential);
+
+      await user.multiFactor.enroll(multiFactorAssertion, multiFactorSession);
+
+      logger.info('MFA setup completed', { uid: user.uid });
+
+      return {
+        success: true
+      };
+
+    } catch (error) {
+      logger.error('MFA setup failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Send email verification
+   */
+  async sendEmailVerification(user: User): Promise<boolean> {
+    try {
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/auth/verify-email`,
+        handleCodeInApp: true
+      };
+
+      await sendEmailVerification(user, actionCodeSettings);
+      
+      logger.info('Email verification sent', { uid: user.uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to send email verification', {
+        error: error.message,
+        uid: user.uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordReset(email: string): Promise<boolean> {
+    try {
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/auth/reset-password`,
+        handleCodeInApp: true
+      };
+
+      await sendPasswordResetEmail(this.auth, email, actionCodeSettings);
+      
+      logger.info('Password reset email sent', { email });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to send password reset email', {
+        error: error.message,
+        email
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Update user password
+   */
+  async updateUserPassword(currentPassword: string, newPassword: string): Promise<boolean> {
+    try {
+      const user = this.getCurrentUser();
+      if (!user || !user.email) {
+        return false;
+      }
+
+      // Validate new password
+      if (!this.validatePassword(newPassword)) {
+        throw new Error('New password does not meet security requirements');
+      }
+
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, newPassword);
+
+      logger.info('Password updated successfully', { uid: user.uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to update password', {
+        error: error.message,
+        uid: this.getCurrentUser()?.uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Delete user account (GDPR right to be forgotten)
+   */
+  async deleteUserAccount(): Promise<boolean> {
+    try {
+      const user = this.getCurrentUser();
+      if (!user) {
+        return false;
+      }
+
+      // Delete user data from Firestore (implement this in your app)
+      await this.deleteUserData(user.uid);
+
+      // Delete Firebase Auth user
+      await deleteUser(user);
+
+      logger.info('User account deleted', { uid: user.uid });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to delete user account', {
+        error: error.message,
+        uid: this.getCurrentUser()?.uid
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Sign out current user
+   */
+  async signOut(): Promise<boolean> {
+    try {
+      await signOut(this.auth);
+      
+      // Clear any local storage or cache
+      this.clearUserCache();
+
+      logger.info('User signed out successfully');
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to sign out', { error: error.message });
+      return false;
+    }
+  }
+
+  /**
+   * Get current user
+   */
+  getCurrentUser(): User | null {
+    return this.auth.currentUser;
+  }
+
+  /**
+   * Get user profile
+   */
+  async getUserProfile(user: User): Promise<UserProfile> {
+    const idTokenResult = await user.getIdTokenResult();
+    
+    return {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      phoneNumber: user.phoneNumber,
+      emailVerified: user.emailVerified,
+      isAnonymous: user.isAnonymous,
+      createdAt: user.metadata.creationTime ? new Date(user.metadata.creationTime) : null,
+      lastLoginAt: user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime) : null,
+      customClaims: idTokenResult.claims,
+      providerData: user.providerData.map(provider => ({
+        providerId: provider.providerId,
+        uid: provider.uid,
+        displayName: provider.displayName,
+        email: provider.email,
+        phoneNumber: provider.phoneNumber,
+        photoURL: provider.photoURL
+      })),
+      mfaEnabled: user.multiFactor.enrolledFactors.length > 0
+    };
+  }
+
+  /**
+   * Listen to authentication state changes
+   */
+  onAuthStateChanged(callback: (user: UserProfile | null) => void): () => void {
+    return onAuthStateChanged(this.auth, async (user) => {
+      if (user) {
+        const userProfile = await this.getUserProfile(user);
+        callback(userProfile);
+      } else {
+        callback(null);
+      }
+    });
+  }
+
+  /**
+   * Get ID token for API calls
+   */
+  async getIdToken(forceRefresh: boolean = false): Promise<string | null> {
+    try {
+      const user = this.getCurrentUser();
+      if (!user) {
+        return null;
+      }
+
+      return await user.getIdToken(forceRefresh);
+
+    } catch (error) {
+      logger.error('Failed to get ID token', { error: error.message });
+      return null;
+    }
+  }
+
+  /**
+   * Validate password against policy
+   */
+  private validatePassword(password: string): boolean {
+    const policy = this.config.passwordPolicy;
+    if (!policy) {
+      return password.length >= 8; // Default minimum
+    }
+
+    if (password.length < policy.minLength) {
+      return false;
+    }
+
+    if (policy.requireUppercase && !/[A-Z]/.test(password)) {
+      return false;
+    }
+
+    if (policy.requireLowercase && !/[a-z]/.test(password)) {
+      return false;
+    }
+
+    if (policy.requireNumbers && !/\d/.test(password)) {
+      return false;
+    }
+
+    if (policy.requireSpecialChars && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\?]/.test(password)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate Norwegian personal number
+   */
+  private validateNorwegianPersonalNumber(personalNumber: string): boolean {
+    if (!/^\d{11}$/.test(personalNumber)) {
+      return false;
+    }
+
+    const digits = personalNumber.split('').map(Number);
+    
+    // Validate control digits using Norwegian algorithm
+    const k1 = (11 - ((3 * digits[0] + 7 * digits[1] + 6 * digits[2] + 1 * digits[3] + 8 * digits[4] + 9 * digits[5] + 4 * digits[6] + 5 * digits[7] + 2 * digits[8]) % 11)) % 11;
+    const k2 = (11 - ((5 * digits[0] + 4 * digits[1] + 3 * digits[2] + 2 * digits[3] + 7 * digits[4] + 6 * digits[5] + 5 * digits[6] + 4 * digits[7] + 3 * digits[8] + 2 * k1) % 11)) % 11;
+    
+    return k1 === digits[9] && k2 === digits[10];
+  }
+
+  /**
+   * Handle authentication errors
+   */
+  private async handleAuthError(error: AuthError, operation: string): Promise<AuthResult> {
+    logger.error(`Auth operation failed: ${operation}`, {
+      code: error.code,
+      message: error.message
+    });
+
+    // Handle MFA required error
+    if (error.code === 'auth/multi-factor-auth-required') {
+      const resolver = getMultiFactorResolver(this.auth, error as MultiFactorError);
+      return {
+        success: false,
+        requiresMFA: true,
+        mfaResolver: resolver,
+        error: 'Multi-factor authentication required',
+        errorCode: error.code
+      };
+    }
+
+    // Map Firebase errors to user-friendly messages
+    const errorMessages: Record<string, string> = {
+      'auth/user-not-found': 'No account found with this email address',
+      'auth/wrong-password': 'Incorrect password',
+      'auth/email-already-in-use': 'An account with this email already exists',
+      'auth/weak-password': 'Password is too weak',
+      'auth/invalid-email': 'Invalid email address',
+      'auth/user-disabled': 'This account has been disabled',
+      'auth/too-many-requests': 'Too many failed attempts. Please try again later',
+      'auth/network-request-failed': 'Network error. Please check your connection',
+      'auth/popup-closed-by-user': 'Authentication cancelled by user',
+      'auth/popup-blocked': 'Popup was blocked by browser'
+    };
+
+    return {
+      success: false,
+      error: errorMessages[error.code] || error.message,
+      errorCode: error.code
+    };
+  }
+
+  /**
+   * Store user metadata (implement according to your data store)
+   */
+  private async storeUserMetadata(uid: string, metadata: any): Promise<void> {
+    // This should integrate with your Firestore client
+    // Example implementation would store in users/{uid}/private/metadata
+    logger.info('Storing user metadata', { uid, metadataKeys: Object.keys(metadata) });
+  }
+
+  /**
+   * Delete user data (GDPR compliance)
+   */
+  private async deleteUserData(uid: string): Promise<void> {
+    // This should implement complete user data deletion
+    // across all your collections and services
+    logger.info('Deleting user data for GDPR compliance', { uid });
+  }
+
+  /**
+   * Clear user cache and local storage
+   */
+  private clearUserCache(): void {
+    // Clear any user-specific cache or local storage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('userPreferences');
+      sessionStorage.clear();
+    }
+  }
+}
+
+/**
+ * Default auth configurations
+ */
+export const authConfigs = {
+  production: {
+    requireEmailVerification: true,
+    enableMFA: true,
+    enablePhoneAuth: true,
+    enableAnonymousAuth: false,
+    sessionTimeout: 480, // 8 hours
+    passwordPolicy: {
+      minLength: 12,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true,
+      requireSpecialChars: true,
+      preventCommonPasswords: true,
+      maxAge: 90 // days
+    },
+    gdprCompliance: {
+      requireConsent: true,
+      consentVersion: '1.0',
+      dataRetentionDays: 365,
+      enableDataExport: true,
+      enableDataDeletion: true,
+      enableRightToRectification: true
+    },
+    norwegianIntegration: {
+      enableBankID: true,
+      bankIdEnvironment: 'production',
+      enableVippsLogin: true,
+      requireNorwegianPersonalNumber: false
+    }
+  },
+
+  development: {
+    requireEmailVerification: false,
+    enableMFA: false,
+    enablePhoneAuth: true,
+    enableAnonymousAuth: true,
+    sessionTimeout: 60, // 1 hour
+    passwordPolicy: {
+      minLength: 8,
+      requireUppercase: false,
+      requireLowercase: false,
+      requireNumbers: false,
+      requireSpecialChars: false,
+      preventCommonPasswords: false
+    },
+    gdprCompliance: {
+      requireConsent: false,
+      consentVersion: '1.0',
+      dataRetentionDays: 30,
+      enableDataExport: true,
+      enableDataDeletion: true,
+      enableRightToRectification: true
+    },
+    norwegianIntegration: {
+      enableBankID: true,
+      bankIdEnvironment: 'test',
+      enableVippsLogin: false,
+      requireNorwegianPersonalNumber: false
+    }
+  }
+};
+
+/**
+ * Factory function to create auth client
+ */
+export function createAuthClient(
+  config: Partial<AuthConfig>,
+  environment: 'production' | 'development' = 'production'
+): FirebaseAuthClient {
+  const baseConfig = authConfigs[environment];
+  
+  const fullConfig: AuthConfig = {
+    apiKey: process.env.FIREBASE_API_KEY!,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN!,
+    projectId: process.env.FIREBASE_PROJECT_ID!,
+    ...baseConfig,
+    ...config
+  };
+
+  return new FirebaseAuthClient(fullConfig);
+}
+
+// Export default auth client
+export const authClient = createAuthClient({}, process.env.NODE_ENV === 'production' ? 'production' : 'development');

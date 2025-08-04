@@ -1,0 +1,63 @@
+{
+  "name": "{{projectName}}-cloud-functions",
+  "version": "1.0.0",
+  "description": "Google Cloud Functions for {{projectName}}",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "deploy": "npm run build && gcloud functions deploy",
+    "deploy:all": "npm run build && ./scripts/deploy-all-functions.sh",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "serve": "functions-framework --target={{functionName}} --source=dist",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "{{#if nodeVersion}}{{nodeVersion}}{{else}}18{{/if}}"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/firestore": "^7.1.0",
+    "@google-cloud/storage": "^7.7.0",
+    "@google-cloud/pubsub": "^4.0.7",
+    "@google-cloud/secret-manager": "^5.0.1",
+    "@google-cloud/logging": "^11.0.0",
+    "@google-cloud/monitoring": "^4.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "uuid": "^9.0.1",
+    "consola": "^3.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/uuid": "^9.0.7",
+    "@types/jest": "^29.5.8",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "eslint": "^8.55.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3",
+    "firebase-functions-test": "^3.1.0",
+    "supertest": "^6.3.3",
+    "@types/supertest": "^2.0.16"
+  },
+  "keywords": [
+    "google-cloud",
+    "cloud-functions",
+    "serverless",
+    "typescript",
+    "{{projectName}}"
+  ],
+  "author": "{{author}}",
+  "license": "{{license}}"
+}

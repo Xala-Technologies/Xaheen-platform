@@ -1,0 +1,801 @@
+/**
+ * Azure Service Bus Client
+ * 
+ * Production-ready Service Bus client with comprehensive message handling,
+ * dead letter queue management, session support, and monitoring integration.
+ */
+
+import { 
+  ServiceBusClient, 
+  ServiceBusMessage, 
+  ServiceBusReceiver, 
+  ServiceBusSender,
+  ServiceBusReceivedMessage,
+  ServiceBusAdministrationClient,
+  CreateQueueOptions,
+  CreateTopicOptions,
+  CreateSubscriptionOptions
+} from '@azure/service-bus';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { 
+  ServiceBusMessage as CustomServiceBusMessage,
+  ServiceBusReceiverOptions,
+  ServiceBusDeadLetterInfo,
+  AzureServiceError,
+  AzureError,
+  AzureServiceResponse
+} from '../types/azure.types';
+
+export interface ServiceBusClientOptions {
+  readonly connectionString?: string;
+  readonly fullyQualifiedNamespace?: string;
+  readonly enableDiagnostics?: boolean;
+  readonly defaultRetryOptions?: {
+    readonly maxRetries: number;
+    readonly retryDelayInMs: number;
+    readonly maxRetryDelayInMs: number;
+  };
+}
+
+export interface MessageSendOptions {
+  readonly correlationId?: string;
+  readonly sessionId?: string;
+  readonly partitionKey?: string;
+  readonly timeToLiveInMs?: number;
+  readonly scheduledEnqueueTime?: Date;
+  readonly subject?: string;
+  readonly contentType?: string;
+  readonly replyTo?: string;
+  readonly userProperties?: Record<string, unknown>;
+}
+
+export interface BatchSendOptions extends MessageSendOptions {
+  readonly maxBatchSize?: number;
+}
+
+export class AzureServiceBusClient {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly serviceBusClient: ServiceBusClient;
+  private readonly adminClient: ServiceBusAdministrationClient;
+  private readonly senders: Map<string, ServiceBusSender> = new Map();
+  private readonly receivers: Map<string, ServiceBusReceiver> = new Map();
+  private readonly options: ServiceBusClientOptions;
+
+  constructor(options: ServiceBusClientOptions) {
+    this.options = options;
+    this.logger = new Logger('AzureServiceBusClient');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+
+    try {
+      if (options.connectionString) {
+        this.serviceBusClient = new ServiceBusClient(options.connectionString);
+        this.adminClient = new ServiceBusAdministrationClient(options.connectionString);
+      } else if (options.fullyQualifiedNamespace) {
+        const credential = new DefaultAzureCredential();
+        this.serviceBusClient = new ServiceBusClient(options.fullyQualifiedNamespace, credential);
+        this.adminClient = new ServiceBusAdministrationClient(options.fullyQualifiedNamespace, credential);
+      } else {
+        throw new AzureServiceError('Either connectionString or fullyQualifiedNamespace must be provided');
+      }
+
+      this.logger.info('Service Bus client initialized successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to initialize Service Bus client', { error: errorMessage });
+      throw new AzureServiceError(`Service Bus client initialization failed: ${errorMessage}`);
+    }
+  }
+
+  // Queue operations
+  async createQueue(queueName: string, options?: CreateQueueOptions): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    
+    try {
+      this.logger.info('Creating queue', { queueName });
+
+      const queueOptions: CreateQueueOptions = {
+        maxDeliveryCount: 10,
+        lockDurationInMs: 60000, // 1 minute
+        duplicateDetectionTimeWindowInMs: 600000, // 10 minutes
+        enableDeadLetteringOnMessageExpiration: true,
+        enablePartitioning: false,
+        maxSizeInMegabytes: 1024,
+        requiresDuplicateDetection: true,
+        ...options
+      };
+
+      await this.adminClient.createQueue(queueName, queueOptions);
+
+      this.logger.info('Queue created successfully', { 
+        queueName, 
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createQueue',
+        queueName,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to create queue', { 
+        queueName, 
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createQueue',
+        queueName,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'QUEUE_CREATION_FAILED',
+          message: `Failed to create queue ${queueName}: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    }
+  }
+
+  async deleteQueue(queueName: string): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    
+    try {
+      this.logger.info('Deleting queue', { queueName });
+
+      await this.adminClient.deleteQueue(queueName);
+
+      // Clean up cached senders and receivers
+      this.senders.delete(queueName);
+      this.receivers.delete(queueName);
+
+      this.logger.info('Queue deleted successfully', { 
+        queueName, 
+        duration: Date.now() - startTime 
+      });
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to delete queue', { 
+        queueName, 
+        error: errorMessage,
+        duration
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'QUEUE_DELETION_FAILED',
+          message: `Failed to delete queue ${queueName}: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    }
+  }
+
+  // Message sending operations
+  async sendMessage(
+    queueOrTopicName: string, 
+    messageBody: unknown, 
+    options?: MessageSendOptions
+  ): Promise<AzureServiceResponse<{ messageId: string }>> {
+    const startTime = Date.now();
+    const correlationId = options?.correlationId || this.generateCorrelationId();
+    
+    try {
+      this.logger.info('Sending message', { 
+        queueOrTopicName, 
+        correlationId,
+        hasSession: !!options?.sessionId
+      });
+
+      const sender = await this.getSender(queueOrTopicName);
+      
+      const message: ServiceBusMessage = {
+        body: messageBody,
+        correlationId,
+        sessionId: options?.sessionId,
+        partitionKey: options?.partitionKey,
+        timeToLive: options?.timeToLiveInMs,
+        scheduledEnqueueTime: options?.scheduledEnqueueTime,
+        subject: options?.subject,
+        contentType: options?.contentType || 'application/json',
+        replyTo: options?.replyTo,
+        applicationProperties: options?.userProperties
+      };
+
+      const result = await sender.sendMessages(message);
+      const messageId = this.generateMessageId();
+
+      this.logger.info('Message sent successfully', { 
+        queueOrTopicName, 
+        messageId,
+        correlationId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        operation: 'send',
+        queueOrTopicName,
+        messageId,
+        correlationId,
+        success: true,
+        processingTime: Date.now() - startTime,
+        deliveryCount: 1
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: { messageId },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to send message', { 
+        queueOrTopicName, 
+        correlationId,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        operation: 'send',
+        queueOrTopicName,
+        correlationId,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'MESSAGE_SEND_FAILED',
+          message: `Failed to send message to ${queueOrTopicName}: ${errorMessage}`,
+          details: { correlationId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          correlationId,
+          duration
+        }
+      };
+    }
+  }
+
+  async sendBatchMessages(
+    queueOrTopicName: string, 
+    messages: Array<{ body: unknown; options?: MessageSendOptions }>,
+    batchOptions?: BatchSendOptions
+  ): Promise<AzureServiceResponse<{ messagesSent: number; batchId: string }>> {
+    const startTime = Date.now();
+    const batchId = this.generateRequestId();
+    const maxBatchSize = batchOptions?.maxBatchSize || 100;
+    
+    try {
+      this.logger.info('Sending batch messages', { 
+        queueOrTopicName, 
+        messageCount: messages.length,
+        batchId,
+        maxBatchSize
+      });
+
+      const sender = await this.getSender(queueOrTopicName);
+      let totalSent = 0;
+
+      // Process messages in batches
+      for (let i = 0; i < messages.length; i += maxBatchSize) {
+        const batch = messages.slice(i, i + maxBatchSize);
+        const serviceBusMessages: ServiceBusMessage[] = batch.map((msg, index) => ({
+          body: msg.body,
+          correlationId: msg.options?.correlationId || `${batchId}-${i + index}`,
+          sessionId: msg.options?.sessionId || batchOptions?.sessionId,
+          partitionKey: msg.options?.partitionKey || batchOptions?.partitionKey,
+          timeToLive: msg.options?.timeToLiveInMs || batchOptions?.timeToLiveInMs,
+          scheduledEnqueueTime: msg.options?.scheduledEnqueueTime || batchOptions?.scheduledEnqueueTime,
+          subject: msg.options?.subject || batchOptions?.subject,
+          contentType: msg.options?.contentType || batchOptions?.contentType || 'application/json',
+          replyTo: msg.options?.replyTo || batchOptions?.replyTo,
+          applicationProperties: {
+            ...batchOptions?.userProperties,
+            ...msg.options?.userProperties,
+            batchId
+          }
+        }));
+
+        await sender.sendMessages(serviceBusMessages);
+        totalSent += batch.length;
+
+        this.logger.debug('Batch sent', { 
+          batchNumber: Math.floor(i / maxBatchSize) + 1,
+          messagesSent: batch.length,
+          totalSent
+        });
+      }
+
+      this.logger.info('Batch messages sent successfully', { 
+        queueOrTopicName, 
+        messagesSent: totalSent,
+        batchId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusBatch({
+        operation: 'sendBatch',
+        queueOrTopicName,
+        batchId,
+        messagesSent: totalSent,
+        success: true,
+        processingTime: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: { messagesSent: totalSent, batchId },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to send batch messages', { 
+        queueOrTopicName, 
+        messageCount: messages.length,
+        batchId,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusBatch({
+        operation: 'sendBatch',
+        queueOrTopicName,
+        batchId,
+        messagesSent: totalSent || 0,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'BATCH_SEND_FAILED',
+          message: `Failed to send batch messages to ${queueOrTopicName}: ${errorMessage}`,
+          details: { batchId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration
+        }
+      };
+    }
+  }
+
+  // Message receiving operations
+  async receiveMessages(
+    queueName: string, 
+    maxMessages: number = 1,
+    options?: ServiceBusReceiverOptions
+  ): Promise<AzureServiceResponse<ServiceBusReceivedMessage[]>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+    
+    try {
+      this.logger.info('Receiving messages', { 
+        queueName, 
+        maxMessages,
+        requestId
+      });
+
+      const receiver = await this.getReceiver(queueName, options);
+      const messages = await receiver.receiveMessages(maxMessages, {
+        maxWaitTimeInMs: options?.timeoutMs || 30000
+      });
+
+      this.logger.info('Messages received successfully', { 
+        queueName, 
+        messagesReceived: messages.length,
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'receive',
+        queueOrTopicName: queueName,
+        messagesProcessed: messages.length,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: messages,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to receive messages', { 
+        queueName, 
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'receive',
+        queueOrTopicName: queueName,
+        messagesProcessed: 0,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'MESSAGE_RECEIVE_FAILED',
+          message: `Failed to receive messages from ${queueName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  // Message completion operations
+  async completeMessage(message: ServiceBusReceivedMessage): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    
+    try {
+      this.logger.debug('Completing message', { 
+        messageId: message.messageId,
+        correlationId: message.correlationId
+      });
+
+      await message.complete();
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        operation: 'complete',
+        messageId: message.messageId || 'unknown',
+        correlationId: message.correlationId || 'unknown',
+        success: true,
+        processingTime: Date.now() - startTime,
+        deliveryCount: message.deliveryCount || 1
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      this.logger.error('Failed to complete message', { 
+        messageId: message.messageId,
+        error: errorMessage
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'MESSAGE_COMPLETE_FAILED',
+          message: `Failed to complete message: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    }
+  }
+
+  async abandonMessage(message: ServiceBusReceivedMessage, reason?: string): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    
+    try {
+      this.logger.debug('Abandoning message', { 
+        messageId: message.messageId,
+        correlationId: message.correlationId,
+        reason
+      });
+
+      await message.abandon({ reason });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        operation: 'abandon',
+        messageId: message.messageId || 'unknown',
+        correlationId: message.correlationId || 'unknown',
+        success: true,
+        processingTime: Date.now() - startTime,
+        deliveryCount: message.deliveryCount || 1
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      this.logger.error('Failed to abandon message', { 
+        messageId: message.messageId,
+        error: errorMessage
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'MESSAGE_ABANDON_FAILED',
+          message: `Failed to abandon message: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    }
+  }
+
+  async deadLetterMessage(
+    message: ServiceBusReceivedMessage, 
+    deadLetterInfo: ServiceBusDeadLetterInfo
+  ): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    
+    try {
+      this.logger.warn('Dead lettering message', { 
+        messageId: message.messageId,
+        correlationId: message.correlationId,
+        deadLetterInfo
+      });
+
+      await message.deadLetter(deadLetterInfo);
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        operation: 'deadLetter',
+        messageId: message.messageId || 'unknown',
+        correlationId: message.correlationId || 'unknown',
+        success: true,
+        processingTime: Date.now() - startTime,
+        deliveryCount: message.deliveryCount || 1
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      this.logger.error('Failed to dead letter message', { 
+        messageId: message.messageId,
+        error: errorMessage
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'MESSAGE_DEAD_LETTER_FAILED',
+          message: `Failed to dead letter message: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId(),
+          duration: Date.now() - startTime
+        }
+      };
+    }
+  }
+
+  // Helper methods
+  private async getSender(queueOrTopicName: string): Promise<ServiceBusSender> {
+    if (!this.senders.has(queueOrTopicName)) {
+      const sender = this.serviceBusClient.createSender(queueOrTopicName);
+      this.senders.set(queueOrTopicName, sender);
+      this.logger.debug('Created new sender', { queueOrTopicName });
+    }
+    
+    return this.senders.get(queueOrTopicName)!;
+  }
+
+  private async getReceiver(queueName: string, options?: ServiceBusReceiverOptions): Promise<ServiceBusReceiver> {
+    const receiverKey = `${queueName}-${options?.receiveMode || 'peekLock'}`;
+    
+    if (!this.receivers.has(receiverKey)) {
+      const receiver = this.serviceBusClient.createReceiver(queueName, {
+        receiveMode: options?.receiveMode || 'peekLock',
+        maxAutoLockRenewalDurationInMs: options?.maxAutoLockRenewalDurationInMs
+      });
+      this.receivers.set(receiverKey, receiver);
+      this.logger.debug('Created new receiver', { queueName, receiveMode: options?.receiveMode || 'peekLock' });
+    }
+    
+    return this.receivers.get(receiverKey)!;
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateCorrelationId(): string {
+    return `corr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateMessageId(): string {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // Cleanup method
+  async close(): Promise<void> {
+    try {
+      this.logger.info('Closing Service Bus client');
+
+      // Close all senders
+      for (const [name, sender] of this.senders.entries()) {
+        try {
+          await sender.close();
+          this.logger.debug('Sender closed', { name });
+        } catch (error) {
+          this.logger.warn('Failed to close sender', { 
+            name, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      // Close all receivers
+      for (const [name, receiver] of this.receivers.entries()) {
+        try {
+          await receiver.close();
+          this.logger.debug('Receiver closed', { name });
+        } catch (error) {
+          this.logger.warn('Failed to close receiver', { 
+            name, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      // Close main client
+      await this.serviceBusClient.close();
+
+      this.senders.clear();
+      this.receivers.clear();
+
+      this.logger.info('Service Bus client closed successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to close Service Bus client', { error: errorMessage });
+      throw new AzureServiceError(`Service Bus client close failed: ${errorMessage}`);
+    }
+  }
+}
+
+// Factory function for creating Service Bus client
+export async function createServiceBusClient(options?: ServiceBusClientOptions): Promise<AzureServiceBusClient> {
+  const clientOptions: ServiceBusClientOptions = {
+    connectionString: process.env.AZURE_SERVICEBUS_CONNECTION_STRING,
+    fullyQualifiedNamespace: process.env.AZURE_SERVICEBUS_NAMESPACE ? 
+      `${process.env.AZURE_SERVICEBUS_NAMESPACE}.servicebus.windows.net` : undefined,
+    {{#if enableDiagnostics}}
+    enableDiagnostics: true,
+    {{else}}
+    enableDiagnostics: false,
+    {{/if}}
+    defaultRetryOptions: {
+      maxRetries: parseInt(process.env.SERVICE_BUS_MAX_RETRIES || '3'),
+      retryDelayInMs: parseInt(process.env.SERVICE_BUS_RETRY_DELAY_MS || '1000'),
+      maxRetryDelayInMs: parseInt(process.env.SERVICE_BUS_MAX_RETRY_DELAY_MS || '30000')
+    },
+    ...options
+  };
+
+  return new AzureServiceBusClient(clientOptions);
+}

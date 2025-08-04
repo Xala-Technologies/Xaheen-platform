@@ -94,6 +94,9 @@ const GENERATOR_CATEGORIES = {
 	// Infrastructure generators
 	infrastructure: ["docker", "k8s", "ci", "deployment", "terraform"],
 
+	// DevOps generators
+	devops: ["docker", "kubernetes", "github-actions", "azure-devops", "gitlab-ci"],
+
 	// Integration generators
 	integration: ["webhook", "queue", "cron", "worker", "integration"],
 
@@ -673,6 +676,9 @@ export async function executeFullStackGenerator(
 					backup: context.options.backup || false,
 				});
 
+			case "devops":
+				return await executeDevOpsGenerator(context);
+
 			case "integration":
 				return await executeIntegrationGenerator(context);
 
@@ -762,6 +768,12 @@ export function getGeneratorHelp(type: GeneratorType): string {
 		ci: "Generate CI/CD pipeline configuration",
 		deployment: "Generate deployment scripts for cloud platforms",
 		terraform: "Generate Terraform infrastructure as code for AWS, Azure, and GCP",
+
+		// DevOps
+		"github-actions": "Generate GitHub Actions workflows with security scanning and deployment",
+		"azure-devops": "Generate Azure DevOps pipelines with multi-stage deployments",
+		"gitlab-ci": "Generate GitLab CI/CD pipelines with security and compliance scanning",
+		kubernetes: "Generate comprehensive Kubernetes manifests with Helm charts and Istio service mesh",
 
 		// Integration
 		webhook: "Generate webhook handler with validation",

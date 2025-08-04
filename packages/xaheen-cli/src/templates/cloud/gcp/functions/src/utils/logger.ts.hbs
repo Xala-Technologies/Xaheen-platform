@@ -1,0 +1,221 @@
+/**
+ * Cloud Logging Integration
+ * Structured logging for Google Cloud Functions
+ */
+
+import { Logging } from '@google-cloud/logging';
+
+// Initialize Cloud Logging
+const logging = new Logging({
+  projectId: process.env.GOOGLE_CLOUD_PROJECT
+});
+
+// Create a Bunyan-style logger that writes to Cloud Logging
+const log = logging.log('{{projectName}}-functions');
+
+export interface LogEntry {
+  severity?: 'DEBUG' | 'INFO' | 'NOTICE' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'ALERT' | 'EMERGENCY';
+  message: string;
+  metadata?: Record<string, any>;
+  httpRequest?: {
+    requestMethod?: string;
+    requestUrl?: string;
+    status?: number;
+    userAgent?: string;
+    remoteIp?: string;
+    referer?: string;
+  };
+  trace?: string;
+  spanId?: string;
+  operation?: {
+    id?: string;
+    producer?: string;
+    first?: boolean;
+    last?: boolean;
+  };
+  sourceLocation?: {
+    file?: string;
+    line?: number;
+    function?: string;
+  };
+}
+
+/**
+ * Structured logger for Cloud Functions
+ */
+export class Logger {
+  private projectId: string;
+  private functionName: string;
+
+  constructor() {
+    this.projectId = process.env.GOOGLE_CLOUD_PROJECT || 'unknown-project';
+    this.functionName = process.env.K_SERVICE || process.env.FUNCTION_NAME || 'unknown-function';
+  }
+
+  /**
+   * Log debug message
+   */
+  debug(message: string, metadata?: Record<string, any>): void {
+    this.writeLog('DEBUG', message, metadata);
+  }
+
+  /**
+   * Log info message
+   */
+  info(message: string, metadata?: Record<string, any>): void {
+    this.writeLog('INFO', message, metadata);
+  }
+
+  /**
+   * Log warning message
+   */
+  warn(message: string, metadata?: Record<string, any>): void {
+    this.writeLog('WARNING', message, metadata);
+  }
+
+  /**
+   * Log error message
+   */
+  error(message: string, metadata?: Record<string, any>): void {
+    this.writeLog('ERROR', message, metadata);
+  }
+
+  /**
+   * Log critical message
+   */
+  critical(message: string, metadata?: Record<string, any>): void {
+    this.writeLog('CRITICAL', message, metadata);
+  }
+
+  /**
+   * Write structured log entry
+   */
+  private writeLog(severity: string, message: string, metadata?: Record<string, any>): void {
+    const entry: LogEntry = {
+      severity: severity as LogEntry['severity'],
+      message,
+      metadata: {
+        ...metadata,
+        functionName: this.functionName,
+        projectId: this.projectId,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    // Add trace context if available
+    const traceHeader = process.env.X_CLOUD_TRACE_CONTEXT;
+    if (traceHeader) {
+      const [traceId, spanId] = traceHeader.split('/');
+      entry.trace = `projects/${this.projectId}/traces/${traceId}`;
+      entry.spanId = spanId;
+    }
+
+    // Write to Cloud Logging
+    if (process.env.NODE_ENV === 'production') {
+      log.write(log.entry({
+        severity,
+        resource: {
+          type: 'cloud_function',
+          labels: {
+            function_name: this.functionName,
+            project_id: this.projectId,
+            region: process.env.FUNCTION_REGION || 'us-central1'
+          }
+        }
+      }, entry));
+    } else {
+      // Console logging for development
+      console[severity.toLowerCase() as keyof Console] || console.log(
+        JSON.stringify(entry, null, 2)
+      );
+    }
+  }
+
+  /**
+   * Log HTTP request
+   */
+  logHttpRequest(
+    method: string,
+    url: string,
+    status: number,
+    metadata?: Record<string, any>
+  ): void {
+    this.writeLog('INFO', 'HTTP Request', {
+      ...metadata,
+      httpRequest: {
+        requestMethod: method,
+        requestUrl: url,
+        status
+      }
+    });
+  }
+
+  /**
+   * Log function execution time
+   */
+  logExecutionTime(functionName: string, startTime: number, metadata?: Record<string, any>): void {
+    const executionTime = Date.now() - startTime;
+    this.info(`Function ${functionName} executed`, {
+      ...metadata,
+      executionTimeMs: executionTime,
+      performance: {
+        executionTime,
+        memoryUsage: process.memoryUsage(),
+        uptime: process.uptime()
+      }
+    });
+  }
+
+  /**
+   * Log function start
+   */
+  logFunctionStart(functionName: string, metadata?: Record<string, any>): number {
+    const startTime = Date.now();
+    this.info(`Function ${functionName} started`, {
+      ...metadata,
+      startTime: new Date(startTime).toISOString()
+    });
+    return startTime;
+  }
+
+  /**
+   * Log function end
+   */
+  logFunctionEnd(functionName: string, startTime: number, metadata?: Record<string, any>): void {
+    this.logExecutionTime(functionName, startTime, metadata);
+  }
+}
+
+// Export singleton instance
+export const logger = new Logger();
+
+/**
+ * Middleware to log HTTP requests
+ */
+export const logHttpRequest = (req: any, res: any, next: any): void => {
+  const startTime = Date.now();
+  
+  // Log request start
+  logger.info('HTTP Request received', {
+    method: req.method,
+    url: req.url,
+    userAgent: req.get('User-Agent'),
+    remoteIp: req.ip,
+    headers: req.headers
+  });
+
+  // Override res.end to log response
+  const originalEnd = res.end;
+  res.end = function(chunk: any, encoding: any) {
+    const executionTime = Date.now() - startTime;
+    
+    logger.logHttpRequest(req.method, req.url, res.statusCode, {
+      executionTime,
+      responseSize: chunk ? chunk.length : 0
+    });
+
+    originalEnd.call(res, chunk, encoding);
+  };
+
+  next();
+};

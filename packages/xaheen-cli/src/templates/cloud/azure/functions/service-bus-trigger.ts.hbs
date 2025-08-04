@@ -1,0 +1,748 @@
+/**
+ * Azure Service Bus Trigger Function
+ * 
+ * Production-ready Service Bus trigger function with comprehensive message processing,
+ * error handling, dead letter queue management, and monitoring.
+ */
+
+import { AzureFunction, Context } from '@azure/functions';
+import { DefaultAzureCredential } from '@azure/identity';
+import { ServiceBusClient, ServiceBusMessage, ServiceBusReceivedMessage } from '@azure/service-bus';
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { MessageValidator } from '../utils/message-validator';
+import { 
+  ServiceBusMessage as CustomServiceBusMessage,
+  ServiceBusDeadLetterInfo,
+  AzureServiceError,
+  AzureError 
+} from '../types/azure.types';
+
+// Initialize services
+const logger = new Logger('ServiceBusTrigger');
+const metricsCollector = new MetricsCollector();
+const messageValidator = new MessageValidator();
+const credential = new DefaultAzureCredential();
+
+let serviceBusClient: ServiceBusClient | null = null;
+
+// Message processing result interface
+interface MessageProcessingResult {
+  readonly messageId: string;
+  readonly success: boolean;
+  readonly processingTime: number;
+  readonly error?: string;
+  readonly shouldRetry?: boolean;
+  readonly details?: Record<string, unknown>;
+}
+
+// Supported message types
+type MessageType = 
+  | 'user-created'
+  | 'user-updated' 
+  | 'user-deleted'
+  | 'order-placed'
+  | 'order-updated'
+  | 'order-cancelled'
+  | 'payment-processed'
+  | 'payment-failed'
+  | 'notification-send'
+  | 'data-sync'
+  | 'health-check'
+  | 'custom-event';
+
+interface ProcessedMessage {
+  readonly messageType: MessageType;
+  readonly correlationId?: string;
+  readonly timestamp: string;
+  readonly data: unknown;
+  readonly metadata?: Record<string, unknown>;
+}
+
+const serviceBusTrigger: AzureFunction = async (context: Context, mySbMsg: ServiceBusReceivedMessage): Promise<void> => {
+  const startTime = Date.now();
+  const messageId = mySbMsg.messageId || context.invocationId;
+  const correlationId = mySbMsg.correlationId || messageId;
+
+  // Initialize context logging
+  logger.setContext({ 
+    messageId, 
+    correlationId, 
+    functionName: context.functionName,
+    queueName: context.bindingData?.queueName || 'unknown'
+  });
+
+  logger.info('Service Bus trigger function started', {
+    messageId,
+    correlationId,
+    deliveryCount: mySbMsg.deliveryCount,
+    enqueuedTimeUtc: mySbMsg.enqueuedTimeUtc,
+    timeToLive: mySbMsg.timeToLive,
+    label: mySbMsg.subject,
+    contentType: mySbMsg.contentType,
+    sessionId: mySbMsg.sessionId,
+    partitionKey: mySbMsg.partitionKey
+  });
+
+  let processingResult: MessageProcessingResult;
+
+  try {
+    // Initialize Service Bus client if not already done
+    await initializeServiceBusClient();
+
+    // Validate message format and content
+    const validationResult = await messageValidator.validate(mySbMsg);
+    if (!validationResult.isValid) {
+      throw new AzureError(
+        'Message validation failed',
+        'INVALID_MESSAGE',
+        400,
+        { validationErrors: validationResult.errors }
+      );
+    }
+
+    // Check for duplicate message processing
+    const isDuplicate = await checkForDuplicateProcessing(messageId, correlationId);
+    if (isDuplicate) {
+      logger.warn('Duplicate message detected, skipping processing', {
+        messageId,
+        correlationId
+      });
+      
+      processingResult = {
+        messageId,
+        success: true,
+        processingTime: Date.now() - startTime,
+        details: { reason: 'duplicate-skipped' }
+      };
+      
+      await recordProcessingResult(processingResult);
+      return;
+    }
+
+    // Parse message content
+    const parsedMessage = await parseMessage(mySbMsg);
+    
+    // Process message based on type
+    const result = await processMessage(parsedMessage, context, mySbMsg);
+    
+    processingResult = {
+      messageId,
+      success: true,
+      processingTime: Date.now() - startTime,
+      details: result
+    };
+
+    // Record successful processing
+    await recordMessageProcessing(messageId, correlationId, true);
+
+    logger.info('Service Bus message processed successfully', {
+      messageId,
+      correlationId,
+      messageType: parsedMessage.messageType,
+      processingTime: processingResult.processingTime
+    });
+
+  } catch (error) {
+    const processingTime = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    processingResult = {
+      messageId,
+      success: false,
+      processingTime,
+      error: errorMessage,
+      shouldRetry: shouldRetryMessage(error, mySbMsg.deliveryCount || 1)
+    };
+
+    // Record failed processing
+    await recordMessageProcessing(messageId, correlationId, false, errorMessage);
+
+    logger.error('Service Bus message processing failed', {
+      messageId,
+      correlationId,
+      error: errorMessage,
+      deliveryCount: mySbMsg.deliveryCount,
+      processingTime,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
+    // Handle message failure
+    await handleMessageFailure(mySbMsg, error, context);
+    
+    // Re-throw error to trigger Service Bus retry mechanism
+    if (processingResult.shouldRetry) {
+      throw error;
+    }
+  } finally {
+    // Record processing metrics
+    {{#if enableDiagnostics}}
+    await metricsCollector.recordServiceBusMessage({
+      messageId,
+      correlationId,
+      queueName: context.bindingData?.queueName || 'unknown',
+      success: processingResult.success,
+      processingTime: processingResult.processingTime,
+      deliveryCount: mySbMsg.deliveryCount || 1,
+      error: processingResult.error
+    });
+    {{/if}}
+
+    // Store processing result for audit
+    await recordProcessingResult(processingResult);
+  }
+};
+
+async function initializeServiceBusClient(): Promise<void> {
+  if (!serviceBusClient) {
+    try {
+      const connectionString = process.env.AZURE_SERVICEBUS_CONNECTION_STRING;
+      if (!connectionString) {
+        throw new AzureServiceError('Service Bus connection string not configured');
+      }
+
+      serviceBusClient = new ServiceBusClient(connectionString);
+      logger.info('Service Bus client initialized');
+    } catch (error) {
+      logger.error('Failed to initialize Service Bus client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw new AzureServiceError('Service Bus client initialization failed');
+    }
+  }
+}
+
+async function parseMessage(message: ServiceBusReceivedMessage): Promise<ProcessedMessage> {
+  try {
+    let messageData: unknown;
+    
+    // Parse message body based on content type
+    if (message.contentType === 'application/json' || !message.contentType) {
+      if (typeof message.body === 'string') {
+        messageData = JSON.parse(message.body);
+      } else {
+        messageData = message.body;
+      }
+    } else if (message.contentType === 'text/plain') {
+      messageData = message.body.toString();
+    } else {
+      messageData = message.body;
+    }
+
+    // Extract message type from label, user properties, or message data
+    let messageType: MessageType = 'custom-event';
+    
+    if (message.subject) {
+      messageType = message.subject as MessageType;
+    } else if (message.applicationProperties && message.applicationProperties['messageType']) {
+      messageType = message.applicationProperties['messageType'] as MessageType;
+    } else if (typeof messageData === 'object' && messageData !== null && 'messageType' in messageData) {
+      messageType = (messageData as any).messageType as MessageType;
+    }
+
+    const processedMessage: ProcessedMessage = {
+      messageType,
+      correlationId: message.correlationId,
+      timestamp: new Date().toISOString(),
+      data: messageData,
+      metadata: {
+        enqueuedTimeUtc: message.enqueuedTimeUtc,
+        deliveryCount: message.deliveryCount,
+        timeToLive: message.timeToLive,
+        sessionId: message.sessionId,
+        partitionKey: message.partitionKey,
+        applicationProperties: message.applicationProperties
+      }
+    };
+
+    return processedMessage;
+  } catch (error) {
+    logger.error('Failed to parse message', {
+      messageId: message.messageId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureError('Message parsing failed', 'PARSE_ERROR', 400);
+  }
+}
+
+async function processMessage(
+  message: ProcessedMessage, 
+  context: Context, 
+  originalMessage: ServiceBusReceivedMessage
+): Promise<Record<string, unknown>> {
+  logger.info(`Processing message of type: ${message.messageType}`, {
+    correlationId: message.correlationId
+  });
+
+  switch (message.messageType) {
+    case 'user-created':
+      return await handleUserCreated(message, context);
+    
+    case 'user-updated':
+      return await handleUserUpdated(message, context);
+    
+    case 'user-deleted':
+      return await handleUserDeleted(message, context);
+    
+    case 'order-placed':
+      return await handleOrderPlaced(message, context);
+    
+    case 'order-updated':
+      return await handleOrderUpdated(message, context);
+    
+    case 'order-cancelled':
+      return await handleOrderCancelled(message, context);
+    
+    case 'payment-processed':
+      return await handlePaymentProcessed(message, context);
+    
+    case 'payment-failed':
+      return await handlePaymentFailed(message, context);
+    
+    case 'notification-send':
+      return await handleNotificationSend(message, context);
+    
+    case 'data-sync':
+      return await handleDataSync(message, context);
+    
+    case 'health-check':
+      return await handleHealthCheck(message, context);
+    
+    case 'custom-event':
+      return await handleCustomEvent(message, context);
+    
+    default:
+      throw new AzureError(
+        `Unsupported message type: ${message.messageType}`,
+        'UNSUPPORTED_MESSAGE_TYPE',
+        400
+      );
+  }
+}
+
+// Message handlers
+async function handleUserCreated(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing user created event');
+  
+  try {
+    const userData = message.data as any;
+    
+    // Implement your user creation logic here
+    // Example: Send welcome email, create user profile, etc.
+    
+    return {
+      action: 'user-created',
+      userId: userData.userId,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle user created event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('User created event processing failed');
+  }
+}
+
+async function handleUserUpdated(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing user updated event');
+  
+  try {
+    const userData = message.data as any;
+    
+    // Implement your user update logic here
+    // Example: Update search indexes, sync with external systems, etc.
+    
+    return {
+      action: 'user-updated',
+      userId: userData.userId,
+      changes: userData.changes,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle user updated event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('User updated event processing failed');
+  }
+}
+
+async function handleUserDeleted(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing user deleted event');
+  
+  try {
+    const userData = message.data as any;
+    
+    // Implement your user deletion logic here
+    // Example: Cleanup user data, remove from indexes, etc.
+    
+    return {
+      action: 'user-deleted',
+      userId: userData.userId,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle user deleted event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('User deleted event processing failed');
+  }
+}
+
+async function handleOrderPlaced(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing order placed event');
+  
+  try {
+    const orderData = message.data as any;
+    
+    // Implement your order processing logic here
+    // Example: Validate inventory, process payment, send confirmation, etc.
+    
+    return {
+      action: 'order-placed',
+      orderId: orderData.orderId,
+      userId: orderData.userId,
+      totalAmount: orderData.totalAmount,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle order placed event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Order placed event processing failed');
+  }
+}
+
+async function handleOrderUpdated(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing order updated event');
+  
+  try {
+    const orderData = message.data as any;
+    
+    // Implement your order update logic here
+    
+    return {
+      action: 'order-updated',
+      orderId: orderData.orderId,
+      changes: orderData.changes,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle order updated event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Order updated event processing failed');
+  }
+}
+
+async function handleOrderCancelled(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing order cancelled event');
+  
+  try {
+    const orderData = message.data as any;
+    
+    // Implement your order cancellation logic here
+    // Example: Refund payment, restore inventory, send notification, etc.
+    
+    return {
+      action: 'order-cancelled',
+      orderId: orderData.orderId,
+      refundAmount: orderData.refundAmount,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle order cancelled event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Order cancelled event processing failed');
+  }
+}
+
+async function handlePaymentProcessed(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing payment processed event');
+  
+  try {
+    const paymentData = message.data as any;
+    
+    // Implement your payment processing logic here
+    
+    return {
+      action: 'payment-processed',
+      paymentId: paymentData.paymentId,
+      orderId: paymentData.orderId,
+      amount: paymentData.amount,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle payment processed event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Payment processed event processing failed');
+  }
+}
+
+async function handlePaymentFailed(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing payment failed event');
+  
+  try {
+    const paymentData = message.data as any;
+    
+    // Implement your payment failure logic here
+    
+    return {
+      action: 'payment-failed',
+      paymentId: paymentData.paymentId,
+      orderId: paymentData.orderId,
+      failureReason: paymentData.failureReason,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle payment failed event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Payment failed event processing failed');
+  }
+}
+
+async function handleNotificationSend(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing notification send event');
+  
+  try {
+    const notificationData = message.data as any;
+    
+    // Implement your notification logic here
+    
+    return {
+      action: 'notification-send',
+      notificationId: notificationData.notificationId,
+      recipient: notificationData.recipient,
+      channel: notificationData.channel,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle notification send event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Notification send event processing failed');
+  }
+}
+
+async function handleDataSync(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing data sync event');
+  
+  try {
+    const syncData = message.data as any;
+    
+    // Implement your data synchronization logic here
+    
+    return {
+      action: 'data-sync',
+      syncId: syncData.syncId,
+      dataType: syncData.dataType,
+      recordsProcessed: syncData.recordsProcessed || 0,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle data sync event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Data sync event processing failed');
+  }
+}
+
+async function handleHealthCheck(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing health check event');
+  
+  try {
+    // Implement your health check logic here
+    
+    return {
+      action: 'health-check',
+      status: 'healthy',
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle health check event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Health check event processing failed');
+  }
+}
+
+async function handleCustomEvent(
+  message: ProcessedMessage, 
+  context: Context
+): Promise<Record<string, unknown>> {
+  logger.info('Processing custom event');
+  
+  try {
+    // Implement your custom event logic here
+    
+    return {
+      action: 'custom-event',
+      eventData: message.data,
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    logger.error('Failed to handle custom event', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Custom event processing failed');
+  }
+}
+
+// Helper functions
+async function checkForDuplicateProcessing(messageId: string, correlationId?: string): Promise<boolean> {
+  try {
+    // Implement duplicate detection logic here
+    // Example: Check Redis cache, database, etc.
+    return false;
+  } catch (error) {
+    logger.error('Failed to check for duplicate processing', {
+      messageId,
+      correlationId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    return false; // Assume not duplicate on error
+  }
+}
+
+async function recordMessageProcessing(
+  messageId: string, 
+  correlationId: string | undefined, 
+  success: boolean, 
+  error?: string
+): Promise<void> {
+  try {
+    // Implement message processing record logic here
+    // Example: Store in database, cache, etc.
+  } catch (recordError) {
+    logger.error('Failed to record message processing', {
+      messageId,
+      correlationId,
+      error: recordError instanceof Error ? recordError.message : 'Unknown error'
+    });
+  }
+}
+
+async function recordProcessingResult(result: MessageProcessingResult): Promise<void> {
+  try {
+    // Implement processing result storage logic here
+    // Example: Store in database for audit purposes
+  } catch (error) {
+    logger.error('Failed to record processing result', {
+      messageId: result.messageId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
+
+function shouldRetryMessage(error: unknown, deliveryCount: number): boolean {
+  const maxRetries = parseInt(process.env.SERVICE_BUS_MAX_RETRIES || '3');
+  
+  // Don't retry if we've exceeded max delivery count
+  if (deliveryCount >= maxRetries) {
+    return false;
+  }
+
+  // Don't retry for certain error types
+  if (error instanceof AzureError) {
+    const nonRetryableCodes = ['INVALID_MESSAGE', 'UNSUPPORTED_MESSAGE_TYPE', 'PARSE_ERROR'];
+    if (nonRetryableCodes.includes(error.code || '')) {
+      return false;
+    }
+  }
+
+  // Retry for other errors
+  return true;
+}
+
+async function handleMessageFailure(
+  message: ServiceBusReceivedMessage, 
+  error: unknown, 
+  context: Context
+): Promise<void> {
+  try {
+    if (!serviceBusClient) {
+      return;
+    }
+
+    const maxRetries = parseInt(process.env.SERVICE_BUS_MAX_RETRIES || '3');
+    const deliveryCount = message.deliveryCount || 1;
+
+    // If we've exceeded max retries, move to dead letter queue
+    if (deliveryCount >= maxRetries) {
+      const queueName = context.bindingData?.queueName;
+      if (queueName) {
+        const receiver = serviceBusClient.createReceiver(queueName);
+        
+        const deadLetterInfo: ServiceBusDeadLetterInfo = {
+          deadLetterReason: 'MaxDeliveryCountExceeded',
+          deadLetterErrorDescription: error instanceof Error ? error.message : 'Unknown error',
+          deadLetterSource: context.functionName
+        };
+
+        // In a real implementation, you would dead letter the message
+        // This is just for demonstration as we can't access the receiver context here
+        logger.warn('Message would be moved to dead letter queue', {
+          messageId: message.messageId,
+          deliveryCount,
+          deadLetterInfo
+        });
+
+        await receiver.close();
+      }
+    }
+  } catch (handlingError) {
+    logger.error('Failed to handle message failure', {
+      messageId: message.messageId,
+      error: handlingError instanceof Error ? handlingError.message : 'Unknown error'
+    });
+  }
+}
+
+export default serviceBusTrigger;

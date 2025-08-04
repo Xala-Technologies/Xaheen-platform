@@ -1,0 +1,623 @@
+# Cloud Storage IAM Policies for {{projectName}}
+# This file defines the IAM policies for secure bucket access
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-iam-policies
+  namespace: {{projectName}}
+data:
+  # Main storage bucket policy
+  main-storage-policy.json: |
+    {
+      "bindings": [
+        {
+          "role": "roles/storage.objectAdmin",
+          "members": [
+            "serviceAccount:{{projectId}}-storage-admin@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Admin access to main storage",
+            "description": "Full access for storage admin service account",
+            "expression": "true"
+          }
+        },
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "serviceAccount:{{projectId}}-app-backend@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Read access for backend services",
+            "description": "Read-only access for application backend",
+            "expression": "resource.name.startsWith('projects/_/buckets/{{projectId}}-main-storage/objects/public/')"
+          }
+        },
+        {
+          "role": "roles/storage.objectCreator",
+          "members": [
+            "serviceAccount:{{projectId}}-upload-service@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Upload access for upload service",
+            "description": "Create access for upload service",
+            "expression": "resource.name.startsWith('projects/_/buckets/{{projectId}}-main-storage/objects/uploads/')"
+          }
+        }
+      ],
+      "etag": "BwWWja0YfJA=",
+      "version": 3
+    }
+
+  # User uploads bucket policy
+  user-uploads-policy.json: |
+    {
+      "bindings": [
+        {
+          "role": "roles/storage.objectAdmin",
+          "members": [
+            "serviceAccount:{{projectId}}-storage-admin@{{projectId}}.iam.gserviceaccount.com"
+          ]
+        },
+        {
+          "role": "roles/storage.objectCreator",
+          "members": [
+            "allAuthenticatedUsers"
+          ],
+          "condition": {
+            "title": "User upload access",
+            "description": "Authenticated users can upload to their own folders",
+            "expression": "resource.name.startsWith('projects/_/buckets/{{projectId}}-user-uploads/objects/' + request.auth.claims.sub + '/')"
+          }
+        },
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "allAuthenticatedUsers"
+          ],
+          "condition": {
+            "title": "User read access",
+            "description": "Users can read their own uploads and public files",
+            "expression": "resource.name.startsWith('projects/_/buckets/{{projectId}}-user-uploads/objects/' + request.auth.claims.sub + '/') || resource.name.startsWith('projects/_/buckets/{{projectId}}-user-uploads/objects/public/')"
+          }
+        }
+      ],
+      "etag": "BwWWja0YfJB=",
+      "version": 3
+    }
+
+  # Documents bucket policy (restricted access)
+  documents-policy.json: |
+    {
+      "bindings": [
+        {
+          "role": "roles/storage.objectAdmin",
+          "members": [
+            "serviceAccount:{{projectId}}-storage-admin@{{projectId}}.iam.gserviceaccount.com"
+          ]
+        },
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "serviceAccount:{{projectId}}-document-service@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Document service read access",
+            "description": "Document service can read all documents",
+            "expression": "true"
+          }
+        },
+        {
+          "role": "roles/storage.objectCreator",
+          "members": [
+            "serviceAccount:{{projectId}}-document-service@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Document service write access",
+            "description": "Document service can create documents",
+            "expression": "true"
+          }
+        }
+      ],
+      "etag": "BwWWja0YfJC=",
+      "version": 3
+    }
+
+  # GDPR compliant data bucket policy
+  gdpr-data-policy.json: |
+    {
+      "bindings": [
+        {
+          "role": "roles/storage.objectAdmin",
+          "members": [
+            "serviceAccount:{{projectId}}-gdpr-admin@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "GDPR admin access",
+            "description": "GDPR service has full access for data management",
+            "expression": "true"
+          }
+        },
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "serviceAccount:{{projectId}}-audit-service@{{projectId}}.iam.gserviceaccount.com"
+          ],
+          "condition": {
+            "title": "Audit service read access",
+            "description": "Audit service can read for compliance checks",
+            "expression": "true"
+          }
+        }
+      ],
+      "etag": "BwWWja0YfJD=",
+      "version": 3
+    }
+
+  # Backup bucket policy
+  backup-policy.json: |
+    {
+      "bindings": [
+        {
+          "role": "roles/storage.objectAdmin",
+          "members": [
+            "serviceAccount:{{projectId}}-backup-service@{{projectId}}.iam.gserviceaccount.com"
+          ]
+        },
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "serviceAccount:{{projectId}}-restore-service@{{projectId}}.iam.gserviceaccount.com"
+          ]
+        }
+      ],
+      "etag": "BwWWja0YfJE=",
+      "version": 3
+    }
+
+---
+# Service Account definitions
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-service-accounts
+  namespace: {{projectName}}
+data:
+  service-accounts.yaml: |
+    serviceAccounts:
+      - name: "{{projectId}}-storage-admin"
+        displayName: "Storage Admin Service Account"
+        description: "Service account for storage administration"
+        roles:
+          - "roles/storage.admin"
+          - "roles/logging.logWriter"
+          - "roles/monitoring.metricWriter"
+      
+      - name: "{{projectId}}-app-backend"
+        displayName: "Application Backend Service Account"
+        description: "Service account for backend application services"
+        roles:
+          - "roles/storage.objectViewer"
+          - "roles/logging.logWriter"
+      
+      - name: "{{projectId}}-upload-service"
+        displayName: "Upload Service Account"
+        description: "Service account for file upload operations"
+        roles:
+          - "roles/storage.objectCreator"
+          - "roles/logging.logWriter"
+      
+      - name: "{{projectId}}-document-service"
+        displayName: "Document Service Account"
+        description: "Service account for document management"
+        roles:
+          - "roles/storage.objectAdmin"
+          - "roles/logging.logWriter"
+          - "roles/secretmanager.secretAccessor"
+      
+      - name: "{{projectId}}-gdpr-admin"
+        displayName: "GDPR Admin Service Account"
+        description: "Service account for GDPR compliance operations"
+        roles:
+          - "roles/storage.admin"
+          - "roles/logging.logWriter"
+          - "roles/monitoring.metricWriter"
+          - "roles/secretmanager.admin"
+      
+      - name: "{{projectId}}-audit-service"
+        displayName: "Audit Service Account"
+        description: "Service account for audit and compliance"
+        roles:
+          - "roles/storage.objectViewer"
+          - "roles/logging.viewer"
+          - "roles/monitoring.viewer"
+      
+      - name: "{{projectId}}-backup-service"
+        displayName: "Backup Service Account"
+        description: "Service account for backup operations"
+        roles:
+          - "roles/storage.admin"
+          - "roles/logging.logWriter"
+      
+      - name: "{{projectId}}-restore-service"
+        displayName: "Restore Service Account"
+        description: "Service account for restore operations"
+        roles:
+          - "roles/storage.objectViewer"
+          - "roles/logging.logWriter"
+
+---
+# Bucket lifecycle policies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-lifecycle-policies
+  namespace: {{projectName}}
+data:
+  main-storage-lifecycle.json: |
+    {
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "NEARLINE"
+            },
+            "condition": {
+              "age": 30,
+              "matchesStorageClass": ["STANDARD"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "COLDLINE"
+            },
+            "condition": {
+              "age": 90,
+              "matchesStorageClass": ["NEARLINE"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "ARCHIVE"
+            },
+            "condition": {
+              "age": 365,
+              "matchesStorageClass": ["COLDLINE"]
+            }
+          },
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": 2555,
+              "matchesPrefix": ["temp/", "cache/"]
+            }
+          }
+        ]
+      }
+    }
+
+  user-uploads-lifecycle.json: |
+    {
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": 30,
+              "matchesPrefix": ["temp/"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "NEARLINE"
+            },
+            "condition": {
+              "age": 30,
+              "matchesStorageClass": ["STANDARD"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "COLDLINE"
+            },
+            "condition": {
+              "age": 90,
+              "matchesStorageClass": ["NEARLINE"]
+            }
+          }
+        ]
+      }
+    }
+
+  documents-lifecycle.json: |
+    {
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "NEARLINE"
+            },
+            "condition": {
+              "age": 90,
+              "matchesStorageClass": ["STANDARD"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "COLDLINE"
+            },
+            "condition": {
+              "age": 365,
+              "matchesStorageClass": ["NEARLINE"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "ARCHIVE"
+            },
+            "condition": {
+              "age": 1825,
+              "matchesStorageClass": ["COLDLINE"]
+            }
+          }
+        ]
+      }
+    }
+
+  gdpr-data-lifecycle.json: |
+    {
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": {{dataRetentionDays}},
+              "matchesPrefix": ["personal-data/"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "ARCHIVE"
+            },
+            "condition": {
+              "age": 30,
+              "matchesStorageClass": ["STANDARD"],
+              "matchesPrefix": ["audit-logs/"]
+            }
+          }
+        ]
+      }
+    }
+
+  backup-lifecycle.json: |
+    {
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "NEARLINE"
+            },
+            "condition": {
+              "age": 1,
+              "matchesStorageClass": ["STANDARD"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "COLDLINE"
+            },
+            "condition": {
+              "age": 30,
+              "matchesStorageClass": ["NEARLINE"]
+            }
+          },
+          {
+            "action": {
+              "type": "SetStorageClass",
+              "storageClass": "ARCHIVE"
+            },
+            "condition": {
+              "age": 90,
+              "matchesStorageClass": ["COLDLINE"]
+            }
+          },
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": 2555,
+              "matchesStorageClass": ["ARCHIVE"]
+            }
+          }
+        ]
+      }
+    }
+
+---
+# CORS policies for browser uploads
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-cors-policies
+  namespace: {{projectName}}
+data:
+  cors-policy.json: |
+    [
+      {
+        "origin": [
+          "https://{{projectName}}.com",
+          "https://www.{{projectName}}.com",
+          "https://app.{{projectName}}.com",
+          "https://admin.{{projectName}}.com"
+        ],
+        "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+        "responseHeader": [
+          "Content-Type",
+          "Access-Control-Allow-Origin",
+          "Access-Control-Allow-Methods",
+          "Access-Control-Allow-Headers",
+          "Access-Control-Max-Age",
+          "ETag",
+          "x-goog-hash",
+          "x-goog-generation",
+          "x-goog-metageneration"
+        ],
+        "maxAgeSeconds": 3600
+      }
+    ]
+
+  cors-policy-dev.json: |
+    [
+      {
+        "origin": ["*"],
+        "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+        "responseHeader": ["*"],
+        "maxAgeSeconds": 3600
+      }
+    ]
+
+---
+# Security scanning and monitoring configurations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-security-config
+  namespace: {{projectName}}
+data:
+  security-policy.yaml: |
+    securityPolicies:
+      # Anti-virus scanning for uploads
+      virusScanning:
+        enabled: true
+        quarantineBucket: "{{projectId}}-quarantine"
+        allowedFileTypes:
+          - "image/jpeg"
+          - "image/png"
+          - "image/gif"
+          - "image/webp"
+          - "application/pdf"
+          - "text/plain"
+          - "text/csv"
+          - "application/json"
+        blockedFileTypes:
+          - "application/x-executable"
+          - "application/x-msdownload"
+          - "application/x-msdos-program"
+        maxFileSize: 104857600  # 100MB
+
+      # Data Loss Prevention (DLP)
+      dlpScanning:
+        enabled: true
+        inspectTemplates:
+          - "PII_DETECTION"
+          - "CREDIT_CARD_DETECTION"
+          - "SSN_DETECTION"
+          - "NORWAY_PERSONAL_NUMBER"
+        actions:
+          - "QUARANTINE"
+          - "LOG_VIOLATION"
+          - "NOTIFY_ADMIN"
+
+      # Encryption settings
+      encryption:
+        defaultKmsKeyName: "projects/{{projectId}}/locations/global/keyRings/{{projectName}}-storage/cryptoKeys/storage-key"
+        customerManagedEncryption: true
+        rotationPeriod: "2592000s"  # 30 days
+
+      # Access logging
+      accessLogging:
+        enabled: true
+        logBucket: "{{projectId}}-access-logs"
+        retentionDays: 365
+        includePayload: false
+
+      # Audit logging
+      auditLogging:
+        enabled: true
+        logTypes:
+          - "DATA_READ"
+          - "DATA_WRITE"
+          - "ADMIN_READ"
+        exemptedMembers: []
+
+      # Monitoring and alerting
+      monitoring:
+        enabled: true
+        alerts:
+          - name: "unusual-download-activity"
+            condition: "download_requests > 1000 per hour"
+            severity: "WARNING"
+          - name: "unauthorized-access-attempt"
+            condition: "403_errors > 10 per minute"
+            severity: "CRITICAL"
+          - name: "large-file-upload"
+            condition: "file_size > 100MB"
+            severity: "INFO"
+          - name: "suspicious-file-type"
+            condition: "blocked_file_type_upload"
+            severity: "HIGH"
+
+---
+# Backup and disaster recovery configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-backup-config
+  namespace: {{projectName}}
+data:
+  backup-policy.yaml: |
+    backupPolicies:
+      main-storage:
+        enabled: true
+        schedule: "0 2 * * *"  # Daily at 2 AM
+        retentionDays: 30
+        crossRegionReplication:
+          enabled: true
+          destinationRegion: "europe-north1"
+        incrementalBackup: true
+
+      documents:
+        enabled: true
+        schedule: "0 1 * * *"  # Daily at 1 AM
+        retentionDays: 2555  # 7 years for compliance
+        crossRegionReplication:
+          enabled: true
+          destinationRegion: "europe-north1"
+        incrementalBackup: true
+        encryptionKey: "projects/{{projectId}}/locations/global/keyRings/{{projectName}}-backup/cryptoKeys/backup-key"
+
+      user-uploads:
+        enabled: true
+        schedule: "0 3 * * 0"  # Weekly on Sunday at 3 AM
+        retentionDays: 90
+        crossRegionReplication:
+          enabled: false
+
+    restorePolicies:
+      pointInTimeRecovery:
+        enabled: true
+        retentionDays: 30
+      
+      disasterRecovery:
+        enabled: true
+        rpoMinutes: 60  # Recovery Point Objective
+        rtoMinutes: 240  # Recovery Time Objective
+        testSchedule: "0 0 1 * *"  # Monthly test

@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{manifest.metadata.name}}
+  namespace: {{manifest.metadata.namespace}}
+  labels:
+    {{#each manifest.metadata.labels}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{#if manifest.metadata.annotations}}
+  annotations:
+    {{#each manifest.metadata.annotations}}
+    {{@key}}: {{this}}
+    {{/each}}
+  {{/if}}
+spec:
+  {{#if manifest.spec.ingressClassName}}
+  ingressClassName: {{manifest.spec.ingressClassName}}
+  {{/if}}
+  {{#if manifest.spec.tls}}
+  tls:
+  {{#each manifest.spec.tls}}
+  - hosts:
+    {{#each hosts}}
+    - {{this}}
+    {{/each}}
+    secretName: {{secretName}}
+  {{/each}}
+  {{/if}}
+  rules:
+  {{#each manifest.spec.rules}}
+  - host: {{host}}
+    http:
+      paths:
+      {{#each http.paths}}
+      - path: {{path}}
+        pathType: {{pathType}}
+        backend:
+          service:
+            name: {{backend.service.name}}
+            port:
+              number: {{backend.service.port.number}}
+      {{/each}}
+  {{/each}}

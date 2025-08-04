@@ -1,0 +1,139 @@
+name: {{name}}
+
+on:
+  {{#if on.push}}
+  push:
+    {{#if on.push.branches}}
+    branches:
+      {{#each on.push.branches}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    {{#if on.push.paths}}
+    paths:
+      {{#each on.push.paths}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+  {{#if on.pull_request}}
+  pull_request:
+    {{#if on.pull_request.branches}}
+    branches:
+      {{#each on.pull_request.branches}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    {{#if on.pull_request.paths}}
+    paths:
+      {{#each on.pull_request.paths}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+  {{#if on.schedule}}
+  schedule:
+    {{#each on.schedule}}
+    - cron: '{{cron}}'
+    {{/each}}
+  {{/if}}
+  {{#if on.workflow_dispatch}}
+  workflow_dispatch: {}
+  {{/if}}
+  {{#if on.release}}
+  release:
+    {{#if on.release.types}}
+    types:
+      {{#each on.release.types}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/if}}
+
+{{#if concurrency}}
+concurrency:
+  group: {{concurrency.group}}
+  cancel-in-progress: {{concurrency.cancel_in_progress}}
+{{/if}}
+
+{{#if env}}
+env:
+  {{#each env}}
+  {{@key}}: {{this}}
+  {{/each}}
+{{/if}}
+
+jobs:
+  {{#each jobs}}
+  {{@key}}:
+    name: {{name}}
+    runs-on: {{runs_on}}
+    {{#if needs}}
+    needs: 
+      {{#if (eq (typeof needs) "string")}}
+      - {{needs}}
+      {{else}}
+      {{#each needs}}
+      - {{this}}
+      {{/each}}
+      {{/if}}
+    {{/if}}
+    {{#if if}}
+    if: {{if}}
+    {{/if}}
+    {{#if environment}}
+    environment: {{environment}}
+    {{/if}}
+    {{#if timeout_minutes}}
+    timeout-minutes: {{timeout_minutes}}
+    {{/if}}
+    {{#if strategy}}
+    strategy:
+      {{#if strategy.matrix}}
+      matrix:
+        {{#each strategy.matrix}}
+        {{@key}}:
+          {{#each this}}
+          - {{this}}
+          {{/each}}
+        {{/each}}
+      {{/if}}
+      {{#if strategy.fail_fast}}
+      fail-fast: {{strategy.fail_fast}}
+      {{/if}}
+      {{#if strategy.max_parallel}}
+      max-parallel: {{strategy.max_parallel}}
+      {{/if}}
+    {{/if}}
+    steps:
+    {{#each steps}}
+    - name: {{name}}
+      {{#if uses}}
+      uses: {{uses}}
+      {{/if}}
+      {{#if run}}
+      run: {{run}}
+      {{/if}}
+      {{#if with}}
+      with:
+        {{#each with}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+      {{#if env}}
+      env:
+        {{#each env}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+      {{#if if}}
+      if: {{if}}
+      {{/if}}
+      {{#if continue_on_error}}
+      continue-on-error: {{continue_on_error}}
+      {{/if}}
+      {{#if timeout_minutes}}
+      timeout-minutes: {{timeout_minutes}}
+      {{/if}}
+    {{/each}}
+  {{/each}}

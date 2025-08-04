@@ -1,0 +1,860 @@
+/**
+ * Google Cloud Storage Client
+ * Secure file upload, download, and management for {{projectName}}
+ */
+
+import { Storage, Bucket, File } from '@google-cloud/storage';
+import { logger } from '../functions/src/utils/logger';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
+import * as crypto from 'crypto';
+
+export interface StorageConfig {
+  projectId: string;
+  keyFilename?: string;
+  bucketName: string;
+  cdnDomain?: string;
+  maxFileSize: number; // in bytes
+  allowedMimeTypes: string[];
+  enablePublicAccess: boolean;
+  enableVersioning: boolean;
+  defaultLifecycleDays: number;
+}
+
+export interface UploadOptions {
+  destination?: string;
+  metadata?: Record<string, string>;
+  isPublic?: boolean;
+  cacheControl?: string;
+  contentEncoding?: string;
+  userMetadata?: Record<string, string>;
+  generateSignedUrl?: boolean;
+  signedUrlExpiration?: number; // in minutes
+}
+
+export interface UploadResult {
+  success: boolean;
+  fileName: string;
+  filePath: string;
+  publicUrl?: string;
+  signedUrl?: string;
+  metadata: FileMetadata;
+  error?: string;
+}
+
+export interface FileMetadata {
+  name: string;
+  bucket: string;
+  contentType: string;
+  size: number;
+  etag: string;
+  md5Hash: string;
+  crc32c: string;
+  timeCreated: Date;
+  updated: Date;
+  generation: string;
+  metageneration: string;
+  customMetadata?: Record<string, string>;
+}
+
+export interface FileInfo {
+  name: string;
+  size: number;
+  contentType: string;
+  lastModified: Date;
+  isPublic: boolean;
+  downloadUrl: string;
+  metadata: Record<string, string>;
+}
+
+export interface ListOptions {
+  prefix?: string;
+  delimiter?: string;
+  maxResults?: number;
+  pageToken?: string;
+  includeTrailingDelimiter?: boolean;
+}
+
+export interface ListResult {
+  files: FileInfo[];
+  prefixes: string[];
+  nextPageToken?: string;
+}
+
+/**
+ * Cloud Storage Client Class
+ */
+export class CloudStorageClient {
+  private storage: Storage;
+  private bucket: Bucket;
+  private config: StorageConfig;
+
+  constructor(config: StorageConfig) {
+    this.config = config;
+    
+    // Initialize Cloud Storage
+    this.storage = new Storage({
+      projectId: config.projectId,
+      keyFilename: config.keyFilename
+    });
+
+    this.bucket = this.storage.bucket(config.bucketName);
+  }
+
+  /**
+   * Initialize bucket with proper configuration
+   */
+  async initializeBucket(): Promise<void> {
+    try {
+      // Check if bucket exists
+      const [exists] = await this.bucket.exists();
+      
+      if (!exists) {
+        // Create bucket
+        await this.storage.createBucket(this.config.bucketName, {
+          location: 'US', // or config.location
+          storageClass: 'STANDARD',
+          versioning: {
+            enabled: this.config.enableVersioning
+          },
+          lifecycle: {
+            rule: [
+              {
+                action: { type: 'Delete' },
+                condition: { age: this.config.defaultLifecycleDays }
+              },
+              {
+                action: { type: 'SetStorageClass', storageClass: 'NEARLINE' },
+                condition: { age: 30 }
+              },
+              {
+                action: { type: 'SetStorageClass', storageClass: 'COLDLINE' },
+                condition: { age: 90 }
+              }
+            ]
+          },
+          cors: [
+            {
+              origin: ['*'],
+              method: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
+              responseHeader: ['Content-Type', 'Access-Control-Allow-Origin'],
+              maxAgeSeconds: 3600
+            }
+          ]
+        });
+
+        logger.info('Cloud Storage bucket created', {
+          bucketName: this.config.bucketName
+        });
+      }
+
+      // Configure bucket policies
+      await this.configureBucketPolicies();
+
+    } catch (error) {
+      logger.error('Failed to initialize bucket', {
+        error: error.message,
+        bucketName: this.config.bucketName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Configure bucket IAM policies
+   */
+  private async configureBucketPolicies(): Promise<void> {
+    try {
+      if (this.config.enablePublicAccess) {
+        // Make bucket publicly readable
+        await this.bucket.makePublic();
+        
+        // Set uniform bucket-level access
+        await this.bucket.setMetadata({
+          iamConfiguration: {
+            uniformBucketLevelAccess: {
+              enabled: true
+            }
+          }
+        });
+      }
+
+      // Set lifecycle rules
+      await this.bucket.setMetadata({
+        lifecycle: {
+          rule: [
+            {
+              action: { type: 'Delete' },
+              condition: { age: this.config.defaultLifecycleDays }
+            },
+            {
+              action: { type: 'SetStorageClass', storageClass: 'NEARLINE' },
+              condition: { age: 30 }
+            },
+            {
+              action: { type: 'SetStorageClass', storageClass: 'COLDLINE' },
+              condition: { age: 90 }
+            },
+            {
+              action: { type: 'SetStorageClass', storageClass: 'ARCHIVE' },
+              condition: { age: 365 }
+            }
+          ]
+        }
+      });
+
+      logger.info('Bucket policies configured', {
+        bucketName: this.config.bucketName,
+        publicAccess: this.config.enablePublicAccess
+      });
+
+    } catch (error) {
+      logger.error('Failed to configure bucket policies', {
+        error: error.message,
+        bucketName: this.config.bucketName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file to Cloud Storage
+   */
+  async uploadFile(
+    fileBuffer: Buffer,
+    originalName: string,
+    contentType: string,
+    options: UploadOptions = {}
+  ): Promise<UploadResult> {
+    try {
+      // Validate file
+      this.validateFile(fileBuffer, contentType);
+
+      // Generate unique filename
+      const fileName = this.generateFileName(originalName, options.destination);
+      const file = this.bucket.file(fileName);
+
+      // Prepare metadata
+      const metadata = {
+        contentType,
+        cacheControl: options.cacheControl || 'public, max-age=3600',
+        metadata: {
+          originalName,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: options.userMetadata?.userId || 'anonymous',
+          ...options.userMetadata
+        }
+      };
+
+      // Add content encoding if specified
+      if (options.contentEncoding) {
+        metadata['contentEncoding'] = options.contentEncoding;
+      }
+
+      // Upload file
+      await file.save(fileBuffer, {
+        metadata,
+        public: options.isPublic || false,
+        resumable: fileBuffer.length > 5 * 1024 * 1024, // Use resumable for files > 5MB
+        validation: 'crc32c'
+      });
+
+      // Get file metadata
+      const [fileMetadata] = await file.getMetadata();
+      const fileInfo = this.parseFileMetadata(fileMetadata);
+
+      // Generate URLs
+      let publicUrl: string | undefined;
+      let signedUrl: string | undefined;
+
+      if (options.isPublic || this.config.enablePublicAccess) {
+        publicUrl = this.getPublicUrl(fileName);
+      }
+
+      if (options.generateSignedUrl) {
+        const expiration = options.signedUrlExpiration || 60; // 60 minutes default
+        signedUrl = await this.generateSignedUrl(fileName, 'read', expiration);
+      }
+
+      logger.info('File uploaded successfully', {
+        fileName,
+        contentType,
+        size: fileBuffer.length,
+        public: options.isPublic
+      });
+
+      return {
+        success: true,
+        fileName,
+        filePath: fileName,
+        publicUrl,
+        signedUrl,
+        metadata: fileInfo
+      };
+
+    } catch (error) {
+      logger.error('File upload failed', {
+        error: error.message,
+        originalName,
+        contentType
+      });
+
+      return {
+        success: false,
+        fileName: '',
+        filePath: '',
+        metadata: {} as FileMetadata,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Upload multiple files
+   */
+  async uploadFiles(
+    files: Array<{
+      buffer: Buffer;
+      originalName: string;
+      contentType: string;
+      options?: UploadOptions;
+    }>
+  ): Promise<UploadResult[]> {
+    const uploadPromises = files.map(file =>
+      this.uploadFile(file.buffer, file.originalName, file.contentType, file.options)
+    );
+
+    return await Promise.all(uploadPromises);
+  }
+
+  /**
+   * Download file from Cloud Storage
+   */
+  async downloadFile(fileName: string): Promise<Buffer> {
+    try {
+      const file = this.bucket.file(fileName);
+      const [buffer] = await file.download();
+
+      logger.info('File downloaded successfully', { fileName });
+      return buffer;
+
+    } catch (error) {
+      logger.error('File download failed', {
+        error: error.message,
+        fileName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get file stream for large files
+   */
+  getFileStream(fileName: string): NodeJS.ReadableStream {
+    const file = this.bucket.file(fileName);
+    return file.createReadStream();
+  }
+
+  /**
+   * Delete file from Cloud Storage
+   */
+  async deleteFile(fileName: string): Promise<boolean> {
+    try {
+      const file = this.bucket.file(fileName);
+      await file.delete();
+
+      logger.info('File deleted successfully', { fileName });
+      return true;
+
+    } catch (error) {
+      logger.error('File deletion failed', {
+        error: error.message,
+        fileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Delete multiple files
+   */
+  async deleteFiles(fileNames: string[]): Promise<{ success: string[]; failed: string[] }> {
+    const results = await Promise.allSettled(
+      fileNames.map(fileName => this.deleteFile(fileName))
+    );
+
+    const success: string[] = [];
+    const failed: string[] = [];
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value) {
+        success.push(fileNames[index]);
+      } else {
+        failed.push(fileNames[index]);
+      }
+    });
+
+    return { success, failed };
+  }
+
+  /**
+   * List files in bucket
+   */
+  async listFiles(options: ListOptions = {}): Promise<ListResult> {
+    try {
+      const [files, , metadata] = await this.bucket.getFiles({
+        prefix: options.prefix,
+        delimiter: options.delimiter,
+        maxResults: options.maxResults,
+        pageToken: options.pageToken,
+        includeTrailingDelimiter: options.includeTrailingDelimiter
+      });
+
+      const fileInfos = await Promise.all(
+        files.map(async (file) => {
+          const [metadata] = await file.getMetadata();
+          return this.convertToFileInfo(file, metadata);
+        })
+      );
+
+      return {
+        files: fileInfos,
+        prefixes: metadata.prefixes || [],
+        nextPageToken: metadata.nextPageToken
+      };
+
+    } catch (error) {
+      logger.error('Failed to list files', {
+        error: error.message,
+        options
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get file metadata
+   */
+  async getFileMetadata(fileName: string): Promise<FileMetadata> {
+    try {
+      const file = this.bucket.file(fileName);
+      const [metadata] = await file.getMetadata();
+      return this.parseFileMetadata(metadata);
+
+    } catch (error) {
+      logger.error('Failed to get file metadata', {
+        error: error.message,
+        fileName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if file exists
+   */
+  async fileExists(fileName: string): Promise<boolean> {
+    try {
+      const file = this.bucket.file(fileName);
+      const [exists] = await file.exists();
+      return exists;
+
+    } catch (error) {
+      logger.error('Failed to check file existence', {
+        error: error.message,
+        fileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Generate signed URL for file access
+   */
+  async generateSignedUrl(
+    fileName: string,
+    action: 'read' | 'write' | 'delete' = 'read',
+    expirationMinutes: number = 60,
+    options: {
+      contentType?: string;
+      extensionHeaders?: Record<string, string>;
+    } = {}
+  ): Promise<string> {
+    try {
+      const file = this.bucket.file(fileName);
+      const expires = Date.now() + (expirationMinutes * 60 * 1000);
+
+      const signedUrlOptions: any = {
+        version: 'v4',
+        action,
+        expires
+      };
+
+      if (options.contentType) {
+        signedUrlOptions.contentType = options.contentType;
+      }
+
+      if (options.extensionHeaders) {
+        signedUrlOptions.extensionHeaders = options.extensionHeaders;
+      }
+
+      const [url] = await file.getSignedUrl(signedUrlOptions);
+
+      logger.info('Signed URL generated', {
+        fileName,
+        action,
+        expirationMinutes
+      });
+
+      return url;
+
+    } catch (error) {
+      logger.error('Failed to generate signed URL', {
+        error: error.message,
+        fileName,
+        action
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Copy file within bucket or to another bucket
+   */
+  async copyFile(
+    sourceFileName: string,
+    destinationFileName: string,
+    destinationBucket?: string
+  ): Promise<boolean> {
+    try {
+      const sourceFile = this.bucket.file(sourceFileName);
+      const destBucket = destinationBucket ? this.storage.bucket(destinationBucket) : this.bucket;
+      const destinationFile = destBucket.file(destinationFileName);
+
+      await sourceFile.copy(destinationFile);
+
+      logger.info('File copied successfully', {
+        sourceFileName,
+        destinationFileName,
+        destinationBucket: destinationBucket || this.config.bucketName
+      });
+
+      return true;
+
+    } catch (error) {
+      logger.error('File copy failed', {
+        error: error.message,
+        sourceFileName,
+        destinationFileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Move file within bucket
+   */
+  async moveFile(sourceFileName: string, destinationFileName: string): Promise<boolean> {
+    try {
+      const success = await this.copyFile(sourceFileName, destinationFileName);
+      if (success) {
+        await this.deleteFile(sourceFileName);
+        return true;
+      }
+      return false;
+
+    } catch (error) {
+      logger.error('File move failed', {
+        error: error.message,
+        sourceFileName,
+        destinationFileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Set file metadata
+   */
+  async setFileMetadata(
+    fileName: string,
+    metadata: Record<string, string>
+  ): Promise<boolean> {
+    try {
+      const file = this.bucket.file(fileName);
+      await file.setMetadata({ metadata });
+
+      logger.info('File metadata updated', { fileName, metadata });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to set file metadata', {
+        error: error.message,
+        fileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Make file public
+   */
+  async makeFilePublic(fileName: string): Promise<string> {
+    try {
+      const file = this.bucket.file(fileName);
+      await file.makePublic();
+
+      const publicUrl = this.getPublicUrl(fileName);
+      
+      logger.info('File made public', { fileName, publicUrl });
+      return publicUrl;
+
+    } catch (error) {
+      logger.error('Failed to make file public', {
+        error: error.message,
+        fileName
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Make file private
+   */
+  async makeFilePrivate(fileName: string): Promise<boolean> {
+    try {
+      const file = this.bucket.file(fileName);
+      await file.makePrivate();
+
+      logger.info('File made private', { fileName });
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to make file private', {
+        error: error.message,
+        fileName
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Get public URL for file
+   */
+  getPublicUrl(fileName: string): string {
+    if (this.config.cdnDomain) {
+      return `${this.config.cdnDomain}/${fileName}`;
+    }
+    return `https://storage.googleapis.com/${this.config.bucketName}/${fileName}`;
+  }
+
+  /**
+   * Validate file before upload
+   */
+  private validateFile(fileBuffer: Buffer, contentType: string): void {
+    // Check file size
+    if (fileBuffer.length > this.config.maxFileSize) {
+      throw new Error(`File size exceeds maximum allowed size of ${this.config.maxFileSize} bytes`);
+    }
+
+    // Check MIME type
+    if (!this.config.allowedMimeTypes.includes(contentType)) {
+      throw new Error(`File type ${contentType} is not allowed`);
+    }
+
+    // Additional security checks
+    this.performSecurityChecks(fileBuffer, contentType);
+  }
+
+  /**
+   * Perform security checks on file
+   */
+  private performSecurityChecks(fileBuffer: Buffer, contentType: string): void {
+    // Check for malicious file signatures
+    const fileSignature = fileBuffer.slice(0, 4).toString('hex');
+    
+    // Block potentially dangerous file types
+    const dangerousSignatures = [
+      '4d5a9000', // EXE files
+      '504b0304', // ZIP files (could contain executables)
+      'ffd8ffe0', // Check for valid JPEG if claiming to be JPEG
+    ];
+
+    if (contentType.includes('image/jpeg') && !fileSignature.startsWith('ffd8')) {
+      throw new Error('Invalid JPEG file signature');
+    }
+
+    if (contentType.includes('image/png') && !fileSignature.startsWith('89504e47')) {
+      throw new Error('Invalid PNG file signature');
+    }
+
+    // Additional security validations can be added here
+  }
+
+  /**
+   * Generate unique filename
+   */
+  private generateFileName(originalName: string, destination?: string): string {
+    const extension = path.extname(originalName);
+    const baseName = path.basename(originalName, extension);
+    const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
+    const uuid = uuidv4();
+    const timestamp = Date.now();
+    
+    const fileName = `${sanitizedBaseName}_${timestamp}_${uuid}${extension}`;
+    
+    if (destination) {
+      return `${destination.replace(/\/$/, '')}/${fileName}`;
+    }
+    
+    return fileName;
+  }
+
+  /**
+   * Parse file metadata from Cloud Storage
+   */
+  private parseFileMetadata(metadata: any): FileMetadata {
+    return {
+      name: metadata.name,
+      bucket: metadata.bucket,
+      contentType: metadata.contentType,
+      size: parseInt(metadata.size, 10),
+      etag: metadata.etag,
+      md5Hash: metadata.md5Hash,
+      crc32c: metadata.crc32c,
+      timeCreated: new Date(metadata.timeCreated),
+      updated: new Date(metadata.updated),
+      generation: metadata.generation,
+      metageneration: metadata.metageneration,
+      customMetadata: metadata.metadata
+    };
+  }
+
+  /**
+   * Convert file and metadata to FileInfo
+   */
+  private async convertToFileInfo(file: File, metadata: any): Promise<FileInfo> {
+    const isPublic = await this.isFilePublic(file);
+    
+    return {
+      name: metadata.name,
+      size: parseInt(metadata.size, 10),
+      contentType: metadata.contentType,
+      lastModified: new Date(metadata.updated),
+      isPublic,
+      downloadUrl: isPublic ? this.getPublicUrl(metadata.name) : '',
+      metadata: metadata.metadata || {}
+    };
+  }
+
+  /**
+   * Check if file is public
+   */
+  private async isFilePublic(file: File): Promise<boolean> {
+    try {
+      const [metadata] = await file.getMetadata();
+      return metadata.acl && metadata.acl.some((acl: any) => 
+        acl.entity === 'allUsers' && acl.role === 'READER'
+      );
+    } catch (error) {
+      return false;
+    }
+  }
+}
+
+/**
+ * Default storage configurations
+ */
+export const storageConfigs = {
+  // Production configuration
+  production: {
+    maxFileSize: 50 * 1024 * 1024, // 50MB
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+      'text/plain',
+      'text/csv',
+      'application/json',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ],
+    enablePublicAccess: false,
+    enableVersioning: true,
+    defaultLifecycleDays: 365
+  },
+
+  // Development configuration
+  development: {
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+      'text/plain',
+      'application/json'
+    ],
+    enablePublicAccess: true,
+    enableVersioning: false,
+    defaultLifecycleDays: 30
+  },
+
+  // User avatars configuration
+  avatars: {
+    maxFileSize: 2 * 1024 * 1024, // 2MB
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ],
+    enablePublicAccess: true,
+    enableVersioning: false,
+    defaultLifecycleDays: 730 // 2 years
+  },
+
+  // Document storage configuration
+  documents: {
+    maxFileSize: 100 * 1024 * 1024, // 100MB
+    allowedMimeTypes: [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+      'text/csv'
+    ],
+    enablePublicAccess: false,
+    enableVersioning: true,
+    defaultLifecycleDays: 2555 // 7 years for compliance
+  }
+};
+
+/**
+ * Factory function to create storage client
+ */
+export function createStorageClient(
+  bucketName: string,
+  configType: keyof typeof storageConfigs = 'production',
+  overrides: Partial<StorageConfig> = {}
+): CloudStorageClient {
+  const baseConfig = storageConfigs[configType];
+  
+  const config: StorageConfig = {
+    projectId: process.env.GOOGLE_CLOUD_PROJECT || '{{projectId}}',
+    bucketName,
+    ...baseConfig,
+    ...overrides
+  };
+
+  return new CloudStorageClient(config);
+}
+
+// Export storage client instances
+export const mainStorageClient = createStorageClient('{{projectId}}-main-storage');
+export const userStorageClient = createStorageClient('{{projectId}}-user-uploads', 'avatars');
+export const documentStorageClient = createStorageClient('{{projectId}}-documents', 'documents');

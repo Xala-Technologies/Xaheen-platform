@@ -19,6 +19,10 @@ import { TemplateManager } from "./templates/TemplateManager.js";
 import specificationTools, {
 	specificationToolHandlers,
 } from "./tools/specification-tools.js";
+import {
+	componentRetrievalTools,
+	componentRetrievalToolHandlers,
+} from "./tools/component-retrieval-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 
 // Zod schemas for validation
@@ -206,6 +210,8 @@ class XalaUISystemMCPServer {
 		this.server.setRequestHandler(ListToolsRequestSchema, async () => {
 			return {
 				tools: [
+					// Component retrieval tools (inspired by shadcn-ui MCP)
+					...componentRetrievalTools,
 					// Specification-based tools
 					...specificationTools.tools,
 					{
@@ -612,7 +618,30 @@ class XalaUISystemMCPServer {
 			const { name, arguments: args } = request.params;
 
 			try {
-				// Handle specification-based tools first
+				// Handle component retrieval tools first
+				if (
+					componentRetrievalToolHandlers[
+						name as keyof typeof componentRetrievalToolHandlers
+					]
+				) {
+					const result =
+						await componentRetrievalToolHandlers[
+							name as keyof typeof componentRetrievalToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+
+				// Handle specification-based tools
 				if (
 					specificationToolHandlers[
 						name as keyof typeof specificationToolHandlers

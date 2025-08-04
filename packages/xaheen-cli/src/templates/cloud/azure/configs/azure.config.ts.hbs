@@ -1,0 +1,219 @@
+/**
+ * Azure Configuration
+ * 
+ * Centralized configuration for Azure services with environment-specific settings
+ * and comprehensive security configurations.
+ */
+
+export interface AzureConfig {
+  readonly subscription: {
+    readonly id: string;
+    readonly tenantId: string;
+  };
+  readonly resourceGroup: {
+    readonly name: string;
+    readonly location: string;
+  };
+  readonly environment: 'development' | 'staging' | 'production';
+  readonly services: {
+    readonly keyVault: {
+      readonly enabled: boolean;
+      readonly name?: string;
+      readonly url?: string;
+    };
+    readonly servicebus: {
+      readonly enabled: boolean;
+      readonly namespace?: string;
+      readonly connectionString?: string;
+    };
+    readonly database: {
+      readonly enabled: boolean;
+      readonly server?: string;
+      readonly name?: string;
+    };
+    readonly storage: {
+      readonly enabled: boolean;
+      readonly accountName?: string;
+    };
+    readonly aiServices: {
+      readonly enabled: boolean;
+      readonly endpoint?: string;
+      readonly region?: string;
+    };
+  };
+  readonly monitoring: {
+    readonly applicationInsights: {
+      readonly enabled: boolean;
+      readonly instrumentationKey?: string;
+      readonly connectionString?: string;
+    };
+    readonly logAnalytics: {
+      readonly enabled: boolean;
+      readonly workspaceId?: string;
+    };
+  };
+  readonly security: {
+    readonly managedIdentity: boolean;
+    readonly rbacEnabled: boolean;
+    readonly networkRestrictions: boolean;
+  };
+  readonly tags: Record<string, string>;
+}
+
+const azureConfig: AzureConfig = {
+  subscription: {
+    id: process.env.AZURE_SUBSCRIPTION_ID || '{{subscriptionId}}',
+    tenantId: process.env.AZURE_TENANT_ID || '{{tenantId}}'
+  },
+  resourceGroup: {
+    name: process.env.AZURE_RESOURCE_GROUP || '{{resourceGroupName}}',
+    location: process.env.AZURE_LOCATION || '{{location}}'
+  },
+  environment: (process.env.NODE_ENV as 'development' | 'staging' | 'production') || '{{environment}}',
+  services: {
+    keyVault: {
+      enabled: {{#if enableKeyVault}}true{{else}}false{{/if}},
+      name: process.env.AZURE_KEYVAULT_NAME,
+      url: process.env.AZURE_KEYVAULT_URL
+    },
+    servicebus: {
+      enabled: {{#if enableServiceBus}}true{{else}}false{{/if}},
+      namespace: process.env.AZURE_SERVICEBUS_NAMESPACE,
+      connectionString: process.env.AZURE_SERVICEBUS_CONNECTION_STRING
+    },
+    database: {
+      enabled: {{#if enableSqlDatabase}}true{{else}}false{{/if}},
+      server: process.env.AZURE_SQL_SERVER,
+      name: process.env.AZURE_SQL_DATABASE
+    },
+    storage: {
+      enabled: true,
+      accountName: process.env.AZURE_STORAGE_ACCOUNT_NAME
+    },
+    aiServices: {
+      enabled: {{#if enableAiServices}}true{{else}}false{{/if}},
+      endpoint: process.env.AZURE_AI_SERVICES_ENDPOINT,
+      region: process.env.AZURE_AI_SERVICES_REGION
+    }
+  },
+  monitoring: {
+    applicationInsights: {
+      enabled: {{#if enableDiagnostics}}true{{else}}false{{/if}},
+      instrumentationKey: process.env.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY,
+      connectionString: process.env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    },
+    logAnalytics: {
+      enabled: {{#if enableDiagnostics}}true{{else}}false{{/if}},
+      workspaceId: process.env.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    }
+  },
+  security: {
+    managedIdentity: {{#if useEntraId}}true{{else}}false{{/if}},
+    rbacEnabled: true,
+    networkRestrictions: {{#if (eq environment 'production')}}true{{else}}false{{/if}}
+  },
+  tags: {
+    Environment: '{{environment}}',
+    Project: process.env.PROJECT_NAME || 'xaheen-project',
+    Owner: process.env.PROJECT_OWNER || 'xaheen-team',
+    CostCenter: process.env.COST_CENTER || 'engineering',
+    ...{{json tags}}
+  }
+};
+
+// Validation function to ensure all required configuration is present
+export function validateAzureConfig(config: AzureConfig): void {
+  const errors: string[] = [];
+
+  if (!config.subscription.id) {
+    errors.push('Azure subscription ID is required');
+  }
+
+  if (!config.subscription.tenantId) {
+    errors.push('Azure tenant ID is required');
+  }
+
+  if (!config.resourceGroup.name) {
+    errors.push('Azure resource group name is required');
+  }
+
+  if (!config.resourceGroup.location) {
+    errors.push('Azure location is required');
+  }
+
+  if (config.services.keyVault.enabled && !config.services.keyVault.name) {
+    errors.push('Key Vault name is required when Key Vault is enabled');
+  }
+
+  if (config.services.servicebus.enabled && !config.services.servicebus.namespace) {
+    errors.push('Service Bus namespace is required when Service Bus is enabled');
+  }
+
+  if (config.services.database.enabled && (!config.services.database.server || !config.services.database.name)) {
+    errors.push('Database server and name are required when SQL Database is enabled');
+  }
+
+  if (config.monitoring.applicationInsights.enabled && !config.monitoring.applicationInsights.connectionString) {
+    console.warn('Application Insights connection string is not set - monitoring may be limited');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Azure configuration validation failed:\n${errors.join('\n')}`);
+  }
+}
+
+// Validate configuration on import
+try {
+  validateAzureConfig(azureConfig);
+} catch (error) {
+  console.error('Azure configuration validation failed:', error);
+  // In production, we might want to exit the process
+  if (azureConfig.environment === 'production') {
+    process.exit(1);
+  }
+}
+
+export default azureConfig;
+
+// Helper functions for common configuration patterns
+export const getKeyVaultUrl = (): string => {
+  if (!azureConfig.services.keyVault.enabled) {
+    throw new Error('Key Vault is not enabled');
+  }
+  return azureConfig.services.keyVault.url || `https://${azureConfig.services.keyVault.name}.vault.azure.net/`;
+};
+
+export const getServiceBusConnectionString = (): string => {
+  if (!azureConfig.services.servicebus.enabled) {
+    throw new Error('Service Bus is not enabled');
+  }
+  return azureConfig.services.servicebus.connectionString || '';
+};
+
+export const getDatabaseConnectionString = (): string => {
+  if (!azureConfig.services.database.enabled) {
+    throw new Error('SQL Database is not enabled');
+  }
+  
+  const server = azureConfig.services.database.server;
+  const database = azureConfig.services.database.name;
+  
+  // Use Azure AD authentication for enhanced security
+  return `Server=tcp:${server}.database.windows.net,1433;Database=${database};Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;Connection Timeout=30;`;
+};
+
+export const getStorageConnectionString = (): string => {
+  const accountName = azureConfig.services.storage.accountName;
+  if (!accountName) {
+    throw new Error('Storage account name is not configured');
+  }
+  
+  // Use DefaultAzureCredential for secure authentication
+  return `DefaultEndpointsProtocol=https;AccountName=${accountName};EndpointSuffix=core.windows.net`;
+};
+
+{{#if customDomain}}
+export const getCustomDomain = (): string => {
+  return '{{customDomain}}';
+};
+{{/if}}

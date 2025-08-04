@@ -1,0 +1,636 @@
+/**
+ * Azure Types and Interfaces
+ * 
+ * Comprehensive type definitions for Azure services integration with
+ * strict TypeScript typing and comprehensive error handling.
+ */
+
+// Base Azure Types
+export interface AzureResourceIdentifier {
+  readonly subscriptionId: string;
+  readonly resourceGroupName: string;
+  readonly resourceName: string;
+  readonly resourceType: string;
+}
+
+export interface AzureCredentials {
+  readonly clientId?: string;
+  readonly clientSecret?: string;
+  readonly tenantId: string;
+  readonly subscriptionId: string;
+}
+
+export interface AzureServiceOptions {
+  readonly retryAttempts?: number;
+  readonly retryDelayMs?: number;
+  readonly timeoutMs?: number;
+  readonly enableDiagnostics?: boolean;
+}
+
+// Error Types
+export class AzureError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+    public readonly statusCode?: number,
+    public readonly details?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'AzureError';
+    Object.setPrototypeOf(this, AzureError.prototype);
+  }
+}
+
+export class AzureCredentialError extends AzureError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'CREDENTIAL_ERROR', 401, details);
+    this.name = 'AzureCredentialError';
+    Object.setPrototypeOf(this, AzureCredentialError.prototype);
+  }
+}
+
+export class AzureServiceError extends AzureError {
+  constructor(message: string, code?: string, statusCode?: number, details?: Record<string, unknown>) {
+    super(message, code || 'SERVICE_ERROR', statusCode || 500, details);
+    this.name = 'AzureServiceError';
+    Object.setPrototypeOf(this, AzureServiceError.prototype);
+  }
+}
+
+export class AzureClientError extends AzureError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'CLIENT_ERROR', 400, details);
+    this.name = 'AzureClientError';
+    Object.setPrototypeOf(this, AzureClientError.prototype);
+  }
+}
+
+export class AzureConfigurationError extends AzureError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'CONFIGURATION_ERROR', 500, details);
+    this.name = 'AzureConfigurationError';
+    Object.setPrototypeOf(this, AzureConfigurationError.prototype);
+  }
+}
+
+// Azure Functions Types
+export interface AzureFunctionContext {
+  readonly invocationId: string;
+  readonly functionName: string;
+  readonly functionDirectory: string;
+  readonly executionContext: {
+    readonly invocationId: string;
+    readonly functionName: string;
+    readonly functionDirectory: string;
+  };
+  readonly bindingData: Record<string, unknown>;
+  readonly bindingDefinitions: readonly AzureFunctionBinding[];
+  readonly traceContext: {
+    readonly traceparent?: string;
+    readonly tracestate?: string;
+    readonly attributes?: Record<string, unknown>;
+  };
+  log: {
+    (message: string): void;
+    error(message: string, error?: Error): void;
+    warn(message: string): void;
+    info(message: string): void;
+    verbose(message: string): void;
+  };
+}
+
+export interface AzureFunctionBinding {
+  readonly name: string;
+  readonly type: string;
+  readonly direction: 'in' | 'out' | 'inout';
+  readonly [key: string]: unknown;
+}
+
+export interface AzureFunctionRequest {
+  readonly method: string;
+  readonly url: string;
+  readonly headers: Record<string, string>;
+  readonly query: Record<string, string>;
+  readonly params: Record<string, string>;
+  readonly body?: unknown;
+  readonly rawBody?: string | Buffer;
+}
+
+export interface AzureFunctionResponse {
+  status?: number;
+  headers?: Record<string, string>;
+  body?: unknown;
+  isRaw?: boolean;
+}
+
+export interface AzureTimerInfo {
+  readonly scheduleStatus: {
+    readonly last: string;
+    readonly next: string;
+    readonly lastUpdated: string;
+  };
+  readonly isPastDue: boolean;
+}
+
+// Service Bus Types
+export interface ServiceBusMessage {
+  readonly messageId?: string;
+  readonly sessionId?: string;
+  readonly partitionKey?: string;
+  readonly correlationId?: string;
+  readonly contentType?: string;
+  readonly label?: string;
+  readonly to?: string;
+  readonly replyTo?: string;
+  readonly replyToSessionId?: string;
+  readonly timeToLive?: number;
+  readonly scheduledEnqueueTime?: Date;
+  readonly body: unknown;
+  readonly userProperties?: Record<string, unknown>;
+}
+
+export interface ServiceBusDeadLetterInfo {
+  readonly deadLetterReason?: string;
+  readonly deadLetterErrorDescription?: string;
+  readonly deadLetterSource?: string;
+}
+
+export interface ServiceBusReceiverOptions extends AzureServiceOptions {
+  readonly receiveMode?: 'peekLock' | 'receiveAndDelete';
+  readonly maxConcurrentCalls?: number;
+  readonly maxAutoLockRenewalDurationInMs?: number;
+  readonly autoCompleteMessages?: boolean;
+}
+
+// Key Vault Types
+export interface KeyVaultSecret {
+  readonly name: string;
+  readonly value?: string;
+  readonly id?: string;
+  readonly version?: string;
+  readonly contentType?: string;
+  readonly enabled?: boolean;
+  readonly notBefore?: Date;
+  readonly expiresOn?: Date;
+  readonly createdOn?: Date;
+  readonly updatedOn?: Date;
+  readonly tags?: Record<string, string>;
+}
+
+export interface KeyVaultCertificate {
+  readonly name: string;
+  readonly id?: string;
+  readonly version?: string;
+  readonly enabled?: boolean;
+  readonly notBefore?: Date;
+  readonly expiresOn?: Date;
+  readonly createdOn?: Date;
+  readonly updatedOn?: Date;
+  readonly tags?: Record<string, string>;
+  readonly keyId?: string;
+  readonly secretId?: string;
+  readonly x509Thumbprint?: Uint8Array;
+}
+
+export interface KeyVaultKey {
+  readonly name: string;
+  readonly id?: string;
+  readonly version?: string;
+  readonly keyType?: string;
+  readonly keySize?: number;
+  readonly keyOperations?: readonly string[];
+  readonly enabled?: boolean;
+  readonly notBefore?: Date;
+  readonly expiresOn?: Date;
+  readonly createdOn?: Date;
+  readonly updatedOn?: Date;
+  readonly tags?: Record<string, string>;
+}
+
+// SQL Database Types
+export interface AzureSqlConnectionConfig {
+  readonly server: string;
+  readonly database: string;
+  readonly port?: number;
+  readonly authentication?: 'default' | 'active-directory-default' | 'active-directory-integrated' | 'sql-login';
+  readonly username?: string;
+  readonly password?: string;
+  readonly connectionTimeout?: number;
+  readonly requestTimeout?: number;
+  readonly encrypt?: boolean;
+  readonly trustServerCertificate?: boolean;
+  readonly enableArithAbort?: boolean;
+  readonly isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+  readonly pool?: {
+    readonly min?: number;
+    readonly max?: number;
+    readonly acquireTimeoutMillis?: number;
+    readonly createTimeoutMillis?: number;
+    readonly destroyTimeoutMillis?: number;
+    readonly idleTimeoutMillis?: number;
+    readonly reapIntervalMillis?: number;
+    readonly createRetryIntervalMillis?: number;
+  };
+}
+
+export interface DatabaseEntity {
+  readonly id?: string | number;
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
+  readonly version?: number;
+}
+
+export interface DatabaseQueryResult<T = unknown> {
+  readonly data: readonly T[];
+  readonly totalCount: number;
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly hasNextPage: boolean;
+  readonly hasPreviousPage: boolean;
+}
+
+export interface DatabaseTransactionOptions {
+  readonly isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+  readonly timeoutMs?: number;
+}
+
+// Storage Types
+export interface BlobStorageOptions extends AzureServiceOptions {
+  readonly containerName?: string;
+  readonly blobName?: string;
+  readonly contentType?: string;
+  readonly metadata?: Record<string, string>;
+  readonly tags?: Record<string, string>;
+  readonly tier?: 'Hot' | 'Cool' | 'Archive';
+}
+
+export interface BlobInfo {
+  readonly name: string;
+  readonly containerName: string;
+  readonly url: string;
+  readonly size: number;
+  readonly contentType?: string;
+  readonly lastModified: Date;
+  readonly etag: string;
+  readonly metadata?: Record<string, string>;
+  readonly tier?: string;
+}
+
+export interface BlobUploadResult {
+  readonly blobName: string;
+  readonly containerName: string;
+  readonly url: string;
+  readonly etag: string;
+  readonly contentMd5?: Uint8Array;
+  readonly uploadId?: string;
+}
+
+{{#if enableAiServices}}
+// AI Services Types
+{{#each aiServices}}
+{{#if (eq this 'openai')}}
+export interface AzureOpenAIConfig {
+  readonly endpoint: string;
+  readonly apiKey: string;
+  readonly apiVersion: string;
+  readonly deploymentName: string;
+  readonly maxTokens?: number;
+  readonly temperature?: number;
+  readonly topP?: number;
+  readonly frequencyPenalty?: number;
+  readonly presencePenalty?: number;
+}
+
+export interface OpenAIMessage {
+  readonly role: 'system' | 'user' | 'assistant' | 'function';
+  readonly content: string;
+  readonly name?: string;
+  readonly functionCall?: {
+    readonly name: string;
+    readonly arguments: string;
+  };
+}
+
+export interface OpenAICompletionResponse {
+  readonly id: string;
+  readonly object: string;
+  readonly created: number;
+  readonly model: string;
+  readonly choices: readonly {
+    readonly index: number;
+    readonly message: OpenAIMessage;
+    readonly finishReason: string;
+  }[];
+  readonly usage: {
+    readonly promptTokens: number;
+    readonly completionTokens: number;
+    readonly totalTokens: number;
+  };
+}
+{{/if}}
+
+{{#if (eq this 'cognitive-services')}}
+export interface CognitiveServicesConfig {
+  readonly endpoint: string;
+  readonly apiKey: string;
+  readonly region: string;
+}
+
+export interface TextAnalyticsResult {
+  readonly id: string;
+  readonly sentiment?: {
+    readonly label: 'positive' | 'negative' | 'neutral' | 'mixed';
+    readonly score: number;
+  };
+  readonly keyPhrases?: readonly string[];
+  readonly entities?: readonly {
+    readonly text: string;
+    readonly category: string;
+    readonly subcategory?: string;
+    readonly confidenceScore: number;
+  }[];
+  readonly language?: {
+    readonly name: string;
+    readonly iso6391Name: string;
+    readonly confidenceScore: number;
+  };
+}
+{{/if}}
+
+{{#if (eq this 'document-intelligence')}}
+export interface DocumentIntelligenceConfig {
+  readonly endpoint: string;
+  readonly apiKey: string;
+}
+
+export interface DocumentAnalysisResult {
+  readonly modelId: string;
+  readonly pages: readonly {
+    readonly pageNumber: number;
+    readonly width: number;
+    readonly height: number;
+    readonly unit: string;
+    readonly lines?: readonly {
+      readonly content: string;
+      readonly boundingBox: readonly number[];
+    }[];
+    readonly words?: readonly {
+      readonly content: string;
+      readonly boundingBox: readonly number[];
+      readonly confidence: number;
+    }[];
+  }[];
+  readonly tables?: readonly {
+    readonly rowCount: number;
+    readonly columnCount: number;
+    readonly cells: readonly {
+      readonly rowIndex: number;
+      readonly columnIndex: number;
+      readonly content: string;
+      readonly boundingBox: readonly number[];
+    }[];
+  }[];
+  readonly keyValuePairs?: readonly {
+    readonly key: {
+      readonly content: string;
+      readonly boundingBox: readonly number[];
+    };
+    readonly value: {
+      readonly content: string;
+      readonly boundingBox: readonly number[];
+    };
+    readonly confidence: number;
+  }[];
+}
+{{/if}}
+
+{{#if (eq this 'speech')}}
+export interface SpeechConfig {
+  readonly subscriptionKey: string;
+  readonly region: string;
+  readonly language?: string;
+  readonly voice?: string;
+}
+
+export interface SpeechRecognitionResult {
+  readonly resultId: string;
+  readonly text: string;
+  readonly reason: string;
+  readonly duration: number;
+  readonly offset: number;
+  readonly confidence?: number;
+  readonly words?: readonly {
+    readonly word: string;
+    readonly offset: number;
+    readonly duration: number;
+    readonly confidence: number;
+  }[];
+}
+
+export interface SpeechSynthesisResult {
+  readonly resultId: string;
+  readonly reason: string;
+  readonly audioData?: ArrayBuffer;
+  readonly audioDuration?: number;
+}
+{{/if}}
+
+{{#if (eq this 'vision')}}
+export interface ComputerVisionConfig {
+  readonly endpoint: string;
+  readonly apiKey: string;
+}
+
+export interface ImageAnalysisResult {
+  readonly categories?: readonly {
+    readonly name: string;
+    readonly score: number;
+    readonly detail?: {
+      readonly celebrities?: readonly {
+        readonly name: string;
+        readonly confidence: number;
+        readonly faceRectangle: {
+          readonly left: number;
+          readonly top: number;
+          readonly width: number;
+          readonly height: number;
+        };
+      }[];
+      readonly landmarks?: readonly {
+        readonly name: string;
+        readonly confidence: number;
+      }[];
+    };
+  }[];
+  readonly description?: {
+    readonly tags: readonly string[];
+    readonly captions: readonly {
+      readonly text: string;
+      readonly confidence: number;
+    }[];
+  };
+  readonly faces?: readonly {
+    readonly age: number;
+    readonly gender: 'Male' | 'Female';
+    readonly faceRectangle: {
+      readonly left: number;
+      readonly top: number;
+      readonly width: number;
+      readonly height: number;
+    };
+  }[];
+  readonly objects?: readonly {
+    readonly objectProperty: string;
+    readonly confidence: number;
+    readonly parent?: {
+      readonly objectProperty: string;
+      readonly confidence: number;
+    };
+    readonly rectangle: {
+      readonly x: number;
+      readonly y: number;
+      readonly w: number;
+      readonly h: number;
+    };
+  }[];
+  readonly tags?: readonly {
+    readonly name: string;
+    readonly confidence: number;
+    readonly hint?: string;
+  }[];
+}
+{{/if}}
+{{/each}}
+{{/if}}
+
+// Monitoring Types
+export interface AzureMetric {
+  readonly name: string;
+  readonly value: number;
+  readonly timestamp: Date;
+  readonly dimensions?: Record<string, string>;
+  readonly unit?: string;
+}
+
+export interface AzureAlert {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly severity: 'Critical' | 'Error' | 'Warning' | 'Informational' | 'Verbose';
+  readonly status: 'New' | 'Acknowledged' | 'Closed';
+  readonly timestamp: Date;
+  readonly resourceId: string;
+  readonly resourceType: string;
+  readonly conditions: readonly {
+    readonly metricName: string;
+    readonly operator: string;
+    readonly threshold: number;
+    readonly timeAggregation: string;
+  }[];
+}
+
+export interface DiagnosticSettings {
+  readonly logs?: readonly {
+    readonly category: string;
+    readonly enabled: boolean;
+    readonly retentionPolicy?: {
+      readonly enabled: boolean;
+      readonly days: number;
+    };
+  }[];
+  readonly metrics?: readonly {
+    readonly category: string;
+    readonly enabled: boolean;
+    readonly retentionPolicy?: {
+      readonly enabled: boolean;
+      readonly days: number;
+    };
+  }[];
+  readonly workspaceId?: string;
+  readonly storageAccountId?: string;
+  readonly eventHubAuthorizationRuleId?: string;
+  readonly eventHubName?: string;
+}
+
+// Security Types
+export interface AzureRoleAssignment {
+  readonly principalId: string;
+  readonly principalType: 'User' | 'Group' | 'ServicePrincipal' | 'ManagedIdentity';
+  readonly roleDefinitionId: string;
+  readonly scope: string;
+  readonly condition?: string;
+  readonly conditionVersion?: string;
+}
+
+export interface NetworkSecurityRule {
+  readonly name: string;
+  readonly priority: number;
+  readonly direction: 'Inbound' | 'Outbound';
+  readonly access: 'Allow' | 'Deny';
+  readonly protocol: 'Tcp' | 'Udp' | 'Icmp' | '*';
+  readonly sourcePortRange?: string;
+  readonly destinationPortRange?: string;
+  readonly sourceAddressPrefix?: string;
+  readonly destinationAddressPrefix?: string;
+  readonly sourcePortRanges?: readonly string[];
+  readonly destinationPortRanges?: readonly string[];
+  readonly sourceAddressPrefixes?: readonly string[];
+  readonly destinationAddressPrefixes?: readonly string[];
+}
+
+// Utility Types
+export type AzureRegion = 
+  | 'eastus' | 'eastus2' | 'southcentralus' | 'westus2' | 'westus3' | 'australiaeast'
+  | 'southeastasia' | 'northeurope' | 'swedencentral' | 'uksouth' | 'westeurope'
+  | 'centralus' | 'southafricanorth' | 'centralindia' | 'eastasia' | 'japaneast'
+  | 'koreacentral' | 'canadacentral' | 'francecentral' | 'germanywestcentral'
+  | 'norwayeast' | 'polandcentral' | 'switzerlandnorth' | 'uaenorth'
+  | 'brazilsouth' | 'israelcentral' | 'qatarcentral';
+
+export type AzureEnvironment = 'development' | 'staging' | 'production';
+
+export type AzureServiceTier = 'Free' | 'Basic' | 'Standard' | 'Premium' | 'Isolated';
+
+export type LogLevel = 'error' | 'warn' | 'info' | 'verbose' | 'debug' | 'silly';
+
+// Helper type for ensuring all services are configured
+export type RequiredServices = {
+  {{#each servicesToGenerate}}
+  readonly {{this}}: boolean;
+  {{/each}}
+};
+
+// Response wrapper for consistent API responses
+export interface AzureServiceResponse<T = unknown> {
+  readonly success: boolean;
+  readonly data?: T;
+  readonly error?: {
+    readonly code: string;
+    readonly message: string;
+    readonly details?: Record<string, unknown>;
+  };
+  readonly metadata?: {
+    readonly timestamp: Date;
+    readonly requestId: string;
+    readonly correlationId?: string;
+    readonly duration?: number;
+  };
+}
+
+// Pagination types
+export interface PaginationOptions {
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly sortBy?: string;
+  readonly sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedResponse<T> {
+  readonly items: readonly T[];
+  readonly totalCount: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
+  readonly hasNextPage: boolean;
+  readonly hasPreviousPage: boolean;
+}

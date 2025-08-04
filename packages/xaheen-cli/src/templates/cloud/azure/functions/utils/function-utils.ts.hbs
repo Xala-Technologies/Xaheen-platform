@@ -1,0 +1,878 @@
+/**
+ * Azure Functions Utilities
+ * 
+ * Comprehensive utility functions for Azure Functions with validation,
+ * sanitization, logging, metrics, health checks, and rate limiting.
+ */
+
+import { Context } from '@azure/functions';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { 
+  AzureError, 
+  AzureServiceError, 
+  LogLevel,
+  AzureMetric 
+} from '../../types/azure.types';
+
+// Validation interfaces
+export interface ValidationResult {
+  readonly isValid: boolean;
+  readonly errors: readonly string[];
+  readonly warnings: readonly string[];
+}
+
+export interface SanitizationOptions {
+  readonly allowHtml: boolean;
+  readonly maxLength?: number;
+  readonly stripWhitespace: boolean;
+  readonly convertCase?: 'upper' | 'lower' | 'title';
+}
+
+// Logger utility class
+export class Logger {
+  private readonly name: string;
+  private context: Record<string, unknown> = {};
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  setContext(context: Record<string, unknown>): void {
+    this.context = { ...this.context, ...context };
+  }
+
+  clearContext(): void {
+    this.context = {};
+  }
+
+  private log(level: LogLevel, message: string, data?: Record<string, unknown>): void {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      timestamp,
+      level,
+      logger: this.name,
+      message,
+      context: this.context,
+      data
+    };
+
+    // In Azure Functions, use console methods for Application Insights integration
+    switch (level) {
+      case 'error':
+        console.error(JSON.stringify(logEntry));
+        break;
+      case 'warn':
+        console.warn(JSON.stringify(logEntry));
+        break;
+      case 'info':
+        console.info(JSON.stringify(logEntry));
+        break;
+      case 'debug':
+      case 'verbose':
+      case 'silly':
+        console.log(JSON.stringify(logEntry));
+        break;
+      default:
+        console.log(JSON.stringify(logEntry));
+    }
+
+    {{#if enableDiagnostics}}
+    // Send custom telemetry to Application Insights
+    if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+      try {
+        const appInsights = require('applicationinsights');
+        if (appInsights.defaultClient) {
+          appInsights.defaultClient.trackTrace({
+            message: `${this.name}: ${message}`,
+            severity: this.mapLogLevelToSeverity(level),
+            properties: {
+              ...this.context,
+              ...data
+            }
+          });
+        }
+      } catch (error) {
+        // Silently fail if Application Insights is not available
+      }
+    }
+    {{/if}}
+  }
+
+  private mapLogLevelToSeverity(level: LogLevel): number {
+    switch (level) {
+      case 'error': return 3; // Error
+      case 'warn': return 2; // Warning
+      case 'info': return 1; // Information
+      case 'debug':
+      case 'verbose':
+      case 'silly':
+      default: return 0; // Verbose
+    }
+  }
+
+  error(message: string, data?: Record<string, unknown>): void {
+    this.log('error', message, data);
+  }
+
+  warn(message: string, data?: Record<string, unknown>): void {
+    this.log('warn', message, data);
+  }
+
+  info(message: string, data?: Record<string, unknown>): void {
+    this.log('info', message, data);
+  }
+
+  debug(message: string, data?: Record<string, unknown>): void {
+    this.log('debug', message, data);
+  }
+
+  verbose(message: string, data?: Record<string, unknown>): void {
+    this.log('verbose', message, data);
+  }
+}
+
+// Metrics collector utility class
+export class MetricsCollector {
+  private readonly logger: Logger;
+
+  constructor() {
+    this.logger = new Logger('MetricsCollector');
+  }
+
+  async recordHttpRequest(metric: {
+    readonly method: string;
+    readonly statusCode: number;
+    readonly duration: number;
+    readonly correlationId: string;
+    readonly error?: string;
+  }): Promise<void> {
+    try {
+      const customMetric: AzureMetric = {
+        name: 'HttpRequest',
+        value: metric.duration,
+        timestamp: new Date(),
+        dimensions: {
+          method: metric.method,
+          statusCode: metric.statusCode.toString(),
+          correlationId: metric.correlationId,
+          success: metric.error ? 'false' : 'true'
+        },
+        unit: 'milliseconds'
+      };
+
+      await this.sendMetric(customMetric);
+
+      {{#if enableDiagnostics}}
+      // Send to Application Insights
+      if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+        try {
+          const appInsights = require('applicationinsights');
+          if (appInsights.defaultClient) {
+            appInsights.defaultClient.trackRequest({
+              name: `${metric.method} Request`,
+              url: 'function://http-trigger',
+              duration: metric.duration,
+              resultCode: metric.statusCode.toString(),
+              success: !metric.error,
+              properties: {
+                correlationId: metric.correlationId,
+                error: metric.error
+              }
+            });
+
+            appInsights.defaultClient.trackMetric({
+              name: 'HttpRequestDuration',
+              value: metric.duration,
+              properties: {
+                method: metric.method,
+                statusCode: metric.statusCode.toString()
+              }
+            });
+          }
+        } catch (error) {
+          this.logger.warn('Failed to send metrics to Application Insights', {
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to record HTTP request metric', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metric
+      });
+    }
+  }
+
+  async recordServiceBusMessage(metric: {
+    readonly messageId: string;
+    readonly correlationId: string;
+    readonly queueName: string;
+    readonly success: boolean;
+    readonly processingTime: number;
+    readonly deliveryCount: number;
+    readonly error?: string;
+  }): Promise<void> {
+    try {
+      const customMetric: AzureMetric = {
+        name: 'ServiceBusMessage',
+        value: metric.processingTime,
+        timestamp: new Date(),
+        dimensions: {
+          queueName: metric.queueName,
+          success: metric.success.toString(),
+          deliveryCount: metric.deliveryCount.toString(),
+          correlationId: metric.correlationId
+        },
+        unit: 'milliseconds'
+      };
+
+      await this.sendMetric(customMetric);
+
+      {{#if enableDiagnostics}}
+      // Send to Application Insights
+      if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+        try {
+          const appInsights = require('applicationinsights');
+          if (appInsights.defaultClient) {
+            appInsights.defaultClient.trackEvent({
+              name: 'ServiceBusMessageProcessed',
+              properties: {
+                messageId: metric.messageId,
+                correlationId: metric.correlationId,
+                queueName: metric.queueName,
+                success: metric.success.toString(),
+                deliveryCount: metric.deliveryCount.toString(),
+                error: metric.error
+              },
+              measurements: {
+                processingTime: metric.processingTime
+              }
+            });
+          }
+        } catch (error) {
+          this.logger.warn('Failed to send Service Bus metrics to Application Insights', {
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to record Service Bus message metric', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metric
+      });
+    }
+  }
+
+  async recordTimerTask(metric: {
+    readonly taskName: string;
+    readonly success: boolean;
+    readonly duration: number;
+    readonly recordsProcessed?: number;
+    readonly executionId: string;
+    readonly error?: string;
+  }): Promise<void> {
+    try {
+      const customMetric: AzureMetric = {
+        name: 'TimerTask',
+        value: metric.duration,
+        timestamp: new Date(),
+        dimensions: {
+          taskName: metric.taskName,
+          success: metric.success.toString(),
+          executionId: metric.executionId
+        },
+        unit: 'milliseconds'
+      };
+
+      await this.sendMetric(customMetric);
+
+      {{#if enableDiagnostics}}
+      // Send to Application Insights
+      if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+        try {
+          const appInsights = require('applicationinsights');
+          if (appInsights.defaultClient) {
+            appInsights.defaultClient.trackEvent({
+              name: 'TimerTaskExecuted',
+              properties: {
+                taskName: metric.taskName,
+                success: metric.success.toString(),
+                executionId: metric.executionId,
+                error: metric.error
+              },
+              measurements: {
+                duration: metric.duration,
+                recordsProcessed: metric.recordsProcessed || 0
+              }
+            });
+          }
+        } catch (error) {
+          this.logger.warn('Failed to send timer task metrics to Application Insights', {
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to record timer task metric', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metric
+      });
+    }
+  }
+
+  async recordTimerExecution(metric: {
+    readonly executionId: string;
+    readonly totalDuration: number;
+    readonly tasksSucceeded: number;
+    readonly tasksFailed: number;
+    readonly isPastDue: boolean;
+    readonly error?: string;
+  }): Promise<void> {
+    try {
+      const customMetric: AzureMetric = {
+        name: 'TimerExecution',
+        value: metric.totalDuration,
+        timestamp: new Date(),
+        dimensions: {
+          executionId: metric.executionId,
+          isPastDue: metric.isPastDue.toString(),
+          success: metric.error ? 'false' : 'true'
+        },
+        unit: 'milliseconds'
+      };
+
+      await this.sendMetric(customMetric);
+
+      {{#if enableDiagnostics}}
+      // Send to Application Insights
+      if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+        try {
+          const appInsights = require('applicationinsights');
+          if (appInsights.defaultClient) {
+            appInsights.defaultClient.trackEvent({
+              name: 'TimerExecutionCompleted',
+              properties: {
+                executionId: metric.executionId,
+                isPastDue: metric.isPastDue.toString(),
+                error: metric.error
+              },
+              measurements: {
+                totalDuration: metric.totalDuration,
+                tasksSucceeded: metric.tasksSucceeded,
+                tasksFailed: metric.tasksFailed
+              }
+            });
+          }
+        } catch (error) {
+          this.logger.warn('Failed to send timer execution metrics to Application Insights', {
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to record timer execution metric', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metric
+      });
+    }
+  }
+
+  private async sendMetric(metric: AzureMetric): Promise<void> {
+    // Implement custom metric sending logic here
+    // This could send to custom monitoring systems, databases, etc.
+    this.logger.debug('Metric recorded', { metric });
+  }
+
+  async flush(): Promise<void> {
+    {{#if enableDiagnostics}}
+    // Flush Application Insights
+    if (typeof process !== 'undefined' && process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+      try {
+        const appInsights = require('applicationinsights');
+        if (appInsights.defaultClient) {
+          appInsights.defaultClient.flush();
+        }
+      } catch (error) {
+        this.logger.warn('Failed to flush Application Insights', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+    {{/if}}
+  }
+}
+
+// Health checker utility class
+export class HealthChecker {
+  private readonly logger: Logger;
+
+  constructor() {
+    this.logger = new Logger('HealthChecker');
+  }
+
+  async check(): Promise<{ status: 'healthy' | 'unhealthy'; details: Record<string, unknown> }> {
+    const checks = await this.checkAll();
+    
+    return {
+      status: checks.status,
+      details: {
+        timestamp: new Date().toISOString(),
+        checks: checks.checks
+      }
+    };
+  }
+
+  async checkAll(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    checks: readonly {
+      name: string;
+      status: 'healthy' | 'unhealthy';
+      responseTime: number;
+      error?: string;
+    }[];
+  }> {
+    const healthChecks = [
+      { name: 'database', handler: this.checkDatabase.bind(this) },
+      { name: 'storage', handler: this.checkStorage.bind(this) },
+      { name: 'servicebus', handler: this.checkServiceBus.bind(this) },
+      {{#if enableKeyVault}}
+      { name: 'keyvault', handler: this.checkKeyVault.bind(this) },
+      {{/if}}
+      { name: 'external-api', handler: this.checkExternalApi.bind(this) }
+    ];
+
+    const results = await Promise.allSettled(
+      healthChecks.map(async (check) => {
+        const startTime = Date.now();
+        try {
+          await check.handler();
+          return {
+            name: check.name,
+            status: 'healthy' as const,
+            responseTime: Date.now() - startTime
+          };
+        } catch (error) {
+          return {
+            name: check.name,
+            status: 'unhealthy' as const,
+            responseTime: Date.now() - startTime,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          };
+        }
+      })
+    );
+
+    const checks = results.map((result) => 
+      result.status === 'fulfilled' ? result.value : {
+        name: 'unknown',
+        status: 'unhealthy' as const,
+        responseTime: 0,
+        error: 'Health check failed'
+      }
+    );
+
+    const overallStatus = checks.every(check => check.status === 'healthy') ? 'healthy' : 'unhealthy';
+
+    return { status: overallStatus, checks };
+  }
+
+  private async checkDatabase(): Promise<void> {
+    // Implement database health check
+    // Example: Simple query to verify connection
+  }
+
+  private async checkStorage(): Promise<void> {
+    // Implement storage health check
+    // Example: List containers or get account info
+  }
+
+  private async checkServiceBus(): Promise<void> {
+    // Implement Service Bus health check
+    // Example: Get namespace info
+  }
+
+  {{#if enableKeyVault}}
+  private async checkKeyVault(): Promise<void> {
+    // Implement Key Vault health check
+    try {
+      const keyVaultUrl = process.env.AZURE_KEYVAULT_URL;
+      if (keyVaultUrl) {
+        const credential = new DefaultAzureCredential();
+        const secretClient = new SecretClient(keyVaultUrl, credential);
+        
+        // Try to list secrets (this will work even if vault is empty)
+        const secretIterator = secretClient.listPropertiesOfSecrets();
+        await secretIterator.next();
+      }
+    } catch (error) {
+      throw new AzureServiceError('Key Vault health check failed');
+    }
+  }
+  {{/if}}
+
+  private async checkExternalApi(): Promise<void> {
+    // Implement external API health check
+    // Example: Ping external services
+  }
+}
+
+// Rate limiter utility class
+export class RateLimiter {
+  private readonly logger: Logger;
+  private readonly cache: Map<string, { count: number; resetTime: number }> = new Map();
+
+  constructor() {
+    this.logger = new Logger('RateLimiter');
+  }
+
+  async isLimited(identifier: string): Promise<boolean> {
+    try {
+      const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000'); // 1 minute
+      const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000');
+      
+      const now = Date.now();
+      const entry = this.cache.get(identifier);
+
+      if (!entry || now > entry.resetTime) {
+        // Reset or create new entry
+        this.cache.set(identifier, {
+          count: 1,
+          resetTime: now + windowMs
+        });
+        return false;
+      }
+
+      if (entry.count >= maxRequests) {
+        this.logger.warn('Rate limit exceeded', {
+          identifier,
+          count: entry.count,
+          maxRequests
+        });
+        return true;
+      }
+
+      entry.count++;
+      return false;
+    } catch (error) {
+      this.logger.error('Rate limiter error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        identifier
+      });
+      return false; // Allow request on error
+    }
+  }
+
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.resetTime) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+// Message validator utility class
+export class MessageValidator {
+  private readonly logger: Logger;
+
+  constructor() {
+    this.logger = new Logger('MessageValidator');
+  }
+
+  async validate(message: unknown): Promise<ValidationResult> {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    try {
+      // Basic validation
+      if (!message) {
+        errors.push('Message is null or undefined');
+        return { isValid: false, errors, warnings };
+      }
+
+      // Check message size
+      const messageSize = JSON.stringify(message).length;
+      const maxSize = parseInt(process.env.MAX_MESSAGE_SIZE_BYTES || '262144'); // 256KB
+
+      if (messageSize > maxSize) {
+        errors.push(`Message size ${messageSize} exceeds maximum allowed size ${maxSize}`);
+      }
+
+      // Validate message structure based on type
+      if (typeof message === 'object' && message !== null) {
+        const msgObj = message as any;
+
+        // Check for required fields
+        if (!msgObj.body && !msgObj.data) {
+          warnings.push('Message does not contain body or data field');
+        }
+
+        // Validate message ID if present
+        if (msgObj.messageId && typeof msgObj.messageId !== 'string') {
+          errors.push('messageId must be a string');
+        }
+
+        // Validate correlation ID if present
+        if (msgObj.correlationId && typeof msgObj.correlationId !== 'string') {
+          errors.push('correlationId must be a string');
+        }
+
+        // Validate timestamp if present
+        if (msgObj.timestamp) {
+          const timestamp = new Date(msgObj.timestamp);
+          if (isNaN(timestamp.getTime())) {
+            errors.push('Invalid timestamp format');
+          }
+        }
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        warnings
+      };
+    } catch (error) {
+      this.logger.error('Message validation failed', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      return {
+        isValid: false,
+        errors: ['Message validation failed due to internal error'],
+        warnings
+      };
+    }
+  }
+}
+
+// Validation functions
+export function validateRequest(request: unknown): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!request) {
+    errors.push('Request is null or undefined');
+    return { isValid: false, errors, warnings };
+  }
+
+  if (typeof request !== 'object') {
+    errors.push('Request must be an object');
+    return { isValid: false, errors, warnings };
+  }
+
+  const req = request as any;
+
+  // Validate action
+  if (!req.action) {
+    errors.push('Action is required');
+  } else if (typeof req.action !== 'string') {
+    errors.push('Action must be a string');
+  }
+
+  // Validate data if present
+  if (req.data !== undefined && req.data !== null) {
+    try {
+      JSON.stringify(req.data);
+    } catch {
+      errors.push('Data must be JSON serializable');
+    }
+  }
+
+  // Validate correlation ID if present
+  if (req.correlationId && typeof req.correlationId !== 'string') {
+    warnings.push('correlationId should be a string');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+// Sanitization functions
+export function sanitizeInput(
+  input: unknown, 
+  options: SanitizationOptions = {
+    allowHtml: false,
+    stripWhitespace: true
+  }
+): unknown {
+  if (input === null || input === undefined) {
+    return input;
+  }
+
+  if (typeof input === 'string') {
+    return sanitizeString(input, options);
+  }
+
+  if (Array.isArray(input)) {
+    return input.map(item => sanitizeInput(item, options));
+  }
+
+  if (typeof input === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(input)) {
+      const sanitizedKey = sanitizeString(key, { ...options, allowHtml: false });
+      sanitized[sanitizedKey] = sanitizeInput(value, options);
+    }
+    return sanitized;
+  }
+
+  return input;
+}
+
+function sanitizeString(str: string, options: SanitizationOptions): string {
+  let sanitized = str;
+
+  // Strip whitespace
+  if (options.stripWhitespace) {
+    sanitized = sanitized.trim();
+  }
+
+  // Remove HTML if not allowed
+  if (!options.allowHtml) {
+    sanitized = sanitized.replace(/<[^>]*>/g, '');
+  }
+
+  // Apply length limit
+  if (options.maxLength && sanitized.length > options.maxLength) {
+    sanitized = sanitized.substring(0, options.maxLength);
+  }
+
+  // Convert case
+  if (options.convertCase) {
+    switch (options.convertCase) {
+      case 'upper':
+        sanitized = sanitized.toUpperCase();
+        break;
+      case 'lower':
+        sanitized = sanitized.toLowerCase();
+        break;
+      case 'title':
+        sanitized = sanitized.replace(/\w\S*/g, (txt) => 
+          txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+        );
+        break;
+    }
+  }
+
+  return sanitized;
+}
+
+// Utility functions for error handling
+export function createAzureError(
+  message: string,
+  code?: string,
+  statusCode?: number,
+  details?: Record<string, unknown>
+): AzureError {
+  return new AzureError(message, code, statusCode, details);
+}
+
+export function isRetryableError(error: unknown): boolean {
+  if (error instanceof AzureError) {
+    const retryableCodes = ['TIMEOUT', 'SERVICE_UNAVAILABLE', 'THROTTLED', 'TRANSIENT_ERROR'];
+    return retryableCodes.includes(error.code || '');
+  }
+
+  if (error instanceof Error) {
+    const retryableMessages = ['timeout', 'service unavailable', 'throttled', 'temporary failure'];
+    const errorMessage = error.message.toLowerCase();
+    return retryableMessages.some(msg => errorMessage.includes(msg));
+  }
+
+  return false;
+}
+
+// Retry utility function
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000,
+  backoffMultiplier: number = 2
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === maxRetries || !isRetryableError(error)) {
+        throw error;
+      }
+
+      const delay = delayMs * Math.pow(backoffMultiplier, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+// Circuit breaker utility
+export class CircuitBreaker {
+  private failures = 0;
+  private lastFailureTime = 0;
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
+
+  constructor(
+    private readonly threshold: number = 5,
+    private readonly timeoutMs: number = 60000
+  ) {}
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailureTime > this.timeoutMs) {
+        this.state = 'half-open';
+      } else {
+        throw new AzureServiceError('Circuit breaker is open');
+      }
+    }
+
+    try {
+      const result = await operation();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0;
+    this.state = 'closed';
+  }
+
+  private onFailure(): void {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+
+    if (this.failures >= this.threshold) {
+      this.state = 'open';
+    }
+  }
+
+  getState(): 'closed' | 'open' | 'half-open' {
+    return this.state;
+  }
+}
+
+// Export configured instances
+export const defaultLogger = new Logger('AzureFunctions');
+export const defaultMetricsCollector = new MetricsCollector();
+export const defaultHealthChecker = new HealthChecker();
+export const defaultRateLimiter = new RateLimiter();
+export const defaultMessageValidator = new MessageValidator();
+export const defaultCircuitBreaker = new CircuitBreaker();

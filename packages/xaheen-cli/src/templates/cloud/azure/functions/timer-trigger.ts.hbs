@@ -1,0 +1,642 @@
+/**
+ * Azure Timer Trigger Function
+ * 
+ * Production-ready timer trigger function for scheduled tasks with comprehensive
+ * monitoring, error handling, and integration with Azure services.
+ */
+
+import { AzureFunction, Context } from '@azure/functions';
+import { DefaultAzureCredential } from '@azure/identity';
+import { BlobServiceClient } from '@azure/storage-blob';
+import { CosmosClient } from '@azure/cosmos';
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { HealthChecker } from '../utils/health-checker';
+import { 
+  AzureTimerInfo,
+  AzureServiceError,
+  AzureError 
+} from '../types/azure.types';
+
+// Initialize services
+const logger = new Logger('TimerTrigger');
+const metricsCollector = new MetricsCollector();
+const healthChecker = new HealthChecker();
+const credential = new DefaultAzureCredential();
+
+let blobServiceClient: BlobServiceClient | null = null;
+let cosmosClient: CosmosClient | null = null;
+
+// Task result interface
+interface TaskResult {
+  readonly taskName: string;
+  readonly success: boolean;
+  readonly duration: number;
+  readonly recordsProcessed?: number;
+  readonly error?: string;
+  readonly details?: Record<string, unknown>;
+}
+
+interface TimerExecutionSummary {
+  readonly executionId: string;
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly totalDuration: number;
+  readonly tasksCompleted: number;
+  readonly tasksSucceeded: number;
+  readonly tasksFailed: number;
+  readonly results: readonly TaskResult[];
+  readonly isPastDue: boolean;
+  readonly nextScheduledTime?: string;
+}
+
+const timerTrigger: AzureFunction = async (context: Context, myTimer: AzureTimerInfo): Promise<void> => {
+  const startTime = Date.now();
+  const executionId = context.invocationId;
+  const isPastDue = myTimer.isPastDue;
+
+  // Initialize context logging
+  logger.setContext({ 
+    executionId, 
+    functionName: context.functionName,
+    isPastDue 
+  });
+
+  logger.info('Timer trigger function started', {
+    scheduleStatus: myTimer.scheduleStatus,
+    isPastDue,
+    lastRun: myTimer.scheduleStatus.last,
+    nextRun: myTimer.scheduleStatus.next
+  });
+
+  const taskResults: TaskResult[] = [];
+
+  try {
+    // Initialize Azure services
+    await initializeServices();
+
+    // Execute scheduled tasks
+    const tasks = [
+      { name: 'cleanup-old-data', handler: cleanupOldData },
+      { name: 'generate-reports', handler: generateReports },
+      { name: 'sync-external-data', handler: syncExternalData },
+      { name: 'update-search-indexes', handler: updateSearchIndexes },
+      { name: 'backup-critical-data', handler: backupCriticalData },
+      { name: 'health-check-services', handler: performHealthChecks },
+      { name: 'optimize-storage', handler: optimizeStorage },
+      { name: 'send-notifications', handler: sendScheduledNotifications }
+    ];
+
+    // Execute tasks in parallel with controlled concurrency
+    const concurrency = parseInt(process.env.TIMER_TASK_CONCURRENCY || '3');
+    const taskBatches = chunkArray(tasks, concurrency);
+
+    for (const batch of taskBatches) {
+      const batchPromises = batch.map(async (task) => {
+        const taskStartTime = Date.now();
+        
+        try {
+          logger.info(`Starting task: ${task.name}`);
+          
+          const result = await task.handler(context);
+          const taskDuration = Date.now() - taskStartTime;
+          
+          const taskResult: TaskResult = {
+            taskName: task.name,
+            success: true,
+            duration: taskDuration,
+            recordsProcessed: result.recordsProcessed,
+            details: result.details
+          };
+
+          taskResults.push(taskResult);
+          
+          logger.info(`Task completed successfully: ${task.name}`, {
+            duration: taskDuration,
+            recordsProcessed: result.recordsProcessed
+          });
+
+          // Record task metrics
+          {{#if enableDiagnostics}}
+          await metricsCollector.recordTimerTask({
+            taskName: task.name,
+            success: true,
+            duration: taskDuration,
+            recordsProcessed: result.recordsProcessed || 0,
+            executionId
+          });
+          {{/if}}
+
+        } catch (error) {
+          const taskDuration = Date.now() - taskStartTime;
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          const taskResult: TaskResult = {
+            taskName: task.name,
+            success: false,
+            duration: taskDuration,
+            error: errorMessage
+          };
+
+          taskResults.push(taskResult);
+          
+          logger.error(`Task failed: ${task.name}`, {
+            error: errorMessage,
+            duration: taskDuration,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+
+          // Record task error metrics
+          {{#if enableDiagnostics}}
+          await metricsCollector.recordTimerTask({
+            taskName: task.name,
+            success: false,
+            duration: taskDuration,
+            error: errorMessage,
+            executionId
+          });
+          {{/if}}
+
+          // Continue with other tasks unless it's a critical failure
+          if (error instanceof AzureServiceError && error.code === 'CRITICAL_FAILURE') {
+            throw error;
+          }
+        }
+      });
+
+      // Wait for batch completion
+      await Promise.allSettled(batchPromises);
+    }
+
+    const totalDuration = Date.now() - startTime;
+    const tasksSucceeded = taskResults.filter(r => r.success).length;
+    const tasksFailed = taskResults.filter(r => !r.success).length;
+
+    // Create execution summary
+    const summary: TimerExecutionSummary = {
+      executionId,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date().toISOString(),
+      totalDuration,
+      tasksCompleted: taskResults.length,
+      tasksSucceeded,
+      tasksFailed,
+      results: taskResults,
+      isPastDue,
+      nextScheduledTime: myTimer.scheduleStatus.next
+    };
+
+    // Store execution summary for audit purposes
+    await storeExecutionSummary(summary);
+
+    // Record overall execution metrics
+    {{#if enableDiagnostics}}
+    await metricsCollector.recordTimerExecution({
+      executionId,
+      totalDuration,
+      tasksSucceeded,
+      tasksFailed,
+      isPastDue
+    });
+    {{/if}}
+
+    logger.info('Timer trigger function completed', {
+      totalDuration,
+      tasksCompleted: taskResults.length,
+      tasksSucceeded,
+      tasksFailed,
+      isPastDue
+    });
+
+    // Alert if too many tasks failed
+    if (tasksFailed > 0 && tasksFailed / taskResults.length > 0.3) {
+      logger.warn('High task failure rate detected', {
+        tasksSucceeded,
+        tasksFailed,
+        failureRate: tasksFailed / taskResults.length
+      });
+      
+      // Send alert notification
+      await sendAlertNotification(summary);
+    }
+
+  } catch (error) {
+    const totalDuration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    logger.error('Timer trigger function failed', {
+      error: errorMessage,
+      totalDuration,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
+    // Record failure metrics
+    {{#if enableDiagnostics}}
+    await metricsCollector.recordTimerExecution({
+      executionId,
+      totalDuration,
+      tasksSucceeded: taskResults.filter(r => r.success).length,
+      tasksFailed: taskResults.filter(r => !r.success).length + 1, // +1 for the main failure
+      isPastDue,
+      error: errorMessage
+    });
+    {{/if}}
+
+    // Create failure summary
+    const failureSummary: TimerExecutionSummary = {
+      executionId,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date().toISOString(),
+      totalDuration,
+      tasksCompleted: taskResults.length,
+      tasksSucceeded: taskResults.filter(r => r.success).length,
+      tasksFailed: taskResults.filter(r => !r.success).length + 1,
+      results: taskResults,
+      isPastDue
+    };
+
+    // Store failure summary
+    await storeExecutionSummary(failureSummary);
+    
+    // Send critical alert
+    await sendAlertNotification(failureSummary);
+
+    throw error;
+  }
+};
+
+async function initializeServices(): Promise<void> {
+  try {
+    if (!blobServiceClient) {
+      const storageAccountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+      if (storageAccountName) {
+        const accountUrl = `https://${storageAccountName}.blob.core.windows.net`;
+        blobServiceClient = new BlobServiceClient(accountUrl, credential);
+        logger.info('Blob Storage client initialized');
+      }
+    }
+
+    if (!cosmosClient) {
+      const cosmosEndpoint = process.env.AZURE_COSMOSDB_ENDPOINT;
+      if (cosmosEndpoint) {
+        cosmosClient = new CosmosClient({
+          endpoint: cosmosEndpoint,
+          aadCredentials: credential
+        });
+        logger.info('Cosmos DB client initialized');
+      }
+    }
+  } catch (error) {
+    logger.error('Failed to initialize Azure services', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Service initialization failed');
+  }
+}
+
+// Task implementations
+async function cleanupOldData(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting cleanup of old data');
+  
+  try {
+    // Implement your cleanup logic here
+    // Example: Delete old blob files, database records, etc.
+    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 days ago
+    
+    let recordsProcessed = 0;
+    
+    // Example: Cleanup old blobs
+    if (blobServiceClient) {
+      const containerClient = blobServiceClient.getContainerClient('temporary-files');
+      
+      for await (const blob of containerClient.listBlobsFlat()) {
+        if (blob.properties.lastModified && blob.properties.lastModified < cutoffDate) {
+          await containerClient.deleteBlob(blob.name);
+          recordsProcessed++;
+        }
+      }
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        cutoffDate: cutoffDate.toISOString(),
+        type: 'old-data-cleanup'
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to cleanup old data', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Old data cleanup failed');
+  }
+}
+
+async function generateReports(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting report generation');
+  
+  try {
+    // Implement your report generation logic here
+    // Example: Generate daily/weekly/monthly reports
+    
+    const reportDate = new Date();
+    let recordsProcessed = 0;
+    
+    // Example report generation logic
+    const reports = ['daily-usage', 'error-summary', 'performance-metrics'];
+    
+    for (const reportType of reports) {
+      // Generate and store report
+      const reportData = await generateReport(reportType, reportDate);
+      await storeReport(reportType, reportData);
+      recordsProcessed++;
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        reportDate: reportDate.toISOString(),
+        reportsGenerated: reports
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to generate reports', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Report generation failed');
+  }
+}
+
+async function syncExternalData(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting external data synchronization');
+  
+  try {
+    // Implement your data synchronization logic here
+    // Example: Sync with external APIs, databases, etc.
+    
+    let recordsProcessed = 0;
+    
+    // Example synchronization logic
+    const dataSources = ['external-api-1', 'external-db-2'];
+    
+    for (const source of dataSources) {
+      const syncResult = await syncDataSource(source);
+      recordsProcessed += syncResult.recordsProcessed;
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        dataSources,
+        syncTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to sync external data', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('External data sync failed');
+  }
+}
+
+async function updateSearchIndexes(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting search index updates');
+  
+  try {
+    // Implement your search index update logic here
+    // Example: Update Azure Cognitive Search indexes
+    
+    let recordsProcessed = 0;
+    
+    // Example index update logic
+    const indexes = ['products', 'users', 'documents'];
+    
+    for (const indexName of indexes) {
+      const updateResult = await updateSearchIndex(indexName);
+      recordsProcessed += updateResult.recordsProcessed;
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        indexesUpdated: indexes,
+        updateTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to update search indexes', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Search index update failed');
+  }
+}
+
+async function backupCriticalData(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting critical data backup');
+  
+  try {
+    // Implement your backup logic here
+    // Example: Backup critical database tables, files, etc.
+    
+    let recordsProcessed = 0;
+    
+    // Example backup logic
+    const backupTargets = ['user-data', 'configuration', 'audit-logs'];
+    
+    for (const target of backupTargets) {
+      const backupResult = await performBackup(target);
+      recordsProcessed += backupResult.recordsProcessed;
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        backupTargets,
+        backupTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to backup critical data', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Critical data backup failed');
+  }
+}
+
+async function performHealthChecks(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting health checks');
+  
+  try {
+    const healthResults = await healthChecker.checkAll();
+    
+    return {
+      recordsProcessed: healthResults.checks.length,
+      details: {
+        overallHealth: healthResults.status,
+        checks: healthResults.checks,
+        checkTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to perform health checks', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Health checks failed');
+  }
+}
+
+async function optimizeStorage(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting storage optimization');
+  
+  try {
+    // Implement your storage optimization logic here
+    // Example: Tier blobs, compress files, etc.
+    
+    let recordsProcessed = 0;
+    
+    if (blobServiceClient) {
+      const containerClient = blobServiceClient.getContainerClient('data-files');
+      
+      for await (const blob of containerClient.listBlobsFlat()) {
+        // Example: Move old blobs to cool tier
+        const blobClient = containerClient.getBlobClient(blob.name);
+        
+        if (blob.properties.lastModified) {
+          const daysSinceLastModified = (Date.now() - blob.properties.lastModified.getTime()) / (1000 * 60 * 60 * 24);
+          
+          if (daysSinceLastModified > 30 && blob.properties.accessTier === 'Hot') {
+            await blobClient.setAccessTier('Cool');
+            recordsProcessed++;
+          }
+        }
+      }
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        optimizationType: 'blob-tiering',
+        optimizationTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to optimize storage', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Storage optimization failed');
+  }
+}
+
+async function sendScheduledNotifications(context: Context): Promise<{ recordsProcessed?: number; details?: Record<string, unknown> }> {
+  logger.info('Starting scheduled notifications');
+  
+  try {
+    // Implement your notification logic here
+    // Example: Send scheduled emails, SMS, push notifications, etc.
+    
+    let recordsProcessed = 0;
+    
+    // Example notification logic
+    const notificationTypes = ['daily-digest', 'system-alerts', 'maintenance-notices'];
+    
+    for (const notificationType of notificationTypes) {
+      const notificationResult = await sendNotification(notificationType);
+      recordsProcessed += notificationResult.recipientCount;
+    }
+    
+    return {
+      recordsProcessed,
+      details: {
+        notificationTypes,
+        sendTime: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Failed to send scheduled notifications', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new AzureServiceError('Scheduled notifications failed');
+  }
+}
+
+// Helper functions
+function chunkArray<T>(array: readonly T[], chunkSize: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize));
+  }
+  return chunks;
+}
+
+async function storeExecutionSummary(summary: TimerExecutionSummary): Promise<void> {
+  try {
+    if (cosmosClient) {
+      const database = cosmosClient.database('monitoring');
+      const container = database.container('timer-executions');
+      
+      await container.items.create({
+        id: summary.executionId,
+        ...summary,
+        partitionKey: summary.executionId
+      });
+    }
+  } catch (error) {
+    logger.error('Failed to store execution summary', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    // Don't throw here to avoid breaking the main function
+  }
+}
+
+async function sendAlertNotification(summary: TimerExecutionSummary): Promise<void> {
+  try {
+    // Implement your alert notification logic here
+    // Example: Send email, Teams message, etc.
+    
+    logger.warn('Sending alert notification', {
+      executionId: summary.executionId,
+      tasksFailed: summary.tasksFailed,
+      failureRate: summary.tasksFailed / summary.tasksCompleted
+    });
+    
+    // Example alert implementation would go here
+  } catch (error) {
+    logger.error('Failed to send alert notification', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    // Don't throw here to avoid breaking the main function
+  }
+}
+
+// Stub functions for demonstration - implement these based on your needs
+async function generateReport(reportType: string, reportDate: Date): Promise<unknown> {
+  return { reportType, reportDate, data: 'sample-data' };
+}
+
+async function storeReport(reportType: string, reportData: unknown): Promise<void> {
+  // Implement report storage logic
+}
+
+async function syncDataSource(source: string): Promise<{ recordsProcessed: number }> {
+  // Implement data source sync logic
+  return { recordsProcessed: Math.floor(Math.random() * 100) };
+}
+
+async function updateSearchIndex(indexName: string): Promise<{ recordsProcessed: number }> {
+  // Implement search index update logic
+  return { recordsProcessed: Math.floor(Math.random() * 50) };
+}
+
+async function performBackup(target: string): Promise<{ recordsProcessed: number }> {
+  // Implement backup logic
+  return { recordsProcessed: Math.floor(Math.random() * 200) };
+}
+
+async function sendNotification(notificationType: string): Promise<{ recipientCount: number }> {
+  // Implement notification logic
+  return { recipientCount: Math.floor(Math.random() * 10) };
+}
+
+export default timerTrigger;
