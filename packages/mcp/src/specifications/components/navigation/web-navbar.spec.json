@@ -1,0 +1,712 @@
+{
+  "metadata": {
+    "name": "WebNavbar",
+    "version": "1.0.0",
+    "category": "navigation",
+    "description": "Enterprise-grade responsive navigation bar with mobile support, user menu, and search functionality",
+    "author": "Xala Enterprise UI System",
+    "created": "2025-08-04",
+    "updated": "2025-08-04"
+  },
+  "compliance": {
+    "norwegian": {
+      "nsmClassification": "OPEN",
+      "gdprCompliant": true,
+      "wcagLevel": "AAA",
+      "supportedLanguages": ["nb-NO", "en-US"],
+      "auditTrail": false
+    },
+    "accessibility": {
+      "wcagLevel": "AAA",
+      "keyboardNavigation": true,
+      "screenReaderSupport": true,
+      "focusManagement": true,
+      "ariaLabels": true,
+      "colorContrastRatio": "7:1"
+    }
+  },
+  "props": {
+    "logo": {
+      "type": "object",
+      "required": false,
+      "description": "Logo configuration for the navbar",
+      "properties": {
+        "src": {
+          "type": "string",
+          "required": true,
+          "description": "Source URL for the logo image"
+        },
+        "alt": {
+          "type": "string",
+          "required": true,
+          "description": "Alternative text for the logo image"
+        },
+        "href": {
+          "type": "string",
+          "required": false,
+          "default": "/",
+          "description": "URL to navigate to when logo is clicked"
+        },
+        "width": {
+          "type": "number",
+          "required": false,
+          "default": 120,
+          "description": "Logo width in pixels"
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": 40,
+          "description": "Logo height in pixels"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "required": false,
+      "default": [],
+      "description": "Array of navigation items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "required": true,
+            "description": "Display text for the navigation item"
+          },
+          "href": {
+            "type": "string",
+            "required": true,
+            "description": "URL for the navigation item"
+          },
+          "active": {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether this item is currently active"
+          },
+          "dropdown": {
+            "type": "array",
+            "required": false,
+            "description": "Dropdown menu items",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "required": true
+                },
+                "href": {
+                  "type": "string",
+                  "required": true
+                },
+                "description": {
+                  "type": "string",
+                  "required": false
+                },
+                "icon": {
+                  "type": "string",
+                  "required": false
+                }
+              }
+            }
+          },
+          "icon": {
+            "type": "string",
+            "required": false,
+            "description": "Icon name for the navigation item"
+          },
+          "disabled": {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether this item is disabled"
+          }
+        }
+      }
+    },
+    "variant": {
+      "type": "string",
+      "required": false,
+      "default": "default",
+      "enum": ["default", "transparent", "dark", "light"],
+      "description": "Visual style variant of the navbar"
+    },
+    "position": {
+      "type": "string",
+      "required": false,
+      "default": "static",
+      "enum": ["static", "fixed", "sticky"],
+      "description": "CSS position property for the navbar"
+    },
+    "mobileBreakpoint": {
+      "type": "string",
+      "required": false,
+      "default": "md",
+      "enum": ["sm", "md", "lg", "xl"],
+      "description": "Breakpoint at which mobile menu activates"
+    },
+    "user": {
+      "type": "object",
+      "required": false,
+      "description": "User menu configuration",
+      "properties": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "description": "User's display name"
+        },
+        "email": {
+          "type": "string",
+          "required": false,
+          "description": "User's email address"
+        },
+        "avatar": {
+          "type": "string",
+          "required": false,
+          "description": "URL to user's avatar image"
+        },
+        "menuItems": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "User menu dropdown items",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "required": true
+              },
+              "href": {
+                "type": "string",
+                "required": false
+              },
+              "onClick": {
+                "type": "function",
+                "required": false
+              },
+              "icon": {
+                "type": "string",
+                "required": false
+              },
+              "divider": {
+                "type": "boolean",
+                "required": false,
+                "default": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "required": false,
+      "description": "Search bar configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Whether search functionality is enabled"
+        },
+        "placeholder": {
+          "type": "string",
+          "required": false,
+          "default": "Search...",
+          "description": "Placeholder text for search input"
+        },
+        "onSearch": {
+          "type": "function",
+          "required": false,
+          "description": "Callback function when search is performed"
+        },
+        "suggestions": {
+          "type": "array",
+          "required": false,
+          "description": "Array of search suggestions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "required": true
+              },
+              "value": {
+                "type": "string",
+                "required": true
+              },
+              "category": {
+                "type": "string",
+                "required": false
+              }
+            }
+          }
+        },
+        "shortcut": {
+          "type": "string",
+          "required": false,
+          "default": "⌘K",
+          "description": "Keyboard shortcut to focus search"
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "required": false,
+      "default": [],
+      "description": "Array of action buttons in the navbar",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "required": true,
+            "description": "Button label"
+          },
+          "variant": {
+            "type": "string",
+            "required": false,
+            "default": "primary",
+            "enum": ["primary", "secondary", "outline", "ghost"],
+            "description": "Button style variant"
+          },
+          "onClick": {
+            "type": "function",
+            "required": false,
+            "description": "Click handler function"
+          },
+          "href": {
+            "type": "string",
+            "required": false,
+            "description": "URL for button link"
+          },
+          "icon": {
+            "type": "string",
+            "required": false,
+            "description": "Icon name for the button"
+          },
+          "disabled": {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the button is disabled"
+          }
+        }
+      }
+    },
+    "sticky": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the navbar should be sticky on scroll"
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes to apply"
+    },
+    "onNavigate": {
+      "type": "function",
+      "required": false,
+      "description": "Callback function when navigation occurs"
+    }
+  },
+  "variants": {
+    "default": {
+      "description": "Standard navbar with white background and dark text",
+      "styles": {
+        "background": "bg-white",
+        "text": "text-gray-900",
+        "border": "border-b border-gray-200"
+      }
+    },
+    "transparent": {
+      "description": "Transparent navbar for overlay usage",
+      "styles": {
+        "background": "bg-transparent",
+        "text": "text-white",
+        "border": "border-b border-white/20"
+      }
+    },
+    "dark": {
+      "description": "Dark themed navbar",
+      "styles": {
+        "background": "bg-gray-900",
+        "text": "text-white",
+        "border": "border-b border-gray-800"
+      }
+    },
+    "light": {
+      "description": "Light themed navbar with subtle background",
+      "styles": {
+        "background": "bg-gray-50",
+        "text": "text-gray-900",
+        "border": "border-b border-gray-200"
+      }
+    }
+  },
+  "responsive": {
+    "mobile": {
+      "description": "Mobile-first responsive design with hamburger menu",
+      "breakpoints": {
+        "sm": "640px",
+        "md": "768px",
+        "lg": "1024px",
+        "xl": "1280px"
+      },
+      "features": {
+        "hamburgerMenu": true,
+        "collapsibleNavigation": true,
+        "mobileOptimizedSearch": true,
+        "touchFriendlyButtons": true
+      }
+    }
+  },
+  "performance": {
+    "bundleSize": {
+      "target": "<8KB",
+      "gzipped": "<3KB"
+    },
+    "renderTime": "<16ms",
+    "memoryUsage": "<2MB",
+    "lazyLoading": {
+      "dropdowns": true,
+      "userMenu": true,
+      "searchSuggestions": true
+    }
+  },
+  "examples": [
+    {
+      "name": "basic",
+      "title": "Basic Navigation Bar",
+      "description": "Simple navbar with logo and navigation items",
+      "code": {
+        "logo": {
+          "src": "/logo.svg",
+          "alt": "Company Logo",
+          "href": "/"
+        },
+        "items": [
+          {
+            "label": "Home",
+            "href": "/",
+            "active": true
+          },
+          {
+            "label": "Products",
+            "href": "/products"
+          },
+          {
+            "label": "About",
+            "href": "/about"
+          },
+          {
+            "label": "Contact",
+            "href": "/contact"
+          }
+        ],
+        "variant": "default",
+        "position": "static"
+      }
+    },
+    {
+      "name": "with-user-menu",
+      "title": "Navigation Bar with User Menu",
+      "description": "Navbar with user authentication and profile menu",
+      "code": {
+        "logo": {
+          "src": "/logo.svg",
+          "alt": "Company Logo",
+          "href": "/"
+        },
+        "items": [
+          {
+            "label": "Dashboard",
+            "href": "/dashboard",
+            "active": true
+          },
+          {
+            "label": "Projects",
+            "href": "/projects",
+            "dropdown": [
+              {
+                "label": "All Projects",
+                "href": "/projects",
+                "description": "View all your projects"
+              },
+              {
+                "label": "Create New",
+                "href": "/projects/new",
+                "description": "Start a new project"
+              }
+            ]
+          },
+          {
+            "label": "Analytics",
+            "href": "/analytics"
+          }
+        ],
+        "user": {
+          "name": "John Doe",
+          "email": "john@example.com",
+          "avatar": "/avatars/john.jpg",
+          "menuItems": [
+            {
+              "label": "Profile",
+              "href": "/profile",
+              "icon": "user"
+            },
+            {
+              "label": "Settings",
+              "href": "/settings",
+              "icon": "settings"
+            },
+            {
+              "label": "Sign Out",
+              "onClick": "handleSignOut",
+              "icon": "logout",
+              "divider": true
+            }
+          ]
+        },
+        "variant": "default",
+        "position": "sticky"
+      }
+    },
+    {
+      "name": "with-search",
+      "title": "Navigation Bar with Search",
+      "description": "Navbar with integrated search functionality",
+      "code": {
+        "logo": {
+          "src": "/logo.svg",
+          "alt": "Company Logo",
+          "href": "/"
+        },
+        "items": [
+          {
+            "label": "Explore",
+            "href": "/explore"
+          },
+          {
+            "label": "Categories",
+            "href": "/categories",
+            "dropdown": [
+              {
+                "label": "Technology",
+                "href": "/categories/technology"
+              },
+              {
+                "label": "Design",
+                "href": "/categories/design"
+              },
+              {
+                "label": "Business",
+                "href": "/categories/business"
+              }
+            ]
+          }
+        ],
+        "search": {
+          "enabled": true,
+          "placeholder": "Search products, articles, or help...",
+          "suggestions": [
+            {
+              "label": "React Components",
+              "value": "react-components",
+              "category": "Development"
+            },
+            {
+              "label": "Design System",
+              "value": "design-system",
+              "category": "Design"
+            }
+          ],
+          "shortcut": "⌘K"
+        },
+        "actions": [
+          {
+            "label": "Sign In",
+            "variant": "outline",
+            "href": "/signin"
+          },
+          {
+            "label": "Get Started",
+            "variant": "primary",
+            "href": "/signup"
+          }
+        ],
+        "variant": "default",
+        "mobileBreakpoint": "md"
+      }
+    },
+    {
+      "name": "enterprise-portal",
+      "title": "Enterprise Portal Navigation",
+      "description": "Full-featured navbar for enterprise applications with Norwegian compliance",
+      "code": {
+        "logo": {
+          "src": "/xala-logo.svg",
+          "alt": "Xala Enterprise Logo",
+          "href": "/dashboard"
+        },
+        "items": [
+          {
+            "label": "Oversikt",
+            "href": "/dashboard",
+            "active": true,
+            "icon": "dashboard"
+          },
+          {
+            "label": "Prosjekter",
+            "href": "/projects",
+            "dropdown": [
+              {
+                "label": "Alle prosjekter",
+                "href": "/projects",
+                "description": "Se alle dine prosjekter",
+                "icon": "folder"
+              },
+              {
+                "label": "Opprett nytt",
+                "href": "/projects/new",
+                "description": "Start et nytt prosjekt",
+                "icon": "plus"
+              },
+              {
+                "label": "Maler",
+                "href": "/templates",
+                "description": "Bruk eksisterende maler",
+                "icon": "template"
+              }
+            ]
+          },
+          {
+            "label": "Rapporter",
+            "href": "/reports",
+            "icon": "chart"
+          },
+          {
+            "label": "Administrasjon",
+            "href": "/admin",
+            "dropdown": [
+              {
+                "label": "Brukere",
+                "href": "/admin/users",
+                "icon": "users"
+              },
+              {
+                "label": "Roller",
+                "href": "/admin/roles",
+                "icon": "key"
+              },
+              {
+                "label": "Systeminnstillinger",
+                "href": "/admin/settings",
+                "icon": "settings"
+              }
+            ]
+          }
+        ],
+        "search": {
+          "enabled": true,
+          "placeholder": "Søk i prosjekter, dokumenter eller hjelp...",
+          "suggestions": [
+            {
+              "label": "Prosjekt Alpha",
+              "value": "project-alpha",
+              "category": "Prosjekter"
+            },
+            {
+              "label": "Månedlig rapport",
+              "value": "monthly-report",
+              "category": "Rapporter"
+            }
+          ],
+          "shortcut": "⌘K"
+        },
+        "user": {
+          "name": "Ola Nordmann",
+          "email": "ola.nordmann@xala.no",
+          "avatar": "/avatars/ola.jpg",
+          "menuItems": [
+            {
+              "label": "Min profil",
+              "href": "/profile",
+              "icon": "user"
+            },
+            {
+              "label": "Innstillinger",
+              "href": "/settings",
+              "icon": "settings"
+            },
+            {
+              "label": "Hjelp og støtte",
+              "href": "/support",
+              "icon": "help"
+            },
+            {
+              "label": "Logg ut",
+              "onClick": "handleSignOut",
+              "icon": "logout",
+              "divider": true
+            }
+          ]
+        },
+        "actions": [
+          {
+            "label": "Nytt prosjekt",
+            "variant": "primary",
+            "onClick": "handleCreateProject",
+            "icon": "plus"
+          }
+        ],
+        "variant": "default",
+        "position": "sticky",
+        "mobileBreakpoint": "lg"
+      }
+    }
+  ],
+  "testing": {
+    "unitTests": [
+      "renders navbar with logo and navigation items",
+      "handles mobile menu toggle correctly",
+      "displays user menu when authenticated",
+      "performs search functionality",
+      "supports keyboard navigation",
+      "meets WCAG AAA accessibility standards",
+      "handles Norwegian language content",
+      "renders different variants correctly"
+    ],
+    "integrationTests": [
+      "integrates with routing system",
+      "handles authentication state changes",
+      "works with search backend API",
+      "responsive behavior across breakpoints"
+    ],
+    "e2eTests": [
+      "complete navigation flow",
+      "mobile menu interactions",
+      "search and suggestions workflow",
+      "user menu and logout process"
+    ]
+  },
+  "documentation": {
+    "storybook": {
+      "enabled": true,
+      "stories": [
+        "Basic navbar variations",
+        "Interactive states and behaviors",
+        "Responsive design showcase",
+        "Accessibility features demo"
+      ]
+    },
+    "api": {
+      "propsTable": true,
+      "examples": true,
+      "playgroundSupport": true
+    }
+  }
+}

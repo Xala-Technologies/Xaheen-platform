@@ -1,0 +1,863 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xala-technologies.com/schemas/ai-component-specifications/v1.0.0",
+  "title": "AI-Optimized Component Specifications for Enhanced Code Generation",
+  "description": "Comprehensive AI-friendly metadata and recommendations for UI components to optimize code generation capabilities across multiple AI platforms (Claude, ChatGPT, Cursor, etc.)",
+  "version": "1.0.0",
+  "lastUpdated": "2025-08-03T00:00:00Z",
+  "aiOptimization": {
+    "targetModels": ["claude-sonnet-4", "gpt-4", "cursor-ai", "copilot"],
+    "contextWindowOptimized": true,
+    "tokenEstimation": true,
+    "patternRecognition": true
+  },
+  "components": {
+    "Button": {
+      "metadata": {
+        "name": "Button",
+        "category": "interactive",
+        "subcategory": "action",
+        "complexity": "simple",
+        "priority": "high",
+        "estimatedTokens": 450,
+        "generationTime": "fast"
+      },
+      "aiContext": {
+        "semanticTags": [
+          "action", "interactive", "clickable", "form-control", 
+          "navigation", "primary-action", "secondary-action"
+        ],
+        "purposeDescription": "Interactive element that triggers actions when clicked or activated",
+        "commonUseCases": [
+          "Form submission",
+          "Navigation trigger",
+          "Action confirmation",
+          "Modal/dialog opener",
+          "API call trigger",
+          "State change initiator"
+        ],
+        "cognitiveLoad": "low",
+        "learningCurve": "minimal"
+      },
+      "specifications": {
+        "baseInterface": {
+          "required": ["children"],
+          "optional": [
+            "variant", "size", "disabled", "loading", "onClick", "type", 
+            "ariaLabel", "icon", "iconPosition", "fullWidth", "href"
+          ],
+          "deprecated": ["color"]
+        },
+        "variants": {
+          "primary": {
+            "description": "Main call-to-action button with high visual emphasis",
+            "usage": "Use for the primary action on a page or form",
+            "classes": "bg-primary text-primary-foreground hover:bg-primary/90",
+            "examples": ["Submit", "Save", "Create Account", "Buy Now"]
+          },
+          "secondary": {
+            "description": "Secondary action with medium visual emphasis",
+            "usage": "Use for supporting actions alongside primary buttons",
+            "classes": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+            "examples": ["Cancel", "View Details", "Learn More"]
+          },
+          "outline": {
+            "description": "Minimal emphasis button with border only",
+            "usage": "Use for tertiary actions or when visual hierarchy needs to be subtle",
+            "classes": "border border-input bg-background hover:bg-accent",
+            "examples": ["Reset Form", "Advanced Options", "Export"]
+          },
+          "ghost": {
+            "description": "Text-only button with hover background",
+            "usage": "Use for low-priority actions or within dense interfaces",
+            "classes": "hover:bg-accent hover:text-accent-foreground",
+            "examples": ["Skip", "Maybe Later", "Dismiss"]
+          },
+          "destructive": {
+            "description": "High-risk action button with warning emphasis",
+            "usage": "use for irreversible or potentially harmful actions",
+            "classes": "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+            "examples": ["Delete", "Remove", "Permanently Delete"]
+          }
+        },
+        "sizes": {
+          "sm": {
+            "description": "Compact button for dense interfaces",
+            "classes": "h-8 px-3 text-sm",
+            "usage": "Use in tables, toolbars, or space-constrained areas"
+          },
+          "md": {
+            "description": "Standard button size for most interfaces",
+            "classes": "h-10 px-4 py-2",
+            "usage": "Default size for forms and general actions"
+          },
+          "lg": {
+            "description": "Larger button for emphasis or touch interfaces",
+            "classes": "h-11 px-8",
+            "usage": "Use for primary CTAs or mobile-first designs"
+          },
+          "xl": {
+            "description": "Extra large button for hero sections",
+            "classes": "h-12 px-12 text-base",
+            "usage": "Use in landing pages or marketing sections"
+          }
+        }
+      },
+      "aiGeneration": {
+        "bestPractices": [
+          "Always include explicit return type ': JSX.Element'",
+          "Use forwardRef for proper ref handling",
+          "Implement proper loading states with visual indicators",
+          "Include comprehensive ARIA attributes",
+          "Handle disabled state properly with visual feedback",
+          "Use semantic HTML elements (button vs div)",
+          "Implement proper focus management",
+          "Include keyboard event handlers when needed"
+        ],
+        "antiPatterns": [
+          {
+            "pattern": "Using div with onClick instead of button",
+            "reason": "Breaks accessibility and semantic HTML",
+            "alternative": "Use button element or role='button' with proper ARIA"
+          },
+          {
+            "pattern": "Missing disabled state handling",
+            "reason": "Poor user experience and potential bugs",
+            "alternative": "Always check disabled/loading state before executing actions"
+          },
+          {
+            "pattern": "Using any type for onClick handler",
+            "reason": "Breaks type safety",
+            "alternative": "Use proper MouseEvent typing: (event: MouseEvent<HTMLButtonElement>) => void"
+          }
+        ],
+        "compositionRules": {
+          "canContain": ["text", "Icon", "Spinner", "Badge"],
+          "cannotContain": ["Button", "Input", "interactive elements"],
+          "parentCompatibility": ["Form", "Toolbar", "Modal", "Card", "any container"],
+          "siblingSynergy": ["Input (in forms)", "Text (as description)", "Icon (as decorator)"]
+        },
+        "performanceHints": [
+          "Use React.memo if button receives complex props",
+          "Debounce click handlers for API calls",
+          "Avoid inline functions in onClick when possible",
+          "Use CSS transitions over JavaScript animations"
+        ]
+      },
+      "codeTemplates": {
+        "basic": {
+          "description": "Basic button implementation",
+          "estimatedTokens": 200,
+          "code": "export const Button = ({ children, variant = 'primary', size = 'md', ...props }: ButtonProps): JSX.Element => {\n  return (\n    <button\n      className={cn(buttonVariants({ variant, size }))}\n      {...props}\n    >\n      {children}\n    </button>\n  );\n};"
+        },
+        "withLoading": {
+          "description": "Button with loading state",
+          "estimatedTokens": 280,
+          "code": "export const Button = ({ children, loading, disabled, ...props }: ButtonProps): JSX.Element => {\n  return (\n    <button\n      disabled={disabled || loading}\n      {...props}\n    >\n      {loading && <Spinner className=\"mr-2 h-4 w-4\" />}\n      {children}\n    </button>\n  );\n};"
+        },
+        "withIcon": {
+          "description": "Button with icon support",
+          "estimatedTokens": 320,
+          "code": "export const Button = ({ children, icon, iconPosition = 'left', ...props }: ButtonProps): JSX.Element => {\n  return (\n    <button {...props}>\n      {icon && iconPosition === 'left' && <Icon name={icon} className=\"mr-2 h-4 w-4\" />}\n      {children}\n      {icon && iconPosition === 'right' && <Icon name={icon} className=\"ml-2 h-4 w-4\" />}\n    </button>\n  );\n};"
+        }
+      },
+      "accessibility": {
+        "required": {
+          "attributes": ["aria-label or accessible text content", "role (if not button element)"],
+          "behavior": ["keyboard navigation", "focus management", "screen reader support"]
+        },
+        "wcagGuidelines": ["2.1.1 Keyboard", "2.4.7 Focus Visible", "3.2.1 On Focus"],
+        "testingChecklist": [
+          "Can be activated with Enter and Space keys",
+          "Has visible focus indicator",
+          "Screen reader announces button purpose",
+          "Disabled state is properly communicated",
+          "Loading state has appropriate aria-busy"
+        ]
+      },
+      "norwegianCompliance": {
+        "altinnCompliant": true,
+        "designTokens": ["--action-primary", "--action-secondary", "--focus-ring"],
+        "localizationKeys": ["common.save", "common.cancel", "common.delete"],
+        "nsmClassification": "OPEN"
+      }
+    },
+    "Input": {
+      "metadata": {
+        "name": "Input",
+        "category": "form",
+        "subcategory": "data-entry",
+        "complexity": "moderate",
+        "priority": "high",
+        "estimatedTokens": 650,
+        "generationTime": "medium"
+      },
+      "aiContext": {
+        "semanticTags": [
+          "form-control", "data-entry", "user-input", "validation-target",
+          "text-input", "interactive", "focusable", "labelable"
+        ],
+        "purposeDescription": "Form control element for collecting user text input with validation and accessibility features",
+        "commonUseCases": [
+          "Text data collection",
+          "Search functionality",
+          "Form field input",
+          "Data filtering",
+          "User credentials entry",
+          "Content creation"
+        ],
+        "cognitiveLoad": "medium",
+        "learningCurve": "moderate"
+      },
+      "specifications": {
+        "baseInterface": {
+          "required": ["type"],
+          "optional": [
+            "value", "onChange", "placeholder", "disabled", "readOnly", "required",
+            "error", "helperText", "label", "id", "name", "autoComplete",
+            "validation", "size", "variant", "leftIcon", "rightIcon"
+          ],
+          "deprecated": ["color", "theme"]
+        },
+        "types": {
+          "text": {
+            "description": "Standard text input for general text entry",
+            "usage": "Use for names, descriptions, general text data",
+            "validation": "Length, pattern, custom validators"
+          },
+          "email": {
+            "description": "Email input with built-in validation",
+            "usage": "Use for email address collection",
+            "validation": "Email format, domain validation"
+          },
+          "password": {
+            "description": "Password input with masking",
+            "usage": "Use for sensitive text entry",
+            "validation": "Strength requirements, confirmation matching"
+          },
+          "number": {
+            "description": "Numeric input with controls",
+            "usage": "Use for quantities, prices, measurements",
+            "validation": "Min/max values, step increments"
+          },
+          "search": {
+            "description": "Search input with enhanced styling",
+            "usage": "Use for search functionality",
+            "validation": "Query length, special characters"
+          },
+          "tel": {
+            "description": "Telephone number input",
+            "usage": "Use for phone number collection",
+            "validation": "Phone format, country codes"
+          },
+          "url": {
+            "description": "URL input with validation",
+            "usage": "Use for website addresses",
+            "validation": "URL format, protocol requirements"
+          }
+        },
+        "states": {
+          "default": {
+            "description": "Normal input state ready for user interaction",
+            "classes": "border-input focus:border-primary"
+          },
+          "focused": {
+            "description": "Input has keyboard focus",
+            "classes": "border-primary ring-2 ring-primary/20 outline-none"
+          },
+          "error": {
+            "description": "Input has validation errors",
+            "classes": "border-destructive focus:border-destructive ring-destructive/20"
+          },
+          "disabled": {
+            "description": "Input is not interactive",
+            "classes": "opacity-50 cursor-not-allowed bg-muted"
+          },
+          "readOnly": {
+            "description": "Input is viewable but not editable",
+            "classes": "bg-muted cursor-default"
+          }
+        }
+      },
+      "aiGeneration": {
+        "bestPractices": [
+          "Always associate with a label element using htmlFor/id",
+          "Implement controlled components with value/onChange",
+          "Include proper validation feedback",
+          "Use appropriate input types for semantic meaning",
+          "Implement proper error states with ARIA",
+          "Include autocomplete attributes when appropriate",
+          "Handle form submission and validation properly",
+          "Support both controlled and uncontrolled modes"
+        ],
+        "antiPatterns": [
+          {
+            "pattern": "Input without associated label",
+            "reason": "Breaks accessibility and usability",
+            "alternative": "Always use <label htmlFor='inputId'> or aria-label"
+          },
+          {
+            "pattern": "Missing validation feedback",
+            "reason": "Poor user experience",
+            "alternative": "Show clear error messages with aria-describedby"
+          },
+          {
+            "pattern": "Not handling edge cases (null, undefined values)",
+            "reason": "Runtime errors and inconsistent behavior",
+            "alternative": "Use defaultValue and proper null checks"
+          }
+        ],
+        "compositionRules": {
+          "requiresContext": ["Label", "FormField", "ErrorMessage"],
+          "canContain": ["text content only"],
+          "parentCompatibility": ["Form", "FormField", "SearchBar", "Modal"],
+          "siblingSynergy": ["Label (required)", "HelperText", "ErrorMessage", "Icon"]
+        },
+        "performanceHints": [
+          "Debounce onChange handlers for expensive operations",
+          "Use React.memo for inputs that receive frequent prop updates",
+          "Implement virtual scrolling for large option lists",
+          "Avoid unnecessary re-renders by optimizing value comparisons"
+        ]
+      },
+      "codeTemplates": {
+        "basic": {
+          "description": "Basic controlled input with label",
+          "estimatedTokens": 280,
+          "code": "export const Input = ({ label, error, helperText, ...props }: InputProps): JSX.Element => {\n  return (\n    <div className=\"space-y-2\">\n      {label && <Label htmlFor={props.id}>{label}</Label>}\n      <input\n        className={cn(inputVariants({ error: !!error }))}\n        aria-describedby={error ? `${props.id}-error` : undefined}\n        {...props}\n      />\n      {error && <ErrorMessage id={`${props.id}-error`}>{error}</ErrorMessage>}\n      {helperText && <HelperText>{helperText}</HelperText>}\n    </div>\n  );\n};"
+        },
+        "withValidation": {
+          "description": "Input with real-time validation",
+          "estimatedTokens": 420,
+          "code": "export const Input = ({ validation, onChange, ...props }: InputProps): JSX.Element => {\n  const [error, setError] = useState<string>('');\n  \n  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {\n    const value = e.target.value;\n    \n    if (validation) {\n      const validationError = validateInput(value, validation);\n      setError(validationError || '');\n    }\n    \n    onChange?.(e);\n  };\n  \n  return (\n    <input\n      onChange={handleChange}\n      aria-invalid={!!error}\n      {...props}\n    />\n  );\n};"
+        },
+        "withIcons": {
+          "description": "Input with left and right icon support",
+          "estimatedTokens": 380,
+          "code": "export const Input = ({ leftIcon, rightIcon, ...props }: InputProps): JSX.Element => {\n  return (\n    <div className=\"relative\">\n      {leftIcon && (\n        <Icon name={leftIcon} className=\"absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground\" />\n      )}\n      <input\n        className={cn(\n          inputVariants(),\n          leftIcon && 'pl-10',\n          rightIcon && 'pr-10'\n        )}\n        {...props}\n      />\n      {rightIcon && (\n        <Icon name={rightIcon} className=\"absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground\" />\n      )}\n    </div>\n  );\n};"
+        }
+      },
+      "accessibility": {
+        "required": {
+          "attributes": ["label or aria-label", "id", "name", "type"],
+          "behavior": ["keyboard navigation", "screen reader support", "error announcement"]
+        },
+        "wcagGuidelines": ["1.3.1 Info and Relationships", "2.4.6 Headings and Labels", "3.3.1 Error Identification"],
+        "testingChecklist": [
+          "Label is properly associated with input",
+          "Error messages are announced to screen readers",
+          "Input purpose is clear from context",
+          "Autocomplete attributes are appropriate",
+          "Required fields are clearly indicated"
+        ]
+      },
+      "norwegianCompliance": {
+        "altinnCompliant": true,
+        "designTokens": ["--input-border", "--input-focus", "--input-error"],
+        "localizationKeys": ["validation.required", "validation.email", "validation.minLength"],
+        "nsmClassification": "RESTRICTED"
+      }
+    },
+    "Card": {
+      "metadata": {
+        "name": "Card",
+        "category": "layout",
+        "subcategory": "container",
+        "complexity": "simple",
+        "priority": "high",
+        "estimatedTokens": 380,
+        "generationTime": "fast"
+      },
+      "aiContext": {
+        "semanticTags": [
+          "container", "content-wrapper", "visual-grouping", "layout-component",
+          "sectioning", "bordered-container", "elevation", "information-card"
+        ],
+        "purposeDescription": "Flexible container component that groups related content with consistent styling and elevation",
+        "commonUseCases": [
+          "Content organization",
+          "Product displays",
+          "User profiles",
+          "Statistics presentation",
+          "Action grouping",
+          "Information panels"
+        ],
+        "cognitiveLoad": "low",
+        "learningCurve": "minimal"
+      },
+      "specifications": {
+        "baseInterface": {
+          "required": ["children"],
+          "optional": [
+            "variant", "padding", "shadow", "border", "radius", "hoverable",
+            "clickable", "onClick", "header", "footer", "className"
+          ],
+          "deprecated": ["elevation", "color"]
+        },
+        "variants": {
+          "default": {
+            "description": "Standard card with default styling",
+            "usage": "Use for general content grouping",
+            "classes": "bg-card text-card-foreground border border-border"
+          },
+          "elevated": {
+            "description": "Card with enhanced shadow for prominence",
+            "usage": "Use for important content or interactive cards",
+            "classes": "bg-card text-card-foreground border border-border shadow-lg"
+          },
+          "outlined": {
+            "description": "Card with prominent border and no background",
+            "usage": "Use when background contrast is not desired",
+            "classes": "border-2 border-border bg-transparent"
+          },
+          "filled": {
+            "description": "Card with filled background color",
+            "usage": "Use for highlighting or categorizing content",
+            "classes": "bg-accent text-accent-foreground border-accent"
+          }
+        },
+        "sizes": {
+          "sm": {
+            "description": "Compact card with minimal padding",
+            "classes": "p-3",
+            "usage": "Use for dense layouts or small content items"
+          },
+          "md": {
+            "description": "Standard card padding",
+            "classes": "p-6",
+            "usage": "Default padding for most use cases"
+          },
+          "lg": {
+            "description": "Spacious card with generous padding",
+            "classes": "p-8",
+            "usage": "Use for important content or when whitespace is desired"
+          }
+        }
+      },
+      "aiGeneration": {
+        "bestPractices": [
+          "Use semantic HTML structure (article, section, or div)",
+          "Implement proper composition with header, body, footer",
+          "Support both static and interactive card variants",
+          "Include proper ARIA labels when clickable",
+          "Handle hover and focus states appropriately",
+          "Use consistent spacing and typography hierarchy",
+          "Support nested content with proper layout",
+          "Implement responsive behavior"
+        ],
+        "antiPatterns": [
+          {
+            "pattern": "Clickable card without proper accessibility",
+            "reason": "Breaks keyboard navigation and screen reader support",
+            "alternative": "Use button wrapper or proper ARIA roles with keyboard handlers"
+          },
+          {
+            "pattern": "Inconsistent internal spacing",
+            "reason": "Poor visual hierarchy and design inconsistency",
+            "alternative": "Use consistent spacing tokens and layout patterns"
+          },
+          {
+            "pattern": "Card content overflow without handling",
+            "reason": "Layout breaks and poor responsive behavior",
+            "alternative": "Implement proper overflow handling and responsive design"
+          }
+        ],
+        "compositionRules": {
+          "canContain": ["CardHeader", "CardContent", "CardFooter", "any content"],
+          "cannotContain": ["no restrictions"],
+          "parentCompatibility": ["Grid", "List", "Container", "Layout", "any parent"],
+          "siblingSynergy": ["other Cards (in grids)", "Divider", "Spacer"]
+        },
+        "performanceHints": [
+          "Use CSS transforms for hover animations",
+          "Avoid heavy shadows on mobile devices",
+          "Implement lazy loading for card images",
+          "Use virtual scrolling for large card lists"
+        ]
+      },
+      "codeTemplates": {
+        "basic": {
+          "description": "Basic card container",
+          "estimatedTokens": 180,
+          "code": "export const Card = ({ children, className, ...props }: CardProps): JSX.Element => {\n  return (\n    <div\n      className={cn(\n        'rounded-lg border bg-card text-card-foreground shadow-sm',\n        className\n      )}\n      {...props}\n    >\n      {children}\n    </div>\n  );\n};"
+        },
+        "withComposition": {
+          "description": "Card with header, content, and footer composition",
+          "estimatedTokens": 320,
+          "code": "export const Card = ({ children, header, footer, ...props }: CardProps): JSX.Element => {\n  return (\n    <div className={cn(cardVariants())} {...props}>\n      {header && (\n        <div className=\"border-b p-6 pb-4\">\n          {header}\n        </div>\n      )}\n      <div className=\"p-6\">\n        {children}\n      </div>\n      {footer && (\n        <div className=\"border-t p-6 pt-4\">\n          {footer}\n        </div>\n      )}\n    </div>\n  );\n};"
+        },
+        "interactive": {
+          "description": "Interactive clickable card",
+          "estimatedTokens": 280,
+          "code": "export const Card = ({ children, onClick, hoverable, ...props }: CardProps): JSX.Element => {\n  const isInteractive = !!onClick || hoverable;\n  \n  return (\n    <div\n      className={cn(\n        cardVariants(),\n        isInteractive && 'cursor-pointer transition-colors hover:bg-accent'\n      )}\n      onClick={onClick}\n      role={onClick ? 'button' : undefined}\n      tabIndex={onClick ? 0 : undefined}\n      onKeyDown={(e) => {\n        if (onClick && (e.key === 'Enter' || e.key === ' ')) {\n          e.preventDefault();\n          onClick(e as any);\n        }\n      }}\n      {...props}\n    >\n      {children}\n    </div>\n  );\n};"
+        }
+      },
+      "accessibility": {
+        "required": {
+          "attributes": ["role (if interactive)", "aria-label (if clickable without text)"],
+          "behavior": ["keyboard navigation (if interactive)", "focus management"]
+        },
+        "wcagGuidelines": ["2.1.1 Keyboard", "2.4.7 Focus Visible", "4.1.2 Name Role Value"],
+        "testingChecklist": [
+          "Interactive cards are keyboard accessible",
+          "Focus indicators are visible",
+          "Screen readers announce card purpose",
+          "Content hierarchy is logical",
+          "Color is not the only indicator of interactivity"
+        ]
+      },
+      "norwegianCompliance": {
+        "altinnCompliant": true,
+        "designTokens": ["--card-background", "--card-border", "--card-shadow"],
+        "localizationKeys": [],
+        "nsmClassification": "OPEN"
+      }
+    },
+    "DataTable": {
+      "metadata": {
+        "name": "DataTable",
+        "category": "data-display",
+        "subcategory": "table",
+        "complexity": "complex",
+        "priority": "high",
+        "estimatedTokens": 1200,
+        "generationTime": "slow"
+      },
+      "aiContext": {
+        "semanticTags": [
+          "data-grid", "tabular-data", "sortable", "filterable", "pagination",
+          "selection", "data-visualization", "structured-content", "interactive-table"
+        ],
+        "purposeDescription": "Complex table component for displaying, sorting, filtering, and manipulating large datasets with full accessibility support",
+        "commonUseCases": [
+          "Admin dashboards",
+          "User management",
+          "Product catalogs",
+          "Analytics reports",
+          "Content management",
+          "Financial data display"
+        ],
+        "cognitiveLoad": "high",
+        "learningCurve": "steep"
+      },
+      "specifications": {
+        "baseInterface": {
+          "required": ["columns", "data"],
+          "optional": [
+            "sorting", "filtering", "pagination", "selection", "actions",
+            "loading", "error", "emptyState", "onSort", "onFilter", "onSelect",
+            "rowKey", "expandable", "virtualized", "stickyHeader"
+          ],
+          "deprecated": ["striped", "bordered"]
+        },
+        "features": {
+          "sorting": {
+            "description": "Column-based sorting with multiple sort support",
+            "implementation": "Click column headers to sort, shift+click for multi-sort",
+            "aria": "aria-sort attribute on column headers"
+          },
+          "filtering": {
+            "description": "Per-column filtering with various filter types",
+            "implementation": "Filter dropdowns or inputs in column headers",
+            "types": ["text", "select", "date-range", "number-range"]
+          },
+          "pagination": {
+            "description": "Client or server-side pagination with customizable page sizes",
+            "implementation": "Page controls with jump-to-page and size selector",
+            "accessibility": "Proper labeling and keyboard navigation"
+          },
+          "selection": {
+            "description": "Single or multiple row selection with bulk actions",
+            "implementation": "Checkboxes with select-all functionality",
+            "accessibility": "Proper ARIA attributes and keyboard shortcuts"
+          },
+          "virtualization": {
+            "description": "Virtual scrolling for large datasets",
+            "implementation": "Render only visible rows for performance",
+            "considerations": "Accessibility implications with screen readers"
+          }
+        }
+      },
+      "aiGeneration": {
+        "bestPractices": [
+          "Use proper table semantic HTML (table, thead, tbody, th, td)",
+          "Implement comprehensive ARIA support for complex interactions",
+          "Handle loading and error states gracefully",
+          "Optimize performance with virtualization for large datasets",
+          "Support keyboard navigation throughout the table",
+          "Implement proper focus management for interactive elements",
+          "Use meaningful column headers with sorting indicators",
+          "Provide clear visual feedback for all interactions"
+        ],
+        "antiPatterns": [
+          {
+            "pattern": "Using div-based tables without proper ARIA",
+            "reason": "Breaks screen reader navigation and semantic meaning",
+            "alternative": "Use semantic table elements or comprehensive ARIA roles"
+          },
+          {
+            "pattern": "Not handling empty states",
+            "reason": "Poor user experience when no data is available",
+            "alternative": "Show meaningful empty state with actions when appropriate"
+          },
+          {
+            "pattern": "Inconsistent interaction patterns",
+            "reason": "Confusing user experience across different table features",
+            "alternative": "Use consistent interaction patterns for all table features"
+          }
+        ],
+        "compositionRules": {
+          "canContain": ["TableCell", "Button", "Checkbox", "Icon", "Badge", "Avatar"],
+          "cannotContain": ["Input (within cells without proper handling)"],
+          "parentCompatibility": ["Card", "Container", "Layout", "Modal"],
+          "siblingSynergy": ["Pagination", "Toolbar", "SearchBar", "FilterPanel"]
+        },
+        "performanceHints": [
+          "Implement virtual scrolling for tables with >100 rows",
+          "Use React.memo for table rows to prevent unnecessary re-renders",
+          "Debounce filter and search operations",
+          "Optimize sorting algorithms for large datasets",
+          "Use server-side operations when client-side performance is insufficient"
+        ]
+      },
+      "codeTemplates": {
+        "basic": {
+          "description": "Basic data table with sorting",
+          "estimatedTokens": 600,
+          "code": "export const DataTable = ({ columns, data, sorting, onSort }: DataTableProps): JSX.Element => {\n  return (\n    <div className=\"overflow-x-auto\">\n      <table className=\"w-full border-collapse\">\n        <thead>\n          <tr>\n            {columns.map((column) => (\n              <th\n                key={column.key}\n                className=\"border-b p-4 text-left\"\n                onClick={() => onSort?.(column.key)}\n                aria-sort={getSortDirection(column.key, sorting)}\n              >\n                {column.label}\n                {sorting?.key === column.key && (\n                  <Icon name={sorting.direction === 'asc' ? 'chevron-up' : 'chevron-down'} />\n                )}\n              </th>\n            ))}\n          </tr>\n        </thead>\n        <tbody>\n          {data.map((row, index) => (\n            <tr key={row.id || index}>\n              {columns.map((column) => (\n                <td key={column.key} className=\"border-b p-4\">\n                  {row[column.key]}\n                </td>\n              ))}\n            </tr>\n          ))}\n        </tbody>\n      </table>\n    </div>\n  );\n};"
+        },
+        "withSelection": {
+          "description": "Data table with row selection",
+          "estimatedTokens": 800,
+          "code": "export const DataTable = ({ data, selection, onSelectionChange }: DataTableProps): JSX.Element => {\n  const handleSelectAll = (checked: boolean) => {\n    if (checked) {\n      onSelectionChange?.(data.map(row => row.id));\n    } else {\n      onSelectionChange?.([]);\n    }\n  };\n  \n  const isAllSelected = selection.length === data.length;\n  const isIndeterminate = selection.length > 0 && selection.length < data.length;\n  \n  return (\n    <table>\n      <thead>\n        <tr>\n          <th>\n            <Checkbox\n              checked={isAllSelected}\n              indeterminate={isIndeterminate}\n              onChange={handleSelectAll}\n              aria-label=\"Select all rows\"\n            />\n          </th>\n          {/* other headers */}\n        </tr>\n      </thead>\n      <tbody>\n        {data.map((row) => (\n          <tr key={row.id} className={selection.includes(row.id) ? 'bg-accent' : ''}>\n            <td>\n              <Checkbox\n                checked={selection.includes(row.id)}\n                onChange={(checked) => {\n                  if (checked) {\n                    onSelectionChange?.([...selection, row.id]);\n                  } else {\n                    onSelectionChange?.(selection.filter(id => id !== row.id));\n                  }\n                }}\n                aria-label={`Select row ${row.id}`}\n              />\n            </td>\n            {/* other cells */}\n          </tr>\n        ))}\n      </tbody>\n    </table>\n  );\n};"
+        }
+      },
+      "accessibility": {
+        "required": {
+          "attributes": ["role='table'", "aria-label or caption", "columnheader roles", "cell roles"],
+          "behavior": ["keyboard navigation", "screen reader support", "sort announcement"]
+        },
+        "wcagGuidelines": ["1.3.1 Info and Relationships", "2.1.1 Keyboard", "4.1.2 Name Role Value"],
+        "testingChecklist": [
+          "Table structure is announced correctly",
+          "Sort controls are keyboard accessible",
+          "Selection state is communicated to screen readers", 
+          "Column headers are properly associated",
+          "Navigation between cells works with arrow keys"
+        ]
+      },
+      "norwegianCompliance": {
+        "altinnCompliant": true,
+        "designTokens": ["--table-border", "--table-header", "--table-selected"],
+        "localizationKeys": ["table.sort", "table.filter", "table.selectAll"],
+        "nsmClassification": "RESTRICTED"
+      }
+    },
+    "Modal": {
+      "metadata": {
+        "name": "Modal",
+        "category": "overlay",
+        "subcategory": "dialog",
+        "complexity": "complex",
+        "priority": "high",
+        "estimatedTokens": 850,
+        "generationTime": "medium"
+      },
+      "aiContext": {
+        "semanticTags": [
+          "dialog", "overlay", "popup", "modal-dialog", "focus-trap",
+          "backdrop", "escapable", "accessible-dialog", "portal"
+        ],
+        "purposeDescription": "Overlay dialog component that focuses user attention on specific content while blocking interaction with the background",
+        "commonUseCases": [
+          "Form dialogs",
+          "Confirmation prompts",
+          "Content preview",
+          "Settings panels",
+          "Image galleries",
+          "Alert messages"
+        ],
+        "cognitiveLoad": "high",
+        "learningCurve": "moderate"
+      },
+      "specifications": {
+        "baseInterface": {
+          "required": ["isOpen", "onClose", "children"],
+          "optional": [
+            "title", "description", "size", "closeOnBackdrop", "closeOnEscape",
+            "showCloseButton", "footer", "preventScroll", "initialFocus",
+            "returnFocus", "aria-labelledby", "aria-describedby"
+          ],
+          "deprecated": ["backdrop", "keyboard"]
+        },
+        "sizes": {
+          "sm": {
+            "description": "Small modal for simple confirmations",
+            "classes": "max-w-md",
+            "usage": "Use for alerts, confirmations, or simple forms"
+          },
+          "md": {
+            "description": "Medium modal for standard content",
+            "classes": "max-w-lg",
+            "usage": "Default size for most modal content"
+          },
+          "lg": {
+            "description": "Large modal for complex content",
+            "classes": "max-w-2xl",
+            "usage": "Use for detailed forms or content preview"
+          },
+          "xl": {
+            "description": "Extra large modal for rich content",
+            "classes": "max-w-4xl",
+            "usage": "Use for complex interfaces or media content"
+          },
+          "fullscreen": {
+            "description": "Full screen modal on mobile",
+            "classes": "max-w-full h-full md:max-w-4xl md:h-auto",
+            "usage": "Use for mobile-first complex interfaces"
+          }
+        }
+      },
+      "aiGeneration": {
+        "bestPractices": [
+          "Implement proper focus trapping within the modal",
+          "Return focus to trigger element when closed",
+          "Use React portals to render outside DOM hierarchy",
+          "Implement proper ARIA dialog semantics",
+          "Handle escape key and backdrop clicks for closing",
+          "Prevent body scroll when modal is open",
+          "Use semantic heading structure within modal",
+          "Implement proper loading and error states"
+        ],
+        "antiPatterns": [
+          {
+            "pattern": "Modal without focus management",
+            "reason": "Breaks keyboard navigation and accessibility",
+            "alternative": "Implement focus trap and return focus properly"
+          },
+          {
+            "pattern": "Missing backdrop click handling",
+            "reason": "Inconsistent user experience expectations",
+            "alternative": "Always handle backdrop clicks unless explicitly disabled"
+          },
+          {
+            "pattern": "Modal content without proper semantic structure",
+            "reason": "Poor screen reader experience",
+            "alternative": "Use proper headings, labels, and ARIA attributes"
+          }
+        ],
+        "compositionRules": {
+          "canContain": ["Form", "Button", "Text", "any content"],
+          "cannotContain": ["other Modals (nested)", "Tooltip", "Popover"],
+          "parentCompatibility": ["Portal", "body"],
+          "siblingSynergy": ["Backdrop", "CloseButton", "Overlay"]
+        },
+        "performanceHints": [
+          "Use lazy loading for modal content when possible",
+          "Implement proper cleanup for event listeners",
+          "Use CSS transforms for animations over position changes",
+          "Consider virtualization for modals with large content lists"
+        ]
+      },
+      "codeTemplates": {
+        "basic": {
+          "description": "Basic modal with focus management",
+          "estimatedTokens": 450,
+          "code": "export const Modal = ({ isOpen, onClose, children, title }: ModalProps): JSX.Element => {\n  const dialogRef = useRef<HTMLDivElement>(null);\n  \n  useEffect(() => {\n    if (isOpen) {\n      dialogRef.current?.focus();\n    }\n  }, [isOpen]);\n  \n  if (!isOpen) return null;\n  \n  return createPortal(\n    <div className=\"fixed inset-0 z-50 flex items-center justify-center\">\n      <div className=\"fixed inset-0 bg-black/50\" onClick={onClose} />\n      <div\n        ref={dialogRef}\n        role=\"dialog\"\n        aria-modal=\"true\"\n        aria-labelledby={title ? 'modal-title' : undefined}\n        className=\"relative bg-white rounded-lg p-6 max-w-md w-full mx-4\"\n        tabIndex={-1}\n      >\n        {title && <h2 id=\"modal-title\" className=\"text-lg font-semibold mb-4\">{title}</h2>}\n        {children}\n      </div>\n    </div>,\n    document.body\n  );\n};"
+        },
+        "withFocusTrap": {
+          "description": "Modal with comprehensive focus management",
+          "estimatedTokens": 680,
+          "code": "export const Modal = ({ isOpen, onClose, children }: ModalProps): JSX.Element => {\n  const modalRef = useRef<HTMLDivElement>(null);\n  const previousFocus = useRef<HTMLElement | null>(null);\n  \n  useEffect(() => {\n    if (isOpen) {\n      previousFocus.current = document.activeElement as HTMLElement;\n      modalRef.current?.focus();\n      document.body.style.overflow = 'hidden';\n    } else {\n      document.body.style.overflow = 'unset';\n      previousFocus.current?.focus();\n    }\n    \n    return () => {\n      document.body.style.overflow = 'unset';\n    };\n  }, [isOpen]);\n  \n  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {\n    if (e.key === 'Escape') {\n      onClose();\n    }\n    \n    if (e.key === 'Tab') {\n      trapFocus(e, modalRef.current);\n    }\n  };\n  \n  if (!isOpen) return null;\n  \n  return createPortal(\n    <div className=\"fixed inset-0 z-50 flex items-center justify-center\">\n      <div className=\"fixed inset-0 bg-black/50\" onClick={onClose} />\n      <div\n        ref={modalRef}\n        role=\"dialog\"\n        aria-modal=\"true\"\n        onKeyDown={handleKeyDown}\n        className=\"relative bg-white rounded-lg p-6 max-w-md w-full mx-4\"\n        tabIndex={-1}\n      >\n        {children}\n      </div>\n    </div>,\n    document.body\n  );\n};"
+        }
+      },
+      "accessibility": {
+        "required": {
+          "attributes": ["role='dialog'", "aria-modal='true'", "aria-labelledby or aria-label"],
+          "behavior": ["focus trapping", "escape key handling", "return focus"]
+        },
+        "wcagGuidelines": ["2.1.2 No Keyboard Trap", "2.4.3 Focus Order", "3.2.1 On Focus"],
+        "testingChecklist": [
+          "Focus is trapped within the modal",
+          "Escape key closes the modal",
+          "Focus returns to trigger element when closed",
+          "Screen readers announce dialog opening",
+          "Background content is not accessible"
+        ]
+      },
+      "norwegianCompliance": {
+        "altinnCompliant": true,
+        "designTokens": ["--modal-backdrop", "--modal-shadow", "--modal-border"],
+        "localizationKeys": ["modal.close", "modal.confirm", "modal.cancel"],
+        "nsmClassification": "OPEN"
+      }
+    }
+  },
+  "aiInstructions": {
+    "generalGuidelines": [
+      "Always prioritize accessibility and semantic HTML in generated components",
+      "Use TypeScript with strict typing - never use 'any' type",
+      "Implement proper error boundaries and loading states",
+      "Follow the established design token system",
+      "Include comprehensive prop validation and default values",
+      "Generate components that are SSR-safe and framework-agnostic where possible",
+      "Always include proper ARIA attributes and keyboard navigation",
+      "Use the CVA (Class Variance Authority) pattern for styling variants",
+      "Implement proper focus management for interactive components",
+      "Include Norwegian compliance considerations where applicable"
+    ],
+    "codeGenerationPatterns": {
+      "interfaceDefinition": "Always start with a clear readonly interface extending appropriate HTML attributes",
+      "forwardRef": "Use React.forwardRef for components that need ref access",
+      "variantSystem": "Implement CVA-based variant system for consistent styling",
+      "accessibilityFirst": "Include ARIA attributes and keyboard handling from the start",
+      "errorHandling": "Implement proper error boundaries and graceful degradation",
+      "performance": "Use React.memo, useCallback, and useMemo appropriately",
+      "testing": "Generate components with proper data-testid attributes",
+      "localization": "Include i18n considerations for user-facing text"
+    },
+    "tokenEstimation": {
+      "simple": "200-400 tokens",
+      "moderate": "400-800 tokens", 
+      "complex": "800-1500 tokens",
+      "factors": [
+        "Number of props and variants",
+        "Accessibility requirements",
+        "Interactive features",
+        "Composition complexity",
+        "Error handling needs"
+      ]
+    },
+    "qualityChecklist": [
+      "Component follows TypeScript strict mode requirements",
+      "All interactive elements are keyboard accessible",
+      "ARIA attributes are properly implemented",
+      "Error states are handled gracefully",
+      "Loading states provide appropriate feedback",
+      "Component is responsive and mobile-friendly",
+      "Design tokens are used consistently",
+      "Norwegian compliance requirements are met",
+      "Performance optimizations are implemented",
+      "Code is properly documented with JSDoc comments"
+    ]
+  },
+  "platformOptimization": {
+    "react": {
+      "preferredPatterns": ["forwardRef", "controlled components", "composition"],
+      "hookRecommendations": ["useState", "useEffect", "useCallback", "useMemo", "useRef"],
+      "performanceHints": ["React.memo", "lazy loading", "code splitting"]
+    },
+    "nextjs": {
+      "considerations": ["SSR compatibility", "Image optimization", "App Router support"],
+      "patterns": ["Server Components where applicable", "Client Component boundaries"]
+    },
+    "accessibility": {
+      "required": ["WCAG AAA compliance", "keyboard navigation", "screen reader support"],
+      "testing": ["automated a11y tests", "manual keyboard testing", "screen reader validation"]
+    },
+    "norwegian": {
+      "compliance": ["Altinn design system", "NSM classifications", "GDPR requirements"],
+      "localization": ["Norwegian language support", "right-to-left for Arabic", "cultural considerations"]
+    }
+  }
+}

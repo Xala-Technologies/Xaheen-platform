@@ -467,7 +467,7 @@ export class XalaIntegrationService {
 
 	private getPlatformDependencies(platform: XalaPlatform) {
 		const baseDeps = {
-			"@xala-technologies/ui-system": "^5.0.0",
+			"@xala-technologies/ui-system": "^6.0.0",
 			"class-variance-authority": "^0.7.0",
 			clsx: "^2.0.0",
 		};

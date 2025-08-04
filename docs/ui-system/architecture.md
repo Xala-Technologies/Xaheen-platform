@@ -1,8 +1,8 @@
-# UI System Architecture - v5.0.0
+# UI System Architecture - v6.0.0
 
 ## 🏗 **Production-Ready SSR-Safe Architecture**
 
-The UI System v5.0.0 implements a **production-ready, SSR-compatible architecture** with design token integration, designed for enterprise-scale React applications.
+The UI System v6.0.0 implements a **production-ready, SSR-compatible architecture** with design token integration, designed for enterprise-scale React applications.
 
 ## 🎯 **Core Design Principles**
 
@@ -44,7 +44,7 @@ const template = await templateLoader.loadTemplate(templateId);
 
 ```mermaid
 graph TD
-    A[UISystemProvider] --> B[TokenSystem v5.0.0]
+    A[UISystemProvider] --> B[TokenSystem v6.0.0]
     B --> C[Design Token System]
     C --> D[useTokens Hook]
     D --> E[UI Components]
@@ -62,7 +62,7 @@ graph TD
 ### **Provider Architecture**
 
 ```typescript
-// UISystemProvider v5.0.0 - SSR-Safe Implementation
+// UISystemProvider v6.0.0 - SSR-Safe Implementation
 'use client';
 
 interface UISystemProviderProps {

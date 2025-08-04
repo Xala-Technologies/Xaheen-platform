@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.5.1",
-    "@xala-technologies/ui-system": "^5.0.0",
+    "@xala-technologies/ui-system": "^6.0.0",
     "babel-plugin-react-compiler": "^19.1.0-rc.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -58,7 +58,7 @@
     "wrangler": "^4.24.3"
   },
   "xala": {
-    "version": "5.0.0",
+    "version": "6.0.0",
     "compliance": {
       "norwegian": true,
       "gdpr": true,

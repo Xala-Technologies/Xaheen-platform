@@ -8,7 +8,7 @@
 
 ## 🎯 **Integration Objective**
 
-Integrate the Xala UI System (`@xala-technologies/ui-system@^5.0.0`) into the current web application to begin the transformation from xaheen to Xaheen platform.
+Integrate the Xala UI System (`@xala-technologies/ui-system@^6.0.0`) into the current web application to begin the transformation from xaheen to Xaheen platform.
 
 ---
 
@@ -21,7 +21,7 @@ Integrate the Xala UI System (`@xala-technologies/ui-system@^5.0.0`) into the cu
 
 ### **2. Package Access Assessment**
 - 🔄 **Package Availability**: Checking @xala-technologies/ui-system access
-- 🔄 **Version Compatibility**: Verifying v5.0.0 availability
+- 🔄 **Version Compatibility**: Verifying v6.0.0 availability
 - 🔄 **Dependency Analysis**: Checking peer dependencies
 
 ---
@@ -38,7 +38,7 @@ To access the Xala UI System package, we need:
    ```
 3. **Package Installation**:
    ```bash
-   bun add @xala-technologies/ui-system@^5.0.0
+   bun add @xala-technologies/ui-system@^6.0.0
    ```
 
 ### **Integration Plan**
@@ -146,7 +146,7 @@ Once authentication is resolved, we can:
 
 To continue with Xala UI System integration, please provide:
 1. **GitHub Personal Access Token** with packages:read permission
-2. **Confirmation** that @xala-technologies/ui-system@^5.0.0 exists and is accessible
+2. **Confirmation** that @xala-technologies/ui-system@^6.0.0 exists and is accessible
 
 Alternatively, let me know if you'd prefer to:
 - **Mock the integration** for now and continue with other tasks

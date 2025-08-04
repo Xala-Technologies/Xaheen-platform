@@ -14,7 +14,7 @@ bun install
 
 # Add Xala UI System as a dependency
 cd packages/config
-npm install @xala-technologies/ui-system@^5.0.0
+npm install @xala-technologies/ui-system@^6.0.0
 ```
 
 ### 2. Configure NPM for GitHub Packages

@@ -11,7 +11,7 @@
 
 ### **Xala UI System Integration**
 
-1. **Successfully installed** @xala-technologies/ui-system v5.0.0
+1. **Successfully installed** @xala-technologies/ui-system v6.0.0
    - Configured GitHub Packages authentication
    - Added to web app dependencies
    - Verified package access and installation

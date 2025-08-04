@@ -1,0 +1,1393 @@
+{
+  "$schema": "../schemas/component-schema.json",
+  "version": "5.0.0",
+  "totalComponents": 187,
+  "lastUpdated": "2025-08-03T00:00:00Z",
+  "compliance": {
+    "i18nCompliant": 85,
+    "semanticCompliant": 120,
+    "ssrCompliant": 175,
+    "wcagCompliant": 180,
+    "norwegianCompliant": 95
+  },
+  "categories": {
+    "action-feedback": {
+      "description": "Interactive components for user actions and system feedback",
+      "count": 14,
+      "components": [
+        {
+          "name": "Alert",
+          "path": "action-feedback/alert.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "AlertActions",
+          "path": "action-feedback/alert-actions.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "AlertBase",
+          "path": "action-feedback/alert-base.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "AlertContent",
+          "path": "action-feedback/alert-content.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "AlertIcon",
+          "path": "action-feedback/alert-icon.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Button",
+          "path": "action-feedback/button.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ButtonBase",
+          "path": "action-feedback/button-base.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ButtonConfirmation",
+          "path": "action-feedback/button-confirmation.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "RESTRICTED",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ButtonIcon",
+          "path": "action-feedback/button-icon.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ClassificationIndicator",
+          "path": "action-feedback/classification-indicator.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "RESTRICTED",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Modal",
+          "path": "action-feedback/modal.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "PriorityIndicator",
+          "path": "action-feedback/priority-indicator.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Toast",
+          "path": "action-feedback/toast.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "ToastIcon",
+          "path": "action-feedback/toast-icon.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "data-display": {
+      "description": "Components for presenting data and information",
+      "count": 5,
+      "components": [
+        {
+          "name": "Badge",
+          "path": "data-display/badge.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "DataTable",
+          "path": "data-display/data-table.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "RESTRICTED",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "KeyValueList",
+          "path": "data-display/key-value-list.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Tag",
+          "path": "data-display/tag.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Tooltip",
+          "path": "data-display/tooltip.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        }
+      ]
+    },
+    "form": {
+      "description": "Form controls and input components",
+      "count": 6,
+      "components": [
+        {
+          "name": "Form",
+          "path": "form/form.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Input",
+          "path": "form/input.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "OrganizationNumberInput",
+          "path": "form/organization-number-input.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "RESTRICTED",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "PersonalNumberInput",
+          "path": "form/personal-number-input.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "CONFIDENTIAL",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Select",
+          "path": "form/select.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "TextArea",
+          "path": "form/textarea.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "layout": {
+      "description": "Layout and structure components",
+      "count": 11,
+      "components": [
+        {
+          "name": "Card",
+          "path": "layout/card.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Container",
+          "path": "layout/container.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Dashboard",
+          "path": "layout/dashboard.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Grid",
+          "path": "layout/grid.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "PageLayout",
+          "path": "layout/page-layout.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Section",
+          "path": "layout/section.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Stack",
+          "path": "layout/stack.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "HStack",
+          "path": "layout/hstack.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "VStack",
+          "path": "layout/vstack.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "GridItem",
+          "path": "layout/grid-item.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "EnhancedDashboard",
+          "path": "layout/enhanced-dashboard.spec.json",
+          "status": "beta",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "RESTRICTED",
+            "i18n": true,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "navigation": {
+      "description": "Navigation and routing components",
+      "count": 6,
+      "components": [
+        {
+          "name": "NavigationComponents",
+          "path": "navigation/navigation-components.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "WebNavbar",
+          "path": "navigation/web-navbar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "MobileWebNavbar",
+          "path": "navigation/mobile-web-navbar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ProgressBar",
+          "path": "navigation/progress-bar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Steps",
+          "path": "navigation/steps.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Tabs",
+          "path": "navigation/tabs.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "semantic": {
+      "description": "Semantic HTML replacement components",
+      "count": 21,
+      "components": [
+        {
+          "name": "Box",
+          "path": "semantic/box.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Section",
+          "path": "semantic/section.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Article",
+          "path": "semantic/article.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Header",
+          "path": "semantic/header.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Footer",
+          "path": "semantic/footer.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Main",
+          "path": "semantic/main.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Nav",
+          "path": "semantic/nav.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Aside",
+          "path": "semantic/aside.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Container",
+          "path": "semantic/container.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Text",
+          "path": "semantic/text.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Paragraph",
+          "path": "semantic/paragraph.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Heading",
+          "path": "semantic/heading.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Button",
+          "path": "semantic/button.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Input",
+          "path": "semantic/input.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "List",
+          "path": "semantic/list.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Link",
+          "path": "semantic/link.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Image",
+          "path": "semantic/image.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Breadcrumb",
+          "path": "semantic/breadcrumb.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Navigation",
+          "path": "semantic/navigation.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Toast",
+          "path": "semantic/toast.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        }
+      ]
+    },
+    "ui": {
+      "description": "Extended UI components library",
+      "count": 50,
+      "components": [
+        {
+          "name": "Accordion",
+          "path": "ui/accordion.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ActionBar",
+          "path": "ui/action-bar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Alert",
+          "path": "ui/alert.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Avatar",
+          "path": "ui/avatar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Badge",
+          "path": "ui/badge.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Calendar",
+          "path": "ui/calendar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Checkbox",
+          "path": "ui/checkbox.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "CodeBlock",
+          "path": "ui/code-block.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Combobox",
+          "path": "ui/combobox.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "CommandPalette",
+          "path": "ui/command-palette.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "ContextMenu",
+          "path": "ui/context-menu.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "DatePicker",
+          "path": "ui/date-picker.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Dialog",
+          "path": "ui/dialog.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Divider",
+          "path": "ui/divider.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Drawer",
+          "path": "ui/drawer.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Dropdown",
+          "path": "ui/dropdown.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "DropdownMenu",
+          "path": "ui/dropdown-menu.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "IconButton",
+          "path": "ui/icon-button.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "MainContent",
+          "path": "ui/main-content.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "MessageBubble",
+          "path": "ui/message-bubble.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "MultiSelect",
+          "path": "ui/multi-select.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Pagination",
+          "path": "ui/pagination.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Popover",
+          "path": "ui/popover.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Progress",
+          "path": "ui/progress.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Radio",
+          "path": "ui/radio.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ScrollArea",
+          "path": "ui/scroll-area.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Separator",
+          "path": "ui/separator.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Sheet",
+          "path": "ui/sheet.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Sidebar",
+          "path": "ui/sidebar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Skeleton",
+          "path": "ui/skeleton.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Slider",
+          "path": "ui/slider.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Spinner",
+          "path": "ui/spinner.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Switch",
+          "path": "ui/switch.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Table",
+          "path": "ui/table.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "TimePicker",
+          "path": "ui/time-picker.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "Timeline",
+          "path": "ui/timeline.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "TreeView",
+          "path": "ui/tree-view.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "Typography",
+          "path": "ui/typography.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "enhanced": {
+      "description": "Theme-aware enhanced components",
+      "count": 3,
+      "components": [
+        {
+          "name": "ThemeAwareButton",
+          "path": "enhanced/theme-aware-button.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ThemeAwareCard",
+          "path": "enhanced/theme-aware-card.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ThemeAwareSearch",
+          "path": "enhanced/theme-aware-search.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "platform": {
+      "description": "Platform-specific components",
+      "count": 5,
+      "components": [
+        {
+          "name": "BottomNavigation",
+          "path": "platform/bottom-navigation.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "DesktopSidebar",
+          "path": "platform/desktop-sidebar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "MobileHeader",
+          "path": "platform/mobile-header.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "SwipeableDrawer",
+          "path": "platform/swipeable-drawer.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "SplitView",
+          "path": "platform/split-view.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        }
+      ]
+    },
+    "specialty": {
+      "description": "Specialized and utility components",
+      "count": 7,
+      "components": [
+        {
+          "name": "ThemeManager",
+          "path": "specialty/theme-manager.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "UISystemProvider",
+          "path": "specialty/ui-system-provider.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "GlobalSearch",
+          "path": "specialty/global-search.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": false
+          }
+        },
+        {
+          "name": "FilterBar",
+          "path": "specialty/filter-bar.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "LazyImage",
+          "path": "specialty/lazy-image.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": false
+          }
+        },
+        {
+          "name": "SEOHead",
+          "path": "specialty/seo-head.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "N/A",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "ErrorBoundary",
+          "path": "specialty/error-boundary.spec.json",
+          "status": "stable",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": true,
+            "ssr": true
+          }
+        },
+        {
+          "name": "AirbnbCard",
+          "path": "specialty/airbnb-card.spec.json",
+          "status": "experimental",
+          "compliance": {
+            "wcag": "AAA",
+            "nsm": "OPEN",
+            "i18n": false,
+            "ssr": true
+          }
+        }
+      ]
+    }
+  },
+  "statistics": {
+    "byCategory": {
+      "action-feedback": 14,
+      "data-display": 5,
+      "form": 6,
+      "layout": 11,
+      "navigation": 6,
+      "semantic": 21,
+      "ui": 50,
+      "enhanced": 3,
+      "platform": 5,
+      "specialty": 8
+    },
+    "byCompliance": {
+      "wcag": {
+        "AAA": 180,
+        "AA": 0,
+        "A": 0,
+        "N/A": 1
+      },
+      "nsm": {
+        "OPEN": 172,
+        "RESTRICTED": 5,
+        "CONFIDENTIAL": 1,
+        "SECRET": 0
+      },
+      "i18n": {
+        "true": 85,
+        "false": 102
+      },
+      "ssr": {
+        "true": 145,
+        "false": 42
+      }
+    },
+    "byStatus": {
+      "stable": 185,
+      "beta": 1,
+      "experimental": 1,
+      "deprecated": 0
+    }
+  }
+}

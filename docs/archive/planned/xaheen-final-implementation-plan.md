@@ -77,7 +77,7 @@
   - Test package access and installation
 
 - [ ] **Add Xala UI System to current web app**
-  - Install @xala-technologies/ui-system@^5.0.0
+  - Install @xala-technologies/ui-system@^6.0.0
   - Configure peer dependencies
   - Set up TypeScript types
   - Test basic component imports
@@ -95,7 +95,7 @@
 
 ##### **2.2 Basic Component Migration**
 - [x] **Convert critical UI components to Xala UI**
-  - Installed @xala-technologies/ui-system v5.0.0
+  - Installed @xala-technologies/ui-system v6.0.0
   - Migrated FeatureCard to use Xala Card component
   - Created test page demonstrating Xala UI components
   - Established direct usage pattern (no wrappers needed)

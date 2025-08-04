@@ -1,0 +1,335 @@
+{
+  "metadata": {
+    "name": "DataTable",
+    "version": "2.0.0",
+    "category": "data-display",
+    "description": "Production-ready data table with sorting, filtering, pagination, and Norwegian compliance",
+    "stability": "stable"
+  },
+  "compliance": {
+    "wcag": {
+      "level": "AAA",
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2
+      }
+    },
+    "norwegian": {
+      "nsmClassification": "RESTRICTED",
+      "gdprCompliant": true,
+      "auditTrail": true
+    },
+    "semantic": {
+      "htmlElements": ["table", "thead", "tbody", "tr", "th", "td", "caption"],
+      "ariaRoles": ["table", "grid", "columnheader", "cell", "row"]
+    }
+  },
+  "props": {
+    "schema": {
+      "data": {
+        "type": {
+          "array": {
+            "object": {
+              "id": {
+                "type": { "primitive": "string" },
+                "required": true
+              }
+            },
+            "strict": false
+          }
+        },
+        "description": "Array of data objects to display",
+        "required": true
+      },
+      "columns": {
+        "type": {
+          "array": {
+            "object": {
+              "key": {
+                "type": { "primitive": "string" },
+                "required": true
+              },
+              "label": {
+                "type": { "primitive": "string" },
+                "required": true
+              },
+              "type": {
+                "type": {
+                  "custom": "variant",
+                  "values": ["text", "number", "date", "boolean", "badge", "actions"]
+                },
+                "required": false
+              },
+              "sortable": {
+                "type": { "primitive": "boolean" },
+                "required": false
+              },
+              "filterable": {
+                "type": { "primitive": "boolean" },
+                "required": false
+              },
+              "width": {
+                "type": { "primitive": "string" },
+                "required": false
+              }
+            }
+          }
+        },
+        "description": "Column definitions for the table",
+        "required": true
+      },
+      "sorting": {
+        "type": {
+          "object": {
+            "enabled": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "defaultSort": {
+              "type": {
+                "object": {
+                  "column": {
+                    "type": { "primitive": "string" },
+                    "required": true
+                  },
+                  "direction": {
+                    "type": {
+                      "custom": "variant",
+                      "values": ["asc", "desc"]
+                    },
+                    "required": false
+                  }
+                }
+              },
+              "required": false
+            }
+          }
+        },
+        "description": "Sorting configuration",
+        "required": false,
+        "defaultValue": { "enabled": true }
+      },
+      "filtering": {
+        "type": {
+          "object": {
+            "enabled": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "searchable": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "filters": {
+              "type": {
+                "object": {},
+                "strict": false
+              },
+              "required": false
+            }
+          }
+        },
+        "description": "Filtering configuration",
+        "required": false,
+        "defaultValue": { "enabled": true, "searchable": true }
+      },
+      "pagination": {
+        "type": {
+          "object": {
+            "enabled": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "pageSize": {
+              "type": {
+                "primitive": "number",
+                "constraints": {
+                  "minimum": 1,
+                  "maximum": 1000
+                }
+              },
+              "required": false
+            },
+            "currentPage": {
+              "type": {
+                "primitive": "number",
+                "constraints": {
+                  "minimum": 1
+                }
+              },
+              "required": false
+            }
+          }
+        },
+        "description": "Pagination configuration",
+        "required": false,
+        "defaultValue": { "enabled": true, "pageSize": 10, "currentPage": 1 }
+      },
+      "selection": {
+        "type": {
+          "object": {
+            "enabled": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "multiple": {
+              "type": { "primitive": "boolean" },
+              "required": false
+            },
+            "selectedRows": {
+              "type": {
+                "array": { "primitive": "string" }
+              },
+              "required": false
+            }
+          }
+        },
+        "description": "Row selection configuration",
+        "required": false,
+        "defaultValue": { "enabled": false, "multiple": false }
+      },
+      "onSort": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              { "name": "column", "type": "string", "required": true },
+              { "name": "direction", "type": "'asc' | 'desc'", "required": true }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Sort change handler",
+        "required": false
+      },
+      "onFilter": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              { "name": "filters", "type": "Record<string, unknown>", "required": true }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Filter change handler",
+        "required": false
+      },
+      "onPageChange": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              { "name": "page", "type": "number", "required": true },
+              { "name": "pageSize", "type": "number", "required": true }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Page change handler",
+        "required": false
+      },
+      "onRowSelect": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              { "name": "selectedRows", "type": "string[]", "required": true }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Row selection handler",
+        "required": false
+      },
+      "ariaLabel": {
+        "type": { "primitive": "string" },
+        "description": "Accessible label for the table",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-label"
+        }
+      },
+      "caption": {
+        "type": { "primitive": "string" },
+        "description": "Table caption for accessibility",
+        "required": false
+      }
+    },
+    "groups": {
+      "required": ["data", "columns"],
+      "optional": ["sorting", "filtering", "pagination", "selection", "onSort", "onFilter", "onPageChange", "onRowSelect", "ariaLabel", "caption"]
+    }
+  },
+  "accessibility": {
+    "role": {
+      "primary": "table"
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        { "key": "Tab", "action": "navigate", "context": "Move between elements" },
+        { "key": "Enter", "action": "select", "context": "Select row or activate control" },
+        { "key": "Space", "action": "select", "context": "Toggle row selection" },
+        { "key": "ArrowUp/Down", "action": "navigate", "context": "Navigate rows" },
+        { "key": "ArrowLeft/Right", "action": "navigate", "context": "Navigate columns" }
+      ]
+    },
+    "screenReader": {
+      "announcements": [
+        { "trigger": "sort", "message": "Table sorted by {column} {direction}" },
+        { "trigger": "filter", "message": "Table filtered, showing {count} results" },
+        { "trigger": "page", "message": "Page {current} of {total}" },
+        { "trigger": "select", "message": "{count} rows selected" }
+      ]
+    }
+  },
+  "performance": {
+    "virtualScrolling": {
+      "enabled": true,
+      "threshold": 1000,
+      "description": "Enable virtual scrolling for large datasets"
+    },
+    "metrics": {
+      "bundleSize": { "max": "15KB" },
+      "renderTime": { "initial": "<50ms (100 rows)" }
+    },
+    "optimizations": [
+      "Virtual scrolling for 1000+ rows",
+      "Memoized column definitions",
+      "Debounced search inputs"
+    ]
+  },
+  "examples": [
+    {
+      "name": "Basic Table",
+      "code": "<DataTable data={users} columns={columns} />",
+      "props": {
+        "data": [
+          { "id": "1", "name": "John Doe", "email": "john@example.com" }
+        ],
+        "columns": [
+          { "key": "name", "label": "Name", "sortable": true },
+          { "key": "email", "label": "Email", "sortable": true }
+        ]
+      }
+    },
+    {
+      "name": "Full Featured",
+      "code": "<DataTable data={data} columns={columns} sorting={{ enabled: true }} filtering={{ enabled: true, searchable: true }} pagination={{ enabled: true }} selection={{ enabled: true, multiple: true }} />",
+      "description": "Table with all features enabled"
+    }
+  ],
+  "testing": {
+    "required": [
+      "renders with data",
+      "handles sorting",
+      "handles filtering", 
+      "handles pagination",
+      "handles selection",
+      "keyboard navigation",
+      "accessibility compliance"
+    ],
+    "coverage": { "minimum": 95 }
+  }
+}

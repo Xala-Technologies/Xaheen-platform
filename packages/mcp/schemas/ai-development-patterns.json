@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xala-technologies.com/schemas/ai-development-patterns/v1.0.0",
+  "title": "AI Development Patterns and Code Generation Templates",
+  "description": "Comprehensive patterns, templates, and optimization strategies for AI-assisted UI component development",
+  "version": "1.0.0",
+  "lastUpdated": "2025-08-03T00:00:00Z",
+  
+  "codePatterns": {
+    "componentStructure": {
+      "template": "interface {ComponentName}Props extends React.{BaseElementProps}<{ElementType}> {\n  readonly variant?: {VariantType};\n  readonly size?: {SizeType};\n  readonly disabled?: boolean;\n  readonly loading?: boolean;\n  readonly children?: React.ReactNode;\n}\n\nexport const {ComponentName} = React.forwardRef<{ElementType}, {ComponentName}Props>(\n  ({ variant = 'default', size = 'md', disabled, loading, children, className, ...props }, ref) => {\n    return (\n      <{elementTag}\n        ref={ref}\n        className={cn({componentName}Variants({ variant, size }), className)}\n        disabled={disabled || loading}\n        aria-disabled={disabled || loading}\n        {...props}\n      >\n        {loading && <LoadingSpinner />}\n        {children}\n      </{elementTag}>\n    );\n  }\n);\n\n{ComponentName}.displayName = '{ComponentName}';",
+      "placeholders": {
+        "ComponentName": "PascalCase component name",
+        "BaseElementProps": "HTMLButtonAttributes | HTMLDivAttributes | HTMLInputAttributes",
+        "ElementType": "HTMLButtonElement | HTMLDivElement | HTMLInputElement",
+        "VariantType": "'primary' | 'secondary' | 'outline' | 'ghost'",
+        "SizeType": "'sm' | 'md' | 'lg' | 'xl'",
+        "elementTag": "button | div | input",
+        "componentName": "camelCase component name"
+      }
+    },
+    "cvaVariants": {
+      "template": "const {componentName}Variants = cva(\n  // Base classes\n  '{baseClasses}',\n  {\n    variants: {\n      variant: {\n        {variantDefinitions}\n      },\n      size: {\n        {sizeDefinitions}\n      },\n    },\n    compoundVariants: [\n      {compoundVariants}\n    ],\n    defaultVariants: {\n      variant: '{defaultVariant}',\n      size: '{defaultSize}',\n    },\n  }\n);",
+      "examples": {
+        "button": {
+          "baseClasses": "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          "variantDefinitions": "default: 'bg-primary text-primary-foreground hover:bg-primary/90',\n        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',\n        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',\n        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',\n        ghost: 'hover:bg-accent hover:text-accent-foreground',\n        link: 'text-primary underline-offset-4 hover:underline'"
+        }
+      }
+    },
+    "accessibilityPattern": {
+      "template": "// Accessibility implementation\nconst {componentName}Id = useId();\nconst [announceText, setAnnounceText] = useState('');\n\nconst handleKeyDown = (event: KeyboardEvent<{ElementType}>) => {\n  switch (event.key) {\n    case 'Enter':\n    case ' ':\n      event.preventDefault();\n      {actionHandler}?.();\n      break;\n    case 'Escape':\n      {escapeHandler}?.();\n      break;\n  }\n};\n\nreturn (\n  <>\n    <{elementTag}\n      id={id || {componentName}Id}\n      role=\"{role}\"\n      aria-label={ariaLabel}\n      aria-describedby={error ? `${id || {componentName}Id}-error` : undefined}\n      aria-expanded={expanded}\n      aria-pressed={pressed}\n      onKeyDown={handleKeyDown}\n      {...props}\n    >\n      {children}\n    </{elementTag}>\n    {announceText && (\n      <div\n        aria-live=\"polite\"\n        aria-atomic=\"true\"\n        className=\"sr-only\"\n      >\n        {announceText}\n      </div>\n    )}\n  </>\n);"
+    },
+    "formFieldPattern": {
+      "template": "interface {ComponentName}Props {\n  readonly label?: string;\n  readonly error?: string;\n  readonly helperText?: string;\n  readonly required?: boolean;\n  readonly id?: string;\n}\n\nexport const {ComponentName} = ({ label, error, helperText, required, id, ...props }: {ComponentName}Props): JSX.Element => {\n  const fieldId = id || useId();\n  const errorId = `${fieldId}-error`;\n  const helperId = `${fieldId}-helper`;\n  \n  return (\n    <div className=\"space-y-2\">\n      {label && (\n        <Label htmlFor={fieldId} className={required ? 'after:content-[\"*\"] after:text-destructive after:ml-1' : ''}>\n          {label}\n        </Label>\n      )}\n      <{InputElement}\n        id={fieldId}\n        aria-invalid={!!error}\n        aria-describedby={cn(\n          error && errorId,\n          helperText && helperId\n        )}\n        aria-required={required}\n        {...props}\n      />\n      {error && (\n        <p id={errorId} className=\"text-sm text-destructive\" role=\"alert\">\n          {error}\n        </p>\n      )}\n      {helperText && !error && (\n        <p id={helperId} className=\"text-sm text-muted-foreground\">\n          {helperText}\n        </p>\n      )}\n    </div>\n  );\n};"
+    },
+    "loadingStatePattern": {
+      "template": "interface LoadingStateProps {\n  readonly loading?: boolean;\n  readonly loadingText?: string;\n  readonly disabled?: boolean;\n}\n\nconst LoadingButton = ({ loading, loadingText, disabled, children, ...props }: LoadingStateProps & ButtonProps) => {\n  const isDisabled = disabled || loading;\n  \n  return (\n    <Button\n      disabled={isDisabled}\n      aria-busy={loading}\n      aria-describedby={loading ? 'loading-description' : undefined}\n      {...props}\n    >\n      {loading && (\n        <>\n          <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" aria-hidden=\"true\" />\n          <span className=\"sr-only\" id=\"loading-description\">\n            {loadingText || 'Loading, please wait'}\n          </span>\n        </>\n      )}\n      <span className={loading ? 'opacity-70' : ''}>\n        {children}\n      </span>\n    </Button>\n  );\n};"
+    },
+    "norwegianCompliancePattern": {
+      "template": "interface NorwegianComplianceProps {\n  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';\n  readonly gdprSensitive?: boolean;\n  readonly auditTrail?: boolean;\n  readonly locale?: 'nb-NO' | 'en-US' | 'fr-FR' | 'ar-SA';\n}\n\nconst {ComponentName} = ({ nsmClassification = 'OPEN', gdprSensitive, auditTrail, locale = 'nb-NO', ...props }: {ComponentName}Props & NorwegianComplianceProps) => {\n  const { t } = useTranslation(locale);\n  \n  useEffect(() => {\n    if (auditTrail) {\n      auditLogger.log({\n        component: '{ComponentName}',\n        action: 'render',\n        nsmLevel: nsmClassification,\n        timestamp: new Date().toISOString(),\n        userId: getCurrentUserId(),\n      });\n    }\n  }, [auditTrail, nsmClassification]);\n  \n  return (\n    <div\n      data-nsm-classification={nsmClassification}\n      data-gdpr-sensitive={gdprSensitive}\n      dir={locale === 'ar-SA' ? 'rtl' : 'ltr'}\n      lang={locale}\n      {...props}\n    >\n      {/* Component content */}\n    </div>\n  );\n};"
+    }
+  },
+  
+  "aiOptimizationStrategies": {
+    "tokenReduction": {
+      "techniques": [
+        "Use abbreviated but clear variable names",
+        "Leverage TypeScript inference where possible",
+        "Combine related props into objects",
+        "Use conditional rendering over multiple return statements",
+        "Extract repetitive patterns into helper functions"
+      ],
+      "example": {
+        "verbose": "const isButtonDisabled = disabled || loading || isSubmitting;\nconst buttonAriaLabel = ariaLabel || defaultAriaLabel;\nconst buttonClassName = cn(baseClasses, variantClasses, sizeClasses, disabledClasses);",
+        "optimized": "const isDisabled = disabled || loading || isSubmitting;\nconst className = cn(buttonVariants({ variant, size, disabled: isDisabled }));"
+      }
+    },
+    "contextOptimization": {
+      "priorityOrder": [
+        "Component interface and required props",
+        "Core functionality and event handlers",
+        "Accessibility attributes and ARIA",
+        "Styling and visual variants",
+        "Edge cases and error handling",
+        "Performance optimizations",
+        "Documentation and examples"
+      ],
+      "contextHints": [
+        "// This component handles [specific use case]",
+        "// Key accessibility requirements: [list requirements]",
+        "// Performance considerations: [list considerations]",
+        "// Norwegian compliance: [specific requirements]"
+      ]
+    },
+    "patternRecognition": {
+      "commonSignals": {
+        "interactiveComponent": ["onClick", "onKeyDown", "disabled", "aria-pressed"],
+        "formComponent": ["onChange", "value", "name", "required", "validation"],
+        "containerComponent": ["children", "className", "as", "variant"],
+        "dataComponent": ["data", "loading", "error", "onRefresh"],
+        "overlayComponent": ["isOpen", "onClose", "portal", "focus-trap"]
+      },
+      "generationHints": {
+        "whenSeeingOnClick": "Generate keyboard event handlers and ARIA attributes",
+        "whenSeeingChildren": "Support proper composition and content nesting",
+        "whenSeeingLoading": "Include loading states, spinners, and aria-busy",
+        "whenSeeingError": "Include error boundaries and user feedback",
+        "whenSeeingVariant": "Implement CVA-based styling system"
+      }
+    }
+  },
+  
+  "promptTemplates": {
+    "componentGeneration": {
+      "basic": "Create a {componentType} component named {componentName} that:\n- Follows TypeScript strict mode with explicit return types\n- Implements {accessibilityLevel} accessibility standards\n- Uses CVA for styling variants: {variants}\n- Supports sizes: {sizes}\n- Includes proper ARIA attributes and keyboard navigation\n- Is compatible with Norwegian design system tokens\n- Handles loading and error states appropriately",
+      "advanced": "Generate a {componentType} component with the following specifications:\n\nCore Requirements:\n- Name: {componentName}\n- Category: {category}\n- Complexity: {complexity}\n- Estimated tokens: {estimatedTokens}\n\nFeatures:\n{featureList}\n\nAccessibility:\n- WCAG {wcagLevel} compliance\n- Keyboard navigation: {keyboardPatterns}\n- Screen reader support: {screenReaderFeatures}\n\nStyling:\n- Variants: {variants}\n- Sizes: {sizes}\n- Design tokens: {designTokens}\n\nNorwegian Compliance:\n- NSM Classification: {nsmLevel}\n- GDPR considerations: {gdprRequirements}\n- Localization: {supportedLocales}\n\nPlease include comprehensive TypeScript types, error handling, and follow the established patterns."
+    },
+    "debuggingPrompt": "I have a {componentName} component that isn't working as expected. Here are the issues:\n\n{issueDescription}\n\nCurrent code:\n```typescript\n{currentCode}\n```\n\nPlease:\n1. Identify the problems\n2. Provide corrected code that follows our patterns\n3. Explain the changes and why they're necessary\n4. Ensure accessibility and Norwegian compliance requirements are met\n5. Add any missing TypeScript types or error handling",
+    "optimizationPrompt": "Please optimize this {componentName} component for:\n- Performance (React.memo, useCallback, etc.)\n- Accessibility (ARIA, keyboard navigation)\n- Bundle size (code splitting, tree shaking)\n- Norwegian compliance (NSM, GDPR, localization)\n\nCurrent implementation:\n```typescript\n{currentCode}\n```\n\nFocus on: {optimizationAreas}"
+  },
+  
+  "validationRules": {
+    "codeQuality": [
+      {
+        "rule": "No 'any' types allowed",
+        "pattern": "\\bany\\b",
+        "severity": "error",
+        "message": "Use specific TypeScript types instead of 'any'"
+      },
+      {
+        "rule": "Components must have explicit return types",
+        "pattern": "\\): JSX\\.Element =>",
+        "required": true,
+        "message": "All components must explicitly return JSX.Element"
+      },
+      {
+        "rule": "Interactive elements need ARIA attributes",
+        "pattern": "onClick.*aria-",
+        "context": "interactive",
+        "message": "Interactive elements should include appropriate ARIA attributes"
+      },
+      {
+        "rule": "Form controls need labels",
+        "pattern": "<(input|select|textarea).*aria-label|<label",
+        "context": "form",
+        "message": "Form controls must have associated labels or aria-label"
+      }
+    ],
+    "accessibility": [
+      {
+        "rule": "Keyboard event handlers for interactive elements",
+        "pattern": "onKeyDown|onKeyPress|onKeyUp",
+        "context": "onClick",
+        "message": "Interactive elements should handle keyboard events"
+      },
+      {
+        "rule": "Focus management for modals and overlays",
+        "pattern": "useRef.*focus\\(\\)|autoFocus",
+        "context": "modal|dialog|overlay",
+        "message": "Modals and overlays need proper focus management"
+      },
+      {
+        "rule": "Loading states need aria-busy",
+        "pattern": "loading.*aria-busy",
+        "context": "loading",
+        "message": "Loading states should include aria-busy attribute"
+      }
+    ],
+    "norwegianCompliance": [
+      {
+        "rule": "NSM classification for sensitive components",
+        "pattern": "data-nsm-classification|nsmClassification",
+        "context": "data|user-input",
+        "message": "Data handling components need NSM classification"
+      },
+      {
+        "rule": "RTL support for Arabic locale",
+        "pattern": "dir=.*rtl.*ar-SA",
+        "context": "localization",
+        "message": "Components should support RTL layout for Arabic locale"
+      }
+    ]
+  },
+  
+  "performancePatterns": {
+    "memoization": {
+      "when": "Component receives complex props or renders frequently",
+      "pattern": "export const {ComponentName} = React.memo(({ComponentName}Base);\n\nconst {ComponentName}Base = ({ ...props }: {ComponentName}Props): JSX.Element => {\n  // Component implementation\n};\n\n{ComponentName}.displayName = '{ComponentName}';"
+    },
+    "callbacks": {
+      "when": "Event handlers that could cause child re-renders",
+      "pattern": "const handleClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {\n  if (disabled || loading) return;\n  onClick?.(event);\n}, [disabled, loading, onClick]);"
+    },
+    "computedValues": {
+      "when": "Expensive calculations or complex derivations",
+      "pattern": "const computedValue = useMemo(() => {\n  return expensiveCalculation(prop1, prop2);\n}, [prop1, prop2]);"
+    },
+    "lazyLoading": {
+      "when": "Large components or rarely used features",
+      "pattern": "const HeavyComponent = lazy(() => import('./HeavyComponent'));\n\nconst ComponentWithLazyFeature = ({ showAdvanced, ...props }) => {\n  return (\n    <div>\n      {/* Always rendered content */}\n      {showAdvanced && (\n        <Suspense fallback={<LoadingSpinner />}>\n          <HeavyComponent {...props} />\n        </Suspense>\n      )}\n    </div>\n  );\n};"
+    }
+  },
+  
+  "testingPatterns": {
+    "unitTests": {
+      "template": "describe('{ComponentName}', () => {\n  it('renders with default props', () => {\n    render(<{ComponentName}>Test content</{ComponentName}>);\n    expect(screen.getByText('Test content')).toBeInTheDocument();\n  });\n  \n  it('handles click events', async () => {\n    const handleClick = jest.fn();\n    render(<{ComponentName} onClick={handleClick}>Click me</{ComponentName}>);\n    \n    await user.click(screen.getByRole('button'));\n    expect(handleClick).toHaveBeenCalledTimes(1);\n  });\n  \n  it('supports keyboard navigation', async () => {\n    const handleClick = jest.fn();\n    render(<{ComponentName} onClick={handleClick}>Click me</{ComponentName}>);\n    \n    const button = screen.getByRole('button');\n    button.focus();\n    await user.keyboard('{Enter}');\n    expect(handleClick).toHaveBeenCalledTimes(1);\n  });\n  \n  it('meets accessibility requirements', async () => {\n    const { container } = render(<{ComponentName}>Accessible content</{ComponentName}>);\n    const results = await axe(container);\n    expect(results).toHaveNoViolations();\n  });\n});"
+    },
+    "integrationTests": {
+      "template": "describe('{ComponentName} Integration', () => {\n  it('works within forms', async () => {\n    const handleSubmit = jest.fn();\n    render(\n      <form onSubmit={handleSubmit}>\n        <{ComponentName} name=\"test\" required />\n        <button type=\"submit\">Submit</button>\n      </form>\n    );\n    \n    // Test form integration\n  });\n  \n  it('responds to external state changes', () => {\n    const TestWrapper = () => {\n      const [state, setState] = useState(false);\n      return <{ComponentName} active={state} onToggle={setState} />;\n    };\n    \n    render(<TestWrapper />);\n    // Test state integration\n  });\n});"
+    }
+  },
+  
+  "errorPatterns": {
+    "commonMistakes": [
+      {
+        "mistake": "Using div with onClick without proper ARIA",
+        "correction": "Use button element or add role='button' with proper keyboard handling",
+        "example": "// Bad\n<div onClick={handleClick}>Click me</div>\n\n// Good\n<button onClick={handleClick}>Click me</button>\n// or\n<div role=\"button\" tabIndex={0} onClick={handleClick} onKeyDown={handleKeyDown}>Click me</div>"
+      },
+      {
+        "mistake": "Missing key prop in lists",
+        "correction": "Always provide unique key prop for list items",
+        "example": "// Bad\n{items.map(item => <Item>{item.name}</Item>)}\n\n// Good\n{items.map(item => <Item key={item.id}>{item.name}</Item>)}"
+      },
+      {
+        "mistake": "Not handling loading/error states",
+        "correction": "Always provide feedback for async operations",
+        "example": "// Good\nif (loading) return <LoadingSpinner />;\nif (error) return <ErrorMessage error={error} />;\nreturn <Component data={data} />;"
+      }
+    ],
+    "debuggingHints": [
+      "Check browser console for accessibility warnings",
+      "Use React DevTools to inspect component props and state",
+      "Test keyboard navigation manually",
+      "Validate with screen readers",
+      "Check network tab for unnecessary re-renders",
+      "Use React Profiler for performance analysis"
+    ]
+  }
+}

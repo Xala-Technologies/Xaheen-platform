@@ -1,0 +1,394 @@
+{
+  "metadata": {
+    "name": "DatePicker",
+    "version": "1.0.0",
+    "category": "form",
+    "description": "A comprehensive date picker component with Norwegian compliance and WCAG AAA accessibility",
+    "tags": ["form", "date", "input", "calendar", "norwegian", "accessible"],
+    "author": "Xala Enterprise UI System",
+    "status": "stable"
+  },
+  "props": {
+    "value": {
+      "type": "Date | string | null",
+      "required": false,
+      "description": "Controlled value of the date picker",
+      "examples": [
+        "new Date()",
+        "'2024-12-25'",
+        "'25.12.2024'",
+        "null"
+      ]
+    },
+    "defaultValue": {
+      "type": "Date | string | null",
+      "required": false,
+      "description": "Default uncontrolled value for the date picker",
+      "examples": [
+        "new Date()",
+        "'2024-12-25'",
+        "null"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "required": false,
+      "default": "dd.MM.yyyy",
+      "description": "Date format string following Norwegian standard",
+      "examples": [
+        "'dd.MM.yyyy'",
+        "'dd/MM/yyyy'",
+        "'yyyy-MM-dd'",
+        "'dd. MMMM yyyy'"
+      ]
+    },
+    "locale": {
+      "type": "string",
+      "required": false,
+      "default": "nb-NO",
+      "description": "Locale for date formatting and calendar localization",
+      "examples": [
+        "'nb-NO'",
+        "'en-US'",
+        "'sv-SE'",
+        "'da-DK'"
+      ]
+    },
+    "minDate": {
+      "type": "Date | string | null",
+      "required": false,
+      "description": "Minimum selectable date",
+      "examples": [
+        "new Date('2020-01-01')",
+        "'2020-01-01'",
+        "null"
+      ]
+    },
+    "maxDate": {
+      "type": "Date | string | null",
+      "required": false,
+      "description": "Maximum selectable date",
+      "examples": [
+        "new Date('2030-12-31')",
+        "'2030-12-31'",
+        "null"
+      ]
+    },
+    "disabledDates": {
+      "type": "(Date | string)[] | ((date: Date) => boolean)",
+      "required": false,
+      "description": "Array of disabled dates or function to determine if date is disabled",
+      "examples": [
+        "['2024-12-25', '2024-12-26']",
+        "(date) => date.getDay() === 0", // Sundays
+        "[]"
+      ]
+    },
+    "showTime": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether to include time picker functionality",
+      "examples": [true, false]
+    },
+    "timeFormat": {
+      "type": "string",
+      "required": false,
+      "default": "HH:mm",
+      "description": "Time format string when showTime is true",
+      "examples": [
+        "'HH:mm'",
+        "'HH:mm:ss'",
+        "'h:mm a'"
+      ]
+    },
+    "placeholder": {
+      "type": "string",
+      "required": false,
+      "description": "Placeholder text for the input field",
+      "examples": [
+        "'Velg dato'",
+        "'dd.mm.åååå'",
+        "'Select date'"
+      ]
+    },
+    "clearable": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether the date picker can be cleared",
+      "examples": [true, false]
+    },
+    "disabled": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the date picker is disabled",
+      "examples": [true, false]
+    },
+    "error": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the date picker is in error state",
+      "examples": [true, false]
+    },
+    "helperText": {
+      "type": "string",
+      "required": false,
+      "description": "Helper text displayed below the input",
+      "examples": [
+        "'Velg ønsket dato'",
+        "'Format: dd.mm.åååå'",
+        "'Required field'"
+      ]
+    },
+    "errorText": {
+      "type": "string",
+      "required": false,
+      "description": "Error message displayed when error is true",
+      "examples": [
+        "'Ugyldig dato'",
+        "'Dato er påkrevd'",
+        "'Dato må være etter i dag'"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "required": false,
+      "description": "Label for the date picker",
+      "examples": [
+        "'Fødselsdato'",
+        "'Startdato'",
+        "'Sluttdato'"
+      ]
+    },
+    "required": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the field is required",
+      "examples": [true, false]
+    },
+    "size": {
+      "type": "'small' | 'medium' | 'large'",
+      "required": false,
+      "default": "medium",
+      "description": "Size variant of the date picker",
+      "examples": ["'small'", "'medium'", "'large'"]
+    },
+    "variant": {
+      "type": "'outlined' | 'filled' | 'standard'",
+      "required": false,
+      "default": "outlined",
+      "description": "Visual variant of the date picker",
+      "examples": ["'outlined'", "'filled'", "'standard'"]
+    },
+    "onChange": {
+      "type": "(date: Date | null, dateString: string) => void",
+      "required": false,
+      "description": "Callback function triggered when date changes",
+      "examples": [
+        "(date, dateString) => console.log(date, dateString)",
+        "(date) => setSelectedDate(date)"
+      ]
+    },
+    "onBlur": {
+      "type": "(event: FocusEvent) => void",
+      "required": false,
+      "description": "Callback function triggered when input loses focus"
+    },
+    "onFocus": {
+      "type": "(event: FocusEvent) => void",
+      "required": false,
+      "description": "Callback function triggered when input gains focus"
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes for custom styling"
+    },
+    "id": {
+      "type": "string",
+      "required": false,
+      "description": "Unique identifier for the date picker"
+    },
+    "name": {
+      "type": "string",
+      "required": false,
+      "description": "Name attribute for form handling"
+    },
+    "autoFocus": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether to automatically focus the input on mount"
+    },
+    "readOnly": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the input is read-only"
+    }
+  },
+  "accessibility": {
+    "wcagLevel": "AAA",
+    "features": [
+      "Full keyboard navigation support",
+      "Screen reader compatibility with ARIA labels",
+      "High contrast mode support",
+      "Focus management and visible focus indicators",
+      "Semantic HTML structure with proper roles",
+      "Calendar grid navigation with arrow keys",
+      "Date announcement for screen readers",
+      "Error state announcements",
+      "Keyboard shortcuts for common actions"
+    ],
+    "keyboardNavigation": {
+      "Enter": "Open/close calendar or select focused date",
+      "Space": "Select focused date",
+      "Escape": "Close calendar",
+      "Tab": "Navigate between elements",
+      "ArrowKeys": "Navigate calendar grid",
+      "Home": "Go to first day of week/month",
+      "End": "Go to last day of week/month",
+      "PageUp": "Previous month",
+      "PageDown": "Next month",
+      "Ctrl+Home": "Go to current date",
+      "Ctrl+Left": "Previous year",
+      "Ctrl+Right": "Next year"
+    },
+    "ariaAttributes": [
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-expanded",
+      "aria-selected",
+      "aria-disabled",
+      "aria-invalid",
+      "aria-required",
+      "role='grid'",
+      "role='gridcell'",
+      "role='button'",
+      "aria-live='polite'"
+    ],
+    "colorContrast": {
+      "normal": "4.5:1 minimum",
+      "large": "3:1 minimum",
+      "focus": "3:1 minimum for focus indicators"
+    }
+  },
+  "compliance": {
+    "norwegian": {
+      "nsmClassification": "OPEN",
+      "gdprCompliant": true,
+      "wcagLevel": "AAA",
+      "supportedLanguages": ["nb-NO", "nn-NO", "en-US"],
+      "dateFormat": "Norwegian standard (dd.MM.yyyy)",
+      "auditTrail": false,
+      "dataRetention": "Not applicable - no data stored",
+      "accessibilityStandard": "Universell utforming (Universal Design)"
+    },
+    "gdpr": {
+      "dataProcessing": "None - component only handles UI state",
+      "personalData": "Date values may contain personal information",
+      "dataStorage": "No persistent storage by component",
+      "userConsent": "Not required for component usage"
+    }
+  },
+  "performance": {
+    "bundleSize": {
+      "target": "<8KB",
+      "gzipped": "<3KB"
+    },
+    "renderTime": "<16ms for initial render",
+    "memoryUsage": "<2MB",
+    "optimization": [
+      "Lazy loading of calendar popup",
+      "Virtual scrolling for year/month selection",
+      "Memoized date calculations",
+      "Efficient re-rendering with React.memo",
+      "Tree-shaking friendly exports"
+    ]
+  },
+  "examples": [
+    {
+      "name": "Basic Date Picker",
+      "description": "Simple date picker with Norwegian formatting",
+      "code": "import { DatePicker } from '@xala-technologies/ui-system';\n\nfunction BasicExample() {\n  const [date, setDate] = useState<Date | null>(null);\n\n  return (\n    <DatePicker\n      label=\"Velg dato\"\n      placeholder=\"dd.mm.åååå\"\n      value={date}\n      onChange={(newDate) => setDate(newDate)}\n      format=\"dd.MM.yyyy\"\n      locale=\"nb-NO\"\n    />\n  );\n}"
+    },
+    {
+      "name": "Date Picker with Time",
+      "description": "Date picker including time selection",
+      "code": "import { DatePicker } from '@xala-technologies/ui-system';\n\nfunction DateTimeExample() {\n  const [dateTime, setDateTime] = useState<Date | null>(null);\n\n  return (\n    <DatePicker\n      label=\"Dato og tid\"\n      placeholder=\"dd.mm.åååå HH:mm\"\n      value={dateTime}\n      onChange={(newDateTime) => setDateTime(newDateTime)}\n      showTime\n      format=\"dd.MM.yyyy\"\n      timeFormat=\"HH:mm\"\n      locale=\"nb-NO\"\n    />\n  );\n}"
+    },
+    {
+      "name": "Date Range with Restrictions",
+      "description": "Date picker with min/max dates and disabled dates",
+      "code": "import { DatePicker } from '@xala-technologies/ui-system';\n\nfunction RestrictedDateExample() {\n  const [date, setDate] = useState<Date | null>(null);\n  const today = new Date();\n  const maxDate = new Date();\n  maxDate.setMonth(maxDate.getMonth() + 6);\n\n  const isWeekend = (date: Date) => {\n    const day = date.getDay();\n    return day === 0 || day === 6;\n  };\n\n  return (\n    <DatePicker\n      label=\"Arbeidsdato\"\n      value={date}\n      onChange={(newDate) => setDate(newDate)}\n      minDate={today}\n      maxDate={maxDate}\n      disabledDates={isWeekend}\n      helperText=\"Kun virkedager tilgjengelig\"\n      required\n      error={!date}\n      errorText={!date ? 'Dato er påkrevd' : undefined}\n    />\n  );\n}"
+    },
+    {
+      "name": "Form Integration",
+      "description": "Date picker integrated with form validation",
+      "code": "import { DatePicker } from '@xala-technologies/ui-system';\nimport { useForm } from 'react-hook-form';\n\ninterface FormData {\n  birthDate: Date | null;\n}\n\nfunction FormExample() {\n  const { control, handleSubmit, formState: { errors } } = useForm<FormData>();\n\n  const onSubmit = (data: FormData) => {\n    console.log('Form data:', data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <Controller\n        name=\"birthDate\"\n        control={control}\n        rules={{ required: 'Fødselsdato er påkrevd' }}\n        render={({ field }) => (\n          <DatePicker\n            label=\"Fødselsdato\"\n            value={field.value}\n            onChange={field.onChange}\n            maxDate={new Date()}\n            error={!!errors.birthDate}\n            errorText={errors.birthDate?.message}\n            required\n          />\n        )}\n      />\n      <button type=\"submit\">Send inn</button>\n    </form>\n  );\n}"
+    }
+  ],
+  "testing": {
+    "unitTests": [
+      "Date selection and formatting",
+      "Keyboard navigation",
+      "Min/max date validation",
+      "Disabled dates functionality",
+      "Time picker integration",
+      "Locale-specific formatting",
+      "Error state handling",
+      "Accessibility compliance"
+    ],
+    "integrationTests": [
+      "Form integration",
+      "Controlled/uncontrolled modes",
+      "Date range validation",
+      "Screen reader compatibility",
+      "Browser compatibility"
+    ],
+    "e2eTests": [
+      "Complete user workflows",
+      "Cross-browser testing",
+      "Mobile responsiveness",
+      "Performance benchmarks"
+    ]
+  },
+  "dependencies": {
+    "required": [
+      "react",
+      "react-dom"
+    ],
+    "optional": [
+      "date-fns",
+      "@xala-technologies/tokens"
+    ],
+    "peerDependencies": {
+      "react": ">=18.0.0",
+      "react-dom": ">=18.0.0"
+    }
+  },
+  "browser_support": {
+    "chrome": ">=90",
+    "firefox": ">=88",
+    "safari": ">=14",
+    "edge": ">=90",
+    "mobile": {
+      "ios_safari": ">=14",
+      "android_chrome": ">=90"
+    }
+  },
+  "implementation": {
+    "framework": "React",
+    "styling": "Tailwind CSS with design tokens",
+    "stateManagement": "Internal useState with optional external control",
+    "dateLibrary": "Native Date API with date-fns for formatting",
+    "accessibility": "ARIA patterns and semantic HTML",
+    "testing": "Jest + React Testing Library",
+    "bundling": "Tree-shakeable ES modules"
+  }
+}

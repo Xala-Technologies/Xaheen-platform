@@ -1,6 +1,6 @@
 # Next.js Navbar Implementation Guide
 
-**Xala UI System v5.0.0 - Comprehensive Navbar Documentation**
+**Xala UI System v6.0.0 - Comprehensive Navbar Documentation**
 
 This guide demonstrates how to build professional navigation bars using existing Xala UI System components while maintaining strict compliance with design system rules.
 

@@ -1,0 +1,1027 @@
+{
+  "metadata": {
+    "name": "Radio",
+    "version": "1.0.0",
+    "semanticVersion": "v5.1",
+    "category": "form",
+    "subcategory": "selection-control",
+    "description": "Accessible radio button component for single-state selection control with Norwegian compliance, WCAG AAA accessibility, and comprehensive form integration. Supports radio groups with fieldset/legend structure for grouped selections.",
+    "keywords": ["radio", "form", "selection", "control", "group", "accessible", "norwegian", "controlled"],
+    "maintainer": {
+      "name": "Xala Form Team",
+      "email": "forms@xala.no",
+      "team": "Form Components"
+    },
+    "stability": "stable",
+    "createdAt": "2024-08-04T10:00:00Z",
+    "updatedAt": "2024-08-04T15:00:00Z"
+  },
+  "compliance": {
+    "i18n": {
+      "supported": true,
+      "defaultLocale": "nb-NO",
+      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+      "textDirection": ["ltr", "rtl"]
+    },
+    "semantic": {
+      "htmlElements": ["input", "label", "div", "span", "fieldset", "legend"],
+      "ariaRoles": ["radio", "radiogroup"],
+      "landmarks": false,
+      "headingStructure": false
+    },
+    "wcag": {
+      "level": "AAA",
+      "tested": true,
+      "guidelines": [
+        "1.3.1 Info and Relationships",
+        "1.4.3 Contrast (Minimum)",
+        "1.4.6 Contrast (Enhanced)",
+        "1.4.11 Non-text Contrast",
+        "2.1.1 Keyboard",
+        "2.4.6 Headings and Labels",
+        "2.5.5 Target Size",
+        "3.2.2 On Input",
+        "3.3.2 Labels or Instructions",
+        "4.1.2 Name, Role, Value"
+      ],
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2,
+        "enhanced": 9.1
+      }
+    },
+    "ssr": {
+      "supported": true,
+      "hydrationSafe": true,
+      "staticGeneration": true
+    },
+    "norwegian": {
+      "nsmClassification": "OPEN",
+      "gdprCompliant": true,
+      "designSystem": {
+        "altinnCompliant": true,
+        "governmentApproved": true
+      },
+      "auditTrail": false
+    }
+  },
+  "props": {
+    "schema": {
+      "value": {
+        "type": { "primitive": "string" },
+        "description": "The value of the radio button",
+        "required": true,
+        "accessibility": {
+          "ariaAttribute": "value",
+          "screenReaderText": "Radio button value"
+        },
+        "examples": [
+          {
+            "value": "option1",
+            "description": "Radio option value",
+            "context": "Form data collection"
+          },
+          {
+            "value": "yes",
+            "description": "Boolean choice value",
+            "context": "Yes/No question"
+          }
+        ]
+      },
+      "checked": {
+        "type": { "primitive": "boolean" },
+        "description": "Controlled component state - whether this radio is selected",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-checked",
+          "screenReaderText": "Radio button is selected/unselected"
+        },
+        "examples": [
+          {
+            "value": true,
+            "description": "Radio is selected",
+            "context": "Controlled component - selected state"
+          },
+          {
+            "value": false,
+            "description": "Radio is not selected",
+            "context": "Controlled component - unselected state"
+          }
+        ]
+      },
+      "defaultChecked": {
+        "type": { "primitive": "boolean" },
+        "description": "Default checked state for uncontrolled component",
+        "required": false,
+        "defaultValue": false,
+        "examples": [
+          {
+            "value": true,
+            "description": "Radio starts selected",
+            "context": "Uncontrolled component initialization"
+          }
+        ]
+      },
+      "onChange": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "event",
+                "type": "ChangeEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when radio state changes",
+        "required": false,
+        "examples": [
+          {
+            "value": "(value, event) => setSelected(value)",
+            "description": "Update state when radio changes",
+            "context": "State management"
+          }
+        ]
+      },
+      "disabled": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the radio button is disabled",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "disabled",
+          "screenReaderText": "Radio button is disabled"
+        }
+      },
+      "size": {
+        "type": {
+          "custom": "variant",
+          "values": ["sm", "md", "lg"]
+        },
+        "description": "Size variant of the radio button",
+        "required": false,
+        "defaultValue": "md",
+        "examples": [
+          {
+            "value": "sm",
+            "description": "Small radio button (16px)",
+            "context": "Compact interfaces"
+          },
+          {
+            "value": "md",
+            "description": "Medium radio button (20px)",
+            "context": "Standard forms"
+          },
+          {
+            "value": "lg",
+            "description": "Large radio button (24px)",
+            "context": "Touch interfaces"
+          }
+        ]
+      },
+      "label": {
+        "type": { "primitive": "string" },
+        "description": "Label text for the radio button",
+        "required": false,
+        "accessibility": {
+          "required": true,
+          "screenReaderText": "Radio button label"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "radio.label.{fieldName}",
+          "context": "form-label"
+        },
+        "examples": [
+          {
+            "value": "Yes, I agree",
+            "description": "Clear descriptive label",
+            "context": "Form agreement"
+          }
+        ]
+      },
+      "name": {
+        "type": { "primitive": "string" },
+        "description": "Name attribute for radio group (required for grouping radios)",
+        "required": true,
+        "accessibility": {
+          "required": true,
+          "screenReaderText": "Radio group name"
+        },
+        "examples": [
+          {
+            "value": "contact-preference",
+            "description": "Radio group name",
+            "context": "Form field grouping"
+          }
+        ]
+      },
+      "error": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the radio button is in error state",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-invalid",
+          "screenReaderText": "Radio button has error"
+        },
+        "examples": [
+          {
+            "value": true,
+            "description": "Show error styling and state",
+            "context": "Form validation failed"
+          }
+        ]
+      },
+      "errorMessage": {
+        "type": { "primitive": "string" },
+        "description": "Error message to display when radio button is in error state",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby",
+          "screenReaderText": "Error message"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "radio.error.{fieldName}",
+          "context": "validation-error"
+        },
+        "examples": [
+          {
+            "value": "Please select an option to continue",
+            "description": "Validation error message",
+            "context": "Required radio group not selected"
+          }
+        ]
+      },
+      "required": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the radio button is required for form submission",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-required",
+          "screenReaderText": "Radio button is required"
+        }
+      },
+      "description": {
+        "type": { "primitive": "string" },
+        "description": "Additional descriptive text for the radio button",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby",
+          "screenReaderText": "Radio button description"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "radio.description.{fieldName}",
+          "context": "form-hint"
+        }
+      },
+      "className": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to the radio container",
+        "required": false
+      },
+      "testId": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+          }
+        },
+        "description": "Test identifier for automated testing",
+        "required": false
+      },
+      "ariaLabel": {
+        "type": { "primitive": "string" },
+        "description": "Accessible label when no visible label is present",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-label",
+          "screenReaderText": "Radio button description"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "aria.label.radio.{fieldName}",
+          "context": "accessibility"
+        }
+      },
+      "ariaDescribedBy": {
+        "type": { "primitive": "string" },
+        "description": "ID of elements that describe the radio button",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby"
+        }
+      },
+      "onFocus": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "FocusEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when radio button receives focus",
+        "required": false
+      },
+      "onBlur": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "FocusEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when radio button loses focus",
+        "required": false
+      }
+    },
+    "groups": {
+      "required": ["value", "name"],
+      "optional": [
+        "checked", "defaultChecked", "onChange", "disabled", "size", "label",
+        "error", "errorMessage", "required", "description", "className",
+        "testId", "ariaLabel", "ariaDescribedBy", "onFocus", "onBlur"
+      ],
+      "deprecated": []
+    },
+    "composition": {
+      "children": {
+        "supported": false
+      },
+      "slots": {
+        "label": {
+          "required": false,
+          "types": ["element", "string"],
+          "description": "Custom label content"
+        },
+        "description": {
+          "required": false,
+          "types": ["element", "string"],
+          "description": "Custom description content"
+        },
+        "errorMessage": {
+          "required": false,
+          "types": ["element", "string"],
+          "description": "Custom error message content"
+        }
+      }
+    }
+  },
+  "radioGroup": {
+    "description": "RadioGroup wrapper component for managing a collection of related radio buttons with WCAG AAA compliance using fieldset/legend structure",
+    "props": {
+      "schema": {
+        "value": {
+          "type": { "primitive": "string" },
+          "description": "Currently selected radio value",
+          "required": false,
+          "examples": [
+            {
+              "value": "option1",
+              "description": "Selected radio value",
+              "context": "Controlled radio group"
+            }
+          ]
+        },
+        "defaultValue": {
+          "type": { "primitive": "string" },
+          "description": "Default selected value for uncontrolled radio group",
+          "required": false,
+          "examples": [
+            {
+              "value": "option1",
+              "description": "Initial selected value",
+              "context": "Uncontrolled radio group"
+            }
+          ]
+        },
+        "onChange": {
+          "type": {
+            "complex": "function",
+            "signature": {
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "event",
+                  "type": "ChangeEvent<HTMLInputElement>",
+                  "required": true
+                }
+              ],
+              "returnType": "void"
+            }
+          },
+          "description": "Callback fired when radio group selection changes",
+          "required": false
+        },
+        "name": {
+          "type": { "primitive": "string" },
+          "description": "Name for all radio buttons in the group",
+          "required": true,
+          "examples": [
+            {
+              "value": "contact-preference",
+              "description": "Radio group name",
+              "context": "Form field grouping"
+            }
+          ]
+        },
+        "legend": {
+          "type": { "primitive": "string" },
+          "description": "Legend text for the radio group fieldset (WCAG requirement)",
+          "required": true,
+          "accessibility": {
+            "required": true,
+            "screenReaderText": "Radio group description"
+          },
+          "i18n": {
+            "translatable": true,
+            "key": "radioGroup.legend.{fieldName}",
+            "context": "form-legend"
+          },
+          "examples": [
+            {
+              "value": "Preferred contact method",
+              "description": "Descriptive legend for radio group",
+              "context": "Form fieldset legend"
+            }
+          ]
+        },
+        "disabled": {
+          "type": { "primitive": "boolean" },
+          "description": "Whether the entire radio group is disabled",
+          "required": false,
+          "defaultValue": false
+        },
+        "error": {
+          "type": { "primitive": "boolean" },
+          "description": "Whether the radio group is in error state",
+          "required": false,
+          "defaultValue": false
+        },
+        "errorMessage": {
+          "type": { "primitive": "string" },
+          "description": "Error message for the radio group",
+          "required": false,
+          "accessibility": {
+            "ariaAttribute": "aria-describedby",
+            "screenReaderText": "Radio group error message"
+          },
+          "i18n": {
+            "translatable": true,
+            "key": "radioGroup.error.{fieldName}",
+            "context": "validation-error"
+          }
+        },
+        "required": {
+          "type": { "primitive": "boolean" },
+          "description": "Whether a selection is required",
+          "required": false,
+          "defaultValue": false
+        },
+        "description": {
+          "type": { "primitive": "string" },
+          "description": "Additional descriptive text for the radio group",
+          "required": false,
+          "i18n": {
+            "translatable": true,
+            "key": "radioGroup.description.{fieldName}",
+            "context": "form-hint"
+          }
+        },
+        "size": {
+          "type": {
+            "custom": "variant",
+            "values": ["sm", "md", "lg"]
+          },
+          "description": "Size variant applied to all radio buttons in the group",
+          "required": false,
+          "defaultValue": "md"
+        },
+        "orientation": {
+          "type": {
+            "custom": "variant",
+            "values": ["horizontal", "vertical"]
+          },
+          "description": "Layout orientation of radio buttons",
+          "required": false,
+          "defaultValue": "vertical",
+          "accessibility": {
+            "ariaAttribute": "aria-orientation"
+          }
+        },
+        "className": {
+          "type": { "primitive": "string" },
+          "description": "Additional CSS classes for the radio group container",
+          "required": false
+        },
+        "testId": {
+          "type": { "primitive": "string" },
+          "description": "Test identifier for the radio group",
+          "required": false
+        }
+      },
+      "groups": {
+        "required": ["name", "legend"],
+        "optional": [
+          "value", "defaultValue", "onChange", "disabled", "error", "errorMessage",
+          "required", "description", "size", "orientation", "className", "testId"
+        ]
+      }
+    }
+  },
+  "variants": {
+    "simple": {
+      "size": {
+        "values": {
+          "sm": "h-4 w-4",
+          "md": "h-5 w-5",
+          "lg": "h-6 w-6"
+        },
+        "defaultValue": "md"
+      },
+      "state": {
+        "values": {
+          "normal": "border-gray-300 text-blue-600",
+          "checked": "bg-blue-600 border-blue-600 text-white",
+          "disabled": "opacity-50 cursor-not-allowed bg-gray-100",
+          "error": "border-red-500 text-red-600",
+          "focused": "ring-2 ring-blue-500 ring-offset-2"
+        },
+        "defaultValue": "normal"
+      }
+    },
+    "compound": [
+      {
+        "conditions": {
+          "size": "sm",
+          "label": true
+        },
+        "className": "gap-2 text-sm",
+        "description": "Small radio button with label"
+      },
+      {
+        "conditions": {
+          "size": "md",
+          "label": true
+        },
+        "className": "gap-3 text-base",
+        "description": "Medium radio button with label"
+      },
+      {
+        "conditions": {
+          "size": "lg",
+          "label": true
+        },
+        "className": "gap-4 text-lg",
+        "description": "Large radio button with label"
+      },
+      {
+        "conditions": {
+          "error": true
+        },
+        "className": "border-red-500 text-red-600",
+        "description": "Error state styling"
+      },
+      {
+        "conditions": {
+          "disabled": true
+        },
+        "className": "pointer-events-none opacity-50 cursor-not-allowed",
+        "description": "Disabled state styling"
+      },
+      {
+        "conditions": {
+          "checked": true
+        },
+        "className": "bg-blue-600 border-blue-600",
+        "description": "Checked state styling"
+      }
+    ]
+  },
+  "accessibility": {
+    "role": {
+      "primary": "radio",
+      "group": "radiogroup"
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        {
+          "key": "Space",
+          "action": "select",
+          "context": "Select focused radio button"
+        },
+        {
+          "key": "ArrowDown/ArrowRight",
+          "action": "navigate",
+          "context": "Move to next radio in group"
+        },
+        {
+          "key": "ArrowUp/ArrowLeft",
+          "action": "navigate",
+          "context": "Move to previous radio in group"
+        },
+        {
+          "key": "Tab",
+          "action": "navigate",
+          "context": "Move focus to next form element"
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "navigate",
+          "context": "Move focus to previous form element"
+        }
+      ],
+      "focusManagement": {
+        "trapFocus": false,
+        "restoreFocus": false,
+        "skipLinks": false,
+        "roving": true
+      }
+    },
+    "screenReader": {
+      "announcements": [
+        {
+          "trigger": "select",
+          "message": "Radio button {label} selected from {groupName}",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "focus",
+          "message": "Radio button {label}, {checked ? 'selected' : 'not selected'}, {position} of {total}",
+          "priority": "polite"
+        },
+        {
+          "trigger": "required",
+          "message": "Required radio group {legend}",
+          "priority": "polite"
+        },
+        {
+          "trigger": "error",
+          "message": "Invalid selection in {legend}, {errorMessage}",
+          "priority": "assertive"
+        }
+      ],
+      "labels": {
+        "required": ["label", "aria-label", "legend"],
+        "descriptions": {
+          "selected": "Selected",
+          "unselected": "Not selected",
+          "required": "Required",
+          "disabled": "Disabled",
+          "invalid": "Invalid"
+        }
+      }
+    },
+    "testing": {
+      "automated": [
+        "radio-label-association",
+        "radio-group-fieldset-legend",
+        "keyboard-navigation",
+        "roving-tabindex",
+        "state-announcements",
+        "focus-management",
+        "color-contrast-aaa",
+        "target-size-minimum",
+        "role-radio-implementation",
+        "form-integration-attributes"
+      ],
+      "manual": [
+        "screen-reader-experience",
+        "keyboard-only-interaction",
+        "high-contrast-mode",
+        "zoom-250-percent",
+        "voice-control-compatibility",
+        "touch-target-accessibility",
+        "radio-group-interaction"
+      ]
+    }
+  },
+  "platforms": {
+    "supported": ["react", "vue", "angular", "svelte"],
+    "primary": "react",
+    "implementations": {
+      "react": {
+        "templatePath": "./templates/react/radio.tsx",
+        "dependencies": ["react", "clsx"],
+        "imports": [
+          {
+            "module": "react",
+            "imports": ["forwardRef", "useState", "useCallback", "useId", "useEffect"]
+          },
+          {
+            "module": "clsx",
+            "imports": ["clsx"]
+          }
+        ]
+      },
+      "vue": {
+        "templatePath": "./templates/vue/radio.vue",
+        "dependencies": ["vue"]
+      },
+      "angular": {
+        "templatePath": "./templates/angular/radio.component.ts",
+        "dependencies": ["@angular/core", "@angular/forms"]
+      },
+      "svelte": {
+        "templatePath": "./templates/svelte/radio.svelte",
+        "dependencies": ["svelte"]
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "Basic Radio Button",
+      "description": "Simple radio button with label",
+      "category": "basic",
+      "code": {
+        "react": "<Radio value='yes' name='agreement' label='Yes, I agree' defaultChecked={false} />",
+        "vue": "<Radio value='yes' name='agreement' label='Yes, I agree' :defaultChecked='false' />",
+        "angular": "<xala-radio value='yes' name='agreement' label='Yes, I agree' [defaultChecked]='false'></xala-radio>",
+        "svelte": "<Radio value='yes' name='agreement' label='Yes, I agree' defaultChecked={false} />"
+      },
+      "props": {
+        "value": "yes",
+        "name": "agreement",
+        "label": "Yes, I agree",
+        "defaultChecked": false
+      }
+    },
+    {
+      "name": "Controlled Radio Button",
+      "description": "Radio button with controlled state management",
+      "category": "controlled",
+      "code": {
+        "react": "<Radio value='email' name='contact' label='Email' checked={contactMethod === 'email'} onChange={(value) => setContactMethod(value)} />"
+      },
+      "props": {
+        "value": "email",
+        "name": "contact",
+        "label": "Email",
+        "checked": true,
+        "onChange": "(value) => setContactMethod(value)"
+      }
+    },
+    {
+      "name": "Radio Group with Fieldset",
+      "description": "Group of radio buttons with proper WCAG structure",
+      "category": "group",
+      "code": {
+        "react": "<RadioGroup name='contactMethod' legend='Preferred contact method' value={selected} onChange={setSelected}>\n  <Radio value='email' label='Email' />\n  <Radio value='phone' label='Phone' />\n  <Radio value='sms' label='SMS' />\n</RadioGroup>"
+      },
+      "props": {
+        "name": "contactMethod",
+        "legend": "Preferred contact method",
+        "value": "email",
+        "onChange": "setSelected"
+      },
+      "notes": "Uses fieldset/legend for WCAG AAA compliance"
+    },
+    {
+      "name": "Required Radio Group with Error",
+      "description": "Required radio group with validation error state",
+      "category": "validation",
+      "code": {
+        "react": "<RadioGroup name='consent' legend='Do you consent to data processing?' required error={!hasConsent} errorMessage='Please select an option to continue'>\n  <Radio value='yes' label='Yes, I consent' />\n  <Radio value='no' label='No, I do not consent' />\n</RadioGroup>"
+      },
+      "props": {
+        "name": "consent",
+        "legend": "Do you consent to data processing?",
+        "required": true,
+        "error": true,
+        "errorMessage": "Please select an option to continue"
+      }
+    },
+    {
+      "name": "Large Radio with Description",
+      "description": "Large radio button with additional descriptive text",
+      "category": "enhanced",
+      "code": {
+        "react": "<Radio value='premium' name='plan' label='Premium Plan' description='Includes all features and priority support' size='lg' />"
+      },
+      "props": {
+        "value": "premium",
+        "name": "plan",
+        "label": "Premium Plan",
+        "description": "Includes all features and priority support",
+        "size": "lg"
+      }
+    },
+    {
+      "name": "Disabled Radio Button",
+      "description": "Radio button in disabled state",
+      "category": "state",
+      "code": {
+        "react": "<Radio value='unavailable' name='option' label='Unavailable option' disabled description='This option is currently not available' />"
+      },
+      "props": {
+        "value": "unavailable",
+        "name": "option",
+        "label": "Unavailable option",
+        "disabled": true,
+        "description": "This option is currently not available"
+      }
+    },
+    {
+      "name": "Horizontal Radio Group",
+      "description": "Radio group with horizontal layout",
+      "category": "layout",
+      "code": {
+        "react": "<RadioGroup name='rating' legend='Rate your experience' orientation='horizontal' value={rating} onChange={setRating}>\n  <Radio value='1' label='Poor' />\n  <Radio value='2' label='Fair' />\n  <Radio value='3' label='Good' />\n  <Radio value='4' label='Very Good' />\n  <Radio value='5' label='Excellent' />\n</RadioGroup>"
+      },
+      "props": {
+        "name": "rating",
+        "legend": "Rate your experience",
+        "orientation": "horizontal",
+        "value": "4",
+        "onChange": "setRating"
+      }
+    },
+    {
+      "name": "GDPR Consent Radio Group",
+      "description": "Norwegian GDPR compliant consent radio group",
+      "category": "compliance",
+      "code": {
+        "react": "<RadioGroup name='gdprConsent' legend='GDPR Data Processing Consent' required value={consent} onChange={setConsent} description='We need your consent to process your personal data according to Norwegian GDPR regulations'>\n  <Radio value='granted' label='I consent to data processing' />\n  <Radio value='denied' label='I do not consent to data processing' />\n</RadioGroup>"
+      },
+      "props": {
+        "name": "gdprConsent",
+        "legend": "GDPR Data Processing Consent",
+        "required": true,
+        "value": "granted",
+        "onChange": "setConsent",
+        "description": "We need your consent to process your personal data according to Norwegian GDPR regulations"
+      },
+      "notes": "Radio group for Norwegian GDPR compliance requirements"
+    }
+  ],
+  "ai": {
+    "optimization": {
+      "hints": [
+        "Always provide accessible labels for radio buttons",
+        "Use proper ARIA attributes for radio role and radiogroup",
+        "Implement fieldset/legend structure for radio groups",
+        "Consider Norwegian GDPR requirements for consent radio groups",
+        "Ensure minimum 44px touch target size for mobile accessibility",
+        "Provide clear error messages and validation feedback",
+        "Implement roving tabindex for keyboard navigation in groups"
+      ],
+      "patterns": [
+        {
+          "pattern": "controlled component",
+          "context": "React implementation",
+          "recommendation": "Use controlled components with checked and onChange props for predictable state management"
+        },
+        {
+          "pattern": "radio group",
+          "context": "Multiple related options",
+          "recommendation": "Implement RadioGroup with fieldset/legend structure for WCAG AAA compliance"
+        },
+        {
+          "pattern": "form integration",
+          "context": "Form data collection",
+          "recommendation": "Include name and value props for proper form submission and data handling"
+        },
+        {
+          "pattern": "accessibility",
+          "context": "Screen readers and keyboard navigation",
+          "recommendation": "Always provide labels, use radio role, implement roving tabindex, and support arrow key navigation"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "pattern": "div with click handler instead of input",
+          "reason": "Loses native accessibility and form integration",
+          "alternative": "Use proper HTML input[type=radio] with custom styling"
+        },
+        {
+          "pattern": "missing fieldset/legend for groups",
+          "reason": "Fails WCAG accessibility requirements",
+          "alternative": "Always wrap radio groups in fieldset with descriptive legend"
+        },
+        {
+          "pattern": "insufficient error feedback",
+          "reason": "Users don't understand validation failures",
+          "alternative": "Provide clear error messages and visual error states"
+        },
+        {
+          "pattern": "too small touch targets",
+          "reason": "Difficult to use on mobile devices",
+          "alternative": "Ensure minimum 44px touch target size including label"
+        },
+        {
+          "pattern": "missing roving tabindex",
+          "reason": "Poor keyboard navigation experience",
+          "alternative": "Implement roving tabindex with arrow key navigation for radio groups"
+        }
+      ]
+    },
+    "generation": {
+      "priority": "high",
+      "complexity": "medium",
+      "estimatedTokens": 2100
+    },
+    "documentation": {
+      "autoGenerate": true,
+      "templates": ["api-reference", "usage-examples", "accessibility-guide", "form-integration-guide", "radio-groups-guide"]
+    }
+  },
+  "testing": {
+    "unit": {
+      "required": [
+        "renders with default props",
+        "handles controlled state changes",
+        "handles uncontrolled state changes",
+        "responds to click events",
+        "responds to keyboard events (Space, Arrow keys)",
+        "manages focus states correctly",
+        "displays labels and descriptions",
+        "handles disabled state",
+        "applies size variants correctly",
+        "handles error state and messages",
+        "handles required validation",
+        "fires event callbacks with correct parameters",
+        "accessibility attributes (role, aria-checked, aria-label)",
+        "screen reader announcements",
+        "form integration (name, value attributes)",
+        "radio group interactions",
+        "roving tabindex implementation",
+        "fieldset/legend structure"
+      ],
+      "coverage": {
+        "minimum": 95
+      }
+    },
+    "integration": {
+      "scenarios": [
+        "form integration and data submission",
+        "keyboard-only interaction workflow",
+        "screen reader radio group interaction",
+        "touch device interaction",
+        "radio group state management",
+        "validation error display and recovery",
+        "GDPR consent radio group flow",
+        "Norwegian locale text rendering",
+        "high contrast mode appearance",
+        "roving tabindex navigation"
+      ]
+    },
+    "visual": {
+      "regression": true,
+      "responsive": true,
+      "themes": ["light", "dark", "high-contrast"]
+    }
+  },
+  "performance": {
+    "metrics": {
+      "bundleSize": {
+        "max": "2KB",
+        "gzipped": "0.8KB"
+      },
+      "renderTime": {
+        "initial": "<3ms",
+        "update": "<1ms"
+      }
+    },
+    "optimizations": [
+      "Minimal DOM structure for fast rendering",
+      "Optimized event handlers with useCallback",
+      "CSS transitions for smooth state changes",
+      "Memoized computed styles",
+      "Efficient radio group state management",
+      "Optimized focus management with roving tabindex"
+    ]
+  }
+}

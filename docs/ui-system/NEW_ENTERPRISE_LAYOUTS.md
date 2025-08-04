@@ -1,8 +1,8 @@
-# Enterprise Layout System v5.0.0 - Complete Layout Collection
+# Enterprise Layout System v6.0.0 - Complete Layout Collection
 
 ## Overview
 
-This document provides a comprehensive overview of the enterprise-grade layouts created for the Xala UI System v5.0.0. These layouts follow strict compliance with WCAG 2.2 AAA accessibility standards, Norwegian enterprise requirements, and modern industry best practices.
+This document provides a comprehensive overview of the enterprise-grade layouts created for the Xala UI System v6.0.0. These layouts follow strict compliance with WCAG 2.2 AAA accessibility standards, Norwegian enterprise requirements, and modern industry best practices.
 
 ## Architecture Highlights
 
@@ -606,6 +606,6 @@ const OptimizedDashboard = React.memo(({ data }) => (
 
 ## Conclusion
 
-The Enterprise Layout System v5.0.0 provides a comprehensive foundation for building modern, accessible, and professional web applications. With over 50 layout components spanning 7 major categories, developers have the tools needed to create consistent, maintainable, and user-friendly interfaces that meet enterprise standards and Norwegian compliance requirements.
+The Enterprise Layout System v6.0.0 provides a comprehensive foundation for building modern, accessible, and professional web applications. With over 50 layout components spanning 7 major categories, developers have the tools needed to create consistent, maintainable, and user-friendly interfaces that meet enterprise standards and Norwegian compliance requirements.
 
 For detailed implementation examples, API documentation, and advanced usage patterns, refer to the individual component documentation files in the `/docs/components/` directory.

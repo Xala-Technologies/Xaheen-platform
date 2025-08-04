@@ -1,0 +1,658 @@
+{
+  "metadata": {
+    "name": "Dialog",
+    "version": "1.0.0",
+    "semanticVersion": "v5.1",
+    "category": "ui",
+    "subcategory": "overlay",
+    "description": "Comprehensive dialog component with modal behavior, focus trapping, keyboard navigation, and Norwegian compliance. Supports confirmation dialogs, form dialogs, and custom content with full accessibility.",
+    "keywords": ["dialog", "modal", "overlay", "popup", "confirmation", "form", "accessible", "norwegian"],
+    "maintainer": {
+      "name": "Xala UI Team",
+      "email": "ui@xala.no",
+      "team": "User Interface"
+    },
+    "stability": "stable",
+    "createdAt": "2024-08-04T15:00:00Z",
+    "updatedAt": "2024-08-04T15:00:00Z"
+  },
+  "compliance": {
+    "i18n": {
+      "supported": true,
+      "defaultLocale": "nb-NO",
+      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+      "textDirection": ["ltr", "rtl"]
+    },
+    "semantic": {
+      "htmlElements": ["div", "button", "h1", "h2", "h3", "h4", "h5", "h6", "dialog"],
+      "ariaRoles": ["dialog", "alertdialog", "button"],
+      "landmarks": false,
+      "headingStructure": true
+    },
+    "wcag": {
+      "level": "AAA",
+      "tested": true,
+      "guidelines": [
+        "1.3.1 Info and Relationships",
+        "1.4.3 Contrast (Minimum)",
+        "1.4.6 Contrast (Enhanced)",
+        "1.4.11 Non-text Contrast",
+        "2.1.1 Keyboard",
+        "2.1.2 No Keyboard Trap",
+        "2.4.3 Focus Order",
+        "2.4.6 Headings and Labels",
+        "2.4.7 Focus Visible",
+        "3.2.2 On Input",
+        "4.1.2 Name, Role, Value",
+        "4.1.3 Status Messages"
+      ],
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2,
+        "enhanced": 9.1
+      }
+    },
+    "ssr": {
+      "supported": true,
+      "hydrationSafe": true,
+      "staticGeneration": false
+    },
+    "norwegian": {
+      "nsmClassification": "OPEN",
+      "gdprCompliant": true,
+      "designSystem": {
+        "altinnCompliant": true,
+        "governmentApproved": true
+      },
+      "auditTrail": false
+    }
+  },
+  "props": {
+    "schema": {
+      "open": {
+        "type": { "primitive": "boolean" },
+        "description": "Controls whether the dialog is visible",
+        "required": true,
+        "examples": [
+          {
+            "value": true,
+            "description": "Dialog is visible and displayed",
+            "context": "Modal state management"
+          },
+          {
+            "value": false,
+            "description": "Dialog is hidden",
+            "context": "Default closed state"
+          }
+        ]
+      },
+      "onClose": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "reason",
+                "type": "'escape' | 'overlay' | 'close-button' | 'action'",
+                "required": false,
+                "description": "Reason why the dialog was closed"
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when dialog should be closed",
+        "required": true,
+        "examples": [
+          {
+            "value": "(reason) => setOpen(false)",
+            "description": "Basic close handler",
+            "context": "State management"
+          },
+          {
+            "value": "(reason) => { logAnalytics('dialog_closed', { reason }); setOpen(false); }",
+            "description": "Close handler with analytics",
+            "context": "User behavior tracking"
+          }
+        ]
+      },
+      "title": {
+        "type": { "primitive": "string" },
+        "description": "Title text displayed in the dialog header",
+        "required": false,
+        "examples": [
+          {
+            "value": "Confirm Action",
+            "description": "Confirmation dialog title",
+            "context": "Destructive actions, confirmations"
+          },
+          {
+            "value": "Edit Profile",
+            "description": "Form dialog title",
+            "context": "Form dialogs, data editing"
+          }
+        ]
+      },
+      "description": {
+        "type": { "primitive": "string" },
+        "description": "Description or content text for the dialog body",
+        "required": false,
+        "examples": [
+          {
+            "value": "Are you sure you want to delete this item? This action cannot be undone.",
+            "description": "Confirmation dialog description",
+            "context": "Destructive actions"
+          },
+          {
+            "value": "Please fill out the form below to update your profile information.",
+            "description": "Form dialog description",
+            "context": "Form instructions"
+          }
+        ]
+      },
+      "actions": {
+        "type": {
+          "complex": "array",
+          "itemType": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "required": true,
+                "description": "Button label text"
+              },
+              "onClick": {
+                "type": "function",
+                "required": true,
+                "description": "Click handler for the action"
+              },
+              "variant": {
+                "type": "'primary' | 'secondary' | 'destructive'",
+                "required": false,
+                "defaultValue": "primary",
+                "description": "Visual style variant"
+              },
+              "disabled": {
+                "type": "boolean",
+                "required": false,
+                "defaultValue": false,
+                "description": "Whether the action is disabled"
+              },
+              "loading": {
+                "type": "boolean",
+                "required": false,
+                "defaultValue": false,
+                "description": "Whether the action is in loading state"
+              }
+            }
+          }
+        },
+        "description": "Array of action buttons displayed in the dialog footer",
+        "required": false,
+        "examples": [
+          {
+            "value": "[{ label: 'Cancel', onClick: () => onClose(), variant: 'secondary' }, { label: 'Confirm', onClick: handleConfirm, variant: 'destructive' }]",
+            "description": "Confirmation dialog actions",
+            "context": "Destructive actions requiring confirmation"
+          },
+          {
+            "value": "[{ label: 'Save', onClick: handleSave, variant: 'primary', loading: isLoading }, { label: 'Cancel', onClick: () => onClose(), variant: 'secondary' }]",
+            "description": "Form dialog actions with loading state",
+            "context": "Form submission dialogs"
+          }
+        ]
+      },
+      "size": {
+        "type": {
+          "custom": "variant",
+          "values": ["sm", "md", "lg"]
+        },
+        "description": "Size variant affecting dialog width and spacing",
+        "required": false,
+        "defaultValue": "md",
+        "examples": [
+          {
+            "value": "sm",
+            "description": "Compact dialog for simple confirmations",
+            "context": "Alert dialogs, simple confirmations"
+          },
+          {
+            "value": "md",
+            "description": "Standard dialog for most use cases",
+            "context": "General purpose dialogs"
+          },
+          {
+            "value": "lg",
+            "description": "Large dialog for complex forms or content",
+            "context": "Complex forms, detailed content"
+          }
+        ]
+      },
+      "closeOnEscape": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the dialog can be closed with the Escape key",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "importance": "high",
+          "reason": "Standard keyboard interaction pattern for modal dialogs"
+        }
+      },
+      "closeOnOverlay": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the dialog can be closed by clicking the overlay",
+        "required": false,
+        "defaultValue": true,
+        "examples": [
+          {
+            "value": false,
+            "description": "Prevent accidental closure during form input",
+            "context": "Critical forms, required actions"
+          }
+        ]
+      },
+      "showCloseButton": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to show the close button in the dialog header",
+        "required": false,
+        "defaultValue": true
+      },
+      "children": {
+        "type": { "complex": "node" },
+        "description": "Custom content to display in the dialog body",
+        "required": false,
+        "examples": [
+          {
+            "value": "<FormComponent onSubmit={handleSubmit} />",
+            "description": "Form component as dialog content",
+            "context": "Custom form dialogs"
+          }
+        ]
+      },
+      "className": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to the dialog container",
+        "required": false
+      },
+      "testId": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+          }
+        },
+        "description": "Test identifier for automated testing",
+        "required": false
+      }
+    },
+    "groups": {
+      "required": ["open", "onClose"],
+      "optional": [
+        "title", "description", "actions", "size", "closeOnEscape", 
+        "closeOnOverlay", "showCloseButton", "children", "className", "testId"
+      ],
+      "deprecated": []
+    },
+    "composition": {
+      "children": {
+        "supported": true,
+        "description": "Custom content rendered in dialog body"
+      },
+      "slots": {
+        "header": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom header content"
+        },
+        "footer": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom footer content"
+        },
+        "closeButton": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom close button icon"
+        }
+      }
+    }
+  },
+  "variants": {
+    "simple": {
+      "size": {
+        "values": {
+          "sm": "w-full max-w-sm",
+          "md": "w-full max-w-md",
+          "lg": "w-full max-w-2xl"
+        },
+        "defaultValue": "md"
+      }
+    },
+    "compound": [
+      {
+        "conditions": {
+          "size": "sm"
+        },
+        "className": "w-full max-w-sm p-4",
+        "description": "Small dialog with compact padding"
+      },
+      {
+        "conditions": {
+          "size": "lg"
+        },
+        "className": "w-full max-w-2xl p-8",
+        "description": "Large dialog with generous padding"
+      }
+    ]
+  },
+  "accessibility": {
+    "role": {
+      "primary": "dialog",
+      "additional": ["alertdialog"]
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        {
+          "key": "Escape",
+          "action": "close",
+          "context": "Close dialog (if closeOnEscape is true)"
+        },
+        {
+          "key": "Tab",
+          "action": "navigate",
+          "context": "Move focus between interactive elements within dialog"
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "navigate",
+          "context": "Move focus backwards within dialog"
+        }
+      ],
+      "focusManagement": {
+        "trapFocus": true,
+        "restoreFocus": true,
+        "skipLinks": false,
+        "initialFocus": "first-interactive-element"
+      }
+    },
+    "screenReader": {
+      "announcements": [
+        {
+          "trigger": "open",
+          "message": "Dialog opened",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "close",
+          "message": "Dialog closed",
+          "priority": "polite"
+        }
+      ],
+      "labels": {
+        "required": ["accessible-name"],
+        "descriptions": {
+          "dialog": "dialog",
+          "closeButton": "close dialog",
+          "overlay": "dialog overlay"
+        }
+      }
+    },
+    "testing": {
+      "automated": [
+        "dialog-structure-present",
+        "focus-trap-functional",
+        "escape-key-closes",
+        "overlay-click-closes",
+        "aria-attributes-present",
+        "keyboard-navigation-functional",
+        "focus-restoration-works",
+        "color-contrast-aaa",
+        "action-buttons-accessible"
+      ],
+      "manual": [
+        "screen-reader-experience",
+        "keyboard-only-navigation",
+        "high-contrast-mode",
+        "zoom-250-percent",
+        "voice-control-compatibility"
+      ]
+    }
+  },
+  "platforms": {
+    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
+    "primary": "react",
+    "implementations": {
+      "react": {
+        "templatePath": "./templates/react/dialog.tsx",
+        "dependencies": ["react", "clsx", "class-variance-authority", "focus-trap-react"],
+        "imports": [
+          {
+            "module": "react",
+            "imports": ["useState", "useEffect", "useCallback", "useRef"]
+          },
+          {
+            "module": "class-variance-authority",
+            "imports": ["cva", "VariantProps"]
+          },
+          {
+            "module": "focus-trap-react",
+            "imports": ["FocusTrap"]
+          }
+        ]
+      },
+      "vue": {
+        "templatePath": "./templates/vue/dialog.vue",
+        "dependencies": ["vue", "clsx", "focus-trap"]
+      },
+      "angular": {
+        "templatePath": "./templates/angular/dialog.component.ts",
+        "dependencies": ["@angular/core", "@angular/common", "@angular/cdk/a11y"]
+      },
+      "svelte": {
+        "templatePath": "./templates/svelte/dialog.svelte",
+        "dependencies": ["svelte", "focus-trap"]
+      },
+      "solid": {
+        "templatePath": "./templates/solid/dialog.tsx",
+        "dependencies": ["solid-js", "focus-trap"]
+      },
+      "web-components": {
+        "templatePath": "./templates/web-components/dialog.ts",
+        "dependencies": ["lit", "focus-trap"]
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "Confirmation Dialog",
+      "description": "Simple confirmation dialog with destructive action",
+      "category": "confirmation",
+      "code": {
+        "react": "const [open, setOpen] = useState(false);\n\n<Dialog\n  open={open}\n  onClose={() => setOpen(false)}\n  title=\"Delete Item\"\n  description=\"Are you sure you want to delete this item? This action cannot be undone.\"\n  actions={[\n    { label: 'Cancel', onClick: () => setOpen(false), variant: 'secondary' },\n    { label: 'Delete', onClick: handleDelete, variant: 'destructive' }\n  ]}\n/>",
+        "vue": "<Dialog :open=\"open\" @close=\"setOpen(false)\" title=\"Delete Item\" :actions=\"actions\" />",
+        "angular": "<xala-dialog [open]=\"open\" (close)=\"setOpen(false)\" title=\"Delete Item\" [actions]=\"actions\"></xala-dialog>",
+        "svelte": "<Dialog {open} on:close={() => setOpen(false)} title=\"Delete Item\" {actions} />",
+        "solid": "<Dialog open={open} onClose={() => setOpen(false)} title=\"Delete Item\" actions={actions} />",
+        "web-components": "<xala-dialog open=\"{open}\" title=\"Delete Item\" actions=\"{actions}\"></xala-dialog>"
+      },
+      "props": {
+        "title": "Delete Item",
+        "description": "Are you sure you want to delete this item? This action cannot be undone.",
+        "actions": [
+          { "label": "Cancel", "variant": "secondary" },
+          { "label": "Delete", "variant": "destructive" }
+        ]
+      }
+    },
+    {
+      "name": "Form Dialog",
+      "description": "Dialog containing a form with custom content",
+      "category": "form",
+      "code": {
+        "react": "<Dialog\n  open={open}\n  onClose={() => setOpen(false)}\n  title=\"Edit Profile\"\n  size=\"lg\"\n  closeOnOverlay={false}\n>\n  <ProfileForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} />\n</Dialog>"
+      },
+      "props": {
+        "title": "Edit Profile",
+        "size": "lg",
+        "closeOnOverlay": false
+      },
+      "notes": "Custom form content with overlay click disabled to prevent accidental closure"
+    },
+    {
+      "name": "Alert Dialog",
+      "description": "Simple alert dialog with single action",
+      "category": "alert",
+      "code": {
+        "react": "<Dialog\n  open={open}\n  onClose={() => setOpen(false)}\n  title=\"Success\"\n  description=\"Your changes have been saved successfully.\"\n  size=\"sm\"\n  actions={[{ label: 'OK', onClick: () => setOpen(false), variant: 'primary' }]}\n/>"
+      },
+      "props": {
+        "title": "Success",
+        "description": "Your changes have been saved successfully.",
+        "size": "sm",
+        "actions": [{ "label": "OK", "variant": "primary" }]
+      }
+    },
+    {
+      "name": "Loading Dialog",
+      "description": "Dialog with loading state in actions",
+      "category": "loading",
+      "code": {
+        "react": "<Dialog\n  open={open}\n  onClose={() => setOpen(false)}\n  title=\"Save Changes\"\n  description=\"Do you want to save your changes?\"\n  actions={[\n    { label: 'Cancel', onClick: () => setOpen(false), variant: 'secondary', disabled: isLoading },\n    { label: 'Save', onClick: handleSave, variant: 'primary', loading: isLoading }\n  ]}\n/>"
+      },
+      "props": {
+        "actions": [
+          { "label": "Cancel", "variant": "secondary", "disabled": "isLoading" },
+          { "label": "Save", "variant": "primary", "loading": "isLoading" }
+        ]
+      }
+    }
+  ],
+  "ai": {
+    "optimization": {
+      "hints": [
+        "Always implement focus trapping to contain focus within the dialog",
+        "Restore focus to trigger element when dialog closes",
+        "Use semantic dialog element when available for better accessibility",
+        "Implement proper escape key handling for keyboard users",
+        "Provide clear visual focus indicators for all interactive elements",
+        "Apply Norwegian design tokens for government compliance",
+        "Ensure color contrast meets AAA standards for all text",
+        "Use aria-labelledby and aria-describedby for screen reader context"
+      ],
+      "patterns": [
+        {
+          "pattern": "useEffect for focus management",
+          "context": "React implementation",
+          "recommendation": "Use useEffect to trap focus when dialog opens and restore when closed"
+        },
+        {
+          "pattern": "useCallback for event handlers",
+          "context": "React implementation",
+          "recommendation": "Memoize close handlers to prevent unnecessary re-renders"
+        },
+        {
+          "pattern": "Portal rendering",
+          "context": "DOM structure",
+          "recommendation": "Render dialog in portal to avoid z-index issues"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "pattern": "div with role='dialog' instead of dialog element",
+          "reason": "Less semantic and may not trigger proper screen reader behavior",
+          "alternative": "Use native dialog element when supported, fallback to div with proper ARIA"
+        },
+        {
+          "pattern": "No focus trapping",
+          "reason": "Allows focus to escape dialog, breaking accessibility",
+          "alternative": "Implement focus trap using focus-trap library or custom solution"
+        },
+        {
+          "pattern": "Missing focus restoration",
+          "reason": "Leaves keyboard users lost when dialog closes",
+          "alternative": "Store and restore focus to triggering element"
+        }
+      ]
+    },
+    "generation": {
+      "priority": "high",
+      "complexity": "moderate",
+      "estimatedTokens": 3000
+    },
+    "documentation": {
+      "autoGenerate": true,
+      "templates": ["api-reference", "usage-examples", "accessibility-guide", "keyboard-navigation", "focus-management"]
+    }
+  },
+  "testing": {
+    "unit": {
+      "required": [
+        "renders when open is true",
+        "does not render when open is false",
+        "closes on escape key",
+        "closes on overlay click",
+        "does not close on overlay click when disabled",
+        "calls onClose with correct reason",
+        "renders title and description",
+        "renders action buttons",
+        "applies size classes correctly",
+        "traps focus within dialog",
+        "restores focus on close",
+        "shows/hides close button based on prop",
+        "handles action button clicks",
+        "shows loading state in actions",
+        "disables actions when specified",
+        "accessibility attributes present",
+        "keyboard navigation works"
+      ],
+      "coverage": {
+        "minimum": 95
+      }
+    },
+    "integration": {
+      "scenarios": [
+        "dialog within form workflows",
+        "nested dialogs (modal over modal)",
+        "dialog with complex interactive content",
+        "keyboard-only interaction flow",
+        "screen reader navigation experience",
+        "multiple dialogs in application",
+        "responsive behavior across devices",
+        "Norwegian compliance validation"
+      ]
+    },
+    "visual": {
+      "regression": true,
+      "responsive": true,
+      "colorContrast": true
+    }
+  },
+  "performance": {
+    "metrics": {
+      "bundleSize": {
+        "max": "4KB",
+        "gzipped": "1.5KB"
+      },
+      "renderTime": {
+        "initial": "<30ms",
+        "open": "<15ms",
+        "close": "<10ms"
+      }
+    },
+    "optimizations": [
+      "Portal rendering to avoid layout recalculations",
+      "Memoized event handlers to prevent re-renders",
+      "CSS-only animations for smooth transitions",
+      "Conditional rendering based on open state",
+      "Efficient focus trap implementation",
+      "Tree-shakeable component structure",
+      "Optimized overlay backdrop rendering"
+    ]
+  }
+}

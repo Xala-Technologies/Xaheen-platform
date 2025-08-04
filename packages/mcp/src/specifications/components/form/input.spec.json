@@ -1,0 +1,913 @@
+{
+  "metadata": {
+    "name": "Input",
+    "version": "1.0.0",
+    "semanticVersion": "v5.1",
+    "category": "form",
+    "subcategory": "input-field",
+    "description": "Accessible input component with validation, Norwegian compliance, and comprehensive form integration. Supports multiple input types with enhanced UX features.",
+    "keywords": ["input", "form", "field", "validation", "accessible", "norwegian", "controlled"],
+    "maintainer": {
+      "name": "Xala Form Team",
+      "email": "forms@xala.no",
+      "team": "Form Components"
+    },
+    "stability": "stable",
+    "createdAt": "2024-08-04T10:00:00Z",
+    "updatedAt": "2024-08-04T15:00:00Z"
+  },
+  "compliance": {
+    "i18n": {
+      "supported": true,
+      "defaultLocale": "nb-NO",
+      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+      "textDirection": ["ltr", "rtl"]
+    },
+    "semantic": {
+      "htmlElements": ["input", "label", "div", "span", "button"],
+      "ariaRoles": ["textbox", "button"],
+      "landmarks": false,
+      "headingStructure": false
+    },
+    "wcag": {
+      "level": "AAA",
+      "tested": true,
+      "guidelines": [
+        "1.3.1 Info and Relationships",
+        "1.4.3 Contrast (Minimum)",
+        "1.4.6 Contrast (Enhanced)",
+        "2.1.1 Keyboard",
+        "2.4.6 Headings and Labels",
+        "3.3.1 Error Identification",
+        "3.3.2 Labels or Instructions",
+        "3.3.3 Error Suggestion",
+        "4.1.2 Name, Role, Value"
+      ],
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2,
+        "enhanced": 9.1
+      }
+    },
+    "ssr": {
+      "supported": true,
+      "hydrationSafe": true,
+      "staticGeneration": true
+    },
+    "norwegian": {
+      "nsmClassification": "OPEN",
+      "gdprCompliant": true,
+      "designSystem": {
+        "altinnCompliant": true,
+        "governmentApproved": true
+      },
+      "auditTrail": false
+    }
+  },
+  "props": {
+    "schema": {
+      "type": {
+        "type": {
+          "custom": "variant",
+          "values": ["text", "email", "password", "number", "tel", "url", "search", "date", "time", "datetime-local"]
+        },
+        "description": "HTML input type attribute",
+        "required": false,
+        "defaultValue": "text",
+        "examples": [
+          {
+            "value": "email",
+            "description": "Email input with validation",
+            "context": "User registration form"
+          },
+          {
+            "value": "password",
+            "description": "Password input with masking",
+            "context": "Login form"
+          }
+        ]
+      },
+      "value": {
+        "type": {
+          "union": [
+            { "primitive": "string" },
+            { "primitive": "number" }
+          ]
+        },
+        "description": "Controlled component value",
+        "required": false,
+        "examples": [
+          {
+            "value": "john@example.com",
+            "description": "Email value",
+            "context": "Controlled component"
+          }
+        ]
+      },
+      "defaultValue": {
+        "type": {
+          "union": [
+            { "primitive": "string" },
+            { "primitive": "number" }
+          ]
+        },
+        "description": "Default value for uncontrolled component",
+        "required": false
+      },
+      "placeholder": {
+        "type": { "primitive": "string" },
+        "description": "Placeholder text displayed when input is empty",
+        "required": false,
+        "i18n": {
+          "translatable": true,
+          "key": "input.placeholder.{fieldName}",
+          "context": "form-hint"
+        },
+        "examples": [
+          {
+            "value": "Enter your email address",
+            "description": "Email input placeholder",
+            "context": "User guidance"
+          }
+        ]
+      },
+      "label": {
+        "type": { "primitive": "string" },
+        "description": "Associated label text for the input",
+        "required": false,
+        "accessibility": {
+          "required": true,
+          "screenReaderText": "Input field label"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "input.label.{fieldName}",
+          "context": "form-label"
+        }
+      },
+      "error": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the input is in an error state",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-invalid",
+          "screenReaderText": "Field has validation error"
+        }
+      },
+      "errorMessage": {
+        "type": { "primitive": "string" },
+        "description": "Error message to display when input is invalid",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby",
+          "screenReaderText": "Validation error description"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "input.error.{fieldName}",
+          "context": "validation-error"
+        }
+      },
+      "success": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the input is in a success state",
+        "required": false,
+        "defaultValue": false
+      },
+      "successMessage": {
+        "type": { "primitive": "string" },
+        "description": "Success message to display when input is valid",
+        "required": false,
+        "i18n": {
+          "translatable": true,
+          "key": "input.success.{fieldName}",
+          "context": "validation-success"
+        }
+      },
+      "disabled": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the input is disabled",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-disabled",
+          "screenReaderText": "Field is disabled"
+        }
+      },
+      "readonly": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the input is read-only",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "readonly",
+          "screenReaderText": "Field is read-only"
+        }
+      },
+      "required": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether the input is required for form submission",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-required",
+          "screenReaderText": "Field is required"
+        }
+      },
+      "pattern": {
+        "type": { "primitive": "string" },
+        "description": "Regular expression pattern for input validation",
+        "required": false,
+        "examples": [
+          {
+            "value": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "description": "Email validation pattern",
+            "context": "Email input validation"
+          }
+        ]
+      },
+      "minLength": {
+        "type": {
+          "primitive": "number",
+          "constraints": {
+            "minimum": 0,
+            "integer": true
+          }
+        },
+        "description": "Minimum number of characters required",
+        "required": false
+      },
+      "maxLength": {
+        "type": {
+          "primitive": "number",
+          "constraints": {
+            "minimum": 1,
+            "integer": true
+          }
+        },
+        "description": "Maximum number of characters allowed",
+        "required": false
+      },
+      "min": {
+        "type": { "primitive": "number" },
+        "description": "Minimum value for number inputs",
+        "required": false
+      },
+      "max": {
+        "type": { "primitive": "number" },
+        "description": "Maximum value for number inputs",
+        "required": false
+      },
+      "step": {
+        "type": { "primitive": "number" },
+        "description": "Step value for number inputs",
+        "required": false
+      },
+      "autoComplete": {
+        "type": {
+          "custom": "variant",
+          "values": ["on", "off", "name", "email", "username", "current-password", "new-password", "tel", "url", "street-address", "postal-code", "country"]
+        },
+        "description": "HTML autocomplete attribute value",
+        "required": false,
+        "defaultValue": "off"
+      },
+      "inputMode": {
+        "type": {
+          "custom": "variant",
+          "values": ["none", "text", "tel", "url", "email", "numeric", "decimal", "search"]
+        },
+        "description": "Virtual keyboard hint for mobile devices",
+        "required": false
+      },
+      "icon": {
+        "type": { "primitive": "string" },
+        "description": "Icon name or component to display",
+        "required": false,
+        "examples": [
+          {
+            "value": "search",
+            "description": "Search icon for search inputs",
+            "context": "Search functionality"
+          },
+          {
+            "value": "mail",
+            "description": "Mail icon for email inputs",
+            "context": "Email field"
+          }
+        ]
+      },
+      "iconPosition": {
+        "type": {
+          "custom": "variant",
+          "values": ["left", "right"]
+        },
+        "description": "Position of the icon relative to input",
+        "required": false,
+        "defaultValue": "left"
+      },
+      "clearable": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to show a clear button when input has value",
+        "required": false,
+        "defaultValue": false
+      },
+      "loading": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to show loading state (e.g., during async validation)",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-busy",
+          "screenReaderText": "Field is validating"
+        }
+      },
+      "onChange": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "ChangeEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when input value changes",
+        "required": false
+      },
+      "onFocus": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "FocusEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when input receives focus",
+        "required": false
+      },
+      "onBlur": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "FocusEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when input loses focus",
+        "required": false
+      },
+      "onKeyDown": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "event",
+                "type": "KeyboardEvent<HTMLInputElement>",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when key is pressed down",
+        "required": false
+      },
+      "onClear": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [],
+            "returnType": "void"
+          }
+        },
+        "description": "Callback fired when clear button is clicked",
+        "required": false
+      },
+      "className": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to the input container",
+        "required": false
+      },
+      "inputClassName": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to the input element",
+        "required": false
+      },
+      "testId": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+          }
+        },
+        "description": "Test identifier for automated testing",
+        "required": false
+      },
+      "ariaLabel": {
+        "type": { "primitive": "string" },
+        "description": "Accessible label when no visible label is present",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-label",
+          "screenReaderText": "Input field description"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "aria.label.input.{fieldName}",
+          "context": "accessibility"
+        }
+      },
+      "ariaDescribedBy": {
+        "type": { "primitive": "string" },
+        "description": "ID of elements that describe the input",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby"
+        }
+      }
+    },
+    "groups": {
+      "required": [],
+      "optional": [
+        "type", "value", "defaultValue", "placeholder", "label", "error", "errorMessage",
+        "success", "successMessage", "disabled", "readonly", "required", "pattern",
+        "minLength", "maxLength", "min", "max", "step", "autoComplete", "inputMode",
+        "icon", "iconPosition", "clearable", "loading", "onChange", "onFocus", "onBlur",
+        "onKeyDown", "onClear", "className", "inputClassName", "testId", "ariaLabel", "ariaDescribedBy"
+      ],
+      "deprecated": []
+    },
+    "composition": {
+      "children": {
+        "supported": false
+      },
+      "slots": {
+        "icon": {
+          "required": false,
+          "types": ["element", "string"],
+          "description": "Custom icon content"
+        },
+        "prefix": {
+          "required": false,
+          "types": ["element"],
+          "description": "Content to display before input"
+        },
+        "suffix": {
+          "required": false,
+          "types": ["element"],
+          "description": "Content to display after input"
+        }
+      }
+    }
+  },
+  "variants": {
+    "simple": {
+      "variant": {
+        "values": {
+          "default": "border-gray-300 focus:border-blue-500",
+          "filled": "bg-gray-100 border-transparent focus:bg-white focus:border-blue-500",
+          "outline": "border-2 border-gray-300 focus:border-blue-500"
+        },
+        "defaultValue": "default"
+      },
+      "size": {
+        "values": {
+          "sm": "h-10 px-3 text-sm",
+          "md": "h-12 px-4 text-base",
+          "lg": "h-14 px-6 text-lg"
+        },
+        "defaultValue": "md"
+      },
+      "state": {
+        "values": {
+          "normal": "",
+          "error": "border-red-500 focus:border-red-500",
+          "success": "border-green-500 focus:border-green-500",
+          "disabled": "bg-gray-100 text-gray-400 cursor-not-allowed"
+        },
+        "defaultValue": "normal"
+      }
+    },
+    "compound": [
+      {
+        "conditions": {
+          "variant": "filled",
+          "state": "error"
+        },
+        "className": "bg-red-50 border-red-500 focus:bg-red-50",
+        "description": "Filled input with error state"
+      },
+      {
+        "conditions": {
+          "variant": "filled",
+          "state": "success"
+        },
+        "className": "bg-green-50 border-green-500 focus:bg-green-50",
+        "description": "Filled input with success state"
+      },
+      {
+        "conditions": {
+          "size": "sm",
+          "clearable": true
+        },
+        "className": "pr-8",
+        "description": "Small input with clear button spacing"
+      },
+      {
+        "conditions": {
+          "size": "md",
+          "clearable": true
+        },
+        "className": "pr-10",
+        "description": "Medium input with clear button spacing"
+      },
+      {
+        "conditions": {
+          "size": "lg",
+          "clearable": true
+        },
+        "className": "pr-12",
+        "description": "Large input with clear button spacing"
+      }
+    ]
+  },
+  "accessibility": {
+    "role": {
+      "primary": "textbox"
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        {
+          "key": "Tab",
+          "action": "navigate",
+          "context": "Move focus to next element"
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "navigate",
+          "context": "Move focus to previous element"
+        },
+        {
+          "key": "Escape",
+          "action": "clear",
+          "context": "Clear input when clearable"
+        },
+        {
+          "key": "Enter",
+          "action": "submit",
+          "context": "Submit form or trigger onEnter"
+        }
+      ],
+      "focusManagement": {
+        "trapFocus": false,
+        "restoreFocus": false,
+        "skipLinks": false
+      }
+    },
+    "screenReader": {
+      "announcements": [
+        {
+          "trigger": "error",
+          "message": "Field {label} has error: {errorMessage}",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "success",
+          "message": "Field {label} is valid",
+          "priority": "polite"
+        },
+        {
+          "trigger": "clear",
+          "message": "Field {label} cleared",
+          "priority": "polite"
+        },
+        {
+          "trigger": "loading",
+          "message": "Field {label} is validating",
+          "priority": "polite"
+        }
+      ],
+      "labels": {
+        "required": ["label", "aria-label"],
+        "descriptions": {
+          "required": "Required field",
+          "optional": "Optional field",
+          "invalid": "Invalid input",
+          "valid": "Valid input",
+          "disabled": "Disabled field",
+          "readonly": "Read-only field"
+        }
+      }
+    },
+    "testing": {
+      "automated": [
+        "input-label-association",
+        "keyboard-navigation",
+        "validation-announcements",
+        "focus-management",
+        "color-contrast-aaa",
+        "error-state-accessibility"
+      ],
+      "manual": [
+        "screen-reader-experience",
+        "keyboard-only-interaction",
+        "high-contrast-mode",
+        "zoom-250-percent",
+        "voice-control-compatibility"
+      ]
+    }
+  },
+  "platforms": {
+    "supported": ["react", "vue", "angular", "svelte"],
+    "primary": "react",
+    "implementations": {
+      "react": {
+        "templatePath": "./templates/react/input.tsx",
+        "dependencies": ["react", "clsx"],
+        "imports": [
+          {
+            "module": "react",
+            "imports": ["forwardRef", "useState", "useCallback", "useId"]
+          },
+          {
+            "module": "clsx",
+            "imports": ["clsx"]
+          }
+        ]
+      },
+      "vue": {
+        "templatePath": "./templates/vue/input.vue",
+        "dependencies": ["vue"]
+      },
+      "angular": {
+        "templatePath": "./templates/angular/input.component.ts",
+        "dependencies": ["@angular/core", "@angular/forms"]
+      },
+      "svelte": {
+        "templatePath": "./templates/svelte/input.svelte",
+        "dependencies": ["svelte"]
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "Basic Text Input",
+      "description": "Simple text input with label",
+      "category": "basic",
+      "code": {
+        "react": "<Input type='text' label='Full Name' placeholder='Enter your full name' />",
+        "vue": "<Input type='text' label='Full Name' placeholder='Enter your full name' />",
+        "angular": "<xala-input type='text' label='Full Name' placeholder='Enter your full name'></xala-input>",
+        "svelte": "<Input type='text' label='Full Name' placeholder='Enter your full name' />"
+      },
+      "props": {
+        "type": "text",
+        "label": "Full Name",
+        "placeholder": "Enter your full name"
+      }
+    },
+    {
+      "name": "Email Input with Validation",
+      "description": "Email input with pattern validation and error state",
+      "category": "validation",
+      "code": {
+        "react": "<Input type='email' label='Email Address' placeholder='name@example.com' pattern='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$' error={hasError} errorMessage='Please enter a valid email address' required />"
+      },
+      "props": {
+        "type": "email",
+        "label": "Email Address",
+        "placeholder": "name@example.com",
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        "error": true,
+        "errorMessage": "Please enter a valid email address",
+        "required": true
+      }
+    },
+    {
+      "name": "Password Input",
+      "description": "Password input with security features",
+      "category": "security",
+      "code": {
+        "react": "<Input type='password' label='Password' placeholder='Enter your password' minLength={8} required autoComplete='current-password' />"
+      },
+      "props": {
+        "type": "password",
+        "label": "Password",
+        "placeholder": "Enter your password",
+        "minLength": 8,
+        "required": true,
+        "autoComplete": "current-password"
+      }
+    },
+    {
+      "name": "Search Input with Icon",
+      "description": "Search input with icon and clearable functionality",
+      "category": "enhanced",
+      "code": {
+        "react": "<Input type='search' placeholder='Search products...' icon='search' iconPosition='left' clearable inputMode='search' />"
+      },
+      "props": {
+        "type": "search",
+        "placeholder": "Search products...",
+        "icon": "search",
+        "iconPosition": "left",
+        "clearable": true,
+        "inputMode": "search"
+      }
+    },
+    {
+      "name": "Number Input with Constraints",
+      "description": "Number input with min/max validation",
+      "category": "numeric",
+      "code": {
+        "react": "<Input type='number' label='Age' min={18} max={120} step={1} required inputMode='numeric' />"
+      },
+      "props": {
+        "type": "number",
+        "label": "Age",
+        "min": 18,
+        "max": 120,
+        "step": 1,
+        "required": true,
+        "inputMode": "numeric"
+      }
+    },
+    {
+      "name": "Success State Input",
+      "description": "Input showing successful validation",
+      "category": "validation",
+      "code": {
+        "react": "<Input type='email' label='Email Address' value='john@example.com' success successMessage='Email address is valid' readonly />"
+      },
+      "props": {
+        "type": "email",
+        "label": "Email Address",
+        "value": "john@example.com",
+        "success": true,
+        "successMessage": "Email address is valid",
+        "readonly": true
+      }
+    },
+    {
+      "name": "Large Input with Custom Styling",
+      "description": "Large input with custom classes and filled variant",
+      "category": "styling",
+      "code": {
+        "react": "<Input type='text' label='Company Name' placeholder='Enter company name' size='lg' variant='filled' className='mb-4' />"
+      },
+      "props": {
+        "type": "text",
+        "label": "Company Name",
+        "placeholder": "Enter company name",
+        "size": "lg",
+        "variant": "filled",
+        "className": "mb-4"
+      },
+      "notes": "Large filled input with custom spacing"
+    }
+  ],
+  "ai": {
+    "optimization": {
+      "hints": [
+        "Always associate inputs with labels for accessibility",
+        "Use appropriate input types for better mobile UX",
+        "Implement proper validation feedback with ARIA attributes",
+        "Consider Norwegian locale requirements for date/number formats",
+        "Use semantic HTML5 input types for better form validation"
+      ],
+      "patterns": [
+        {
+          "pattern": "controlled component",
+          "context": "React implementation",
+          "recommendation": "Use controlled components with value and onChange props"
+        },
+        {
+          "pattern": "validation",
+          "context": "Form validation",
+          "recommendation": "Combine client-side and server-side validation"
+        },
+        {
+          "pattern": "accessibility",
+          "context": "Screen readers",
+          "recommendation": "Always provide labels and error announcements"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "pattern": "placeholder as label",
+          "reason": "Poor accessibility and usability",
+          "alternative": "Use proper label elements with placeholder as hint"
+        },
+        {
+          "pattern": "generic error messages",
+          "reason": "Poor user experience and accessibility",
+          "alternative": "Provide specific, actionable error messages"
+        },
+        {
+          "pattern": "missing validation feedback",
+          "reason": "Users don't know if input is valid",
+          "alternative": "Provide both visual and screen reader feedback"
+        }
+      ]
+    },
+    "generation": {
+      "priority": "high",
+      "complexity": "medium",
+      "estimatedTokens": 2800
+    },
+    "documentation": {
+      "autoGenerate": true,
+      "templates": ["api-reference", "usage-examples", "accessibility-guide", "validation-guide"]
+    }
+  },
+  "testing": {
+    "unit": {
+      "required": [
+        "renders with default props",
+        "handles controlled value changes",
+        "displays error states correctly",
+        "displays success states correctly",
+        "handles keyboard navigation",
+        "manages focus states",
+        "validates input constraints",
+        "clears input when clearable",
+        "displays icons correctly",
+        "handles disabled state",
+        "handles readonly state",
+        "fires event callbacks",
+        "accessibility attributes",
+        "label association",
+        "ARIA announcements"
+      ],
+      "coverage": {
+        "minimum": 95
+      }
+    },
+    "integration": {
+      "scenarios": [
+        "form integration and submission",
+        "validation workflow with error display",
+        "success feedback after validation",
+        "keyboard-only form completion",
+        "screen reader form interaction",
+        "mobile virtual keyboard behavior",
+        "autocomplete functionality",
+        "Norwegian locale formatting"
+      ]
+    },
+    "visual": {
+      "regression": true,
+      "responsive": true,
+      "themes": ["light", "dark", "high-contrast"]
+    }
+  },
+  "performance": {
+    "metrics": {
+      "bundleSize": {
+        "max": "3KB",
+        "gzipped": "1.2KB"
+      },
+      "renderTime": {
+        "initial": "<5ms",
+        "update": "<2ms"
+      }
+    },
+    "optimizations": [
+      "Memoized validation functions",
+      "Debounced onChange handlers for expensive operations",
+      "Lazy loading of validation messages",
+      "Optimized re-renders with React.memo",
+      "Minimal DOM updates for state changes"
+    ]
+  }
+}

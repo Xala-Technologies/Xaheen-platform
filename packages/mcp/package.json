@@ -1,0 +1,108 @@
+{
+  "name": "@xala-technologies/ui-system-mcp",
+  "version": "6.0.0",
+  "description": "Multi-platform MCP server for generating components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using Xala UI System v5.0 semantic architecture",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "xala-ui-mcp": "dist/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+    "format:check": "prettier --check src/**/*.{ts,tsx}",
+    "type-check": "tsc --noEmit",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "validate": "npm run type-check && npm test",
+    "validate-config": "node dist/validate-config.js",
+    "profile": "node --prof dist/index.js",
+    "benchmark": "node dist/benchmark.js",
+    "doctor": "node dist/doctor.js",
+    "prepublishOnly": "npm run validate && npm run build",
+    "postpublish": "git push --tags",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "keywords": [
+    "mcp",
+    "xala-ui-system",
+    "multi-platform",
+    "component-generator",
+    "react",
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "electron",
+    "react-native",
+    "typescript",
+    "semantic-architecture",
+    "design-system",
+    "accessibility",
+    "localization",
+    "enterprise",
+    "norwegian-compliance",
+    "wcag-aaa"
+  ],
+  "author": "Xala Technologies",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@xala-technologies/ui-system": "^5.0.0",
+    "@xala-technologies/xala-cli": "^2.0.0",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.0.0",
+    "glob": "^11.0.3",
+    "handlebars": "^4.7.8",
+    "prettier": "^3.0.0",
+    "react-i18next": "^15.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/handlebars": "^4.1.0",
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "globals": "^16.3.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "templates/**/*",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xala-technologies/ui-system-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xala-technologies/ui-system-mcp/issues"
+  },
+  "homepage": "https://github.com/xala-technologies/ui-system-mcp#readme"
+}

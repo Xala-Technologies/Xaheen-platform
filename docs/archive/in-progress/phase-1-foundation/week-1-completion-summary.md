@@ -125,7 +125,7 @@
 
 ### **Pending Requirements**
 - 🔐 **GitHub Token**: Required for Xala UI System package access
-- 📦 **Package Installation**: @xala-technologies/ui-system@^5.0.0
+- 📦 **Package Installation**: @xala-technologies/ui-system@^6.0.0
 - 🔧 **Service Dependencies**: Some xala-scaffold dependencies need resolution
 
 ### **Risk Mitigation**

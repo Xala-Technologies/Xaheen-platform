@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides comprehensive instructions for migrating from the deprecated `useTokens()` hook pattern to the new **Class Variance Authority (CVA)** pattern in UI System v5.0.0.
+This guide provides comprehensive instructions for migrating from the deprecated `useTokens()` hook pattern to the new **Class Variance Authority (CVA)** pattern in UI System v6.0.0.
 
 ## 🚨 Critical Breaking Changes
 

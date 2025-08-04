@@ -1,0 +1,394 @@
+{
+  "metadata": {
+    "name": "Pagination",
+    "version": "1.0.0",
+    "category": "navigation",
+    "description": "Navigation component for breaking up large datasets into multiple pages with user-friendly controls",
+    "tags": ["navigation", "pagination", "paging", "data-navigation", "table-navigation"],
+    "compliance": {
+      "wcag": "AAA",
+      "nsm": "OPEN",
+      "gdpr": "compliant"
+    },
+    "performance": {
+      "bundleSize": "<3KB",
+      "renderTime": "<16ms",
+      "memoryUsage": "<1MB"
+    }
+  },
+  "props": {
+    "currentPage": {
+      "type": "number",
+      "required": true,
+      "description": "Current active page number (1-based)",
+      "validation": "Must be >= 1 and <= totalPages"
+    },
+    "totalPages": {
+      "type": "number",
+      "required": true,
+      "description": "Total number of pages available",
+      "validation": "Must be >= 1"
+    },
+    "onPageChange": {
+      "type": "(page: number) => void",
+      "required": true,
+      "description": "Callback fired when user navigates to a different page"
+    },
+    "showFirst": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether to show 'First' button for quick navigation to page 1"
+    },
+    "showLast": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether to show 'Last' button for quick navigation to final page"
+    },
+    "showPrevNext": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether to show Previous and Next navigation buttons"
+    },
+    "maxVisible": {
+      "type": "number",
+      "required": false,
+      "default": 7,
+      "description": "Maximum number of page buttons to show before using ellipsis",
+      "validation": "Must be >= 3 for proper ellipsis behavior"
+    },
+    "size": {
+      "type": "enum",
+      "required": false,
+      "default": "md",
+      "values": ["sm", "md", "lg"],
+      "description": "Size variant affecting button dimensions and typography"
+    },
+    "variant": {
+      "type": "enum",
+      "required": false,
+      "default": "default",
+      "values": ["default", "pills", "minimal"],
+      "description": "Visual style variant for different design contexts"
+    },
+    "disabled": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether pagination controls are disabled"
+    },
+    "hideOnSinglePage": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether to hide pagination when totalPages is 1"
+    },
+    "showPageInfo": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether to show 'Page X of Y' information text"
+    },
+    "labels": {
+      "type": "object",
+      "required": false,
+      "description": "Customizable labels for internationalization",
+      "properties": {
+        "first": {
+          "type": "string",
+          "default": "First",
+          "description": "Label for first page button"
+        },
+        "previous": {
+          "type": "string",
+          "default": "Previous",
+          "description": "Label for previous page button"
+        },
+        "next": {
+          "type": "string",
+          "default": "Next",
+          "description": "Label for next page button"
+        },
+        "last": {
+          "type": "string",
+          "default": "Last",
+          "description": "Label for last page button"
+        },
+        "page": {
+          "type": "string",
+          "default": "Page",
+          "description": "Label prefix for page buttons"
+        },
+        "pageInfo": {
+          "type": "string",
+          "default": "Page {current} of {total}",
+          "description": "Template for page information text"
+        }
+      }
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes for custom styling"
+    }
+  },
+  "accessibility": {
+    "wcag": {
+      "level": "AAA",
+      "guidelines": [
+        "2.1.1 - Keyboard navigation support for all controls",
+        "2.4.3 - Focus order follows logical sequence",
+        "2.4.7 - Focus indicator is clearly visible",
+        "3.2.2 - No unexpected context changes",
+        "4.1.2 - Name, Role, Value for all interactive elements"
+      ]
+    },
+    "aria": {
+      "nav": "Required nav element wrapper with aria-label",
+      "aria-label": "Navigation labeled as 'Pagination' or custom label",
+      "aria-current": "Set to 'page' on current page button",
+      "aria-disabled": "Applied to disabled navigation buttons",
+      "role": "button role on all clickable elements"
+    },
+    "keyboard": {
+      "Tab": "Navigate between pagination controls",
+      "Shift+Tab": "Navigate backwards through pagination controls",
+      "Enter": "Activate focused pagination button",
+      "Space": "Activate focused pagination button",
+      "ArrowLeft": "Navigate to previous page (optional enhancement)",
+      "ArrowRight": "Navigate to next page (optional enhancement)"
+    },
+    "screenReader": "Each button clearly announces its purpose, current page status, and total pages context"
+  },
+  "design": {
+    "tokens": {
+      "colors": {
+        "button": "var(--color-neutral-50)",
+        "buttonHover": "var(--color-neutral-100)",
+        "buttonActive": "var(--color-primary-600)",
+        "buttonActiveHover": "var(--color-primary-700)",
+        "buttonDisabled": "var(--color-neutral-100)",
+        "text": "var(--color-text-primary)",
+        "textActive": "var(--color-white)",
+        "textDisabled": "var(--color-text-disabled)",
+        "border": "var(--color-border-default)",
+        "borderActive": "var(--color-primary-600)"
+      },
+      "spacing": {
+        "buttonGap": "var(--spacing-1)",
+        "sectionGap": "var(--spacing-3)",
+        "padding": {
+          "sm": "var(--spacing-2) var(--spacing-3)",
+          "md": "var(--spacing-3) var(--spacing-4)",
+          "lg": "var(--spacing-4) var(--spacing-5)"
+        }
+      },
+      "typography": {
+        "sm": "var(--text-sm)",
+        "md": "var(--text-base)",
+        "lg": "var(--text-lg)"
+      },
+      "borderRadius": {
+        "default": "var(--radius-md)",
+        "pills": "var(--radius-full)",
+        "minimal": "var(--radius-sm)"
+      }
+    },
+    "variants": {
+      "size": {
+        "sm": {
+          "buttonHeight": "32px",
+          "buttonMinWidth": "32px",
+          "fontSize": "var(--text-sm)",
+          "padding": "var(--spacing-1) var(--spacing-2)",
+          "iconSize": "16px"
+        },
+        "md": {
+          "buttonHeight": "40px",
+          "buttonMinWidth": "40px",
+          "fontSize": "var(--text-base)",
+          "padding": "var(--spacing-2) var(--spacing-3)",
+          "iconSize": "18px"
+        },
+        "lg": {
+          "buttonHeight": "48px",
+          "buttonMinWidth": "48px",
+          "fontSize": "var(--text-lg)",
+          "padding": "var(--spacing-3) var(--spacing-4)",
+          "iconSize": "20px"
+        }
+      },
+      "variant": {
+        "default": {
+          "buttonStyle": "border with background",
+          "activeStyle": "filled with primary color",
+          "hoverStyle": "subtle background change"
+        },
+        "pills": {
+          "buttonStyle": "fully rounded buttons",
+          "activeStyle": "filled pill shape",
+          "hoverStyle": "background color change"
+        },
+        "minimal": {
+          "buttonStyle": "text-only with minimal background",
+          "activeStyle": "underlined or subtle highlight",
+          "hoverStyle": "light background overlay"
+        }
+      }
+    }
+  },
+  "behavior": {
+    "navigation": {
+      "pageSelection": "Clicking any page number navigates to that page",
+      "boundaryControls": "First/Last buttons jump to page 1 or final page",
+      "adjacentControls": "Prev/Next buttons move by one page",
+      "disabledStates": "First/Prev disabled on page 1, Last/Next disabled on final page",
+      "ellipsis": "Shows '...' when page range exceeds maxVisible limit"
+    },
+    "ellipsisLogic": {
+      "startEllipsis": "Appears when current page is far from beginning",
+      "endEllipsis": "Appears when current page is far from end",
+      "smartRanging": "Always shows current page ± 1 when possible"
+    },
+    "responsive": {
+      "mobile": "Reduces maxVisible to 3-5 pages, prioritizes Prev/Next",
+      "tablet": "Standard behavior with full control set",
+      "desktop": "Full pagination with all requested controls visible"
+    }
+  },
+  "examples": [
+    {
+      "name": "Basic Pagination",
+      "description": "Standard pagination with all default features",
+      "code": {
+        "tsx": "const [currentPage, setCurrentPage] = useState(1);\nconst totalPages = 20;\n\n<Pagination\n  currentPage={currentPage}\n  totalPages={totalPages}\n  onPageChange={setCurrentPage}\n/>"
+      }
+    },
+    {
+      "name": "With Ellipsis (Large Dataset)",
+      "description": "Pagination handling many pages with ellipsis compression",
+      "code": {
+        "tsx": "const [currentPage, setCurrentPage] = useState(25);\nconst totalPages = 100;\n\n<Pagination\n  currentPage={currentPage}\n  totalPages={totalPages}\n  onPageChange={setCurrentPage}\n  maxVisible={5}\n  showPageInfo={true}\n/>"
+      }
+    },
+    {
+      "name": "Minimal Variant",
+      "description": "Clean, minimal pagination for subtle interfaces",
+      "code": {
+        "tsx": "const [currentPage, setCurrentPage] = useState(3);\nconst totalPages = 10;\n\n<Pagination\n  currentPage={currentPage}\n  totalPages={totalPages}\n  onPageChange={setCurrentPage}\n  variant=\"minimal\"\n  showFirst={false}\n  showLast={false}\n  size=\"sm\"\n/>"
+      }
+    },
+    {
+      "name": "Pills Variant with Custom Labels",
+      "description": "Rounded pill-style pagination with Norwegian labels",
+      "code": {
+        "tsx": "const [currentPage, setCurrentPage] = useState(1);\nconst totalPages = 15;\n\nconst norwegianLabels = {\n  first: \"Første\",\n  previous: \"Forrige\",\n  next: \"Neste\",\n  last: \"Siste\",\n  page: \"Side\",\n  pageInfo: \"Side {current} av {total}\"\n};\n\n<Pagination\n  currentPage={currentPage}\n  totalPages={totalPages}\n  onPageChange={setCurrentPage}\n  variant=\"pills\"\n  size=\"lg\"\n  labels={norwegianLabels}\n  showPageInfo={true}\n/>"
+      }
+    },
+    {
+      "name": "Compact Mobile-Friendly",
+      "description": "Optimized for mobile with essential controls only",
+      "code": {
+        "tsx": "const [currentPage, setCurrentPage] = useState(8);\nconst totalPages = 50;\n\n<Pagination\n  currentPage={currentPage}\n  totalPages={totalPages}\n  onPageChange={setCurrentPage}\n  maxVisible={3}\n  showFirst={false}\n  showLast={false}\n  size=\"sm\"\n  showPageInfo={true}\n/>"
+      }
+    }
+  ],
+  "testing": {
+    "unit": [
+      "Renders correct number of page buttons based on maxVisible",
+      "Applies active state to current page correctly",
+      "Handles page change callbacks with correct page numbers",
+      "Disables First/Previous on page 1",
+      "Disables Last/Next on final page",
+      "Shows ellipsis when appropriate based on page range",
+      "Applies size and variant classes correctly",
+      "Hides component when hideOnSinglePage is true and totalPages is 1"
+    ],
+    "integration": [
+      "Works with data fetching libraries for page-based APIs",
+      "Integrates with URL routing for shareable pagination states",
+      "Handles rapid page changes without race conditions",
+      "Maintains state consistency during parent re-renders"
+    ],
+    "accessibility": [
+      "Has proper nav wrapper with aria-label",
+      "Current page button has aria-current='page'",
+      "Disabled buttons have aria-disabled='true'",
+      "All buttons have descriptive accessible names",
+      "Keyboard navigation works for all interactive elements",
+      "Screen reader announces page changes clearly",
+      "Focus management preserves user context during navigation"
+    ],
+    "visual": [
+      "All size variants render with correct dimensions",
+      "Variant styles apply correctly (default, pills, minimal)",
+      "Active page stands out clearly from inactive pages",
+      "Disabled states are visually distinct",
+      "Ellipsis displays in correct positions",
+      "Hover states provide appropriate feedback",
+      "Component adapts to different container widths"
+    ],
+    "performance": [
+      "Renders efficiently with large totalPages values",
+      "Page change handlers don't cause unnecessary re-renders",
+      "Ellipsis calculation is optimized for frequent updates",
+      "Memory usage stays constant regardless of totalPages"
+    ]
+  },
+  "implementation": {
+    "files": [
+      "src/components/navigation/Pagination.tsx",
+      "src/components/navigation/Pagination.test.tsx",
+      "src/components/navigation/Pagination.stories.tsx",
+      "src/components/navigation/pagination/PaginationButton.tsx",
+      "src/components/navigation/pagination/usePaginationRange.ts"
+    ],
+    "dependencies": [
+      "React",
+      "TypeScript",
+      "Tailwind CSS"
+    ],
+    "exports": [
+      "Pagination",
+      "PaginationProps",
+      "PaginationLabels",
+      "usePaginationRange"
+    ]
+  },
+  "validation": {
+    "norwegian": {
+      "nsm": {
+        "classification": "OPEN",
+        "reasoning": "Navigation component with no sensitive data handling, only manages page state"
+      },
+      "language": {
+        "primary": "nb-NO",
+        "fallback": "en-US",
+        "rtl": false,
+        "localization": "Supports custom labels for Norwegian interface text"
+      }
+    },
+    "performance": {
+      "bundleSize": {
+        "target": "<3KB",
+        "gzipped": "<1.5KB"
+      },
+      "rendering": {
+        "initialRender": "<16ms",
+        "rerender": "<8ms",
+        "pageChange": "<4ms"
+      },
+      "memory": {
+        "baseline": "<1MB",
+        "withLargeDataset": "<1.2MB"
+      }
+    },
+    "security": {
+      "xss": "All user-provided labels are properly escaped",
+      "injection": "No dynamic code execution or eval usage",
+      "disclosure": "No sensitive information exposed in DOM or callbacks"
+    }
+  }
+}

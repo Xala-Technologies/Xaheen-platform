@@ -278,7 +278,7 @@ test('Button renders correct CVA classes', () => {
 - **Consistent Formatting** - All examples follow TypeScript standards
 - **Comprehensive Coverage** - Every component pattern documented
 - **Cross-references** - Internal links updated throughout
-- **Version Accuracy** - All examples compatible with v5.0.0
+- **Version Accuracy** - All examples compatible with v6.0.0
 
 ### Code Examples Validation
 - **Syntax Checking** - All TypeScript examples validated
@@ -334,4 +334,4 @@ test('Button renders correct CVA classes', () => {
 ✅ **Zero useTokens References** - complete deprecated pattern removal  
 ✅ **Testing Documentation** updated for CVA patterns  
 
-The UI System v5.0.0 documentation now serves as a complete reference for CVA-based design system implementation, supporting developers in building performant, accessible, and maintainable applications.
+The UI System v6.0.0 documentation now serves as a complete reference for CVA-based design system implementation, supporting developers in building performant, accessible, and maintainable applications.

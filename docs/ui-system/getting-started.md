@@ -1,8 +1,8 @@
-# Getting Started - UI System v5.0.0 (CVA Pattern)
+# Getting Started - UI System v6.0.0 (CVA Pattern)
 
 ## 🚀 **Production-Ready SSR-Safe UI System with CVA Variants**
 
-Welcome to the UI System v5.0.0 - a production-ready, SSR-compatible component library using **Class Variance Authority (CVA)** for consistent styling, comprehensive theme management, and white-label support.
+Welcome to the UI System v6.0.0 - a production-ready, SSR-compatible component library using **Class Variance Authority (CVA)** for consistent styling, comprehensive theme management, and white-label support.
 
 ## ⚡ **Quick Start**
 
@@ -33,13 +33,13 @@ To ensure accessibility, maintainability, and visual consistency, all applicatio
 
 ```bash
 # Using npm
-npm install @xala-technologies/ui-system@^5.0.0
+npm install @xala-technologies/ui-system@^6.0.0
 
 # Using pnpm (recommended)
-pnpm add @xala-technologies/ui-system@^5.0.0
+pnpm add @xala-technologies/ui-system@^6.0.0
 
 # Using yarn
-yarn add @xala-technologies/ui-system@^5.0.0
+yarn add @xala-technologies/ui-system@^6.0.0
 ```
 
 ### **2. Basic Setup**
@@ -78,7 +78,7 @@ export default function HomePage() {
     <Container size="lg" padding="md">
       <Card variant="elevated" padding="lg">
         <CardHeader>
-          <CardTitle>Welcome to UI System v5.0.0</CardTitle>
+          <CardTitle>Welcome to UI System v6.0.0</CardTitle>
         </CardHeader>
         <CardContent>
           <Stack direction="vertical" gap="md">

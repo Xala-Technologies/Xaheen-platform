@@ -1,8 +1,8 @@
-# Component Documentation - v5.0.0 (CVA Pattern)
+# Component Documentation - v6.0.0 (CVA Pattern)
 
 ## 🎯 **CVA-Based Component Library**
 
-All components in the UI System v5.0.0 use **Class Variance Authority (CVA)** for consistent styling and are **production-ready and SSR-compatible**, without requiring 'use client' directives or the deprecated `useTokens` hook.
+All components in the UI System v6.0.0 use **Class Variance Authority (CVA)** for consistent styling and are **production-ready and SSR-compatible**, without requiring 'use client' directives or the deprecated `useTokens` hook.
 
 ## 🏗 **CVA Component Architecture**
 

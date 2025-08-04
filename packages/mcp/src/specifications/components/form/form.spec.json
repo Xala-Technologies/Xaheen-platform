@@ -1,0 +1,792 @@
+{
+  "metadata": {
+    "name": "Form",
+    "version": "1.0.0",
+    "semanticVersion": "v5.1",
+    "category": "form",
+    "subcategory": "container",
+    "description": "Enterprise-grade form component with validation, accessibility, and Norwegian compliance. Supports complex form workflows, validation schemas, and government form requirements.",
+    "keywords": ["form", "validation", "accessibility", "norwegian", "government", "compliance", "fieldset", "async"],
+    "maintainer": {
+      "name": "Xala Form Team",
+      "email": "forms@xala.no",
+      "team": "UI Components"
+    },
+    "stability": "stable",
+    "createdAt": "2024-08-04T10:00:00Z",
+    "updatedAt": "2024-08-04T15:00:00Z"
+  },
+  "compliance": {
+    "i18n": {
+      "supported": true,
+      "defaultLocale": "nb-NO",
+      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+      "textDirection": ["ltr", "rtl"]
+    },
+    "semantic": {
+      "htmlElements": ["form", "fieldset", "legend", "label", "input", "textarea", "select", "button"],
+      "ariaRoles": ["form", "group", "alert", "status"],
+      "landmarks": true,
+      "headingStructure": true
+    },
+    "wcag": {
+      "level": "AAA",
+      "tested": true,
+      "guidelines": [
+        "1.3.1 Info and Relationships",
+        "1.3.5 Identify Input Purpose", 
+        "1.4.3 Contrast (Minimum)",
+        "1.4.6 Contrast (Enhanced)",
+        "2.1.1 Keyboard",
+        "2.1.2 No Keyboard Trap",
+        "2.4.6 Headings and Labels",
+        "3.2.2 On Input",
+        "3.3.1 Error Identification",
+        "3.3.2 Labels or Instructions",
+        "3.3.3 Error Suggestion",
+        "3.3.4 Error Prevention",
+        "4.1.2 Name, Role, Value"
+      ],
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2,
+        "enhanced": 9.1
+      }
+    },
+    "ssr": {
+      "supported": true,
+      "hydrationSafe": true,
+      "staticGeneration": true
+    },
+    "norwegian": {
+      "nsmClassification": "RESTRICTED",
+      "gdprCompliant": true,
+      "designSystem": {
+        "altinnCompliant": true,
+        "governmentApproved": true
+      },
+      "auditTrail": true,
+      "requirements": {
+        "personalDataHandling": true,
+        "consentManagement": true,
+        "dataRetention": true,
+        "rightToErasure": true
+      }
+    }
+  },
+  "props": {
+    "schema": {
+      "onSubmit": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "values",
+                "type": "Record<string, unknown>",
+                "required": true
+              },
+              {
+                "name": "helpers",
+                "type": "FormHelpers",
+                "required": true
+              }
+            ],
+            "returnType": "void | Promise<void>"
+          }
+        },
+        "description": "Form submission handler with async support",
+        "required": true,
+        "examples": [
+          {
+            "value": "async (values, { setSubmitting, setErrors }) => { await api.submit(values); }",
+            "description": "Async form submission",
+            "context": "API integration"
+          }
+        ]
+      },
+      "onReset": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "helpers",
+                "type": "FormHelpers",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Form reset handler",
+        "required": false
+      },
+      "initialValues": {
+        "type": {
+          "object": {},
+          "strict": false
+        },
+        "description": "Initial form values",
+        "required": false,
+        "defaultValue": {},
+        "examples": [
+          {
+            "value": { "name": "", "email": "", "age": null },
+            "description": "Basic initial values",
+            "context": "User registration"
+          }
+        ]
+      },
+      "validationSchema": {
+        "type": {
+          "union": [
+            {
+              "custom": "ZodSchema",
+              "description": "Zod validation schema"
+            },
+            {
+              "custom": "YupSchema",
+              "description": "Yup validation schema"
+            },
+            {
+              "object": {
+                "validate": {
+                  "type": {
+                    "complex": "function",
+                    "signature": {
+                      "parameters": [
+                        {
+                          "name": "values",
+                          "type": "Record<string, unknown>",
+                          "required": true
+                        }
+                      ],
+                      "returnType": "ValidationErrors | Promise<ValidationErrors>"
+                    }
+                  },
+                  "description": "Custom validation function",
+                  "required": true
+                }
+              }
+            }
+          ]
+        },
+        "description": "Form validation schema (Zod, Yup, or custom)",
+        "required": false,
+        "examples": [
+          {
+            "value": "z.object({ email: z.string().email(), password: z.string().min(8) })",
+            "description": "Zod schema validation",
+            "context": "Login form"
+          }
+        ]
+      },
+      "validateOnChange": {
+        "type": { "primitive": "boolean" },
+        "description": "Validate fields on change events",
+        "required": false,
+        "defaultValue": true
+      },
+      "validateOnBlur": {
+        "type": { "primitive": "boolean" },
+        "description": "Validate fields on blur events",
+        "required": false,
+        "defaultValue": true
+      },
+      "validateOnSubmit": {
+        "type": { "primitive": "boolean" },
+        "description": "Validate form on submission",
+        "required": false,
+        "defaultValue": true
+      },
+      "disabled": {
+        "type": { "primitive": "boolean" },
+        "description": "Disable entire form",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-disabled",
+          "impact": "Disables all form controls"
+        }
+      },
+      "loading": {
+        "type": { "primitive": "boolean" },
+        "description": "Show loading state during submission",
+        "required": false,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-busy",
+          "screenReaderText": "Form is processing"
+        }
+      },
+      "method": {
+        "type": {
+          "custom": "variant",
+          "values": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+        },
+        "description": "HTTP method for form submission",
+        "required": false,
+        "defaultValue": "POST"
+      },
+      "action": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^(https?:\\/\\/)?[\\w.-]+[\\w]+(:\\d+)?(\\/[\\w.-]*)*\\/?$"
+          }
+        },
+        "description": "Form action URL",
+        "required": false
+      },
+      "encType": {
+        "type": {
+          "custom": "variant",
+          "values": ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]
+        },
+        "description": "Form encoding type",
+        "required": false,
+        "defaultValue": "application/x-www-form-urlencoded"
+      },
+      "noValidate": {
+        "type": { "primitive": "boolean" },
+        "description": "Disable HTML5 validation",
+        "required": false,
+        "defaultValue": false
+      },
+      "layout": {
+        "type": {
+          "custom": "variant",
+          "values": ["vertical", "horizontal", "inline", "grid"]
+        },
+        "description": "Form layout direction",
+        "required": false,
+        "defaultValue": "vertical"
+      },
+      "gap": {
+        "type": {
+          "custom": "variant",
+          "values": ["sm", "md", "lg", "xl"]
+        },
+        "description": "Spacing between form fields",
+        "required": false,
+        "defaultValue": "md"
+      },
+      "showRequiredIndicator": {
+        "type": { "primitive": "boolean" },
+        "description": "Show asterisk (*) for required fields",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "note": "Required indicator should be announced by screen readers"
+        }
+      },
+      "errorDisplay": {
+        "type": {
+          "custom": "variant",
+          "values": ["inline", "summary", "both"]
+        },
+        "description": "How to display validation errors",
+        "required": false,
+        "defaultValue": "inline"
+      },
+      "successMessage": {
+        "type": { "primitive": "string" },
+        "description": "Message shown on successful submission",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-live",
+          "priority": "polite"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "form.success.{componentName}",
+          "context": "success-feedback"
+        }
+      },
+      "autoComplete": {
+        "type": {
+          "custom": "variant",
+          "values": ["on", "off", "new-password", "current-password"]
+        },
+        "description": "HTML autocomplete attribute",
+        "required": false,
+        "defaultValue": "on"
+      },
+      "onValidationError": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "errors",
+                "type": "ValidationErrors",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Validation error handler",
+        "required": false
+      },
+      "onFieldChange": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "fieldName",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "value",
+                "type": "unknown",
+                "required": true
+              },
+              {
+                "name": "previousValue",
+                "type": "unknown",
+                "required": true
+              }
+            ],
+            "returnType": "void"
+          }
+        },
+        "description": "Individual field change handler",
+        "required": false
+      },
+      "className": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply",
+        "required": false
+      },
+      "testId": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+          }
+        },
+        "description": "Test identifier for automated testing",
+        "required": false
+      },
+      "ariaLabel": {
+        "type": { "primitive": "string" },
+        "description": "Accessible label for the form",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-label",
+          "screenReaderText": "Form"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "aria.label.form.{componentName}",
+          "context": "accessibility"
+        }
+      },
+      "ariaDescribedBy": {
+        "type": { "primitive": "string" },
+        "description": "ID of element that describes the form",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby"
+        }
+      }
+    },
+    "groups": {
+      "required": ["onSubmit"],
+      "optional": [
+        "onReset", "initialValues", "validationSchema", "validateOnChange", 
+        "validateOnBlur", "validateOnSubmit", "disabled", "loading", "method",
+        "action", "encType", "noValidate", "layout", "gap", "showRequiredIndicator",
+        "errorDisplay", "successMessage", "autoComplete", "onValidationError",
+        "onFieldChange", "className", "testId", "ariaLabel", "ariaDescribedBy"
+      ],
+      "deprecated": []
+    },
+    "composition": {
+      "children": {
+        "supported": true,
+        "types": ["FormField", "FormFieldset", "FormActions", "element"],
+        "description": "Form fields, fieldsets, and action buttons"
+      },
+      "slots": {
+        "header": {
+          "required": false,
+          "types": ["element"],
+          "description": "Form header content (title, description)"
+        },
+        "footer": {
+          "required": false,
+          "types": ["element"],
+          "description": "Form footer content (actions, links)"
+        },
+        "errorSummary": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom error summary display"
+        },
+        "loadingIndicator": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom loading indicator"
+        }
+      }
+    }
+  },
+  "variants": {
+    "simple": {
+      "size": {
+        "values": {
+          "sm": "text-sm gap-4",
+          "md": "text-base gap-6",
+          "lg": "text-lg gap-8"
+        },
+        "defaultValue": "md"
+      },
+      "layout": {
+        "values": {
+          "vertical": "flex flex-col",
+          "horizontal": "grid grid-cols-2 gap-6",
+          "inline": "flex flex-row items-end gap-4",
+          "grid": "grid"
+        },
+        "defaultValue": "vertical"
+      },
+      "density": {
+        "values": {
+          "compact": "gap-3 p-4",
+          "comfortable": "gap-6 p-6",
+          "spacious": "gap-8 p-8"
+        },
+        "defaultValue": "comfortable"
+      }
+    },
+    "compound": [
+      {
+        "conditions": {
+          "layout": "inline",
+          "size": "sm"
+        },
+        "className": "gap-2 text-sm",
+        "description": "Compact inline forms"
+      },
+      {
+        "conditions": {
+          "layout": "grid",
+          "density": "spacious"
+        },
+        "className": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8",
+        "description": "Spacious grid layout"
+      }
+    ]
+  },
+  "accessibility": {
+    "role": {
+      "primary": "form",
+      "additional": ["group"]
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        {
+          "key": "Tab",
+          "action": "navigate",
+          "context": "Move between form fields"
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "navigate",
+          "context": "Move to previous form field"
+        },
+        {
+          "key": "Enter",
+          "action": "submit",
+          "context": "Submit form (when on submit button)"
+        },
+        {
+          "key": "Escape",
+          "action": "cancel",
+          "context": "Cancel form editing (if applicable)"
+        },
+        {
+          "key": "Ctrl+Enter",
+          "action": "submit",
+          "context": "Submit form from any field"
+        }
+      ],
+      "focusManagement": {
+        "trapFocus": false,
+        "restoreFocus": true,
+        "skipLinks": true,
+        "initialFocus": "first-field"
+      }
+    },
+    "screenReader": {
+      "announcements": [
+        {
+          "trigger": "validation-error",
+          "message": "Form has {count} errors. Please review and correct.",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "field-error",
+          "message": "{fieldLabel}: {errorMessage}",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "submit-success",
+          "message": "Form submitted successfully",
+          "priority": "polite"
+        },
+        {
+          "trigger": "submit-loading",
+          "message": "Submitting form, please wait",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "reset",
+          "message": "Form has been reset",
+          "priority": "polite"
+        }
+      ],
+      "labels": {
+        "required": ["form-label", "fieldset-legend", "field-labels"],
+        "descriptions": {
+          "required": "Required field",
+          "optional": "Optional field",
+          "error": "Field has error",
+          "loading": "Form is processing",
+          "disabled": "Form is disabled"
+        }
+      }
+    },
+    "testing": {
+      "automated": [
+        "form-structure-valid",
+        "field-labels-accessible",
+        "error-announcements",
+        "keyboard-navigation",
+        "focus-management",
+        "required-field-indicators",
+        "color-contrast-aaa",
+        "screen-reader-compatibility"
+      ],
+      "manual": [
+        "complex-keyboard-patterns",
+        "screen-reader-form-experience",
+        "error-recovery-workflow",
+        "multi-step-form-navigation",
+        "voice-control-compatibility"
+      ]
+    }
+  },
+  "platforms": {
+    "supported": ["react", "vue", "angular"],
+    "primary": "react",
+    "implementations": {
+      "react": {
+        "templatePath": "./templates/react/form.tsx",
+        "dependencies": ["react", "formik", "yup", "zod", "clsx"],
+        "imports": [
+          {
+            "module": "react",
+            "imports": ["forwardRef", "useCallback", "useEffect", "useState", "useRef"]
+          },
+          {
+            "module": "formik",
+            "imports": ["Formik", "Form", "useFormikContext"]
+          },
+          {
+            "module": "yup",
+            "imports": ["*"],
+            "optional": true
+          },
+          {
+            "module": "zod",
+            "imports": ["*"],
+            "optional": true
+          }
+        ]
+      },
+      "vue": {
+        "templatePath": "./templates/vue/form.vue",
+        "dependencies": ["vue", "vee-validate", "yup", "zod"]
+      },
+      "angular": {
+        "templatePath": "./templates/angular/form.component.ts",
+        "dependencies": ["@angular/core", "@angular/forms", "@angular/common"]
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "Login Form",
+      "description": "Simple login form with email and password",
+      "category": "basic",
+      "code": {
+        "react": "<Form initialValues={{ email: '', password: '' }} validationSchema={loginSchema} onSubmit={handleLogin}>\n  <FormField name='email' type='email' label='Email' required />\n  <FormField name='password' type='password' label='Password' required />\n  <FormActions>\n    <Button type='submit'>Log In</Button>\n  </FormActions>\n</Form>",
+        "vue": "<Form :initial-values='{ email: \"\", password: \"\" }' :validation-schema='loginSchema' @submit='handleLogin'>\n  <FormField name='email' type='email' label='Email' :required='true' />\n  <FormField name='password' type='password' label='Password' :required='true' />\n  <FormActions>\n    <Button type='submit'>Log In</Button>\n  </FormActions>\n</Form>",
+        "angular": "<xala-form [initialValues]='loginValues' [validationSchema]='loginSchema' (submit)='handleLogin($event)'>\n  <xala-form-field name='email' type='email' label='Email' [required]='true'></xala-form-field>\n  <xala-form-field name='password' type='password' label='Password' [required]='true'></xala-form-field>\n  <xala-form-actions>\n    <button type='submit'>Log In</button>\n  </xala-form-actions>\n</xala-form>"
+      },
+      "props": {
+        "initialValues": { "email": "", "password": "" },
+        "validationSchema": "loginSchema",
+        "layout": "vertical",
+        "showRequiredIndicator": true
+      }
+    },
+    {
+      "name": "Registration Form",
+      "description": "Multi-step registration form with validation",
+      "category": "advanced",
+      "code": {
+        "react": "<Form initialValues={registrationInitial} validationSchema={registrationSchema} onSubmit={handleRegistration} layout='grid' errorDisplay='both'>\n  <FormFieldset legend='Personal Information'>\n    <FormField name='firstName' label='First Name' required />\n    <FormField name='lastName' label='Last Name' required />\n    <FormField name='email' type='email' label='Email Address' required />\n    <FormField name='phone' type='tel' label='Phone Number' />\n  </FormFieldset>\n  <FormFieldset legend='Account Details'>\n    <FormField name='username' label='Username' required />\n    <FormField name='password' type='password' label='Password' required />\n    <FormField name='confirmPassword' type='password' label='Confirm Password' required />\n  </FormFieldset>\n  <FormActions>\n    <Button type='button' variant='secondary' onClick={handleReset}>Reset</Button>\n    <Button type='submit' loading={isSubmitting}>Register</Button>\n  </FormActions>\n</Form>"
+      },
+      "props": {
+        "layout": "grid",
+        "errorDisplay": "both",
+        "showRequiredIndicator": true,
+        "validateOnBlur": true,
+        "validateOnChange": false
+      },
+      "notes": "Government-compliant registration form with GDPR consent handling"
+    },
+    {
+      "name": "Norwegian Government Form",
+      "description": "NSM-compliant form for government services",
+      "category": "compliance",
+      "code": {
+        "react": "<Form initialValues={governmentFormValues} validationSchema={nsmComplianceSchema} onSubmit={handleGovernmentSubmission} method='POST' encType='multipart/form-data' className='nsm-restricted'>\n  <FormFieldset legend='Personopplysninger' required>\n    <FormField name='fodselsnummer' label='Fødselsnummer' required pattern='[0-9]{11}' />\n    <FormField name='navn' label='Fullt navn' required />\n    <FormField name='adresse' label='Adresse' required />\n  </FormFieldset>\n  <FormFieldset legend='Dokumenter'>\n    <FormField name='vedlegg' type='file' label='Vedlegg' accept='.pdf,.jpg,.png' multiple />\n  </FormFieldset>\n  <FormActions>\n    <Button type='submit' loading={isSubmitting}>Send søknad</Button>\n  </FormActions>\n</Form>"
+      },
+      "props": {
+        "method": "POST",
+        "encType": "multipart/form-data",
+        "showRequiredIndicator": true,
+        "errorDisplay": "both",
+        "validateOnSubmit": true
+      },
+      "notes": "Includes NSM data classification, GDPR compliance, and Norwegian language support"
+    }
+  ],
+  "ai": {
+    "optimization": {
+      "hints": [
+        "Use semantic form elements for proper accessibility",
+        "Implement proper error handling and user feedback",
+        "Provide clear field labels and instructions",
+        "Use appropriate input types for data validation",
+        "Implement Norwegian data classification for sensitive forms",
+        "Ensure GDPR compliance for personal data collection"
+      ],
+      "patterns": [
+        {
+          "pattern": "Formik + Yup/Zod",
+          "context": "React implementation",
+          "recommendation": "Use Formik with schema validation for robust form handling"
+        },
+        {
+          "pattern": "Progressive enhancement",
+          "context": "Government forms",
+          "recommendation": "Ensure forms work without JavaScript for accessibility"
+        },
+        {
+          "pattern": "Field validation debouncing",
+          "context": "Performance optimization",
+          "recommendation": "Debounce validation to prevent excessive API calls"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "pattern": "Uncontrolled form inputs",
+          "reason": "Difficult to validate and manage state",
+          "alternative": "Use controlled components with proper state management"
+        },
+        {
+          "pattern": "Generic error messages",
+          "reason": "Poor user experience and accessibility",
+          "alternative": "Provide specific, actionable error messages"
+        },
+        {
+          "pattern": "Missing form labels",
+          "reason": "Breaks accessibility and usability",
+          "alternative": "Always provide proper labels for form fields"
+        }
+      ]
+    },
+    "generation": {
+      "priority": "high",
+      "complexity": "complex",
+      "estimatedTokens": 4200
+    },
+    "documentation": {
+      "autoGenerate": true,
+      "templates": ["api-reference", "validation-guide", "accessibility-guide", "compliance-guide", "usage-examples"]
+    }
+  },
+  "testing": {
+    "unit": {
+      "required": [
+        "renders with initial values",
+        "handles form submission",
+        "validates fields correctly",
+        "displays validation errors",
+        "handles form reset",
+        "manages loading states",
+        "keyboard navigation",
+        "accessibility attributes",
+        "error announcements",
+        "required field indicators",
+        "async validation",
+        "field change events"
+      ],
+      "coverage": {
+        "minimum": 95
+      }
+    },
+    "integration": {
+      "scenarios": [
+        "complete form submission workflow",
+        "validation error handling and recovery",
+        "multi-step form navigation",
+        "file upload with validation",
+        "keyboard-only form completion",
+        "screen reader form navigation",
+        "government form compliance validation"
+      ]
+    },
+    "visual": {
+      "regression": true,
+      "responsive": true,
+      "highContrast": true
+    }
+  },
+  "performance": {
+    "metrics": {
+      "bundleSize": {
+        "max": "8KB",
+        "gzipped": "3KB"
+      },
+      "renderTime": {
+        "initial": "<30ms",
+        "validation": "<10ms",
+        "submission": "<50ms"
+      }
+    },
+    "optimizations": [
+      "Lazy validation execution",
+      "Debounced field validation",
+      "Memoized validation schemas",
+      "Optimized re-renders",
+      "Conditional field rendering",
+      "Async validation caching"
+    ]
+  }
+}

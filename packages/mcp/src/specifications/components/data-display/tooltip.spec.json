@@ -1,0 +1,317 @@
+{
+  "metadata": {
+    "name": "Tooltip",
+    "version": "1.0.0",
+    "category": "data-display",
+    "description": "A contextual information overlay that appears on trigger interaction",
+    "status": "stable",
+    "maintainer": "Xala Enterprise UI Team",
+    "lastUpdated": "2025-08-04"
+  },
+  "compliance": {
+    "accessibility": {
+      "standard": "WCAG AAA",
+      "level": "AAA",
+      "requirements": [
+        "Keyboard navigation support",
+        "Screen reader compatibility",
+        "Focus management",
+        "High contrast support",
+        "Text scaling up to 200%",
+        "No flashing content"
+      ],
+      "ariaAttributes": [
+        "aria-describedby",
+        "aria-labelledby",
+        "role=\"tooltip\"",
+        "aria-hidden"
+      ]
+    },
+    "security": {
+      "classification": "NSM OPEN",
+      "dataHandling": "Client-side only",
+      "compliance": ["GDPR", "Norwegian Data Protection Act"],
+      "sanitization": "Required for HTML content"
+    }
+  },
+  "props": {
+    "content": {
+      "type": "string | ReactNode",
+      "required": true,
+      "description": "The content to display in the tooltip",
+      "validation": {
+        "maxLength": 200,
+        "sanitize": true
+      },
+      "examples": [
+        "Simple tooltip text",
+        "<strong>Rich HTML content</strong>",
+        "React.createElement('div', {}, 'JSX content')"
+      ]
+    },
+    "children": {
+      "type": "ReactNode",
+      "required": true,
+      "description": "The trigger element that activates the tooltip",
+      "validation": {
+        "mustBeInteractive": true
+      }
+    },
+    "placement": {
+      "type": "enum",
+      "required": false,
+      "default": "top",
+      "options": [
+        "top",
+        "top-start",
+        "top-end",
+        "bottom",
+        "bottom-start",
+        "bottom-end",
+        "left",
+        "left-start",
+        "left-end",
+        "right",
+        "right-start",
+        "right-end"
+      ],
+      "description": "Position of tooltip relative to trigger element"
+    },
+    "trigger": {
+      "type": "enum | array",
+      "required": false,
+      "default": "hover",
+      "options": ["hover", "click", "focus", "manual"],
+      "description": "Event(s) that trigger tooltip visibility",
+      "examples": [
+        "hover",
+        "click",
+        "focus",
+        ["hover", "focus"]
+      ]
+    },
+    "delay": {
+      "type": "number | object",
+      "required": false,
+      "default": 0,
+      "description": "Delay in milliseconds before showing/hiding tooltip",
+      "validation": {
+        "min": 0,
+        "max": 5000
+      },
+      "examples": [
+        200,
+        "{ show: 500, hide: 200 }"
+      ]
+    },
+    "arrow": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether to display an arrow pointing to the trigger"
+    },
+    "disabled": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Prevents tooltip from showing when true"
+    },
+    "offset": {
+      "type": "number",
+      "required": false,
+      "default": 8,
+      "description": "Distance in pixels between tooltip and trigger",
+      "validation": {
+        "min": 0,
+        "max": 50
+      }
+    },
+    "maxWidth": {
+      "type": "number | string",
+      "required": false,
+      "default": 320,
+      "description": "Maximum width of tooltip content",
+      "examples": [
+        200,
+        "300px",
+        "20rem"
+      ]
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes for tooltip container"
+    },
+    "style": {
+      "type": "CSSProperties",
+      "required": false,
+      "description": "Inline styles for tooltip container"
+    },
+    "onVisibilityChange": {
+      "type": "function",
+      "required": false,
+      "signature": "(visible: boolean) => void",
+      "description": "Callback fired when tooltip visibility changes"
+    },
+    "portal": {
+      "type": "boolean | Element",
+      "required": false,
+      "default": true,
+      "description": "Whether to render tooltip in a portal or custom container"
+    },
+    "zIndex": {
+      "type": "number",
+      "required": false,
+      "default": 1000,
+      "description": "CSS z-index for tooltip positioning"
+    }
+  },
+  "styling": {
+    "theme": {
+      "light": {
+        "background": "bg-gray-900",
+        "text": "text-white",
+        "border": "border-gray-700",
+        "shadow": "shadow-lg"
+      },
+      "dark": {
+        "background": "bg-gray-100",
+        "text": "text-gray-900",
+        "border": "border-gray-300",
+        "shadow": "shadow-lg"
+      }
+    },
+    "variants": {
+      "default": {
+        "classes": "px-3 py-2 text-sm font-medium rounded-md",
+        "arrow": "w-2 h-2"
+      },
+      "large": {
+        "classes": "px-4 py-3 text-base font-medium rounded-lg",
+        "arrow": "w-3 h-3"
+      }
+    },
+    "animations": {
+      "enter": "transition-opacity duration-200 ease-out",
+      "exit": "transition-opacity duration-150 ease-in"
+    }
+  },
+  "behavior": {
+    "keyboard": {
+      "Escape": "Hide tooltip if visible",
+      "Tab": "Move focus and hide tooltip if focus leaves trigger"
+    },
+    "mouse": {
+      "enter": "Show tooltip after delay (if hover trigger)",
+      "leave": "Hide tooltip after delay (if hover trigger)",
+      "click": "Toggle tooltip visibility (if click trigger)"
+    },
+    "focus": {
+      "focusin": "Show tooltip (if focus trigger)",
+      "focusout": "Hide tooltip (if focus trigger)"
+    },
+    "positioning": {
+      "collision": "Automatically flip to opposite side if no space",
+      "boundary": "Constrain to viewport boundaries",
+      "update": "Reposition on scroll/resize"
+    }
+  },
+  "examples": [
+    {
+      "name": "Basic Tooltip",
+      "description": "Simple tooltip with text content",
+      "code": {
+        "tsx": "import { Tooltip } from '@xala/ui-system';\n\nexport const BasicTooltip = () => (\n  <Tooltip content=\"This is helpful information\">\n    <button className=\"px-4 py-2 bg-blue-600 text-white rounded-lg\">\n      Hover me\n    </button>\n  </Tooltip>\n);"
+      }
+    },
+    {
+      "name": "Different Placements",
+      "description": "Tooltip with various placement options",
+      "code": {
+        "tsx": "import { Tooltip } from '@xala/ui-system';\n\nexport const PlacementTooltips = () => (\n  <div className=\"grid grid-cols-2 gap-4 p-8\">\n    <Tooltip content=\"Top tooltip\" placement=\"top\">\n      <button className=\"px-4 py-2 bg-blue-600 text-white rounded-lg\">\n        Top\n      </button>\n    </Tooltip>\n    \n    <Tooltip content=\"Right tooltip\" placement=\"right\">\n      <button className=\"px-4 py-2 bg-green-600 text-white rounded-lg\">\n        Right\n      </button>\n    </Tooltip>\n    \n    <Tooltip content=\"Bottom tooltip\" placement=\"bottom\">\n      <button className=\"px-4 py-2 bg-purple-600 text-white rounded-lg\">\n        Bottom\n      </button>\n    </Tooltip>\n    \n    <Tooltip content=\"Left tooltip\" placement=\"left\">\n      <button className=\"px-4 py-2 bg-red-600 text-white rounded-lg\">\n        Left\n      </button>\n    </Tooltip>\n  </div>\n);"
+      }
+    },
+    {
+      "name": "Interactive Tooltip",
+      "description": "Tooltip with click trigger and rich content",
+      "code": {
+        "tsx": "import { Tooltip } from '@xala/ui-system';\n\nexport const InteractiveTooltip = () => {\n  const tooltipContent = (\n    <div className=\"space-y-2\">\n      <h4 className=\"font-semibold text-sm\">User Profile</h4>\n      <p className=\"text-xs opacity-90\">\n        Click to view detailed information about this user.\n      </p>\n      <div className=\"pt-1 border-t border-white/20\">\n        <span className=\"text-xs font-medium\">Last active: 2 hours ago</span>\n      </div>\n    </div>\n  );\n\n  return (\n    <Tooltip\n      content={tooltipContent}\n      trigger=\"click\"\n      placement=\"bottom-start\"\n      maxWidth={280}\n      arrow={true}\n    >\n      <div className=\"flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer\">\n        <div className=\"w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium\">\n          JD\n        </div>\n        <span className=\"text-sm font-medium text-gray-900\">John Doe</span>\n      </div>\n    </Tooltip>\n  );\n};"
+      }
+    },
+    {
+      "name": "Controlled Tooltip",
+      "description": "Manually controlled tooltip with custom triggers",
+      "code": {
+        "tsx": "import { useState } from 'react';\nimport { Tooltip } from '@xala/ui-system';\n\nexport const ControlledTooltip = () => {\n  const [visible, setVisible] = useState(false);\n\n  return (\n    <div className=\"space-y-4\">\n      <div className=\"flex space-x-2\">\n        <button\n          onClick={() => setVisible(true)}\n          className=\"px-3 py-1 text-sm bg-green-600 text-white rounded\"\n        >\n          Show\n        </button>\n        <button\n          onClick={() => setVisible(false)}\n          className=\"px-3 py-1 text-sm bg-red-600 text-white rounded\"\n        >\n          Hide\n        </button>\n      </div>\n      \n      <Tooltip\n        content=\"This tooltip is manually controlled\"\n        trigger=\"manual\"\n        visible={visible}\n        onVisibilityChange={setVisible}\n      >\n        <div className=\"p-4 border-2 border-dashed border-gray-300 rounded-lg text-center\">\n          Manually controlled tooltip target\n        </div>\n      </Tooltip>\n    </div>\n  );\n};"
+      }
+    }
+  ],
+  "performance": {
+    "bundleSize": {
+      "target": "<2KB",
+      "gzipped": "<800B"
+    },
+    "renderTime": {
+      "initial": "<16ms",
+      "update": "<8ms"
+    },
+    "accessibility": {
+      "focusTime": "<100ms",
+      "announceDelay": "<200ms"
+    },
+    "optimizations": [
+      "Lazy portal creation",
+      "Event listener cleanup",
+      "Position calculation caching",
+      "RAF-based animations"
+    ]
+  },
+  "testing": {
+    "unit": [
+      "Props validation and defaults",
+      "Event handler execution",
+      "Visibility state management",
+      "Position calculations",
+      "Accessibility attributes"
+    ],
+    "integration": [
+      "Keyboard navigation",
+      "Focus management",
+      "Portal rendering",
+      "Collision detection",
+      "Multiple tooltip instances"
+    ],
+    "accessibility": [
+      "Screen reader announcements",
+      "Keyboard-only interaction",
+      "High contrast mode",
+      "Focus indicators",
+      "ARIA relationships"
+    ],
+    "visual": [
+      "Placement accuracy",
+      "Arrow positioning",
+      "Animation smoothness",
+      "Theme consistency",
+      "Responsive behavior"
+    ]
+  },
+  "dependencies": {
+    "external": [
+      "@floating-ui/react-dom",
+      "react",
+      "react-dom"
+    ],
+    "internal": [
+      "@xala/enterprise-standards",
+      "@xala/foundation"
+    ]
+  },
+  "migration": {
+    "from": "1.0.0",
+    "to": "1.1.0",
+    "breaking": [],
+    "deprecated": [],
+    "new": []
+  }
+}

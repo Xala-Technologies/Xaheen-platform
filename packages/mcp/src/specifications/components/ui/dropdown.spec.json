@@ -1,0 +1,372 @@
+{
+  "metadata": {
+    "name": "Dropdown",
+    "version": "1.0.0",
+    "category": "ui",
+    "description": "A flexible dropdown menu component with WCAG AAA compliance and Norwegian NSM standards",
+    "author": "Xala UI System",
+    "license": "MIT",
+    "tags": ["menu", "dropdown", "navigation", "ui", "accessible"],
+    "lastUpdated": "2025-08-04",
+    "stability": "stable"
+  },
+  "component": {
+    "displayName": "Dropdown",
+    "componentName": "Dropdown",
+    "type": "functional",
+    "framework": "react",
+    "typescript": true,
+    "forwardRef": true
+  },
+  "props": {
+    "trigger": {
+      "type": "ReactNode",
+      "required": true,
+      "description": "The trigger element that opens the dropdown (button or custom element)",
+      "examples": [
+        "<button>Open Menu</button>",
+        "<div className=\"custom-trigger\">Custom Trigger</div>"
+      ]
+    },
+    "items": {
+      "type": "DropdownItem[]",
+      "required": true,
+      "description": "Array of dropdown menu items",
+      "itemSchema": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "description": "Display text for the menu item"
+        },
+        "onClick": {
+          "type": "() => void",
+          "required": false,
+          "description": "Click handler for the menu item"
+        },
+        "icon": {
+          "type": "ReactNode",
+          "required": false,
+          "description": "Optional icon to display before the label"
+        },
+        "disabled": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether the menu item is disabled"
+        },
+        "divider": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to show a divider after this item"
+        },
+        "href": {
+          "type": "string",
+          "required": false,
+          "description": "URL for navigation items (renders as link)"
+        },
+        "target": {
+          "type": "'_blank' | '_self' | '_parent' | '_top'",
+          "required": false,
+          "description": "Link target attribute when href is provided"
+        }
+      }
+    },
+    "placement": {
+      "type": "'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end'",
+      "required": false,
+      "default": "bottom-start",
+      "description": "Placement of the dropdown menu relative to the trigger"
+    },
+    "align": {
+      "type": "'start' | 'center' | 'end'",
+      "required": false,
+      "default": "start",
+      "description": "Alignment of the dropdown menu"
+    },
+    "closeOnSelect": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether to close the dropdown when an item is selected"
+    },
+    "isOpen": {
+      "type": "boolean",
+      "required": false,
+      "description": "Controlled open state of the dropdown"
+    },
+    "onOpenChange": {
+      "type": "(open: boolean) => void",
+      "required": false,
+      "description": "Callback fired when the dropdown open state changes"
+    },
+    "disabled": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Whether the dropdown trigger is disabled"
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes for the dropdown container"
+    },
+    "menuClassName": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes for the dropdown menu"
+    },
+    "offset": {
+      "type": "number",
+      "required": false,
+      "default": 8,
+      "description": "Distance between trigger and dropdown menu in pixels"
+    },
+    "maxHeight": {
+      "type": "number",
+      "required": false,
+      "description": "Maximum height of the dropdown menu in pixels"
+    }
+  },
+  "accessibility": {
+    "wcag": {
+      "level": "AAA",
+      "guidelines": [
+        "1.4.3 Contrast (Minimum) - AA",
+        "1.4.6 Contrast (Enhanced) - AAA",
+        "1.4.11 Non-text Contrast - AA",
+        "2.1.1 Keyboard - A",
+        "2.1.2 No Keyboard Trap - A",
+        "2.4.3 Focus Order - A",
+        "2.4.7 Focus Visible - AA",
+        "3.2.1 On Focus - A",
+        "3.2.2 On Input - A",
+        "4.1.2 Name, Role, Value - A"
+      ]
+    },
+    "ariaAttributes": {
+      "required": [
+        "aria-haspopup=\"menu\"",
+        "aria-expanded",
+        "aria-controls",
+        "role=\"menu\"",
+        "role=\"menuitem\""
+      ],
+      "recommended": [
+        "aria-label",
+        "aria-labelledby",
+        "aria-describedby"
+      ]
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "keys": [
+        {
+          "key": "Enter/Space",
+          "action": "Open dropdown or activate menu item"
+        },
+        {
+          "key": "Escape",
+          "action": "Close dropdown"
+        },
+        {
+          "key": "ArrowDown",
+          "action": "Navigate to next menu item"
+        },
+        {
+          "key": "ArrowUp",
+          "action": "Navigate to previous menu item"
+        },
+        {
+          "key": "Home",
+          "action": "Navigate to first menu item"
+        },
+        {
+          "key": "End",
+          "action": "Navigate to last menu item"
+        },
+        {
+          "key": "Tab",
+          "action": "Close dropdown and move focus to next element"
+        }
+      ]
+    },
+    "screenReader": {
+      "announcements": [
+        "Menu opened/closed state changes",
+        "Current focused menu item",
+        "Number of menu items available",
+        "Disabled state of menu items"
+      ]
+    },
+    "focusManagement": {
+      "initialFocus": "First menu item when opened",
+      "focusReturn": "Trigger element when closed",
+      "focusTrapping": "Within menu when open",
+      "visualFocusIndicator": "High contrast focus ring"
+    }
+  },
+  "compliance": {
+    "norwegian": {
+      "nsm": {
+        "classification": "OPEN",
+        "dataHandling": "No sensitive data processed",
+        "auditTrail": false
+      },
+      "gdpr": {
+        "compliant": true,
+        "personalData": false,
+        "dataProcessing": "None"
+      },
+      "designSystem": {
+        "tokens": "Norwegian design tokens compatible",
+        "language": "Multi-language support (nb-NO, en-US)"
+      }
+    }
+  },
+  "styling": {
+    "framework": "tailwindcss",
+    "customizable": true,
+    "responsive": true,
+    "themes": ["light", "dark", "high-contrast"],
+    "tokens": {
+      "colors": "Norwegian design system colors",
+      "spacing": "8px grid system",
+      "typography": "Inter font family",
+      "shadows": "Subtle elevation system",
+      "borderRadius": "8px standard radius"
+    },
+    "defaultClasses": {
+      "container": "relative inline-block",
+      "trigger": "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+      "menu": "absolute z-50 min-w-48 py-2 bg-white border border-gray-200 rounded-lg shadow-lg",
+      "item": "px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer",
+      "divider": "h-px bg-gray-200 my-1",
+      "disabled": "opacity-50 cursor-not-allowed"
+    }
+  },
+  "performance": {
+    "bundleSize": {
+      "target": "< 3KB",
+      "gzipped": "< 1.5KB"
+    },
+    "renderTime": "< 16ms",
+    "accessibility": {
+      "screenReaderLatency": "< 100ms",
+      "keyboardResponseTime": "< 50ms"
+    },
+    "optimization": [
+      "Lazy loading of menu items",
+      "Virtual scrolling for large lists",
+      "Memoized item rendering",
+      "Efficient event delegation"
+    ]
+  },
+  "examples": [
+    {
+      "name": "Basic Menu",
+      "description": "Simple dropdown with text items",
+      "code": {
+        "tsx": "const basicItems = [\n  { label: 'Profile', onClick: () => navigate('/profile') },\n  { label: 'Settings', onClick: () => navigate('/settings') },\n  { label: 'Sign Out', onClick: handleSignOut, divider: true }\n];\n\n<Dropdown\n  trigger={<button>Account</button>}\n  items={basicItems}\n  placement=\"bottom-end\"\n/>"
+      }
+    },
+    {
+      "name": "With Icons",
+      "description": "Dropdown menu items with icons",
+      "code": {
+        "tsx": "const iconItems = [\n  { \n    label: 'Edit', \n    onClick: handleEdit,\n    icon: <EditIcon className=\"w-4 h-4\" />\n  },\n  { \n    label: 'Delete', \n    onClick: handleDelete,\n    icon: <DeleteIcon className=\"w-4 h-4\" />,\n    disabled: !canDelete\n  },\n  { \n    label: 'Share', \n    onClick: handleShare,\n    icon: <ShareIcon className=\"w-4 h-4\" />,\n    divider: true\n  }\n];\n\n<Dropdown\n  trigger={<button>Actions</button>}\n  items={iconItems}\n  closeOnSelect={true}\n/>"
+      }
+    },
+    {
+      "name": "Navigation Menu",
+      "description": "Dropdown with navigation links",
+      "code": {
+        "tsx": "const navItems = [\n  { label: 'Dashboard', href: '/dashboard' },\n  { label: 'Projects', href: '/projects' },\n  { label: 'Team', href: '/team' },\n  { label: 'External Link', href: 'https://example.com', target: '_blank' }\n];\n\n<Dropdown\n  trigger={<button>Navigation</button>}\n  items={navItems}\n  placement=\"bottom-start\"\n  align=\"start\"\n/>"
+      }
+    },
+    {
+      "name": "Controlled Dropdown",
+      "description": "Dropdown with controlled open state",
+      "code": {
+        "tsx": "const [isOpen, setIsOpen] = useState(false);\n\nconst controlledItems = [\n  { label: 'Option 1', onClick: () => setIsOpen(false) },\n  { label: 'Option 2', onClick: () => setIsOpen(false) }\n];\n\n<Dropdown\n  trigger={<button>Controlled</button>}\n  items={controlledItems}\n  isOpen={isOpen}\n  onOpenChange={setIsOpen}\n  closeOnSelect={false}\n/>"
+      }
+    }
+  ],
+  "testing": {
+    "unit": {
+      "framework": "vitest",
+      "coverage": "> 95%",
+      "testCases": [
+        "Renders trigger element correctly",
+        "Opens menu on trigger click",
+        "Closes menu on outside click",
+        "Handles keyboard navigation",
+        "Calls onClick handlers",
+        "Respects disabled state",
+        "Applies correct ARIA attributes",
+        "Supports controlled state",
+        "Renders icons when provided",
+        "Shows dividers correctly"
+      ]
+    },
+    "integration": [
+      "Works with form elements",
+      "Integrates with routing libraries",
+      "Supports theming systems",
+      "Compatible with screen readers"
+    ],
+    "accessibility": [
+      "WCAG AAA compliance tests",
+      "Keyboard navigation tests",
+      "Screen reader compatibility",
+      "Focus management tests",
+      "Color contrast validation"
+    ]
+  },
+  "dependencies": {
+    "peerDependencies": {
+      "react": ">=18.0.0",
+      "react-dom": ">=18.0.0"
+    },
+    "optionalDependencies": {
+      "@floating-ui/react": "^0.26.0",
+      "framer-motion": "^10.0.0"
+    }
+  },
+  "api": {
+    "hooks": [
+      {
+        "name": "useDropdown",
+        "description": "Hook for managing dropdown state and behavior",
+        "returns": {
+          "isOpen": "boolean",
+          "open": "() => void",
+          "close": "() => void",
+          "toggle": "() => void"
+        }
+      }
+    ],
+    "utilities": [
+      {
+        "name": "getDropdownPlacement",
+        "description": "Calculate optimal dropdown placement",
+        "params": "triggerRef, placement, viewportBounds",
+        "returns": "OptimalPlacement"
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-08-04",
+      "changes": [
+        "Initial implementation",
+        "WCAG AAA compliance",
+        "Norwegian NSM OPEN classification",
+        "Keyboard navigation support",
+        "Icon and divider support",
+        "Multiple placement options"
+      ]
+    }
+  ]
+}

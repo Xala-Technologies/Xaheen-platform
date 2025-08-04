@@ -1,0 +1,43 @@
+{
+  "testbutton": {
+    "title": "Test Button",
+    "description": "Test Button component with interactive functionality",
+    "label": "Test Button",
+    "placeholder": "Enter testbutton...",
+    "action": "Click me",
+    "error": "Failed to load testbutton",
+    "success": "Test Button completed successfully"
+  },
+  "dialog": {
+    "close": "Close dialog",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "drawer": {
+    "open": "Open drawer",
+    "close": "Close drawer"
+  },
+  "commandPalette": {
+    "placeholder": "Type a command or search...",
+    "noResults": "No results found",
+    "recentCommands": "Recent commands"
+  },
+  "tooltip": {
+    "moreInfo": "More information",
+    "help": "Help"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK"
+  }
+}

@@ -1,6 +1,6 @@
 # Hooks Index
 
-This document lists and describes all custom hooks available in the Xala UI System v5.0.0, with links to detailed guides for each.
+This document lists and describes all custom hooks available in the Xala UI System v6.0.0, with links to detailed guides for each.
 
 ---
 

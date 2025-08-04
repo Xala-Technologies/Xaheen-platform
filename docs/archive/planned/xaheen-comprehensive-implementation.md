@@ -52,7 +52,7 @@
   - Test package access and installation
 
 - [ ] **Add Xala UI System to web app**
-  - Install @xala-technologies/ui-system@^5.0.0
+  - Install @xala-technologies/ui-system@^6.0.0
   - Configure peer dependencies (React 18, Next.js 14)
   - Set up TypeScript types for Xala components
 

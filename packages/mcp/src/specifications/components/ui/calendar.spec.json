@@ -1,0 +1,376 @@
+{
+  "metadata": {
+    "name": "Calendar",
+    "version": "1.0.0",
+    "category": "ui",
+    "description": "A fully accessible calendar component with Norwegian standards compliance",
+    "tags": ["calendar", "date-picker", "accessibility", "norwegian", "wcag-aaa"],
+    "author": "Xala Enterprise UI System",
+    "lastModified": "2025-08-04"
+  },
+  "specification": {
+    "props": {
+      "value": {
+        "type": "Date | Date[] | DateRange | null",
+        "description": "Selected date(s) - controlled component",
+        "required": false,
+        "default": null,
+        "examples": [
+          "new Date('2025-08-04')",
+          "[new Date('2025-08-04'), new Date('2025-08-05')]",
+          "{ from: new Date('2025-08-04'), to: new Date('2025-08-10') }"
+        ]
+      },
+      "defaultValue": {
+        "type": "Date | Date[] | DateRange | null",
+        "description": "Default selected date(s) - uncontrolled component",
+        "required": false,
+        "default": null,
+        "examples": [
+          "new Date()",
+          "{ from: new Date(), to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }"
+        ]
+      },
+      "mode": {
+        "type": "'single' | 'multiple' | 'range'",
+        "description": "Selection mode for the calendar",
+        "required": false,
+        "default": "single",
+        "examples": ["'single'", "'multiple'", "'range'"]
+      },
+      "minDate": {
+        "type": "Date | null",
+        "description": "Minimum selectable date",
+        "required": false,
+        "default": null,
+        "examples": ["new Date('2020-01-01')"]
+      },
+      "maxDate": {
+        "type": "Date | null",
+        "description": "Maximum selectable date",
+        "required": false,
+        "default": null,
+        "examples": ["new Date('2030-12-31')"]
+      },
+      "disabledDates": {
+        "type": "Date[] | ((date: Date) => boolean)",
+        "description": "Array of disabled dates or function to determine if date is disabled",
+        "required": false,
+        "default": "[]",
+        "examples": [
+          "[new Date('2025-12-25'), new Date('2025-01-01')]",
+          "(date) => date.getDay() === 0 || date.getDay() === 6"
+        ]
+      },
+      "highlightedDates": {
+        "type": "HighlightedDate[]",
+        "description": "Array of dates with special highlighting and descriptions",
+        "required": false,
+        "default": "[]",
+        "examples": [
+          "[{ date: new Date('2025-05-17'), type: 'holiday', label: 'Constitution Day' }]"
+        ]
+      },
+      "showWeekNumbers": {
+        "type": "boolean",
+        "description": "Show ISO week numbers (common in Norwegian business)",
+        "required": false,
+        "default": true,
+        "examples": [true, false]
+      },
+      "firstDayOfWeek": {
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "description": "First day of week (0=Sunday, 1=Monday). Norway uses Monday=1",
+        "required": false,
+        "default": 1,
+        "examples": [1, 0]
+      },
+      "locale": {
+        "type": "string",
+        "description": "Locale for month and day names",
+        "required": false,
+        "default": "'nb-NO'",
+        "examples": ["'nb-NO'", "'en-US'", "'fr-FR'", "'ar-SA'"]
+      },
+      "onSelect": {
+        "type": "(date: Date | Date[] | DateRange | null) => void",
+        "description": "Callback fired when date(s) are selected",
+        "required": false,
+        "examples": [
+          "(date) => console.log('Selected:', date)",
+          "(dates) => setSelectedDates(dates)"
+        ]
+      },
+      "onMonthChange": {
+        "type": "(date: Date) => void",
+        "description": "Callback fired when month is changed",
+        "required": false,
+        "examples": [
+          "(date) => console.log('Month changed to:', date)",
+          "(date) => fetchEventsForMonth(date)"
+        ]
+      },
+      "onYearChange": {
+        "type": "(year: number) => void",
+        "description": "Callback fired when year is changed",
+        "required": false,
+        "examples": [
+          "(year) => console.log('Year changed to:', year)"
+        ]
+      },
+      "disabled": {
+        "type": "boolean",
+        "description": "Disable the entire calendar",
+        "required": false,
+        "default": false,
+        "examples": [false, true]
+      },
+      "readOnly": {
+        "type": "boolean",
+        "description": "Make calendar read-only (navigation allowed, selection disabled)",
+        "required": false,
+        "default": false,
+        "examples": [false, true]
+      },
+      "className": {
+        "type": "string",
+        "description": "Additional CSS classes",
+        "required": false,
+        "examples": ["'custom-calendar'", "'border-2 shadow-lg'"]
+      },
+      "id": {
+        "type": "string",
+        "description": "HTML id attribute for the calendar",
+        "required": false,
+        "examples": ["'event-calendar'", "'booking-calendar'"]
+      }
+    },
+    "types": {
+      "DateRange": {
+        "description": "Date range object for range selection mode",
+        "properties": {
+          "from": {
+            "type": "Date | null",
+            "description": "Start date of the range"
+          },
+          "to": {
+            "type": "Date | null",
+            "description": "End date of the range"
+          }
+        }
+      },
+      "HighlightedDate": {
+        "description": "Special date with highlighting and metadata",
+        "properties": {
+          "date": {
+            "type": "Date",
+            "description": "The date to highlight"
+          },
+          "type": {
+            "type": "'holiday' | 'event' | 'deadline' | 'birthday' | 'custom'",
+            "description": "Type of highlighted date"
+          },
+          "label": {
+            "type": "string",
+            "description": "Accessible label for the highlighted date"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional detailed description"
+          },
+          "color": {
+            "type": "string",
+            "description": "Optional custom color class"
+          }
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "level": "WCAG AAA",
+    "features": [
+      "Full keyboard navigation with arrow keys",
+      "Grid navigation pattern (role='grid')",
+      "Screen reader announcements for date selection",
+      "High contrast support",
+      "Focus management and visible focus indicators",
+      "Semantic HTML structure",
+      "ARIA labels and descriptions",
+      "Live region announcements for month/year changes",
+      "Skip links for efficient navigation",
+      "Reduced motion support"
+    ],
+    "keyboardNavigation": {
+      "ArrowLeft": "Move to previous day",
+      "ArrowRight": "Move to next day",
+      "ArrowUp": "Move to same day in previous week",
+      "ArrowDown": "Move to same day in next week",
+      "Home": "Move to first day of current week",
+      "End": "Move to last day of current week",
+      "PageUp": "Move to same date in previous month",
+      "PageDown": "Move to same date in next month",
+      "Ctrl+PageUp": "Move to same date in previous year",
+      "Ctrl+PageDown": "Move to same date in next year",
+      "Enter": "Select focused date",
+      "Space": "Select focused date",
+      "Escape": "Close calendar if in popup mode"
+    },
+    "ariaAttributes": {
+      "role": "grid",
+      "aria-label": "Calendar",
+      "aria-multiselectable": "true (when mode='multiple')",
+      "aria-readonly": "true (when readOnly=true)",
+      "aria-disabled": "true (when disabled=true)"
+    }
+  },
+  "norwegianCompliance": {
+    "nsmClassification": "OPEN",
+    "gdprCompliant": true,
+    "wcagLevel": "AAA",
+    "supportedLanguages": ["nb-NO", "nn-NO", "en-US", "fr-FR", "ar-SA"],
+    "features": [
+      "ISO week numbers display (standard in Norwegian business)",
+      "Monday as first day of week (Norwegian standard)",
+      "Norwegian locale support with proper month/day names",
+      "Support for Norwegian holidays and red days",
+      "24-hour time format support",
+      "Date format follows Norwegian standards (dd.mm.yyyy)"
+    ],
+    "auditTrail": false,
+    "dataProcessing": "No personal data processing in component"
+  },
+  "examples": [
+    {
+      "name": "Basic Calendar",
+      "description": "Simple single date selection calendar",
+      "code": "import { Calendar } from '@xala/ui-system';\n\nconst BasicCalendar = () => {\n  const [selectedDate, setSelectedDate] = useState<Date | null>(null);\n\n  return (\n    <Calendar\n      value={selectedDate}\n      onSelect={setSelectedDate}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n    />\n  );\n};"
+    },
+    {
+      "name": "Range Selection Calendar",
+      "description": "Calendar with date range selection for booking systems",
+      "code": "import { Calendar, DateRange } from '@xala/ui-system';\n\nconst RangeCalendar = () => {\n  const [dateRange, setDateRange] = useState<DateRange | null>(null);\n\n  return (\n    <Calendar\n      mode=\"range\"\n      value={dateRange}\n      onSelect={setDateRange}\n      minDate={new Date()}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      className=\"border rounded-lg shadow-md\"\n    />\n  );\n};"
+    },
+    {
+      "name": "Calendar with Events",
+      "description": "Calendar showing Norwegian holidays and custom events",
+      "code": "import { Calendar, HighlightedDate } from '@xala/ui-system';\n\nconst EventCalendar = () => {\n  const [selectedDate, setSelectedDate] = useState<Date | null>(null);\n  \n  const norwegianHolidays: HighlightedDate[] = [\n    {\n      date: new Date('2025-05-17'),\n      type: 'holiday',\n      label: 'Grunnlovsdagen',\n      description: 'Norwegian Constitution Day'\n    },\n    {\n      date: new Date('2025-12-25'),\n      type: 'holiday',\n      label: 'Juledag',\n      description: 'Christmas Day'\n    }\n  ];\n\n  return (\n    <Calendar\n      value={selectedDate}\n      onSelect={setSelectedDate}\n      highlightedDates={norwegianHolidays}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      disabledDates={(date) => date.getDay() === 0} // Disable Sundays\n    />\n  );\n};"
+    },
+    {
+      "name": "Multiple Date Selection",
+      "description": "Calendar allowing multiple date selection",
+      "code": "import { Calendar } from '@xala/ui-system';\n\nconst MultiSelectCalendar = () => {\n  const [selectedDates, setSelectedDates] = useState<Date[]>([]);\n\n  return (\n    <Calendar\n      mode=\"multiple\"\n      value={selectedDates}\n      onSelect={setSelectedDates}\n      locale=\"nb-NO\"\n      showWeekNumbers={true}\n      maxDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now\n    />\n  );\n};"
+    }
+  ],
+  "styling": {
+    "baseClasses": [
+      "relative",
+      "bg-white",
+      "border",
+      "border-gray-200",
+      "rounded-lg",
+      "shadow-sm",
+      "p-4",
+      "font-sans"
+    ],
+    "variants": {
+      "size": {
+        "sm": "text-sm p-2",
+        "md": "text-base p-4",
+        "lg": "text-lg p-6"
+      },
+      "theme": {
+        "light": "bg-white text-gray-900 border-gray-200",
+        "dark": "bg-gray-900 text-gray-100 border-gray-700"
+      }
+    },
+    "states": {
+      "disabled": "opacity-50 cursor-not-allowed",
+      "readOnly": "cursor-default"
+    },
+    "customizableElements": [
+      "calendar-header",
+      "calendar-navigation",
+      "week-numbers",
+      "calendar-grid",
+      "day-cell",
+      "selected-day",
+      "today",
+      "highlighted-date",
+      "disabled-date",
+      "range-start",
+      "range-end",
+      "range-middle"
+    ]
+  },
+  "performance": {
+    "bundleSize": "< 6KB (gzipped)",
+    "renderTime": "< 16ms (60fps)",
+    "memoryUsage": "< 2MB",
+    "treeShaking": "Fully tree-shakeable",
+    "lazyLoading": "Supports dynamic imports for locale data",
+    "optimization": [
+      "Memoized date calculations",
+      "Virtual scrolling for year/month selection",
+      "Efficient re-rendering with React.memo",
+      "Minimal DOM updates"
+    ]
+  },
+  "testing": {
+    "unitTests": [
+      "Date selection in all modes",
+      "Keyboard navigation",
+      "Disabled dates handling",
+      "Locale formatting",
+      "Range selection validation",
+      "Week number calculation",
+      "Accessibility compliance"
+    ],
+    "integrationTests": [
+      "Form integration",
+      "Date picker popup integration",
+      "Event handling",
+      "State management"
+    ],
+    "accessibilityTests": [
+      "Screen reader compatibility",
+      "Keyboard navigation",
+      "High contrast mode",
+      "Focus management",
+      "ARIA attributes"
+    ]
+  },
+  "dependencies": {
+    "peer": [
+      "react >= 18.0.0",
+      "react-dom >= 18.0.0"
+    ],
+    "runtime": [
+      "@xala/design-tokens",
+      "date-fns >= 2.29.0"
+    ],
+    "development": [
+      "@testing-library/react",
+      "@testing-library/user-event",
+      "jest-axe"
+    ]
+  },
+  "browserSupport": {
+    "modern": ["Chrome >= 90", "Firefox >= 88", "Safari >= 14", "Edge >= 90"],
+    "legacy": ["IE 11 (with polyfills)"],
+    "mobile": ["iOS Safari >= 14", "Chrome Mobile >= 90"]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-08-04",
+      "changes": [
+        "Initial release",
+        "WCAG AAA compliance",
+        "Norwegian standards support",
+        "Full keyboard navigation",
+        "Multiple selection modes",
+        "Week numbers support"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@xala-ui/type-generation",
+  "version": "1.0.0",
+  "description": "TypeScript type generation system for Xala UI components",
+  "type": "module",
+  "main": "generate-types.js",
+  "bin": {
+    "generate-types": "./generate-types.js"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "generate": "node generate-types.js",
+    "generate:examples": "node generate-types.js --input ../examples/specifications --output ../examples/generated-types",
+    "generate:watch": "node generate-types.js --watch",
+    "validate": "node generate-types.js --validate-only",
+    "clean": "rm -rf ../src/generated"
+  },
+  "dependencies": {
+    "zod": "^3.22.0",
+    "glob": "^10.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "@types/react": ">=18.0.0"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "generation",
+    "ui-components",
+    "norwegian-compliance",
+    "accessibility",
+    "multi-platform"
+  ],
+  "author": "Xala Technologies",
+  "license": "MIT"
+}

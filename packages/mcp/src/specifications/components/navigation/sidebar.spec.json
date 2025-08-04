@@ -1,0 +1,403 @@
+{
+  "metadata": {
+    "name": "Sidebar",
+    "version": "1.0.0",
+    "category": "navigation",
+    "description": "A responsive navigation sidebar component with collapsible functionality and nested menu support",
+    "designSystem": "xala-ui-system",
+    "createdAt": "2025-08-04",
+    "lastModified": "2025-08-04"
+  },
+  "compliance": {
+    "nsm": {
+      "classification": "OPEN",
+      "description": "Standard navigation component with no classified data handling",
+      "auditRequired": false
+    },
+    "gdpr": {
+      "personalDataHandling": false,
+      "cookieUsage": false,
+      "dataProcessing": "none"
+    },
+    "accessibility": {
+      "wcagLevel": "AAA",
+      "screenReaderSupport": true,
+      "keyboardNavigation": true,
+      "focusManagement": true,
+      "colorContrast": "AAA",
+      "ariaCompliant": true
+    }
+  },
+  "props": {
+    "items": {
+      "type": "array",
+      "required": true,
+      "description": "Array of navigation items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "required": true,
+            "description": "Display text for the navigation item"
+          },
+          "href": {
+            "type": "string",
+            "required": false,
+            "description": "URL or route path for navigation"
+          },
+          "icon": {
+            "type": "string | ReactNode",
+            "required": false,
+            "description": "Icon component or icon name"
+          },
+          "children": {
+            "type": "array",
+            "required": false,
+            "description": "Nested navigation items for sub-menus",
+            "items": {
+              "$ref": "#/props/items/items"
+            }
+          },
+          "active": {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether this item is currently active"
+          },
+          "badge": {
+            "type": "object",
+            "required": false,
+            "description": "Badge configuration for notifications or counters",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Badge display text"
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["default", "primary", "secondary", "success", "warning", "error"],
+                "default": "default"
+              },
+              "count": {
+                "type": "number",
+                "description": "Numeric count for badge"
+              }
+            }
+          },
+          "disabled": {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the item is disabled"
+          },
+          "target": {
+            "type": "string",
+            "required": false,
+            "enum": ["_blank", "_self", "_parent", "_top"],
+            "description": "Link target attribute"
+          }
+        }
+      }
+    },
+    "collapsed": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Current collapsed state of the sidebar"
+    },
+    "collapsible": {
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Whether the sidebar can be collapsed"
+    },
+    "position": {
+      "type": "string",
+      "required": false,
+      "enum": ["left", "right"],
+      "default": "left",
+      "description": "Position of the sidebar relative to the main content"
+    },
+    "variant": {
+      "type": "string",
+      "required": false,
+      "enum": ["default", "dark", "transparent"],
+      "default": "default",
+      "description": "Visual style variant of the sidebar"
+    },
+    "width": {
+      "type": "number",
+      "required": false,
+      "default": 280,
+      "description": "Width of the sidebar in pixels when expanded",
+      "minimum": 200,
+      "maximum": 400
+    },
+    "collapsedWidth": {
+      "type": "number",
+      "required": false,
+      "default": 64,
+      "description": "Width of the sidebar in pixels when collapsed",
+      "minimum": 48,
+      "maximum": 120
+    },
+    "header": {
+      "type": "ReactNode",
+      "required": false,
+      "description": "Optional header content (logo, title, etc.)"
+    },
+    "footer": {
+      "type": "ReactNode",
+      "required": false,
+      "description": "Optional footer content (user profile, settings, etc.)"
+    },
+    "onToggle": {
+      "type": "function",
+      "required": false,
+      "signature": "(collapsed: boolean) => void",
+      "description": "Callback function called when sidebar collapse state changes"
+    },
+    "onItemClick": {
+      "type": "function",
+      "required": false,
+      "signature": "(item: NavigationItem, event: MouseEvent) => void",
+      "description": "Callback function called when a navigation item is clicked"
+    },
+    "className": {
+      "type": "string",
+      "required": false,
+      "description": "Additional CSS classes to apply to the sidebar container"
+    },
+    "testId": {
+      "type": "string",
+      "required": false,
+      "description": "Test identifier for automated testing"
+    }
+  },
+  "accessibility": {
+    "keyboardNavigation": {
+      "ArrowUp": "Navigate to previous item",
+      "ArrowDown": "Navigate to next item",
+      "ArrowRight": "Expand submenu or navigate to child items",
+      "ArrowLeft": "Collapse submenu or navigate to parent item",
+      "Enter": "Activate selected item",
+      "Space": "Activate selected item",
+      "Home": "Navigate to first item",
+      "End": "Navigate to last item",
+      "Escape": "Close expanded submenu",
+      "Tab": "Move focus to next focusable element",
+      "Shift+Tab": "Move focus to previous focusable element"
+    },
+    "ariaAttributes": {
+      "role": "navigation",
+      "aria-label": "Main navigation",
+      "aria-expanded": "true/false for collapsible state",
+      "aria-current": "page for active items",
+      "aria-hidden": "true for collapsed items",
+      "aria-describedby": "Reference to toggle button description"
+    },
+    "focusManagement": {
+      "focusVisible": true,
+      "focusTrapping": false,
+      "initialFocus": "first navigation item",
+      "focusRestoration": true
+    },
+    "screenReader": {
+      "announcements": [
+        "Sidebar collapsed/expanded state changes",
+        "Active navigation item changes",
+        "Submenu expansion/collapse"
+      ],
+      "landmarks": "Navigation landmark for main sidebar",
+      "descriptions": "Clear item descriptions and hierarchy"
+    }
+  },
+  "styling": {
+    "tokens": {
+      "colors": {
+        "background": "var(--sidebar-bg, #ffffff)",
+        "backgroundDark": "var(--sidebar-bg-dark, #1f2937)",
+        "backgroundTransparent": "var(--sidebar-bg-transparent, rgba(255, 255, 255, 0.95))",
+        "border": "var(--sidebar-border, #e5e7eb)",
+        "text": "var(--sidebar-text, #374151)",
+        "textActive": "var(--sidebar-text-active, #1f2937)",
+        "textHover": "var(--sidebar-text-hover, #111827)",
+        "activeBackground": "var(--sidebar-active-bg, #f3f4f6)",
+        "hoverBackground": "var(--sidebar-hover-bg, #f9fafb)"
+      },
+      "spacing": {
+        "padding": "var(--sidebar-padding, 1rem)",
+        "itemPadding": "var(--sidebar-item-padding, 0.75rem 1rem)",
+        "iconSpacing": "var(--sidebar-icon-spacing, 0.75rem)",
+        "nestedIndent": "var(--sidebar-nested-indent, 1.5rem)"
+      },
+      "typography": {
+        "fontSize": "var(--sidebar-font-size, 0.875rem)",
+        "fontWeight": "var(--sidebar-font-weight, 500)",
+        "lineHeight": "var(--sidebar-line-height, 1.25)"
+      },
+      "borders": {
+        "radius": "var(--sidebar-border-radius, 0.5rem)",
+        "width": "var(--sidebar-border-width, 1px)"
+      },
+      "shadows": {
+        "default": "var(--sidebar-shadow, 0 1px 3px 0 rgba(0, 0, 0, 0.1))",
+        "hover": "var(--sidebar-hover-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1))"
+      },
+      "transitions": {
+        "duration": "var(--sidebar-transition-duration, 0.2s)",
+        "easing": "var(--sidebar-transition-easing, ease-in-out)"
+      }
+    },
+    "responsive": {
+      "mobile": {
+        "breakpoint": "768px",
+        "behavior": "overlay",
+        "defaultCollapsed": true
+      },
+      "tablet": {
+        "breakpoint": "1024px",
+        "behavior": "push",
+        "defaultCollapsed": false
+      },
+      "desktop": {
+        "breakpoint": "1280px",
+        "behavior": "static",
+        "defaultCollapsed": false
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "basic",
+      "title": "Basic Sidebar",
+      "description": "Simple sidebar with navigation items",
+      "code": {
+        "tsx": "import { Sidebar } from '@xala-technologies/ui-system';\n\nconst BasicSidebar = () => {\n  const items = [\n    { label: 'Dashboard', href: '/dashboard', icon: 'home' },\n    { label: 'Users', href: '/users', icon: 'users' },\n    { label: 'Settings', href: '/settings', icon: 'settings' }\n  ];\n\n  return (\n    <Sidebar items={items} />\n  );\n};"
+      }
+    },
+    {
+      "name": "collapsible",
+      "title": "Collapsible Sidebar",
+      "description": "Sidebar with collapse functionality and state management",
+      "code": {
+        "tsx": "import { Sidebar } from '@xala-technologies/ui-system';\nimport { useState } from 'react';\n\nconst CollapsibleSidebar = () => {\n  const [collapsed, setCollapsed] = useState(false);\n  \n  const items = [\n    { label: 'Dashboard', href: '/dashboard', icon: 'home', active: true },\n    { label: 'Analytics', href: '/analytics', icon: 'chart-bar' },\n    { label: 'Users', href: '/users', icon: 'users', badge: { count: 5, variant: 'primary' } },\n    { label: 'Settings', href: '/settings', icon: 'settings' }\n  ];\n\n  return (\n    <Sidebar\n      items={items}\n      collapsed={collapsed}\n      collapsible={true}\n      onToggle={setCollapsed}\n      variant=\"default\"\n      width={280}\n      collapsedWidth={64}\n    />\n  );\n};"
+      }
+    },
+    {
+      "name": "nested",
+      "title": "Sidebar with Nested Items",
+      "description": "Sidebar with hierarchical navigation structure",
+      "code": {
+        "tsx": "import { Sidebar } from '@xala-technologies/ui-system';\n\nconst NestedSidebar = () => {\n  const items = [\n    { label: 'Dashboard', href: '/dashboard', icon: 'home' },\n    {\n      label: 'Management',\n      icon: 'folder',\n      children: [\n        { label: 'Users', href: '/management/users', icon: 'users' },\n        { label: 'Roles', href: '/management/roles', icon: 'shield' },\n        {\n          label: 'Permissions',\n          icon: 'key',\n          children: [\n            { label: 'View Permissions', href: '/management/permissions/view' },\n            { label: 'Edit Permissions', href: '/management/permissions/edit' }\n          ]\n        }\n      ]\n    },\n    {\n      label: 'Reports',\n      icon: 'chart-bar',\n      children: [\n        { label: 'Sales', href: '/reports/sales', badge: { text: 'New', variant: 'success' } },\n        { label: 'Analytics', href: '/reports/analytics' },\n        { label: 'Performance', href: '/reports/performance' }\n      ]\n    },\n    { label: 'Settings', href: '/settings', icon: 'settings' }\n  ];\n\n  return (\n    <Sidebar\n      items={items}\n      collapsible={true}\n      variant=\"default\"\n      header={<div className=\"p-4 font-bold\">My App</div>}\n      footer={<div className=\"p-4 text-sm text-gray-500\">v1.0.0</div>}\n    />\n  );\n};"
+      }
+    },
+    {
+      "name": "dark-variant",
+      "title": "Dark Sidebar",
+      "description": "Sidebar with dark theme variant",
+      "code": {
+        "tsx": "import { Sidebar } from '@xala-technologies/ui-system';\n\nconst DarkSidebar = () => {\n  const items = [\n    { label: 'Dashboard', href: '/dashboard', icon: 'home', active: true },\n    { label: 'Projects', href: '/projects', icon: 'folder', badge: { count: 12 } },\n    { label: 'Team', href: '/team', icon: 'users' },\n    { label: 'Analytics', href: '/analytics', icon: 'chart-bar' },\n    { label: 'Settings', href: '/settings', icon: 'settings' }\n  ];\n\n  const handleItemClick = (item, event) => {\n    console.log('Navigating to:', item.href);\n  };\n\n  return (\n    <Sidebar\n      items={items}\n      variant=\"dark\"\n      collapsible={true}\n      position=\"left\"\n      onItemClick={handleItemClick}\n      header={\n        <div className=\"p-4 border-b border-gray-700\">\n          <h2 className=\"text-white font-semibold\">Dark Theme</h2>\n        </div>\n      }\n    />\n  );\n};"
+      }
+    }
+  ],
+  "performance": {
+    "bundleSize": {
+      "target": "<6KB",
+      "gzipped": "<2KB",
+      "treeshaking": true
+    },
+    "rendering": {
+      "initialRender": "<16ms",
+      "rerenderOptimization": "React.memo, useMemo for items processing",
+      "virtualScrolling": "Not implemented (consider for >100 items)"
+    },
+    "memory": {
+      "memoryLeaks": "None - proper cleanup of event listeners",
+      "objectPooling": "Not applicable",
+      "lazyLoading": "Icons can be lazy loaded"
+    },
+    "optimization": {
+      "codesplitting": "Dynamic imports for large icon sets",
+      "memoization": "Item processing and event handlers",
+      "debouncing": "Search/filter functionality if implemented"
+    }
+  },
+  "testing": {
+    "unitTests": [
+      "Props validation and default values",
+      "Collapse/expand functionality",
+      "Navigation item rendering",
+      "Nested item expansion",
+      "Badge display and variants",
+      "Event handler execution",
+      "Accessibility attributes",
+      "Keyboard navigation"
+    ],
+    "integrationTests": [
+      "Router integration testing",
+      "Theme variant switching",
+      "Responsive behavior",
+      "State management integration"
+    ],
+    "e2eTests": [
+      "Complete navigation flow",
+      "Accessibility compliance testing",
+      "Cross-browser compatibility",
+      "Mobile responsive behavior"
+    ],
+    "coverage": {
+      "minimum": "95%",
+      "statements": "95%",
+      "branches": "95%",
+      "functions": "95%",
+      "lines": "95%"
+    }
+  },
+  "implementation": {
+    "dependencies": {
+      "peer": [
+        "react@>=18.0.0",
+        "react-dom@>=18.0.0"
+      ],
+      "optional": [
+        "react-router-dom@>=6.0.0",
+        "next@>=13.0.0"
+      ]
+    },
+    "files": [
+      "src/components/navigation/Sidebar/Sidebar.tsx",
+      "src/components/navigation/Sidebar/SidebarItem.tsx",
+      "src/components/navigation/Sidebar/SidebarHeader.tsx",
+      "src/components/navigation/Sidebar/SidebarFooter.tsx",
+      "src/components/navigation/Sidebar/index.ts",
+      "src/components/navigation/Sidebar/Sidebar.stories.tsx",
+      "src/components/navigation/Sidebar/Sidebar.test.tsx",
+      "src/components/navigation/Sidebar/types.ts"
+    ],
+    "hooks": [
+      "useSidebarState",
+      "useSidebarNavigation",
+      "useSidebarKeyboard"
+    ]
+  },
+  "validation": {
+    "required": true,
+    "rules": [
+      "Items array must not be empty",
+      "Each item must have a label",
+      "Nested items must follow same structure",
+      "Width values must be within specified ranges",
+      "Position must be valid enum value",
+      "Variant must be valid enum value"
+    ],
+    "accessibility": [
+      "All interactive elements must be keyboard accessible",
+      "ARIA attributes must be properly set",
+      "Focus indicators must be visible",
+      "Color contrast must meet WCAG AAA standards",
+      "Screen reader announcements must be clear"
+    ]
+  }
+}

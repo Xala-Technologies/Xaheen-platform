@@ -1,0 +1,851 @@
+{
+  "metadata": {
+    "name": "Modal",
+    "version": "1.0.0",
+    "semanticVersion": "v5.1",
+    "category": "action-feedback",
+    "subcategory": "modal",
+    "description": "Comprehensive modal/dialog component with focus trap, Norwegian compliance, accessibility, and responsive design. Supports various sizes, positions, animations, and custom content slots.",
+    "keywords": ["modal", "dialog", "overlay", "popup", "focus-trap", "accessible", "norwegian", "responsive"],
+    "maintainer": {
+      "name": "Xala UI Team",
+      "email": "ui@xala.no",
+      "team": "User Interface"
+    },
+    "stability": "stable",
+    "createdAt": "2024-02-01T09:00:00Z",
+    "updatedAt": "2024-08-04T15:00:00Z"
+  },
+  "compliance": {
+    "i18n": {
+      "supported": true,
+      "defaultLocale": "nb-NO",
+      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+      "textDirection": ["ltr", "rtl"]
+    },
+    "semantic": {
+      "htmlElements": ["dialog", "div", "button"],
+      "ariaRoles": ["dialog", "alertdialog", "presentation"],
+      "landmarks": true,
+      "headingStructure": true
+    },
+    "wcag": {
+      "level": "AAA",
+      "tested": true,
+      "guidelines": [
+        "1.4.3 Contrast (Minimum)",
+        "1.4.6 Contrast (Enhanced)",
+        "1.4.11 Non-text Contrast",
+        "2.1.1 Keyboard",
+        "2.1.2 No Keyboard Trap",
+        "2.4.3 Focus Order",
+        "2.4.6 Headings and Labels",
+        "2.4.7 Focus Visible",
+        "3.2.1 On Focus",
+        "3.2.2 On Input",
+        "4.1.2 Name, Role, Value",
+        "4.1.3 Status Messages"
+      ],
+      "colorContrast": {
+        "normal": 7.5,
+        "large": 5.2,
+        "enhanced": 9.1
+      }
+    },
+    "ssr": {
+      "supported": true,
+      "hydrationSafe": true,
+      "staticGeneration": true,
+      "portalRendering": true
+    },
+    "norwegian": {
+      "nsmClassification": "RESTRICTED",
+      "gdprCompliant": true,
+      "designSystem": {
+        "altinnCompliant": true,
+        "governmentApproved": true
+      },
+      "auditTrail": true,
+      "dataHandling": {
+        "sensitiveDataModal": true,
+        "loggingRequired": true,
+        "accessControl": true
+      }
+    }
+  },
+  "props": {
+    "schema": {
+      "open": {
+        "type": { "primitive": "boolean" },
+        "description": "Controls the visibility state of the modal",
+        "required": true,
+        "defaultValue": false,
+        "accessibility": {
+          "ariaAttribute": "aria-hidden",
+          "screenReaderText": "Modal opened/closed"
+        }
+      },
+      "onClose": {
+        "type": {
+          "complex": "function",
+          "signature": {
+            "parameters": [
+              {
+                "name": "reason",
+                "type": "'escape' | 'backdrop' | 'close-button' | 'action'",
+                "required": true
+              }
+            ],
+            "returnType": "void | Promise<void>"
+          }
+        },
+        "description": "Handler called when modal should close, includes reason for closing",
+        "required": true
+      },
+      "title": {
+        "type": { "primitive": "string" },
+        "description": "Modal header title, used for aria-labelledby",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-labelledby",
+          "screenReaderText": "Modal title"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "modal.{componentName}.title",
+          "context": "modal-title"
+        }
+      },
+      "description": {
+        "type": { "primitive": "string" },
+        "description": "Optional modal description for additional context",
+        "required": false,
+        "accessibility": {
+          "ariaAttribute": "aria-describedby",
+          "screenReaderText": "Modal description"
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "modal.{componentName}.description",
+          "context": "modal-description"
+        }
+      },
+      "size": {
+        "type": {
+          "custom": "variant",
+          "values": ["sm", "md", "lg", "xl", "full"]
+        },
+        "description": "Size variant determining modal dimensions and responsive behavior",
+        "required": false,
+        "defaultValue": "md",
+        "examples": [
+          {
+            "value": "sm",
+            "description": "Small modal for simple confirmations",
+            "context": "Delete confirmations, simple alerts"
+          },
+          {
+            "value": "full",
+            "description": "Full-screen modal for complex interfaces",
+            "context": "Form wizards, detailed content editing"
+          }
+        ]
+      },
+      "position": {
+        "type": {
+          "custom": "variant",
+          "values": ["center", "top", "bottom", "left", "right"]
+        },
+        "description": "Position of the modal on screen",
+        "required": false,
+        "defaultValue": "center",
+        "examples": [
+          {
+            "value": "top",
+            "description": "Modal slides from top",
+            "context": "Notifications, alerts"
+          },
+          {
+            "value": "right",
+            "description": "Side panel modal",
+            "context": "Detail views, forms"
+          }
+        ]
+      },
+      "closeOnEscape": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether pressing Escape key closes the modal",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "screenReaderText": "Press Escape to close"
+        }
+      },
+      "closeOnBackdropClick": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether clicking the backdrop closes the modal",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "screenReaderText": "Click outside to close"
+        }
+      },
+      "showCloseButton": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to show the close button in the header",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "ariaLabel": "Close modal",
+          "screenReaderText": "Close button available"
+        }
+      },
+      "backdrop": {
+        "type": {
+          "custom": "variant",
+          "values": [true, false, "blur"]
+        },
+        "description": "Backdrop style - true for dark overlay, false for none, blur for blurred background",
+        "required": false,
+        "defaultValue": true,
+        "examples": [
+          {
+            "value": "blur",
+            "description": "Blurred backdrop for modern look",
+            "context": "Premium interfaces, modern design"
+          }
+        ]
+      },
+      "animation": {
+        "type": {
+          "custom": "variant",
+          "values": ["fade", "slide", "scale", "none"]
+        },
+        "description": "Animation type for modal entry/exit",
+        "required": false,
+        "defaultValue": "fade",
+        "examples": [
+          {
+            "value": "slide",
+            "description": "Slide animation based on position",
+            "context": "Mobile interfaces, side panels"
+          },
+          {
+            "value": "scale",
+            "description": "Scale up/down animation",
+            "context": "Attention-grabbing modals"
+          }
+        ]
+      },
+      "actions": {
+        "type": {
+          "complex": "array",
+          "itemType": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string", "required": true },
+              "action": { "type": "string", "required": true },
+              "variant": { "type": "'primary' | 'secondary' | 'outline' | 'destructive'", "required": false },
+              "loading": { "type": "boolean", "required": false },
+              "disabled": { "type": "boolean", "required": false },
+              "onClick": { "type": "function", "required": true }
+            }
+          }
+        },
+        "description": "Array of action buttons to display in the footer",
+        "required": false,
+        "examples": [
+          {
+            "value": "[{label: 'Cancel', action: 'cancel', variant: 'outline'}, {label: 'Confirm', action: 'confirm', variant: 'primary'}]",
+            "description": "Confirmation dialog actions",
+            "context": "Delete confirmations, form submissions"
+          }
+        ]
+      },
+      "confirmBeforeClose": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to show confirmation before closing if there are unsaved changes",
+        "required": false,
+        "defaultValue": false,
+        "norwegian": {
+          "nsmClassification": "RESTRICTED",
+          "auditRequired": true
+        }
+      },
+      "confirmMessage": {
+        "type": { "primitive": "string" },
+        "description": "Message to show in close confirmation dialog",
+        "required": false,
+        "conditions": {
+          "dependsOn": "confirmBeforeClose",
+          "required": false
+        },
+        "i18n": {
+          "translatable": true,
+          "key": "modal.confirm.close.message",
+          "context": "confirmation"
+        }
+      },
+      "className": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to modal container",
+        "required": false
+      },
+      "overlayClassName": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+          }
+        },
+        "description": "Additional CSS classes to apply to backdrop overlay",
+        "required": false
+      },
+      "zIndex": {
+        "type": {
+          "primitive": "number",
+          "constraints": {
+            "min": 1000,
+            "max": 9999
+          }
+        },
+        "description": "Z-index for modal stacking order",
+        "required": false,
+        "defaultValue": 1050
+      },
+      "initialFocus": {
+        "type": { "primitive": "string" },
+        "description": "CSS selector for element to focus when modal opens",
+        "required": false,
+        "accessibility": {
+          "purpose": "Focus management for accessibility"
+        }
+      },
+      "restoreFocus": {
+        "type": { "primitive": "boolean" },
+        "description": "Whether to restore focus to trigger element when modal closes",
+        "required": false,
+        "defaultValue": true,
+        "accessibility": {
+          "purpose": "Focus restoration for keyboard users"
+        }
+      },
+      "role": {
+        "type": {
+          "custom": "variant",
+          "values": ["dialog", "alertdialog"]
+        },
+        "description": "ARIA role for the modal",
+        "required": false,
+        "defaultValue": "dialog",
+        "accessibility": {
+          "purpose": "Semantic role for screen readers"
+        }
+      },
+      "children": {
+        "type": {
+          "complex": "node",
+          "types": ["string", "element"]
+        },
+        "description": "Modal content - can be overridden by slots",
+        "required": false
+      },
+      "testId": {
+        "type": {
+          "primitive": "string",
+          "constraints": {
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+          }
+        },
+        "description": "Test identifier for automated testing",
+        "required": false
+      }
+    },
+    "groups": {
+      "required": ["open", "onClose"],
+      "optional": [
+        "title", "description", "size", "position", "closeOnEscape", "closeOnBackdropClick",
+        "showCloseButton", "backdrop", "animation", "actions", "confirmBeforeClose", 
+        "confirmMessage", "className", "overlayClassName", "zIndex", "initialFocus", 
+        "restoreFocus", "role", "children", "testId"
+      ],
+      "deprecated": []
+    },
+    "composition": {
+      "children": {
+        "supported": true,
+        "types": ["string", "element"],
+        "description": "Default modal content"
+      },
+      "slots": {
+        "header": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom header content, overrides title and close button"
+        },
+        "body": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom body content, overrides children"
+        },
+        "footer": {
+          "required": false,
+          "types": ["element"],
+          "description": "Custom footer content, overrides actions"
+        }
+      }
+    }
+  },
+  "variants": {
+    "simple": {
+      "size": {
+        "values": {
+          "sm": "max-w-sm w-full mx-4",
+          "md": "max-w-md w-full mx-4",
+          "lg": "max-w-lg w-full mx-4",
+          "xl": "max-w-4xl w-full mx-4",
+          "full": "w-full h-full max-w-none mx-0"
+        },
+        "defaultValue": "md"
+      },
+      "position": {
+        "values": {
+          "center": "items-center justify-center",
+          "top": "items-start justify-center pt-16",
+          "bottom": "items-end justify-center pb-16",
+          "left": "items-center justify-start pl-4",
+          "right": "items-center justify-end pr-4"
+        },
+        "defaultValue": "center"
+      },
+      "backdrop": {
+        "values": {
+          "true": "bg-black/50",
+          "false": "bg-transparent pointer-events-none",
+          "blur": "bg-black/20 backdrop-blur-sm"
+        },
+        "defaultValue": "true"
+      },
+      "animation": {
+        "values": {
+          "fade": "transition-opacity duration-200",
+          "slide": "transition-transform duration-200",
+          "scale": "transition-transform duration-200",
+          "none": ""
+        },
+        "defaultValue": "fade"
+      }
+    },
+    "compound": [
+      {
+        "conditions": {
+          "position": "top",
+          "animation": "slide"
+        },
+        "className": "animate-slide-down",
+        "description": "Slide down animation for top positioned modals"
+      },
+      {
+        "conditions": {
+          "position": "bottom",
+          "animation": "slide"
+        },
+        "className": "animate-slide-up",
+        "description": "Slide up animation for bottom positioned modals"
+      },
+      {
+        "conditions": {
+          "position": "left",
+          "animation": "slide"
+        },
+        "className": "animate-slide-right",
+        "description": "Slide right animation for left positioned modals"
+      },
+      {
+        "conditions": {
+          "position": "right",
+          "animation": "slide"
+        },
+        "className": "animate-slide-left",
+        "description": "Slide left animation for right positioned modals"
+      },
+      {
+        "conditions": {
+          "animation": "scale"
+        },
+        "className": "animate-scale-in",
+        "description": "Scale in animation for all positions"
+      },
+      {
+        "conditions": {
+          "size": "full"
+        },
+        "className": "rounded-none",
+        "description": "Remove border radius for full-size modals"
+      }
+    ]
+  },
+  "accessibility": {
+    "role": {
+      "primary": "dialog",
+      "additional": ["alertdialog"]
+    },
+    "keyboardNavigation": {
+      "supported": true,
+      "patterns": [
+        {
+          "key": "Escape",
+          "action": "close",
+          "context": "Close modal if closeOnEscape is true"
+        },
+        {
+          "key": "Tab",
+          "action": "navigate",
+          "context": "Navigate between focusable elements within modal"
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "navigate-reverse",
+          "context": "Navigate backwards between focusable elements"
+        }
+      ],
+      "focusManagement": {
+        "trapFocus": true,
+        "restoreFocus": true,
+        "skipLinks": false,
+        "initialFocus": "first-focusable-element"
+      }
+    },
+    "screenReader": {
+      "announcements": [
+        {
+          "trigger": "open",
+          "message": "Modal opened",
+          "priority": "assertive"
+        },
+        {
+          "trigger": "close",
+          "message": "Modal closed",
+          "priority": "polite"
+        },
+        {
+          "trigger": "focus-trap-active",
+          "message": "Focus trapped in modal",
+          "priority": "polite"
+        }
+      ],
+      "labels": {
+        "required": ["accessible-name"],
+        "descriptions": {
+          "close-button": "Close modal",
+          "backdrop": "Modal backdrop, click to close",
+          "content": "Modal content",
+          "actions": "Modal actions"
+        }
+      }
+    },
+    "testing": {
+      "automated": [
+        "dialog-element-present",
+        "accessible-name-present",
+        "focus-trap-active",
+        "focus-restoration",
+        "keyboard-close-escape",
+        "backdrop-click-close",
+        "color-contrast-aaa",
+        "heading-structure",
+        "aria-attributes-valid"
+      ],
+      "manual": [
+        "screen-reader-navigation",
+        "keyboard-only-interaction",
+        "focus-management-flow",
+        "high-contrast-mode",
+        "zoom-250-percent",
+        "voice-control-compatibility"
+      ]
+    }
+  },
+  "platforms": {
+    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
+    "primary": "react",
+    "implementations": {
+      "react": {
+        "templatePath": "./templates/react/modal.tsx",
+        "dependencies": ["react", "react-dom", "clsx", "class-variance-authority", "focus-trap-react"],
+        "imports": [
+          {
+            "module": "react",
+            "imports": ["forwardRef", "useState", "useEffect", "useCallback", "HTMLAttributes"]
+          },
+          {
+            "module": "react-dom",
+            "imports": ["createPortal"]
+          },
+          {
+            "module": "focus-trap-react",
+            "imports": ["FocusTrap"]
+          },
+          {
+            "module": "class-variance-authority",
+            "imports": ["cva", "VariantProps"]
+          }
+        ]
+      },
+      "vue": {
+        "templatePath": "./templates/vue/modal.vue",
+        "dependencies": ["vue", "focus-trap", "clsx"]
+      },
+      "angular": {
+        "templatePath": "./templates/angular/modal.component.ts",
+        "dependencies": ["@angular/core", "@angular/common", "@angular/cdk/a11y", "@angular/cdk/overlay"]
+      },
+      "svelte": {
+        "templatePath": "./templates/svelte/modal.svelte",
+        "dependencies": ["svelte", "focus-trap"]
+      },
+      "solid": {
+        "templatePath": "./templates/solid/modal.tsx",
+        "dependencies": ["solid-js", "focus-trap"]
+      },
+      "web-components": {
+        "templatePath": "./templates/web-components/modal.ts",
+        "dependencies": ["lit", "focus-trap"]
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "Basic Modal",
+      "description": "Simple modal with title and content",
+      "category": "basic",
+      "code": {
+        "react": "<Modal open={isOpen} onClose={() => setIsOpen(false)} title='Welcome'>\n  <p>This is a basic modal with some content.</p>\n</Modal>",
+        "vue": "<Modal :open='isOpen' @close='setIsOpen(false)' title='Welcome'>\n  <p>This is a basic modal with some content.</p>\n</Modal>"
+      },
+      "props": {
+        "open": true,
+        "title": "Welcome",
+        "children": "This is a basic modal with some content."
+      }
+    },
+    {
+      "name": "Confirmation Dialog",
+      "description": "Modal with confirmation actions",
+      "category": "dialogs",
+      "code": {
+        "react": "<Modal\n  open={showConfirm}\n  onClose={handleClose}\n  title='Confirm Delete'\n  description='This action cannot be undone'\n  role='alertdialog'\n  actions={[\n    { label: 'Cancel', action: 'cancel', variant: 'outline', onClick: handleCancel },\n    { label: 'Delete', action: 'confirm', variant: 'destructive', onClick: handleDelete }\n  ]}\n/>"
+      },
+      "props": {
+        "role": "alertdialog",
+        "title": "Confirm Delete",
+        "description": "This action cannot be undone",
+        "actions": [
+          { "label": "Cancel", "action": "cancel", "variant": "outline" },
+          { "label": "Delete", "action": "confirm", "variant": "destructive" }
+        ]
+      },
+      "notes": "Use alertdialog role for confirmation dialogs that require immediate attention"
+    },
+    {
+      "name": "Form Modal",
+      "description": "Modal containing a form with custom slots",
+      "category": "forms",
+      "code": {
+        "react": "<Modal open={showForm} onClose={handleClose} size='lg' title='Edit Profile'>\n  <Modal.Body>\n    <form onSubmit={handleSubmit}>\n      <Input label='Name' value={name} onChange={setName} />\n      <Input label='Email' type='email' value={email} onChange={setEmail} />\n    </form>\n  </Modal.Body>\n  <Modal.Footer>\n    <Button variant='outline' onClick={handleClose}>Cancel</Button>\n    <Button type='submit' loading={saving}>Save Changes</Button>\n  </Modal.Footer>\n</Modal>"
+      },
+      "props": {
+        "size": "lg",
+        "title": "Edit Profile"
+      },
+      "notes": "Use custom slots for complex content like forms"
+    },
+    {
+      "name": "Full Screen Modal",
+      "description": "Full screen modal for complex interfaces",
+      "category": "layouts",
+      "code": {
+        "react": "<Modal\n  open={showFullscreen}\n  onClose={handleClose}\n  size='full'\n  position='center'\n  animation='scale'\n  title='Document Editor'\n>\n  <div className='h-full flex flex-col'>\n    <div className='flex-1 p-6'>\n      {/* Complex editor interface */}\n    </div>\n  </div>\n</Modal>"
+      },
+      "props": {
+        "size": "full",
+        "animation": "scale",
+        "title": "Document Editor"
+      },
+      "notes": "Full screen modals are great for complex editing interfaces"
+    },
+    {
+      "name": "Side Panel Modal",
+      "description": "Modal positioned as side panel",
+      "category": "layouts",
+      "code": {
+        "react": "<Modal\n  open={showPanel}\n  onClose={handleClose}\n  position='right'\n  animation='slide'\n  size='lg'\n  backdrop='blur'\n  title='Settings'\n>\n  <div className='space-y-6'>\n    {/* Settings content */}\n  </div>\n</Modal>"
+      },
+      "props": {
+        "position": "right",
+        "animation": "slide",
+        "backdrop": "blur",
+        "title": "Settings"
+      },
+      "notes": "Side panels work well for secondary content and settings"
+    },
+    {
+      "name": "Norwegian Sensitive Data Modal",
+      "description": "Modal for handling sensitive data with Norwegian compliance",
+      "category": "compliance",
+      "code": {
+        "react": "<Modal\n  open={showSensitive}\n  onClose={handleClose}\n  title='Sensitive Information'\n  confirmBeforeClose={true}\n  confirmMessage='Du har ulagrede endringer. Er du sikker på at du vil lukke?'\n  role='alertdialog'\n  actions={[\n    { label: 'Avbryt', action: 'cancel', variant: 'outline', onClick: handleCancel },\n    { label: 'Lagre og lukk', action: 'save', variant: 'primary', onClick: handleSave }\n  ]}\n>\n  {/* Sensitive data form */}\n</Modal>"
+      },
+      "props": {
+        "confirmBeforeClose": true,
+        "confirmMessage": "Du har ulagrede endringer. Er du sikker på at du vil lukke?",
+        "role": "alertdialog"
+      },
+      "notes": "Norwegian compliance requires confirmation before closing sensitive data modals"
+    }
+  ],
+  "ai": {
+    "optimization": {
+      "hints": [
+        "Always use semantic dialog element for proper accessibility",
+        "Implement focus trap to prevent keyboard navigation outside modal",
+        "Restore focus to trigger element when modal closes",
+        "Use portal rendering to avoid z-index issues",
+        "Apply Norwegian design tokens and compliance requirements",
+        "Ensure color contrast meets AAA standards for all text",
+        "Implement proper loading states for async operations"
+      ],
+      "patterns": [
+        {
+          "pattern": "focus-trap",
+          "context": "React implementation",
+          "recommendation": "Use focus-trap-react for robust focus management"
+        },
+        {
+          "pattern": "createPortal",
+          "context": "React implementation", 
+          "recommendation": "Render modal in portal to avoid stacking context issues"
+        },
+        {
+          "pattern": "dialog element",
+          "context": "HTML semantic",
+          "recommendation": "Use native dialog element with progressive enhancement"
+        },
+        {
+          "pattern": "escape key handling",
+          "context": "Keyboard interaction",
+          "recommendation": "Always handle Escape key unless explicitly disabled"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "pattern": "div with fixed positioning as modal",
+          "reason": "Poor accessibility and semantic meaning",
+          "alternative": "Use dialog element with proper ARIA attributes"
+        },
+        {
+          "pattern": "No focus management",
+          "reason": "Breaks keyboard navigation and accessibility",
+          "alternative": "Implement focus trap and restoration"
+        },
+        {
+          "pattern": "Body scroll not prevented",
+          "reason": "Confusing user experience with background scrolling",
+          "alternative": "Prevent body scroll when modal is open"
+        },
+        {
+          "pattern": "Missing close handlers",
+          "reason": "Users cannot exit modal with keyboard or backdrop",
+          "alternative": "Provide multiple ways to close modal"
+        }
+      ]
+    },
+    "generation": {
+      "priority": "high",
+      "complexity": "complex",
+      "estimatedTokens": 4500
+    },
+    "documentation": {
+      "autoGenerate": true,
+      "templates": ["api-reference", "usage-examples", "accessibility-guide", "norwegian-compliance", "focus-management"]
+    }
+  },
+  "testing": {
+    "unit": {
+      "required": [
+        "renders when open is true",
+        "hidden when open is false",
+        "calls onClose when escape pressed",
+        "calls onClose when backdrop clicked",
+        "calls onClose when close button clicked",
+        "prevents body scroll when open",
+        "restores body scroll when closed",
+        "traps focus within modal",
+        "restores focus to trigger element",
+        "applies size variants correctly",
+        "applies position variants correctly",
+        "renders custom slots correctly",
+        "handles action button clicks",
+        "shows confirmation before close",
+        "supports keyboard navigation",
+        "announces state changes",
+        "maintains proper ARIA attributes",
+        "handles portal rendering",
+        "respects zIndex prop",
+        "applies animation classes"
+      ],
+      "coverage": {
+        "minimum": 95
+      }
+    },
+    "integration": {
+      "scenarios": [
+        "modal within modal (nested)",
+        "modal with form validation",
+        "modal with async operations",
+        "modal with complex focus management",
+        "keyboard-only interaction",
+        "screen reader navigation",
+        "Norwegian compliance validation",
+        "responsive behavior testing",
+        "animation and transition testing"
+      ]
+    },
+    "visual": {
+      "regression": true,
+      "responsive": true,
+      "colorContrast": true,
+      "animations": true
+    }
+  },
+  "performance": {
+    "metrics": {
+      "bundleSize": {
+        "max": "6KB",
+        "gzipped": "2.5KB"
+      },
+      "renderTime": {
+        "initial": "<50ms",
+        "update": "<16ms"
+      },
+      "animation": {
+        "duration": "200ms",
+        "fps": "60"
+      }
+    },
+    "optimizations": [
+      "Portal rendering to avoid layout recalculations",
+      "CSS transforms for smooth animations",
+      "Lazy loading of focus-trap library",
+      "Efficient event listener management",
+      "Minimal DOM structure with semantic HTML",
+      "Optimized focus management without DOM queries",
+      "Debounced resize handlers for responsive behavior"
+    ]
+  }
+}

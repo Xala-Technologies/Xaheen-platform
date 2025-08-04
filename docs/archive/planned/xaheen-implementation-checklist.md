@@ -37,7 +37,7 @@ Transform xaheen into Xaheen platform with full Xala UI System integration, AI a
 ## 📦 Epic 2: Xala UI System Integration
 
 ### Story 2.1: Core Dependencies Setup
-- [ ] Add @xala-technologies/ui-system@^5.0.0 to web app dependencies
+- [ ] Add @xala-technologies/ui-system@^6.0.0 to web app dependencies
 - [ ] Install required peer dependencies (React 18, Next.js 14)
 - [ ] Configure TypeScript for Xala UI System types
 - [ ] Set up design system provider configuration
