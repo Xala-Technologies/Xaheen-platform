@@ -41,9 +41,42 @@ Multi-platform MCP server for generating enterprise-grade UI components across R
 
 ## Installation
 
+### From GitHub Packages
+
 ```bash
-bun add @xala-technologies/ui-system-mcp
+# Configure GitHub Packages registry
+echo "@xala-technologies:registry=https://npm.pkg.github.com/" > .npmrc
+echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+
+# Install the package
+npm install @xala-technologies/xala-mcp@6.1.0
+# or with bun
+bun add @xala-technologies/xala-mcp@6.1.0
 ```
+
+**Note**: You'll need a GitHub Personal Access Token with `read:packages` scope. [Create one here](https://github.com/settings/tokens/new?scopes=read:packages).
+
+## Why Choose Xala UI System MCP?
+
+### 🎯 **Best of Both Worlds**
+Combines **comprehensive component generation** (131+ templates) with **shadcn/ui's focused developer experience**
+
+### 🚀 **Multi-Platform Excellence**
+- **7 Platforms**: React, Next.js, Vue, Angular, Svelte, Electron, React Native
+- **Enterprise Ready**: WCAG AAA accessibility, localization, design tokens
+- **Production Templates**: Battle-tested components used in enterprise applications
+
+### ⚡ **Developer Experience**
+- **Quick Generate**: One-command component creation with smart presets
+- **Component Library**: Browse, search, and inspect 191+ templates like shadcn/ui
+- **Intelligent Caching**: Fast template loading with automatic invalidation
+- **Enhanced Validation**: Detailed error messages with actionable suggestions
+
+### 🎨 **Enterprise Features**
+- **Norwegian Compliance**: BankID, Altinn, Vipps, and municipal integrations
+- **Industry Themes**: Finance, healthcare, education, e-commerce
+- **Accessibility**: WCAG AAA compliance out of the box
+- **Localization**: Built-in support for English, Norwegian, French, Arabic
 
 ## MCP Tools Available
 
@@ -231,23 +264,193 @@ cli/templates/
     └── navigation/
 ```
 
-## Usage Examples
+## AI Agent Integration
 
-### With Claude Desktop
+The Xala UI System MCP Server works with multiple AI coding assistants. Choose your preferred setup:
 
-Add to your Claude Desktop configuration:
+### 🤖 Claude Desktop
+
+Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "xala-ui-system": {
+      "command": "npx",
+      "args": [
+        "@xala-technologies/xala-mcp@6.1.0"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+**Alternative with local installation:**
+```json
+{
+  "mcpServers": {
+    "xala-ui-system": {
       "command": "node",
-      "args": ["path/to/xala-ui-system-mcp/dist/index.js"],
+      "args": ["node_modules/@xala-technologies/xala-mcp/dist/index.js"],
       "env": {}
     }
   }
 }
 ```
+
+### 🎯 Cursor IDE
+
+1. **Install the MCP extension** in Cursor
+2. **Create `.cursor/mcp.json`** in your project root:
+
+```json
+{
+  "mcpServers": {
+    "xala-ui-system": {
+      "command": "npx",
+      "args": ["@xala-technologies/xala-mcp@6.1.0"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+3. **Restart Cursor IDE** to load the MCP server
+4. **Access via Command Palette**: `Ctrl/Cmd + Shift + P` → "MCP: Use Tool"
+
+### 🌊 Windsurf IDE
+
+1. **Open Windsurf Settings** (`Ctrl/Cmd + ,`)
+2. **Navigate to Extensions** → MCP Servers
+3. **Add new server configuration**:
+
+```json
+{
+  "name": "Xala UI System",
+  "command": "npx",
+  "args": ["@xala-technologies/xala-mcp@6.1.0"],
+  "env": {
+    "GITHUB_TOKEN": "your_github_token_here"
+  }
+}
+```
+
+4. **Enable the server** and restart Windsurf
+5. **Use via Windsurf AI Chat** - the tools will be available automatically
+
+### 🔧 Continue (VS Code Extension)
+
+1. **Install Continue extension** in VS Code
+2. **Open Continue configuration** (`~/.continue/config.json`):
+
+```json
+{
+  "models": [...],
+  "mcpServers": [
+    {
+      "name": "xala-ui-system",
+      "command": "npx",
+      "args": ["@xala-technologies/xala-mcp@6.1.0"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  ]
+}
+```
+
+3. **Reload VS Code** to activate the MCP server
+4. **Access via Continue chat** - tools will be available in the sidebar
+
+### 🛠️ Cline (VS Code Extension)
+
+1. **Install Cline extension** in VS Code
+2. **Open Cline settings** (extension settings)
+3. **Add MCP Server**:
+   - **Name**: Xala UI System
+   - **Command**: `npx`
+   - **Args**: `@xala-technologies/xala-mcp@6.1.0`
+   - **Environment**: `GITHUB_TOKEN=your_github_token_here`
+
+4. **Restart Cline** to load the server
+5. **Use in Cline chat** - all tools will be available
+
+### 🔑 GitHub Token Setup
+
+For all integrations, you'll need a GitHub Personal Access Token:
+
+1. **Go to**: https://github.com/settings/tokens/new
+2. **Select scopes**: `read:packages` (required for GitHub Packages)
+3. **Generate token** and copy it
+4. **Add to your configuration** in the `env` section as shown above
+
+### ⚡ Quick Start Commands
+
+Once configured with any AI agent, try these commands:
+
+```bash
+# Quick generate a form component
+"Generate a contact form for React using the quick_generate tool with enterprise theme"
+
+# Browse component library  
+"Show me all available form components using browse_component_library"
+
+# Get component source
+"Get the source code for the navbar component in Next.js using get_component_source"
+
+# Generate multiple components
+"Create a user dashboard with form, data table, and navigation using quick_generate_set"
+```
+
+### 🛠️ Troubleshooting
+
+#### Common Issues and Solutions
+
+**❌ "Package not found" or "403 Forbidden"**
+```bash
+# Solution: Ensure GitHub token has correct permissions
+# 1. Check token has 'read:packages' scope
+# 2. Verify .npmrc configuration:
+echo "@xala-technologies:registry=https://npm.pkg.github.com/" > .npmrc
+echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+```
+
+**❌ "MCP server failed to start"**
+```bash
+# Solution: Check Node.js version and installation
+node --version  # Should be >= 18.0.0
+npm ls @xala-technologies/xala-mcp  # Verify installation
+```
+
+**❌ "Tools not showing up in AI agent"**
+- **Claude Desktop**: Check `~/.claude/claude_desktop_config.json` syntax
+- **Cursor**: Ensure `.cursor/mcp.json` is in project root
+- **VS Code Extensions**: Restart VS Code after configuration changes
+- **All agents**: Verify the MCP server process is running in logs
+
+**❌ "GITHUB_TOKEN environment variable not set"**
+```bash
+# For testing locally, export the token:
+export GITHUB_TOKEN=your_github_token_here
+
+# For permanent setup, add to your shell profile (.bashrc, .zshrc):
+echo 'export GITHUB_TOKEN=your_github_token_here' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**❌ "Component generation fails"**  
+Check that the MCP server has access to CLI templates. Ensure the Xala CLI is properly installed or accessible.
+
+#### Getting Help
+
+- **GitHub Issues**: [Report bugs here](https://github.com/Xala-Technologies/Xaheen-platform/issues)
+- **Documentation**: [Full docs](https://docs.xala.tech)
+- **MCP Server Logs**: Check AI agent logs for detailed error messages
 
 ### Programmatic Usage
 
