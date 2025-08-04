@@ -1,0 +1,239 @@
+/**
+ * @fileoverview {{componentName}} - Dashboard Grid Layout with KPI Cards
+ * @description AI-optimized dashboard grid using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Text,
+  Stack,
+  Button,
+  Icon
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly metrics?: MetricCard[];
+  readonly actions?: React.ReactNode;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly columns?: { base: number; md: number; lg: number; xl?: number };
+  readonly gap?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+export interface MetricCard {
+  readonly id: string;
+  readonly title: string;
+  readonly value: string | number;
+  readonly change?: {
+    readonly value: number;
+    readonly type: 'increase' | 'decrease' | 'neutral';
+  };
+  readonly icon?: React.ReactNode;
+  readonly description?: string;
+  readonly actionLabel?: string;
+  readonly onAction?: () => void;
+}
+
+/**
+ * AI-Optimized Dashboard Grid Layout
+ * Pattern: {{mcpComplexity this}} complexity dashboard with responsive grid
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * MCP Patterns:
+ * {{#each mcp.patterns.patterns}}
+ * - {{pattern}}: {{recommendation}}
+ * {{/each}}
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      title = 'Dashboard',
+      subtitle,
+      metrics = [],
+      actions,
+      size = 'xl',
+      columns = { base: 1, md: 2, lg: 3, xl: 4 },
+      gap = 'lg',
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    return (
+      <Container size={size} ref={ref} data-testid={testId} {...props}>
+        <Stack direction="vertical" gap="xl">
+          {/* Dashboard Header */}
+          {(title || subtitle || actions) && (
+            <Stack direction="horizontal" justify="space-between" align="flex-start">
+              <Stack direction="vertical" gap="sm">
+                {title && (
+                  <Text variant="h1" weight="bold">
+                    {{t "dashboard.title" title}}
+                  </Text>
+                )}
+                {subtitle && (
+                  <Text variant="body" color="secondary">
+                    {subtitle}
+                  </Text>
+                )}
+              </Stack>
+              {actions && (
+                <Stack direction="horizontal" gap="sm">
+                  {actions}
+                </Stack>
+              )}
+            </Stack>
+          )}
+
+          {/* KPI Metrics Grid */}
+          <Grid 
+            columns={columns}
+            gap={gap}
+            data-nsm-classification={nsmClassification}
+            role="region"
+            aria-label={{t "dashboard.metrics.label" "Dashboard metrics"}}
+          >
+            {metrics.map((metric) => (
+              <Card 
+                key={metric.id}
+                hover
+                data-testid={`metric-card-${metric.id}`}
+                role="article"
+                aria-labelledby={`metric-title-${metric.id}`}
+              >
+                <CardHeader>
+                  <Stack direction="horizontal" justify="space-between" align="center">
+                    <CardTitle id={`metric-title-${metric.id}`}>
+                      {metric.title}
+                    </CardTitle>
+                    {metric.icon && (
+                      <div className="text-primary-500">
+                        {metric.icon}
+                      </div>
+                    )}
+                  </Stack>
+                </CardHeader>
+                <CardContent>
+                  <Stack direction="vertical" gap="md">
+                    <Text variant="h2" weight="bold" className="text-3xl">
+                      {typeof metric.value === 'number' 
+                        ? metric.value.toLocaleString('{{norwegianLocale}}')
+                        : metric.value
+                      }
+                    </Text>
+                    
+                    {metric.change && (
+                      <Stack direction="horizontal" align="center" gap="sm">
+                        <Icon 
+                          name={metric.change.type === 'increase' ? 'trending-up' : 
+                                metric.change.type === 'decrease' ? 'trending-down' : 'trending-flat'}
+                          className={`h-4 w-4 ${
+                            metric.change.type === 'increase' ? 'text-success-500' :
+                            metric.change.type === 'decrease' ? 'text-error-500' : 
+                            'text-secondary-500'
+                          }`}
+                        />
+                        <Text 
+                          variant="caption" 
+                          className={
+                            metric.change.type === 'increase' ? 'text-success-600' :
+                            metric.change.type === 'decrease' ? 'text-error-600' : 
+                            'text-secondary-600'  
+                          }
+                        >
+                          {metric.change.value > 0 ? '+' : ''}{metric.change.value}%
+                        </Text>
+                      </Stack>
+                    )}
+
+                    {metric.description && (
+                      <Text variant="caption" color="secondary">
+                        {metric.description}
+                      </Text>
+                    )}
+
+                    {metric.actionLabel && metric.onAction && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={metric.onAction}
+                        aria-label={`${metric.actionLabel} for ${metric.title}`}
+                      >
+                        {metric.actionLabel}
+                      </Button>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+          </Grid>
+        </Stack>
+      </Container>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t "dashboard.analytics.title" "Analytics Dashboard"}}
+ *   subtitle={{t "dashboard.analytics.subtitle" "Real-time business metrics"}}
+ *   columns={{ base: 1, md: 2, lg: 3, xl: 4 }}
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   metrics={[
+ *     {
+ *       id: 'revenue',
+ *       title: {{t "metrics.revenue" "Total Revenue"}},
+ *       value: 125430,
+ *       change: { value: 12.5, type: 'increase' },
+ *       icon: <Icon name="currency-dollar" />,
+ *       description: {{t "metrics.revenue.period" "This month"}},
+ *       actionLabel: {{t "actions.view_details" "View Details"}},
+ *       onAction: () => navigateToRevenue()
+ *     },
+ *     {
+ *       id: 'users',
+ *       title: {{t "metrics.users" "Active Users"}},
+ *       value: 8924,
+ *       change: { value: 8.2, type: 'increase' },
+ *       icon: <Icon name="users" />,
+ *       description: {{t "metrics.users.period" "Last 7 days"}}
+ *     },
+ *     {
+ *       id: 'conversion',
+ *       title: {{t "metrics.conversion" "Conversion Rate"}},
+ *       value: '3.2%',
+ *       change: { value: -0.8, type: 'decrease' },
+ *       icon: <Icon name="chart-line" />
+ *     }
+ *   ]}
+ *   actions={
+ *     <Stack direction="horizontal" gap="sm">
+ *       <Button variant="outline">
+ *         {{t "actions.export" "Export"}}
+ *       </Button>
+ *       <Button variant="primary">
+ *         {{t "actions.refresh" "Refresh"}}
+ *       </Button>
+ *     </Stack>
+ *   }
+ * />
+ */

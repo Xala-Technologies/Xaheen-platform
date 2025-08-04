@@ -1,74 +1,74 @@
 <template>
-  <AppShell 
-    :theme="currentTheme"
-    :industry="industry"
-    fullHeight
-  >
-    <Navbar v-if="showNavbar" variant="flat" spacing="md" />
-    
-    <MainContent spacing="xl">
-      <Section align="center" spacing="md">
-        <Heading :level="1" variant="hero" align="center">
+  <Container size="xl">
+    <Stack direction="vertical" gap="xl">
+      <!-- Navbar Section -->
+      <Navbar v-if="showNavbar" variant="flat" />
+      
+      <!-- Hero Section -->
+      <Stack direction="vertical" gap="lg" align="center">
+        <Text variant="h1" align="center">
           {{ t('welcome.title', { name: '{{title}}' }) }}
-        </Heading>
-        <Text variant="lead" align="center" maxWidth="2xl">
+        </Text>
+        <Text variant="body" align="center" color="secondary">
           {{ t('welcome.description', { description: '{{description}}' }) }}
         </Text>
-      </Section>
+      </Stack>
 
+      <!-- Dashboard Layout Pattern -->
       <Dashboard v-if="showDashboard" variant="modern" spacing="xl" />
       
-      <Section v-else spacing="lg">
-        <Grid :columns="{ base: 1, md: 2, lg: 3 }" gap="lg">
-          <Card>
-            <CardHeader>
-              <CardTitle>{{ t('actions.getStarted.title') }}</CardTitle>
-              <CardDescription>
-                {{ t('actions.getStarted.description') }}
-              </CardDescription>
-            </CardHeader>
-            <CardContent spacing="md">
-              <Button variant="primary" size="lg" fullWidth>
-                {{ t('actions.getStarted.button') }}
-              </Button>
-            </CardContent>
-          </Card>
+      <!-- Feature Grid Pattern -->
+      <Grid v-else :cols="{ base: 1, md: 2, lg: 3 }" gap="lg">
+        <Card>
+          <CardHeader>
+            <CardTitle>{{ t('actions.getStarted.title') }}</CardTitle>
+            <CardDescription>
+              {{ t('actions.getStarted.description') }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="primary" size="lg" fullWidth>
+              {{ t('actions.getStarted.button') }}
+            </Button>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{{ t('actions.documentation.title') }}</CardTitle>
-              <CardDescription>
-                {{ t('actions.documentation.description') }}
-              </CardDescription>
-            </CardHeader>
-            <CardContent spacing="md">
-              <Button variant="outline" size="lg" fullWidth>
-                {{ t('actions.documentation.button') }}
-              </Button>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{{ t('actions.documentation.title') }}</CardTitle>
+            <CardDescription>
+              {{ t('actions.documentation.description') }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" size="lg" fullWidth>
+              {{ t('actions.documentation.button') }}
+            </Button>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{{ t('actions.examples.title') }}</CardTitle>
-              <CardDescription>
-                {{ t('actions.examples.description') }}
-              </CardDescription>
-            </CardHeader>
-            <CardContent spacing="md">
-              <Button variant="ghost" size="lg" fullWidth>
-                {{ t('actions.examples.button') }}
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Section>
-    </MainContent>
-  </AppShell>
+        <Card>
+          <CardHeader>
+            <CardTitle>{{ t('actions.examples.title') }}</CardTitle>
+            <CardDescription>
+              {{ t('actions.examples.description') }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="ghost" size="lg" fullWidth>
+              {{ t('actions.examples.button') }}
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Stack>
+  </Container>
 </template>
 
 <script setup lang="ts">
-// v5.0 Architecture: No reactive state management
+// v5.0 Architecture: Perfect semantic structure with Stack components
+// AI-Optimized: Uses semantic naming and predictable patterns
+// Norwegian Compliance: Supports i18n with nb-NO default
 import { 
   Button, 
   Card, 
@@ -76,10 +76,8 @@ import {
   CardDescription, 
   CardHeader, 
   CardTitle,
-  AppShell,
-  MainContent,
-  Section,
-  Heading,
+  Container,
+  Stack,
   Text,
   Grid
 } from '@xala-technologies/ui-system';

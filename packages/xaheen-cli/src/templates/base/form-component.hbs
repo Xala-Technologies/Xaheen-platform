@@ -1,0 +1,275 @@
+/**
+ * @fileoverview {{componentName}} - Form Component Template
+ * @description AI-optimized form component with validation and Norwegian compliance
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{nsmClassification}}, Norwegian Form Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+{{>parent}}
+
+import React, { forwardRef, useState, useCallback, type FormEvent } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Form,
+  Button,
+  Alert,
+  Text
+} from '@xala-technologies/ui-system';
+{{#slot imports}}{{/slot}}
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly onSubmit?: (data: FormData) => Promise<void>;
+  readonly validation?: ValidationConfig;
+  readonly showProgress?: boolean;
+  readonly nsmClassification?: {{nsmClassification}};
+  {{#slot interface-props}}{{/slot}}
+}
+
+export interface FormData {
+  {{#slot form-data-interface}}
+  readonly [key: string]: any;
+  {{/slot}}
+}
+
+export interface ValidationConfig {
+  readonly rules: Record<string, ValidationRule>;
+  readonly messages?: Record<string, string>;
+}
+
+export interface ValidationRule {
+  readonly required?: boolean;
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly pattern?: RegExp;
+  readonly custom?: (value: any) => boolean | string;
+}
+
+{{#slot interfaces}}{{/slot}}
+
+/**
+ * AI-Optimized Form Component
+ * Pattern: {{mcpComplexity this}} complexity form with validation and accessibility
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - Real-time validation
+ * - WCAG AAA form accessibility
+ * - Norwegian language support
+ * - NSM security classification
+ * - Error handling and user feedback
+ */
+export const {{componentName}} = forwardRef<HTMLFormElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t (concat componentName ".title") "Form"}},
+      onSubmit,
+      validation,
+      showProgress = false,
+      nsmClassification = '{{nsmClassification}}',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [formData, setFormData] = useState<FormData>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    {{#slot hooks}}{{/slot}}
+
+    const validateField = useCallback((fieldName: string, value: any): string | null => {
+      if (!validation?.rules[fieldName]) return null;
+      
+      const rule = validation.rules[fieldName];
+      
+      // Required validation
+      if (rule.required && (!value || value === '')) {
+        return validation.messages?.[`${fieldName}.required`] || {{t "validation.required" "This field is required"}};
+      }
+      
+      // Skip other validations if field is empty and not required
+      if (!value || value === '') return null;
+      
+      // Length validations
+      if (rule.minLength && value.length < rule.minLength) {
+        return validation.messages?.[`${fieldName}.minLength`] || {{t "validation.minLength" "Too short"}};
+      }
+      
+      if (rule.maxLength && value.length > rule.maxLength) {
+        return validation.messages?.[`${fieldName}.maxLength`] || {{t "validation.maxLength" "Too long"}};
+      }
+      
+      // Pattern validation
+      if (rule.pattern && !rule.pattern.test(value)) {
+        return validation.messages?.[`${fieldName}.pattern`] || {{t "validation.pattern" "Invalid format"}};
+      }
+      
+      // Custom validation
+      if (rule.custom) {
+        const result = rule.custom(value);
+        if (result !== true) {
+          return typeof result === 'string' ? result : {{t "validation.custom" "Invalid value"}};
+        }
+      }
+      
+      return null;
+    }, [validation]);
+
+    const handleFieldChange = useCallback((fieldName: string, value: any) => {
+      setFormData(prev => ({ ...prev, [fieldName]: value }));
+      
+      // Validate field on change
+      const error = validateField(fieldName, value);
+      setErrors(prev => ({
+        ...prev,
+        [fieldName]: error || undefined
+      }));
+    }, [validateField]);
+
+    const validateForm = useCallback((): boolean => {
+      if (!validation) return true;
+      
+      const newErrors: Record<string, string> = {};
+      let isValid = true;
+      
+      for (const fieldName of Object.keys(validation.rules)) {
+        const error = validateField(fieldName, formData[fieldName]);
+        if (error) {
+          newErrors[fieldName] = error;
+          isValid = false;
+        }
+      }
+      
+      setErrors(newErrors);
+      return isValid;
+    }, [formData, validation, validateField]);
+
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      
+      if (!validateForm()) {
+        setSubmitStatus('error');
+        return;
+      }
+      
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+      
+      try {
+        await onSubmit?.(formData);
+        setSubmitStatus('success');
+        
+        // Reset form on successful submit
+        setFormData({});
+        setErrors({});
+      } catch (error) {
+        console.error('Form submission error:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, onSubmit, validateForm]);
+
+    {{#slot validation}}{{/slot}}
+
+    {{#slot helpers}}{{/slot}}
+
+    return (
+      <Container data-nsm-classification={nsmClassification}>
+        <Card className="shadow-lg">
+          {title && (
+            <CardHeader>
+              <CardTitle>{title}</CardTitle>
+            </CardHeader>
+          )}
+          
+          <CardContent className="p-6">
+            <Form
+              ref={ref}
+              onSubmit={handleSubmit}
+              data-testid={testId}
+              noValidate
+              {...props}
+            >
+              <Stack direction="vertical" gap="lg">
+                {/* Status Messages */}
+                {submitStatus === 'success' && (
+                  <Alert variant="success" role="status">
+                    <Text>{{t (concat componentName ".success") "Form submitted successfully"}}</Text>
+                  </Alert>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <Alert variant="error" role="alert">
+                    <Text>{{t (concat componentName ".error") "Please check the form and try again"}}</Text>
+                  </Alert>
+                )}
+                
+                {{#slot form-fields}}
+                {/* Form fields go here */}
+                {{/slot}}
+                
+                {{#slot actions}}
+                <Stack direction="horizontal" gap="md" justify="flex-end">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={isSubmitting}
+                    loading={isSubmitting}
+                    size="lg"
+                  >
+                    {isSubmitting 
+                      ? {{t (concat componentName ".submitting") "Submitting..."}}
+                      : {{t (concat componentName ".submit") "Submit"}}
+                    }
+                  </Button>
+                </Stack>
+                {{/slot}}
+              </Stack>
+            </Form>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+{{#slot helpers}}{{/slot}}
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t (concat componentName ".title") "Contact Form"}}
+ *   nsmClassification="{{nsmClassification}}"
+ *   validation=\{{
+ *     rules: {
+ *       name: { required: true, minLength: 2 },
+ *       email: { required: true, pattern: /^[^@]+@[^@]+\.[^@]+$/ },
+ *       message: { required: true, minLength: 10, maxLength: 1000 }
+ *     },
+ *     messages: {
+ *       'name.required': {{t "form.name.required" "Name is required"}},
+ *       'email.required': {{t "form.email.required" "Email is required"}},
+ *       'email.pattern': {{t "form.email.invalid" "Please enter a valid email"}},
+ *       'message.required': {{t "form.message.required" "Message is required"}}
+ *     }
+ *   }}
+ *   onSubmit={async (data) => {
+ *     await submitContactForm(data);
+ *     showNotification({{t "notifications.form_submitted" "Form submitted successfully"}});
+ *   }}
+ * />
+ */

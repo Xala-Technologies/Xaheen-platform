@@ -1,0 +1,781 @@
+/**
+ * @fileoverview {{componentName}} - Dashboard Page Template
+ * @description AI-optimized dashboard page using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{mcpNSMLevel this}}, Norwegian Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, useState, useEffect } from 'react';
+import {
+  Container,
+  Stack,
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Text,
+  Button,
+  Badge,
+  Progress,
+  Alert,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly user?: UserInfo;
+  readonly kpiCards?: readonly KPICard[];
+  readonly recentActivities?: readonly ActivityItem[];
+  readonly quickActions?: readonly QuickAction[];
+  readonly notifications?: readonly NotificationItem[];
+  readonly charts?: readonly ChartData[];
+  readonly tables?: readonly TableData[];
+  readonly onRefresh?: () => Promise<void>;
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+export interface UserInfo {
+  readonly name: string;
+  readonly role: string;
+  readonly avatar?: string;
+  readonly lastLogin?: string;
+  readonly clearanceLevel?: {{nsmClassification}};
+}
+
+export interface KPICard {
+  readonly id: string;
+  readonly title: string;
+  readonly value: string | number;
+  readonly change?: string;
+  readonly changeType?: 'positive' | 'negative' | 'neutral';
+  readonly trend?: 'up' | 'down' | 'stable';
+  readonly icon?: string;
+  readonly description?: string;
+}
+
+export interface ActivityItem {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly timestamp: string;
+  readonly type: 'info' | 'success' | 'warning' | 'error';
+  readonly user?: string;
+  readonly href?: string;
+}
+
+export interface QuickAction {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon?: string;
+  readonly action: () => void;
+  readonly variant?: 'primary' | 'secondary' | 'outline';
+  readonly clearanceRequired?: {{nsmClassification}};
+}
+
+export interface NotificationItem {
+  readonly id: string;
+  readonly title: string;
+  readonly message: string;
+  readonly type: 'info' | 'success' | 'warning' | 'error';
+  readonly timestamp: string;
+  readonly read: boolean;
+  readonly urgent?: boolean;
+}
+
+export interface ChartData {
+  readonly id: string;
+  readonly title: string;
+  readonly type: 'line' | 'bar' | 'pie' | 'area';
+  readonly data: any[];
+  readonly description?: string;
+}
+
+export interface TableData {
+  readonly id: string;
+  readonly title: string;
+  readonly headers: readonly string[];
+  readonly rows: readonly any[][];
+  readonly description?: string;
+  readonly maxRows?: number;
+}
+
+/**
+ * AI-Optimized Dashboard Page
+ * Pattern: {{mcpComplexity this}} complexity dashboard with semantic components
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - Real-time data display
+ * - Role-based access control
+ * - Responsive grid layouts
+ * - Accessibility-first design
+ * - Norwegian government styling
+ * - NSM classification support
+ * - Performance optimized
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t (concat componentName ".title") "Dashboard"}},
+      subtitle = {{t (concat componentName ".subtitle") "Welcome to your control center"}},
+      user,
+      kpiCards = defaultKPICards,
+      recentActivities = defaultActivities,
+      quickActions = defaultQuickActions,
+      notifications = defaultNotifications,
+      charts = [],
+      tables = [],
+      onRefresh,
+      nsmClassification = '{{nsmClassification}}',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [activeTab, setActiveTab] = useState('overview');
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+    useEffect(() => {
+      const unread = notifications.filter(n => !n.read).length;
+      setUnreadNotifications(unread);
+    }, [notifications]);
+
+    const handleRefresh = async () => {
+      if (!onRefresh) return;
+      
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } catch (error) {
+        console.error('Dashboard refresh failed:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
+    const getKPIChangeColor = (changeType?: KPICard['changeType']) => {
+      switch (changeType) {
+        case 'positive': return 'text-success-600';
+        case 'negative': return 'text-error-600';
+        case 'neutral':
+        default: return 'text-secondary-600';
+      }
+    };
+
+    const getActivityTypeColor = (type: ActivityItem['type']) => {
+      switch (type) {
+        case 'success': return 'success';
+        case 'warning': return 'warning';
+        case 'error': return 'error';
+        case 'info':
+        default: return 'info';
+      }
+    };
+
+    const hasRequiredClearance = (requiredLevel?: {{nsmClassification}}): boolean => {
+      if (!requiredLevel || !user?.clearanceLevel) return true;
+      
+      const levels: Record<{{nsmClassification}}, number> = {
+        'OPEN': 0,
+        'RESTRICTED': 1,
+        'CONFIDENTIAL': 2,
+        'SECRET': 3
+      };
+      
+      return levels[user.clearanceLevel] >= levels[requiredLevel];
+    };
+
+    return (
+      <div
+        ref={ref}
+        className="dashboard-page"
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        <Container size="full" className="p-6">
+          <Stack direction="vertical" gap="xl">
+            {/* Header */}
+            <Stack direction="horizontal" justify="between" align="center">
+              <Stack direction="vertical" gap="sm">
+                <Text variant="h1" className="text-4xl font-bold">
+                  {title}
+                </Text>
+                {subtitle && (
+                  <Text variant="h4" color="secondary">
+                    {subtitle}
+                  </Text>
+                )}
+              </Stack>
+              
+              <Stack direction="horizontal" gap="md" align="center">
+                {user && (
+                  <Stack direction="horizontal" gap="sm" align="center">
+                    <Stack direction="vertical" gap="xs" align="end">
+                      <Text variant="caption" weight="semibold">
+                        {{t (concat componentName ".welcome") "Welcome"}}, {user.name}
+                      </Text>
+                      <Text variant="caption" color="secondary">
+                        {user.role}
+                      </Text>
+                      {user.clearanceLevel && (
+                        <Badge variant="outline" size="sm">
+                          {user.clearanceLevel}
+                        </Badge>
+                      )}
+                    </Stack>
+                    {user.avatar && (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                    )}
+                  </Stack>
+                )}
+                
+                <Button
+                  variant="outline"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  loading={isRefreshing}
+                >
+                  {isRefreshing 
+                    ? {{t (concat componentName ".refreshing") "Refreshing..."}}
+                    : {{t (concat componentName ".refresh") "Refresh"}}
+                  }
+                </Button>
+                
+                <Badge variant="outline">
+                  NSM {nsmClassification}
+                </Badge>
+              </Stack>
+            </Stack>
+
+            {/* Quick Actions */}
+            {quickActions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{{t (concat componentName ".quick_actions.title") "Quick Actions"}}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Grid cols={4} gap="md">
+                    {quickActions.map((action) => (
+                      <Button
+                        key={action.id}
+                        variant={action.variant || 'outline'}
+                        size="lg"
+                        onClick={action.action}
+                        disabled={!hasRequiredClearance(action.clearanceRequired)}
+                        className="h-auto p-4 flex-col gap-2"
+                      >
+                        {action.icon && (
+                          <span className="text-2xl">{action.icon}</span>
+                        )}
+                        <Stack direction="vertical" gap="xs" align="center">
+                          <Text variant="caption" weight="semibold">
+                            {action.title}
+                          </Text>
+                          <Text variant="caption" color="secondary" className="text-center">
+                            {action.description}
+                          </Text>
+                        </Stack>
+                      </Button>
+                    ))}
+                  </Grid>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* KPI Cards */}
+            <Grid cols={4} gap="lg">
+              {kpiCards.map((kpi) => (
+                <Card key={kpi.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <Stack direction="vertical" gap="md">
+                      <Stack direction="horizontal" justify="between" align="start">
+                        <Stack direction="vertical" gap="xs">
+                          <Text variant="caption" color="secondary">
+                            {kpi.title}
+                          </Text>
+                          <Text variant="h2" weight="bold" className="text-3xl">
+                            {kpi.value}
+                          </Text>
+                        </Stack>
+                        
+                        {kpi.icon && (
+                          <span className="text-2xl text-primary-600">{kpi.icon}</span>
+                        )}
+                      </Stack>
+                      
+                      {kpi.change && (
+                        <Stack direction="horizontal" gap="sm" align="center">
+                          <span className={`text-sm ${getKPIChangeColor(kpi.changeType)}`}>
+                            {kpi.trend === 'up' && '↗'}
+                            {kpi.trend === 'down' && '↘'}
+                            {kpi.trend === 'stable' && '→'}
+                            {kpi.change}
+                          </span>
+                          {kpi.description && (
+                            <Text variant="caption" color="secondary">
+                              {kpi.description}
+                            </Text>
+                          )}
+                        </Stack>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ))}
+            </Grid>
+
+            {/* Main Content Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="overview">
+                  {{t (concat componentName ".tabs.overview") "Overview"}}
+                </TabsTrigger>
+                <TabsTrigger value="activities">
+                  {{t (concat componentName ".tabs.activities") "Recent Activities"}}
+                </TabsTrigger>
+                <TabsTrigger value="notifications">
+                  {{t (concat componentName ".tabs.notifications") "Notifications"}}
+                  {unreadNotifications > 0 && (
+                    <Badge variant="error" size="sm" className="ml-2">
+                      {unreadNotifications}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                {charts.length > 0 && (
+                  <TabsTrigger value="analytics">
+                    {{t (concat componentName ".tabs.analytics") "Analytics"}}
+                  </TabsTrigger>
+                )}
+                {tables.length > 0 && (
+                  <TabsTrigger value="data">
+                    {{t (concat componentName ".tabs.data") "Data Tables"}}
+                  </TabsTrigger>
+                )}
+              </TabsList>
+
+              <TabsContent value="overview">
+                <Grid cols={2} gap="lg">
+                  {/* Recent Activities Preview */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{{t (concat componentName ".overview.recent_activities") "Recent Activities"}}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Stack direction="vertical" gap="md">
+                        {recentActivities.slice(0, 5).map((activity) => (
+                          <Stack key={activity.id} direction="horizontal" gap="md" align="start">
+                            <Badge 
+                              variant={getActivityTypeColor(activity.type)} 
+                              size="sm" 
+                              className="mt-1"
+                            >
+                              {activity.type}
+                            </Badge>
+                            <Stack direction="vertical" gap="xs" className="flex-1">
+                              <Text variant="caption" weight="semibold">
+                                {activity.title}
+                              </Text>
+                              <Text variant="caption" color="secondary">
+                                {activity.description}
+                              </Text>
+                              <Text variant="caption" color="secondary">
+                                {new Date(activity.timestamp).toLocaleString()}
+                              </Text>
+                            </Stack>
+                          </Stack>
+                        ))}
+                        
+                        <Button variant="link" size="sm" onClick={() => setActiveTab('activities')}>
+                          {{t (concat componentName ".overview.view_all_activities") "View all activities"}} →
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+
+                  {/* System Status */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{{t (concat componentName ".overview.system_status") "System Status"}}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Stack direction="vertical" gap="md">
+                        <Stack direction="horizontal" justify="between" align="center">
+                          <Text variant="caption">{{t (concat componentName ".status.uptime") "System Uptime"}}</Text>
+                          <Badge variant="success">99.9%</Badge>
+                        </Stack>
+                        
+                        <Stack direction="vertical" gap="sm">
+                          <Stack direction="horizontal" justify="between" align="center">
+                            <Text variant="caption">{{t (concat componentName ".status.performance") "Performance"}}</Text>
+                            <Text variant="caption" color="secondary">Excellent</Text>
+                          </Stack>
+                          <Progress value={95} className="w-full" />
+                        </Stack>
+                        
+                        <Stack direction="vertical" gap="sm">
+                          <Stack direction="horizontal" justify="between" align="center">
+                            <Text variant="caption">{{t (concat componentName ".status.security") "Security Level"}}</Text>
+                            <Badge variant="success">{nsmClassification}</Badge>
+                          </Stack>
+                          <Progress value={100} className="w-full" />
+                        </Stack>
+                        
+                        <Alert variant="success" size="sm">
+                          <Text variant="caption">
+                            {{t (concat componentName ".status.all_systems_operational") "All systems operational"}}
+                          </Text>
+                        </Alert>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </TabsContent>
+
+              <TabsContent value="activities">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{{t (concat componentName ".activities.title") "Recent Activities"}}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Stack direction="vertical" gap="md">
+                      {recentActivities.map((activity) => (
+                        <Stack key={activity.id} direction="horizontal" gap="md" align="start" className="p-4 border border-secondary-200 rounded-lg">
+                          <Badge variant={getActivityTypeColor(activity.type)}>
+                            {activity.type}
+                          </Badge>
+                          <Stack direction="vertical" gap="xs" className="flex-1">
+                            <Text variant="body" weight="semibold">
+                              {activity.title}
+                            </Text>
+                            <Text variant="body" color="secondary">
+                              {activity.description}
+                            </Text>
+                            <Stack direction="horizontal" gap="md">
+                              <Text variant="caption" color="secondary">
+                                {new Date(activity.timestamp).toLocaleString()}
+                              </Text>
+                              {activity.user && (
+                                <Text variant="caption" color="secondary">
+                                  {{t (concat componentName ".activities.by") "by"}} {activity.user}
+                                </Text>
+                              )}
+                            </Stack>
+                            {activity.href && (
+                              <Button variant="link" size="sm" href={activity.href}>
+                                {{t (concat componentName ".activities.view_details") "View details"}} →
+                              </Button>
+                            )}
+                          </Stack>
+                        </Stack>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{{t (concat componentName ".notifications.title") "Notifications"}}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Stack direction="vertical" gap="md">
+                      {notifications.map((notification) => (
+                        <Alert
+                          key={notification.id}
+                          variant={notification.type}
+                          className={`${!notification.read ? 'border-l-4 border-l-primary-500' : ''} ${notification.urgent ? 'shadow-lg' : ''}`}
+                        >
+                          <Stack direction="vertical" gap="sm">
+                            <Stack direction="horizontal" justify="between" align="start">
+                              <Text variant="body" weight="semibold">
+                                {notification.title}
+                                {!notification.read && (
+                                  <Badge variant="primary" size="sm" className="ml-2">
+                                    {{t (concat componentName ".notifications.new") "New"}}
+                                  </Badge>
+                                )}
+                                {notification.urgent && (
+                                  <Badge variant="error" size="sm" className="ml-2">
+                                    {{t (concat componentName ".notifications.urgent") "Urgent"}}
+                                  </Badge>
+                                )}
+                              </Text>
+                              <Text variant="caption" color="secondary">
+                                {new Date(notification.timestamp).toLocaleString()}
+                              </Text>
+                            </Stack>
+                            <Text variant="body">
+                              {notification.message}
+                            </Text>
+                          </Stack>
+                        </Alert>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {charts.length > 0 && (
+                <TabsContent value="analytics">
+                  <Grid cols={2} gap="lg">
+                    {charts.map((chart) => (
+                      <Card key={chart.id}>
+                        <CardHeader>
+                          <CardTitle>{chart.title}</CardTitle>
+                          {chart.description && (
+                            <Text variant="caption" color="secondary">
+                              {chart.description}
+                            </Text>
+                          )}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="chart-placeholder h-64 bg-secondary-100 rounded-lg flex items-center justify-center">
+                            <Text variant="body" color="secondary">
+                              {{t (concat componentName ".charts.placeholder") "Chart visualization would be rendered here"}}
+                            </Text>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Grid>
+                </TabsContent>
+              )}
+
+              {tables.length > 0 && (
+                <TabsContent value="data">
+                  <Stack direction="vertical" gap="lg">
+                    {tables.map((tableData) => (
+                      <Card key={tableData.id}>
+                        <CardHeader>
+                          <CardTitle>{tableData.title}</CardTitle>
+                          {tableData.description && (
+                            <Text variant="caption" color="secondary">
+                              {tableData.description}
+                            </Text>
+                          )}
+                        </CardHeader>
+                        <CardContent>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                {tableData.headers.map((header, index) => (
+                                  <TableCell key={index} weight="semibold">
+                                    {header}
+                                  </TableCell>
+                                ))}
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {tableData.rows.slice(0, tableData.maxRows || 10).map((row, rowIndex) => (
+                                <TableRow key={rowIndex}>
+                                  {row.map((cell, cellIndex) => (
+                                    <TableCell key={cellIndex}>
+                                      {cell}
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                          
+                          {tableData.rows.length > (tableData.maxRows || 10) && (
+                            <Stack direction="horizontal" justify="center" className="mt-4">
+                              <Text variant="caption" color="secondary">
+                                {{t (concat componentName ".table.showing") "Showing"}} {tableData.maxRows || 10} {{t (concat componentName ".table.of") "of"}} {tableData.rows.length} {{t (concat componentName ".table.rows") "rows"}}
+                              </Text>
+                            </Stack>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                </TabsContent>
+              )}
+            </Tabs>
+          </Stack>
+        </Container>
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+// Default data
+const defaultKPICards: readonly KPICard[] = [
+  {
+    id: 'total-users',
+    title: {{t (concat componentName ".kpi.total_users") "Total Users"}},
+    value: '125,430',
+    change: '+12.5%',
+    changeType: 'positive',
+    trend: 'up',
+    icon: '👥',
+    description: {{t (concat componentName ".kpi.total_users.desc") "vs last month"}}
+  },
+  {
+    id: 'active-sessions',
+    title: {{t (concat componentName ".kpi.active_sessions") "Active Sessions"}},
+    value: '2,847',
+    change: '+5.2%',
+    changeType: 'positive',
+    trend: 'up',
+    icon: '💻',
+    description: {{t (concat componentName ".kpi.active_sessions.desc") "currently online"}}
+  },
+  {
+    id: 'system-uptime',
+    title: {{t (concat componentName ".kpi.system_uptime") "System Uptime"}},
+    value: '99.9%',
+    change: '+0.1%',
+    changeType: 'positive',
+    trend: 'stable',
+    icon: '⚡',
+    description: {{t (concat componentName ".kpi.system_uptime.desc") "last 30 days"}}
+  },
+  {
+    id: 'security-score',
+    title: {{t (concat componentName ".kpi.security_score") "Security Score"}},
+    value: '98/100',
+    change: 'Excellent',
+    changeType: 'positive',
+    trend: 'stable',
+    icon: '🔒',
+    description: {{t (concat componentName ".kpi.security_score.desc") "NSM compliant"}}
+  }
+];
+
+const defaultActivities: readonly ActivityItem[] = [
+  {
+    id: 'activity-1',
+    title: {{t (concat componentName ".activities.user_login") "User login"}},
+    description: {{t (concat componentName ".activities.user_login.desc") "Successful login from Oslo"}},
+    timestamp: new Date(Date.now() - 300000).toISOString(),
+    type: 'success',
+    user: 'Lars Andersen'
+  },
+  {
+    id: 'activity-2',
+    title: {{t (concat componentName ".activities.system_update") "System update"}},
+    description: {{t (concat componentName ".activities.system_update.desc") "Security patches applied successfully"}},
+    timestamp: new Date(Date.now() - 1800000).toISOString(),
+    type: 'info'
+  },
+  {
+    id: 'activity-3',
+    title: {{t (concat componentName ".activities.backup_completed") "Backup completed"}},
+    description: {{t (concat componentName ".activities.backup_completed.desc") "Daily backup finished successfully"}},
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    type: 'success'
+  }
+];
+
+const defaultQuickActions: readonly QuickAction[] = [
+  {
+    id: 'new-service',
+    title: {{t (concat componentName ".actions.new_service") "New Service"}},
+    description: {{t (concat componentName ".actions.new_service.desc") "Create a new government service"}},
+    icon: '➕',
+    action: () => console.log('New service'),
+    variant: 'primary',
+    clearanceRequired: 'RESTRICTED'
+  },
+  {
+    id: 'user-management',
+    title: {{t (concat componentName ".actions.user_management") "User Management"}},
+    description: {{t (concat componentName ".actions.user_management.desc") "Manage user accounts and permissions"}},
+    icon: '👥',
+    action: () => console.log('User management'),
+    variant: 'outline',
+    clearanceRequired: 'CONFIDENTIAL'
+  },
+  {
+    id: 'reports',
+    title: {{t (concat componentName ".actions.reports") "Generate Reports"}},
+    description: {{t (concat componentName ".actions.reports.desc") "Create compliance and usage reports"}},
+    icon: '📊',
+    action: () => console.log('Reports'),
+    variant: 'outline'
+  },
+  {
+    id: 'settings',
+    title: {{t (concat componentName ".actions.settings") "System Settings"}},
+    description: {{t (concat componentName ".actions.settings.desc") "Configure system parameters"}},
+    icon: '⚙️',
+    action: () => console.log('Settings'),
+    variant: 'outline',
+    clearanceRequired: 'SECRET'
+  }
+];
+
+const defaultNotifications: readonly NotificationItem[] = [
+  {
+    id: 'notif-1',
+    title: {{t (concat componentName ".notifications.security_update") "Security Update Available"}},
+    message: {{t (concat componentName ".notifications.security_update.msg") "A new security update is available for your system. Please install it at your earliest convenience."}},
+    type: 'warning',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    read: false,
+    urgent: true
+  },
+  {
+    id: 'notif-2',
+    title: {{t (concat componentName ".notifications.maintenance") "Scheduled Maintenance"}},
+    message: {{t (concat componentName ".notifications.maintenance.msg") "System maintenance is scheduled for tonight from 02:00 to 04:00 CET."}},
+    type: 'info',
+    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    read: true
+  },
+  {
+    id: 'notif-3',
+    title: {{t (concat componentName ".notifications.backup_success") "Backup Completed"}},
+    message: {{t (concat componentName ".notifications.backup_success.msg") "Daily backup has been completed successfully. All data is secure."}},
+    type: 'success',
+    timestamp: new Date(Date.now() - 10800000).toISOString(),
+    read: true
+  }
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t "dashboard.main.title" "Government Portal Dashboard"}}
+ *   subtitle={{t "dashboard.main.subtitle" "Monitor and manage government services"}}
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   user=\{{
+ *     name: "Ole Hansen",
+ *     role: "System Administrator",
+ *     clearanceLevel: "{{mcpNSMLevel this}}",
+ *     avatar: "/avatars/ole-hansen.jpg",
+ *     lastLogin: new Date().toISOString()
+ *   }}
+ *   onRefresh={async () => {
+ *     await refreshDashboardData();
+ *     showNotification({{t "notifications.dashboard_refreshed" "Dashboard data refreshed"}});
+ *   }}
+ *   kpiCards={customKPICards}
+ *   quickActions={userQuickActions}
+ * />
+ */

@@ -1,0 +1,500 @@
+/**
+ * @fileoverview {{componentName}} - Landing Page Template
+ * @description AI-optimized landing page using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{mcpNSMLevel this}}, Norwegian Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef } from 'react';
+import {
+  Container,
+  Stack,
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Text,
+  Button,
+  Badge,
+  Separator,
+  Image
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly heroTitle?: string;
+  readonly heroSubtitle?: string;
+  readonly heroImage?: string;
+  readonly heroCtaText?: string;
+  readonly heroCtaAction?: () => void;
+  readonly features?: readonly FeatureItem[];
+  readonly testimonials?: readonly TestimonialItem[];
+  readonly ctaSectionTitle?: string;
+  readonly ctaSectionSubtitle?: string;
+  readonly ctaButtonText?: string;
+  readonly ctaButtonAction?: () => void;
+  readonly footerLinks?: readonly FooterLinkGroup[];
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+export interface FeatureItem {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon?: string;
+  readonly image?: string;
+  readonly href?: string;
+}
+
+export interface TestimonialItem {
+  readonly id: string;
+  readonly quote: string;
+  readonly author: string;
+  readonly role: string;
+  readonly company?: string;
+  readonly avatar?: string;
+}
+
+export interface FooterLinkGroup {
+  readonly title: string;
+  readonly links: readonly {
+    readonly label: string;
+    readonly href: string;
+  }[];
+}
+
+/**
+ * AI-Optimized Landing Page
+ * Pattern: {{mcpComplexity this}} complexity landing page with semantic structure
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - Semantic HTML structure
+ * - Responsive grid layouts
+ * - Accessibility-first design
+ * - Norwegian government styling
+ * - NSM classification support
+ * - Performance optimized
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t (concat componentName ".title") "Welcome"}},
+      subtitle = {{t (concat componentName ".subtitle") "Your digital government services"}},
+      heroTitle = {{t (concat componentName ".hero.title") "Secure Digital Services"}},
+      heroSubtitle = {{t (concat componentName ".hero.subtitle") "Access all government services in one secure platform"}},
+      heroImage = "/images/hero-government.jpg",
+      heroCtaText = {{t (concat componentName ".hero.cta") "Get Started"}},
+      heroCtaAction,
+      features = defaultFeatures,
+      testimonials = defaultTestimonials,
+      ctaSectionTitle = {{t (concat componentName ".cta.title") "Ready to Begin?"}},
+      ctaSectionSubtitle = {{t (concat componentName ".cta.subtitle") "Join thousands of citizens using our secure platform"}},
+      ctaButtonText = {{t (concat componentName ".cta.button") "Start Now"}},
+      ctaButtonAction,
+      footerLinks = defaultFooterLinks,
+      nsmClassification = '{{nsmClassification}}',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    return (
+      <div
+        ref={ref}
+        className="landing-page"
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        {/* Hero Section */}
+        <section className="hero-section bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+          <Container size="xl" className="py-20">
+            <Grid cols={2} gap="xl" align="center">
+              <Stack direction="vertical" gap="xl">
+                <Stack direction="vertical" gap="lg">
+                  <Badge variant="outline" className="bg-white/10 text-white border-white/20 w-fit">
+                    {{t (concat componentName ".hero.badge") "Secure & Compliant"}} • NSM {nsmClassification}
+                  </Badge>
+                  
+                  <Text variant="h1" className="text-5xl font-bold leading-tight">
+                    {heroTitle}
+                  </Text>
+                  
+                  <Text variant="h3" className="text-blue-100 max-w-2xl">
+                    {heroSubtitle}
+                  </Text>
+                </Stack>
+                
+                <Stack direction="horizontal" gap="md">
+                  <Button
+                    variant="filled"
+                    size="lg"
+                    onClick={heroCtaAction}
+                    className="bg-white text-blue-600 hover:bg-blue-50"
+                  >
+                    {heroCtaText}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-white text-white hover:bg-white/10"
+                  >
+                    {{t (concat componentName ".hero.learn_more") "Learn More"}}
+                  </Button>
+                </Stack>
+                
+                <Stack direction="horizontal" gap="lg" align="center" className="text-blue-200">
+                  <Stack direction="horizontal" gap="sm" align="center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    <Text variant="caption">{{t (concat componentName ".hero.secure") "Bank-level Security"}}</Text>
+                  </Stack>
+                  <Stack direction="horizontal" gap="sm" align="center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    <Text variant="caption">{{t (concat componentName ".hero.accessible") "WCAG AAA Compliant"}}</Text>
+                  </Stack>
+                  <Stack direction="horizontal" gap="sm" align="center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    <Text variant="caption">{{t (concat componentName ".hero.norwegian") "Norwegian Standards"}}</Text>
+                  </Stack>
+                </Stack>
+              </Stack>
+              
+              <div className="hero-image">
+                {heroImage && (
+                  <Image
+                    src={heroImage}
+                    alt={heroTitle}
+                    className="rounded-xl shadow-2xl"
+                    width={600}
+                    height={400}
+                  />
+                )}
+              </div>
+            </Grid>
+          </Container>
+        </section>
+
+        {/* Features Section */}
+        <section className="features-section py-20 bg-secondary-50">
+          <Container size="xl">
+            <Stack direction="vertical" gap="xl">
+              <Stack direction="vertical" gap="md" align="center" className="text-center max-w-3xl mx-auto">
+                <Text variant="h2" className="text-4xl font-bold">
+                  {{t (concat componentName ".features.title") "Powerful Features"}}
+                </Text>
+                <Text variant="h4" color="secondary">
+                  {{t (concat componentName ".features.subtitle") "Everything you need for secure digital government services"}}
+                </Text>
+              </Stack>
+              
+              <Grid cols={3} gap="lg">
+                {features.map((feature) => (
+                  <Card key={feature.id} className="h-full hover:shadow-lg transition-shadow">
+                    <CardContent className="p-8">
+                      <Stack direction="vertical" gap="md">
+                        {feature.icon && (
+                          <div className="feature-icon text-4xl text-primary-600">
+                            {feature.icon}
+                          </div>
+                        )}
+                        
+                        <Text variant="h4" weight="semibold">
+                          {feature.title}
+                        </Text>
+                        
+                        <Text variant="body" color="secondary">
+                          {feature.description}
+                        </Text>
+                        
+                        {feature.href && (
+                          <Button variant="link" size="sm" href={feature.href}>
+                            {{t (concat componentName ".features.learn_more") "Learn more"}} →
+                          </Button>
+                        )}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Grid>
+            </Stack>
+          </Container>
+        </section>
+
+        {/* Testimonials Section */}
+        {testimonials.length > 0 && (
+          <section className="testimonials-section py-20">
+            <Container size="xl">
+              <Stack direction="vertical" gap="xl">
+                <Stack direction="vertical" gap="md" align="center" className="text-center max-w-3xl mx-auto">
+                  <Text variant="h2" className="text-4xl font-bold">
+                    {{t (concat componentName ".testimonials.title") "Trusted by Citizens"}}
+                  </Text>
+                  <Text variant="h4" color="secondary">
+                    {{t (concat componentName ".testimonials.subtitle") "See what our users say about our platform"}}
+                  </Text>
+                </Stack>
+                
+                <Grid cols={3} gap="lg">
+                  {testimonials.map((testimonial) => (
+                    <Card key={testimonial.id} variant="outline" className="h-full">
+                      <CardContent className="p-6">
+                        <Stack direction="vertical" gap="md">
+                          <Text variant="body" className="italic">
+                            "{testimonial.quote}"
+                          </Text>
+                          
+                          <Separator />
+                          
+                          <Stack direction="horizontal" gap="md" align="center">
+                            {testimonial.avatar && (
+                              <Image
+                                src={testimonial.avatar}
+                                alt={testimonial.author}
+                                className="w-12 h-12 rounded-full"
+                                width={48}
+                                height={48}
+                              />
+                            )}
+                            
+                            <Stack direction="vertical" gap="xs">
+                              <Text variant="caption" weight="semibold">
+                                {testimonial.author}
+                              </Text>
+                              <Text variant="caption" color="secondary">
+                                {testimonial.role}
+                                {testimonial.company && ` at ${testimonial.company}`}
+                              </Text>
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Grid>
+              </Stack>
+            </Container>
+          </section>
+        )}
+
+        {/* CTA Section */}
+        <section className="cta-section py-20 bg-primary-600 text-white">
+          <Container size="xl">
+            <Stack direction="vertical" gap="lg" align="center" className="text-center">
+              <Text variant="h2" className="text-4xl font-bold">
+                {ctaSectionTitle}
+              </Text>
+              
+              <Text variant="h4" className="text-primary-100 max-w-2xl">
+                {ctaSectionSubtitle}
+              </Text>
+              
+              <Stack direction="horizontal" gap="md">
+                <Button
+                  variant="filled"
+                  size="lg"
+                  onClick={ctaButtonAction}
+                  className="bg-white text-primary-600 hover:bg-primary-50"
+                >
+                  {ctaButtonText}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-white text-white hover:bg-white/10"
+                >
+                  {{t (concat componentName ".cta.contact") "Contact Support"}}
+                </Button>
+              </Stack>
+              
+              <Text variant="caption" className="text-primary-200">
+                {{t (concat componentName ".cta.security") "🔒 Your data is protected with bank-level encryption"}}
+              </Text>
+            </Stack>
+          </Container>
+        </section>
+
+        {/* Footer */}
+        <footer className="footer bg-secondary-900 text-white py-16">
+          <Container size="xl">
+            <Stack direction="vertical" gap="xl">
+              <Grid cols={4} gap="lg">
+                {/* Brand Column */}
+                <Stack direction="vertical" gap="md">
+                  <Text variant="h4" weight="bold">
+                    {{t (concat componentName ".footer.brand") "Norwegian Government"}}
+                  </Text>
+                  <Text variant="body" color="secondary" className="text-secondary-300">
+                    {{t (concat componentName ".footer.description") "Secure digital services for all citizens and businesses in Norway."}}
+                  </Text>
+                  <Badge variant="outline" className="w-fit border-secondary-600 text-secondary-300">
+                    NSM {nsmClassification} {{t (concat componentName ".footer.classified") "Classified"}}
+                  </Badge>
+                </Stack>
+                
+                {/* Footer Links */}
+                {footerLinks.map((group, index) => (
+                  <Stack key={index} direction="vertical" gap="md">
+                    <Text variant="h5" weight="semibold">
+                      {group.title}
+                    </Text>
+                    <Stack direction="vertical" gap="sm">
+                      {group.links.map((link, linkIndex) => (
+                        <Button
+                          key={linkIndex}
+                          variant="link"
+                          size="sm"
+                          href={link.href}
+                          className="text-secondary-300 hover:text-white justify-start p-0"
+                        >
+                          {link.label}
+                        </Button>
+                      ))}
+                    </Stack>
+                  </Stack>
+                ))}
+              </Grid>
+              
+              <Separator className="border-secondary-700" />
+              
+              <Stack direction="horizontal" justify="between" align="center">
+                <Text variant="caption" color="secondary" className="text-secondary-400">
+                  {{t (concat componentName ".footer.copyright") "© 2024 Norwegian Government. All rights reserved."}}
+                </Text>
+                
+                <Stack direction="horizontal" gap="md">
+                  <Button variant="link" size="sm" className="text-secondary-400 hover:text-white">
+                    {{t (concat componentName ".footer.privacy") "Privacy Policy"}}
+                  </Button>
+                  <Button variant="link" size="sm" className="text-secondary-400 hover:text-white">
+                    {{t (concat componentName ".footer.accessibility") "Accessibility"}}
+                  </Button>
+                  <Button variant="link" size="sm" className="text-secondary-400 hover:text-white">
+                    {{t (concat componentName ".footer.terms") "Terms of Service"}}
+                  </Button>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Container>
+        </footer>
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+// Default data
+const defaultFeatures: readonly FeatureItem[] = [
+  {
+    id: 'security',
+    title: {{t (concat componentName ".features.security.title") "Bank-Level Security"}},
+    description: {{t (concat componentName ".features.security.desc") "Advanced encryption and multi-factor authentication protect your data"}},
+    icon: '🔒'
+  },
+  {
+    id: 'accessibility',
+    title: {{t (concat componentName ".features.accessibility.title") "Fully Accessible"}},
+    description: {{t (concat componentName ".features.accessibility.desc") "WCAG AAA compliant design ensures usability for everyone"}},
+    icon: '♿'
+  },
+  {
+    id: 'compliance',
+    title: {{t (concat componentName ".features.compliance.title") "Norwegian Compliant"}},
+    description: {{t (concat componentName ".features.compliance.desc") "Built according to Norwegian government digital standards"}},
+    icon: '🇳🇴'
+  },
+  {
+    id: 'performance',
+    title: {{t (concat componentName ".features.performance.title") "High Performance"}},
+    description: {{t (concat componentName ".features.performance.desc") "Optimized for speed and reliability across all devices"}},
+    icon: '⚡'
+  },
+  {
+    id: 'multilingual',
+    title: {{t (concat componentName ".features.multilingual.title") "Multilingual Support"}},
+    description: {{t (concat componentName ".features.multilingual.desc") "Available in Norwegian (Bokmål & Nynorsk), English, and Arabic"}},
+    icon: '🌐'
+  },
+  {
+    id: 'support',
+    title: {{t (concat componentName ".features.support.title") "24/7 Support"}},
+    description: {{t (concat componentName ".features.support.desc") "Round-the-clock assistance from our expert support team"}},
+    icon: '🎧'
+  }
+];
+
+const defaultTestimonials: readonly TestimonialItem[] = [
+  {
+    id: 'citizen-1',
+    quote: {{t (concat componentName ".testimonials.citizen1.quote") "The platform makes accessing government services so much easier. Everything is in one place and very secure."}},
+    author: {{t (concat componentName ".testimonials.citizen1.author") "Lars Andersen"}},
+    role: {{t (concat componentName ".testimonials.citizen1.role") "Citizen"}},
+    company: {{t (concat componentName ".testimonials.citizen1.location") "Oslo"}}
+  },
+  {
+    id: 'business-1',
+    quote: {{t (concat componentName ".testimonials.business1.quote") "As a business owner, I appreciate the streamlined processes and clear compliance guidelines."}},
+    author: {{t (concat componentName ".testimonials.business1.author") "Maria Hansen"}},
+    role: {{t (concat componentName ".testimonials.business1.role") "Business Owner"}},
+    company: {{t (concat componentName ".testimonials.business1.company") "Hansen Electronics"}}
+  },
+  {
+    id: 'employee-1',
+    quote: {{t (concat componentName ".testimonials.employee1.quote") "The accessibility features are excellent. I can navigate everything easily using only my keyboard."}},
+    author: {{t (concat componentName ".testimonials.employee1.author") "Astrid Olsen"}},
+    role: {{t (concat componentName ".testimonials.employee1.role") "Government Employee"}},
+    company: {{t (concat componentName ".testimonials.employee1.department") "Ministry of Digital Affairs"}}
+  }
+];
+
+const defaultFooterLinks: readonly FooterLinkGroup[] = [
+  {
+    title: {{t (concat componentName ".footer.services.title") "Services"}},
+    links: [
+      { label: {{t (concat componentName ".footer.services.citizen") "Citizen Services"}}, href: '/services/citizen' },
+      { label: {{t (concat componentName ".footer.services.business") "Business Services"}}, href: '/services/business' },
+      { label: {{t (concat componentName ".footer.services.digital_id") "Digital ID"}}, href: '/digital-id' },
+      { label: {{t (concat componentName ".footer.services.taxes") "Tax Services"}}, href: '/services/taxes' }
+    ]
+  },
+  {
+    title: {{t (concat componentName ".footer.support.title") "Support"}},
+    links: [
+      { label: {{t (concat componentName ".footer.support.help") "Help Center"}}, href: '/help' },
+      { label: {{t (concat componentName ".footer.support.contact") "Contact Us"}}, href: '/contact' },
+      { label: {{t (concat componentName ".footer.support.status") "System Status"}}, href: '/status' },
+      { label: {{t (concat componentName ".footer.support.feedback") "Feedback"}}, href: '/feedback' }
+    ]
+  },
+  {
+    title: {{t (concat componentName ".footer.legal.title") "Legal"}},
+    links: [
+      { label: {{t (concat componentName ".footer.legal.privacy") "Privacy Policy"}}, href: '/privacy' },
+      { label: {{t (concat componentName ".footer.legal.terms") "Terms of Service"}}, href: '/terms' },
+      { label: {{t (concat componentName ".footer.legal.accessibility") "Accessibility Statement"}}, href: '/accessibility' },
+      { label: {{t (concat componentName ".footer.legal.cookies") "Cookie Policy"}}, href: '/cookies' }
+    ]
+  }
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   heroTitle={{t "landing.hero.title" "Secure Norwegian Digital Services"}}
+ *   heroSubtitle={{t "landing.hero.subtitle" "Access all government services through one secure, accessible platform"}}
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   heroCtaAction={() => router.push('/services')}
+ *   ctaButtonAction={() => router.push('/register')}
+ *   features={customFeatures}
+ *   testimonials={customerTestimonials}
+ * />
+ */

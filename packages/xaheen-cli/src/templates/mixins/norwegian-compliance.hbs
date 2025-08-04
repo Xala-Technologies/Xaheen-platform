@@ -1,0 +1,144 @@
+/**
+ * Norwegian Compliance Mixin
+ * 
+ * Provides Norwegian language support, accessibility features,
+ * and compliance with Norwegian digital government standards.
+ */
+
+// Norwegian locale configuration
+const NORWEGIAN_LOCALE = '{{language}}' || 'nb-NO';
+const SUPPORTED_LANGUAGES = ['nb-NO', 'nn-NO', 'en-US', 'ar-SA'];
+
+// Norwegian number and currency formatting
+const formatNorwegianCurrency = (amount: number): string => {
+  return new Intl.NumberFormat(NORWEGIAN_LOCALE, {
+    style: 'currency',
+    currency: 'NOK'
+  }).format(amount);
+};
+
+const formatNorwegianNumber = (number: number): string => {
+  return new Intl.NumberFormat(NORWEGIAN_LOCALE).format(number);
+};
+
+const formatNorwegianDate = (date: Date): string => {
+  return new Intl.DateTimeFormat(NORWEGIAN_LOCALE, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
+};
+
+// Norwegian personal ID validation (11-digit)
+const validateNorwegianPersonalId = (personalId: string): boolean => {
+  const cleaned = personalId.replace(/\s/g, '');
+  if (!/^\d{11}$/.test(cleaned)) return false;
+  
+  // Validate checksum using Norwegian algorithm
+  const digits = cleaned.split('').map(Number);
+  const weights1 = [3, 7, 6, 1, 8, 9, 4, 5, 2];
+  const weights2 = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+  
+  const sum1 = digits.slice(0, 9).reduce((sum, digit, i) => sum + digit * weights1[i], 0);
+  const checksum1 = 11 - (sum1 % 11);
+  const control1 = checksum1 === 11 ? 0 : checksum1;
+  
+  if (control1 !== digits[9]) return false;
+  
+  const sum2 = digits.slice(0, 10).reduce((sum, digit, i) => sum + digit * weights2[i], 0);
+  const checksum2 = 11 - (sum2 % 11);
+  const control2 = checksum2 === 11 ? 0 : checksum2;
+  
+  return control2 === digits[10];
+};
+
+// Norwegian organization number validation (9-digit)
+const validateNorwegianOrganizationNumber = (orgNumber: string): boolean => {
+  const cleaned = orgNumber.replace(/\s/g, '');
+  if (!/^\d{9}$/.test(cleaned)) return false;
+  
+  // Validate checksum using Norwegian organization number algorithm
+  const digits = cleaned.split('').map(Number);
+  const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+  
+  const sum = digits.slice(0, 8).reduce((sum, digit, i) => sum + digit * weights[i], 0);
+  const remainder = sum % 11;
+  const checksum = remainder === 0 ? 0 : 11 - remainder;
+  
+  return checksum === digits[8];
+};
+
+// Norwegian phone number validation
+const validateNorwegianPhoneNumber = (phoneNumber: string): boolean => {
+  const cleaned = phoneNumber.replace(/[\s\-\+]/g, '');
+  
+  // Norwegian mobile: 4xxxxxxx or 9xxxxxxx (8 digits) or +47 prefix
+  // Norwegian landline: Various formats
+  const mobilePattern = /^(47)?[49]\d{7}$/;
+  const landlinePattern = /^(47)?[2-9]\d{7}$/;
+  
+  return mobilePattern.test(cleaned) || landlinePattern.test(cleaned);
+};
+
+// Norwegian postal code validation
+const validateNorwegianPostalCode = (postalCode: string): boolean => {
+  return /^\d{4}$/.test(postalCode);
+};
+
+// Accessibility helpers for Norwegian compliance
+const announceToScreenReader = (message: string): void => {
+  const announcement = document.createElement('div');
+  announcement.setAttribute('aria-live', 'polite');
+  announcement.setAttribute('aria-atomic', 'true');
+  announcement.className = 'sr-only';
+  announcement.textContent = message;
+  
+  document.body.appendChild(announcement);
+  setTimeout(() => document.body.removeChild(announcement), 1000);
+};
+
+// Norwegian government branding colors
+const NORWEGIAN_COLORS = {
+  government: {
+    primary: '#004225',    // Norwegian government green
+    secondary: '#8CC63F',  // Light green
+    accent: '#E6F3FF',     // Light blue
+    text: '#333333',       // Dark text
+    background: '#FFFFFF'   // White background
+  },
+  status: {
+    success: '#28A745',    // Green
+    warning: '#FFC107',    // Yellow
+    error: '#DC3545',      // Red
+    info: '#17A2B8'        // Blue
+  }
+};
+
+// Norwegian compliance utilities
+const getNorwegianComplianceLevel = (): {
+  gdpr: boolean;
+  accessibility: 'A' | 'AA' | 'AAA';
+  dataProtection: boolean;
+  governmentStandards: boolean;
+} => ({
+  gdpr: true,
+  accessibility: 'AAA',
+  dataProtection: true,
+  governmentStandards: true
+});
+
+// Export Norwegian compliance helpers
+export const norwegianComplianceHelpers = {
+  formatCurrency: formatNorwegianCurrency,
+  formatNumber: formatNorwegianNumber,
+  formatDate: formatNorwegianDate,
+  validatePersonalId: validateNorwegianPersonalId,
+  validateOrganizationNumber: validateNorwegianOrganizationNumber,
+  validatePhoneNumber: validateNorwegianPhoneNumber,
+  validatePostalCode: validateNorwegianPostalCode,
+  announceToScreenReader,
+  colors: NORWEGIAN_COLORS,
+  getComplianceLevel: getNorwegianComplianceLevel,
+  locale: NORWEGIAN_LOCALE,
+  supportedLanguages: SUPPORTED_LANGUAGES
+};

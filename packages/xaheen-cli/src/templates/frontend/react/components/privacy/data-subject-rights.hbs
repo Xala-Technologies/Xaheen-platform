@@ -1,0 +1,782 @@
+/**
+ * @fileoverview {{componentName}} - GDPR Data Subject Rights Management Component
+ * @description AI-optimized data subject rights portal with Norwegian compliance
+ * @version 5.0.0
+ * @compliance GDPR Articles 15-22, Norwegian Data Protection Act, NSM {{mcpNSMLevel this}}
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, useState, useCallback, useEffect, type HTMLAttributes, type FormEvent } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Text,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Alert,
+  Badge,
+  Progress,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  Form
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly userId?: string;
+  readonly onRequestSubmit?: (request: DataSubjectRequest) => Promise<void>;
+  readonly onRequestStatusCheck?: (requestId: string) => Promise<RequestStatus>;
+  readonly showStatusTracker?: boolean;
+  readonly enabledRights?: readonly DataSubjectRight[];
+  readonly nsmClassification?: {{nsmClassification}};
+  readonly auditTrailEnabled?: boolean;
+}
+
+export type DataSubjectRight = 
+  | 'access'           // Article 15
+  | 'rectification'    // Article 16
+  | 'erasure'          // Article 17
+  | 'restriction'      // Article 18
+  | 'portability'      // Article 20
+  | 'objection'        // Article 21
+  | 'automated-decision' // Article 22
+  | 'withdraw-consent'; // Article 7
+
+export interface DataSubjectRequest {
+  readonly id?: string;
+  readonly type: DataSubjectRight;
+  readonly userId?: string;
+  readonly email: string;
+  readonly fullName: string;
+  readonly identityVerification: IdentityVerification;
+  readonly description: string;
+  readonly urgencyLevel: 'low' | 'medium' | 'high';
+  readonly preferredResponse: 'email' | 'postal' | 'secure-portal';
+  readonly attachments?: readonly File[];
+  readonly timestamp: string;
+  readonly status?: 'submitted' | 'under-review' | 'approved' | 'rejected' | 'completed';
+  readonly nsmClassification: {{nsmClassification}};
+}
+
+export interface IdentityVerification {
+  readonly method: 'id-porten' | 'passport' | 'drivers-license' | 'bank-id' | 'other';
+  readonly documentNumber?: string;
+  readonly issueDate?: string;
+  readonly expiryDate?: string;
+  readonly additionalInfo?: string;
+}
+
+export interface RequestStatus {
+  readonly requestId: string;
+  readonly status: DataSubjectRequest['status'];
+  readonly submittedAt: string;
+  readonly lastUpdated: string;
+  readonly estimatedCompletion?: string;
+  readonly responseMethod: string;
+  readonly notes?: string;
+}
+
+/**
+ * AI-Optimized GDPR Data Subject Rights Portal
+ * Pattern: {{mcpComplexity this}} complexity privacy rights management with Norwegian compliance
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * GDPR Rights Implementation:
+ * - Right of Access (Article 15): Request copy of personal data
+ * - Right to Rectification (Article 16): Correct inaccurate data
+ * - Right to Erasure (Article 17): "Right to be forgotten"
+ * - Right to Restriction (Article 18): Limit processing
+ * - Right to Data Portability (Article 20): Transfer data
+ * - Right to Object (Article 21): Object to processing
+ * - Automated Decision Making (Article 22): Object to automated decisions
+ * - Withdraw Consent (Article 7): Withdraw consent
+ * 
+ * Norwegian Compliance:
+ * - ID-porten integration for identity verification
+ * - Norwegian language support (Bokmål/Nynorsk)
+ * - Datatilsynet reporting requirements
+ * - NSM classification handling
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      userId,
+      onRequestSubmit,
+      onRequestStatusCheck,
+      showStatusTracker = true,
+      enabledRights = allDataSubjectRights,
+      nsmClassification = 'RESTRICTED',
+      auditTrailEnabled = true,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [activeTab, setActiveTab] = useState('request');
+    const [selectedRight, setSelectedRight] = useState<DataSubjectRight>('access');
+    const [formData, setFormData] = useState<Partial<DataSubjectRequest>>({
+      nsmClassification,
+      urgencyLevel: 'medium',
+      preferredResponse: 'email'
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [requestStatuses, setRequestStatuses] = useState<RequestStatus[]>([]);
+    const [trackingId, setTrackingId] = useState('');
+
+    useEffect(() => {
+      if (userId && showStatusTracker) {
+        loadUserRequests();
+      }
+    }, [userId, showStatusTracker]);
+
+    const loadUserRequests = async () => {
+      try {
+        // Implementation would load user's existing requests
+        // This is a placeholder for demonstration
+        const mockStatuses: RequestStatus[] = [
+          {
+            requestId: 'REQ-2024-001',
+            status: 'completed',
+            submittedAt: '2024-01-15T10:00:00Z',
+            lastUpdated: '2024-01-20T14:30:00Z',
+            responseMethod: 'email',
+            notes: {{t "privacy.status.completed" "Request completed and response sent"}}
+          }
+        ];
+        setRequestStatuses(mockStatuses);
+      } catch (error) {
+        console.error('Failed to load request statuses:', error);
+      }
+    };
+
+    const handleInputChange = useCallback((field: keyof DataSubjectRequest, value: any) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }, []);
+
+    const handleIdentityVerificationChange = useCallback((field: keyof IdentityVerification, value: any) => {
+      setFormData(prev => ({
+        ...prev,
+        identityVerification: {
+          ...prev.identityVerification,
+          [field]: value
+        } as IdentityVerification
+      }));
+    }, []);
+
+    const handleSubmitRequest = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      
+      if (!validateForm()) return;
+      
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+
+      try {
+        const request: DataSubjectRequest = {
+          ...formData,
+          type: selectedRight,
+          timestamp: new Date().toISOString()
+        } as DataSubjectRequest;
+
+        if (auditTrailEnabled) {
+          await createAuditEntry('data-subject-request-submitted', request);
+        }
+
+        await onRequestSubmit?.(request);
+        setSubmitStatus('success');
+        
+        // Reset form
+        setFormData({
+          nsmClassification,
+          urgencyLevel: 'medium',
+          preferredResponse: 'email'
+        });
+        
+        // Reload requests if tracking is enabled
+        if (showStatusTracker) {
+          loadUserRequests();
+        }
+      } catch (error) {
+        console.error('Request submission failed:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, selectedRight, onRequestSubmit, auditTrailEnabled, nsmClassification, showStatusTracker]);
+
+    const handleTrackRequest = useCallback(async () => {
+      if (!trackingId.trim()) return;
+      
+      try {
+        const status = await onRequestStatusCheck?.(trackingId);
+        if (status) {
+          setRequestStatuses([status]);
+        }
+      } catch (error) {
+        console.error('Failed to track request:', error);
+      }
+    }, [trackingId, onRequestStatusCheck]);
+
+    const validateForm = (): boolean => {
+      return !!(
+        formData.email &&
+        formData.fullName &&
+        formData.description &&
+        formData.identityVerification?.method
+      );
+    };
+
+    const createAuditEntry = async (action: string, data: any) => {
+      if (!auditTrailEnabled) return;
+      
+      const auditEntry = {
+        timestamp: new Date().toISOString(),
+        action,
+        userId,
+        nsmClassification,
+        data: JSON.stringify(data),
+        userAgent: navigator.userAgent
+      };
+
+      try {
+        await fetch('/api/audit/privacy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-NSM-Classification': nsmClassification
+          },
+          body: JSON.stringify(auditEntry)
+        });
+      } catch (error) {
+        console.error('Failed to create audit entry:', error);
+      }
+    };
+
+    const getRightDescription = (right: DataSubjectRight): { title: string; description: string; article: string } => {
+      const descriptions = {
+        'access': {
+          title: {{t "privacy.rights.access.title" "Right of Access"}},
+          description: {{t "privacy.rights.access.desc" "Request a copy of your personal data we hold"}},
+          article: 'Article 15'
+        },
+        'rectification': {
+          title: {{t "privacy.rights.rectification.title" "Right to Rectification"}},
+          description: {{t "privacy.rights.rectification.desc" "Correct inaccurate or incomplete personal data"}},
+          article: 'Article 16'
+        },
+        'erasure': {
+          title: {{t "privacy.rights.erasure.title" "Right to Erasure"}},
+          description: {{t "privacy.rights.erasure.desc" "Request deletion of your personal data (right to be forgotten)"}},
+          article: 'Article 17'
+        },
+        'restriction': {
+          title: {{t "privacy.rights.restriction.title" "Right to Restriction"}},
+          description: {{t "privacy.rights.restriction.desc" "Limit how we process your personal data"}},
+          article: 'Article 18'
+        },
+        'portability': {
+          title: {{t "privacy.rights.portability.title" "Right to Data Portability"}},
+          description: {{t "privacy.rights.portability.desc" "Transfer your data to another service provider"}},
+          article: 'Article 20'
+        },
+        'objection': {
+          title: {{t "privacy.rights.objection.title" "Right to Object"}},
+          description: {{t "privacy.rights.objection.desc" "Object to processing of your personal data"}},
+          article: 'Article 21'
+        },
+        'automated-decision': {
+          title: {{t "privacy.rights.automated.title" "Automated Decision Making"}},
+          description: {{t "privacy.rights.automated.desc" "Object to automated decision-making including profiling"}},
+          article: 'Article 22'
+        },
+        'withdraw-consent': {
+          title: {{t "privacy.rights.consent.title" "Withdraw Consent"}},
+          description: {{t "privacy.rights.consent.desc" "Withdraw your consent for data processing"}},
+          article: 'Article 7'
+        }
+      };
+      
+      return descriptions[right];
+    };
+
+    const getStatusColor = (status: RequestStatus['status']) => {
+      switch (status) {
+        case 'completed': return 'success';
+        case 'approved': return 'info';
+        case 'under-review': return 'warning';
+        case 'rejected': return 'error';
+        case 'submitted': return 'secondary';
+        default: return 'secondary';
+      }
+    };
+
+    return (
+      <Container 
+        ref={ref} 
+        className={className}
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        <Stack direction="vertical" gap="xl">
+          {/* Header */}
+          <Card>
+            <CardHeader>
+              <Stack direction="horizontal" justify="space-between" align="center">
+                <Stack direction="vertical" gap="sm">
+                  <CardTitle>
+                    {{t "privacy.portal.title" "Data Subject Rights Portal"}}
+                  </CardTitle>
+                  <Text variant="body" color="secondary">
+                    {{t "privacy.portal.subtitle" "Exercise your rights under GDPR and Norwegian Data Protection Act"}}
+                  </Text>
+                </Stack>
+                
+                <Stack direction="horizontal" gap="sm">
+                  <Badge variant="outline">
+                    GDPR {{t "privacy.compliant" "Compliant"}}
+                  </Badge>
+                  <Badge variant="outline">
+                    NSM {nsmClassification}
+                  </Badge>
+                  <Badge variant="outline">
+                    {{t "privacy.norwegian_compliant" "Norwegian Compliant"}}
+                  </Badge>
+                </Stack>
+              </Stack>
+            </CardHeader>
+          </Card>
+
+          {/* Main Content */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="request">
+                {{t "privacy.tabs.request" "Submit Request"}}
+              </TabsTrigger>
+              {showStatusTracker && (
+                <TabsTrigger value="track">
+                  {{t "privacy.tabs.track" "Track Request"}}
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="info">
+                {{t "privacy.tabs.info" "Your Rights"}}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="request">
+              <Card>
+                <CardContent className="p-6">
+                  <Form onSubmit={handleSubmitRequest}>
+                    <Stack direction="vertical" gap="lg">
+                      {/* Status Messages */}
+                      {submitStatus === 'success' && (
+                        <Alert variant="success" role="status">
+                          <Stack direction="vertical" gap="sm">
+                            <Text weight="semibold">
+                              {{t "privacy.submit.success.title" "Request submitted successfully"}}
+                            </Text>
+                            <Text variant="caption">
+                              {{t "privacy.submit.success.message" "We will process your request within 30 days as required by GDPR."}}
+                            </Text>
+                          </Stack>
+                        </Alert>
+                      )}
+                      
+                      {submitStatus === 'error' && (
+                        <Alert variant="error" role="alert">
+                          <Stack direction="vertical" gap="sm">
+                            <Text weight="semibold">
+                              {{t "privacy.submit.error.title" "Submission failed"}}
+                            </Text>
+                            <Text variant="caption">
+                              {{t "privacy.submit.error.message" "Please try again or contact our data protection officer."}}
+                            </Text>
+                          </Stack>
+                        </Alert>
+                      )}
+
+                      {/* Right Selection */}
+                      <div>
+                        <Text variant="h4" weight="semibold" className="mb-4">
+                          {{t "privacy.form.select_right" "Select Your Right"}}
+                        </Text>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {enabledRights.map((right) => {
+                            const rightInfo = getRightDescription(right);
+                            return (
+                              <Card
+                                key={right}
+                                variant={selectedRight === right ? "filled" : "outline"}
+                                className={`cursor-pointer transition-all ${selectedRight === right ? 'ring-2 ring-primary-500' : ''}`}
+                                onClick={() => setSelectedRight(right)}
+                              >
+                                <CardContent className="p-4">
+                                  <Stack direction="vertical" gap="sm">
+                                    <Stack direction="horizontal" justify="space-between" align="center">
+                                      <Text variant="h5" weight="semibold">
+                                        {rightInfo.title}
+                                      </Text>
+                                      <Badge variant="outline" size="sm">
+                                        {rightInfo.article}
+                                      </Badge>
+                                    </Stack>
+                                    <Text variant="caption" color="secondary">
+                                      {rightInfo.description}
+                                    </Text>
+                                  </Stack>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Personal Information */}
+                      <div>
+                        <Text variant="h4" weight="semibold" className="mb-4">
+                          {{t "privacy.form.personal_info" "Personal Information"}}
+                        </Text>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label={{t "privacy.form.full_name" "Full Name"}}
+                            value={formData.fullName || ''}
+                            onChange={(value) => handleInputChange('fullName', value)}
+                            required
+                            placeholder={{t "privacy.form.full_name.placeholder" "Enter your full legal name"}}
+                          />
+                          
+                          <Input
+                            label={{t "privacy.form.email" "Email Address"}}
+                            type="email"
+                            value={formData.email || ''}
+                            onChange={(value) => handleInputChange('email', value)}
+                            required
+                            placeholder={{t "privacy.form.email.placeholder" "Enter your email address"}}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Identity Verification */}
+                      <div>
+                        <Text variant="h4" weight="semibold" className="mb-4">
+                          {{t "privacy.form.identity_verification" "Identity Verification"}}
+                        </Text>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Select
+                            label={{t "privacy.form.verification_method" "Verification Method"}}
+                            value={formData.identityVerification?.method || ''}
+                            onChange={(value) => handleIdentityVerificationChange('method', value)}
+                            required
+                            options={[
+                              { label: {{t "privacy.verification.id_porten" "ID-porten (Norwegian ID)"}}, value: 'id-porten' },
+                              { label: {{t "privacy.verification.passport" "Passport"}}, value: 'passport' },
+                              { label: {{t "privacy.verification.drivers_license" "Driver's License"}}, value: 'drivers-license' },
+                              { label: {{t "privacy.verification.bank_id" "BankID"}}, value: 'bank-id' },
+                              { label: {{t "privacy.verification.other" "Other"}}, value: 'other' }
+                            ]}
+                          />
+                          
+                          <Input
+                            label={{t "privacy.form.document_number" "Document Number"}}
+                            value={formData.identityVerification?.documentNumber || ''}
+                            onChange={(value) => handleIdentityVerificationChange('documentNumber', value)}
+                            placeholder={{t "privacy.form.document_number.placeholder" "Enter document number"}}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Request Details */}
+                      <div>
+                        <Text variant="h4" weight="semibold" className="mb-4">
+                          {{t "privacy.form.request_details" "Request Details"}}
+                        </Text>
+                        
+                        <Stack direction="vertical" gap="md">
+                          <Textarea
+                            label={{t "privacy.form.description" "Description"}}
+                            value={formData.description || ''}
+                            onChange={(value) => handleInputChange('description', value)}
+                            required
+                            rows={4}
+                            placeholder={{t "privacy.form.description.placeholder" "Please provide details about your request..."}}
+                            maxLength={2000}
+                          />
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Select
+                              label={{t "privacy.form.urgency" "Urgency Level"}}
+                              value={formData.urgencyLevel || 'medium'}
+                              onChange={(value) => handleInputChange('urgencyLevel', value)}
+                              options={[
+                                { label: {{t "privacy.urgency.low" "Low - Standard processing"}}, value: 'low' },
+                                { label: {{t "privacy.urgency.medium" "Medium - Standard processing"}}, value: 'medium' },
+                                { label: {{t "privacy.urgency.high" "High - Urgent processing"}}, value: 'high' }
+                              ]}
+                            />
+                            
+                            <Select
+                              label={{t "privacy.form.response_method" "Preferred Response Method"}}
+                              value={formData.preferredResponse || 'email'}
+                              onChange={(value) => handleInputChange('preferredResponse', value)}
+                              options={[
+                                { label: {{t "privacy.response.email" "Email"}}, value: 'email' },
+                                { label: {{t "privacy.response.postal" "Postal Mail"}}, value: 'postal' },
+                                { label: {{t "privacy.response.secure_portal" "Secure Portal"}}, value: 'secure-portal' }
+                              ]}
+                            />
+                          </div>
+                        </Stack>
+                      </div>
+
+                      {/* Submit Button */}
+                      <Stack direction="horizontal" justify="flex-end">
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          size="lg"
+                          disabled={!validateForm() || isSubmitting}
+                          loading={isSubmitting}
+                        >
+                          {isSubmitting 
+                            ? {{t "privacy.form.submitting" "Submitting Request..."}}
+                            : {{t "privacy.form.submit" "Submit Request"}}
+                          }
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {showStatusTracker && (
+              <TabsContent value="track">
+                <Card>
+                  <CardContent className="p-6">
+                    <Stack direction="vertical" gap="lg">
+                      <div>
+                        <Text variant="h4" weight="semibold" className="mb-4">
+                          {{t "privacy.track.title" "Track Your Request"}}
+                        </Text>
+                        
+                        <Stack direction="horizontal" gap="md">
+                          <Input
+                            label={{t "privacy.track.request_id" "Request ID"}}
+                            value={trackingId}
+                            onChange={setTrackingId}
+                            placeholder="REQ-2024-001"
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={handleTrackRequest}
+                            variant="primary"
+                            className="mt-6"
+                          >
+                            {{t "privacy.track.search" "Track Request"}}
+                          </Button>
+                        </Stack>
+                      </div>
+
+                      {requestStatuses.length > 0 && (
+                        <div>
+                          <Text variant="h4" weight="semibold" className="mb-4">
+                            {{t "privacy.track.status" "Request Status"}}
+                          </Text>
+                          
+                          <Stack direction="vertical" gap="md">
+                            {requestStatuses.map((status) => (
+                              <Card key={status.requestId} variant="outline">
+                                <CardContent className="p-4">
+                                  <Stack direction="vertical" gap="sm">
+                                    <Stack direction="horizontal" justify="space-between" align="center">
+                                      <Text variant="h5" weight="semibold">
+                                        {status.requestId}
+                                      </Text>
+                                      <Badge variant={getStatusColor(status.status)}>
+                                        {status.status}
+                                      </Badge>
+                                    </Stack>
+                                    
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                      <div>
+                                        <Text variant="caption" weight="semibold">
+                                          {{t "privacy.track.submitted" "Submitted"}}:
+                                        </Text>
+                                        <Text variant="caption">
+                                          {new Date(status.submittedAt).toLocaleDateString()}
+                                        </Text>
+                                      </div>
+                                      <div>
+                                        <Text variant="caption" weight="semibold">
+                                          {{t "privacy.track.updated" "Last Updated"}}:
+                                        </Text>
+                                        <Text variant="caption">
+                                          {new Date(status.lastUpdated).toLocaleDateString()}
+                                        </Text>
+                                      </div>
+                                      <div>
+                                        <Text variant="caption" weight="semibold">
+                                          {{t "privacy.track.response" "Response Method"}}:
+                                        </Text>
+                                        <Text variant="caption">
+                                          {status.responseMethod}
+                                        </Text>
+                                      </div>
+                                      {status.estimatedCompletion && (
+                                        <div>
+                                          <Text variant="caption" weight="semibold">
+                                            {{t "privacy.track.estimated" "Estimated Completion"}}:
+                                          </Text>
+                                          <Text variant="caption">
+                                            {new Date(status.estimatedCompletion).toLocaleDateString()}
+                                          </Text>
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    {status.notes && (
+                                      <Alert variant="info" size="sm">
+                                        <Text variant="caption">{status.notes}</Text>
+                                      </Alert>
+                                    )}
+                                  </Stack>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </Stack>
+                        </div>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
+            <TabsContent value="info">
+              <Card>
+                <CardContent className="p-6">
+                  <Stack direction="vertical" gap="lg">
+                    <div>
+                      <Text variant="h4" weight="semibold" className="mb-4">
+                        {{t "privacy.info.title" "Your Data Protection Rights"}}
+                      </Text>
+                      <Text variant="body" color="secondary">
+                        {{t "privacy.info.subtitle" "Under GDPR and Norwegian Data Protection Act, you have the following rights:"}}
+                      </Text>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {allDataSubjectRights.map((right) => {
+                        const rightInfo = getRightDescription(right);
+                        return (
+                          <Card key={right} variant="outline">
+                            <CardContent className="p-4">
+                              <Stack direction="vertical" gap="sm">
+                                <Stack direction="horizontal" justify="space-between" align="center">
+                                  <Text variant="h5" weight="semibold">
+                                    {rightInfo.title}
+                                  </Text>
+                                  <Badge variant="outline" size="sm">
+                                    {rightInfo.article}
+                                  </Badge>
+                                </Stack>
+                                <Text variant="body" color="secondary">
+                                  {rightInfo.description}
+                                </Text>
+                              </Stack>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+
+                    <Alert variant="info">
+                      <Stack direction="vertical" gap="sm">
+                        <Text weight="semibold">
+                          {{t "privacy.info.processing_time.title" "Processing Time"}}
+                        </Text>
+                        <Text variant="caption">
+                          {{t "privacy.info.processing_time.description" "We will respond to your request within 30 days as required by GDPR. In complex cases, we may extend this by an additional 60 days."}}
+                        </Text>
+                      </Stack>
+                    </Alert>
+
+                    <Alert variant="warning">
+                      <Stack direction="vertical" gap="sm">
+                        <Text weight="semibold">
+                          {{t "privacy.info.identity_verification.title" "Identity Verification Required"}}
+                        </Text>
+                        <Text variant="caption">
+                          {{t "privacy.info.identity_verification.description" "To protect your privacy, we require identity verification for all data subject requests. This is required under Norwegian law."}}
+                        </Text>
+                      </Stack>
+                    </Alert>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </Stack>
+      </Container>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+// All GDPR data subject rights
+const allDataSubjectRights: readonly DataSubjectRight[] = [
+  'access',
+  'rectification',
+  'erasure',
+  'restriction',
+  'portability',
+  'objection',
+  'automated-decision',
+  'withdraw-consent'
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   userId="user-123"
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   auditTrailEnabled={true}
+ *   showStatusTracker={true}
+ *   enabledRights={['access', 'erasure', 'rectification', 'portability']}
+ *   onRequestSubmit={async (request) => {
+ *     const response = await fetch('/api/privacy/data-subject-request', {
+ *       method: 'POST',
+ *       headers: { 'Content-Type': 'application/json' },
+ *       body: JSON.stringify(request)
+ *     });
+ *     
+ *     if (!response.ok) {
+ *       throw new Error('Failed to submit request');
+ *     }
+ *     
+ *     const result = await response.json();
+ *     showNotification({{t "notifications.privacy_request_submitted" "Privacy request submitted successfully"}});
+ *     return result;
+ *   }}
+ *   onRequestStatusCheck={async (requestId) => {
+ *     const response = await fetch(`/api/privacy/data-subject-request/${requestId}/status`);
+ *     return await response.json();
+ *   }}
+ * />
+ */

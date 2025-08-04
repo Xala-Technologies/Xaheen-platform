@@ -1,0 +1,666 @@
+/**
+ * @fileoverview {{componentName}} - Form Page Template
+ * @description AI-optimized form page using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{mcpNSMLevel this}}, Norwegian Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, useState, useCallback, type FormEvent } from 'react';
+import {
+  Container,
+  Stack,
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Text,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+  Badge,
+  Alert,
+  Progress,
+  Stepper,
+  StepperItem,
+  Form,
+  Separator
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly description?: string;
+  readonly steps?: readonly FormStep[];
+  readonly currentStep?: number;
+  readonly showProgress?: boolean;
+  readonly onSubmit?: (data: FormData) => Promise<void>;
+  readonly onStepChange?: (step: number) => void;
+  readonly onSaveDraft?: (data: FormData) => Promise<void>;
+  readonly validationRules?: ValidationRules;
+  readonly autoSave?: boolean;
+  readonly requiresAuthentication?: boolean;
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+export interface FormStep {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly fields: readonly FormField[];
+  readonly optional?: boolean;
+}
+
+export interface FormField {
+  readonly id: string;
+  readonly type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'file';
+  readonly label: string;
+  readonly description?: string;
+  readonly placeholder?: string;
+  readonly required?: boolean;
+  readonly options?: readonly { label: string; value: string }[];
+  readonly validation?: FieldValidation;
+  readonly clearanceRequired?: {{nsmClassification}};
+}
+
+export interface FieldValidation {
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly pattern?: RegExp;
+  readonly customValidation?: (value: any) => string | null;
+}
+
+export interface ValidationRules {
+  readonly [fieldId: string]: FieldValidation;
+}
+
+export interface FormData {
+  readonly [fieldId: string]: any;
+}
+
+/**
+ * AI-Optimized Form Page
+ * Pattern: {{mcpComplexity this}} complexity form with multi-step flow and validation
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - Multi-step form navigation
+ * - Real-time validation
+ * - Auto-save functionality
+ * - Accessibility-first design
+ * - Norwegian compliance
+ * - NSM classification support
+ * - Progress tracking
+ */
+export const {{componentName}} = forwardRef<HTMLFormElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t (concat componentName ".title") "Government Form"}},
+      subtitle = {{t (concat componentName ".subtitle") "Please complete all required fields"}},
+      description,
+      steps = defaultSteps,
+      currentStep = 0,
+      showProgress = true,
+      onSubmit,
+      onStepChange,
+      onSaveDraft,
+      validationRules = {},
+      autoSave = false,
+      requiresAuthentication = true,
+      nsmClassification = '{{nsmClassification}}',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [formData, setFormData] = useState<FormData>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDraft, setIsDraft] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+
+    const currentStepData = steps[currentStep];
+    const isLastStep = currentStep === steps.length - 1;
+    const totalProgress = ((currentStep + 1) / steps.length) * 100;
+
+    const validateField = useCallback((fieldId: string, value: any): string | null => {
+      const field = currentStepData?.fields.find(f => f.id === fieldId);
+      const rules = validationRules[fieldId] || field?.validation;
+
+      if (!field) return null;
+
+      // Required validation
+      if (field.required && (!value || value === '')) {
+        return {{t (concat componentName ".validation.required") "This field is required"}};
+      }
+
+      // Skip other validations if field is empty and not required
+      if (!value || value === '') return null;
+
+      // Type-specific validation
+      if (field.type === 'email' && !isValidEmail(value)) {
+        return {{t (concat componentName ".validation.email") "Please enter a valid email address"}};
+      }
+
+      if (field.type === 'tel' && !isValidPhone(value)) {
+        return {{t (concat componentName ".validation.phone") "Please enter a valid phone number"}};
+      }
+
+      // Length validation
+      if (rules?.minLength && value.length < rules.minLength) {
+        return {{t (concat componentName ".validation.min_length") "Too short"}};
+      }
+
+      if (rules?.maxLength && value.length > rules.maxLength) {
+        return {{t (concat componentName ".validation.max_length") "Too long"}};
+      }
+
+      // Pattern validation
+      if (rules?.pattern && !rules.pattern.test(value)) {
+        return {{t (concat componentName ".validation.pattern") "Invalid format"}};
+      }
+
+      // Custom validation
+      if (rules?.customValidation) {
+        return rules.customValidation(value);
+      }
+
+      return null;
+    }, [currentStepData, validationRules]);
+
+    const handleFieldChange = useCallback((fieldId: string, value: any) => {
+      const newFormData = { ...formData, [fieldId]: value };
+      setFormData(newFormData);
+
+      // Clear error when user starts typing
+      if (errors[fieldId]) {
+        setErrors(prev => ({ ...prev, [fieldId]: undefined }));
+      }
+
+      // Auto-save if enabled
+      if (autoSave && onSaveDraft && !isDraft) {
+        setIsDraft(true);
+        onSaveDraft(newFormData).finally(() => setIsDraft(false));
+      }
+    }, [formData, errors, autoSave, onSaveDraft, isDraft]);
+
+    const validateCurrentStep = useCallback(): boolean => {
+      if (!currentStepData) return false;
+
+      const stepErrors: Record<string, string> = {};
+      let isValid = true;
+
+      for (const field of currentStepData.fields) {
+        const error = validateField(field.id, formData[field.id]);
+        if (error) {
+          stepErrors[field.id] = error;
+          isValid = false;
+        }
+      }
+
+      setErrors(stepErrors);
+      return isValid;
+    }, [currentStepData, formData, validateField]);
+
+    const handleNextStep = useCallback(() => {
+      if (validateCurrentStep()) {
+        setCompletedSteps(prev => new Set([...prev, currentStep]));
+        const nextStep = Math.min(currentStep + 1, steps.length - 1);
+        onStepChange?.(nextStep);
+      }
+    }, [currentStep, steps.length, validateCurrentStep, onStepChange]);
+
+    const handlePrevStep = useCallback(() => {
+      const prevStep = Math.max(currentStep - 1, 0);
+      onStepChange?.(prevStep);
+    }, [currentStep, onStepChange]);
+
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!validateCurrentStep()) {
+        setSubmitStatus('error');
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+
+      try {
+        await onSubmit?.(formData);
+        setSubmitStatus('success');
+      } catch (error) {
+        console.error('Form submission error:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, validateCurrentStep, onSubmit]);
+
+    const handleSaveDraft = useCallback(async () => {
+      if (!onSaveDraft) return;
+
+      setIsDraft(true);
+      try {
+        await onSaveDraft(formData);
+      } catch (error) {
+        console.error('Save draft error:', error);
+      } finally {
+        setIsDraft(false);
+      }
+    }, [formData, onSaveDraft]);
+
+    const renderField = useCallback((field: FormField) => {
+      const commonProps = {
+        key: field.id,
+        label: field.label,
+        value: formData[field.id] || '',
+        onChange: (value: any) => handleFieldChange(field.id, value),
+        error: errors[field.id],
+        required: field.required,
+        placeholder: field.placeholder,
+        helperText: field.description,
+        'aria-describedby': field.description ? `${field.id}-description` : undefined
+      };
+
+      switch (field.type) {
+        case 'textarea':
+          return (
+            <Textarea
+              {...commonProps}
+              rows={4}
+            />
+          );
+
+        case 'select':
+          return (
+            <Select
+              {...commonProps}
+              options={field.options || []}
+            />
+          );
+
+        case 'checkbox':
+          return (
+            <Checkbox
+              {...commonProps}
+              checked={formData[field.id] || false}
+            />
+          );
+
+        case 'file':
+          return (
+            <Input
+              {...commonProps}
+              type="file"
+              accept={field.type === 'file' ? '*/*' : undefined}
+            />
+          );
+
+        default:
+          return (
+            <Input
+              {...commonProps}
+              type={field.type}
+            />
+          );
+      }
+    }, [formData, errors, handleFieldChange]);
+
+    // Helper functions
+    const isValidEmail = (email: string): boolean => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    };
+
+    const isValidPhone = (phone: string): boolean => {
+      const cleaned = phone.replace(/[\s\-\+]/g, '');
+      return /^(47)?[4-9]\d{7}$/.test(cleaned);
+    };
+
+    return (
+      <div
+        className="form-page"
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+      >
+        <Container size="lg" className="py-8">
+          <Stack direction="vertical" gap="xl">
+            {/* Header */}
+            <Card>
+              <CardHeader className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+                <Stack direction="vertical" gap="sm">
+                  <Stack direction="horizontal" justify="between" align="center">
+                    <CardTitle className="text-2xl">{title}</CardTitle>
+                    <Stack direction="horizontal" gap="sm">
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                        NSM {nsmClassification}
+                      </Badge>
+                      {requiresAuthentication && (
+                        <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                          {{t (concat componentName ".authenticated") "Authenticated"}}
+                        </Badge>
+                      )}
+                    </Stack>
+                  </Stack>
+
+                  {subtitle && (
+                    <Text variant="body" className="text-primary-100">
+                      {subtitle}
+                    </Text>
+                  )}
+
+                  {description && (
+                    <Text variant="caption" className="text-primary-200">
+                      {description}
+                    </Text>
+                  )}
+                </Stack>
+              </CardHeader>
+
+              {/* Progress Bar */}
+              {showProgress && steps.length > 1 && (
+                <CardContent className="pb-0">
+                  <Stack direction="vertical" gap="md">
+                    <Stack direction="horizontal" justify="between" align="center">
+                      <Text variant="caption" color="secondary">
+                        {{t (concat componentName ".progress.step") "Step"}} {currentStep + 1} {{t (concat componentName ".progress.of") "of"}} {steps.length}
+                      </Text>
+                      <Text variant="caption" color="secondary">
+                        {Math.round(totalProgress)}% {{t (concat componentName ".progress.complete") "complete"}}
+                      </Text>
+                    </Stack>
+                    <Progress value={totalProgress} className="w-full" />
+                  </Stack>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Stepper (for multi-step forms) */}
+            {steps.length > 1 && (
+              <Card>
+                <CardContent className="p-6">
+                  <Stepper currentStep={currentStep}>
+                    {steps.map((step, index) => (
+                      <StepperItem
+                        key={step.id}
+                        title={step.title}
+                        completed={completedSteps.has(index)}
+                        active={index === currentStep}
+                        optional={step.optional}
+                      />
+                    ))}
+                  </Stepper>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Form Content */}
+            <Form ref={ref} onSubmit={handleSubmit} noValidate {...props}>
+              <Stack direction="vertical" gap="lg">
+                {/* Status Messages */}
+                {submitStatus === 'success' && (
+                  <Alert variant="success" role="status">
+                    <Stack direction="vertical" gap="sm">
+                      <Text weight="semibold">
+                        {{t (concat componentName ".success.title") "Form submitted successfully"}}
+                      </Text>
+                      <Text variant="caption">
+                        {{t (concat componentName ".success.message") "Your form has been submitted and is being processed."}}
+                      </Text>
+                    </Stack>
+                  </Alert>
+                )}
+
+                {submitStatus === 'error' && (
+                  <Alert variant="error" role="alert">
+                    <Stack direction="vertical" gap="sm">
+                      <Text weight="semibold">
+                        {{t (concat componentName ".error.title") "Submission failed"}}
+                      </Text>
+                      <Text variant="caption">
+                        {{t (concat componentName ".error.message") "Please check the form and try again."}}
+                      </Text>
+                    </Stack>
+                  </Alert>
+                )}
+
+                {isDraft && (
+                  <Alert variant="info" role="status">
+                    <Text variant="caption">
+                      {{t (concat componentName ".draft.saving") "Saving draft..."}}
+                    </Text>
+                  </Alert>
+                )}
+
+                {/* Current Step */}
+                {currentStepData && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{currentStepData.title}</CardTitle>
+                      {currentStepData.description && (
+                        <Text variant="body" color="secondary">
+                          {currentStepData.description}
+                        </Text>
+                      )}
+                    </CardHeader>
+
+                    <CardContent className="p-6">
+                      <Grid cols={1} gap="lg">
+                        {currentStepData.fields.map(renderField)}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Navigation */}
+                <Card>
+                  <CardContent className="p-6">
+                    <Stack direction="horizontal" justify="space-between" align="center">
+                      <div>
+                        {currentStep > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handlePrevStep}
+                            disabled={isSubmitting}
+                          >
+                            ← {{t (concat componentName ".navigation.previous") "Previous"}}
+                          </Button>
+                        )}
+                      </div>
+
+                      <Stack direction="horizontal" gap="md">
+                        {onSaveDraft && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleSaveDraft}
+                            disabled={isSubmitting || isDraft}
+                            loading={isDraft}
+                          >
+                            {isDraft
+                              ? {{t (concat componentName ".navigation.saving") "Saving..."}}
+                              : {{t (concat componentName ".navigation.save_draft") "Save Draft"}}
+                            }
+                          </Button>
+                        )}
+
+                        {!isLastStep ? (
+                          <Button
+                            type="button"
+                            variant="primary"
+                            onClick={handleNextStep}
+                            disabled={isSubmitting}
+                          >
+                            {{t (concat componentName ".navigation.next") "Next"}} →
+                          </Button>
+                        ) : (
+                          <Button
+                            type="submit"
+                            variant="primary"
+                            disabled={isSubmitting}
+                            loading={isSubmitting}
+                            size="lg"
+                          >
+                            {isSubmitting
+                              ? {{t (concat componentName ".navigation.submitting") "Submitting..."}}
+                              : {{t (concat componentName ".navigation.submit") "Submit Form"}}
+                            }
+                          </Button>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+
+                {/* Footer Information */}
+                <Card variant="outline">
+                  <CardContent className="p-4">
+                    <Stack direction="vertical" gap="sm">
+                      <Text variant="caption" color="secondary" className="text-center">
+                        {{t (concat componentName ".footer.security") "🔒 This form is secure and your data is protected"}}
+                      </Text>
+                      
+                      <Separator />
+                      
+                      <Stack direction="horizontal" justify="between" align="center" className="text-sm">
+                        <Text variant="caption" color="secondary">
+                          {{t (concat componentName ".footer.classification") "Classification"}}: {nsmClassification}
+                        </Text>
+                        <Text variant="caption" color="secondary">
+                          {{t (concat componentName ".footer.compliance") "GDPR & Norwegian Standards Compliant"}}
+                        </Text>
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Stack>
+            </Form>
+          </Stack>
+        </Container>
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+// Default form steps
+const defaultSteps: readonly FormStep[] = [
+  {
+    id: 'personal-info',
+    title: {{t (concat componentName ".steps.personal_info") "Personal Information"}},
+    description: {{t (concat componentName ".steps.personal_info.desc") "Please provide your basic information"}},
+    fields: [
+      {
+        id: 'firstName',
+        type: 'text',
+        label: {{t (concat componentName ".fields.first_name") "First Name"}},
+        required: true,
+        validation: { minLength: 2, maxLength: 50 }
+      },
+      {
+        id: 'lastName',
+        type: 'text',
+        label: {{t (concat componentName ".fields.last_name") "Last Name"}},
+        required: true,
+        validation: { minLength: 2, maxLength: 50 }
+      },
+      {
+        id: 'email',
+        type: 'email',
+        label: {{t (concat componentName ".fields.email") "Email Address"}},
+        required: true,
+        description: {{t (concat componentName ".fields.email.desc") "We'll use this to contact you"}}
+      },
+      {
+        id: 'phone',
+        type: 'tel',
+        label: {{t (concat componentName ".fields.phone") "Phone Number"}},
+        required: false,
+        placeholder: '+47 12 34 56 78'
+      }
+    ]
+  },
+  {
+    id: 'address',
+    title: {{t (concat componentName ".steps.address") "Address Information"}},
+    description: {{t (concat componentName ".steps.address.desc") "Your current address"}},
+    fields: [
+      {
+        id: 'street',
+        type: 'text',
+        label: {{t (concat componentName ".fields.street") "Street Address"}},
+        required: true
+      },
+      {
+        id: 'city',
+        type: 'text',
+        label: {{t (concat componentName ".fields.city") "City"}},
+        required: true
+      },
+      {
+        id: 'postalCode',
+        type: 'text',
+        label: {{t (concat componentName ".fields.postal_code") "Postal Code"}},
+        required: true,
+        validation: { pattern: /^\d{4}$/ }
+      }
+    ]
+  },
+  {
+    id: 'additional',
+    title: {{t (concat componentName ".steps.additional") "Additional Information"}},
+    description: {{t (concat componentName ".steps.additional.desc") "Optional additional details"}},
+    optional: true,
+    fields: [
+      {
+        id: 'comments',
+        type: 'textarea',
+        label: {{t (concat componentName ".fields.comments") "Comments"}},
+        description: {{t (concat componentName ".fields.comments.desc") "Any additional information you'd like to provide"}},
+        required: false,
+        validation: { maxLength: 1000 }
+      },
+      {
+        id: 'subscribe',
+        type: 'checkbox',
+        label: {{t (concat componentName ".fields.subscribe") "Subscribe to updates"}},
+        description: {{t (concat componentName ".fields.subscribe.desc") "Receive notifications about your application"}},
+        required: false
+      }
+    ]
+  }
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t "forms.citizen_application.title" "Citizen Service Application"}}
+ *   subtitle={{t "forms.citizen_application.subtitle" "Apply for government services online"}}
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   requiresAuthentication={true}
+ *   autoSave={true}
+ *   showProgress={true}
+ *   steps={customFormSteps}
+ *   onSubmit={async (data) => {
+ *     const response = await submitApplication(data);
+ *     showNotification({{t "notifications.application_submitted" "Application submitted successfully"}});
+ *     router.push(`/applications/${response.id}`);
+ *   }}
+ *   onSaveDraft={async (data) => {
+ *     await saveDraftApplication(data);
+ *   }}
+ *   onStepChange={(step) => {
+ *     trackFormProgress('citizen-application', step);
+ *   }}
+ * />
+ */

@@ -1,0 +1,400 @@
+/**
+ * @fileoverview {{componentName}} - Dashboard Layout Template
+ * @description AI-optimized dashboard layout with navigation and Norwegian compliance
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{nsmClassification}}, Norwegian Government Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+{{>parent}}
+
+import React, { forwardRef, useState, useCallback } from 'react';
+import {
+  Container,
+  Grid,
+  Stack,
+  Text,
+  Button,
+  Card,
+  CardContent,
+  Badge,
+  Separator
+} from '@xala-technologies/ui-system';
+{{#slot imports}}{{/slot}}
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly showSidebar?: boolean;
+  readonly sidebarCollapsible?: boolean;
+  readonly user?: UserInfo;
+  readonly navigation?: NavigationItem[];
+  readonly breadcrumbs?: BreadcrumbItem[];
+  readonly nsmClassification?: {{nsmClassification}};
+  readonly children?: React.ReactNode;
+  {{#slot interface-props}}{{/slot}}
+}
+
+export interface UserInfo {
+  readonly name: string;
+  readonly role: string;
+  readonly avatar?: string;
+  readonly clearanceLevel?: {{nsmClassification}};
+}
+
+export interface NavigationItem {
+  readonly id: string;
+  readonly label: string;
+  readonly href?: string;
+  readonly icon?: string;
+  readonly active?: boolean;
+  readonly badge?: string;
+  readonly children?: NavigationItem[];
+  readonly clearanceRequired?: {{nsmClassification}};
+}
+
+export interface BreadcrumbItem {
+  readonly label: string;
+  readonly href?: string;
+}
+
+{{#slot interfaces}}{{/slot}}
+
+/**
+ * AI-Optimized Dashboard Layout
+ * Pattern: {{mcpComplexity this}} complexity layout with responsive navigation
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - Responsive sidebar navigation
+ * - Role-based access control
+ * - NSM classification awareness
+ * - WCAG AAA accessibility
+ * - Norwegian government styling
+ * - Breadcrumb navigation
+ * - User profile integration
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t (concat componentName ".title") "Dashboard"}},
+      subtitle,
+      showSidebar = true,
+      sidebarCollapsible = true,
+      user,
+      navigation = [],
+      breadcrumbs = [],
+      nsmClassification = '{{nsmClassification}}',
+      children,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [activeNavItem, setActiveNavItem] = useState<string>('');
+
+    {{#slot hooks}}{{/slot}}
+
+    const handleNavigation = useCallback((item: NavigationItem) => {
+      setActiveNavItem(item.id);
+      
+      // Check clearance level
+      if (item.clearanceRequired && user?.clearanceLevel) {
+        const clearanceLevels: Record<{{nsmClassification}}, number> = {
+          'OPEN': 0,
+          'RESTRICTED': 1,
+          'CONFIDENTIAL': 2,
+          'SECRET': 3
+        };
+        
+        const userLevel = clearanceLevels[user.clearanceLevel];
+        const requiredLevel = clearanceLevels[item.clearanceRequired];
+        
+        if (userLevel < requiredLevel) {
+          // Handle insufficient clearance
+          console.warn(`User lacks clearance for ${item.label}`);
+          return;
+        }
+      }
+      
+      // Navigate
+      if (item.href) {
+        window.location.href = item.href;
+      }
+    }, [user]);
+
+    const toggleSidebar = useCallback(() => {
+      setSidebarCollapsed(prev => !prev);
+    }, []);
+
+    const renderNavigationItem = (item: NavigationItem, level: number = 0) => (
+      <div key={item.id} className={`nav-item level-${level}`}>
+        <Button
+          variant={item.active || activeNavItem === item.id ? "filled" : "ghost"}
+          size="sm"
+          onClick={() => handleNavigation(item)}
+          className={`w-full justify-start ${level > 0 ? 'ml-4' : ''}`}
+          disabled={item.clearanceRequired && user?.clearanceLevel && 
+            !hasRequiredClearance(user.clearanceLevel, item.clearanceRequired)}
+        >
+          <Stack direction="horizontal" justify="space-between" align="center" className="w-full">
+            <Stack direction="horizontal" gap="sm" align="center">
+              {item.icon && <span className="nav-icon">{item.icon}</span>}
+              {!sidebarCollapsed && <Text variant="caption">{item.label}</Text>}
+            </Stack>
+            {!sidebarCollapsed && item.badge && (
+              <Badge variant="secondary" size="sm">{item.badge}</Badge>
+            )}
+          </Stack>
+        </Button>
+        
+        {/* Render children if expanded */}
+        {item.children && !sidebarCollapsed && (
+          <div className="nav-children mt-2">
+            {item.children.map(child => renderNavigationItem(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+
+    const hasRequiredClearance = (userLevel: {{nsmClassification}}, requiredLevel: {{nsmClassification}}): boolean => {
+      const levels: Record<{{nsmClassification}}, number> = {
+        'OPEN': 0,
+        'RESTRICTED': 1,
+        'CONFIDENTIAL': 2,
+        'SECRET': 3
+      };
+      
+      return levels[userLevel] >= levels[requiredLevel];
+    };
+
+    {{#slot helpers}}{{/slot}}
+
+    return (
+      <div
+        ref={ref}
+        className="dashboard-layout h-screen flex"
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        {/* Sidebar */}
+        {showSidebar && (
+          <aside className={`dashboard-sidebar bg-secondary-50 border-r border-secondary-200 transition-all duration-300 ${
+            sidebarCollapsed ? 'w-16' : 'w-64'
+          }`}>
+            <div className="sidebar-header p-4 border-b border-secondary-200">
+              <Stack direction="horizontal" justify="space-between" align="center">
+                {!sidebarCollapsed && (
+                  <Stack direction="vertical" gap="xs">
+                    <Text variant="h5" weight="bold">
+                      {{t (concat componentName ".app_name") "Xaheen Portal"}}
+                    </Text>
+                    <Badge variant="outline" size="sm">
+                      NSM {nsmClassification}
+                    </Badge>
+                  </Stack>
+                )}
+                
+                {sidebarCollapsible && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleSidebar}
+                    aria-label={sidebarCollapsed 
+                      ? {{t "dashboard.expand_sidebar" "Expand sidebar"}}
+                      : {{t "dashboard.collapse_sidebar" "Collapse sidebar"}}
+                    }
+                  >
+                    {sidebarCollapsed ? '→' : '←'}
+                  </Button>
+                )}
+              </Stack>
+            </div>
+
+            {/* User Profile */}
+            {user && (
+              <div className="sidebar-user p-4 border-b border-secondary-200">
+                <Stack direction={sidebarCollapsed ? "vertical" : "horizontal"} gap="sm" align="center">
+                  {user.avatar && (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  {!sidebarCollapsed && (
+                    <Stack direction="vertical" gap="xs">
+                      <Text variant="caption" weight="semibold">{user.name}</Text>
+                      <Text variant="caption" color="secondary">{user.role}</Text>
+                      {user.clearanceLevel && (
+                        <Badge variant="outline" size="sm">
+                          {user.clearanceLevel}
+                        </Badge>
+                      )}
+                    </Stack>
+                  )}
+                </Stack>
+              </div>
+            )}
+
+            {{#slot sidebar}}
+            {/* Navigation */}
+            <nav className="sidebar-nav p-2" aria-label={{t "dashboard.main_navigation" "Main navigation"}}>
+              <Stack direction="vertical" gap="xs">
+                {navigation.map(item => renderNavigationItem(item))}
+              </Stack>
+            </nav>
+            {{/slot}}
+          </aside>
+        )}
+
+        {/* Main Content Area */}
+        <main className="dashboard-main flex-1 flex flex-col overflow-hidden">
+          {{#slot header}}
+          {/* Header */}
+          <header className="dashboard-header bg-white border-b border-secondary-200 p-4">
+            <Stack direction="vertical" gap="sm">
+              {/* Breadcrumbs */}
+              {breadcrumbs.length > 0 && (
+                <nav aria-label={{t "dashboard.breadcrumb" "Breadcrumb"}}>
+                  <Stack direction="horizontal" gap="sm" align="center">
+                    {breadcrumbs.map((crumb, index) => (
+                      <React.Fragment key={index}>
+                        {index > 0 && <Text variant="caption" color="secondary">/</Text>}
+                        {crumb.href ? (
+                          <Button variant="link" size="sm" href={crumb.href}>
+                            {crumb.label}
+                          </Button>
+                        ) : (
+                          <Text variant="caption" color={index === breadcrumbs.length - 1 ? "primary" : "secondary"}>
+                            {crumb.label}
+                          </Text>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </Stack>
+                </nav>
+              )}
+              
+              {/* Title and Subtitle */}
+              <Stack direction="horizontal" justify="space-between" align="center">
+                <Stack direction="vertical" gap="xs">
+                  <Text variant="h2" weight="bold">{title}</Text>
+                  {subtitle && (
+                    <Text variant="body" color="secondary">{subtitle}</Text>
+                  )}
+                </Stack>
+                
+                {/* Header Actions */}
+                <Stack direction="horizontal" gap="sm">
+                  <Badge variant="outline">
+                    {{t "dashboard.classification" "Classification"}}: {nsmClassification}
+                  </Badge>
+                </Stack>
+              </Stack>
+            </Stack>
+          </header>
+          {{/slot}}
+
+          {/* Main Content */}
+          <div className="dashboard-content flex-1 overflow-auto p-6">
+            {{#slot main-content}}
+            <Container size="full">
+              {children || (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Text variant="body" color="secondary">
+                      {{t (concat componentName ".no_content") "No content to display"}}
+                    </Text>
+                  </CardContent>
+                </Card>
+              )}
+            </Container>
+            {{/slot}}
+          </div>
+
+          {{#slot footer}}
+          {/* Footer */}
+          <footer className="dashboard-footer bg-secondary-50 border-t border-secondary-200 p-4">
+            <Stack direction="horizontal" justify="between" align="center">
+              <Text variant="caption" color="secondary">
+                {{t "dashboard.footer.copyright" "© 2024 Norwegian Government. All rights reserved."}}
+              </Text>
+              <Stack direction="horizontal" gap="md">
+                <Button variant="link" size="sm">
+                  {{t "dashboard.footer.privacy" "Privacy Policy"}}
+                </Button>
+                <Button variant="link" size="sm">
+                  {{t "dashboard.footer.accessibility" "Accessibility Statement"}}
+                </Button>
+                <Button variant="link" size="sm">
+                  {{t "dashboard.footer.contact" "Contact Support"}}
+                </Button>
+              </Stack>
+            </Stack>
+          </footer>
+          {{/slot}}
+        </main>
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+{{#slot helpers}}{{/slot}}
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t "dashboard.main.title" "Government Portal Dashboard"}}
+ *   subtitle={{t "dashboard.main.subtitle" "Secure government services platform"}}
+ *   nsmClassification="{{nsmClassification}}"
+ *   showSidebar={true}
+ *   sidebarCollapsible={true}
+ *   user=\{{
+ *     name: "Ole Hansen",
+ *     role: "Administrator",
+ *     clearanceLevel: "{{nsmClassification}}",
+ *     avatar: "/avatars/ole-hansen.jpg"
+ *   }}
+ *   navigation={[
+ *     {
+ *       id: "dashboard",
+ *       label: {{t "nav.dashboard" "Dashboard"}},
+ *       href: "/dashboard",
+ *       icon: "📊",
+ *       active: true
+ *     },
+ *     {
+ *       id: "services",
+ *       label: {{t "nav.services" "Services"}},
+ *       icon: "🏛️",
+ *       children: [
+ *         {
+ *           id: "citizen-services",
+ *           label: {{t "nav.citizen_services" "Citizen Services"}},
+ *           href: "/services/citizen"
+ *         },
+ *         {
+ *           id: "business-services", 
+ *           label: {{t "nav.business_services" "Business Services"}},
+ *           href: "/services/business",
+ *           clearanceRequired: "RESTRICTED"
+ *         }
+ *       ]
+ *     }
+ *   ]}
+ *   breadcrumbs={[
+ *     { label: {{t "breadcrumb.home" "Home"}}, href: "/" },
+ *     { label: {{t "breadcrumb.dashboard" "Dashboard"}} }
+ *   ]}
+ * >
+ *   {/* Dashboard content */}
+ * </{{componentName}}>
+ */

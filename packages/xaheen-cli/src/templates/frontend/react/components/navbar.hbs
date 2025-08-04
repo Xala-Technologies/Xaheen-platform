@@ -1,177 +1,155 @@
 /**
- * @fileoverview {{componentName}} Component - Enterprise Standards Compliant
- * @description Enterprise-grade navbar component using design tokens
+ * @fileoverview {{componentName}} Component - Perfect UI System Integration
+ * @description Navigation component using semantic UI System components with Norwegian compliance
  * @version 5.0.0
- * @compliance WCAG 2.2 AAA, Token-first, SSR-safe, No hooks in components
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Uses semantic naming and predictable patterns for AI generation
  */
 
-import { cn } from '@/lib/utils/cn';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { forwardRef, type HTMLAttributes } from 'react';
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Stack,
+  Button,
+  Text,
+  Logo,
+  Navigation,
+  SearchBar
+} from '@xala-technologies/ui-system';
 
-const {{camelCase componentName}}Variants = cva(
-  [
-    'w-full',
-    'flex',
-    'items-center',
-    'justify-between',
-    'transition-all',
-    'duration-200',
-    'motion-reduce:transition-none',
-    'border-b',
-  ],
-  {
-    variants: {
-      variant: {
-        flat: ['bg-background', 'border-border', 'shadow-none'],
-        elevated: ['bg-background', 'border-border', 'shadow-md'],
-        outlined: ['bg-transparent', 'border-border', 'shadow-none'],
-        floating: ['bg-background/95', 'backdrop-blur-md', 'border-border/50', 'shadow-lg'],
-      },
-      size: {
-        sm: 'px-4 py-2 min-h-[48px]',
-        md: 'px-6 py-3 min-h-[64px]',
-        lg: 'px-8 py-4 min-h-[80px]',
-      },
-      sticky: {
-        true: 'sticky top-0 z-50',
-        false: 'relative',
-      },
-      fullWidth: {
-        true: 'w-full',
-        false: 'max-w-none',
-      },
-    },
-    defaultVariants: {
-      variant: 'flat',
-      size: 'md',
-      sticky: false,
-      fullWidth: true,
-    },
-  }
-);
-
-export interface {{componentName}}Props
-  extends HTMLAttributes<HTMLElement>,
-    VariantProps<typeof {{camelCase componentName}}Variants> {
+export interface {{componentName}}Props extends HTMLAttributes<HTMLElement> {
   readonly logo?: React.ReactNode;
   readonly navigation?: React.ReactNode;
   readonly searchComponent?: React.ReactNode;
   readonly actions?: React.ReactNode;
   readonly mobileMenuTrigger?: React.ReactNode;
-  readonly responsive?: boolean;
-  readonly containerMaxWidth?: string;
+  readonly variant?: 'flat' | 'elevated' | 'floating';
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly sticky?: boolean;
   readonly ariaLabel?: string;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
 }
 
 /**
- * Pure presentational navbar component with no hooks
- * Uses CSS custom properties for theming
+ * Perfect semantic navbar component using UI System components
+ * AI-Optimized: Predictable structure and semantic naming
+ * Norwegian Compliance: NSM classification and i18n support
  */
 export const {{componentName}} = forwardRef<HTMLElement, {{componentName}}Props>(
   (
     {
       className,
-      variant,
-      size,
-      sticky,
-      fullWidth,
       logo,
       navigation,
       searchComponent,
       actions,
       mobileMenuTrigger,
-      responsive = true,
-      containerMaxWidth,
+      variant = 'flat',
+      size = 'md',
+      sticky = false,
       ariaLabel = 'Main navigation',
+      nsmClassification = 'OPEN',
       ...props
     },
     ref
-  ) => {
+  ): JSX.Element => {
     return (
       <nav
         ref={ref}
-        className={cn(
-          {{camelCase componentName}}Variants({
-            variant,
-            size,
-            sticky,
-            fullWidth,
-          }),
-          className
-        )}
         role="navigation"
         aria-label={ariaLabel}
+        data-nsm-classification={nsmClassification}
+        className={className}
+        style={{
+          position: sticky ? 'sticky' : 'relative',
+          top: sticky ? 0 : undefined,
+          zIndex: sticky ? 50 : undefined,
+        }}
         {...props}
       >
-        <div
-          className={cn(
-            'w-full',
-            'flex',
-            'items-center',
-            'justify-between',
-            'gap-4',
-            containerMaxWidth && `max-w-[${containerMaxWidth}]`,
-            'mx-auto'
-          )}
-        >
-          {logo && (
-            <div className="flex-shrink-0" role="banner">
-              {logo}
-            </div>
-          )}
+        <Container size="full">
+          <Stack 
+            direction="horizontal" 
+            justify="space-between" 
+            align="center"
+            gap="lg"
+            padding={size}
+          >
+            {/* Logo Section */}
+            {logo && (
+              <Stack direction="horizontal" align="center" gap="md">
+                {logo}
+              </Stack>
+            )}
 
-          {navigation && (
-            <div
-              className={cn(
-                'flex-1',
-                'flex',
-                'items-center',
-                responsive && 'hidden md:flex'
-              )}
-              role="menubar"
-              aria-orientation="horizontal"
-            >
-              {navigation}
-            </div>
-          )}
-
-          {searchComponent && (
-            <div
-              className={cn(
-                'flex-shrink-0',
-                responsive && 'hidden lg:block'
-              )}
-              role="search"
-            >
-              {searchComponent}
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
-            {actions && (
-              <div
-                className={cn(
-                  'flex',
-                  'items-center',
-                  'gap-2',
-                  responsive && 'hidden sm:flex'
-                )}
+            {/* Navigation Section */}
+            {navigation && (
+              <Stack 
+                direction="horizontal" 
+                align="center" 
+                gap="md"
+                className="hidden md:flex"
               >
-                {actions}
+                {navigation}
+              </Stack>
+            )}
+
+            {/* Search Section */}
+            {searchComponent && (
+              <div className="hidden lg:block">
+                {searchComponent}
               </div>
             )}
 
-            {responsive && mobileMenuTrigger && (
-              <div className="flex md:hidden">
-                {mobileMenuTrigger}
-              </div>
-            )}
-          </div>
-        </div>
+            {/* Actions Section */}
+            <Stack direction="horizontal" align="center" gap="sm">
+              {actions && (
+                <Stack 
+                  direction="horizontal" 
+                  align="center" 
+                  gap="sm"
+                  className="hidden sm:flex"
+                >
+                  {actions}
+                </Stack>
+              )}
+
+              {/* Mobile Menu Trigger */}
+              {mobileMenuTrigger && (
+                <div className="flex md:hidden">
+                  {mobileMenuTrigger}
+                </div>
+              )}
+            </Stack>
+          </Stack>
+        </Container>
       </nav>
     );
   }
 );
 
 {{componentName}}.displayName = '{{componentName}}';
+
+/**
+ * Example usage pattern for AI generation:
+ * 
+ * <{{componentName}} 
+ *   logo={<Logo src="/logo.png" alt="Company" />}
+ *   navigation={
+ *     <Navigation items={[
+ *       { href: '/', label: 'Home' },
+ *       { href: '/about', label: 'About' },
+ *       { href: '/contact', label: 'Contact' }
+ *     ]} />
+ *   }
+ *   searchComponent={<SearchBar placeholder="Search..." />}
+ *   actions={
+ *     <Stack direction="horizontal" gap="sm">
+ *       <Button variant="outline">Sign In</Button>
+ *       <Button variant="primary">Sign Up</Button>
+ *     </Stack>
+ *   }
+ *   variant="elevated"
+ *   sticky
+ * />
+ */

@@ -1,0 +1,80 @@
+/**
+ * @fileoverview {{componentName}} - Base Component Template
+ * @description AI-optimized base component with UI System integration and Norwegian compliance
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{nsmClassification}}, Norwegian Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import {
+  Container
+} from '@xala-technologies/ui-system';
+{{#slot imports}}{{/slot}}
+
+export interface {{componentName}}Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly nsmClassification?: {{nsmClassification}};
+  {{#slot interface-props}}{{/slot}}
+}
+
+{{#slot interfaces}}{{/slot}}
+
+/**
+ * AI-Optimized Base Component
+ * Pattern: {{mcpComplexity this}} complexity component with semantic UI patterns
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - UI System semantic components integration
+ * - WCAG AAA accessibility compliance
+ * - Norwegian language support
+ * - NSM security classification support
+ * - TypeScript strict mode compatibility
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      nsmClassification = '{{nsmClassification}}',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    {{#slot hooks}}{{/slot}}
+
+    {{#slot helpers}}{{/slot}}
+
+    return (
+      <Container
+        ref={ref}
+        className={className}
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        {{#slot content}}
+        {/* Component content goes here */}
+        {{/slot}}
+      </Container>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+{{#slot helpers}}{{/slot}}
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   nsmClassification="{{nsmClassification}}"
+ *   data-testid="{{kebabCase componentName}}"
+ *   className="custom-styles"
+ * >
+ *   {/* Component usage example */}
+ * </{{componentName}}>
+ */

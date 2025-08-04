@@ -1,0 +1,278 @@
+/**
+ * @fileoverview {{componentName}} - RTL Text Support Component
+ * @description AI-optimized RTL (Right-to-Left) text support for Arabic and other RTL languages
+ * @version 5.0.0
+ * @compliance WCAG AAA, Unicode Bidirectional Algorithm, Norwegian Language Requirements
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, useMemo, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Stack,
+  Text
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly children: React.ReactNode;
+  readonly locale?: string;
+  readonly autoDetect?: boolean;
+  readonly forceDirection?: 'ltr' | 'rtl' | 'auto';
+  readonly textAlign?: 'start' | 'end' | 'center' | 'justify';
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+/**
+ * AI-Optimized RTL Text Wrapper
+ * Pattern: {{mcpComplexity this}} complexity internationalization with bidirectional text support
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * RTL Language Support:
+ * - Arabic (ar, ar-SA, ar-EG, ar-AE, etc.)
+ * - Hebrew (he, he-IL)
+ * - Persian/Farsi (fa, fa-IR)
+ * - Urdu (ur, ur-PK)
+ * - Kurdish (ku, ckb)
+ * - Pashto (ps)
+ * 
+ * Norwegian Compliance:
+ * - Support for Arabic-speaking immigrants and refugees
+ * - Government service accessibility requirements
+ * - Digital inclusion standards
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      children,
+      locale,
+      autoDetect = true,
+      forceDirection = 'auto',
+      textAlign = 'start',
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const rtlLocales = useMemo(() => new Set([
+      'ar', 'ar-SA', 'ar-EG', 'ar-AE', 'ar-JO', 'ar-LB', 'ar-SY', 'ar-IQ', 'ar-KW', 'ar-QA', 'ar-BH', 'ar-OM', 'ar-YE',
+      'he', 'he-IL',
+      'fa', 'fa-IR',
+      'ur', 'ur-PK', 'ur-IN',
+      'ku', 'ckb',
+      'ps', 'ps-AF',
+      'dv', 'dv-MV', // Dhivehi
+      'arc', // Aramaic
+      'syr' // Syriac
+    ]), []);
+
+    const isRTLLocale = useMemo(() => {
+      if (!locale) return false;
+      
+      // Check exact match first
+      if (rtlLocales.has(locale)) return true;
+      
+      // Check language prefix (e.g., 'ar' from 'ar-NO')
+      const languageCode = locale.split('-')[0];
+      return rtlLocales.has(languageCode);
+    }, [locale, rtlLocales]);
+
+    const detectedDirection = useMemo(() => {
+      if (forceDirection !== 'auto') {
+        return forceDirection;
+      }
+
+      if (locale && isRTLLocale) {
+        return 'rtl';
+      }
+
+      if (autoDetect && typeof children === 'string') {
+        return detectTextDirection(children);
+      }
+
+      return 'ltr';
+    }, [forceDirection, locale, isRTLLocale, autoDetect, children]);
+
+    const computedStyle = useMemo(() => {
+      const baseStyle: React.CSSProperties = {
+        direction: detectedDirection,
+        textAlign: textAlign === 'start' 
+          ? (detectedDirection === 'rtl' ? 'right' : 'left')
+          : textAlign === 'end'
+          ? (detectedDirection === 'rtl' ? 'left' : 'right')
+          : textAlign,
+        unicodeBidi: 'embed'
+      };
+
+      // Add RTL-specific styling
+      if (detectedDirection === 'rtl') {
+        return {
+          ...baseStyle,
+          fontFamily: 'var(--font-arabic, "Noto Sans Arabic", "Arabic UI Text", "Geeza Pro", "Baghdad", "Al Bayan", system-ui, sans-serif)',
+          lineHeight: '1.6', // Better line height for Arabic text
+          letterSpacing: '0', // No letter spacing for Arabic
+          wordSpacing: '0.1em' // Slight word spacing for readability
+        };
+      }
+
+      return baseStyle;
+    }, [detectedDirection, textAlign]);
+
+    const containerClassName = useMemo(() => {
+      const classes = ['rtl-text-wrapper'];
+      
+      if (detectedDirection === 'rtl') {
+        classes.push('rtl');
+      } else {
+        classes.push('ltr');
+      }
+
+      if (className) {
+        classes.push(className);
+      }
+
+      return classes.join(' ');
+    }, [detectedDirection, className]);
+
+    return (
+      <div
+        ref={ref}
+        className={containerClassName}
+        style={computedStyle}
+        data-testid={testId}
+        data-direction={detectedDirection}
+        data-locale={locale}
+        data-nsm-classification={nsmClassification}
+        lang={locale}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+/**
+ * Detect text direction based on content
+ */
+function detectTextDirection(text: string): 'rtl' | 'ltr' {
+  // Unicode ranges for RTL characters
+  const rtlCharRegex = /[\u0590-\u05FF\u0600-\u06FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  
+  const rtlCharCount = (text.match(rtlCharRegex) || []).length;
+  const totalCharCount = text.replace(/\s/g, '').length;
+  
+  // If more than 30% of characters are RTL, consider it RTL text
+  return rtlCharCount / totalCharCount > 0.3 ? 'rtl' : 'ltr';
+}
+
+/**
+ * RTL-aware text formatting helper
+ */
+export const formatRTLText = (text: string, locale?: string): string => {
+  if (!locale) return text;
+  
+  const isRTL = ['ar', 'he', 'fa', 'ur'].some(rtlLang => locale.startsWith(rtlLang));
+  
+  if (isRTL) {
+    // Add RTL mark (RLM) for mixed text
+    return `\u200F${text}\u200F`;
+  }
+  
+  return text;
+};
+
+/**
+ * Get appropriate font stack for locale
+ */
+export const getFontStackForLocale = (locale?: string): string => {
+  if (!locale) return 'system-ui, sans-serif';
+  
+  if (locale.startsWith('ar')) {
+    return '"Noto Sans Arabic", "Arabic UI Text", "Geeza Pro", "Baghdad", "Al Bayan", system-ui, sans-serif';
+  }
+  
+  if (locale.startsWith('he')) {
+    return '"Noto Sans Hebrew", "Hebrew UI Text", "Arial Hebrew", system-ui, sans-serif';
+  }
+  
+  if (locale.startsWith('fa')) {
+    return '"Noto Sans Arabic", "Persian UI Text", "Geeza Pro", system-ui, sans-serif';
+  }
+  
+  if (locale.startsWith('ur')) {
+    return '"Noto Sans Arabic", "Urdu UI Text", "Geeza Pro", system-ui, sans-serif';
+  }
+  
+  // Norwegian fonts
+  if (locale.startsWith('nb') || locale.startsWith('nn') || locale.startsWith('no')) {
+    return '"Inter", "Helvetica Neue", "Arial", system-ui, sans-serif';
+  }
+  
+  return 'system-ui, sans-serif';
+};
+
+/**
+ * RTL-aware CSS utility classes generator
+ */
+export const generateRTLClasses = (locale?: string): string => {
+  if (!locale) return '';
+  
+  const isRTL = ['ar', 'he', 'fa', 'ur'].some(rtlLang => locale.startsWith(rtlLang));
+  
+  if (isRTL) {
+    return [
+      'rtl',
+      'text-right',
+      'rtl:text-right',
+      'ltr:text-left',
+      'rtl:pr-4',
+      'rtl:pl-0',
+      'ltr:pl-4',
+      'ltr:pr-0'
+    ].join(' ');
+  }
+  
+  return 'ltr text-left';
+};
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   locale="ar-SA"
+ *   autoDetect={true}
+ *   textAlign="start"
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ * >
+ *   <Text variant="h2">
+ *     {{t "welcome.arabic" "مرحباً بكم في نظام الحكومة النرويجية"}}
+ *   </Text>
+ *   <Text variant="body">
+ *     {{t "description.arabic" "يمكنكم الوصول إلى جميع الخدمات الحكومية من خلال هذا النظام"}}
+ *   </Text>
+ * </{{componentName}}>
+ * 
+ * // Mixed content example
+ * <{{componentName}}
+ *   locale="ar-NO"
+ *   autoDetect={true}
+ * >
+ *   <Stack direction="vertical" gap="md">
+ *     <Text variant="body">
+ *       Norwegian: Dette er en norsk tekst.
+ *     </Text>
+ *     <Text variant="body">
+ *       Arabic: هذا نص باللغة العربية.
+ *     </Text>
+ *     <Text variant="body">
+ *       Mixed: Norwegian Government - الحكومة النرويجية
+ *     </Text>
+ *   </Stack>
+ * </{{componentName}}>
+ */

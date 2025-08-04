@@ -1,0 +1,310 @@
+/**
+ * @fileoverview {{componentName}} - Contact Form Pattern
+ * @description AI-optimized contact form using semantic UI System components with validation
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
+import React, { forwardRef, useState, useCallback, type FormEvent } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Form,
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Text,
+  Alert
+} from '@xala-technologies/ui-system';
+
+export interface {{componentName}}Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly onSubmit?: (data: ContactFormData) => Promise<void>;
+  readonly subjects?: readonly string[];
+  readonly showCompanyField?: boolean;
+  readonly nsmClassification?: {{nsmClassification}};
+}
+
+export interface ContactFormData {
+  readonly name: string;
+  readonly email: string;
+  readonly company?: string;
+  readonly subject: string;
+  readonly message: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  company?: string;
+  subject?: string;
+  message?: string;
+}
+
+/**
+ * AI-Optimized Contact Form Pattern
+ * Pattern: {{mcpComplexity this}} complexity form with validation
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * MCP Patterns:
+ * {{#each mcp.patterns.patterns}}
+ * - {{pattern}}: {{recommendation}}
+ * {{/each}}
+ */
+export const {{componentName}} = forwardRef<HTMLFormElement, {{componentName}}Props>(
+  (
+    {
+      title = {{t "contact.form.title" "Contact Us"}},
+      description,
+      size = 'md',
+      onSubmit,
+      subjects = [
+        {{t "contact.subjects.general" "General Inquiry"}},
+        {{t "contact.subjects.support" "Technical Support"}},
+        {{t "contact.subjects.sales" "Sales"}},
+        {{t "contact.subjects.partnership" "Partnership"}}
+      ],
+      showCompanyField = true,
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+    },
+    ref
+  ): JSX.Element => {
+    const [formData, setFormData] = useState<ContactFormData>({
+      name: '',
+      email: '',
+      company: '',
+      subject: subjects[0] || '',
+      message: ''
+    });
+
+    const [errors, setErrors] = useState<FormErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const validateForm = useCallback((): FormErrors => {
+      const newErrors: FormErrors = {};
+
+      // Name validation
+      if (!formData.name.trim()) {
+        newErrors.name = {{t "validation.required" "This field is required"}};
+      } else if (formData.name.trim().length < 2) {
+        newErrors.name = {{t "validation.name.min_length" "Name must be at least 2 characters"}};
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!formData.email.trim()) {
+        newErrors.email = {{t "validation.required" "This field is required"}};
+      } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = {{t "validation.email.invalid" "Please enter a valid email address"}};
+      }
+
+      // Subject validation
+      if (!formData.subject) {
+        newErrors.subject = {{t "validation.required" "This field is required"}};
+      }
+
+      // Message validation
+      if (!formData.message.trim()) {
+        newErrors.message = {{t "validation.required" "This field is required"}};
+      } else if (formData.message.trim().length < 10) {
+        newErrors.message = {{t "validation.message.min_length" "Message must be at least 10 characters"}};
+      }
+
+      return newErrors;
+    }, [formData]);
+
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      
+      const formErrors = validateForm();
+      setErrors(formErrors);
+
+      if (Object.keys(formErrors).length > 0) {
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+
+      try {
+        await onSubmit?.(formData);
+        setSubmitStatus('success');
+        
+        // Reset form on successful submission
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: subjects[0] || '',
+          message: ''
+        });
+      } catch (error) {
+        console.error('Form submission error:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, validateForm, onSubmit, subjects]);
+
+    const handleInputChange = useCallback((field: keyof ContactFormData, value: string) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+      }
+    }, [errors]);
+
+    return (
+      <Container size={size}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            {description && (
+              <Text variant="body" color="secondary">
+                {description}
+              </Text>
+            )}
+          </CardHeader>
+          <CardContent>
+            <Form
+              ref={ref}
+              onSubmit={handleSubmit}
+              data-testid={testId}
+              data-nsm-classification={nsmClassification}
+              noValidate
+            >
+              <Stack direction="vertical" gap="lg">
+                {/* Success/Error Messages */}
+                {submitStatus === 'success' && (
+                  <Alert variant="success" role="status">
+                    {{t "contact.form.success" "Thank you! Your message has been sent successfully."}}
+                  </Alert>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <Alert variant="error" role="alert">
+                    {{t "contact.form.error" "There was an error sending your message. Please try again."}}
+                  </Alert>
+                )}
+
+                {/* Form Fields */}
+                <Stack direction="vertical" gap="md">
+                  {/* Name Field */}
+                  <Input
+                    label={{t "contact.form.name.label" "Full Name"}}
+                    value={formData.name}
+                    onChange={(value) => handleInputChange('name', value)}
+                    error={errors.name}
+                    required
+                    aria-describedby={errors.name ? 'name-error' : undefined}
+                    placeholder={{t "contact.form.name.placeholder" "Enter your full name"}}
+                  />
+
+                  {/* Email Field */}
+                  <Input
+                    label={{t "contact.form.email.label" "Email Address"}}
+                    type="email"
+                    value={formData.email}
+                    onChange={(value) => handleInputChange('email', value)}
+                    error={errors.email}
+                    required
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    placeholder={{t "contact.form.email.placeholder" "Enter your email address"}}
+                  />
+
+                  {/* Company Field (Optional) */}
+                  {showCompanyField && (
+                    <Input
+                      label={{t "contact.form.company.label" "Company"}}
+                      value={formData.company}
+                      onChange={(value) => handleInputChange('company', value)}
+                      error={errors.company}
+                      placeholder={{t "contact.form.company.placeholder" "Enter your company name"}}
+                    />
+                  )}
+
+                  {/* Subject Field */}
+                  <Select
+                    label={{t "contact.form.subject.label" "Subject"}}
+                    value={formData.subject}
+                    onChange={(value) => handleInputChange('subject', value)}
+                    error={errors.subject}
+                    required
+                    options={subjects.map(subject => ({
+                      label: subject,
+                      value: subject
+                    }))}
+                  />
+
+                  {/* Message Field */}
+                  <Textarea
+                    label={{t "contact.form.message.label" "Message"}}
+                    value={formData.message}
+                    onChange={(value) => handleInputChange('message', value)}
+                    error={errors.message}
+                    required
+                    rows={5}
+                    aria-describedby={errors.message ? 'message-error' : undefined}
+                    placeholder={{t "contact.form.message.placeholder" "Enter your message..."}}
+                  />
+                </Stack>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  aria-label={{t "contact.form.submit.aria" "Submit contact form"}}
+                >
+                  {isSubmitting 
+                    ? {{t "contact.form.submitting" "Sending..."}}
+                    : {{t "contact.form.submit" "Send Message"}}
+                  }
+                </Button>
+              </Stack>
+            </Form>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{componentName}}
+ *   title={{t "support.contact.title" "Get Support"}}
+ *   description={{t "support.contact.description" "Have questions? We're here to help!"}}
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   subjects={[
+ *     {{t "support.subjects.technical" "Technical Support"}},
+ *     {{t "support.subjects.billing" "Billing Question"}},
+ *     {{t "support.subjects.feature" "Feature Request"}},
+ *     {{t "support.subjects.bug" "Bug Report"}}
+ *   ]}
+ *   showCompanyField={true}
+ *   onSubmit={async (data) => {
+ *     await submitContactForm(data);
+ *     showNotification({{t "notifications.message_sent" "Message sent successfully!"}});
+ *   }}
+ * />
+ */
