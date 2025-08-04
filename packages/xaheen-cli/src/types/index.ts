@@ -1,554 +1,299 @@
-/**
- * Core Type Definitions for Xaheen CLI v2
- *
- * @author CLI Template Generator Agent
- * @since 2025-01-03
- */
+// Core type definitions for the Xaheen CLI
+import { z } from 'zod';
 
-import { z } from "zod";
-
-// Project configuration
-export const ProjectConfigSchema = z.object({
-	name: z.string(),
-	path: z.string(),
-	framework: z.string(),
-	backend: z.string(),
-	database: z.string(),
-	platform: z.enum(["web", "mobile", "desktop"]).default("web"),
-	features: z.array(z.string()).default([]),
-	metadata: z.record(z.string(), z.any()).default({}),
-});
-
-export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
-
-// Service types
-export const ServiceTypeSchema = z.enum([
-	"auth",
-	"payments",
-	"database",
-	"cache",
-	"queue",
-	"storage",
-	"email",
-	"sms",
-	"push",
-	"search",
-	"analytics",
-	"monitoring",
-	"logging",
-	"i18n",
-	"cms",
-	"admin",
-	"docs",
-	"testing",
-	"deployment",
-	"ci",
-	"cdn",
-	"security",
-	"backup",
-	"compliance",
-	"ai",
-	"realtime",
-	"api",
-	"orm",
-	"ui",
-	"state",
-	"routing",
-	"forms",
-	"validation",
-	"charts",
-	"maps",
-	"calendar",
-	"chat",
-	"video",
-	"audio",
-	"image",
-	"pdf",
-	"office",
-	// Framework and architecture types
-	"frontend",
-	"backend",
-	"rbac",
-	"multitenancy",
-	// AI and specialized types
-	"ai-chatbot",
-	"vector-database",
-	"ai-observability",
-]);
-
-export type ServiceType = z.infer<typeof ServiceTypeSchema>;
-
-// Service configuration
-export const ServiceConfigurationSchema = z.object({
-	serviceId: z.string(),
-	serviceType: ServiceTypeSchema,
-	provider: z.string(),
-	version: z.string(),
-	required: z.boolean().default(true),
-	priority: z.number().default(50),
-	configuration: z.record(z.string(), z.any()).default({}),
-	environmentVariables: z
-		.array(
-			z.object({
-				name: z.string(),
-				value: z.string().optional(),
-				required: z.boolean().default(false),
-			}),
-		)
-		.default([]),
-	dependencies: z
-		.array(
-			z.object({
-				serviceType: ServiceTypeSchema,
-				provider: z.string().optional(),
-				version: z.string().optional(),
-			}),
-		)
-		.default([]),
-	postInstallSteps: z.array(z.string()).default([]),
-	verificationSteps: z.array(z.string()).default([]),
-});
-
-export type ServiceConfiguration = z.infer<typeof ServiceConfigurationSchema>;
-
-// Service template
-export const ServiceTemplateSchema = z.object({
-	name: z.string(),
-	type: ServiceTypeSchema,
-	provider: z.string(),
-	version: z.string(),
-	description: z.string(),
-	author: z.string().optional(),
-	license: z.string().default("MIT"),
-	injectionPoints: z
-		.array(
-			z.object({
-				type: z.enum([
-					"file-create",
-					"file-append",
-					"file-prepend",
-					"file-replace",
-					"ast-modify",
-					"json-merge",
-					"config-update",
-					"dependency",
-				]),
-				target: z.string(),
-				template: z.string(),
-				condition: z.string().optional(),
-				searchPattern: z.string().optional(),
-				conflictsWith: z.array(z.string()).optional(),
-				priority: z.number().default(50),
-			}),
-		)
-		.default([]),
-	envVariables: z
-		.array(
-			z.object({
-				name: z.string(),
-				description: z.string(),
-				required: z.boolean().default(false),
-				defaultValue: z.string().optional(),
-				type: z
-					.enum(["string", "number", "boolean", "url", "secret"])
-					.default("string"),
-				sensitive: z.boolean().default(false),
-			}),
-		)
-		.default([]),
-	dependencies: z
-		.array(
-			z.object({
-				serviceType: ServiceTypeSchema,
-				provider: z.string().optional(),
-				version: z.string().optional(),
-				required: z.boolean().default(true),
-			}),
-		)
-		.default([]),
-	postInjectionSteps: z
-		.array(
-			z.object({
-				type: z.enum(["command", "manual"]),
-				description: z.string(),
-				command: z.string().optional(),
-			}),
-		)
-		.default([]),
-	frameworks: z.array(z.string()).default([]),
-	databases: z.array(z.string()).default([]),
-	platforms: z.array(z.string()).default(["web"]),
-	tags: z.array(z.string()).default([]),
-});
-
-export type ServiceTemplate = z.infer<typeof ServiceTemplateSchema>;
-
-// Service bundle
-export const ServiceBundleSchema = z.object({
-	id: z.string().uuid(),
-	name: z.string(),
-	displayName: z.string(),
-	description: z.string(),
-	version: z.string(),
-	type: z.enum([
-		"saas-starter",
-		"saas-professional",
-		"saas-enterprise",
-		"marketplace",
-		"fintech",
-		"healthcare",
-		"ecommerce",
-		"custom",
-		// Application types
-		"landing-page",
-		"web-app",
-		"mobile-app",
-		"api",
-		"enterprise",
-		"saas",
-		"government",
-	]),
-	author: z.string().optional(),
-	services: z.array(
-		z.object({
-			serviceType: ServiceTypeSchema,
-			provider: z.string(),
-			version: z.string().optional(),
-			required: z.boolean().default(true),
-			priority: z.number().default(50),
-			config: z.record(z.string(), z.any()).default({}),
-		}),
-	),
-	optionalServices: z
-		.array(
-			z.object({
-				serviceType: ServiceTypeSchema,
-				provider: z.string(),
-				version: z.string().optional(),
-				condition: z.string().optional(),
-			}),
-		)
-		.default([]),
-	deploymentTargets: z.array(z.string()).default(["cloud-native"]),
-	prerequisites: z
-		.object({
-			frameworks: z.array(z.string()).default([]),
-			databases: z.array(z.string()).default([]),
-			platforms: z.array(z.string()).default([]),
-		})
-		.optional(),
-	pricing: z
-		.object({
-			tier: z.string(),
-			monthlyPrice: z.string(),
-			features: z.array(z.string()),
-		})
-		.optional(),
-	compliance: z.array(z.string()).default([]),
-	tags: z.array(z.string()).default([]),
-	createdAt: z.date().default(() => new Date()),
-	updatedAt: z.date().default(() => new Date()),
-});
-
-export type ServiceBundle = z.infer<typeof ServiceBundleSchema>;
-
-// Bundle resolution result
-export const BundleResolutionResultSchema = z.object({
-	bundleId: z.string(),
-	bundleName: z.string(),
-	bundleVersion: z.string(),
-	status: z.enum(["success", "warning", "failed"]),
-	resolvedServices: z.array(ServiceConfigurationSchema),
-	dependencies: z.array(
-		z.object({
-			dependentService: z.string(),
-			requiredService: z.string(),
-			requiredProvider: z.string(),
-			requiredVersion: z.string().optional(),
-		}),
-	),
-	configuration: z.record(z.string(), z.any()),
-	deploymentInstructions: z.array(z.string()),
-	postInstallSteps: z.array(z.string()),
-	verificationSteps: z.array(z.string()),
-	errors: z.array(z.string()),
-	warnings: z.array(z.string()),
-	resolutionTime: z.number(),
-	resolvedAt: z.date(),
-});
-
-export type BundleResolutionResult = z.infer<
-	typeof BundleResolutionResultSchema
->;
-
-// Service injection result
-export const ServiceInjectionResultSchema = z.object({
-	serviceId: z.string(),
-	serviceType: ServiceTypeSchema,
-	provider: z.string(),
-	status: z.enum(["success", "failed"]),
-	injectedFiles: z.array(z.string()),
-	createdFiles: z.array(z.string()),
-	environmentVariables: z.array(
-		z.object({
-			name: z.string(),
-			value: z.string(),
-			required: z.boolean(),
-		}),
-	),
-	postInstallSteps: z.array(z.string()),
-	errors: z.array(z.string()),
-	warnings: z.array(z.string()),
-	injectionTime: z.number(),
-	injectedAt: z.date(),
-});
-
-export type ServiceInjectionResult = z.infer<
-	typeof ServiceInjectionResultSchema
->;
-
-// Project context for template rendering
-export interface ProjectContext {
-	name: string;
-	framework: string;
-	backend?: string;
-	database?: string;
-	platform: string;
-	packageManager: "npm" | "pnpm" | "yarn" | "bun";
-	typescript: boolean;
-	git: boolean;
-	features: string[];
-	author?: string;
-	license?: string;
-	[key: string]: any;
+// Base CLI command structure
+export interface CLICommand {
+  domain: string;
+  action: string;
+  target?: string;
+  options: Record<string, any>;
 }
 
-// Service registry interface
-export interface IServiceRegistry {
-	initialize(): Promise<void>;
-	getTemplate(
-		type: ServiceType | string,
-		provider: string,
-	): Promise<ServiceTemplate | null>;
-	listTemplates(type?: ServiceType | string): Promise<ServiceTemplate[]>;
-	registerTemplate(template: ServiceTemplate): Promise<void>;
-}
+// Domain types - Comprehensive set for Xaheen CLI
+export type CLIDomain = 
+  // Artisan-inspired commands
+  | 'make'        // Creation commands (make:model, make:controller, etc.)
+  | 'migrate'     // Database migrations
+  | 'db'          // Database operations  
+  | 'route'       // Route management
+  | 'cache'       // Cache management
+  | 'queue'       // Queue operations
+  | 'serve'       // Development server
+  | 'tinker'      // Interactive REPL
+  | 'test'        // Testing commands
+  | 'optimize'    // Optimization commands
+  // Original domains
+  | 'project'     // Project management
+  | 'app'         // App management (monorepo)
+  | 'package'     // Package management (monorepo)
+  | 'service'     // Service management
+  | 'component'   // Component generation
+  | 'page'        // Page generation
+  | 'model'       // Model generation
+  | 'theme'       // Theme management
+  | 'ai'          // AI-enhanced features
+  | 'validate'    // Validation
+  | 'build'       // Build commands
+  | 'mcp';
 
-// Bundle resolver interface
-export interface IBundleResolver {
-	resolveBundle(
-		bundle: ServiceBundle,
-		options?: any,
-	): Promise<BundleResolutionResult>;
-	loadBundleByName(name: string): Promise<ServiceBundle | null>;
-	createCustomBundle(services: string[]): Promise<ServiceBundle>;
-}
+export type CLIAction = 
+  | 'create' 
+  | 'add' 
+  | 'remove' 
+  | 'update' 
+  | 'list' 
+  | 'generate' 
+  | 'deploy' 
+  | 'sync' 
+  | 'validate' 
+  | 'migrate'
+  | 'scaffold'
+  // Make-specific actions
+  | 'model'
+  | 'controller'
+  | 'service'
+  | 'component'
+  | 'migration'
+  | 'seeder'
+  | 'factory'
+  | 'crud'
+  | 'analyze';
 
-// Service injector interface
-export interface IServiceInjector {
-	injectService(
-		service: ServiceConfiguration,
-		template: ServiceTemplate,
-		projectPath: string,
-		projectContext: ProjectContext,
-		options?: any,
-	): Promise<ServiceInjectionResult>;
-
-	injectServices(
-		services: ServiceConfiguration[],
-		projectPath: string,
-		projectContext: ProjectContext,
-		options?: any,
-	): Promise<ServiceInjectionResult[]>;
-}
-
-// Validation types
-export const ValidationIssueSchema = z.object({
-	id: z.string(),
-	category: z.string(),
-	severity: z.enum(["error", "warning", "info"]),
-	message: z.string(),
-	file: z.string().optional(),
-	line: z.number().optional(),
-	column: z.number().optional(),
-	suggestion: z.string().optional(),
-	fixable: z.boolean().default(false),
-	rule: z.string().optional(),
+// Xaheen configuration schema
+export const XaheenConfigSchema = z.object({
+  version: z.string().default('3.0.0'),
+  project: z.object({
+    name: z.string(),
+    framework: z.string(),
+    packageManager: z.enum(['npm', 'yarn', 'pnpm', 'bun']).default('bun'),
+  }),
+  services: z.record(z.object({
+    provider: z.string(),
+    version: z.string().optional(),
+    config: z.record(z.any()).optional(),
+  })).optional(),
+  design: z.object({
+    platform: z.enum(['react', 'vue', 'angular', 'svelte', 'flutter', 'react-native']).optional(),
+    theme: z.string().optional(),
+    tokens: z.string().optional(),
+  }).optional(),
+  ai: z.object({
+    provider: z.enum(['openai', 'anthropic', 'local']).optional(),
+    model: z.string().optional(),
+    apiKey: z.string().optional(),
+  }).optional(),
+  compliance: z.object({
+    accessibility: z.enum(['A', 'AA', 'AAA']).default('AAA'),
+    norwegian: z.boolean().default(false),
+    gdpr: z.boolean().default(false),
+  }).optional(),
 });
 
-export type ValidationIssue = z.infer<typeof ValidationIssueSchema>;
+export type XaheenConfig = z.infer<typeof XaheenConfigSchema>;
 
-export const ValidationResultSchema = z.object({
-	isValid: z.boolean(),
-	errors: z.array(ValidationIssueSchema),
-	warnings: z.array(ValidationIssueSchema),
-	fixableIssues: z.number().default(0),
-	validatedAt: z.date().default(() => new Date()),
-	metrics: z
-		.object({
-			dependencies: z
-				.object({
-					total: z.number(),
-					outdated: z.number(),
-					vulnerable: z.number(),
-				})
-				.optional(),
-			bundleSize: z.number().optional(),
-			typesCoverage: z.number().optional(),
-			lintIssues: z.number().optional(),
-			testCoverage: z.number().optional(),
-		})
-		.optional(),
-});
-
-export type ValidationResult = z.infer<typeof ValidationResultSchema>;
-
-export const FixResultSchema = z.object({
-	fixedCount: z.number(),
-	errors: z.array(z.string()),
-	appliedFixes: z.array(
-		z.object({
-			issueId: z.string(),
-			description: z.string(),
-			success: z.boolean(),
-		}),
-	),
-});
-
-export type FixResult = z.infer<typeof FixResultSchema>;
-
-// Xala UI Integration Types
-export const XalaPlatformSchema = z.enum([
-	"react",
-	"nextjs",
-	"vue",
-	"angular",
-	"svelte",
-	"electron",
-]);
-
-export type XalaPlatform = z.infer<typeof XalaPlatformSchema>;
-
-export const XalaThemeSchema = z.enum([
-	"enterprise",
-	"healthcare",
-	"finance",
-	"government",
-	"consumer",
-]);
-
-export type XalaTheme = z.infer<typeof XalaThemeSchema>;
-
-export const XalaComplianceSchema = z.enum([
-	"gdpr",
-	"hipaa",
-	"sox",
-	"nsm",
-	"wcag-aaa",
-	"iso27001",
-]);
-
-export type XalaCompliance = z.infer<typeof XalaComplianceSchema>;
-
-// Xala UI configuration
-export const XalaUIConfigSchema = z.object({
-	system: z.literal("xala").default("xala"),
-	version: z.string().default("5.0.0"),
-	architecture: z.literal("semantic-v5").default("semantic-v5"),
-	theme: XalaThemeSchema.default("enterprise"),
-	platform: XalaPlatformSchema,
-	compliance: z.array(XalaComplianceSchema).default([]),
-	localization: z
-		.object({
-			defaultLocale: z.string().default("en"),
-			supportedLocales: z
-				.array(z.string())
-				.default(["en", "nb-NO", "fr", "ar"]),
-			fallbackLocale: z.string().optional(),
-			extractionPath: z.string().default("./locales"),
-			namespace: z.string().optional(),
-		})
-		.default({}),
-	features: z
-		.object({
-			navbar: z.boolean().default(true),
-			dashboard: z.boolean().default(true),
-			semanticComponents: z.boolean().default(true),
-			designTokens: z.boolean().default(true),
-		})
-		.default({}),
-	componentLibrary: z
-		.object({
-			components: z.array(z.string()).default([]),
-			dataComponents: z.array(z.string()).default([]),
-			themeComponents: z.array(z.string()).default([]),
-			layouts: z.array(z.string()).default([]),
-			providers: z.array(z.string()).default([]),
-			patterns: z.array(z.string()).default([]),
-			tools: z.array(z.string()).default([]),
-		})
-		.default({}),
-});
-
-export type XalaUIConfig = z.infer<typeof XalaUIConfigSchema>;
-
-// Extended project context with Xala UI support
-export interface ExtendedProjectContext extends ProjectContext {
-	ui?: XalaUIConfig;
-	xalaIntegration?: {
-		enabled: boolean;
-		version: string;
-		features: string[];
-		autoSync: boolean;
-		platformSync: Record<string, any>;
-		hooks: {
-			preBuild?: string;
-			postGenerate?: string;
-			preLocalize?: string;
-		};
-	};
+// Legacy configuration types for backward compatibility
+export interface LegacyXaheenConfig {
+  version: string;
+  project: {
+    name: string;
+    framework: string;
+    packageManager: string;
+  };
+  services: Record<string, {
+    provider: string;
+    version?: string;
+  }>;
 }
 
-// Xala component specification
-export interface XalaComponentSpec {
-	name: string;
-	type: "component" | "layout" | "provider" | "pattern" | "tool";
-	platform: XalaPlatform;
-	semantic: boolean;
-	withStories: boolean;
-	withTests: boolean;
-	enterprise: boolean;
-	localized: boolean;
-	accessible: boolean;
+export interface XalaConfig {
+  version: string;
+  platform: string;
+  theme?: string;
+  tokens?: string;
+  ai?: {
+    provider: string;
+    model?: string;
+  };
 }
 
-// Xala validation result
-export interface XalaValidationResult {
-	success: boolean;
-	issues: XalaValidationIssue[];
-	score: number;
-	recommendations: string[];
+// Service registry types
+export interface ServiceTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  provider: string;
+  version: string;
+  dependencies: string[];
+  files: TemplateFile[];
+  config: Record<string, any>;
 }
 
-export interface XalaValidationIssue {
-	type: "error" | "warning" | "info";
-	category: "semantic" | "accessibility" | "localization" | "design-tokens";
-	message: string;
-	file: string;
-	line?: number;
-	column?: number;
-	fix?: string;
+export interface ComponentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  platform: string;
+  category: string;
+  props: ComponentProp[];
+  files: TemplateFile[];
+  examples: string[];
 }
 
-// Xala integration options
-export interface XalaIntegrationOptions {
-	platform: XalaPlatform;
-	theme: XalaTheme;
-	compliance: XalaCompliance[];
-	components: string[];
-	features: string[];
-	locale: string;
-	skipUISetup: boolean;
-	skipLocalization: boolean;
-	interactive: boolean;
+export interface TemplateFile {
+  path: string;
+  content: string;
+  isTemplate: boolean;
 }
+
+export interface ComponentProp {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+  default?: any;
+}
+
+// Plugin system types
+export interface CLIPlugin {
+  name: string;
+  version: string;
+  commands: PluginCommand[];
+  providers: Provider[];
+  templates: Template[];
+  
+  // Lifecycle hooks
+  onInstall(): Promise<void>;
+  onActivate(): Promise<void>;
+  onCommand(cmd: string, args: any): Promise<void>;
+}
+
+export interface PluginCommand {
+  name: string;
+  description: string;
+  domain: CLIDomain;
+  action: CLIAction;
+  handler: (args: any) => Promise<void>;
+}
+
+export interface Provider {
+  name: string;
+  type: 'auth' | 'database' | 'payment' | 'ai' | 'deployment';
+  config: Record<string, any>;
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  type: 'service' | 'component' | 'project';
+  files: TemplateFile[];
+}
+
+// Command routing types
+export interface CommandRoute {
+  pattern: string;
+  domain: CLIDomain;
+  action: CLIAction;
+  handler: CommandHandler;
+  legacy?: {
+    xaheen?: string[];
+    xala?: string[];
+  };
+}
+
+export type CommandHandler = (args: CLICommand) => Promise<void>;
+
+// Migration types
+export interface MigrationResult {
+  success: boolean;
+  source: 'xaheen-cli' | 'xala-cli';
+  migratedConfig: XaheenConfig;
+  warnings: string[];
+  errors: string[];
+}
+
+// Error types
+export class CLIError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public domain?: string,
+    public action?: string
+  ) {
+    super(message);
+    this.name = 'CLIError';
+  }
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Platform and Monorepo types
+export type PlatformType = 'web' | 'mobile' | 'desktop' | 'server' | 'shared';
+export type MonorepoTarget = 'apps' | 'packages';
+
+export interface AppTemplate {
+  id: string;
+  name: string;
+  description: string;
+  platform: PlatformType;
+  framework: string;
+  targetPath: MonorepoTarget;
+  dependencies: string[];
+  files: TemplateFile[];
+  config: Record<string, any>;
+}
+
+export interface MonorepoStructure {
+  type: 'apps-packages' | 'workspaces' | 'nx';
+  apps: string[];
+  packages: string[];
+  sharedDependencies: string[];
+}
+
+// Stack Adapter types
+export type StackType = 'nextjs' | 'nestjs' | 'django' | 'laravel' | 'rails' | 'dotnet' | 'angular' | 'vue' | 'react' | 'unknown';
+
+export interface StackAdapter {
+  name: string;
+  type: StackType;
+  detect(projectPath: string): Promise<boolean>;
+  generateModel(context: GeneratorContext): Promise<GeneratedFile[]>;
+  generateController(context: GeneratorContext): Promise<GeneratedFile[]>;
+  generateService(context: GeneratorContext): Promise<GeneratedFile[]>;
+  generateMigration(context: GeneratorContext): Promise<GeneratedFile[]>;
+  generateRoute(context: GeneratorContext): Promise<GeneratedFile[]>;
+}
+
+export interface GeneratorContext {
+  name: string;
+  fields?: Field[];
+  options: Record<string, any>;
+  projectPath: string;
+  stackType: StackType;
+}
+
+export interface Field {
+  name: string;
+  type: string;
+  required?: boolean;
+  unique?: boolean;
+  defaultValue?: any;
+  validation?: string[];
+}
+
+export interface GeneratedFile {
+  path: string;
+  content: string;
+  type: 'create' | 'update' | 'append';
+}
+
+// Utility types
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+export type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>;

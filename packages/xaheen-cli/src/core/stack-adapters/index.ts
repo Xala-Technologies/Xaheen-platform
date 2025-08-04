@@ -5,7 +5,7 @@
  * (Next.js, Django, .NET, Angular, etc.) with a unified interface.
  */
 
-import { StackAdapter, StackType, GeneratorContext, GeneratedFile } from './types.js';
+import { StackAdapter, StackType, GeneratorContext, GeneratedFile } from '../../types/index.js';
 import { NextJsAdapter } from './adapters/nextjs.adapter.js';
 import { NestJsAdapter } from './adapters/nestjs.adapter.js';
 // Future adapters
@@ -162,71 +162,27 @@ export class UniversalGenerator {
   }
 
   async generateModel(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
+    const adapter = this.registry.getAdapter(context.stackType);
     return adapter.generateModel(context);
   }
 
   async generateController(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
+    const adapter = this.registry.getAdapter(context.stackType);
     return adapter.generateController(context);
   }
 
   async generateService(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
+    const adapter = this.registry.getAdapter(context.stackType);
     return adapter.generateService(context);
   }
 
-  async generateComponent(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
-    return adapter.generateComponent(context);
-  }
-
-  async generatePage(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
-    return adapter.generatePage(context);
-  }
-
-  async generateCrud(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
-    return adapter.generateCrud(context);
-  }
-
   async generateMigration(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
+    const adapter = this.registry.getAdapter(context.stackType);
     return adapter.generateMigration(context);
   }
 
-  async generateTest(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
-    return adapter.generateTest(context);
-  }
-
-  async generateValidation(context: GeneratorContext): Promise<GeneratedFile[]> {
-    const adapter = this.registry.getAdapter(context.stack);
-    return adapter.generateValidation(context);
-  }
-
-  /**
-   * Get stack-specific configuration
-   */
-  getStackConfig(stack?: StackType): any {
-    const adapter = this.registry.getAdapter(stack);
-    return adapter.getConfig();
-  }
-
-  /**
-   * Get stack-specific file extensions
-   */
-  getFileExtensions(stack?: StackType): { script: string; style: string; config: string } {
-    const adapter = this.registry.getAdapter(stack);
-    return adapter.getFileExtensions();
-  }
-
-  /**
-   * Get stack-specific paths
-   */
-  getPaths(stack?: StackType): any {
-    const adapter = this.registry.getAdapter(stack);
-    return adapter.getPaths();
+  async generateRoute(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const adapter = this.registry.getAdapter(context.stackType);
+    return adapter.generateRoute(context);
   }
 }

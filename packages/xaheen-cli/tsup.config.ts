@@ -10,9 +10,6 @@ export default defineConfig({
 	treeshake: true,
 	splitting: false,
 	shims: true,
-	banner: {
-		js: "#!/usr/bin/env node",
-	},
 	esbuildOptions(options) {
 		options.platform = "node";
 		options.target = "node18";

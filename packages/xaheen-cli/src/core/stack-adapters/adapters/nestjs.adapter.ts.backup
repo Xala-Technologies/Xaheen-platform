@@ -4,19 +4,11 @@
  * Generates code for NestJS microservices with TypeScript, Prisma, and best practices
  */
 
-import { 
-  BaseStackAdapter, 
-  GeneratorContext, 
-  GeneratedFile, 
-  StackConfig, 
-  StackPaths, 
-  FileExtensions, 
-  StackCommands, 
-  StackDependencies,
-  FieldType 
-} from '../types.js';
+import type { StackAdapter, GeneratorContext, GeneratedFile, Field, StackType } from '../../types/index.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-export class NestJsAdapter extends BaseStackAdapter {
+export class NestJsAdapter implements StackAdapter {
   readonly name = 'NestJS';
   readonly version = '10.0.0';
   readonly type = 'nestjs' as const;

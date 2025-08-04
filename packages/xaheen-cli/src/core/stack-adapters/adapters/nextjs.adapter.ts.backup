@@ -4,19 +4,11 @@
  * Generates code for Next.js 14+ with App Router, Prisma, and TypeScript
  */
 
-import { 
-  BaseStackAdapter, 
-  GeneratorContext, 
-  GeneratedFile, 
-  StackConfig, 
-  StackPaths, 
-  FileExtensions, 
-  StackCommands, 
-  StackDependencies,
-  FieldType 
-} from '../types.js';
+import type { StackAdapter, GeneratorContext, GeneratedFile, Field, StackType } from '../../types/index.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-export class NextJsAdapter extends BaseStackAdapter {
+export class NextJsAdapter implements StackAdapter {
   readonly name = 'Next.js';
   readonly version = '14.0.0';
   readonly type = 'nextjs' as const;

@@ -59,7 +59,12 @@
       "Bash(cd:*)",
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js --help)",
       "Bash(XAHEEN_NO_BANNER=true XAHEEN_LOG_LEVEL=debug node dist/index.js --version)",
-      "Bash(XAHEEN_NO_BANNER=true node dist/index.js project create test-app --help)"
+      "Bash(XAHEEN_NO_BANNER=true node dist/index.js project create test-app --help)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(XAHEEN_NO_BANNER=true node dist/index.js make --help)",
+      "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --help)",
+      "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --dry-run)"
     ],
     "deny": []
   }

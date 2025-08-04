@@ -2,7 +2,7 @@
  * Agent Dashboard - Central command center for orchestrating all development tools
  * 
  * FEATURES:
- * - Dashboard pattern from MCP documentation
+ * - DashboardLayout pattern from MCP documentation
  * - Multi-panel interface with Project Explorer, Command Center, Agent Status
  * - Real-time communication with MCP server
  * - Natural language command input
@@ -18,7 +18,7 @@
  * - ✅ Proper localization support
  * - ✅ WCAG 2.2 AAA accessibility
  * - ✅ TypeScript explicit return types
- * - ✅ Dashboard pattern compliance
+ * - ✅ DashboardLayout pattern compliance
  */
 
 "use client";
@@ -33,8 +33,7 @@ import {
   Stack,
   Text,
   Typography,
-  Dashboard,
-  DashboardProps  
+  DashboardLayout,
 } from "@xala-technologies/ui-system";
 import { useWebSocket } from "@/lib/services/websocket-service";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -252,8 +251,8 @@ export const AgentDashboard = ({
   }
 
   return (
-    <Dashboard>
-      <Dashboard.Header>
+    <DashboardLayout>
+      <DashboardLayout.Header>
         <Stack direction="horizontal" justify="space-between" align="center">
           <Stack direction="horizontal" gap="md" align="center">
             <Text variant="h2">🤖 Agent Development Hub</Text>
@@ -273,9 +272,9 @@ export const AgentDashboard = ({
             </Badge>
           </Stack>
         </Stack>
-      </Dashboard.Header>
+      </DashboardLayout.Header>
 
-      <Dashboard.Sidebar variant="admin">
+      <DashboardLayout.Sidebar variant="admin">
         <Stack direction="vertical" gap="xs">
           <Button
             variant={selectedView === 'overview' ? 'secondary' : 'ghost'}
@@ -313,9 +312,9 @@ export const AgentDashboard = ({
             ⚙️ Settings
           </Button>
         </Stack>
-      </Dashboard.Sidebar>
+      </DashboardLayout.Sidebar>
 
-      <Dashboard.Main>
+      <DashboardLayout.Main>
         {/* KPI Cards Row */}
         <Grid cols={4} gap="lg" className="mb-8">
           <Card variant="elevated" padding="lg">
@@ -436,7 +435,7 @@ export const AgentDashboard = ({
             </Stack>
           </Card>
         </Grid>
-      </Dashboard.Main>
-    </Dashboard>
+      </DashboardLayout.Main>
+    </DashboardLayout>
   );
 };

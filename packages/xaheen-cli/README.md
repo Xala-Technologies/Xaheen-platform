@@ -1,477 +1,468 @@
-# 🚀 Xaheen CLI v2
+# Xaheen CLI v3.0.0
 
-> Next-generation CLI for enterprise-grade development with intelligent service bundling
+The next-generation CLI that combines **service-based architecture** with **AI-powered component generation** for the ultimate full-stack development experience.
 
-[![npm version](https://badge.fury.io/js/@xala-technologies%2Fxaheen-cli.svg)](https://badge.fury.io/js/@xala-technologies%2Fxaheen-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## 🚀 Features
 
-## ✨ What's New in v2
+### Core Capabilities
+- **Laravel Artisan-inspired**: `xaheen make:model User --all`
+- **Monorepo-First**: Built for apps-packages structure with Turbo
+- **Multi-Platform Support**: Web, desktop, mobile, and server applications
+- **AI-Powered Generation**: Natural language component and service creation
+- **Legacy Compatibility**: Full backward compatibility with xaheen-cli and xala-cli
 
-### 🎯 **Service-Based Architecture**
-- **SOLID principles** implementation throughout
-- **Modular service providers** for different frameworks
-- **Template factory pattern** with intelligent injection
-- **Type-safe** TypeScript with comprehensive validation
+### Platform Support
+- **Web**: Next.js, React, Vue, Angular, Svelte
+- **Desktop**: Electron, Tauri
+- **Mobile**: React Native, Expo
+- **Server**: NestJS, Fastify, Express
 
-### 📦 **Intelligent Service Bundling**
-Choose from **13 pre-configured bundles**:
+### Service Integration
+- **13 Pre-configured Bundles**: SaaS starter, e-commerce, CMS, analytics
+- **Service Injection**: Add/remove services with dependency management
+- **Norwegian Compliance**: BankID, Vipps, Altinn integration
+- **WCAG AAA Accessibility**: Built-in compliance validation
 
-- **🚀 SaaS Starter** - Essential SaaS features
-- **💼 SaaS Professional** - Full-featured platform
-- **💎 SaaS Complete** - Enterprise-grade with AI
-- **🌐 Marketing Site** - Landing pages with CMS
-- **🎨 Portfolio Site** - Creative portfolios
-- **📊 Dashboard App** - Admin dashboards
-- **📱 Mobile App** - React Native applications
-- **🔌 REST API** - Backend APIs with documentation
-- **🏢 Enterprise App** - Microsoft stack applications
-- **🇳🇴 Norwegian Government** - Compliance-ready
-- **🏛️ Municipality Portal** - Citizen services
-- **🏥 Healthcare Management** - GDPR compliant
-
-### ⚡ **Performance Improvements**
-- **328KB bundle size** (reduced from 500KB+)
-- **Faster initialization** with cached templates
-- **Parallel service injection**
-- **Optimized dependency resolution**
-
-### 🇳🇴 **Norwegian Compliance**
-Built-in support for:
-- **BankID** identity verification
-- **Vipps** payment integration
-- **Altinn** government services
-- **GDPR/DPIA** compliance features
-
-## 🛠 Installation
+## 📦 Installation
 
 ```bash
-# Global installation
 npm install -g @xala-technologies/xaheen-cli
-
-# Or use directly with npx
-npx @xala-technologies/xaheen-cli@latest create my-app
+# or
+yarn global add @xala-technologies/xaheen-cli
+# or
+pnpm add -g @xala-technologies/xaheen-cli
+# or
+bun add -g @xala-technologies/xaheen-cli
 ```
 
-## Quick Start
+## 🎯 Quick Start
+
+### Create a New Monorepo Project
 
 ```bash
-# Create a new SaaS project
-xaheen create my-saas --bundle saas-starter
+# Interactive setup
+xaheen project create my-app
 
-# Add authentication to existing project
-cd my-project
-xaheen add auth --provider clerk
-
-# Validate project health
-xaheen validate --fix
+# With specific options
+xaheen project create my-app --framework nextjs --bundle saas-starter --norwegian
 ```
 
-## Commands
-
-### `xaheen create <name>`
-Create a new project with optional service bundles.
+### Add Applications to Existing Monorepo
 
 ```bash
-# Basic usage
-xaheen create my-app
+# Add a new web application
+xaheen add app admin-panel --platform web --framework nextjs
 
-# With specific framework
-xaheen create my-app --framework nextjs
+# Add a desktop application
+xaheen add app desktop-client --platform desktop --framework electron
 
-# With service bundle
-xaheen create my-app --bundle saas-starter
-
-# With specific services
-xaheen create my-app --services auth,database,payments
+# Add a mobile application
+xaheen add app mobile-app --platform mobile --framework react-native
 ```
 
-Options:
-- `--framework <framework>` - Framework to use (nextjs, nuxt, sveltekit, react, vue, angular)
-- `--database <database>` - Database to configure (postgresql, mysql, mongodb, sqlite)
-- `--bundle <bundle>` - Service bundle to apply (saas-starter, e-commerce, api-platform, blog-cms)
-- `--services <services>` - Comma-separated list of services to add
-- `--package-manager <pm>` - Package manager to use (npm, yarn, pnpm, bun)
-
-### `xaheen add [services...]`
-Add services to existing project.
+### Laravel Artisan-inspired Commands
 
 ```bash
-# Add single service
-xaheen add auth
+# Make commands for full-stack generation
+xaheen make:model User --migration
+xaheen make:controller UserController --api
+xaheen make:page dashboard --template admin
+xaheen make:component UserCard --props name,email
 
-# Add multiple services
-xaheen add auth database payments
-
-# With specific providers
-xaheen add auth --provider clerk
-xaheen add database --provider postgresql --orm prisma
-
-# Preview changes
-xaheen add email --dry-run
+# Database operations
+xaheen migrate
+xaheen db:seed
 ```
 
-Options:
-- `--provider <provider>` - Specific provider to use
-- `--orm <orm>` - ORM to use with database (prisma, drizzle, mongoose)
-- `--dry-run` - Preview changes without applying
-- `--force` - Add even if conflicts exist
-
-### `xaheen validate`
-Validate project configuration and health.
+### Service Management
 
 ```bash
-# Basic validation
-xaheen validate
+# Add individual services
+xaheen service add auth --provider clerk
+xaheen service add database --provider postgresql --orm prisma
+xaheen service add payments --provider stripe
 
-# Auto-fix issues
-xaheen validate --fix
+# List available services
+xaheen service list
 
-# Specific validations
-xaheen validate --services --deps --env
+# Remove services
+xaheen service remove auth
 ```
 
-Options:
-- `--fix` - Automatically fix issues where possible
-- `--services` - Validate service configurations
-- `--deps` - Validate dependencies
-- `--env` - Validate environment variables
-- `--lint` - Run linting checks
-- `--types` - Run TypeScript validation
-
-### `xaheen remove [services...]`
-Remove services from existing project.
+### AI-Powered Generation
 
 ```bash
-# Remove single service
-xaheen remove auth
+# Generate components with AI
+xaheen component generate "user dashboard with charts and metrics"
+xaheen component generate "responsive navigation with mobile menu"
 
-# Remove multiple services
-xaheen remove auth payments
-
-# Preview removal
-xaheen remove database --dry-run
-
-# Force removal
-xaheen remove cache --force
+# Generate complete services
+xaheen ai service "create authentication with Norwegian BankID and session management"
 ```
 
-Options:
-- `--force` - Force removal even if dependencies exist
-- `--cleanup` - Remove orphaned files and dependencies
-- `--dry-run` - Preview changes without applying
-- `--keep-config` - Keep configuration files
-
-## Service Bundles
-
-Pre-configured combinations of services for common use cases:
-
-### SaaS Starter
-Perfect for SaaS applications with authentication, payments, and analytics.
-
-**Included Services:**
-- Authentication (Clerk)
-- Database (PostgreSQL + Prisma)
-- Payments (Stripe)
-- Email (Resend)
-- Analytics (PostHog)
+### Theme and Design System
 
 ```bash
-xaheen create my-saas --bundle saas-starter
+# Create and manage themes
+xaheen theme create healthcare --industry medical
+xaheen theme list
+
+# Update design configuration
+xaheen design update --platform react --theme healthcare
 ```
 
-### E-commerce
-Complete e-commerce setup with inventory, payments, and media handling.
+## 📋 Command Reference
 
-**Included Services:**
-- Authentication (Auth.js)
-- Database (PostgreSQL + Drizzle)
-- Payments (Stripe)
-- Email (SendGrid)
-- Storage (Cloudinary)
+### Make Commands (Laravel Artisan-inspired)
 
 ```bash
-xaheen create my-shop --bundle e-commerce
+xaheen make:model <name>           # Create model with Prisma schema
+xaheen make:controller <name>      # Create Next.js API controller
+xaheen make:service <name>         # Create NestJS service
+xaheen make:component <name>       # Create React component
+xaheen make:page <name>            # Create Next.js page
+xaheen make:migration <name>       # Create database migration
 ```
 
-### API Platform
-Backend API with authentication, monitoring, and background jobs.
+**Options:**
+- `--all` - Generate related files (model, controller, service, migration)
+- `--api` - Generate API-only controller
+- `--migration` - Include database migration
+- `--props <props>` - Component props (name:type,email:string)
 
-**Included Services:**
-- Authentication (Auth.js)
-- Database (PostgreSQL + Prisma)
-- Email (Resend)
-- Monitoring (Sentry)
-- Queue (BullMQ)
+### Project Commands
 
 ```bash
-xaheen create my-api --bundle api-platform
+xaheen project create <name>     # Create new monorepo project
+xaheen project validate          # Validate project structure and config
 ```
 
-### Blog/CMS
-Content management with authentication, media, and analytics.
+**Options:**
+- `--framework <framework>` - nextjs, react, vue, angular, svelte
+- `--bundle <bundle>` - saas-starter, e-commerce, cms, dashboard
+- `--norwegian` - Enable Norwegian compliance features
+- `--gdpr` - Enable GDPR compliance features
 
-**Included Services:**
-- Authentication (Clerk)
-- Database (PostgreSQL + Prisma)
-- Storage (Cloudinary)
-- Analytics (Vercel Analytics)
+### Service Commands
 
 ```bash
-xaheen create my-blog --bundle blog-cms
+xaheen service add <service>     # Add service to project
+xaheen service remove <service>  # Remove service from project
+xaheen service list              # List available services
 ```
 
-## Test Suite
+### Component Commands
 
-Comprehensive test coverage with:
-- Unit tests for all core services
-- Integration tests for complete workflows
-- Command tests for CLI interface
-- Fixture-based testing with temporary projects
-
-Run tests:
 ```bash
-bun test
-bun test --coverage
+xaheen component generate "<description>"  # AI-powered component generation
+xaheen component create <name>             # Create component from template
 ```
 
-## Architecture
+### Theme Commands
 
-### Core Services
+```bash
+xaheen theme create <name>       # Create new theme
+xaheen theme list                # List available themes
+```
 
-- **ServiceRegistry**: Manages service templates and definitions
-- **ProjectAnalyzer**: Detects project configuration and services
-- **ProjectValidator**: Validates project health and configuration
-- **ServiceRemover**: Handles safe service removal with dependency checking
-- **BundleResolver**: Resolves service bundles and compatibility
-- **ServiceInjector**: Injects service code into projects
+### AI Commands
 
-### Built-in Service Templates
+```bash
+xaheen ai generate "<prompt>"           # General AI generation
+xaheen ai service "<description>"       # AI-enhanced service generation
+```
 
-#### Authentication
-- **Better Auth**: Modern authentication with database integration
-- **Clerk**: Full-featured authentication with social providers
-- **Auth.js**: Flexible authentication for Next.js
-- **Supabase Auth**: Authentication with Supabase
+### Build Commands
 
-#### Database
-- **PostgreSQL**: Enterprise-grade relational database with Prisma ORM
-- **MySQL**: Popular relational database with Prisma ORM
-- **MongoDB**: Document-based NoSQL database
-- **Supabase**: PostgreSQL with real-time capabilities
+```bash
+xaheen build                     # Build all applications
+xaheen build --platform web      # Build specific platform
+```
 
-#### Payments
-- **Stripe**: Complete payment processing platform
-- **Paddle**: SaaS-focused payment solution
+### Validation Commands
 
-#### Email
-- **Resend**: Modern email API for developers
-- **SendGrid**: Scalable email delivery service
-- **Postmark**: Transactional email service
+```bash
+xaheen validate                  # Validate entire project
+xaheen validate --config         # Validate configuration only
+```
 
-#### Storage
-- **AWS S3**: Amazon S3 object storage
-- **Cloudinary**: Media management and transformation
+## 🏗️ Project Structure
 
-#### Queue
-- **BullMQ**: Redis-based queue system for background jobs
+The CLI creates monorepo projects with the following structure:
 
-#### Realtime
-- **Socket.io**: Real-time bidirectional event-based communication
-- **Pusher**: Hosted real-time messaging API
+```
+my-app/
+├── apps/                        # Applications
+│   ├── web/                     # Next.js web app
+│   ├── desktop/                 # Electron app (optional)
+│   └── mobile/                  # React Native app (optional)
+├── packages/                    # Shared packages
+│   ├── ui-system/              # Design system
+│   ├── shared/                 # Shared utilities
+│   └── config/                 # Shared configurations
+├── xaheen.config.json          # CLI configuration
+├── turbo.json                  # Turbo configuration
+├── package.json                # Root package.json
+└── README.md
+```
 
-#### Analytics
-- **PostHog**: Product analytics platform
-- **Vercel Analytics**: Web analytics for Vercel deployments
-- **Mixpanel**: Advanced user behavior analytics
+## ⚙️ Configuration
 
-#### Monitoring
-- **Sentry**: Error tracking and performance monitoring
-
-#### Cache
-- **Redis**: In-memory data structure store
-
-## Configuration
-
-### Project Configuration
-
-When you create or add services, Xaheen CLI creates a `.xaheen/config.json` file:
+### Configuration File (`xaheen.config.json`)
 
 ```json
 {
-  "version": "2.0.0",
-  "framework": "nextjs",
-  "packageManager": "bun",
+  "version": "3.0.0",
+  "project": {
+    "name": "my-app",
+    "framework": "nextjs",
+    "packageManager": "bun"
+  },
   "services": {
-    "auth": {
-      "provider": "clerk",
-      "version": "5.0.0",
-      "installedAt": "2024-01-20T10:00:00Z"
-    },
-    "database": {
-      "provider": "postgresql",
-      "orm": "prisma",
-      "version": "5.0.0",
-      "installedAt": "2024-01-20T10:00:00Z"
-    }
+    "auth": { "provider": "clerk", "version": "5.0.0" },
+    "database": { "provider": "postgresql", "orm": "prisma" }
+  },
+  "design": {
+    "platform": "react",
+    "theme": "healthcare-light",
+    "tokens": "./design-tokens.json"
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4"
+  },
+  "compliance": {
+    "accessibility": "AAA",
+    "norwegian": true,
+    "gdpr": true
   }
 }
 ```
 
 ### Environment Variables
 
-Services automatically add required environment variables to `.env.local`:
-
 ```bash
-# Authentication (Clerk)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+# AI Configuration
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
 
-# Database (PostgreSQL)
-DATABASE_URL=postgresql://user:password@localhost:5432/mydb
-
-# Payments (Stripe)
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Email (Resend)
-RESEND_API_KEY=re_...
+# CLI Behavior
+XAHEEN_NO_BANNER=true          # Disable startup banner
+XAHEEN_LOG_LEVEL=debug         # Enable debug logging
 ```
 
-### Service Dependencies
+## 🔧 Legacy Migration
 
-Some services have dependencies that are automatically managed:
+### From xaheen-cli v2.x
 
-- **BullMQ** requires Redis
-- **Better Auth** requires a database
-- **Realtime services** may require additional configuration
+The CLI automatically detects and migrates from existing `.xaheen/config.json`:
 
-The CLI will prompt you to install dependencies or configure them automatically.
+```bash
+cd existing-xaheen-project
+xaheen migrate --from xaheen-cli
+```
 
-## Advanced Usage
+**Legacy Command Mapping:**
+- `xaheen create` → `xaheen project create`
+- `xaheen add` → `xaheen service add`
+- `xaheen remove` → `xaheen service remove`
+- `xaheen validate` → `xaheen project validate`
 
-### Custom Service Templates
+### From xala-cli v2.x
 
-Create custom service templates in `.xaheen/templates/`:
+Automatic migration from existing `xala.config.js`:
 
-```json
-{
-  "name": "custom-auth",
-  "type": "auth",
-  "provider": "custom",
-  "version": "1.0.0",
-  "description": "Custom authentication service",
-  "dependencies": {
-    "jsonwebtoken": "^9.0.0",
-    "bcryptjs": "^2.4.3"
-  },
-  "envVariables": [
+```bash
+cd existing-xala-project
+xaheen migrate --from xala-cli
+```
+
+**Legacy Command Mapping:**
+- `xala init` → `xaheen project create`
+- `xala generate component` → `xaheen component generate`
+- `xala themes create` → `xaheen theme create`
+- `xala build` → `xaheen build`
+
+## 🧪 Development
+
+### Building from Source
+
+```bash
+git clone https://github.com/Xala-Technologies/xaheen.git
+cd xaheen/packages/xaheen-cli
+bun install
+bun run build
+```
+
+### Running Tests
+
+```bash
+bun test                         # Run all tests
+bun test --watch                 # Watch mode
+bun test --coverage              # With coverage
+```
+
+### Local Development
+
+```bash
+bun run dev                      # Build with watch mode
+bun run build && npm link       # Link globally for testing
+```
+
+## 🎨 Service Bundles
+
+### SaaS Starter Bundle
+- **Authentication**: Clerk/Auth0/NextAuth
+- **Database**: PostgreSQL with Prisma
+- **Payments**: Stripe integration
+- **Email**: Resend/SendGrid
+- **Analytics**: PostHog/Mixpanel
+
+### E-commerce Bundle
+- **Products**: Catalog management
+- **Cart**: Shopping cart logic
+- **Orders**: Order processing
+- **Inventory**: Stock management
+- **Payments**: Multi-provider support
+
+### CMS Bundle
+- **Content**: Rich content management
+- **Media**: File upload and processing
+- **Admin**: Administrative interface
+- **SEO**: Search optimization
+- **Localization**: Multi-language support
+
+### Analytics Dashboard Bundle
+- **Charts**: Interactive visualizations
+- **Metrics**: KPI tracking
+- **Reports**: Automated reporting
+- **Real-time**: Live data updates
+- **Export**: Data export capabilities
+
+## 🌍 Norwegian Compliance
+
+Built-in support for Norwegian regulatory requirements:
+
+### BankID Integration
+```bash
+xaheen service add bankid --environment test
+```
+
+### Vipps Payments
+```bash
+xaheen service add vipps --merchant-id YOUR_ID
+```
+
+### Altinn Integration
+```bash
+xaheen service add altinn --environment test
+```
+
+### GDPR Compliance
+```bash
+xaheen compliance enable gdpr
+xaheen compliance validate gdpr
+```
+
+## 🤖 AI Integration
+
+### OpenAI Integration
+```bash
+# Configure OpenAI
+xaheen ai config --provider openai --api-key YOUR_KEY
+
+# Generate components
+xaheen component generate "modern login form with validation"
+```
+
+### Anthropic Claude Integration
+```bash
+# Configure Claude
+xaheen ai config --provider anthropic --api-key YOUR_KEY
+
+# Generate services
+xaheen ai service "user management with roles and permissions"
+```
+
+## 🔌 Plugin System
+
+The CLI supports a plugin architecture for extensibility:
+
+```typescript
+// my-plugin.ts
+import { CLIPlugin } from '@xala-technologies/xaheen-cli';
+
+export const myPlugin: CLIPlugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  commands: [
     {
-      "name": "JWT_SECRET",
-      "description": "Secret key for JWT tokens",
-      "required": true
+      name: 'custom-command',
+      description: 'My custom command',
+      domain: 'custom',
+      action: 'run',
+      handler: async (args) => {
+        console.log('Custom command executed!');
+      }
     }
   ],
-  "injectionPoints": [
-    {
-      "type": "file-create",
-      "target": "src/lib/auth.ts",
-      "template": "// Custom auth implementation",
-      "priority": 100
-    }
-  ]
-}
+  providers: [],
+  templates: [],
+  
+  async onInstall() {
+    console.log('Plugin installed');
+  },
+  
+  async onActivate() {
+    console.log('Plugin activated');
+  },
+  
+  async onCommand(cmd, args) {
+    console.log(`Command executed: ${cmd}`);
+  }
+};
 ```
 
-### Service Compatibility
+## 📊 Performance
 
-The CLI checks compatibility between services and frameworks:
+- **Command Initialization**: <100ms average
+- **Project Creation**: <30s for full monorepo
+- **Service Injection**: <5s per service
+- **AI Generation**: 5-15s depending on complexity
+- **Bundle Size**: <500KB total CLI size
 
-```bash
-# Check compatibility before adding
-xaheen add auth --provider better-auth --check-compatibility
+## 🤝 Contributing
 
-# Force add despite warnings
-xaheen add auth --provider better-auth --force
-```
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Backup and Recovery
-
-Before destructive operations, backups are created:
-
-```bash
-# Backups are stored in .xaheen/backups/
-.xaheen/backups/
-├── 2024-01-20-10-00-00-remove-auth/
-│   ├── files/
-│   └── config.json
-```
-
-Restore from backup:
-
-```bash
-xaheen restore .xaheen/backups/2024-01-20-10-00-00-remove-auth
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Service not detected**
-   - Ensure service files follow naming conventions
-   - Run `xaheen validate --services` to check detection
-
-2. **Dependency conflicts**
-   - Use `xaheen validate --deps` to identify conflicts
-   - Run with `--force` to override (use carefully)
-
-3. **Environment variables missing**
-   - Check `.env.local` for required variables
-   - Run `xaheen validate --env` to verify
-
-### Debug Mode
-
-Enable debug output for troubleshooting:
-
-```bash
-# Debug all operations
-DEBUG=xaheen:* xaheen add auth
-
-# Debug specific modules
-DEBUG=xaheen:analyzer xaheen validate
-DEBUG=xaheen:injector xaheen add database
-```
-
-## Development
-
-```bash
-# Install dependencies
-bun install
-
-# Build
-bun run build
-
-# Test
-bun test
-
-# Test with coverage
-bun test --coverage
-
-# Development with watch
-bun dev
-
-# Link for local testing
-bun link
-```
-
-## Contributing
-
+### Development Setup
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Clone your fork
+3. Install dependencies: `bun install`
+4. Create a feature branch
+5. Make your changes
+6. Run tests: `bun test`
+7. Submit a pull request
 
-## License
+## 📝 License
 
-MIT - see [LICENSE](../../LICENSE) for details
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🆘 Support
+
+### Documentation
+- [Full Documentation](https://docs.xaheen.dev)
+- [API Reference](https://docs.xaheen.dev/api)
+- [Examples](https://github.com/Xala-Technologies/xaheen-examples)
+
+### Community
+- [Discord](https://discord.gg/xaheen)
+- [GitHub Discussions](https://github.com/Xala-Technologies/xaheen/discussions)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/xaheen)
+
+### Enterprise Support
+For enterprise support and custom integrations, contact: [enterprise@xala.no](mailto:enterprise@xala.no)
+
+---
+
+**Xaheen CLI v3.0.0** - Built by [Xala Technologies](https://xala.no)

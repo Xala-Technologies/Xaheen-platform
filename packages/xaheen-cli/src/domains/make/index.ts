@@ -2,10 +2,12 @@
  * Make Domain - Laravel Artisan-inspired creation commands
  * 
  * Provides a consistent, high-quality interface for generating
- * application components with intelligent defaults and MCP enhancement.
+ * application components with intelligent defaults and AI enhancement.
  */
 
 import type { CLICommand } from '../../types/index.js';
+import { AIGeneratorService } from '../../services/generators/ai-generator.service.js';
+import { ConfigManager } from '../../core/config-manager/index.js';
 import { logger } from '../../utils/logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -21,13 +23,26 @@ interface MakeOptions {
   api?: boolean;
   force?: boolean;
   test?: boolean;
+  // AI-enhanced options
+  ai?: boolean;
+  description?: string;
+  withStories?: boolean;
+  accessibility?: 'A' | 'AA' | 'AAA';
+  norwegian?: boolean;
+  gdpr?: boolean;
+  styling?: 'tailwind' | 'css-modules' | 'styled-components';
+  features?: string[];
 }
 
 export default class MakeDomain {
   private readonly generators: Map<string, Function>;
+  private readonly aiGenerator: AIGeneratorService;
+  private readonly configManager: ConfigManager;
 
   constructor() {
     this.generators = this.initializeGenerators();
+    this.configManager = new ConfigManager();
+    this.aiGenerator = new AIGeneratorService(this.configManager.getConfig());
   }
 
   private initializeGenerators(): Map<string, Function> {
@@ -70,6 +85,9 @@ export default class MakeDomain {
     generators.set('crud', this.makeCrud.bind(this));
     generators.set('api-resource', this.makeApiResource.bind(this));
     generators.set('feature', this.makeFeature.bind(this));
+    
+    // AI-specific generators
+    generators.set('analyze', this.makeAnalyze.bind(this));
     
     return generators;
   }
@@ -180,44 +198,107 @@ export default class MakeDomain {
 
   /**
    * Make Component - Creates a frontend component
-   * Usage: xaheen make:component UserCard --typescript
+   * Usage: xaheen make:component UserCard --ai --description "A user profile card with avatar and actions"
    */
   private async makeComponent(name: string, options: MakeOptions): Promise<void> {
-    const componentPath = await this.generateComponent(name, options);
-    logger.success(`Component created successfully: ${chalk.cyan(componentPath)}`);
-    
-    if (options.test) {
-      const testPath = await this.generateComponentTest(name);
-      logger.success(`Test created: ${chalk.cyan(testPath)}`);
+    if (options.ai) {
+      // Use AI-powered generation
+      logger.info(chalk.blue('🤖 Using AI-powered component generation...'));
+      
+      const files = await this.aiGenerator.generateComponent(
+        name, 
+        'component',
+        {
+          description: options.description,
+          withTests: options.test,
+          withStories: options.withStories,
+          accessibility: options.accessibility,
+          norwegian: options.norwegian,
+          gdpr: options.gdpr,
+          styling: options.styling,
+          features: options.features
+        }
+      );
+      
+      logger.success(`AI-powered component created with ${files.length} files`);
+      
+    } else {
+      // Use traditional generation
+      const componentPath = await this.generateComponent(name, options);
+      logger.success(`Component created successfully: ${chalk.cyan(componentPath)}`);
+      
+      if (options.test) {
+        const testPath = await this.generateComponentTest(name);
+        logger.success(`Test created: ${chalk.cyan(testPath)}`);
+      }
     }
   }
 
   /**
    * Make Service - Creates a service class
-   * Usage: xaheen make:service UserService
+   * Usage: xaheen make:service UserService --ai --description "A service for managing user authentication and profiles"
    */
   private async makeService(name: string, options: MakeOptions): Promise<void> {
-    const servicePath = await this.generateService(name);
-    logger.success(`Service created successfully: ${chalk.cyan(servicePath)}`);
+    if (options.ai) {
+      // Use AI-powered generation
+      logger.info(chalk.blue('🤖 Using AI-powered service generation...'));
+      
+      const files = await this.aiGenerator.generateService(
+        name,
+        'business',
+        {
+          description: options.description,
+          withTests: options.test,
+          features: options.features
+        }
+      );
+      
+      logger.success(`AI-powered service created with ${files.length} files`);
+      
+    } else {
+      // Use traditional generation
+      const servicePath = await this.generateService(name);
+      logger.success(`Service created successfully: ${chalk.cyan(servicePath)}`);
+    }
   }
 
   /**
    * Make CRUD - Creates complete CRUD operations
-   * Usage: xaheen make:crud Product --api
+   * Usage: xaheen make:crud Product --ai --description "A product management system with inventory tracking"
    */
   private async makeCrud(name: string, options: MakeOptions): Promise<void> {
-    logger.info(chalk.green('Creating complete CRUD...'));
-    
-    const files = await this.generateCrud(name, options);
-    
-    files.forEach(file => {
-      logger.success(`  ${chalk.green('✓')} Created: ${chalk.dim(file)}`);
-    });
-    
-    logger.info(chalk.yellow('\n📋 Next steps:'));
-    logger.info('  1. Run migrations: ' + chalk.cyan('xaheen migrate'));
-    logger.info('  2. Add routes to your router');
-    logger.info('  3. Update navigation links');
+    if (options.ai) {
+      // Use AI-powered CRUD generation
+      logger.info(chalk.blue('🤖 Using AI-powered CRUD generation...'));
+      
+      const files = await this.aiGenerator.generateCRUD(name, {
+        description: options.description,
+        withTests: options.test,
+        withStories: options.withStories,
+        accessibility: options.accessibility,
+        norwegian: options.norwegian,
+        gdpr: options.gdpr,
+        styling: options.styling,
+        features: options.features
+      });
+      
+      logger.success(`AI-powered CRUD system created with ${files.length} files`);
+      
+    } else {
+      // Use traditional generation
+      logger.info(chalk.green('Creating complete CRUD...'));
+      
+      const files = await this.generateCrud(name, options);
+      
+      files.forEach(file => {
+        logger.success(`  ${chalk.green('✓')} Created: ${chalk.dim(file)}`);
+      });
+      
+      logger.info(chalk.yellow('\n📋 Next steps:'));
+      logger.info('  1. Run migrations: ' + chalk.cyan('xaheen migrate'));
+      logger.info('  2. Add routes to your router');
+      logger.info('  3. Update navigation links');
+    }
   }
 
   // Generator implementations
@@ -1344,6 +1425,24 @@ export default function ${pageName}Page() {
     logger.info('Feature generator coming soon...');
   }
 
+  /**
+   * Make Analyze - AI code analysis
+   * Usage: xaheen make:analyze src/components/UserCard.tsx
+   */
+  private async makeAnalyze(filePath: string, options: MakeOptions): Promise<void> {
+    if (!filePath) {
+      logger.error('File path is required for analysis');
+      logger.info(chalk.gray('Example: xaheen make:analyze src/components/UserCard.tsx'));
+      return;
+    }
+
+    try {
+      await this.aiGenerator.analyzeCode(filePath);
+    } catch (error) {
+      logger.error(`Failed to analyze code: ${error}`);
+    }
+  }
+
   // Helper methods
   private async writeFile(filePath: string, content: string): Promise<void> {
     const dir = path.dirname(filePath);
@@ -1371,6 +1470,27 @@ export default function ${pageName}Page() {
     commands.forEach(({ cmd, desc }) => {
       logger.info(`  ${chalk.cyan(cmd.padEnd(50))} ${chalk.gray(desc)}`);
     });
+    
+    logger.info(chalk.blue('\n🤖 AI-Enhanced Commands (add --ai flag):'));
+    const aiCommands = [
+      { cmd: 'make:component UserCard --ai --description "Card component with avatar"', desc: 'AI-powered component' },
+      { cmd: 'make:service AuthService --ai --description "JWT authentication service"', desc: 'AI-powered service' },
+      { cmd: 'make:crud Product --ai --description "E-commerce product manager"', desc: 'AI-powered CRUD system' },
+      { cmd: 'make:analyze src/components/UserCard.tsx', desc: 'AI code analysis & suggestions' },
+    ];
+    
+    aiCommands.forEach(({ cmd, desc }) => {
+      logger.info(`  ${chalk.magenta(cmd.padEnd(65))} ${chalk.gray(desc)}`);
+    });
+    
+    logger.info(chalk.blue('\n💡 AI Options:'));
+    logger.info(`  ${chalk.dim('--ai')}                    Enable AI-powered generation`);
+    logger.info(`  ${chalk.dim('--description "..."')}      Describe what you want to build`);
+    logger.info(`  ${chalk.dim('--test')}                  Generate unit tests`);
+    logger.info(`  ${chalk.dim('--withStories')}           Generate Storybook stories`);
+    logger.info(`  ${chalk.dim('--accessibility AAA')}     Set accessibility level (A/AA/AAA)`);
+    logger.info(`  ${chalk.dim('--norwegian')}             Enable Norwegian compliance`);
+    logger.info(`  ${chalk.dim('--gdpr')}                  Enable GDPR compliance`);
     
     logger.info(chalk.gray('\nFor more information, run: xaheen help make:<command>'));
   }

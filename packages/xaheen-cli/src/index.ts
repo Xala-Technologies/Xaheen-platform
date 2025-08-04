@@ -1,80 +1,112 @@
-/**
- * Xaheen CLI v2 - Enterprise Development Platform
- *
- * Next-generation CLI with service-based architecture,
- * intelligent bundling, and AI-powered scaffolding.
- *
- * @author Xala Technologies
- * @since 2025-01-03
- */
+#!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import chalk from "chalk";
-import { Command } from "commander";
-import { consola } from "consola";
-import { addCommand } from "./commands/add.js";
-import { bundleCommand } from "./commands/bundle.js";
-// Commands
-import { createCommand } from "./commands/create.js";
-import { doctorCommand } from "./commands/doctor.js";
-import { removeCommand } from "./commands/remove.js";
-import { upgradeCommand } from "./commands/upgrade.js";
-import { validateCommand } from "./commands/validate.js";
+import { CommandParser } from './core/command-parser/index.js';
+import { ConfigManager } from './core/config-manager/index.js';
+import { StackAdapterRegistry } from './core/stack-adapters/index.js';
+import { logger, cliLogger } from './utils/logger.js';
+import { CLIError } from './types/index.js';
+import chalk from 'chalk';
+import { performance } from 'perf_hooks';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load package.json for version
-const packageJson = JSON.parse(
-	readFileSync(join(__dirname, "../package.json"), "utf-8"),
-);
-
-// Create main program
-const program = new Command();
-
-program
-	.name("xaheen")
-	.description(chalk.cyan("Xaheen CLI - Enterprise Development Platform"))
-	.version(packageJson.version, "-v, --version", "Display version number")
-	.option("--debug", "Enable debug mode")
-	.option("--no-telemetry", "Disable anonymous telemetry")
-	.option("--config <path>", "Path to configuration file")
-	.hook("preAction", (thisCommand) => {
-		const options = thisCommand.opts();
-		if (options.debug) {
-			consola.level = 4; // Debug level
-			consola.debug("Debug mode enabled");
-		}
-	});
-
-// Add commands
-program.addCommand(createCommand);
-program.addCommand(addCommand);
-program.addCommand(removeCommand);
-program.addCommand(validateCommand);
-program.addCommand(bundleCommand);
-program.addCommand(upgradeCommand);
-program.addCommand(doctorCommand);
-
-// Handle unknown commands
-program.on("command:*", () => {
-	consola.error(`Invalid command: ${program.args.join(" ")}`);
-	consola.info('Run "xaheen --help" for a list of available commands.');
-	process.exit(1);
-});
-
-// Show help if no command provided
-if (!process.argv.slice(2).length) {
-	program.outputHelp();
+async function main(): Promise<void> {
+  const startTime = performance.now();
+  
+  try {
+    // Display banner
+    displayBanner();
+    
+    // Initialize core systems
+    logger.debug('Initializing Xaheen CLI...');
+    
+    // Initialize configuration manager
+    const configManager = new ConfigManager();
+    
+    // Initialize stack adapter registry
+    const stackRegistry = StackAdapterRegistry.getInstance();
+    const detectedStack = await stackRegistry.detectStack();
+    logger.debug(`Detected stack: ${detectedStack}`);
+    
+    // Initialize command parser
+    const commandParser = new CommandParser();
+    
+    // Make core systems available globally for domain handlers
+    global.__xaheen_cli = {
+      configManager,
+      commandParser,
+      stackRegistry
+    };
+    
+    // Parse and execute command
+    await commandParser.parse(process.argv);
+    
+    const endTime = performance.now();
+    const duration = Math.round(endTime - startTime);
+    
+    logger.debug(`Command completed in ${duration}ms`);
+    
+  } catch (error) {
+    const endTime = performance.now();
+    const duration = Math.round(endTime - startTime);
+    
+    if (error instanceof CLIError) {
+      cliLogger.error(`${error.message} (${duration}ms)`);
+      if (error.code === 'COMMAND_NOT_FOUND') {
+        cliLogger.info('Run `xaheen --help` to see available commands');
+      }
+      process.exit(1);
+    } else if (error instanceof Error) {
+      cliLogger.error(`Unexpected error: ${error.message} (${duration}ms)`);
+      logger.debug('Stack trace:', error.stack);
+      process.exit(1);
+    } else {
+      cliLogger.error(`Unknown error occurred (${duration}ms)`);
+      process.exit(1);
+    }
+  }
 }
 
-// Parse arguments
-program.parse(process.argv);
+function displayBanner(): void {
+  if (process.env.XAHEEN_NO_BANNER === 'true') return;
+  
+  const version = '3.0.0';
+  const banner = `
+${chalk.cyan('╭─────────────────────────────────────────────────────────────╮')}
+${chalk.cyan('│')}  ${chalk.bold.white('Xaheen CLI')} ${chalk.gray(`v${version}`)}                                     ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.gray('Service-based architecture + AI-powered components')}     ${chalk.cyan('│')}
+${chalk.cyan('│')}                                                             ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.green('✓')} Laravel Artisan-inspired commands                        ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.green('✓')} AI-powered component generation                       ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.green('✓')} Multi-platform support (web, mobile, desktop)        ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.green('✓')} Monorepo-ready with apps & packages                  ${chalk.cyan('│')}
+${chalk.cyan('│')}  ${chalk.green('✓')} Norwegian compliance & WCAG AAA accessibility        ${chalk.cyan('│')}
+${chalk.cyan('╰─────────────────────────────────────────────────────────────╯')}
+`;
+  
+  console.log(banner);
+}
 
-// Handle uncaught errors
-process.on("unhandledRejection", (error) => {
-	consola.error("Unhandled error:", error);
-	process.exit(1);
+// Global CLI context interface
+declare global {
+  var __xaheen_cli: {
+    configManager: ConfigManager;
+    commandParser: CommandParser;
+    stackRegistry: StackAdapterRegistry;
+  };
+}
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  cliLogger.info('CLI interrupted by user');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  cliLogger.info('CLI terminated');
+  process.exit(0);
+});
+
+// Start the CLI
+main().catch((error) => {
+  cliLogger.error('Failed to start CLI:', error);
+  process.exit(1);
 });

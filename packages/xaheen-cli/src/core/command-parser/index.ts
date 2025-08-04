@@ -3,7 +3,7 @@ import type { CLICommand, CLIDomain, CLIAction, CommandRoute } from '../../types
 import { CLIError } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 
-export class UnifiedCommandParser {
+export class CommandParser {
   private program: Command;
   private routes: Map<string, CommandRoute> = new Map();
   private legacyMappings: Map<string, CommandRoute> = new Map();
@@ -18,8 +18,8 @@ export class UnifiedCommandParser {
   private setupProgram(): void {
     this.program
       .name('xaheen')
-      .description('Unified Xaheen CLI - Service-based architecture with AI-powered component generation')
-      .version('3.0.0-alpha.1');
+      .description('Xaheen CLI - Service-based architecture with AI-powered component generation')
+      .version('3.0.0');
   }
 
   private setupRoutes(): void {
@@ -200,6 +200,62 @@ export class UnifiedCommandParser {
         handler: this.handleModelMigrate.bind(this)
       },
 
+      // Make domain routes (Laravel Artisan-inspired)
+      {
+        pattern: 'make:model <name>',
+        domain: 'make',
+        action: 'model',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:controller <name>',
+        domain: 'make',
+        action: 'controller',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:service <name>',
+        domain: 'make',
+        action: 'service',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:component <name>',
+        domain: 'make',
+        action: 'component',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:migration <name>',
+        domain: 'make',
+        action: 'migration',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:seeder <name>',
+        domain: 'make',
+        action: 'seeder',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:factory <name>',
+        domain: 'make',
+        action: 'factory',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:crud <name>',
+        domain: 'make',
+        action: 'crud',
+        handler: this.handleMakeCommand.bind(this)
+      },
+      {
+        pattern: 'make:analyze <filepath>',
+        domain: 'make',
+        action: 'analyze',
+        handler: this.handleMakeCommand.bind(this)
+      },
+
       // Theme domain routes
       {
         pattern: 'theme create <name>',
@@ -306,6 +362,28 @@ export class UnifiedCommandParser {
         .option('-v, --verbose', 'Enable verbose logging')
         .option('--dry-run', 'Show what would be done without executing')
         .option('--config <path>', 'Path to configuration file');
+
+      // Add make-specific options for AI enhancement
+      if (route.domain === 'make') {
+        command
+          .option('--ai', 'Enable AI-powered generation')
+          .option('--description <desc>', 'Describe what you want to build')
+          .option('--test', 'Generate unit tests')
+          .option('--withStories', 'Generate Storybook stories')
+          .option('--accessibility <level>', 'Set accessibility level (A/AA/AAA)', 'AAA')
+          .option('--norwegian', 'Enable Norwegian compliance')
+          .option('--gdpr', 'Enable GDPR compliance')
+          .option('--styling <type>', 'Styling approach (tailwind/css-modules/styled-components)', 'tailwind')
+          .option('--features <features>', 'Comma-separated list of features')
+          .option('--migration', 'Create migration file (for models)')
+          .option('--controller', 'Create controller (for models)')
+          .option('--resource', 'Create resource controller')
+          .option('--factory', 'Create factory file')
+          .option('--seeder', 'Create seeder file')
+          .option('--all', 'Create all related files')
+          .option('--api', 'Create API-only controller')
+          .option('--force', 'Force overwrite existing files');
+      }
 
       this.routes.set(route.pattern, route);
       this.registeredCommands.add(route.pattern);
@@ -502,6 +580,12 @@ export class UnifiedCommandParser {
     const { default: MCPDomain } = await import('../../domains/mcp/index.js');
     const domain = new MCPDomain();
     await domain.deploy(command);
+  }
+
+  private async handleMakeCommand(command: CLICommand): Promise<void> {
+    const { default: MakeDomain } = await import('../../domains/make/index.js');
+    const domain = new MakeDomain();
+    await domain.execute(command);
   }
 
   public async parse(args?: string[]): Promise<void> {

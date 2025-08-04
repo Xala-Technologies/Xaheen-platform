@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import type { UnifiedConfig, XaheenConfig, XalaConfig, MigrationResult } from '../../types/index.js';
-import { UnifiedConfigSchema } from '../../types/index.js';
+import type { XaheenConfig, LegacyXaheenConfig, XalaConfig, MigrationResult } from '../../types/index.js';
+import { XaheenConfigSchema } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 import { z } from 'zod';
 
@@ -12,9 +12,9 @@ export interface ConfigPaths {
   packageJson: string;
 }
 
-export class UnifiedConfigManager {
+export class ConfigManager {
   private configPaths: ConfigPaths;
-  private cachedConfig: UnifiedConfig | null = null;
+  private cachedConfig: XaheenConfig | null = null;
 
   constructor(projectRoot: string = process.cwd()) {
     this.configPaths = {
