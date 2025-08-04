@@ -1,0 +1,419 @@
+/**
+ * Feedback Collection API
+ * Captures developer acceptance/rejection patterns for continuous learning
+ * Generated with Xaheen CLI - Continuous Learning System
+ */
+
+{{#if (eq framework "express")}}
+import { Router, Request, Response } from 'express';
+{{else if (eq framework "nestjs")}}
+import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{else if (eq framework "fastify")}}
+import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
+{{/if}}
+import { z } from 'zod';
+import { FeedbackService } from './feedback.service';
+{{#if (eq feedbackCollection.authentication "jwt")}}
+import { authenticate } from '../middleware/jwt-auth';
+{{else if (eq feedbackCollection.authentication "api-key")}}
+import { authenticate } from '../middleware/api-key-auth';
+{{/if}}
+{{#if feedbackCollection.rateLimiting}}
+import { rateLimit } from '../middleware/rate-limit';
+{{/if}}
+
+const feedbackSchema = z.object({
+  suggestionId: z.string().uuid(),
+  action: z.enum(['accepted', 'rejected', 'modified']),
+  reason: z.string().optional(),
+  modifiedCode: z.string().optional(),
+  confidence: z.number().min(0).max(1),
+  context: z.object({
+    fileType: z.string(),
+    projectType: z.string(),
+    codeComplexity: z.number().min(1).max(5),
+    userExperience: z.enum(['junior', 'mid', 'senior', 'expert']),
+    timestamp: z.date().default(() => new Date()),
+  }),
+  metadata: z.record(z.any()).optional(),
+});
+
+const bulkFeedbackSchema = z.object({
+  feedbacks: z.array(feedbackSchema).min(1).max(100),
+});
+
+{{#if (eq framework "express")}}
+export class FeedbackAPI {
+  private router = Router();
+  private feedbackService = new FeedbackService();
+
+  constructor() {
+    this.setupRoutes();
+  }
+
+  private setupRoutes(): void {
+    // Submit individual feedback
+    this.router.post('/feedback',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      {{#if feedbackCollection.rateLimiting}}rateLimit(),{{/if}}
+      this.validateRequest(feedbackSchema),
+      this.submitFeedback.bind(this)
+    );
+
+    // Submit bulk feedback
+    this.router.post('/feedback/bulk',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      {{#if feedbackCollection.rateLimiting}}rateLimit(),{{/if}}
+      this.validateRequest(bulkFeedbackSchema),
+      this.submitBulkFeedback.bind(this)
+    );
+
+    // Get feedback analytics
+    this.router.get('/feedback/analytics',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      this.getFeedbackAnalytics.bind(this)
+    );
+
+    // Get feedback history with pagination
+    this.router.get('/feedback/history',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      this.getFeedbackHistory.bind(this)
+    );
+
+    // Get feedback trends
+    this.router.get('/feedback/trends',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      this.getFeedbackTrends.bind(this)
+    );
+
+    // Export feedback data
+    this.router.get('/feedback/export',
+      {{#if feedbackCollection.authentication}}authenticate('{{feedbackCollection.authentication}}'),{{/if}}
+      this.exportFeedback.bind(this)
+    );
+  }
+
+  private validateRequest(schema: z.ZodSchema) {
+    return (req: Request, res: Response, next: Function) => {
+      try {
+        schema.parse(req.body);
+        next();
+      } catch (error) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: error.errors
+        });
+      }
+    };
+  }
+
+  private async submitFeedback(req: Request, res: Response): Promise<void> {
+    try {
+      const feedback = req.body;
+      const userId = (req as any).user?.id;
+      
+      const result = await this.feedbackService.submitFeedback({
+        ...feedback,
+        userId,
+        {{#if feedbackCollection.anonymization}}
+        anonymized: true,
+        {{/if}}
+      });
+      
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: 'Feedback submitted successfully'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to submit feedback',
+        details: error.message
+      });
+    }
+  }
+
+  private async submitBulkFeedback(req: Request, res: Response): Promise<void> {
+    try {
+      const { feedbacks } = req.body;
+      const userId = (req as any).user?.id;
+      
+      const results = await this.feedbackService.submitBulkFeedback(
+        feedbacks.map(f => ({ ...f, userId }))
+      );
+      
+      res.status(201).json({
+        success: true,
+        data: results,
+        message: `${results.successful} feedbacks submitted, ${results.failed} failed`
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to submit bulk feedback',
+        details: error.message
+      });
+    }
+  }
+
+  private async getFeedbackAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const { timeRange = '7d', groupBy = 'day', metrics } = req.query;
+      
+      const analytics = await this.feedbackService.getAnalytics({
+        timeRange: timeRange as string,
+        groupBy: groupBy as string,
+        metrics: metrics ? (metrics as string).split(',') : {{json analytics.metrics}}
+      });
+
+      res.json({
+        success: true,
+        data: analytics
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch analytics',
+        details: error.message
+      });
+    }
+  }
+
+  private async getFeedbackHistory(req: Request, res: Response): Promise<void> {
+    try {
+      const { 
+        page = 1, 
+        limit = 50, 
+        filters = '{}',
+        sortBy = 'timestamp',
+        sortOrder = 'desc'
+      } = req.query;
+      
+      const history = await this.feedbackService.getHistory({
+        page: Number(page),
+        limit: Math.min(Number(limit), 100), // Cap at 100
+        filters: JSON.parse(filters as string),
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc'
+      });
+
+      res.json({
+        success: true,
+        data: history
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch feedback history',
+        details: error.message
+      });
+    }
+  }
+
+  private async getFeedbackTrends(req: Request, res: Response): Promise<void> {
+    try {
+      const { 
+        period = '30d',
+        granularity = 'day',
+        metrics = 'acceptance-rate,rejection-rate'
+      } = req.query;
+      
+      const trends = await this.feedbackService.getTrends({
+        period: period as string,
+        granularity: granularity as 'hour' | 'day' | 'week' | 'month',
+        metrics: (metrics as string).split(',')
+      });
+
+      res.json({
+        success: true,
+        data: trends
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch feedback trends',
+        details: error.message
+      });
+    }
+  }
+
+  private async exportFeedback(req: Request, res: Response): Promise<void> {
+    try {
+      const { 
+        format = 'json',
+        startDate,
+        endDate,
+        filters = '{}'
+      } = req.query;
+      
+      const exportData = await this.feedbackService.exportFeedback({
+        format: format as 'json' | 'csv' | 'xlsx',
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        filters: JSON.parse(filters as string)
+      });
+
+      // Set appropriate content type
+      const contentTypes = {
+        json: 'application/json',
+        csv: 'text/csv',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      };
+
+      res.setHeader('Content-Type', contentTypes[format as keyof typeof contentTypes]);
+      res.setHeader('Content-Disposition', `attachment; filename="feedback-export.${format}"`);
+      res.send(exportData);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to export feedback',
+        details: error.message
+      });
+    }
+  }
+
+  public getRouter(): Router {
+    return this.router;
+  }
+}
+
+export default FeedbackAPI;
+
+{{else if (eq framework "nestjs")}}
+@ApiTags('Continuous Learning - Feedback')
+@Controller('feedback')
+{{#if feedbackCollection.authentication}}@UseGuards(AuthGuard){{/if}}
+export class FeedbackController {
+  constructor(private readonly feedbackService: FeedbackService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Submit feedback for continuous learning' })
+  @ApiResponse({ status: 201, description: 'Feedback submitted successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid feedback data' })
+  {{#if feedbackCollection.rateLimiting}}@ApiResponse({ status: 429, description: 'Rate limit exceeded' }){{/if}}
+  async submitFeedback(@Body() feedback: SubmitFeedbackDto) {
+    return await this.feedbackService.submitFeedback(feedback);
+  }
+
+  @Post('bulk')
+  @ApiOperation({ summary: 'Submit multiple feedbacks' })
+  @ApiResponse({ status: 201, description: 'Bulk feedback submitted successfully' })
+  async submitBulkFeedback(@Body() bulkFeedback: BulkFeedbackDto) {
+    return await this.feedbackService.submitBulkFeedback(bulkFeedback.feedbacks);
+  }
+
+  @Get('analytics')
+  @ApiOperation({ summary: 'Get feedback analytics' })
+  @ApiResponse({ status: 200, description: 'Analytics retrieved successfully' })
+  async getFeedbackAnalytics(
+    @Query('timeRange') timeRange: string = '7d',
+    @Query('groupBy') groupBy: string = 'day',
+    @Query('metrics') metrics?: string
+  ) {
+    return await this.feedbackService.getAnalytics({
+      timeRange,
+      groupBy,
+      metrics: metrics?.split(',') || {{json analytics.metrics}}
+    });
+  }
+
+  @Get('history')
+  @ApiOperation({ summary: 'Get feedback history with pagination' })
+  async getFeedbackHistory(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 50,
+    @Query('filters') filters: string = '{}',
+    @Query('sortBy') sortBy: string = 'timestamp',
+    @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'desc'
+  ) {
+    return await this.feedbackService.getHistory({
+      page,
+      limit: Math.min(limit, 100),
+      filters: JSON.parse(filters),
+      sortBy,
+      sortOrder
+    });
+  }
+
+  @Get('trends')
+  @ApiOperation({ summary: 'Get feedback trends over time' })
+  async getFeedbackTrends(
+    @Query('period') period: string = '30d',
+    @Query('granularity') granularity: 'hour' | 'day' | 'week' | 'month' = 'day',
+    @Query('metrics') metrics: string = 'acceptance-rate,rejection-rate'
+  ) {
+    return await this.feedbackService.getTrends({
+      period,
+      granularity,
+      metrics: metrics.split(',')
+    });
+  }
+
+  @Get('export')
+  @ApiOperation({ summary: 'Export feedback data' })
+  async exportFeedback(
+    @Query('format') format: 'json' | 'csv' | 'xlsx' = 'json',
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('filters') filters: string = '{}'
+  ) {
+    return await this.feedbackService.exportFeedback({
+      format,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+      filters: JSON.parse(filters)
+    });
+  }
+}
+{{/if}}
+
+// Types and interfaces
+export interface FeedbackSubmission {
+  suggestionId: string;
+  action: 'accepted' | 'rejected' | 'modified';
+  reason?: string;
+  modifiedCode?: string;
+  confidence: number;
+  context: {
+    fileType: string;
+    projectType: string;
+    codeComplexity: number;
+    userExperience: 'junior' | 'mid' | 'senior' | 'expert';
+    timestamp: Date;
+  };
+  metadata?: Record<string, any>;
+  userId?: string;
+  {{#if feedbackCollection.anonymization}}
+  anonymized?: boolean;
+  {{/if}}
+}
+
+export interface FeedbackAnalyticsQuery {
+  timeRange: string;
+  groupBy: string;
+  metrics: string[];
+}
+
+export interface FeedbackHistoryQuery {
+  page: number;
+  limit: number;
+  filters: Record<string, any>;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+export interface FeedbackTrendsQuery {
+  period: string;
+  granularity: 'hour' | 'day' | 'week' | 'month';
+  metrics: string[];
+}
+
+export interface FeedbackExportQuery {
+  format: 'json' | 'csv' | 'xlsx';
+  startDate?: Date;
+  endDate?: Date;
+  filters: Record<string, any>;
+}

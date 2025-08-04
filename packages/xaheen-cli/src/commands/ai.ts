@@ -16,6 +16,8 @@ import {
   hasUncommittedChanges,
   getCurrentBranch
 } from '../lib/patch-utils.js';
+import { AIRefactoringGenerator } from '../generators/ai/refactoring.generator.js';
+import type { AIRefactoringOptions } from '../generators/ai/refactoring.generator.js';
 
 export interface AICommandOptions {
   readonly model?: string;
@@ -231,6 +233,69 @@ Please ensure the implementation follows Norwegian compliance requirements:
 }
 
 /**
+ * AI refactoring command to generate refactoring assistants
+ */
+export async function generateRefactoringAssistantCommand(
+  name: string,
+  framework: string,
+  outputPath: string,
+  options: {
+    providers?: string[];
+    features?: string[];
+    includeUI?: boolean;
+    includeGit?: boolean;
+    includeTests?: boolean;
+    includeCLI?: boolean;
+  } = {}
+): Promise<void> {
+  console.log(chalk.blue('🤖 Generating AI Refactoring Assistant\n'));
+
+  try {
+    const generator = new AIRefactoringGenerator();
+    
+    const refactoringOptions: AIRefactoringOptions = {
+      name: name,
+      framework: framework as any,
+      aiProviders: options.providers as any || ['openai', 'anthropic'],
+      outputPath: outputPath,
+      features: options.features as any || [
+        'extract-function',
+        'rename-variable',
+        'simplify-condition',
+        'remove-duplication',
+        'optimize-imports',
+        'modernize-syntax'
+      ],
+      includeInteractiveUI: options.includeUI ?? true,
+      includeGitIntegration: options.includeGit ?? true,
+      includeTests: options.includeTests ?? true,
+      includeCLI: options.includeCLI ?? true,
+      confidenceThreshold: 0.7,
+      maxSuggestionsPerFile: 10
+    };
+
+    await generator.generate(refactoringOptions);
+
+    console.log(chalk.green('\n✅ AI Refactoring Assistant generated successfully!'));
+    console.log(chalk.blue(`📁 Generated at: ${outputPath}`));
+    console.log(chalk.yellow(`🎯 Framework: ${framework}`));
+    console.log(chalk.yellow(`🤖 AI Providers: ${refactoringOptions.aiProviders.join(', ')}`));
+    console.log(chalk.yellow(`⚡ Features: ${refactoringOptions.features.join(', ')}`));
+    
+    console.log(chalk.cyan('\n📋 Next steps:'));
+    console.log(chalk.gray('  1. Install dependencies: npm install'));
+    console.log(chalk.gray('  2. Configure AI provider API keys in environment variables'));
+    console.log(chalk.gray('  3. Run the CLI: npx your-refactor-cli analyze <files>'));
+    console.log(chalk.gray('  4. Start refactoring with interactive mode'));
+
+  } catch (error) {
+    console.error(chalk.red('\n❌ Error generating AI Refactoring Assistant:'));
+    console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+    process.exit(1);
+  }
+}
+
+/**
  * Creates the AI command structure for the CLI
  */
 export function createAICommand(): Command {
@@ -289,6 +354,27 @@ export function createAICommand(): Command {
     .description('Create or update Codebuff index for better context awareness')
     .action(async () => {
       await createCodebuffIndex(process.cwd());
+    });
+
+  // AI Refactoring Assistant generator
+  aiCommand
+    .command('refactor-assistant <name> <framework> <outputPath>')
+    .description('Generate an AI-powered refactoring assistant for your project')
+    .option('-p, --providers <providers>', 'Comma-separated list of AI providers (openai,anthropic,local-llm)', 'openai,anthropic')
+    .option('-f, --features <features>', 'Comma-separated list of refactoring features', 'extract-function,rename-variable,simplify-condition,remove-duplication,optimize-imports,modernize-syntax')
+    .option('--no-ui', 'Skip generating interactive UI components')
+    .option('--no-git', 'Skip generating Git integration')
+    .option('--no-tests', 'Skip generating test files')
+    .option('--no-cli', 'Skip generating CLI interface')
+    .action(async (name: string, framework: string, outputPath: string, options) => {
+      await generateRefactoringAssistantCommand(name, framework, outputPath, {
+        providers: options.providers.split(','),
+        features: options.features.split(','),
+        includeUI: options.ui,
+        includeGit: options.git,
+        includeTests: options.tests,
+        includeCLI: options.cli
+      });
     });
 
   return aiCommand;

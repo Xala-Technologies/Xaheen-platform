@@ -1,0 +1,829 @@
+{{#if (eq framework "nextjs")}}
+/**
+ * Continuous Learning Analytics Dashboard
+ * Real-time dashboard for monitoring AI model performance and developer feedback
+ * Generated with Xaheen CLI - Continuous Learning System
+ */
+
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+{{#if (or (eq analytics.visualization "charts") (eq analytics.visualization "both"))}}
+import { 
+  LineChart, 
+  Line, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell,
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+{{/if}}
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Activity, 
+  Users, 
+  Target, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle,
+  Download,
+  RefreshCw,
+  Settings
+} from 'lucide-react';
+{{#if analytics.realTime}}
+import { useWebSocket } from '@/hooks/useWebSocket';
+{{/if}}
+import { MetricsService } from '@/services/metrics.service';
+import { FeedbackService } from '@/services/feedback.service';
+{{#if analytics.alerts}}
+import { AlertsPanel } from '@/components/alerts-panel';
+{{/if}}
+
+interface DashboardMetrics {
+  // Key Performance Indicators
+  acceptanceRate: number;
+  rejectionRate: number;
+  modificationRate: number;
+  modelAccuracy: number;
+  avgResponseTime: number;
+  totalFeedback: number;
+  activeUsers: number;
+  
+  // Trends
+  acceptanceRateChange: number;
+  accuracyChange: number;
+  responseTimeChange: number;
+  
+  // Charts data
+  feedbackTrends?: Array<{
+    date: string;
+    accepted: number;
+    rejected: number;
+    modified: number;
+  }>;
+  
+  performanceMetrics?: Array<{
+    metric: string;
+    value: number;
+    target?: number;
+  }>;
+  
+  userExperienceBreakdown?: Array<{
+    experience: string;
+    count: number;
+    acceptanceRate: number;
+  }>;
+  
+  modelVersions?: Array<{
+    id: string;
+    version: string;
+    status: string;
+    accuracy: number;
+    deployedAt: string;
+    description?: string;
+  }>;
+  
+  recentFeedback?: Array<{
+    id: string;
+    action: string;
+    suggestionType: string;
+    confidence: number;
+    userExperience: string;
+    timestamp: string;
+    reason?: string;
+  }>;
+}
+
+interface DashboardProps {
+  className?: string;
+}
+
+const CHART_COLORS = {
+  accepted: '#22c55e',
+  rejected: '#ef4444',
+  modified: '#f59e0b',
+  primary: '#3b82f6',
+  secondary: '#8b5cf6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  danger: '#ef4444'
+};
+
+export default function ContinuousLearningDashboard({ className }: DashboardProps) {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState('7d');
+  const [refreshInterval, setRefreshInterval] = useState(30000);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  
+  const metricsService = new MetricsService();
+  const feedbackService = new FeedbackService();
+
+  {{#if analytics.realTime}}
+  // Real-time updates via WebSocket
+  const { data: realtimeData, isConnected } = useWebSocket('/api/websocket/metrics', {
+    enabled: true,
+    reconnectInterval: 5000
+  });
+
+  useEffect(() => {
+    if (realtimeData) {
+      setMetrics(prev => prev ? { ...prev, ...realtimeData } : realtimeData);
+      setLastUpdated(new Date());
+    }
+  }, [realtimeData]);
+  {{/if}}
+
+  const fetchMetrics = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [dashboardData, trendsData, modelsData, recentData] = await Promise.all([
+        metricsService.getDashboardMetrics({ 
+          timeRange,
+          metrics: {{json analytics.metrics}}
+        }),
+        metricsService.getFeedbackTrends({ 
+          period: timeRange,
+          granularity: timeRange === '24h' ? 'hour' : 'day'
+        }),
+        metricsService.getModelVersions(),
+        feedbackService.getRecentFeedback({ limit: 10 })
+      ]);
+
+      const combinedMetrics: DashboardMetrics = {
+        ...dashboardData,
+        feedbackTrends: trendsData,
+        modelVersions: modelsData,
+        recentFeedbook: recentData
+      };
+
+      setMetrics(combinedMetrics);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
+    } finally {
+      setLoading(false);
+    }
+  }, [timeRange, metricsService, feedbackService]);
+
+  useEffect(() => {
+    fetchMetrics();
+    
+    {{#unless analytics.realTime}}
+    // Polling fallback when WebSocket is not available
+    const interval = setInterval(fetchMetrics, refreshInterval);
+    return () => clearInterval(interval);
+    {{/unless}}
+  }, [fetchMetrics{{#unless analytics.realTime}}, refreshInterval{{/unless}}]);
+
+  const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
+    try {
+      const exportData = await feedbackService.exportFeedback({
+        format,
+        startDate: new Date(Date.now() - (timeRange === '24h' ? 86400000 : timeRange === '7d' ? 604800000 : 2592000000)),
+        endDate: new Date()
+      });
+      
+      // Trigger download
+      const blob = new Blob([exportData], { 
+        type: format === 'json' ? 'application/json' : 
+              format === 'csv' ? 'text/csv' : 'application/pdf' 
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `continuous-learning-report-${timeRange}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
+  if (loading && !metrics) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center space-x-2">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          <span>Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-red-500 mb-4">
+          <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+          <p className="text-lg font-semibold">Dashboard Error</p>
+          <p className="text-sm">{error}</p>
+        </div>
+        <Button onClick={fetchMetrics} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (!metrics) return null;
+
+  return (
+    <div className={`p-6 space-y-6 ${className || ''}`}>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Continuous Learning Dashboard</h1>
+          <p className="text-muted-foreground">
+            AI model performance and developer feedback analytics
+            {lastUpdated && (
+              <span className="ml-2 text-xs">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {{#if analytics.realTime}}
+          <Badge variant={isConnected ? "default" : "destructive"} className="mr-2">
+            <Activity className="h-3 w-3 mr-1" />
+            {isConnected ? 'Live' : 'Offline'}
+          </Badge>
+          {{/if}}
+          
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24h">Last 24h</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Button onClick={fetchMetrics} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          
+          <Select onValueChange={(value) => handleExport(value as 'csv' | 'json' | 'pdf')}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Export" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="csv">Export CSV</SelectItem>
+              <SelectItem value="json">Export JSON</SelectItem>
+              {{#if (includes reporting.format "pdf")}}
+              <SelectItem value="pdf">Export PDF</SelectItem>
+              {{/if}}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {{#if analytics.alerts}}
+      {/* Alerts Panel */}
+      <AlertsPanel />
+      {{/if}}
+
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Acceptance Rate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(metrics.acceptanceRate * 100).toFixed(1)}%</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {metrics.acceptanceRateChange > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+              )}
+              {metrics.acceptanceRateChange > 0 ? '+' : ''}{(metrics.acceptanceRateChange * 100).toFixed(1)}% from last period
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Model Accuracy</CardTitle>
+            <Target className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(metrics.modelAccuracy * 100).toFixed(1)}%</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {metrics.accuracyChange > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+              )}
+              {metrics.accuracyChange > 0 ? '+' : ''}{(metrics.accuracyChange * 100).toFixed(1)}% change
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{metrics.avgResponseTime}ms</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {metrics.responseTimeChange < 0 ? (
+                <TrendingDown className="h-3 w-3 text-green-600 mr-1" />
+              ) : (
+                <TrendingUp className="h-3 w-3 text-red-600 mr-1" />
+              )}
+              {metrics.responseTimeChange > 0 ? '+' : ''}{metrics.responseTimeChange}ms change
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
+            <Users className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{metrics.totalFeedback.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {metrics.activeUsers} active users
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Dashboard Tabs */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="trends">Trends</TabsTrigger>
+          <TabsTrigger value="models">Models</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          {{#if abTesting.enabled}}
+          <TabsTrigger value="experiments">A/B Tests</TabsTrigger>
+          {{/if}}
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{#if (or (eq analytics.visualization "charts") (eq analytics.visualization "both"))}}
+            {/* Feedback Trends Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Feedback Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={metrics.feedbackTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Area 
+                      type="monotone" 
+                      dataKey="accepted" 
+                      stackId="1"
+                      stroke={CHART_COLORS.accepted}
+                      fill={CHART_COLORS.accepted}
+                      name="Accepted"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="rejected" 
+                      stackId="1"
+                      stroke={CHART_COLORS.rejected}
+                      fill={CHART_COLORS.rejected}
+                      name="Rejected"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="modified" 
+                      stackId="1"
+                      stroke={CHART_COLORS.modified}
+                      fill={CHART_COLORS.modified}
+                      name="Modified"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Performance Metrics Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Metrics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={metrics.performanceMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="metric" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill={CHART_COLORS.primary} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* User Experience Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>User Experience Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={metrics.userExperienceBreakdown}
+                      dataKey="count"
+                      nameKey="experience"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={({ experience, count }) => `${experience}: ${count}`}
+                    >
+                      {metrics.userExperienceBreakdown?.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            {{/if}}
+
+            {/* Recent Feedback Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Feedback</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metrics.recentFeedback?.map((feedback) => (
+                    <div key={feedback.id} className="flex items-center justify-between p-3 border rounded">
+                      <div className="flex items-center space-x-3">
+                        <Badge 
+                          variant={
+                            feedback.action === 'accepted' ? 'default' :
+                            feedback.action === 'rejected' ? 'destructive' : 'secondary'
+                          }
+                        >
+                          {feedback.action}
+                        </Badge>
+                        <div>
+                          <p className="text-sm font-medium">{feedback.suggestionType}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {feedback.userExperience} • {(feedback.confidence * 100).toFixed(0)}% confidence
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(feedback.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trends">
+          {/* Detailed trends analysis */}
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Trend Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Detailed trend charts and analysis would go here...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="models">
+          {/* Model versions and performance */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Model Versions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {metrics.modelVersions?.map((version) => (
+                    <div key={version.id} className="flex items-center justify-between p-4 border rounded">
+                      <div className="space-y-1">
+                        <h3 className="font-semibold">{version.version}</h3>
+                        <p className="text-sm text-muted-foreground">{version.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Deployed: {new Date(version.deployedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right space-y-1">
+                        <Badge 
+                          variant={
+                            version.status === 'active' ? 'default' :
+                            version.status === 'canary' ? 'secondary' : 'outline'
+                          }
+                        >
+                          {version.status}
+                        </Badge>
+                        <p className="text-sm">
+                          Accuracy: {(version.accuracy * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="users">
+          {/* User analytics */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>User behavior and engagement metrics would go here...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {{#if abTesting.enabled}}
+        <TabsContent value="experiments">
+          {/* A/B testing experiments */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>A/B Testing Experiments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>A/B testing experiment results and management would go here...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        {{/if}}
+      </Tabs>
+    </div>
+  );
+}
+
+{{else}}
+/**
+ * Continuous Learning Analytics Dashboard (Non-React)
+ * Server-side rendered dashboard for monitoring AI model performance
+ * Generated with Xaheen CLI - Continuous Learning System
+ */
+
+{{#if (eq framework "express")}}
+import { Router, Request, Response } from 'express';
+import { MetricsService } from '../services/metrics.service';
+import { FeedbackService } from '../services/feedback.service';
+
+export class AnalyticsDashboard {
+  private router = Router();
+  private metricsService = new MetricsService();
+  private feedbackService = new FeedbackService();
+
+  constructor() {
+    this.setupRoutes();
+  }
+
+  private setupRoutes(): void {
+    // Dashboard home page
+    this.router.get('/dashboard', this.renderDashboard.bind(this));
+    
+    // API endpoints for dashboard data
+    this.router.get('/api/dashboard/metrics', this.getDashboardMetrics.bind(this));
+    this.router.get('/api/dashboard/trends', this.getTrendsData.bind(this));
+    this.router.get('/api/dashboard/export', this.exportData.bind(this));
+  }
+
+  private async renderDashboard(req: Request, res: Response): Promise<void> {
+    try {
+      const timeRange = (req.query.timeRange as string) || '7d';
+      
+      const [metrics, trends, models] = await Promise.all([
+        this.metricsService.getDashboardMetrics({ timeRange }),
+        this.metricsService.getFeedbackTrends({ period: timeRange }),
+        this.metricsService.getModelVersions()
+      ]);
+
+      // Render dashboard HTML template
+      res.render('dashboard', {
+        title: 'Continuous Learning Dashboard',
+        metrics,
+        trends,
+        models,
+        timeRange,
+        config: {
+          realTime: {{analytics.realTime}},
+          features: {{json features}}
+        }
+      });
+    } catch (error) {
+      res.status(500).render('error', {
+        message: 'Failed to load dashboard',
+        error: error.message
+      });
+    }
+  }
+
+  private async getDashboardMetrics(req: Request, res: Response): Promise<void> {
+    try {
+      const { timeRange = '7d', metrics: requestedMetrics } = req.query;
+      
+      const metrics = await this.metricsService.getDashboardMetrics({
+        timeRange: timeRange as string,
+        metrics: requestedMetrics ? 
+          (requestedMetrics as string).split(',') : 
+          {{json analytics.metrics}}
+      });
+
+      res.json({
+        success: true,
+        data: metrics,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch dashboard metrics',
+        details: error.message
+      });
+    }
+  }
+
+  private async getTrendsData(req: Request, res: Response): Promise<void> {
+    try {
+      const { 
+        period = '30d',
+        granularity = 'day',
+        metrics = 'acceptance-rate,rejection-rate'
+      } = req.query;
+      
+      const trends = await this.metricsService.getFeedbackTrends({
+        period: period as string,
+        granularity: granularity as string,
+        metrics: (metrics as string).split(',')
+      });
+
+      res.json({
+        success: true,
+        data: trends
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch trends data'
+      });
+    }
+  }
+
+  private async exportData(req: Request, res: Response): Promise<void> {
+    try {
+      const { 
+        format = 'json',
+        timeRange = '7d',
+        type = 'metrics'
+      } = req.query;
+
+      let exportData;
+      
+      if (type === 'feedback') {
+        exportData = await this.feedbackService.exportFeedback({
+          format: format as string,
+          startDate: new Date(Date.now() - this.getTimeRangeMs(timeRange as string)),
+          endDate: new Date()
+        });
+      } else {
+        exportData = await this.metricsService.exportMetrics({
+          format: format as string,
+          timeRange: timeRange as string
+        });
+      }
+
+      // Set appropriate headers
+      res.setHeader('Content-Type', this.getContentType(format as string));
+      res.setHeader('Content-Disposition', 
+        `attachment; filename="dashboard-export-${timeRange}.${format}"`);
+      
+      res.send(exportData);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Export failed'
+      });
+    }
+  }
+
+  private getTimeRangeMs(timeRange: string): number {
+    const ranges = {
+      '24h': 24 * 60 * 60 * 1000,
+      '7d': 7 * 24 * 60 * 60 * 1000,
+      '30d': 30 * 24 * 60 * 60 * 1000,
+      '90d': 90 * 24 * 60 * 60 * 1000
+    };
+    return ranges[timeRange as keyof typeof ranges] || ranges['7d'];
+  }
+
+  private getContentType(format: string): string {
+    const types = {
+      json: 'application/json',
+      csv: 'text/csv',
+      xml: 'application/xml',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    };
+    return types[format as keyof typeof types] || 'application/json';
+  }
+
+  public getRouter(): Router {
+    return this.router;
+  }
+}
+
+export default AnalyticsDashboard;
+
+{{else if (eq framework "nestjs")}}
+import { Controller, Get, Query, Res, Render } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Response } from 'express';
+import { MetricsService } from '../services/metrics.service';
+import { FeedbackService } from '../services/feedback.service';
+
+@ApiTags('Analytics Dashboard')
+@Controller('dashboard')
+export class DashboardController {
+  constructor(
+    private readonly metricsService: MetricsService,
+    private readonly feedbackService: FeedbackService
+  ) {}
+
+  @Get()
+  @Render('dashboard')
+  @ApiOperation({ summary: 'Render analytics dashboard' })
+  async renderDashboard(@Query('timeRange') timeRange: string = '7d') {
+    const [metrics, trends, models] = await Promise.all([
+      this.metricsService.getDashboardMetrics({ timeRange }),
+      this.metricsService.getFeedbackTrends({ period: timeRange }),
+      this.metricsService.getModelVersions()
+    ]);
+
+    return {
+      title: 'Continuous Learning Dashboard',
+      metrics,
+      trends,
+      models,
+      timeRange,
+      config: {
+        realTime: {{analytics.realTime}},
+        features: {{json features}}
+      }
+    };
+  }
+
+  // Additional NestJS-specific dashboard endpoints...
+}
+{{/if}}
+{{/if}}

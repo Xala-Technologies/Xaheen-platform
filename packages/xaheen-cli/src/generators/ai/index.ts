@@ -6,5 +6,7 @@ export { AIContentModerationGenerator } from "./content-moderation.generator.js"
 export { AIRecommendationGenerator } from "./recommendation.generator.js";
 export { AIAnalyticsGenerator } from "./analytics.generator.js";
 export { AIContentGenerationGenerator } from "./content-generation.generator.js";
+export { ContinuousLearningGenerator } from "./continuous-learning.generator.js";
+export { AIRefactoringGenerator } from "./refactoring.generator.js";
 
 export * from "./types.js";

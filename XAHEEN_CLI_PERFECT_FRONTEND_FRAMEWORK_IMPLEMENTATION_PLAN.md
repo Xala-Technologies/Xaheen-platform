@@ -842,3 +842,70 @@ The success of this implementation will result in:
 - **Zero-Configuration Setup**: Smart defaults with override capabilities
 
 This plan provides the foundation for the next generation of frontend development tools, combining the power of semantic design systems, AI intelligence, and enterprise-grade compliance in a unified, efficient system.
+
+Building on your existing **EPIC 12**, let’s fold in the real-world schemas you’ve defined (project-types, quick-presets, tech-categories, tech-options, tech-compatibility) so the `xaheen scaffold` and `xaheen web init` experiences truly reflect your domain:
+
+---
+
+## 📋 **EPIC 12: Interactive Full-Stack Tech Builder (Expanded)**
+
+### **Story 12.1: Interactive Project Scaffolding**
+
+*Leverage your JSON-driven presets, project types and tech categories*
+
+* **Load Project Types & Quick-Presets**
+
+  * Parse **project-types.json** at startup to present exactly those tiles (Landing Page, E-commerce, Blog, etc.)&#x20;
+  * Offer “quick-presets” (marketing-site, dashboard-app, fullstack-app, mobile-app, etc.) as one-click starters&#x20;
+* **Dynamic Category Prompts**
+
+  * Iteratively walk through **tech-categories.json** in defined order (webFrontend → backend → … → multiTenancy)&#x20;
+  * For each category, list **tech-options.json** entries sorted by sort\_order (e.g. under “webFrontend” show TanStack Router, React-Router, Next.js, …)&#x20;
+* **Compatibility Enforcement**
+
+  * After each selection, automatically filter subsequent category options using **tech-compatibility.json** (e.g. if backend=hono, only ORMs \[drizzle, prisma] appear)&#x20;
+  * Prevent invalid combos (e.g. don’t show entity-framework when runtime≠dotnet)
+* **Bundling & Addons**
+
+  * Present “bundles” from your v2 features—e.g. SaaS Starter, SaaS Professional, SaaS Complete—mapping their `"services"` arrays to pre-flip toggles in the UI&#x20;
+  * Under “addons” category show PWA, Tauri, Biome, etc., from **tech-options.json**
+
+### **Story 12.2: Modular Scaffold Generators**
+
+*Drive every `generate` command from JSON metadata*
+
+* **“generate preset”**
+
+  * Allow capturing any current selection set back into a new quick-preset entry, updating **quick-presets.json** automatically.
+* **“generate bundle”**
+
+  * Read your `bundles` definitions (SaaS Starter, Marketing Site, etc.) and scaffold the full set of services in one shot.
+* **Category-aware “generate” commands**
+
+  * Tie `xaheen generate model|service|integration|bundle` to their corresponding tech-categories options. For example, `generate integration webhook` only appears if “integrations” was enabled in your scaffold selection.
+
+### **Story 12.3: Unified Builder UX**
+
+*Present JSON data seamlessly, at every step*
+
+* **Menu-Driven CLI**
+
+  * Leverage [Enquirer](https://github.com/enquirer/enquirer) or [Ink](https://github.com/vadimdemedes/ink) to render:
+
+    1. A grid of **project-types** icons + names
+    2. A second screen of **quick-presets**, with emojis/descriptions
+    3. Dynamically-filtered lists for each **tech-category**
+* **Live Preview & Validation**
+
+  * After every selection, show a summary “Your stack so far…” with a tree view (category\:choice) and warn if any remaining categories have no valid options (due to compatibility conflicts).
+* **Auto-Completion & Defaults**
+
+  * Pre-select defaults flagged in **tech-options.json** and in **default-stack.json** for your internal defaults .
+
+---
+
+**By fully driving your interactive builder from those JSON definitions, you guarantee**
+
+1. **Consistency:** your CLI always reflects the latest presets, categories, options and compatibility rules.
+2. **Extensibility:** updating a JSON file feeds straight into the CLI without code changes.
+3. **User Confidence:** impossible combos are filtered out at prompt time, and preset-based starters get users up and running in one command.
