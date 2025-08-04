@@ -2580,10 +2580,4 @@ For technical support, refer to:
       type: "create",
     }];
   }
-}`,
-      type: "create",
-    });
-
-<function_calls>
-<invoke name="TodoWrite">
-<parameter name="todos">[{"id": "1", "content": "Create Vipps Payment Integration generator in packages/xaheen-cli/src/generators/integrations/vipps.generator.ts", "status": "completed", "priority": "high"}, {"id": "2", "content": "Create Digipost Integration generator in packages/xaheen-cli/src/generators/integrations/digipost.generator.ts", "status": "completed", "priority": "high"}, {"id": "3", "content": "Create Vipps payment service templates with payment flows, webhooks, and refund logic", "status": "in_progress", "priority": "high"}, {"id": "4", "content": "Create Digipost templates with document delivery APIs, digital signatures, and tracking", "status": "pending", "priority": "high"}, {"id": "5", "content": "Create secure document storage patterns for Digipost integration", "status": "pending", "priority": "medium"}, {"id": "6", "content": "Create payment reconciliation services and templates", "status": "pending", "priority": "medium"}, {"id": "7", "content": "Add Norwegian compliance and error handling patterns to all integrations", "status": "pending", "priority": "medium"}]
+}

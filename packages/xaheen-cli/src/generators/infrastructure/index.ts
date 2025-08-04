@@ -6,6 +6,9 @@
 
 import { TerraformGenerator } from "./terraform.generator.js";
 
+// Export all generators
+export { TerraformGenerator };
+
 export interface InfrastructureGeneratorOptions {
 	readonly type: "docker" | "k8s" | "ci" | "deployment" | "terraform";
 	readonly platform:
@@ -113,7 +116,7 @@ export async function generateInfrastructure(
  * Infrastructure generator factory
  * Creates appropriate generator based on type
  */
-function createInfrastructureGenerator(
+export function createInfrastructureGenerator(
 	type: InfrastructureGeneratorOptions["type"],
 ): InfrastructureGenerator {
 	switch (type) {

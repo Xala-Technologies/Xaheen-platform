@@ -14,7 +14,20 @@ import { RESTAPIGenerator } from "./api/index.js";
 // Generator imports
 import { BackendGenerator } from "./backend/index.js";
 import { PrismaGenerator } from "./database/index.js";
-import { DockerGenerator } from "./infrastructure/index.js";
+import { DockerGenerator, createInfrastructureGenerator } from "./infrastructure/index.js";
+
+// Placeholder generator factory functions
+function createApiGenerator(type: string) {
+	return new RESTAPIGenerator();
+}
+
+function createDatabaseGenerator(type: string) {
+	return new PrismaGenerator();
+}
+
+function createBackendGenerator(type: string) {
+	return new BackendGenerator();
+}
 // Pattern generators
 import { 
   DDDPatternGenerator,
@@ -28,6 +41,19 @@ import {
   getPatternHelp,
   validatePatternOptions
 } from "./patterns/index.js";
+
+/**
+ * Project information interface
+ */
+export interface ProjectInfo {
+	name: string;
+	version: string;
+	description?: string;
+	author?: string;
+	framework?: string;
+	language?: string;
+	dependencies?: string[];
+}
 
 /**
  * Generator execution context
@@ -769,3 +795,17 @@ export function getGeneratorHelp(type: GeneratorType): string {
 
 	return helpTexts[type] || `Generate ${type} with best practices`;
 }
+
+// Export pattern generators
+export {
+	DDDPatternGenerator,
+	CleanArchitectureGenerator,
+	CQRSEventSourcingGenerator,
+	DependencyInjectionGenerator,
+	PATTERN_GENERATORS,
+	PatternGeneratorFactory,
+	getPatternGenerator,
+	isPatternGeneratorSupported,
+	getPatternHelp,
+	validatePatternOptions,
+} from './patterns/index.js';

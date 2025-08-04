@@ -436,3 +436,89 @@ export type DeepPartial<T> = {
 };
 
 export type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>;
+
+// Additional types for services and integrations
+export interface ServiceConfiguration {
+	name: string;
+	type: string;
+	provider: string;
+	config: Record<string, any>;
+}
+
+export interface XalaIntegrationOptions {
+	framework: string;
+	platform: XalaPlatform;
+	features?: string[];
+	useTypeScript?: boolean;
+}
+
+export type XalaPlatform = "react" | "vue" | "angular" | "svelte" | "flutter" | "react-native" | "nextjs";
+
+export interface ServiceBundle {
+	name: string;
+	services: ServiceConfiguration[];
+	dependencies: Record<string, string>;
+}
+
+export interface ProjectConfig extends ProjectContext {
+	packageManager: "npm" | "yarn" | "pnpm" | "bun";
+	platform?: XalaPlatform;
+}
+
+export interface ValidationIssue {
+	id: string;
+	type: "error" | "warning" | "info";
+	message: string;
+	file?: string;
+	line?: number;
+	fixable?: boolean;
+	suggestion?: string;
+}
+
+export interface FixResult {
+	success: boolean;
+	message: string;
+	fixed?: string[];
+	failed?: string[];
+}
+
+export interface IServiceRegistry {
+	register(service: ServiceConfiguration): void;
+	get(name: string): ServiceConfiguration | undefined;
+	list(): ServiceConfiguration[];
+}
+
+export interface TemplateContext {
+	project: ProjectContext;
+	component?: any;
+	data?: Record<string, any>;
+}
+
+export interface XalaComponentSpec {
+	name: string;
+	type: string;
+	platform: XalaPlatform;
+	props?: Record<string, any>;
+	children?: XalaComponentSpec[];
+}
+
+export interface ExtendedProjectContext extends ProjectContext {
+	platform: XalaPlatform;
+	packageManager: "npm" | "yarn" | "pnpm" | "bun";
+}
+
+export interface XalaUIConfig {
+	platform: XalaPlatform;
+	theme?: string;
+	components?: Record<string, any>;
+}
+
+export interface XalaValidationResult {
+	valid: boolean;
+	errors?: ValidationIssue[];
+	warnings?: ValidationIssue[];
+}
+
+export interface GenerationResult extends GeneratorResult {
+	generatedFiles?: GeneratedFile[];
+}
