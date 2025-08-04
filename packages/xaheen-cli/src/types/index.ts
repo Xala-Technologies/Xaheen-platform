@@ -34,7 +34,8 @@ export type CLIDomain =
   | 'ai'          // AI-enhanced features
   | 'validate'    // Validation
   | 'build'       // Build commands
-  | 'mcp';
+  | 'mcp'         // Model Context Protocol
+  | 'help';       // Help system
 
 export type CLIAction = 
   | 'create' 
@@ -57,7 +58,11 @@ export type CLIAction =
   | 'seeder'
   | 'factory'
   | 'crud'
-  | 'analyze';
+  | 'analyze'
+  // Help-specific actions
+  | 'show'
+  | 'search'
+  | 'examples';
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({

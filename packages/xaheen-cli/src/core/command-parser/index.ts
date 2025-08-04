@@ -2,17 +2,21 @@ import { Command } from 'commander';
 import type { CLICommand, CLIDomain, CLIAction, CommandRoute } from '../../types/index.js';
 import { CLIError } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
+import { AliasResolverMiddleware } from '../../middleware/alias-resolver.middleware.js';
 
 export class CommandParser {
   private program: Command;
   private routes: Map<string, CommandRoute> = new Map();
   private legacyMappings: Map<string, CommandRoute> = new Map();
   private registeredCommands: Set<string> = new Set();
+  private aliasResolver: AliasResolverMiddleware;
 
   constructor() {
     this.program = new Command();
+    this.aliasResolver = new AliasResolverMiddleware();
     this.setupProgram();
     this.setupRoutes();
+    this.setupAliasCommands();
   }
 
   private setupProgram(): void {
@@ -312,10 +316,78 @@ export class CommandParser {
         handler: this.handleMCPConnect.bind(this)
       },
       {
+        pattern: 'mcp analyze',
+        domain: 'mcp',
+        action: 'analyze',
+        handler: this.handleMCPAnalyze.bind(this)
+      },
+      {
+        pattern: 'mcp suggestions [category]',
+        domain: 'mcp',
+        action: 'analyze',
+        handler: this.handleMCPSuggestions.bind(this)
+      },
+      {
+        pattern: 'mcp context',
+        domain: 'mcp',
+        action: 'analyze',
+        handler: this.handleMCPContext.bind(this)
+      },
+      {
+        pattern: 'mcp generate <name>',
+        domain: 'mcp',
+        action: 'generate',
+        handler: this.handleMCPGenerate.bind(this)
+      },
+      {
+        pattern: 'mcp list [platform]',
+        domain: 'mcp',
+        action: 'list',
+        handler: this.handleMCPList.bind(this)
+      },
+      {
+        pattern: 'mcp info [platform]',
+        domain: 'mcp',
+        action: 'analyze',
+        handler: this.handleMCPInfo.bind(this)
+      },
+      {
+        pattern: 'mcp disconnect',
+        domain: 'mcp',
+        action: 'remove',
+        handler: this.handleMCPDisconnect.bind(this)
+      },
+      {
         pattern: 'mcp deploy',
         domain: 'mcp',
         action: 'deploy',
         handler: this.handleMCPDeploy.bind(this)
+      },
+
+      // Help domain routes
+      {
+        pattern: 'help [topic]',
+        domain: 'help',
+        action: 'show',
+        handler: this.handleHelp.bind(this)
+      },
+      {
+        pattern: 'help search <query>',
+        domain: 'help',
+        action: 'search',
+        handler: this.handleHelpSearch.bind(this)
+      },
+      {
+        pattern: 'help examples [topic]',
+        domain: 'help',
+        action: 'examples',
+        handler: this.handleHelpExamples.bind(this)
+      },
+      {
+        pattern: 'aliases',
+        domain: 'help',
+        action: 'show',
+        handler: this.handleAliases.bind(this)
       }
     ];
 
@@ -326,6 +398,78 @@ export class CommandParser {
 
     // Register legacy commands
     this.registerLegacyCommands();
+  }
+
+  /**
+   * Setup alias commands dynamically
+   */
+  private setupAliasCommands(): void {
+    const aliases = this.aliasResolver.getAliasManager().getAllAliases();
+    
+    aliases.forEach(alias => {
+      try {
+        if (!this.registeredCommands.has(alias.alias)) {
+          // Create a dynamic command for each alias
+          const command = this.program
+            .command(alias.alias)
+            .description(`${alias.description} (alias for ${alias.originalCommand})`)
+            .allowUnknownOption()
+            .action(async (...args) => {
+              try {
+                // Process the aliased command
+                const [options] = args.slice(-1); // Last argument is always options
+                const targets = args.slice(0, -1); // Everything before options
+                
+                const aliasedCommand = this.aliasResolver.processArguments([alias.alias, ...targets]);
+                
+                if (aliasedCommand.resolved && aliasedCommand.command) {
+                  // Find the appropriate handler for the resolved command
+                  const route = this.findRouteForCommand(aliasedCommand.command);
+                  if (route) {
+                    await route.handler(aliasedCommand.command);
+                  } else {
+                    logger.error(`No handler found for aliased command: ${alias.originalCommand}`);
+                  }
+                } else {
+                  logger.error(`Failed to resolve alias: ${alias.alias}`);
+                }
+              } catch (error) {
+                logger.error(`Alias command failed: ${alias.alias}`, error);
+                throw error;
+              }
+            });
+
+          // Add common options to alias commands
+          command
+            .option('-v, --verbose', 'Enable verbose logging')
+            .option('--dry-run', 'Show what would be done without executing')
+            .option('--config <path>', 'Path to configuration file');
+
+          this.registeredCommands.add(alias.alias);
+          logger.debug(`Registered alias command: ${alias.alias}`);
+        }
+      } catch (error) {
+        logger.warn(`Failed to register alias command ${alias.alias}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Find route for a resolved command
+   */
+  private findRouteForCommand(command: CLICommand): CommandRoute | undefined {
+    // Look for exact pattern match first
+    const exactPattern = `${command.domain} ${command.action}${command.target ? ` ${command.target}` : ''}`;
+    let route = Array.from(this.routes.values()).find(r => r.pattern.includes(exactPattern));
+    
+    if (!route) {
+      // Look for domain + action match
+      route = Array.from(this.routes.values()).find(r => 
+        r.domain === command.domain && r.action === command.action
+      );
+    }
+    
+    return route;
   }
 
   private registerRoute(route: CommandRoute): void {
@@ -383,6 +527,19 @@ export class CommandParser {
           .option('--all', 'Create all related files')
           .option('--api', 'Create API-only controller')
           .option('--force', 'Force overwrite existing files');
+      }
+
+      // Add MCP-specific options
+      if (route.domain === 'mcp') {
+        command
+          .option('--server <url>', 'MCP server URL to connect to')
+          .option('--path <path>', 'Project path to analyze')
+          .option('--category <category>', 'Filter suggestions by category (architecture/performance/security/accessibility)')
+          .option('--platform <platform>', 'Target platform (react/nextjs/vue/angular/svelte)', 'react')
+          .option('--all', 'Generate for all platforms')
+          .option('--platforms <platforms>', 'Comma-separated list of platforms')
+          .option('--name <name>', 'Component name to generate')
+          .option('--force', 'Force deployment despite critical issues');
       }
 
       this.routes.set(route.pattern, route);
@@ -580,6 +737,75 @@ export class CommandParser {
     const { default: MCPDomain } = await import('../../domains/mcp/index.js');
     const domain = new MCPDomain();
     await domain.deploy(command);
+  }
+
+  private async handleMCPAnalyze(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.analyze(command);
+  }
+
+  private async handleMCPSuggestions(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.suggestions(command);
+  }
+
+  private async handleMCPContext(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.context(command);
+  }
+
+  private async handleMCPGenerate(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.generate(command);
+  }
+
+  private async handleMCPList(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.list(command);
+  }
+
+  private async handleMCPInfo(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.info(command);
+  }
+
+  private async handleMCPDisconnect(command: CLICommand): Promise<void> {
+    const { default: MCPDomain } = await import('../../domains/mcp/index.js');
+    const domain = new MCPDomain();
+    await domain.disconnect(command);
+  }
+
+  private async handleHelp(command: CLICommand): Promise<void> {
+    const { default: HelpDomain } = await import('../../domains/help/index.js');
+    const domain = new HelpDomain();
+    await domain.show(command);
+  }
+
+  private async handleHelpSearch(command: CLICommand): Promise<void> {
+    const { default: HelpDomain } = await import('../../domains/help/index.js');
+    const domain = new HelpDomain();
+    await domain.search(command);
+  }
+
+  private async handleHelpExamples(command: CLICommand): Promise<void> {
+    const { default: HelpDomain } = await import('../../domains/help/index.js');
+    const domain = new HelpDomain();
+    await domain.examples(command);
+  }
+
+  private async handleAliases(command: CLICommand): Promise<void> {
+    const { cliLogger } = await import('../../utils/logger.js');
+    const chalk = await import('chalk');
+    
+    const helpText = this.aliasResolver.showAliasHelp();
+    cliLogger.info(chalk.default.blue('🔗 Command Aliases and Shortcuts'));
+    cliLogger.info(helpText);
   }
 
   private async handleMakeCommand(command: CLICommand): Promise<void> {

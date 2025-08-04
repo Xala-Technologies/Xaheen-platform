@@ -64,7 +64,8 @@
       "Bash(true)",
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js make --help)",
       "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --help)",
-      "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --dry-run)"
+      "Bash(XAHEEN_NO_BANNER=true node dist/index.js make:component --dry-run)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }
