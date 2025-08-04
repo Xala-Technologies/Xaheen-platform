@@ -1,4 +1,4 @@
-# Xala UI System MCP Server v6.0
+# Xala UI System MCP Server v6.1
 
 Multi-platform MCP server for generating enterprise-grade UI components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using the Xala UI System v5.0 semantic architecture.
 

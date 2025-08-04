@@ -5,7 +5,44 @@ All notable changes to the Xala UI System MCP Server will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.1.0] - 2024-01-04
+
+### Added - Developer Experience Enhancements (Inspired by shadcn/ui MCP)
+- 🚀 **Quick Generate Tools** - Streamlined component generation with smart presets
+  - `quick_generate` - One-command generation with predefined configurations
+  - `quick_generate_set` - Generate multiple components with consistent theming
+  - `get_quick_presets` - Browse available component presets
+  - `get_platform_recommendations` - Platform-specific guidance and best practices
+
+- 🔍 **Component Retrieval Tools** - Browse and inspect template library
+  - `get_component_source` - Retrieve component source code with metadata
+  - `get_component_demo` - Access usage examples and demos
+  - `browse_component_library` - Search and filter through 191+ templates
+  - `get_component_metadata` - Detailed component information and dependencies
+
+- ⚡ **Performance Improvements**
+  - Template caching system with intelligent invalidation
+  - File-based caching with TTL and automatic cleanup
+  - Optimized template loading and processing
+
+- 📝 **Enhanced Validation System**
+  - Detailed error messages with actionable suggestions
+  - Field-specific validation feedback
+  - Platform compatibility warnings
+  - PascalCase component name validation with suggestions
+
+### Improved
+- Tool interface simplified from 15+ to 11 focused tools
+- Better tool categorization and prioritization
+- Enhanced error messages with helpful suggestions
+- Component validation with warnings for best practices
+
+### Changed
+- Tool handler priority: Quick Generate → Component Retrieval → Advanced Generation
+- Server version updated to 6.1.0
+- README updated with comprehensive comparison to shadcn/ui MCP
+
+## [6.0.0] - 2024-01-01
 
 ### Added
 - Initial MCP server implementation
