@@ -1,598 +1,602 @@
 {
-  "metadata": {
-    "name": "Button",
-    "version": "1.0.0",
-    "semanticVersion": "v5.0",
-    "category": "basic",
-    "subcategory": "interactive",
-    "description": "A versatile button component with Norwegian compliance and multi-platform support. Supports various sizes, variants, and accessibility features.",
-    "keywords": ["button", "interactive", "click", "action", "form", "norwegian"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "Frontend Architecture"
-    },
-    "stability": "stable",
-    "createdAt": "2024-01-15T10:00:00Z",
-    "updatedAt": "2024-08-04T14:30:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["button", "a"],
-      "ariaRoles": ["button", "link"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.7 Focus Visible",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.2,
-        "large": 4.8,
-        "enhanced": 8.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "children": {
-        "type": {
-          "union": [
-            { "primitive": "string" },
-            { "complex": "node" }
-          ]
-        },
-        "description": "Button content - can be text or React nodes",
-        "required": false,
-        "examples": [
-          {
-            "value": "Click me",
-            "description": "Simple text button",
-            "context": "Basic usage"
-          },
-          {
-            "value": "<Icon name='plus' /> Add Item",
-            "description": "Button with icon",
-            "context": "With icon"
-          }
-        ],
-        "accessibility": {
-          "screenReaderText": "Button content"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "button.{componentName}.label",
-          "context": "action"
-        }
-      },
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["primary", "secondary", "destructive", "ghost", "outline"]
-        },
-        "description": "Visual style variant of the button",
-        "required": false,
-        "defaultValue": "primary",
-        "examples": [
-          {
-            "value": "primary",
-            "description": "Main action button",
-            "context": "Primary actions"
-          },
-          {
-            "value": "destructive",
-            "description": "Dangerous actions",
-            "context": "Delete operations"
-          }
-        ]
-      },
-      "size": {
-        "type": {
-          "custom": "size",
-          "values": ["xs", "sm", "md", "lg", "xl"]
-        },
-        "description": "Size variant controlling height and padding",
-        "required": false,
-        "defaultValue": "md",
-        "validation": {
-          "rules": [
-            {
-              "type": "custom",
-              "customValidator": "validateButtonSize",
-              "message": "Button size must be appropriate for its context"
-            }
-          ]
-        }
-      },
-      "disabled": {
-        "type": {
-          "primitive": "boolean"
-        },
-        "description": "Whether the button is disabled and non-interactive",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-disabled",
-          "keyboardInteraction": true
-        }
-      },
-      "loading": {
-        "type": {
-          "primitive": "boolean"
-        },
-        "description": "Whether the button is in a loading state",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-busy",
-          "screenReaderText": "Loading"
-        }
-      },
-      "onClick": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Click event handler function",
-        "required": false,
-        "accessibility": {
-          "keyboardInteraction": true
-        }
-      },
-      "onKeyDown": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "KeyboardEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Keyboard event handler for accessibility",
-        "required": false,
-        "accessibility": {
-          "keyboardInteraction": true
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false,
-        "validation": {
-          "rules": [
-            {
-              "type": "pattern",
-              "value": "^[a-zA-Z0-9\\s\\-_]*$",
-              "message": "Invalid CSS class name format"
-            }
-          ]
-        }
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false,
-        "validation": {
-          "rules": [
-            {
-              "type": "pattern",
-              "value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
-              "message": "Test ID must start with a letter"
-            }
-          ]
-        }
-      },
-      "ariaLabel": {
-        "type": {
-          "primitive": "string"
-        },
-        "description": "Accessible label for screen readers",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Accessible label"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.{componentName}",
-          "context": "accessibility"
-        }
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "children",
-        "variant",
-        "size",
-        "disabled",
-        "loading",
-        "onClick",
-        "onKeyDown",
-        "className",
-        "testId",
-        "ariaLabel"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element", "node"],
-        "constraints": {
-          "maxChildren": 5
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "primary": "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-          "secondary": "bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500",
-          "destructive": "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-          "ghost": "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
-          "outline": "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500"
-        },
-        "defaultValue": "primary"
-      },
-      "size": {
-        "values": {
-          "xs": "h-6 px-2 text-xs",
-          "sm": "h-8 px-3 text-sm",
-          "md": "h-10 px-4 text-base",
-          "lg": "h-12 px-6 text-lg",
-          "xl": "h-14 px-8 text-xl"
-        },
-        "defaultValue": "md"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "primary",
-          "size": "lg"
-        },
-        "className": "font-semibold shadow-lg",
-        "description": "Large primary buttons get extra emphasis"
-      },
-      {
-        "conditions": {
-          "variant": "destructive",
-          "size": "xs"
-        },
-        "className": "font-medium",
-        "description": "Small destructive buttons need more weight"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "button",
-      "additional": ["link"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Enter",
-          "action": "activate",
-          "context": "Activate button"
-        },
-        {
-          "key": "Space",
-          "action": "activate",
-          "context": "Activate button"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus to next element"
-        },
-        {
-          "key": "Shift+Tab",
-          "action": "navigate",
-          "context": "Move focus to previous element"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "press",
-          "message": "Button activated",
-          "priority": "polite"
-        },
-        {
-          "trigger": "loading",
-          "message": "Loading, please wait",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "disabled",
-          "message": "Button unavailable",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["aria-label", "children"],
-        "descriptions": {
-          "loading": "Button is processing your request",
-          "disabled": "Button is not available for interaction"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "aria-label-exists",
-        "keyboard-accessible",
-        "color-contrast-aaa",
-        "focus-visible"
-      ],
-      "manual": [
-        "screen-reader-announcement",
-        "high-contrast-mode",
-        "reduced-motion-respect"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/button.tsx",
-        "dependencies": ["react", "clsx"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "ButtonHTMLAttributes"]
-          },
-          {
-            "module": "clsx",
-            "imports": ["clsx"]
-          }
-        ],
-        "examples": [
-          {
-            "code": "<Button variant='primary' size='md' onClick={handleClick}>Save</Button>",
-            "language": "tsx",
-            "description": "Basic button usage"
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/button.vue",
-        "dependencies": ["vue"],
-        "examples": [
-          {
-            "code": "<Button variant='primary' size='md' @click='handleClick'>Save</Button>",
-            "language": "vue",
-            "description": "Vue button usage"
-          }
-        ]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/button.component.ts",
-        "dependencies": ["@angular/core"],
-        "examples": [
-          {
-            "code": "<xala-button variant='primary' size='md' (click)='handleClick()'>Save</xala-button>",
-            "language": "html",
-            "description": "Angular button usage"
-          }
-        ]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Button",
-      "description": "Simple button with text",
-      "category": "basic",
-      "code": {
-        "react": "<Button>Click me</Button>",
-        "vue": "<Button>Click me</Button>",
-        "angular": "<xala-button>Click me</xala-button>"
-      },
-      "props": {
-        "children": "Click me"
-      }
-    },
-    {
-      "name": "Primary Action Button",
-      "description": "Prominent call-to-action button",
-      "category": "basic",
-      "code": {
-        "react": "<Button variant='primary' size='lg'>Get Started</Button>",
-        "vue": "<Button variant='primary' size='lg'>Get Started</Button>",
-        "angular": "<xala-button variant='primary' size='lg'>Get Started</xala-button>"
-      },
-      "props": {
-        "variant": "primary",
-        "size": "lg",
-        "children": "Get Started"
-      }
-    },
-    {
-      "name": "Destructive Action",
-      "description": "Button for dangerous actions",
-      "category": "advanced",
-      "code": {
-        "react": "<Button variant='destructive' onClick={handleDelete} ariaLabel='Delete item'>Delete</Button>",
-        "vue": "<Button variant='destructive' @click='handleDelete' aria-label='Delete item'>Delete</Button>",
-        "angular": "<xala-button variant='destructive' (click)='handleDelete()' aria-label='Delete item'>Delete</xala-button>"
-      },
-      "props": {
-        "variant": "destructive",
-        "onClick": "handleDelete",
-        "ariaLabel": "Delete item",
-        "children": "Delete"
-      },
-      "notes": "Always provide clear aria-label for destructive actions"
-    },
-    {
-      "name": "Loading State",
-      "description": "Button in loading state with proper accessibility",
-      "category": "advanced",
-      "code": {
-        "react": "<Button loading disabled ariaLabel='Saving changes, please wait'>Save</Button>",
-        "vue": "<Button :loading='true' :disabled='true' aria-label='Saving changes, please wait'>Save</Button>",
-        "angular": "<xala-button [loading]='true' [disabled]='true' aria-label='Saving changes, please wait'>Save</xala-button>"
-      },
-      "props": {
-        "loading": true,
-        "disabled": true,
-        "ariaLabel": "Saving changes, please wait",
-        "children": "Save"
-      },
-      "notes": "Loading buttons should be disabled and have descriptive aria-label"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use semantic HTML button element for accessibility",
-        "Implement proper focus management for keyboard users",
-        "Provide clear visual feedback for all states",
-        "Use Norwegian color palette for government compliance"
-      ],
-      "patterns": [
-        {
-          "pattern": "forwardRef",
-          "context": "React implementation",
-          "recommendation": "Use forwardRef for proper ref passing to DOM element"
-        },
-        {
-          "pattern": "compound variants",
-          "context": "Styling system",
-          "recommendation": "Use cva (class-variance-authority) for type-safe variant handling"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div with onClick",
-          "reason": "Not semantically correct and lacks keyboard accessibility",
-          "alternative": "Use proper button element"
-        },
-        {
-          "pattern": "inline styles",
-          "reason": "Not maintainable and conflicts with design system",
-          "alternative": "Use Tailwind classes or CSS modules"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "simple",
-      "estimatedTokens": 1200
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders correctly",
-        "handles click events",
-        "applies variants correctly",
-        "forwards refs properly",
-        "handles loading state",
-        "handles disabled state"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "form submission workflow",
-        "async action handling",
-        "keyboard navigation flow",
-        "screen reader interaction"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "800B"
-      },
-      "renderTime": {
-        "initial": "<16ms",
-        "update": "<8ms"
-      }
-    },
-    "optimizations": [
-      "Tree shaking support",
-      "Lazy loading for icons",
-      "Memoized variant calculations",
-      "Minimal re-renders"
-    ]
-  }
+	"metadata": {
+		"name": "Button",
+		"version": "1.0.0",
+		"semanticVersion": "v5.0",
+		"category": "basic",
+		"subcategory": "interactive",
+		"description": "A versatile button component with Norwegian compliance and multi-platform support. Supports various sizes, variants, and accessibility features.",
+		"keywords": [
+			"button",
+			"interactive",
+			"click",
+			"action",
+			"form",
+			"norwegian"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "Frontend Architecture"
+		},
+		"stability": "stable",
+		"createdAt": "2024-01-15T10:00:00Z",
+		"updatedAt": "2024-08-04T14:30:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["button", "a"],
+			"ariaRoles": ["button", "link"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.7 Focus Visible",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.2,
+				"large": 4.8,
+				"enhanced": 8.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"children": {
+				"type": {
+					"union": [{ "primitive": "string" }, { "complex": "node" }]
+				},
+				"description": "Button content - can be text or React nodes",
+				"required": false,
+				"examples": [
+					{
+						"value": "Click me",
+						"description": "Simple text button",
+						"context": "Basic usage"
+					},
+					{
+						"value": "<Icon name='plus' /> Add Item",
+						"description": "Button with icon",
+						"context": "With icon"
+					}
+				],
+				"accessibility": {
+					"screenReaderText": "Button content"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "button.{componentName}.label",
+					"context": "action"
+				}
+			},
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": ["primary", "secondary", "destructive", "ghost", "outline"]
+				},
+				"description": "Visual style variant of the button",
+				"required": false,
+				"defaultValue": "primary",
+				"examples": [
+					{
+						"value": "primary",
+						"description": "Main action button",
+						"context": "Primary actions"
+					},
+					{
+						"value": "destructive",
+						"description": "Dangerous actions",
+						"context": "Delete operations"
+					}
+				]
+			},
+			"size": {
+				"type": {
+					"custom": "size",
+					"values": ["xs", "sm", "md", "lg", "xl"]
+				},
+				"description": "Size variant controlling height and padding",
+				"required": false,
+				"defaultValue": "md",
+				"validation": {
+					"rules": [
+						{
+							"type": "custom",
+							"customValidator": "validateButtonSize",
+							"message": "Button size must be appropriate for its context"
+						}
+					]
+				}
+			},
+			"disabled": {
+				"type": {
+					"primitive": "boolean"
+				},
+				"description": "Whether the button is disabled and non-interactive",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-disabled",
+					"keyboardInteraction": true
+				}
+			},
+			"loading": {
+				"type": {
+					"primitive": "boolean"
+				},
+				"description": "Whether the button is in a loading state",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-busy",
+					"screenReaderText": "Loading"
+				}
+			},
+			"onClick": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Click event handler function",
+				"required": false,
+				"accessibility": {
+					"keyboardInteraction": true
+				}
+			},
+			"onKeyDown": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "KeyboardEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Keyboard event handler for accessibility",
+				"required": false,
+				"accessibility": {
+					"keyboardInteraction": true
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false,
+				"validation": {
+					"rules": [
+						{
+							"type": "pattern",
+							"value": "^[a-zA-Z0-9\\s\\-_]*$",
+							"message": "Invalid CSS class name format"
+						}
+					]
+				}
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false,
+				"validation": {
+					"rules": [
+						{
+							"type": "pattern",
+							"value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+							"message": "Test ID must start with a letter"
+						}
+					]
+				}
+			},
+			"ariaLabel": {
+				"type": {
+					"primitive": "string"
+				},
+				"description": "Accessible label for screen readers",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Accessible label"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.{componentName}",
+					"context": "accessibility"
+				}
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"children",
+				"variant",
+				"size",
+				"disabled",
+				"loading",
+				"onClick",
+				"onKeyDown",
+				"className",
+				"testId",
+				"ariaLabel"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element", "node"],
+				"constraints": {
+					"maxChildren": 5
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"primary": "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+					"secondary": "bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500",
+					"destructive": "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+					"ghost": "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
+					"outline": "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500"
+				},
+				"defaultValue": "primary"
+			},
+			"size": {
+				"values": {
+					"xs": "h-6 px-2 text-xs",
+					"sm": "h-8 px-3 text-sm",
+					"md": "h-10 px-4 text-base",
+					"lg": "h-12 px-6 text-lg",
+					"xl": "h-14 px-8 text-xl"
+				},
+				"defaultValue": "md"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "primary",
+					"size": "lg"
+				},
+				"className": "font-semibold shadow-lg",
+				"description": "Large primary buttons get extra emphasis"
+			},
+			{
+				"conditions": {
+					"variant": "destructive",
+					"size": "xs"
+				},
+				"className": "font-medium",
+				"description": "Small destructive buttons need more weight"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "button",
+			"additional": ["link"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Enter",
+					"action": "activate",
+					"context": "Activate button"
+				},
+				{
+					"key": "Space",
+					"action": "activate",
+					"context": "Activate button"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus to next element"
+				},
+				{
+					"key": "Shift+Tab",
+					"action": "navigate",
+					"context": "Move focus to previous element"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "press",
+					"message": "Button activated",
+					"priority": "polite"
+				},
+				{
+					"trigger": "loading",
+					"message": "Loading, please wait",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "disabled",
+					"message": "Button unavailable",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["aria-label", "children"],
+				"descriptions": {
+					"loading": "Button is processing your request",
+					"disabled": "Button is not available for interaction"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"aria-label-exists",
+				"keyboard-accessible",
+				"color-contrast-aaa",
+				"focus-visible"
+			],
+			"manual": [
+				"screen-reader-announcement",
+				"high-contrast-mode",
+				"reduced-motion-respect"
+			]
+		}
+	},
+	"platforms": {
+		"supported": ["react", "vue", "angular"],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/button.tsx",
+				"dependencies": ["react", "clsx"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["forwardRef", "ButtonHTMLAttributes"]
+					},
+					{
+						"module": "clsx",
+						"imports": ["clsx"]
+					}
+				],
+				"examples": [
+					{
+						"code": "<Button variant='primary' size='md' onClick={handleClick}>Save</Button>",
+						"language": "tsx",
+						"description": "Basic button usage"
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/button.vue",
+				"dependencies": ["vue"],
+				"examples": [
+					{
+						"code": "<Button variant='primary' size='md' @click='handleClick'>Save</Button>",
+						"language": "vue",
+						"description": "Vue button usage"
+					}
+				]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/button.component.ts",
+				"dependencies": ["@angular/core"],
+				"examples": [
+					{
+						"code": "<xala-button variant='primary' size='md' (click)='handleClick()'>Save</xala-button>",
+						"language": "html",
+						"description": "Angular button usage"
+					}
+				]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Button",
+			"description": "Simple button with text",
+			"category": "basic",
+			"code": {
+				"react": "<Button>Click me</Button>",
+				"vue": "<Button>Click me</Button>",
+				"angular": "<xala-button>Click me</xala-button>"
+			},
+			"props": {
+				"children": "Click me"
+			}
+		},
+		{
+			"name": "Primary Action Button",
+			"description": "Prominent call-to-action button",
+			"category": "basic",
+			"code": {
+				"react": "<Button variant='primary' size='lg'>Get Started</Button>",
+				"vue": "<Button variant='primary' size='lg'>Get Started</Button>",
+				"angular": "<xala-button variant='primary' size='lg'>Get Started</xala-button>"
+			},
+			"props": {
+				"variant": "primary",
+				"size": "lg",
+				"children": "Get Started"
+			}
+		},
+		{
+			"name": "Destructive Action",
+			"description": "Button for dangerous actions",
+			"category": "advanced",
+			"code": {
+				"react": "<Button variant='destructive' onClick={handleDelete} ariaLabel='Delete item'>Delete</Button>",
+				"vue": "<Button variant='destructive' @click='handleDelete' aria-label='Delete item'>Delete</Button>",
+				"angular": "<xala-button variant='destructive' (click)='handleDelete()' aria-label='Delete item'>Delete</xala-button>"
+			},
+			"props": {
+				"variant": "destructive",
+				"onClick": "handleDelete",
+				"ariaLabel": "Delete item",
+				"children": "Delete"
+			},
+			"notes": "Always provide clear aria-label for destructive actions"
+		},
+		{
+			"name": "Loading State",
+			"description": "Button in loading state with proper accessibility",
+			"category": "advanced",
+			"code": {
+				"react": "<Button loading disabled ariaLabel='Saving changes, please wait'>Save</Button>",
+				"vue": "<Button :loading='true' :disabled='true' aria-label='Saving changes, please wait'>Save</Button>",
+				"angular": "<xala-button [loading]='true' [disabled]='true' aria-label='Saving changes, please wait'>Save</xala-button>"
+			},
+			"props": {
+				"loading": true,
+				"disabled": true,
+				"ariaLabel": "Saving changes, please wait",
+				"children": "Save"
+			},
+			"notes": "Loading buttons should be disabled and have descriptive aria-label"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use semantic HTML button element for accessibility",
+				"Implement proper focus management for keyboard users",
+				"Provide clear visual feedback for all states",
+				"Use Norwegian color palette for government compliance"
+			],
+			"patterns": [
+				{
+					"pattern": "forwardRef",
+					"context": "React implementation",
+					"recommendation": "Use forwardRef for proper ref passing to DOM element"
+				},
+				{
+					"pattern": "compound variants",
+					"context": "Styling system",
+					"recommendation": "Use cva (class-variance-authority) for type-safe variant handling"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div with onClick",
+					"reason": "Not semantically correct and lacks keyboard accessibility",
+					"alternative": "Use proper button element"
+				},
+				{
+					"pattern": "inline styles",
+					"reason": "Not maintainable and conflicts with design system",
+					"alternative": "Use Tailwind classes or CSS modules"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "simple",
+			"estimatedTokens": 1200
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": ["api-reference", "usage-examples", "accessibility-guide"]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders correctly",
+				"handles click events",
+				"applies variants correctly",
+				"forwards refs properly",
+				"handles loading state",
+				"handles disabled state"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"form submission workflow",
+				"async action handling",
+				"keyboard navigation flow",
+				"screen reader interaction"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "800B"
+			},
+			"renderTime": {
+				"initial": "<16ms",
+				"update": "<8ms"
+			}
+		},
+		"optimizations": [
+			"Tree shaking support",
+			"Lazy loading for icons",
+			"Memoized variant calculations",
+			"Minimal re-renders"
+		]
+	}
 }

@@ -1,122 +1,134 @@
 /**
  * Alias Resolver Middleware
- * 
+ *
  * Processes command input to resolve aliases and expand shortcuts
  * before passing to the main command parser.
  */
 
-import { AliasManagerService } from '../services/aliases/alias-manager.service.js';
-import { logger } from '../utils/logger.js';
-import type { CLICommand } from '../types/index.js';
+import { AliasManagerService } from "../services/aliases/alias-manager.service.js";
+import type { CLICommand } from "../types/index.js";
+import { logger } from "../utils/logger.js";
 
 export class AliasResolverMiddleware {
-  private aliasManager: AliasManagerService;
+	private aliasManager: AliasManagerService;
 
-  constructor() {
-    this.aliasManager = new AliasManagerService();
-  }
+	constructor() {
+		this.aliasManager = new AliasManagerService();
+	}
 
-  /**
-   * Process raw command arguments and resolve aliases
-   */
-  public processArguments(args: string[]): { 
-    resolved: boolean; 
-    command?: CLICommand; 
-    originalArgs: string[]; 
-    expandedArgs?: string[] 
-  } {
-    if (args.length === 0) {
-      return { resolved: false, originalArgs: args };
-    }
+	/**
+	 * Process raw command arguments and resolve aliases
+	 */
+	public processArguments(args: string[]): {
+		resolved: boolean;
+		command?: CLICommand;
+		originalArgs: string[];
+		expandedArgs?: string[];
+	} {
+		if (args.length === 0) {
+			return { resolved: false, originalArgs: args };
+		}
 
-    const [firstArg, ...restArgs] = args;
-    
-    // Check if first argument is an alias
-    if (this.aliasManager.isAlias(firstArg)) {
-      const aliasedCommand = this.aliasManager.parseAliasedCommand(args);
-      
-      if (aliasedCommand) {
-        logger.debug(`Resolved alias: ${firstArg} → ${JSON.stringify(aliasedCommand)}`);
-        return {
-          resolved: true,
-          command: aliasedCommand,
-          originalArgs: args
-        };
-      }
-    }
+		const [firstArg, ...restArgs] = args;
 
-    // Expand shortcuts in arguments even if no alias is found
-    const expandedArgs = this.aliasManager.expandShortcuts(args);
-    const hasExpansions = expandedArgs.some((arg, index) => arg !== args[index]);
+		// Check if first argument is an alias
+		if (this.aliasManager.isAlias(firstArg)) {
+			const aliasedCommand = this.aliasManager.parseAliasedCommand(args);
 
-    if (hasExpansions) {
-      logger.debug(`Expanded shortcuts: ${args.join(' ')} → ${expandedArgs.join(' ')}`);
-      return {
-        resolved: false,
-        originalArgs: args,
-        expandedArgs
-      };
-    }
+			if (aliasedCommand) {
+				logger.debug(
+					`Resolved alias: ${firstArg} → ${JSON.stringify(aliasedCommand)}`,
+				);
+				return {
+					resolved: true,
+					command: aliasedCommand,
+					originalArgs: args,
+				};
+			}
+		}
 
-    return { resolved: false, originalArgs: args };
-  }
+		// Expand shortcuts in arguments even if no alias is found
+		const expandedArgs = this.aliasManager.expandShortcuts(args);
+		const hasExpansions = expandedArgs.some(
+			(arg, index) => arg !== args[index],
+		);
 
-  /**
-   * Get suggestions for partial alias input
-   */
-  public getSuggestions(partial: string): string[] {
-    const suggestions = this.aliasManager.getSuggestions(partial);
-    return suggestions.map(alias => `${alias.alias} (${alias.originalCommand})`);
-  }
+		if (hasExpansions) {
+			logger.debug(
+				`Expanded shortcuts: ${args.join(" ")} → ${expandedArgs.join(" ")}`,
+			);
+			return {
+				resolved: false,
+				originalArgs: args,
+				expandedArgs,
+			};
+		}
 
-  /**
-   * Show all available aliases and shortcuts
-   */
-  public showAliasHelp(): string {
-    return this.aliasManager.getAliasHelp();
-  }
+		return { resolved: false, originalArgs: args };
+	}
 
-  /**
-   * Register a custom alias
-   */
-  public registerCustomAlias(alias: string, originalCommand: string, description: string): boolean {
-    try {
-      // Parse the original command to extract domain and action
-      const parts = originalCommand.split(' ');
-      if (parts.length < 2) {
-        return false;
-      }
+	/**
+	 * Get suggestions for partial alias input
+	 */
+	public getSuggestions(partial: string): string[] {
+		const suggestions = this.aliasManager.getSuggestions(partial);
+		return suggestions.map(
+			(alias) => `${alias.alias} (${alias.originalCommand})`,
+		);
+	}
 
-      const domain = parts[0] as any; // We'll validate this exists in types
-      const action = parts[1] as any;
+	/**
+	 * Show all available aliases and shortcuts
+	 */
+	public showAliasHelp(): string {
+		return this.aliasManager.getAliasHelp();
+	}
 
-      this.aliasManager.registerAlias({
-        alias,
-        originalCommand,
-        domain,
-        action,
-        description,
-        example: `xaheen ${alias}`
-      });
+	/**
+	 * Register a custom alias
+	 */
+	public registerCustomAlias(
+		alias: string,
+		originalCommand: string,
+		description: string,
+	): boolean {
+		try {
+			// Parse the original command to extract domain and action
+			const parts = originalCommand.split(" ");
+			if (parts.length < 2) {
+				return false;
+			}
 
-      return true;
-    } catch (error) {
-      logger.error(`Failed to register alias: ${error}`);
-      return false;
-    }
-  }
+			const domain = parts[0] as any; // We'll validate this exists in types
+			const action = parts[1] as any;
 
-  /**
-   * Remove a custom alias
-   */
-  public removeCustomAlias(alias: string): boolean {
-    return this.aliasManager.removeAlias(alias);
-  }
+			this.aliasManager.registerAlias({
+				alias,
+				originalCommand,
+				domain,
+				action,
+				description,
+				example: `xaheen ${alias}`,
+			});
 
-  /**
-   * Get the alias manager for direct access
-   */
-  public getAliasManager(): AliasManagerService {
-    return this.aliasManager;
-  }
+			return true;
+		} catch (error) {
+			logger.error(`Failed to register alias: ${error}`);
+			return false;
+		}
+	}
+
+	/**
+	 * Remove a custom alias
+	 */
+	public removeCustomAlias(alias: string): boolean {
+		return this.aliasManager.removeAlias(alias);
+	}
+
+	/**
+	 * Get the alias manager for direct access
+	 */
+	public getAliasManager(): AliasManagerService {
+		return this.aliasManager;
+	}
 }

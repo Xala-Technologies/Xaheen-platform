@@ -1,543 +1,551 @@
 {
-  "metadata": {
-    "name": "Spinner",
-    "version": "1.0.0",
-    "category": "ui",
-    "description": "A loading indicator that shows indeterminate progress with customizable visual variants",
-    "tags": ["spinner", "loading", "indicator", "progress", "ui", "feedback"],
-    "author": "Xala Enterprise UI System",
-    "created": "2025-08-04T00:00:00Z",
-    "lastModified": "2025-08-04T00:00:00Z"
-  },
-  "compliance": {
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "wcagLevel": "AAA",
-      "supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "auditTrail": false
-    },
-    "accessibility": {
-      "wcagLevel": "AAA",
-      "keyboardNavigation": false,
-      "screenReaderSupport": true,
-      "highContrast": true,
-      "focusManagement": false,
-      "ariaCompliance": true
-    }
-  },
-  "performance": {
-    "bundleSize": "<1KB",
-    "renderTime": "<8ms",
-    "memoryUsage": "<512KB",
-    "treeshaking": true,
-    "lazy": false
-  },
-  "props": {
-    "size": {
-      "type": "string | number",
-      "required": false,
-      "default": "md",
-      "description": "Size of the spinner - predefined sizes or custom number in pixels",
-      "options": ["xs", "sm", "md", "lg", "xl"],
-      "validation": {
-        "min": 8,
-        "max": 200
-      },
-      "examples": ["xs", "sm", "md", "lg", "xl", 24, 48, 64]
-    },
-    "color": {
-      "type": "string",
-      "required": false,
-      "default": "primary",
-      "description": "Color variant or custom color value",
-      "options": ["primary", "secondary", "success", "warning", "error"],
-      "examples": ["primary", "secondary", "success", "warning", "error", "#3B82F6", "rgb(59, 130, 246)"]
-    },
-    "thickness": {
-      "type": "number",
-      "required": false,
-      "default": null,
-      "description": "Border thickness in pixels (auto-calculated based on size if not provided)",
-      "validation": {
-        "min": 1,
-        "max": 8
-      },
-      "examples": [1, 2, 3, 4]
-    },
-    "speed": {
-      "type": "string | number",
-      "required": false,
-      "default": "normal",
-      "description": "Animation speed - predefined speeds or custom duration in milliseconds",
-      "options": ["slow", "normal", "fast"],
-      "validation": {
-        "min": 100,
-        "max": 5000
-      },
-      "examples": ["slow", "normal", "fast", 800, 1200, 2000]
-    },
-    "label": {
-      "type": "string",
-      "required": false,
-      "default": null,
-      "description": "Optional loading text displayed with the spinner",
-      "examples": ["Loading...", "Please wait", "Processing", "Laster...", "Vennligst vent"]
-    },
-    "labelPosition": {
-      "type": "string",
-      "required": false,
-      "default": "bottom",
-      "description": "Position of the label relative to the spinner",
-      "options": ["top", "bottom", "left", "right"],
-      "examples": ["top", "bottom", "left", "right"]
-    },
-    "variant": {
-      "type": "string",
-      "required": false,
-      "default": "circular",
-      "description": "Visual variant of the spinner",
-      "options": ["circular", "dots", "bars"],
-      "examples": ["circular", "dots", "bars"]
-    },
-    "overlay": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to render as fullscreen overlay with backdrop",
-      "examples": [true, false]
-    },
-    "overlayOpacity": {
-      "type": "number",
-      "required": false,
-      "default": 0.5,
-      "description": "Opacity of the overlay backdrop (0-1)",
-      "validation": {
-        "min": 0,
-        "max": 1
-      },
-      "examples": [0.3, 0.5, 0.7, 0.9]
-    },
-    "centered": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to center the spinner in its container",
-      "examples": [true, false]
-    },
-    "className": {
-      "type": "string",
-      "required": false,
-      "description": "Additional CSS classes for custom styling",
-      "examples": ["custom-spinner", "ml-4 opacity-75"]
-    },
-    "id": {
-      "type": "string",
-      "required": false,
-      "description": "Unique identifier for the spinner element",
-      "examples": ["loading-spinner", "upload-spinner"]
-    },
-    "ariaLabel": {
-      "type": "string",
-      "required": false,
-      "description": "Accessible label for screen readers (defaults to 'Loading' or provided label)",
-      "examples": ["Loading content", "Processing request", "Uploading file"]
-    },
-    "ariaDescribedBy": {
-      "type": "string",
-      "required": false,
-      "description": "ID of element(s) that describe the loading state",
-      "examples": ["loading-description", "status-text"]
-    },
-    "testId": {
-      "type": "string",
-      "required": false,
-      "description": "Test identifier for automated testing",
-      "examples": ["spinner", "loading-indicator"]
-    }
-  },
-  "styling": {
-    "tokens": {
-      "colors": {
-        "primary": {
-          "spinner": "var(--color-blue-600)",
-          "background": "transparent",
-          "text": "var(--color-gray-700)"
-        },
-        "secondary": {
-          "spinner": "var(--color-gray-600)",
-          "background": "transparent",
-          "text": "var(--color-gray-700)"
-        },
-        "success": {
-          "spinner": "var(--color-green-600)",
-          "background": "transparent",
-          "text": "var(--color-gray-700)"
-        },
-        "warning": {
-          "spinner": "var(--color-yellow-600)",
-          "background": "transparent",
-          "text": "var(--color-gray-700)"
-        },
-        "error": {
-          "spinner": "var(--color-red-600)",
-          "background": "transparent",
-          "text": "var(--color-gray-700)"
-        }
-      },
-      "sizes": {
-        "xs": {
-          "size": "16px",
-          "thickness": "2px",
-          "fontSize": "12px",
-          "gap": "8px"
-        },
-        "sm": {
-          "size": "20px",
-          "thickness": "2px",
-          "fontSize": "14px",
-          "gap": "10px"
-        },
-        "md": {
-          "size": "24px",
-          "thickness": "3px",
-          "fontSize": "16px",
-          "gap": "12px"
-        },
-        "lg": {
-          "size": "32px",
-          "thickness": "3px",
-          "fontSize": "18px",
-          "gap": "16px"
-        },
-        "xl": {
-          "size": "40px",
-          "thickness": "4px",
-          "fontSize": "20px",
-          "gap": "20px"
-        }
-      },
-      "animations": {
-        "slow": {
-          "duration": "2000ms",
-          "timingFunction": "linear",
-          "iterationCount": "infinite"
-        },
-        "normal": {
-          "duration": "1200ms",
-          "timingFunction": "linear",
-          "iterationCount": "infinite"
-        },
-        "fast": {
-          "duration": "800ms",
-          "timingFunction": "linear",
-          "iterationCount": "infinite"
-        }
-      },
-      "variants": {
-        "circular": {
-          "borderRadius": "50%",
-          "animation": "spin"
-        },
-        "dots": {
-          "dotCount": 3,
-          "animation": "pulse"
-        },
-        "bars": {
-          "barCount": 4,
-          "animation": "scale"
-        }
-      }
-    },
-    "baseClasses": [
-      "inline-block",
-      "animate-spin"
-    ],
-    "variantClasses": {
-      "circular": [
-        "border-solid",
-        "border-current",
-        "border-r-transparent",
-        "rounded-full"
-      ],
-      "dots": [
-        "flex",
-        "items-center",
-        "space-x-1"
-      ],
-      "bars": [
-        "flex",
-        "items-end",
-        "space-x-1"
-      ]
-    },
-    "sizeClasses": {
-      "xs": ["w-4", "h-4"],
-      "sm": ["w-5", "h-5"],
-      "md": ["w-6", "h-6"],
-      "lg": ["w-8", "h-8"],
-      "xl": ["w-10", "h-10"]
-    },
-    "colorClasses": {
-      "primary": ["text-blue-600"],
-      "secondary": ["text-gray-600"],
-      "success": ["text-green-600"],
-      "warning": ["text-yellow-600"],
-      "error": ["text-red-600"]
-    }
-  },
-  "accessibility": {
-    "role": "status",
-    "requiredAttributes": [
-      "aria-label"
-    ],
-    "optionalAttributes": [
-      "aria-describedby",
-      "aria-live"
-    ],
-    "defaultAttributes": {
-      "aria-label": "Loading",
-      "aria-live": "polite"
-    },
-    "keyboardSupport": {
-      "focusable": false,
-      "description": "Spinners are not interactive and do not receive keyboard focus"
-    },
-    "screenReader": {
-      "announcements": true,
-      "liveRegion": "polite",
-      "description": "Loading state is announced to screen readers via aria-label"
-    },
-    "colorContrast": {
-      "minimum": "4.5:1",
-      "enhanced": "7:1",
-      "description": "All spinner variants meet WCAG AAA contrast requirements"
-    },
-    "motionReduction": {
-      "respectsPreference": true,
-      "fallback": "Static loading indicator",
-      "description": "Respects prefers-reduced-motion setting"
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Spinner",
-      "description": "Simple circular spinner with default settings",
-      "code": {
-        "tsx": "<Spinner />",
-        "props": {}
-      }
-    },
-    {
-      "name": "Spinner with Label",
-      "description": "Spinner with loading text below",
-      "code": {
-        "tsx": "<Spinner label=\"Loading...\" />",
-        "props": {
-          "label": "Loading..."
-        }
-      }
-    },
-    {
-      "name": "Large Success Spinner",
-      "description": "Large spinner with success color and custom label",
-      "code": {
-        "tsx": "<Spinner size=\"lg\" color=\"success\" label=\"Processing payment\" labelPosition=\"right\" />",
-        "props": {
-          "size": "lg",
-          "color": "success",
-          "label": "Processing payment",
-          "labelPosition": "right"
-        }
-      }
-    },
-    {
-      "name": "Fullscreen Overlay",
-      "description": "Spinner as fullscreen overlay with backdrop",
-      "code": {
-        "tsx": "<Spinner overlay label=\"Please wait...\" size=\"xl\" />",
-        "props": {
-          "overlay": true,
-          "label": "Please wait...",
-          "size": "xl"
-        }
-      }
-    },
-    {
-      "name": "Dots Variant",
-      "description": "Three-dot loading animation",
-      "code": {
-        "tsx": "<Spinner variant=\"dots\" color=\"primary\" speed=\"fast\" />",
-        "props": {
-          "variant": "dots",
-          "color": "primary",
-          "speed": "fast"
-        }
-      }
-    },
-    {
-      "name": "Bars Variant",
-      "description": "Animated bars loading indicator",
-      "code": {
-        "tsx": "<Spinner variant=\"bars\" size=\"md\" color=\"warning\" label=\"Uploading files\" />",
-        "props": {
-          "variant": "bars",
-          "size": "md",
-          "color": "warning",
-          "label": "Uploading files"
-        }
-      }
-    },
-    {
-      "name": "Custom Size and Speed",
-      "description": "Spinner with custom pixel size and animation duration",
-      "code": {
-        "tsx": "<Spinner size={48} speed={1500} thickness={4} color=\"#3B82F6\" />",
-        "props": {
-          "size": 48,
-          "speed": 1500,
-          "thickness": 4,
-          "color": "#3B82F6"
-        }
-      }
-    },
-    {
-      "name": "Centered in Container",
-      "description": "Spinner centered within its container",
-      "code": {
-        "tsx": "<Spinner centered label=\"Loading content\" size=\"lg\" />",
-        "props": {
-          "centered": true,
-          "label": "Loading content",
-          "size": "lg"
-        }
-      }
-    },
-    {
-      "name": "Norwegian Localization",
-      "description": "Spinner with Norwegian loading text",
-      "code": {
-        "tsx": "<Spinner label=\"Laster innhold...\" ariaLabel=\"Laster innhold\" />",
-        "props": {
-          "label": "Laster innhold...",
-          "ariaLabel": "Laster innhold"
-        }
-      }
-    },
-    {
-      "name": "Accessible Spinner",
-      "description": "Spinner with comprehensive accessibility attributes",
-      "code": {
-        "tsx": "<Spinner ariaLabel=\"Loading user profile\" ariaDescribedBy=\"loading-status\" testId=\"profile-spinner\" />",
-        "props": {
-          "ariaLabel": "Loading user profile",
-          "ariaDescribedBy": "loading-status",
-          "testId": "profile-spinner"
-        }
-      }
-    }
-  ],
-  "states": {
-    "loading": {
-      "description": "Active loading state with animation",
-      "visualCues": ["Rotating/pulsing animation", "Visible spinner", "Optional label text"]
-    },
-    "overlay": {
-      "description": "Fullscreen loading overlay",
-      "visualCues": ["Semi-transparent backdrop", "Centered spinner", "Blocks user interaction"]
-    },
-    "inline": {
-      "description": "Inline loading indicator",
-      "visualCues": ["Compact size", "Flows with content", "Non-blocking"]
-    },
-    "reduced-motion": {
-      "description": "Static loading indicator for motion-sensitive users",
-      "visualCues": ["Static spinner", "Pulsing opacity", "Accessible alternative"]
-    }
-  },
-  "variants": {
-    "circular": {
-      "description": "Classic circular spinner with rotating border",
-      "implementation": "Border-based circular animation",
-      "useCases": ["General loading", "Form submissions", "Data fetching"]
-    },
-    "dots": {
-      "description": "Three animated dots indicating loading",
-      "implementation": "Sequential dot animation with scaling/opacity",
-      "useCases": ["Text loading", "Inline indicators", "Subtle feedback"]
-    },
-    "bars": {
-      "description": "Animated vertical bars of varying heights",
-      "implementation": "Staggered bar height animation",
-      "useCases": ["Audio/visual processing", "Data visualization", "Analytics loading"]
-    }
-  },
-  "implementation": {
-    "framework": "React",
-    "typescript": true,
-    "dependencies": [
-      "react",
-      "@types/react",
-      "clsx"
-    ],
-    "peerDependencies": [
-      "react@>=18.0.0"
-    ],
-    "exports": {
-      "Spinner": "./Spinner.tsx",
-      "SpinnerProps": "./Spinner.types.ts"
-    }
-  },
-  "testing": {
-    "unit": {
-      "coverage": "95%",
-      "framework": "Jest + Testing Library",
-      "scenarios": [
-        "Renders with default props",
-        "Respects size variants",
-        "Handles custom colors",
-        "Shows/hides labels correctly",
-        "Overlay functionality",
-        "Accessibility attributes",
-        "Motion preference handling"
-      ]
-    },
-    "accessibility": {
-      "tools": ["jest-axe", "eslint-plugin-jsx-a11y"],
-      "coverage": "100%",
-      "tests": [
-        "ARIA attributes present",
-        "Screen reader announcements",
-        "Keyboard navigation (not applicable)",
-        "Color contrast compliance",
-        "Motion reduction support"
-      ]
-    },
-    "visual": {
-      "tool": "Storybook + Chromatic",
-      "coverage": "All variants, sizes, and colors",
-      "scenarios": [
-        "All size variants",
-        "All color variants", 
-        "All visual variants (circular/dots/bars)",
-        "With and without labels",
-        "Overlay mode",
-        "Motion-reduced state"
-      ]
-    },
-    "performance": {
-      "bundleSize": "<1KB gzipped",
-      "renderTime": "<8ms average",
-      "animationPerformance": "60fps smooth animation"
-    }
-  },
-  "documentation": {
-    "storybook": true,
-    "playground": true,
-    "designTokens": true,
-    "accessibilityGuidelines": true,
-    "usageExamples": true,
-    "norwegianLocalization": true,
-    "performanceGuidelines": true
-  }
+	"metadata": {
+		"name": "Spinner",
+		"version": "1.0.0",
+		"category": "ui",
+		"description": "A loading indicator that shows indeterminate progress with customizable visual variants",
+		"tags": ["spinner", "loading", "indicator", "progress", "ui", "feedback"],
+		"author": "Xala Enterprise UI System",
+		"created": "2025-08-04T00:00:00Z",
+		"lastModified": "2025-08-04T00:00:00Z"
+	},
+	"compliance": {
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"wcagLevel": "AAA",
+			"supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"auditTrail": false
+		},
+		"accessibility": {
+			"wcagLevel": "AAA",
+			"keyboardNavigation": false,
+			"screenReaderSupport": true,
+			"highContrast": true,
+			"focusManagement": false,
+			"ariaCompliance": true
+		}
+	},
+	"performance": {
+		"bundleSize": "<1KB",
+		"renderTime": "<8ms",
+		"memoryUsage": "<512KB",
+		"treeshaking": true,
+		"lazy": false
+	},
+	"props": {
+		"size": {
+			"type": "string | number",
+			"required": false,
+			"default": "md",
+			"description": "Size of the spinner - predefined sizes or custom number in pixels",
+			"options": ["xs", "sm", "md", "lg", "xl"],
+			"validation": {
+				"min": 8,
+				"max": 200
+			},
+			"examples": ["xs", "sm", "md", "lg", "xl", 24, 48, 64]
+		},
+		"color": {
+			"type": "string",
+			"required": false,
+			"default": "primary",
+			"description": "Color variant or custom color value",
+			"options": ["primary", "secondary", "success", "warning", "error"],
+			"examples": [
+				"primary",
+				"secondary",
+				"success",
+				"warning",
+				"error",
+				"#3B82F6",
+				"rgb(59, 130, 246)"
+			]
+		},
+		"thickness": {
+			"type": "number",
+			"required": false,
+			"default": null,
+			"description": "Border thickness in pixels (auto-calculated based on size if not provided)",
+			"validation": {
+				"min": 1,
+				"max": 8
+			},
+			"examples": [1, 2, 3, 4]
+		},
+		"speed": {
+			"type": "string | number",
+			"required": false,
+			"default": "normal",
+			"description": "Animation speed - predefined speeds or custom duration in milliseconds",
+			"options": ["slow", "normal", "fast"],
+			"validation": {
+				"min": 100,
+				"max": 5000
+			},
+			"examples": ["slow", "normal", "fast", 800, 1200, 2000]
+		},
+		"label": {
+			"type": "string",
+			"required": false,
+			"default": null,
+			"description": "Optional loading text displayed with the spinner",
+			"examples": [
+				"Loading...",
+				"Please wait",
+				"Processing",
+				"Laster...",
+				"Vennligst vent"
+			]
+		},
+		"labelPosition": {
+			"type": "string",
+			"required": false,
+			"default": "bottom",
+			"description": "Position of the label relative to the spinner",
+			"options": ["top", "bottom", "left", "right"],
+			"examples": ["top", "bottom", "left", "right"]
+		},
+		"variant": {
+			"type": "string",
+			"required": false,
+			"default": "circular",
+			"description": "Visual variant of the spinner",
+			"options": ["circular", "dots", "bars"],
+			"examples": ["circular", "dots", "bars"]
+		},
+		"overlay": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to render as fullscreen overlay with backdrop",
+			"examples": [true, false]
+		},
+		"overlayOpacity": {
+			"type": "number",
+			"required": false,
+			"default": 0.5,
+			"description": "Opacity of the overlay backdrop (0-1)",
+			"validation": {
+				"min": 0,
+				"max": 1
+			},
+			"examples": [0.3, 0.5, 0.7, 0.9]
+		},
+		"centered": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to center the spinner in its container",
+			"examples": [true, false]
+		},
+		"className": {
+			"type": "string",
+			"required": false,
+			"description": "Additional CSS classes for custom styling",
+			"examples": ["custom-spinner", "ml-4 opacity-75"]
+		},
+		"id": {
+			"type": "string",
+			"required": false,
+			"description": "Unique identifier for the spinner element",
+			"examples": ["loading-spinner", "upload-spinner"]
+		},
+		"ariaLabel": {
+			"type": "string",
+			"required": false,
+			"description": "Accessible label for screen readers (defaults to 'Loading' or provided label)",
+			"examples": ["Loading content", "Processing request", "Uploading file"]
+		},
+		"ariaDescribedBy": {
+			"type": "string",
+			"required": false,
+			"description": "ID of element(s) that describe the loading state",
+			"examples": ["loading-description", "status-text"]
+		},
+		"testId": {
+			"type": "string",
+			"required": false,
+			"description": "Test identifier for automated testing",
+			"examples": ["spinner", "loading-indicator"]
+		}
+	},
+	"styling": {
+		"tokens": {
+			"colors": {
+				"primary": {
+					"spinner": "var(--color-blue-600)",
+					"background": "transparent",
+					"text": "var(--color-gray-700)"
+				},
+				"secondary": {
+					"spinner": "var(--color-gray-600)",
+					"background": "transparent",
+					"text": "var(--color-gray-700)"
+				},
+				"success": {
+					"spinner": "var(--color-green-600)",
+					"background": "transparent",
+					"text": "var(--color-gray-700)"
+				},
+				"warning": {
+					"spinner": "var(--color-yellow-600)",
+					"background": "transparent",
+					"text": "var(--color-gray-700)"
+				},
+				"error": {
+					"spinner": "var(--color-red-600)",
+					"background": "transparent",
+					"text": "var(--color-gray-700)"
+				}
+			},
+			"sizes": {
+				"xs": {
+					"size": "16px",
+					"thickness": "2px",
+					"fontSize": "12px",
+					"gap": "8px"
+				},
+				"sm": {
+					"size": "20px",
+					"thickness": "2px",
+					"fontSize": "14px",
+					"gap": "10px"
+				},
+				"md": {
+					"size": "24px",
+					"thickness": "3px",
+					"fontSize": "16px",
+					"gap": "12px"
+				},
+				"lg": {
+					"size": "32px",
+					"thickness": "3px",
+					"fontSize": "18px",
+					"gap": "16px"
+				},
+				"xl": {
+					"size": "40px",
+					"thickness": "4px",
+					"fontSize": "20px",
+					"gap": "20px"
+				}
+			},
+			"animations": {
+				"slow": {
+					"duration": "2000ms",
+					"timingFunction": "linear",
+					"iterationCount": "infinite"
+				},
+				"normal": {
+					"duration": "1200ms",
+					"timingFunction": "linear",
+					"iterationCount": "infinite"
+				},
+				"fast": {
+					"duration": "800ms",
+					"timingFunction": "linear",
+					"iterationCount": "infinite"
+				}
+			},
+			"variants": {
+				"circular": {
+					"borderRadius": "50%",
+					"animation": "spin"
+				},
+				"dots": {
+					"dotCount": 3,
+					"animation": "pulse"
+				},
+				"bars": {
+					"barCount": 4,
+					"animation": "scale"
+				}
+			}
+		},
+		"baseClasses": ["inline-block", "animate-spin"],
+		"variantClasses": {
+			"circular": [
+				"border-solid",
+				"border-current",
+				"border-r-transparent",
+				"rounded-full"
+			],
+			"dots": ["flex", "items-center", "space-x-1"],
+			"bars": ["flex", "items-end", "space-x-1"]
+		},
+		"sizeClasses": {
+			"xs": ["w-4", "h-4"],
+			"sm": ["w-5", "h-5"],
+			"md": ["w-6", "h-6"],
+			"lg": ["w-8", "h-8"],
+			"xl": ["w-10", "h-10"]
+		},
+		"colorClasses": {
+			"primary": ["text-blue-600"],
+			"secondary": ["text-gray-600"],
+			"success": ["text-green-600"],
+			"warning": ["text-yellow-600"],
+			"error": ["text-red-600"]
+		}
+	},
+	"accessibility": {
+		"role": "status",
+		"requiredAttributes": ["aria-label"],
+		"optionalAttributes": ["aria-describedby", "aria-live"],
+		"defaultAttributes": {
+			"aria-label": "Loading",
+			"aria-live": "polite"
+		},
+		"keyboardSupport": {
+			"focusable": false,
+			"description": "Spinners are not interactive and do not receive keyboard focus"
+		},
+		"screenReader": {
+			"announcements": true,
+			"liveRegion": "polite",
+			"description": "Loading state is announced to screen readers via aria-label"
+		},
+		"colorContrast": {
+			"minimum": "4.5:1",
+			"enhanced": "7:1",
+			"description": "All spinner variants meet WCAG AAA contrast requirements"
+		},
+		"motionReduction": {
+			"respectsPreference": true,
+			"fallback": "Static loading indicator",
+			"description": "Respects prefers-reduced-motion setting"
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Spinner",
+			"description": "Simple circular spinner with default settings",
+			"code": {
+				"tsx": "<Spinner />",
+				"props": {}
+			}
+		},
+		{
+			"name": "Spinner with Label",
+			"description": "Spinner with loading text below",
+			"code": {
+				"tsx": "<Spinner label=\"Loading...\" />",
+				"props": {
+					"label": "Loading..."
+				}
+			}
+		},
+		{
+			"name": "Large Success Spinner",
+			"description": "Large spinner with success color and custom label",
+			"code": {
+				"tsx": "<Spinner size=\"lg\" color=\"success\" label=\"Processing payment\" labelPosition=\"right\" />",
+				"props": {
+					"size": "lg",
+					"color": "success",
+					"label": "Processing payment",
+					"labelPosition": "right"
+				}
+			}
+		},
+		{
+			"name": "Fullscreen Overlay",
+			"description": "Spinner as fullscreen overlay with backdrop",
+			"code": {
+				"tsx": "<Spinner overlay label=\"Please wait...\" size=\"xl\" />",
+				"props": {
+					"overlay": true,
+					"label": "Please wait...",
+					"size": "xl"
+				}
+			}
+		},
+		{
+			"name": "Dots Variant",
+			"description": "Three-dot loading animation",
+			"code": {
+				"tsx": "<Spinner variant=\"dots\" color=\"primary\" speed=\"fast\" />",
+				"props": {
+					"variant": "dots",
+					"color": "primary",
+					"speed": "fast"
+				}
+			}
+		},
+		{
+			"name": "Bars Variant",
+			"description": "Animated bars loading indicator",
+			"code": {
+				"tsx": "<Spinner variant=\"bars\" size=\"md\" color=\"warning\" label=\"Uploading files\" />",
+				"props": {
+					"variant": "bars",
+					"size": "md",
+					"color": "warning",
+					"label": "Uploading files"
+				}
+			}
+		},
+		{
+			"name": "Custom Size and Speed",
+			"description": "Spinner with custom pixel size and animation duration",
+			"code": {
+				"tsx": "<Spinner size={48} speed={1500} thickness={4} color=\"#3B82F6\" />",
+				"props": {
+					"size": 48,
+					"speed": 1500,
+					"thickness": 4,
+					"color": "#3B82F6"
+				}
+			}
+		},
+		{
+			"name": "Centered in Container",
+			"description": "Spinner centered within its container",
+			"code": {
+				"tsx": "<Spinner centered label=\"Loading content\" size=\"lg\" />",
+				"props": {
+					"centered": true,
+					"label": "Loading content",
+					"size": "lg"
+				}
+			}
+		},
+		{
+			"name": "Norwegian Localization",
+			"description": "Spinner with Norwegian loading text",
+			"code": {
+				"tsx": "<Spinner label=\"Laster innhold...\" ariaLabel=\"Laster innhold\" />",
+				"props": {
+					"label": "Laster innhold...",
+					"ariaLabel": "Laster innhold"
+				}
+			}
+		},
+		{
+			"name": "Accessible Spinner",
+			"description": "Spinner with comprehensive accessibility attributes",
+			"code": {
+				"tsx": "<Spinner ariaLabel=\"Loading user profile\" ariaDescribedBy=\"loading-status\" testId=\"profile-spinner\" />",
+				"props": {
+					"ariaLabel": "Loading user profile",
+					"ariaDescribedBy": "loading-status",
+					"testId": "profile-spinner"
+				}
+			}
+		}
+	],
+	"states": {
+		"loading": {
+			"description": "Active loading state with animation",
+			"visualCues": [
+				"Rotating/pulsing animation",
+				"Visible spinner",
+				"Optional label text"
+			]
+		},
+		"overlay": {
+			"description": "Fullscreen loading overlay",
+			"visualCues": [
+				"Semi-transparent backdrop",
+				"Centered spinner",
+				"Blocks user interaction"
+			]
+		},
+		"inline": {
+			"description": "Inline loading indicator",
+			"visualCues": ["Compact size", "Flows with content", "Non-blocking"]
+		},
+		"reduced-motion": {
+			"description": "Static loading indicator for motion-sensitive users",
+			"visualCues": [
+				"Static spinner",
+				"Pulsing opacity",
+				"Accessible alternative"
+			]
+		}
+	},
+	"variants": {
+		"circular": {
+			"description": "Classic circular spinner with rotating border",
+			"implementation": "Border-based circular animation",
+			"useCases": ["General loading", "Form submissions", "Data fetching"]
+		},
+		"dots": {
+			"description": "Three animated dots indicating loading",
+			"implementation": "Sequential dot animation with scaling/opacity",
+			"useCases": ["Text loading", "Inline indicators", "Subtle feedback"]
+		},
+		"bars": {
+			"description": "Animated vertical bars of varying heights",
+			"implementation": "Staggered bar height animation",
+			"useCases": [
+				"Audio/visual processing",
+				"Data visualization",
+				"Analytics loading"
+			]
+		}
+	},
+	"implementation": {
+		"framework": "React",
+		"typescript": true,
+		"dependencies": ["react", "@types/react", "clsx"],
+		"peerDependencies": ["react@>=18.0.0"],
+		"exports": {
+			"Spinner": "./Spinner.tsx",
+			"SpinnerProps": "./Spinner.types.ts"
+		}
+	},
+	"testing": {
+		"unit": {
+			"coverage": "95%",
+			"framework": "Jest + Testing Library",
+			"scenarios": [
+				"Renders with default props",
+				"Respects size variants",
+				"Handles custom colors",
+				"Shows/hides labels correctly",
+				"Overlay functionality",
+				"Accessibility attributes",
+				"Motion preference handling"
+			]
+		},
+		"accessibility": {
+			"tools": ["jest-axe", "eslint-plugin-jsx-a11y"],
+			"coverage": "100%",
+			"tests": [
+				"ARIA attributes present",
+				"Screen reader announcements",
+				"Keyboard navigation (not applicable)",
+				"Color contrast compliance",
+				"Motion reduction support"
+			]
+		},
+		"visual": {
+			"tool": "Storybook + Chromatic",
+			"coverage": "All variants, sizes, and colors",
+			"scenarios": [
+				"All size variants",
+				"All color variants",
+				"All visual variants (circular/dots/bars)",
+				"With and without labels",
+				"Overlay mode",
+				"Motion-reduced state"
+			]
+		},
+		"performance": {
+			"bundleSize": "<1KB gzipped",
+			"renderTime": "<8ms average",
+			"animationPerformance": "60fps smooth animation"
+		}
+	},
+	"documentation": {
+		"storybook": true,
+		"playground": true,
+		"designTokens": true,
+		"accessibilityGuidelines": true,
+		"usageExamples": true,
+		"norwegianLocalization": true,
+		"performanceGuidelines": true
+	}
 }

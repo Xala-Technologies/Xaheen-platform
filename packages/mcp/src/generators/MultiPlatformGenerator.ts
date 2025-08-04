@@ -4,190 +4,259 @@
  */
 
 import type {
-  ComponentConfig,
-  GeneratedComponent,
-  GeneratedFile,
-  SupportedPlatform,
-  PlatformConfig,
-  PlatformTemplateConfig,
-  ComponentTemplate
-} from '../types/index';
-import { LocalizationGenerator } from './LocalizationGenerator.js';
-import { TestGenerator } from './TestGenerator.js';
-import { StoryGenerator } from './StoryGenerator.js';
-import { DocumentationGenerator } from './DocumentationGenerator.js';
+	ComponentConfig,
+	ComponentTemplate,
+	GeneratedComponent,
+	GeneratedFile,
+	PlatformConfig,
+	PlatformTemplateConfig,
+	SupportedPlatform,
+} from "../types/index";
+import { DocumentationGenerator } from "./DocumentationGenerator.js";
+import { LocalizationGenerator } from "./LocalizationGenerator.js";
+import { StoryGenerator } from "./StoryGenerator.js";
+import { TestGenerator } from "./TestGenerator.js";
 
 // Helper to convert string array to ComponentTemplate array
 const ALL_COMPONENTS: ComponentTemplate[] = [
-  'navbar', 'modal', 'sidebar', 'header', 'form', 'card', 'dashboard',
-  'data-table', 'virtual-list', 'command-palette', 'global-search',
-  'theme-switcher', 'theme-selector', 'app-shell', 'layout',
-  'auth-provider', 'theme-provider', 'error-boundary', 'notification-provider',
-  'render-props', 'hoc-collection', 'component-factory',
-  'performance-monitor', 'code-generator'
+	"navbar",
+	"modal",
+	"sidebar",
+	"header",
+	"form",
+	"card",
+	"dashboard",
+	"data-table",
+	"virtual-list",
+	"command-palette",
+	"global-search",
+	"theme-switcher",
+	"theme-selector",
+	"app-shell",
+	"layout",
+	"auth-provider",
+	"theme-provider",
+	"error-boundary",
+	"notification-provider",
+	"render-props",
+	"hoc-collection",
+	"component-factory",
+	"performance-monitor",
+	"code-generator",
 ] as ComponentTemplate[];
 
 const CORE_COMPONENTS: ComponentTemplate[] = [
-  'navbar', 'modal', 'sidebar', 'header', 'form', 'card', 'dashboard',
-  'data-table', 'virtual-list', 'command-palette', 'global-search',
-  'theme-switcher', 'theme-selector', 'app-shell', 'layout',
-  'auth-provider', 'theme-provider', 'error-boundary', 'notification-provider',
-  'performance-monitor', 'code-generator'
+	"navbar",
+	"modal",
+	"sidebar",
+	"header",
+	"form",
+	"card",
+	"dashboard",
+	"data-table",
+	"virtual-list",
+	"command-palette",
+	"global-search",
+	"theme-switcher",
+	"theme-selector",
+	"app-shell",
+	"layout",
+	"auth-provider",
+	"theme-provider",
+	"error-boundary",
+	"notification-provider",
+	"performance-monitor",
+	"code-generator",
 ] as ComponentTemplate[];
 
 export class MultiPlatformGenerator {
-  private localizationGenerator: LocalizationGenerator;
-  private testGenerator: TestGenerator;
-  private storyGenerator: StoryGenerator;
-  private documentationGenerator: DocumentationGenerator;
+	private localizationGenerator: LocalizationGenerator;
+	private testGenerator: TestGenerator;
+	private storyGenerator: StoryGenerator;
+	private documentationGenerator: DocumentationGenerator;
 
-  // Platform template configurations
-  private platformConfigs: Record<SupportedPlatform, PlatformTemplateConfig> = {
-    'react': {
-      platform: 'react',
-      availableComponents: ALL_COMPONENTS,
-      templatePath: '/templates/react/',
-      fileExtension: '.tsx',
-      localizationPattern: 't()'
-    },
-    'nextjs': {
-      platform: 'nextjs',
-      availableComponents: ALL_COMPONENTS,
-      templatePath: '/templates/nextjs/',
-      fileExtension: '.tsx',
-      localizationPattern: 't()'
-    },
-    'vue': {
-      platform: 'vue',
-      availableComponents: CORE_COMPONENTS,
-      templatePath: '/templates/vue/',
-      fileExtension: '.vue',
-      localizationPattern: '{{ t() }}'
-    },
-    'angular': {
-      platform: 'angular',
-      availableComponents: CORE_COMPONENTS,
-      templatePath: '/templates/angular/',
-      fileExtension: '.component.ts',
-      localizationPattern: '| translate'
-    },
-    'svelte': {
-      platform: 'svelte',
-      availableComponents: CORE_COMPONENTS,
-      templatePath: '/templates/svelte/',
-      fileExtension: '.svelte',
-      localizationPattern: '{t()}'
-    },
-    'electron': {
-      platform: 'electron',
-      availableComponents: CORE_COMPONENTS,
-      templatePath: '/templates/electron/',
-      fileExtension: '.tsx',
-      localizationPattern: '{t()}'
-    },
-    'react-native': {
-      platform: 'react-native',
-      availableComponents: CORE_COMPONENTS,
-      templatePath: '/templates/react-native/',
-      fileExtension: '.tsx',
-      localizationPattern: 't()'
-    }
-  };
+	// Platform template configurations
+	private platformConfigs: Record<SupportedPlatform, PlatformTemplateConfig> = {
+		react: {
+			platform: "react",
+			availableComponents: ALL_COMPONENTS,
+			templatePath: "/templates/react/",
+			fileExtension: ".tsx",
+			localizationPattern: "t()",
+		},
+		nextjs: {
+			platform: "nextjs",
+			availableComponents: ALL_COMPONENTS,
+			templatePath: "/templates/nextjs/",
+			fileExtension: ".tsx",
+			localizationPattern: "t()",
+		},
+		vue: {
+			platform: "vue",
+			availableComponents: CORE_COMPONENTS,
+			templatePath: "/templates/vue/",
+			fileExtension: ".vue",
+			localizationPattern: "{{ t() }}",
+		},
+		angular: {
+			platform: "angular",
+			availableComponents: CORE_COMPONENTS,
+			templatePath: "/templates/angular/",
+			fileExtension: ".component.ts",
+			localizationPattern: "| translate",
+		},
+		svelte: {
+			platform: "svelte",
+			availableComponents: CORE_COMPONENTS,
+			templatePath: "/templates/svelte/",
+			fileExtension: ".svelte",
+			localizationPattern: "{t()}",
+		},
+		electron: {
+			platform: "electron",
+			availableComponents: CORE_COMPONENTS,
+			templatePath: "/templates/electron/",
+			fileExtension: ".tsx",
+			localizationPattern: "{t()}",
+		},
+		"react-native": {
+			platform: "react-native",
+			availableComponents: CORE_COMPONENTS,
+			templatePath: "/templates/react-native/",
+			fileExtension: ".tsx",
+			localizationPattern: "t()",
+		},
+	};
 
-  constructor() {
-    this.localizationGenerator = new LocalizationGenerator();
-    this.testGenerator = new TestGenerator();
-    this.storyGenerator = new StoryGenerator();
-    this.documentationGenerator = new DocumentationGenerator();
-  }
+	constructor() {
+		this.localizationGenerator = new LocalizationGenerator();
+		this.testGenerator = new TestGenerator();
+		this.storyGenerator = new StoryGenerator();
+		this.documentationGenerator = new DocumentationGenerator();
+	}
 
-  /**
-   * Generate component for specific platform with v5.0 semantic architecture
-   */
-  async generateMultiPlatformComponent(config: ComponentConfig): Promise<GeneratedComponent> {
-    const platform = config.platform || 'react';
-    const platformConfig = this.platformConfigs[platform];
-    
-    if (!platformConfig) {
-      throw new Error(`Unsupported platform: ${platform}`);
-    }
+	/**
+	 * Generate component for specific platform with v5.0 semantic architecture
+	 */
+	async generateMultiPlatformComponent(
+		config: ComponentConfig,
+	): Promise<GeneratedComponent> {
+		const platform = config.platform || "react";
+		const platformConfig = this.platformConfigs[platform];
 
-    // Validate component availability for platform
-    const componentName = this.getComponentTemplateName(config);
-    if (!platformConfig.availableComponents.includes(componentName as any)) {
-      throw new Error(`Component ${componentName} not available for platform ${platform}`);
-    }
+		if (!platformConfig) {
+			throw new Error(`Unsupported platform: ${platform}`);
+		}
 
-    const componentCode = this.generatePlatformSpecificCode(config, platform);
-    const typesCode = this.generatePlatformSpecificTypes(config, platform);
-    const localizationKeys = this.localizationGenerator.generateKeys(config);
-    const imports = this.generatePlatformSpecificImports(config, platform);
-    const dependencies = this.generatePlatformSpecificDependencies(config, platform);
-    
-    const files = this.generatePlatformSpecificFiles(config, platform, {
-      componentCode,
-      typesCode,
-      localizationKeys
-    });
+		// Validate component availability for platform
+		const componentName = this.getComponentTemplateName(config);
+		if (!platformConfig.availableComponents.includes(componentName as any)) {
+			throw new Error(
+				`Component ${componentName} not available for platform ${platform}`,
+			);
+		}
 
-    return {
-      componentCode,
-      typesCode,
-      localizationKeys,
-      imports,
-      dependencies,
-      files,
-      platform,
-      architecture: config.platformConfig?.architecture || 'semantic'
-    };
-  }
+		const componentCode = this.generatePlatformSpecificCode(config, platform);
+		const typesCode = this.generatePlatformSpecificTypes(config, platform);
+		const localizationKeys = this.localizationGenerator.generateKeys(config);
+		const imports = this.generatePlatformSpecificImports(config, platform);
+		const dependencies = this.generatePlatformSpecificDependencies(
+			config,
+			platform,
+		);
 
-  /**
-   * Generate components for all platforms
-   */
-  async generateAllPlatforms(config: ComponentConfig): Promise<Record<SupportedPlatform, GeneratedComponent>> {
-    const results: Record<SupportedPlatform, GeneratedComponent> = {} as any;
-    
-    for (const platform of Object.keys(this.platformConfigs) as SupportedPlatform[]) {
-      const platformConfig = { ...config, platform };
-      try {
-        results[platform] = await this.generateMultiPlatformComponent(platformConfig);
-      } catch (error) {
-        console.warn(`Failed to generate for platform ${platform}:`, error);
-      }
-    }
-    
-    return results;
-  }
+		const files = this.generatePlatformSpecificFiles(config, platform, {
+			componentCode,
+			typesCode,
+			localizationKeys,
+		});
 
-  private generatePlatformSpecificCode(config: ComponentConfig, platform: SupportedPlatform): string {
-    const componentName = this.toPascalCase(config.name);
-    const templateName = this.getComponentTemplateName(config);
-    
-    switch (platform) {
-      case 'react':
-      case 'nextjs':
-        return this.generateReactComponent(config, componentName, templateName);
-      case 'vue':
-        return this.generateVueComponent(config, componentName, templateName);
-      case 'angular':
-        return this.generateAngularComponent(config, componentName, templateName);
-      case 'svelte':
-        return this.generateSvelteComponent(config, componentName, templateName);
-      case 'electron':
-        return this.generateElectronComponent(config, componentName, templateName);
-      case 'react-native':
-        return this.generateReactNativeComponent(config, componentName, templateName);
-      default:
-        throw new Error(`Platform ${platform} not implemented`);
-    }
-  }
+		return {
+			componentCode,
+			typesCode,
+			localizationKeys,
+			imports,
+			dependencies,
+			files,
+			platform,
+			architecture: config.platformConfig?.architecture || "semantic",
+		};
+	}
 
-  private generateReactComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    const isNextJS = config.platform === 'nextjs';
-    const hasAppRouter = config.platformConfig?.features?.appRouter;
-    
-    return `/**
+	/**
+	 * Generate components for all platforms
+	 */
+	async generateAllPlatforms(
+		config: ComponentConfig,
+	): Promise<Record<SupportedPlatform, GeneratedComponent>> {
+		const results: Record<SupportedPlatform, GeneratedComponent> = {} as any;
+
+		for (const platform of Object.keys(
+			this.platformConfigs,
+		) as SupportedPlatform[]) {
+			const platformConfig = { ...config, platform };
+			try {
+				results[platform] =
+					await this.generateMultiPlatformComponent(platformConfig);
+			} catch (error) {
+				console.warn(`Failed to generate for platform ${platform}:`, error);
+			}
+		}
+
+		return results;
+	}
+
+	private generatePlatformSpecificCode(
+		config: ComponentConfig,
+		platform: SupportedPlatform,
+	): string {
+		const componentName = this.toPascalCase(config.name);
+		const templateName = this.getComponentTemplateName(config);
+
+		switch (platform) {
+			case "react":
+			case "nextjs":
+				return this.generateReactComponent(config, componentName, templateName);
+			case "vue":
+				return this.generateVueComponent(config, componentName, templateName);
+			case "angular":
+				return this.generateAngularComponent(
+					config,
+					componentName,
+					templateName,
+				);
+			case "svelte":
+				return this.generateSvelteComponent(
+					config,
+					componentName,
+					templateName,
+				);
+			case "electron":
+				return this.generateElectronComponent(
+					config,
+					componentName,
+					templateName,
+				);
+			case "react-native":
+				return this.generateReactNativeComponent(
+					config,
+					componentName,
+					templateName,
+				);
+			default:
+				throw new Error(`Platform ${platform} not implemented`);
+		}
+	}
+
+	private generateReactComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		const isNextJS = config.platform === "nextjs";
+		const hasAppRouter = config.platformConfig?.features?.appRouter;
+
+		return `/**
  * @fileoverview ${componentName} Component - v5.0 Semantic Architecture
  * @platform ${config.platform}
  * @architecture semantic
@@ -266,10 +335,14 @@ export const ${componentName}: React.FC<${componentName}Props> = ({
 
 ${componentName}.displayName = '${componentName}';
 `;
-  }
+	}
 
-  private generateVueComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    return `<template>
+	private generateVueComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		return `<template>
   <div 
     :class="containerClasses"
     :data-testid="testId"
@@ -325,10 +398,14 @@ const containerClasses = computed(() => [
 /* v5.0 Architecture: CSS-only styling */
 </style>
 `;
-  }
+	}
 
-  private generateAngularComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    return `/**
+	private generateAngularComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		return `/**
  * @fileoverview ${componentName} Component - v5.0 Semantic Architecture Angular
  * @platform angular
  * @architecture semantic
@@ -423,10 +500,14 @@ export class ${componentName}Component {
   }
 }
 `;
-  }
+	}
 
-  private generateSvelteComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    return `<!--
+	private generateSvelteComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		return `<!--
   @fileoverview ${componentName} Component - v5.0 Semantic Architecture Svelte
   @platform svelte
   @architecture semantic
@@ -473,10 +554,14 @@ export class ${componentName}Component {
   /* v5.0 Architecture: CSS-only styling */
 </style>
 `;
-  }
+	}
 
-  private generateElectronComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    return `/**
+	private generateElectronComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		return `/**
  * @fileoverview ${componentName} Component - v5.0 Semantic Architecture Electron
  * @platform electron  
  * @architecture semantic
@@ -595,10 +680,14 @@ export const ${componentName}: React.FC<${componentName}Props> = ({
 
 ${componentName}.displayName = '${componentName}';
 `;
-  }
+	}
 
-  private generateReactNativeComponent(config: ComponentConfig, componentName: string, templateName: string): string {
-    return `/**
+	private generateReactNativeComponent(
+		config: ComponentConfig,
+		componentName: string,
+		templateName: string,
+	): string {
+		return `/**
  * @fileoverview ${componentName} Component - v5.0 Semantic Architecture React Native
  * @platform react-native
  * @architecture semantic
@@ -728,12 +817,15 @@ const styles = StyleSheet.create({
   }
 });
 `;
-  }
+	}
 
-  private generatePlatformSpecificTypes(config: ComponentConfig, platform: SupportedPlatform): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// types/${config.name.toLowerCase()}.types.ts
+	private generatePlatformSpecificTypes(
+		config: ComponentConfig,
+		platform: SupportedPlatform,
+	): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// types/${config.name.toLowerCase()}.types.ts
 /**
  * Type definitions for ${componentName} - ${platform}
  * Generated by Xala UI System MCP v6.0
@@ -743,17 +835,17 @@ export interface ${componentName}Props {
   readonly className?: string;
   readonly children?: React.ReactNode;
   readonly variant?: '${config.styling.variant}';
-  readonly size?: '${config.size || 'md'}';
+  readonly size?: '${config.size || "md"}';
   readonly disabled?: boolean;
   readonly loading?: boolean;
   readonly 'data-testid'?: string;
 }
 
 export interface ${componentName}Config {
-  readonly theme: '${config.theme || 'enterprise'}';
-  readonly locale: '${config.locale || 'en'}';
+  readonly theme: '${config.theme || "enterprise"}';
+  readonly locale: '${config.locale || "en"}';
   readonly platform: '${platform}';
-  readonly architecture: '${config.platformConfig?.architecture || 'semantic'}';
+  readonly architecture: '${config.platformConfig?.architecture || "semantic"}';
   readonly accessibility: {
     readonly level: '${config.accessibility.level}';
     readonly screenReader: ${config.accessibility.screenReader};
@@ -762,232 +854,267 @@ export interface ${componentName}Config {
 }
 
 export type ${componentName}Variant = '${config.styling.variant}';
-export type ${componentName}Size = '${config.size || 'md'}';
+export type ${componentName}Size = '${config.size || "md"}';
 export type ${componentName}Platform = '${platform}';`;
-  }
+	}
 
-  private generatePlatformSpecificImports(config: ComponentConfig, platform: SupportedPlatform): string[] {
-    const baseImports = ['React'];
-    const conditionalImports: string[] = [];
+	private generatePlatformSpecificImports(
+		config: ComponentConfig,
+		platform: SupportedPlatform,
+	): string[] {
+		const baseImports = ["React"];
+		const conditionalImports: string[] = [];
 
-    switch (platform) {
-      case 'react':
-      case 'nextjs':
-        conditionalImports.push('cva', 'type VariantProps', 'cn');
-        break;
-      case 'vue':
-        conditionalImports.push('computed', 'defineProps', 'withDefaults');
-        break;
-      case 'angular':
-        conditionalImports.push('Component', 'Input', 'CommonModule', 'TranslateModule');
-        break;
-      case 'svelte':
-        // Svelte imports are handled in template
-        break;
-      case 'electron':
-        conditionalImports.push('cva', 'type VariantProps', 'cn');
-        break;
-      case 'react-native':
-        conditionalImports.push('View', 'Text', 'StyleSheet', 'Platform');
-        break;
-    }
+		switch (platform) {
+			case "react":
+			case "nextjs":
+				conditionalImports.push("cva", "type VariantProps", "cn");
+				break;
+			case "vue":
+				conditionalImports.push("computed", "defineProps", "withDefaults");
+				break;
+			case "angular":
+				conditionalImports.push(
+					"Component",
+					"Input",
+					"CommonModule",
+					"TranslateModule",
+				);
+				break;
+			case "svelte":
+				// Svelte imports are handled in template
+				break;
+			case "electron":
+				conditionalImports.push("cva", "type VariantProps", "cn");
+				break;
+			case "react-native":
+				conditionalImports.push("View", "Text", "StyleSheet", "Platform");
+				break;
+		}
 
-    // Add UI system imports
-    conditionalImports.push('@xala-technologies/ui-system');
-    conditionalImports.push('@xala-technologies/ui-system/i18n');
+		// Add UI system imports
+		conditionalImports.push("@xala-technologies/ui-system");
+		conditionalImports.push("@xala-technologies/ui-system/i18n");
 
-    return [...new Set([...baseImports, ...conditionalImports])];
-  }
+		return [...new Set([...baseImports, ...conditionalImports])];
+	}
 
-  private generatePlatformSpecificDependencies(config: ComponentConfig, platform: SupportedPlatform): string[] {
-    const baseDeps = [
-      '@xala-technologies/ui-system',
-      'react-i18next'
-    ];
+	private generatePlatformSpecificDependencies(
+		config: ComponentConfig,
+		platform: SupportedPlatform,
+	): string[] {
+		const baseDeps = ["@xala-technologies/ui-system", "react-i18next"];
 
-    const conditionalDeps: string[] = [];
+		const conditionalDeps: string[] = [];
 
-    switch (platform) {
-      case 'react':
-        conditionalDeps.push('react', 'class-variance-authority');
-        break;
-      case 'nextjs':
-        conditionalDeps.push('react', 'next', 'class-variance-authority');
-        break;
-      case 'vue':
-        conditionalDeps.push('vue');
-        break;
-      case 'angular':
-        conditionalDeps.push('@angular/core', '@angular/common', '@ngx-translate/core');
-        break;
-      case 'svelte':
-        conditionalDeps.push('svelte');
-        break;
-      case 'electron':
-        conditionalDeps.push('react', 'electron', 'class-variance-authority');
-        break;
-      case 'react-native':
-        conditionalDeps.push('react', 'react-native', 'react-native-safe-area-context');
-        break;
-    }
+		switch (platform) {
+			case "react":
+				conditionalDeps.push("react", "class-variance-authority");
+				break;
+			case "nextjs":
+				conditionalDeps.push("react", "next", "class-variance-authority");
+				break;
+			case "vue":
+				conditionalDeps.push("vue");
+				break;
+			case "angular":
+				conditionalDeps.push(
+					"@angular/core",
+					"@angular/common",
+					"@ngx-translate/core",
+				);
+				break;
+			case "svelte":
+				conditionalDeps.push("svelte");
+				break;
+			case "electron":
+				conditionalDeps.push("react", "electron", "class-variance-authority");
+				break;
+			case "react-native":
+				conditionalDeps.push(
+					"react",
+					"react-native",
+					"react-native-safe-area-context",
+				);
+				break;
+		}
 
-    if (config.features.icons) {
-      conditionalDeps.push('lucide-react');
-    }
+		if (config.features.icons) {
+			conditionalDeps.push("lucide-react");
+		}
 
-    if (config.features.animated) {
-      conditionalDeps.push('framer-motion');
-    }
+		if (config.features.animated) {
+			conditionalDeps.push("framer-motion");
+		}
 
-    return [...new Set([...baseDeps, ...conditionalDeps])];
-  }
+		return [...new Set([...baseDeps, ...conditionalDeps])];
+	}
 
-  private generatePlatformSpecificFiles(
-    config: ComponentConfig,
-    platform: SupportedPlatform,
-    content: { componentCode: string; typesCode: string; localizationKeys: Record<string, any> }
-  ): GeneratedFile[] {
-    const componentName = this.toPascalCase(config.name);
-    const platformConfig = this.platformConfigs[platform];
-    const extension = platformConfig.fileExtension;
-    
-    const files: GeneratedFile[] = [
-      {
-        path: `components/${config.category}/${componentName}${extension}`,
-        content: content.componentCode,
-        type: 'component'
-      },
-      {
-        path: `types/${config.name.toLowerCase()}.types.ts`,
-        content: content.typesCode,
-        type: 'types'
-      }
-    ];
+	private generatePlatformSpecificFiles(
+		config: ComponentConfig,
+		platform: SupportedPlatform,
+		content: {
+			componentCode: string;
+			typesCode: string;
+			localizationKeys: Record<string, any>;
+		},
+	): GeneratedFile[] {
+		const componentName = this.toPascalCase(config.name);
+		const platformConfig = this.platformConfigs[platform];
+		const extension = platformConfig.fileExtension;
 
-    // Add localization files for all supported locales
-    const locales = ['en', 'nb-NO', 'fr', 'ar'];
-    locales.forEach(locale => {
-      files.push({
-        path: `locales/${locale}/${config.name.toLowerCase()}.json`,
-        content: JSON.stringify(content.localizationKeys[locale] || content.localizationKeys, null, 2),
-        type: 'locale'
-      });
-    });
+		const files: GeneratedFile[] = [
+			{
+				path: `components/${config.category}/${componentName}${extension}`,
+				content: content.componentCode,
+				type: "component",
+			},
+			{
+				path: `types/${config.name.toLowerCase()}.types.ts`,
+				content: content.typesCode,
+				type: "types",
+			},
+		];
 
-    return files;
-  }
+		// Add localization files for all supported locales
+		const locales = ["en", "nb-NO", "fr", "ar"];
+		locales.forEach((locale) => {
+			files.push({
+				path: `locales/${locale}/${config.name.toLowerCase()}.json`,
+				content: JSON.stringify(
+					content.localizationKeys[locale] || content.localizationKeys,
+					null,
+					2,
+				),
+				type: "locale",
+			});
+		});
 
-  private getComponentTemplateName(config: ComponentConfig): string {
-    // Map category to template name
-    const categoryMap: Record<string, string> = {
-      'components': config.name.toLowerCase(),
-      'data-components': config.name.toLowerCase(), 
-      'theme-components': config.name.toLowerCase(),
-      'layouts': config.name.toLowerCase(),
-      'providers': config.name.toLowerCase(),
-      'patterns': config.name.toLowerCase(),
-      'tools': config.name.toLowerCase()
-    };
+		return files;
+	}
 
-    return categoryMap[config.category] || config.name.toLowerCase();
-  }
+	private getComponentTemplateName(config: ComponentConfig): string {
+		// Map category to template name
+		const categoryMap: Record<string, string> = {
+			components: config.name.toLowerCase(),
+			"data-components": config.name.toLowerCase(),
+			"theme-components": config.name.toLowerCase(),
+			layouts: config.name.toLowerCase(),
+			providers: config.name.toLowerCase(),
+			patterns: config.name.toLowerCase(),
+			tools: config.name.toLowerCase(),
+		};
 
-  private toPascalCase(str: string): string {
-    return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-        return index === 0 ? word.toLowerCase() : word.toUpperCase();
-      })
-      .replace(/\s+/g, '')
-      .replace(/^./, str => str.toUpperCase());
-  }
+		return categoryMap[config.category] || config.name.toLowerCase();
+	}
 
-  /**
-   * Get available components for a platform
-   */
-  getAvailableComponents(platform: SupportedPlatform): ComponentTemplate[] {
-    return this.platformConfigs[platform]?.availableComponents || [];
-  }
+	private toPascalCase(str: string): string {
+		return str
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+				return index === 0 ? word.toLowerCase() : word.toUpperCase();
+			})
+			.replace(/\s+/g, "")
+			.replace(/^./, (str) => str.toUpperCase());
+	}
 
-  /**
-   * Get platform configuration
-   */
-  getPlatformConfig(platform: SupportedPlatform): PlatformTemplateConfig {
-    const config = this.platformConfigs[platform];
-    if (!config) {
-      throw new Error(`Platform ${platform} not supported`);
-    }
-    return config;
-  }
+	/**
+	 * Get available components for a platform
+	 */
+	getAvailableComponents(platform: SupportedPlatform): ComponentTemplate[] {
+		return this.platformConfigs[platform]?.availableComponents || [];
+	}
 
-  /**
-   * Validate if component is available for platform
-   */
-  isComponentAvailable(component: string, platform: SupportedPlatform): boolean {
-    const platformConfig = this.platformConfigs[platform];
-    return platformConfig?.availableComponents.includes(component as any) || false;
-  }
+	/**
+	 * Get platform configuration
+	 */
+	getPlatformConfig(platform: SupportedPlatform): PlatformTemplateConfig {
+		const config = this.platformConfigs[platform];
+		if (!config) {
+			throw new Error(`Platform ${platform} not supported`);
+		}
+		return config;
+	}
 
-  /**
-   * Generate component from JSON specification
-   */
-  public async generateFromSpecification(
-    spec: any,
-    options: {
-      platform?: SupportedPlatform;
-      variant?: string;
-      customProps?: Record<string, any>;
-      includeTests?: boolean;
-      includeStories?: boolean;
-      includeDocs?: boolean;
-    }
-  ): Promise<{ files: GeneratedFile[] }> {
-    const platform = options.platform || 'react';
-    const config: ComponentConfig = {
-      name: spec.metadata.name,
-      category: spec.metadata.category || 'components',
-      platform: platform,
-      variant: options.variant || 'default',
-      size: 'md',
-      theme: 'enterprise',
-      locale: 'nb-NO',
-      features: {
-        icons: false,
-        animated: false,
-        interactive: true,
-        loading: false,
-        error: false,
-        validation: false
-      },
-      styling: {
-        variant: (options.variant as 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary') || 'default',
-        colorScheme: 'auto',
-        borderRadius: 'md',
-        shadow: 'sm',
-        spacing: 'comfortable'
-      },
-      accessibility: {
-        level: 'AAA' as const,
-        screenReader: true,
-        keyboardNavigation: true,
-        highContrast: false,
-        reducedMotion: false,
-        focusManagement: true,
-        ariaLabels: true
-      },
-      responsive: {
-        breakpoints: ['mobile', 'tablet', 'desktop'],
-        mobileFirst: true,
-        fluidTypography: true,
-        adaptiveLayout: true,
-        touchOptimized: true
-      }
-    };
+	/**
+	 * Validate if component is available for platform
+	 */
+	isComponentAvailable(
+		component: string,
+		platform: SupportedPlatform,
+	): boolean {
+		const platformConfig = this.platformConfigs[platform];
+		return (
+			platformConfig?.availableComponents.includes(component as any) || false
+		);
+	}
 
-    // Generate the component
-    const result = await this.generateMultiPlatformComponent(config);
-    
-    return {
-      files: result.files
-    };
-  }
+	/**
+	 * Generate component from JSON specification
+	 */
+	public async generateFromSpecification(
+		spec: any,
+		options: {
+			platform?: SupportedPlatform;
+			variant?: string;
+			customProps?: Record<string, any>;
+			includeTests?: boolean;
+			includeStories?: boolean;
+			includeDocs?: boolean;
+		},
+	): Promise<{ files: GeneratedFile[] }> {
+		const platform = options.platform || "react";
+		const config: ComponentConfig = {
+			name: spec.metadata.name,
+			category: spec.metadata.category || "components",
+			platform: platform,
+			variant: options.variant || "default",
+			size: "md",
+			theme: "enterprise",
+			locale: "nb-NO",
+			features: {
+				icons: false,
+				animated: false,
+				interactive: true,
+				loading: false,
+				error: false,
+				validation: false,
+			},
+			styling: {
+				variant:
+					(options.variant as
+						| "default"
+						| "outline"
+						| "ghost"
+						| "destructive"
+						| "secondary") || "default",
+				colorScheme: "auto",
+				borderRadius: "md",
+				shadow: "sm",
+				spacing: "comfortable",
+			},
+			accessibility: {
+				level: "AAA" as const,
+				screenReader: true,
+				keyboardNavigation: true,
+				highContrast: false,
+				reducedMotion: false,
+				focusManagement: true,
+				ariaLabels: true,
+			},
+			responsive: {
+				breakpoints: ["mobile", "tablet", "desktop"],
+				mobileFirst: true,
+				fluidTypography: true,
+				adaptiveLayout: true,
+				touchOptimized: true,
+			},
+		};
+
+		// Generate the component
+		const result = await this.generateMultiPlatformComponent(config);
+
+		return {
+			files: result.files,
+		};
+	}
 }

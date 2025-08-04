@@ -1,39 +1,38 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+import { TestButton } from "./TestButton.js";
 
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { TestButton } from './TestButton.js';
+describe("TestButton", () => {
+	it("renders without crashing", () => {
+		render(<TestButton />);
+		expect(screen.getByRole("button")).toBeInTheDocument();
+	});
 
-describe('TestButton', () => {
-  it('renders without crashing', () => {
-    render(<TestButton />);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
+	it("handles user interactions", () => {
+		const handleClick = jest.fn();
+		render(<TestButton onClick={handleClick} />);
 
-  it('handles user interactions', () => {
-    const handleClick = jest.fn();
-    render(<TestButton onClick={handleClick} />);
-    
-    const element = screen.getByRole('button');
-    fireEvent.click(element);
-    
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
+		const element = screen.getByRole("button");
+		fireEvent.click(element);
 
-  it('applies correct accessibility attributes', () => {
-    render(<TestButton />);
-    const element = screen.getByRole('button');
-    
-    expect(element).toHaveAttribute('aria-label');
-    expect(element).toBeVisible();
-  });
+		expect(handleClick).toHaveBeenCalledTimes(1);
+	});
 
-  it('supports keyboard navigation', () => {
-    render(<TestButton />);
-    const element = screen.getByRole('button');
-    
-    fireEvent.keyDown(element, { key: 'Enter' });
-    fireEvent.keyDown(element, { key: ' ' });
-    
-    expect(element).toHaveFocus();
-  });
+	it("applies correct accessibility attributes", () => {
+		render(<TestButton />);
+		const element = screen.getByRole("button");
+
+		expect(element).toHaveAttribute("aria-label");
+		expect(element).toBeVisible();
+	});
+
+	it("supports keyboard navigation", () => {
+		render(<TestButton />);
+		const element = screen.getByRole("button");
+
+		fireEvent.keyDown(element, { key: "Enter" });
+		fireEvent.keyDown(element, { key: " " });
+
+		expect(element).toHaveFocus();
+	});
 });

@@ -1,8 +1,8 @@
-import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from "boxen";
+import chalk from "chalk";
 
 export async function displayBanner(): Promise<void> {
-  const banner = chalk.bold.cyan(`
+	const banner = chalk.bold.cyan(`
   ██╗  ██╗ █████╗ ██╗      █████╗ 
   ╚██╗██╔╝██╔══██╗██║     ██╔══██╗
    ╚███╔╝ ███████║██║     ███████║
@@ -10,19 +10,23 @@ export async function displayBanner(): Promise<void> {
   ██╔╝ ██╗██║  ██║███████╗██║  ██║
   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
   
-  ${chalk.white('Universal Design System CLI')}
-  ${chalk.gray('Enterprise-grade, AI-powered, multi-platform')}
+  ${chalk.white("Universal Design System CLI")}
+  ${chalk.gray("Enterprise-grade, AI-powered, multi-platform")}
   `);
 
-  const boxedBanner = boxen(banner, {
-    padding: 1,
-    margin: 1,
-    borderStyle: 'round',
-    borderColor: 'cyan',
-    backgroundColor: 'black'
-  });
+	const boxedBanner = boxen(banner, {
+		padding: 1,
+		margin: 1,
+		borderStyle: "round",
+		borderColor: "cyan",
+		backgroundColor: "black",
+	});
 
-  console.log(boxedBanner);
-  
-  console.log(chalk.dim('Build beautiful, accessible, compliant applications across all platforms\n'));
+	console.log(boxedBanner);
+
+	console.log(
+		chalk.dim(
+			"Build beautiful, accessible, compliant applications across all platforms\n",
+		),
+	);
 }

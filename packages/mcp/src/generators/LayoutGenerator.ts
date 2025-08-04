@@ -2,33 +2,32 @@
  * Layout Generator for Xala UI System
  */
 
-import type { LayoutConfig } from '../types/index.js';
+import type { LayoutConfig } from "../types/index.js";
 
 export class LayoutGenerator {
-  
-  generateLayout(config: LayoutConfig): string {
-    switch (config.layoutType) {
-      case 'admin':
-        return this.generateAdminLayout(config);
-      case 'web':
-        return this.generateWebLayout(config);
-      case 'desktop':
-        return this.generateDesktopLayout(config);
-      case 'mobile':
-        return this.generateMobileLayout(config);
-      case 'tablet':
-        return this.generateTabletLayout(config);
-      case 'base':
-        return this.generateBaseLayout(config);
-      default:
-        throw new Error(`Unknown layout type: ${config.layoutType}`);
-    }
-  }
+	generateLayout(config: LayoutConfig): string {
+		switch (config.layoutType) {
+			case "admin":
+				return this.generateAdminLayout(config);
+			case "web":
+				return this.generateWebLayout(config);
+			case "desktop":
+				return this.generateDesktopLayout(config);
+			case "mobile":
+				return this.generateMobileLayout(config);
+			case "tablet":
+				return this.generateTabletLayout(config);
+			case "base":
+				return this.generateBaseLayout(config);
+			default:
+				throw new Error(`Unknown layout type: ${config.layoutType}`);
+		}
+	}
 
-  private generateAdminLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateAdminLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   AdminLayout,
   AdminSidebar,
@@ -111,12 +110,12 @@ export function ${componentName}({
     </AdminLayout>
   );
 }`;
-  }
+	}
 
-  private generateWebLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateWebLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   WebLayout,
   WebNavbar,
@@ -197,12 +196,12 @@ export function ${componentName}({
     </WebLayout>
   );
 }`;
-  }
+	}
 
-  private generateDesktopLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateDesktopLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   DesktopLayout,
   DesktopHeader,
@@ -275,12 +274,12 @@ export function ${componentName}({
     </DesktopLayout>
   );
 }`;
-  }
+	}
 
-  private generateMobileLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateMobileLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   MobileLayout,
   MobileHeader,
@@ -367,12 +366,12 @@ export function ${componentName}({
     </MobileLayout>
   );
 }`;
-  }
+	}
 
-  private generateTabletLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateTabletLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   TabletLayout,
   TabletHeader,
@@ -434,12 +433,12 @@ export function ${componentName}({
     </TabletLayout>
   );
 }`;
-  }
+	}
 
-  private generateBaseLayout(config: LayoutConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// components/layouts/${componentName}.tsx
+	private generateBaseLayout(config: LayoutConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// components/layouts/${componentName}.tsx
 import {
   BaseLayout,
   Header,
@@ -523,33 +522,33 @@ export function ${componentName}({
     </BaseLayout>
   );
 }`;
-  }
+	}
 
-  private toPascalCase(str: string): string {
-    return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-        return index === 0 ? word.toLowerCase() : word.toUpperCase();
-      })
-      .replace(/\s+/g, '')
-      .replace(/^./, str => str.toUpperCase());
-  }
+	private toPascalCase(str: string): string {
+		return str
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+				return index === 0 ? word.toLowerCase() : word.toUpperCase();
+			})
+			.replace(/\s+/g, "")
+			.replace(/^./, (str) => str.toUpperCase());
+	}
 
-  /**
-   * Generate layout using Container, Grid, and Stack specifications (async version for MCP tools)
-   */
-  public async generateAdvancedLayout(config: {
-    name: string;
-    structure: {
-      container?: any;
-      grid?: any;
-      stacks?: any[];
-    };
-    responsive: boolean;
-    semanticHTML: boolean;
-  }): Promise<string> {
-    const { name, structure, responsive, semanticHTML } = config;
-    
-    const layoutCode = `
+	/**
+	 * Generate layout using Container, Grid, and Stack specifications (async version for MCP tools)
+	 */
+	public async generateAdvancedLayout(config: {
+		name: string;
+		structure: {
+			container?: any;
+			grid?: any;
+			stacks?: any[];
+		};
+		responsive: boolean;
+		semanticHTML: boolean;
+	}): Promise<string> {
+		const { name, structure, responsive, semanticHTML } = config;
+
+		const layoutCode = `
 /**
  * Generated Layout: ${name}
  * Responsive: ${responsive}
@@ -570,30 +569,39 @@ export const ${name}: React.FC<${name}Props> = ({
   className
 }) => {
   return (
-    <${semanticHTML ? 'main' : 'div'} className={className}>
+    <${semanticHTML ? "main" : "div"} className={className}>
       <Container 
-        ${structure.container ? `size="${structure.container.size || 'full'}"` : 'size="full"'}
-        ${structure.container ? `padding="${structure.container.padding || 'lg'}"` : 'padding="lg"'}
+        ${structure.container ? `size="${structure.container.size || "full"}"` : 'size="full"'}
+        ${structure.container ? `padding="${structure.container.padding || "lg"}"` : 'padding="lg"'}
       >
-        ${structure.grid ? `
+        ${
+					structure.grid
+						? `
         <Grid
           columns={${structure.grid.columns || 12}}
-          gap="${structure.grid.gap || 'md'}"
-          ${responsive ? 'responsive' : ''}
+          gap="${structure.grid.gap || "md"}"
+          ${responsive ? "responsive" : ""}
         >
-          ${structure.stacks?.map((stack, index) => `
+          ${
+						structure.stacks
+							?.map(
+								(stack, index) => `
           <Stack
-            direction="${stack.direction || 'vertical'}"
-            gap="${stack.gap || 'md'}"
-            align="${stack.align || 'start'}"
-            justify="${stack.justify || 'start'}"
+            direction="${stack.direction || "vertical"}"
+            gap="${stack.gap || "md"}"
+            align="${stack.align || "start"}"
+            justify="${stack.justify || "start"}"
             className="grid-item"
           >
             {/* Stack ${index + 1} content */}
           </Stack>
-          `).join('') || ''}
+          `,
+							)
+							.join("") || ""
+					}
         </Grid>
-        ` : `
+        `
+						: `
         <Stack
           direction="vertical"
           gap="lg"
@@ -601,15 +609,16 @@ export const ${name}: React.FC<${name}Props> = ({
         >
           {children}
         </Stack>
-        `}
+        `
+				}
       </Container>
-    </${semanticHTML ? 'main' : 'div'}>
+    </${semanticHTML ? "main" : "div"}>
   );
 };
 
 ${name}.displayName = '${name}';
 `;
 
-    return layoutCode;
-  }
+		return layoutCode;
+	}
 }

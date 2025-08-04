@@ -5,24 +5,24 @@
  */
 
 export interface TestCardProps {
-  readonly className?: string;
-  readonly children?: React.ReactNode;
-  readonly variant?: 'default';
-  readonly size?: 'md';
-  readonly disabled?: boolean;
-  readonly loading?: boolean;
-  readonly 'data-testid'?: string;
+	readonly className?: string;
+	readonly children?: React.ReactNode;
+	readonly variant?: "default";
+	readonly size?: "md";
+	readonly disabled?: boolean;
+	readonly loading?: boolean;
+	readonly "data-testid"?: string;
 }
 
 export interface TestCardConfig {
-  readonly theme: 'enterprise';
-  readonly locale: 'en';
-  readonly accessibility: {
-    readonly level: 'AAA';
-    readonly screenReader: true;
-    readonly keyboardNavigation: true;
-  };
+	readonly theme: "enterprise";
+	readonly locale: "en";
+	readonly accessibility: {
+		readonly level: "AAA";
+		readonly screenReader: true;
+		readonly keyboardNavigation: true;
+	};
 }
 
-export type TestCardVariant = 'default';
-export type TestCardSize = 'md';
+export type TestCardVariant = "default";
+export type TestCardSize = "md";

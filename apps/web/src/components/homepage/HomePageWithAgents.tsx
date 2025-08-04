@@ -33,10 +33,10 @@ import {
 } from "@xala-technologies/ui-system";
 import React, { useEffect, useState } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
+import { AgentDashboard } from "../agent-dashboard/AgentDashboard";
 import { CommandDisplay } from "./CommandDisplay";
 import { ProjectIdeaSection } from "./ProjectIdeaSection";
 import { QuickStartTemplates } from "./QuickStartTemplates";
-import { AgentDashboard } from "../agent-dashboard/AgentDashboard";
 
 interface PresetStack {
 	projectName: string;
@@ -75,7 +75,9 @@ export function HomePageWithAgents(): React.JSX.Element {
 	const [copiedCommand, setCopiedCommand] = useState<boolean>(false);
 	const [quickPresets, setQuickPresets] = useState<Preset[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
-	const [activeMode, setActiveMode] = useState<'traditional' | 'agents'>('traditional');
+	const [activeMode, setActiveMode] = useState<"traditional" | "agents">(
+		"traditional",
+	);
 
 	useEffect(() => {
 		const loadPresets = async (): Promise<void> => {
@@ -141,10 +143,10 @@ export function HomePageWithAgents(): React.JSX.Element {
 
 	const handleGenerate = (): void => {
 		// Switch to agent mode when AI generation is requested
-		setActiveMode('agents');
+		setActiveMode("agents");
 	};
 
-	const handleModeSwitch = (mode: 'traditional' | 'agents'): void => {
+	const handleModeSwitch = (mode: "traditional" | "agents"): void => {
 		setActiveMode(mode);
 	};
 
@@ -199,21 +201,21 @@ export function HomePageWithAgents(): React.JSX.Element {
 						{/* Mode Switcher */}
 						<Stack direction="horizontal" gap="sm" align="center">
 							<button
-								onClick={() => handleModeSwitch('traditional')}
+								onClick={() => handleModeSwitch("traditional")}
 								className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-									activeMode === 'traditional'
-										? 'bg-primary text-primary-foreground'
-										: 'bg-muted text-muted-foreground hover:bg-muted/80'
+									activeMode === "traditional"
+										? "bg-primary text-primary-foreground"
+										: "bg-muted text-muted-foreground hover:bg-muted/80"
 								}`}
 							>
 								Traditional Builder
 							</button>
 							<button
-								onClick={() => handleModeSwitch('agents')}
+								onClick={() => handleModeSwitch("agents")}
 								className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-									activeMode === 'agents'
-										? 'bg-primary text-primary-foreground'
-										: 'bg-muted text-muted-foreground hover:bg-muted/80'
+									activeMode === "agents"
+										? "bg-primary text-primary-foreground"
+										: "bg-muted text-muted-foreground hover:bg-muted/80"
 								}`}
 							>
 								🤖 AI Agents
@@ -221,16 +223,15 @@ export function HomePageWithAgents(): React.JSX.Element {
 						</Stack>
 
 						<Typography variant="body" color="muted" align="center">
-							{activeMode === 'traditional' 
+							{activeMode === "traditional"
 								? "Configure your stack manually or choose from pre-built templates"
-								: "Let AI agents understand your requirements and build your application intelligently"
-							}
+								: "Let AI agents understand your requirements and build your application intelligently"}
 						</Typography>
 					</Stack>
 				</Card>
 
 				{/* Conditional Content Based on Mode */}
-				{activeMode === 'traditional' ? (
+				{activeMode === "traditional" ? (
 					<>
 						{/* Traditional Stack Builder */}
 						<Grid columns={12} gap="xl">
@@ -254,7 +255,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 									<Stack direction="vertical" gap="lg">
 										<Stack direction="vertical" gap="sm">
 											<Typography variant="h3">
-												{t("homepage.templates_title") || "Quick Start Templates"}
+												{t("homepage.templates_title") ||
+													"Quick Start Templates"}
 											</Typography>
 											<Typography variant="body" color="muted">
 												{t("homepage.templates_description") ||
@@ -268,9 +270,21 @@ export function HomePageWithAgents(): React.JSX.Element {
 													<GridItem key={index}>
 														<Card variant="outlined" padding="md">
 															<Stack direction="vertical" gap="sm">
-																<Skeleton width="100%" height={20} variant="text" />
-																<Skeleton width="80%" height={16} variant="text" />
-																<Skeleton width="60%" height={14} variant="text" />
+																<Skeleton
+																	width="100%"
+																	height={20}
+																	variant="text"
+																/>
+																<Skeleton
+																	width="80%"
+																	height={16}
+																	variant="text"
+																/>
+																<Skeleton
+																	width="60%"
+																	height={14}
+																	variant="text"
+																/>
 															</Stack>
 														</Card>
 													</GridItem>
@@ -292,7 +306,7 @@ export function HomePageWithAgents(): React.JSX.Element {
 				) : (
 					<>
 						{/* AI Agent Dashboard */}
-						<AgentDashboard 
+						<AgentDashboard
 							projectPath="/current/project"
 							initialCommand={projectIdea}
 						/>
@@ -307,7 +321,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 								Full-Stack Development Ecosystem
 							</Typography>
 							<Typography variant="body" color="muted" align="center">
-								Comprehensive development platform with AI agents, CLI tools, and enterprise compliance
+								Comprehensive development platform with AI agents, CLI tools,
+								and enterprise compliance
 							</Typography>
 						</Stack>
 
@@ -320,7 +335,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 											AI Agents
 										</Typography>
 										<Typography variant="body" color="muted" align="center">
-											Natural language to production code with intelligent agent orchestration
+											Natural language to production code with intelligent agent
+											orchestration
 										</Typography>
 									</Stack>
 								</Card>
@@ -334,7 +350,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 											Unified CLI
 										</Typography>
 										<Typography variant="body" color="muted" align="center">
-											Merged Xaheen + Xala CLI with context-aware command routing
+											Merged Xaheen + Xala CLI with context-aware command
+											routing
 										</Typography>
 									</Stack>
 								</Card>
@@ -348,7 +365,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 											MCP Integration
 										</Typography>
 										<Typography variant="body" color="muted" align="center">
-											Model Context Protocol for advanced AI-powered development workflows
+											Model Context Protocol for advanced AI-powered development
+											workflows
 										</Typography>
 									</Stack>
 								</Card>
@@ -362,7 +380,8 @@ export function HomePageWithAgents(): React.JSX.Element {
 											Norwegian Compliance
 										</Typography>
 										<Typography variant="body" color="muted" align="center">
-											Built-in GDPR, NSM, and WCAG AAA compliance for enterprise applications
+											Built-in GDPR, NSM, and WCAG AAA compliance for enterprise
+											applications
 										</Typography>
 									</Stack>
 								</Card>
@@ -372,7 +391,7 @@ export function HomePageWithAgents(): React.JSX.Element {
 				</Card>
 
 				{/* Agent Capabilities */}
-				{activeMode === 'agents' && (
+				{activeMode === "agents" && (
 					<Card variant="outlined" padding="lg">
 						<Stack direction="vertical" gap="lg">
 							<Typography variant="h3" align="center">
@@ -390,10 +409,10 @@ export function HomePageWithAgents(): React.JSX.Element {
 												</Typography>
 											</Stack>
 											<Typography variant="body" color="muted">
-												• Architecture planning and optimization<br/>
-												• Technology stack recommendations<br/>
-												• Enterprise integration patterns<br/>
-												• Performance and scalability analysis
+												• Architecture planning and optimization
+												<br />• Technology stack recommendations
+												<br />• Enterprise integration patterns
+												<br />• Performance and scalability analysis
 											</Typography>
 										</Stack>
 									</Card>
@@ -404,15 +423,13 @@ export function HomePageWithAgents(): React.JSX.Element {
 										<Stack direction="vertical" gap="sm">
 											<Stack direction="horizontal" gap="sm" align="center">
 												<div className="text-2xl">⚙️</div>
-												<Typography variant="h4">
-													Code Generation
-												</Typography>
+												<Typography variant="h4">Code Generation</Typography>
 											</Stack>
 											<Typography variant="body" color="muted">
-												• End-to-end feature generation<br/>
-												• Multi-platform component creation<br/>
-												• API endpoint with validation<br/>
-												• Test suite generation
+												• End-to-end feature generation
+												<br />• Multi-platform component creation
+												<br />• API endpoint with validation
+												<br />• Test suite generation
 											</Typography>
 										</Stack>
 									</Card>
@@ -428,10 +445,10 @@ export function HomePageWithAgents(): React.JSX.Element {
 												</Typography>
 											</Stack>
 											<Typography variant="body" color="muted">
-												• Legacy system transformation<br/>
-												• Xala UI System migration<br/>
-												• CI/CD pipeline generation<br/>
-												• Production deployment automation
+												• Legacy system transformation
+												<br />• Xala UI System migration
+												<br />• CI/CD pipeline generation
+												<br />• Production deployment automation
 											</Typography>
 										</Stack>
 									</Card>

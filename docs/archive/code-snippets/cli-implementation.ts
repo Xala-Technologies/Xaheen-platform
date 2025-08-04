@@ -1,406 +1,495 @@
-// cli/src/index.ts
 #!/usr/bin/env node
+// cli/src/index.ts
 
-import { prompts } from '@clack/prompts';
-import { Command } from 'commander';
-import { version } from '../../package.json';
-import { add } from './commands/add';
-import { configure } from './commands/configure';
-import { create } from './commands/create';
-import { logger } from './utils/logger';
+import { prompts } from "@clack/prompts";
+import { Command } from "commander";
+import { version } from "../../package.json";
+import { add } from "./commands/add";
+import { configure } from "./commands/configure";
+import { create } from "./commands/create";
+import { logger } from "./utils/logger";
 
 const program = new Command();
 
 program
-  .name('create-custom-stack')
-  .description('CLI to scaffold custom TypeScript projects with company standards')
-  .version(version);
+	.name("create-custom-stack")
+	.description(
+		"CLI to scaffold custom TypeScript projects with company standards",
+	)
+	.version(version);
 
 // Main create command
 program
-  .command('create [project-name]')
-  .description('Create a new project')
-  .option('-t, --template <template>', 'Use a specific template')
-  .option('-y, --yes', 'Skip prompts and use defaults')
-  .option('--no-install', 'Skip dependency installation')
-  .option('--no-git', 'Skip git initialization')
-  .action(create);
+	.command("create [project-name]")
+	.description("Create a new project")
+	.option("-t, --template <template>", "Use a specific template")
+	.option("-y, --yes", "Skip prompts and use defaults")
+	.option("--no-install", "Skip dependency installation")
+	.option("--no-git", "Skip git initialization")
+	.action(create);
 
 // Add components/features
 program
-  .command('add <type>')
-  .description('Add components or features to existing project')
-  .option('-n, --name <name>', 'Component/feature name')
-  .option('-p, --path <path>', 'Custom path')
-  .action(add);
+	.command("add <type>")
+	.description("Add components or features to existing project")
+	.option("-n, --name <name>", "Component/feature name")
+	.option("-p, --path <path>", "Custom path")
+	.action(add);
 
 // Configure project settings
 program
-  .command('configure')
-  .description('Configure project settings')
-  .option('--theme', 'Configure theme')
-  .option('--eslint', 'Update ESLint rules')
-  .option('--prettier', 'Update Prettier config')
-  .action(configure);
+	.command("configure")
+	.description("Configure project settings")
+	.option("--theme", "Configure theme")
+	.option("--eslint", "Update ESLint rules")
+	.option("--prettier", "Update Prettier config")
+	.action(configure);
 
 program.parse();
 
 // cli/src/commands/create.ts
-import { cancel, confirm, intro, isCancel, multiselect, outro, prompts, select, spinner, text } from '@clack/prompts';
-import chalk from 'chalk';
-import fs from 'fs-extra';
-import path from 'path';
-import { generateProject } from '../generators/project';
-import { initGit } from '../utils/git';
-import { detectPackageManager, validateProjectName } from '../utils/helpers';
-import { installDependencies } from '../utils/install';
+import {
+	cancel,
+	confirm,
+	intro,
+	isCancel,
+	multiselect,
+	outro,
+	prompts,
+	select,
+	spinner,
+	text,
+} from "@clack/prompts";
+import chalk from "chalk";
+import fs from "fs-extra";
+import path from "path";
+import { generateProject } from "../generators/project";
+import { initGit } from "../utils/git";
+import { detectPackageManager, validateProjectName } from "../utils/helpers";
+import { installDependencies } from "../utils/install";
 
 interface CreateOptions {
-  template?: string;
-  yes?: boolean;
-  install?: boolean;
-  git?: boolean;
+	template?: string;
+	yes?: boolean;
+	install?: boolean;
+	git?: boolean;
 }
 
 interface ProjectConfig {
-  name: string;
-  template: string;
-  frontend: string;
-  backend: string;
-  database: string;
-  auth: string;
-  styling: string;
-  testing: string;
-  components: string[];
-  features: string[];
+	name: string;
+	template: string;
+	frontend: string;
+	backend: string;
+	database: string;
+	auth: string;
+	styling: string;
+	testing: string;
+	components: string[];
+	features: string[];
 }
 
-export async function create(projectName: string | undefined, options: CreateOptions) {
-  console.clear();
-  
-  intro(chalk.gradient.pastel.multiline(`
+export async function create(
+	projectName: string | undefined,
+	options: CreateOptions,
+) {
+	console.clear();
+
+	intro(
+		chalk.gradient.pastel.multiline(`
     ╔═══════════════════════════════════╗
     ║   Create Custom Stack             ║
     ║   Enterprise TypeScript Setup     ║
     ╚═══════════════════════════════════╝
-  `));
+  `),
+	);
 
-  const config: Partial<ProjectConfig> = {};
+	const config: Partial<ProjectConfig> = {};
 
-  // Project name
-  if (!projectName) {
-    const name = await text({
-      message: 'What is your project name?',
-      placeholder: 'my-awesome-app',
-      validate: (value) => {
-        if (!value) return 'Project name is required';
-        const validation = validateProjectName(value);
-        if (!validation.valid) return validation.message;
-      }
-    });
+	// Project name
+	if (!projectName) {
+		const name = await text({
+			message: "What is your project name?",
+			placeholder: "my-awesome-app",
+			validate: (value) => {
+				if (!value) return "Project name is required";
+				const validation = validateProjectName(value);
+				if (!validation.valid) return validation.message;
+			},
+		});
 
-    if (isCancel(name)) {
-      cancel('Operation cancelled');
-      process.exit(0);
-    }
+		if (isCancel(name)) {
+			cancel("Operation cancelled");
+			process.exit(0);
+		}
 
-    config.name = name as string;
-  } else {
-    const validation = validateProjectName(projectName);
-    if (!validation.valid) {
-      console.error(chalk.red(validation.message));
-      process.exit(1);
-    }
-    config.name = projectName;
-  }
+		config.name = name as string;
+	} else {
+		const validation = validateProjectName(projectName);
+		if (!validation.valid) {
+			console.error(chalk.red(validation.message));
+			process.exit(1);
+		}
+		config.name = projectName;
+	}
 
-  // Use defaults for --yes flag
-  if (options.yes) {
-    Object.assign(config, {
-      template: 'full-stack',
-      frontend: 'react-vite',
-      backend: 'hono',
-      database: 'postgresql',
-      auth: 'lucia',
-      styling: 'custom-design-system',
-      testing: 'vitest',
-      components: ['button', 'form', 'modal', 'table'],
-      features: ['auth', 'dashboard', 'api']
-    });
-  } else {
-    // Interactive prompts
-    const template = await select({
-      message: 'Which template would you like to use?',
-      options: [
-        { value: 'full-stack', label: 'Full Stack Application', hint: 'Frontend + Backend + Database' },
-        { value: 'frontend', label: 'Frontend Only', hint: 'SPA with React/Vue/Solid' },
-        { value: 'backend', label: 'Backend API', hint: 'REST/GraphQL/tRPC API' },
-        { value: 'monorepo', label: 'Monorepo', hint: 'Multiple apps and packages' },
-        { value: 'library', label: 'Component Library', hint: 'Reusable UI components' },
-        { value: 'custom', label: 'Custom', hint: 'Configure everything' }
-      ]
-    });
+	// Use defaults for --yes flag
+	if (options.yes) {
+		Object.assign(config, {
+			template: "full-stack",
+			frontend: "react-vite",
+			backend: "hono",
+			database: "postgresql",
+			auth: "lucia",
+			styling: "custom-design-system",
+			testing: "vitest",
+			components: ["button", "form", "modal", "table"],
+			features: ["auth", "dashboard", "api"],
+		});
+	} else {
+		// Interactive prompts
+		const template = await select({
+			message: "Which template would you like to use?",
+			options: [
+				{
+					value: "full-stack",
+					label: "Full Stack Application",
+					hint: "Frontend + Backend + Database",
+				},
+				{
+					value: "frontend",
+					label: "Frontend Only",
+					hint: "SPA with React/Vue/Solid",
+				},
+				{
+					value: "backend",
+					label: "Backend API",
+					hint: "REST/GraphQL/tRPC API",
+				},
+				{
+					value: "monorepo",
+					label: "Monorepo",
+					hint: "Multiple apps and packages",
+				},
+				{
+					value: "library",
+					label: "Component Library",
+					hint: "Reusable UI components",
+				},
+				{ value: "custom", label: "Custom", hint: "Configure everything" },
+			],
+		});
 
-    if (isCancel(template)) {
-      cancel('Operation cancelled');
-      process.exit(0);
-    }
+		if (isCancel(template)) {
+			cancel("Operation cancelled");
+			process.exit(0);
+		}
 
-    config.template = template as string;
+		config.template = template as string;
 
-    // Frontend selection
-    if (['full-stack', 'frontend', 'monorepo', 'custom'].includes(config.template)) {
-      const frontend = await select({
-        message: 'Select frontend framework:',
-        options: [
-          { value: 'react-vite', label: 'React + Vite', hint: 'Fast, modern React setup' },
-          { value: 'react-next', label: 'Next.js', hint: 'Full-stack React framework' },
-          { value: 'vue', label: 'Vue 3', hint: 'Progressive framework' },
-          { value: 'solid', label: 'SolidJS', hint: 'Fine-grained reactivity' },
-          { value: 'astro', label: 'Astro', hint: 'Content-focused framework' }
-        ]
-      });
+		// Frontend selection
+		if (
+			["full-stack", "frontend", "monorepo", "custom"].includes(config.template)
+		) {
+			const frontend = await select({
+				message: "Select frontend framework:",
+				options: [
+					{
+						value: "react-vite",
+						label: "React + Vite",
+						hint: "Fast, modern React setup",
+					},
+					{
+						value: "react-next",
+						label: "Next.js",
+						hint: "Full-stack React framework",
+					},
+					{ value: "vue", label: "Vue 3", hint: "Progressive framework" },
+					{ value: "solid", label: "SolidJS", hint: "Fine-grained reactivity" },
+					{ value: "astro", label: "Astro", hint: "Content-focused framework" },
+				],
+			});
 
-      if (isCancel(frontend)) {
-        cancel('Operation cancelled');
-        process.exit(0);
-      }
+			if (isCancel(frontend)) {
+				cancel("Operation cancelled");
+				process.exit(0);
+			}
 
-      config.frontend = frontend as string;
-    }
+			config.frontend = frontend as string;
+		}
 
-    // Backend selection
-    if (['full-stack', 'backend', 'monorepo', 'custom'].includes(config.template)) {
-      const backend = await select({
-        message: 'Select backend framework:',
-        options: [
-          { value: 'hono', label: 'Hono', hint: 'Ultrafast web framework' },
-          { value: 'elysia', label: 'Elysia', hint: 'Bun-first web framework' },
-          { value: 'express', label: 'Express', hint: 'Classic Node.js framework' },
-          { value: 'fastify', label: 'Fastify', hint: 'Fast and low overhead' },
-          { value: 'nestjs', label: 'NestJS', hint: 'Enterprise-grade framework' }
-        ]
-      });
+		// Backend selection
+		if (
+			["full-stack", "backend", "monorepo", "custom"].includes(config.template)
+		) {
+			const backend = await select({
+				message: "Select backend framework:",
+				options: [
+					{ value: "hono", label: "Hono", hint: "Ultrafast web framework" },
+					{ value: "elysia", label: "Elysia", hint: "Bun-first web framework" },
+					{
+						value: "express",
+						label: "Express",
+						hint: "Classic Node.js framework",
+					},
+					{ value: "fastify", label: "Fastify", hint: "Fast and low overhead" },
+					{
+						value: "nestjs",
+						label: "NestJS",
+						hint: "Enterprise-grade framework",
+					},
+				],
+			});
 
-      if (isCancel(backend)) {
-        cancel('Operation cancelled');
-        process.exit(0);
-      }
+			if (isCancel(backend)) {
+				cancel("Operation cancelled");
+				process.exit(0);
+			}
 
-      config.backend = backend as string;
-    }
+			config.backend = backend as string;
+		}
 
-    // Styling system
-    const styling = await select({
-      message: 'Select styling approach:',
-      options: [
-        { value: 'custom-design-system', label: 'Custom Design System', hint: 'Your company design tokens' },
-        { value: 'tailwind', label: 'Tailwind CSS', hint: 'Utility-first CSS' },
-        { value: 'css-modules', label: 'CSS Modules', hint: 'Scoped CSS' },
-        { value: 'styled-components', label: 'Styled Components', hint: 'CSS-in-JS' },
-        { value: 'vanilla-extract', label: 'Vanilla Extract', hint: 'Zero-runtime CSS' }
-      ]
-    });
+		// Styling system
+		const styling = await select({
+			message: "Select styling approach:",
+			options: [
+				{
+					value: "custom-design-system",
+					label: "Custom Design System",
+					hint: "Your company design tokens",
+				},
+				{ value: "tailwind", label: "Tailwind CSS", hint: "Utility-first CSS" },
+				{ value: "css-modules", label: "CSS Modules", hint: "Scoped CSS" },
+				{
+					value: "styled-components",
+					label: "Styled Components",
+					hint: "CSS-in-JS",
+				},
+				{
+					value: "vanilla-extract",
+					label: "Vanilla Extract",
+					hint: "Zero-runtime CSS",
+				},
+			],
+		});
 
-    if (isCancel(styling)) {
-      cancel('Operation cancelled');
-      process.exit(0);
-    }
+		if (isCancel(styling)) {
+			cancel("Operation cancelled");
+			process.exit(0);
+		}
 
-    config.styling = styling as string;
+		config.styling = styling as string;
 
-    // Component selection
-    const components = await multiselect({
-      message: 'Select components to include:',
-      options: [
-        { value: 'button', label: 'Button', hint: 'Primary, secondary, etc.' },
-        { value: 'form', label: 'Form Components', hint: 'Input, select, checkbox' },
-        { value: 'modal', label: 'Modal/Dialog', hint: 'Popups and modals' },
-        { value: 'table', label: 'Data Table', hint: 'Sortable, filterable' },
-        { value: 'navigation', label: 'Navigation', hint: 'Navbar, sidebar' },
-        { value: 'card', label: 'Card', hint: 'Content containers' },
-        { value: 'toast', label: 'Toast/Notifications', hint: 'Alert messages' }
-      ],
-      required: false
-    });
+		// Component selection
+		const components = await multiselect({
+			message: "Select components to include:",
+			options: [
+				{ value: "button", label: "Button", hint: "Primary, secondary, etc." },
+				{
+					value: "form",
+					label: "Form Components",
+					hint: "Input, select, checkbox",
+				},
+				{ value: "modal", label: "Modal/Dialog", hint: "Popups and modals" },
+				{ value: "table", label: "Data Table", hint: "Sortable, filterable" },
+				{ value: "navigation", label: "Navigation", hint: "Navbar, sidebar" },
+				{ value: "card", label: "Card", hint: "Content containers" },
+				{
+					value: "toast",
+					label: "Toast/Notifications",
+					hint: "Alert messages",
+				},
+			],
+			required: false,
+		});
 
-    if (isCancel(components)) {
-      cancel('Operation cancelled');
-      process.exit(0);
-    }
+		if (isCancel(components)) {
+			cancel("Operation cancelled");
+			process.exit(0);
+		}
 
-    config.components = components as string[];
-  }
+		config.components = components as string[];
+	}
 
-  // Project generation
-  const s = spinner();
-  
-  s.start('Creating project structure...');
-  
-  const projectPath = path.join(process.cwd(), config.name!);
-  
-  try {
-    // Check if directory exists
-    if (fs.existsSync(projectPath)) {
-      s.stop();
-      const overwrite = await confirm({
-        message: `Directory ${config.name} already exists. Overwrite?`,
-        initialValue: false
-      });
+	// Project generation
+	const s = spinner();
 
-      if (isCancel(overwrite) || !overwrite) {
-        cancel('Operation cancelled');
-        process.exit(0);
-      }
+	s.start("Creating project structure...");
 
-      fs.removeSync(projectPath);
-    }
+	const projectPath = path.join(process.cwd(), config.name!);
 
-    // Generate project
-    await generateProject(projectPath, config as ProjectConfig);
-    s.stop('Project structure created');
+	try {
+		// Check if directory exists
+		if (fs.existsSync(projectPath)) {
+			s.stop();
+			const overwrite = await confirm({
+				message: `Directory ${config.name} already exists. Overwrite?`,
+				initialValue: false,
+			});
 
-    // Git initialization
-    if (options.git !== false) {
-      s.start('Initializing git repository...');
-      await initGit(projectPath);
-      s.stop('Git repository initialized');
-    }
+			if (isCancel(overwrite) || !overwrite) {
+				cancel("Operation cancelled");
+				process.exit(0);
+			}
 
-    // Install dependencies
-    if (options.install !== false) {
-      s.start('Installing dependencies...');
-      const packageManager = await detectPackageManager();
-      await installDependencies(projectPath, packageManager);
-      s.stop('Dependencies installed');
-    }
+			fs.removeSync(projectPath);
+		}
 
-    // Success message
-    outro(chalk.green(`
+		// Generate project
+		await generateProject(projectPath, config as ProjectConfig);
+		s.stop("Project structure created");
+
+		// Git initialization
+		if (options.git !== false) {
+			s.start("Initializing git repository...");
+			await initGit(projectPath);
+			s.stop("Git repository initialized");
+		}
+
+		// Install dependencies
+		if (options.install !== false) {
+			s.start("Installing dependencies...");
+			const packageManager = await detectPackageManager();
+			await installDependencies(projectPath, packageManager);
+			s.stop("Dependencies installed");
+		}
+
+		// Success message
+		outro(
+			chalk.green(`
 🎉 Project created successfully!
 
-${chalk.bold('Next steps:')}
+${chalk.bold("Next steps:")}
 ${chalk.cyan(`cd ${config.name}`)}
-${options.install === false ? chalk.cyan(`${await detectPackageManager()} install`) : ''}
+${options.install === false ? chalk.cyan(`${await detectPackageManager()} install`) : ""}
 ${chalk.cyan(`${await detectPackageManager()} run dev`)}
 
-${chalk.bold('Available commands:')}
-${chalk.gray('• npm run dev')}       - Start development server
-${chalk.gray('• npm run build')}     - Build for production
-${chalk.gray('• npm run test')}      - Run tests
-${chalk.gray('• npm run lint')}      - Lint code
+${chalk.bold("Available commands:")}
+${chalk.gray("• npm run dev")}       - Start development server
+${chalk.gray("• npm run build")}     - Build for production
+${chalk.gray("• npm run test")}      - Run tests
+${chalk.gray("• npm run lint")}      - Lint code
 
-${chalk.bold('Add more features:')}
+${chalk.bold("Add more features:")}
 ${chalk.gray(`• npx create-custom-stack add component`)}
 ${chalk.gray(`• npx create-custom-stack add feature`)}
 ${chalk.gray(`• npx create-custom-stack configure`)}
 
-${chalk.dim('Happy coding! 🚀')}
-    `));
-
-  } catch (error) {
-    s.stop('Failed to create project');
-    console.error(chalk.red('Error:'), error);
-    process.exit(1);
-  }
+${chalk.dim("Happy coding! 🚀")}
+    `),
+		);
+	} catch (error) {
+		s.stop("Failed to create project");
+		console.error(chalk.red("Error:"), error);
+		process.exit(1);
+	}
 }
 
 // cli/src/generators/project.ts
-import fs from 'fs-extra';
-import path from 'path';
-import { copyTemplate } from '../utils/template';
-import { generateESLintConfig } from './eslint';
-import { generateGitignore } from './gitignore';
-import { generatePackageJson } from './package-json';
-import { generatePrettierConfig } from './prettier';
-import { generateReadme } from './readme';
-import { generateTsConfig } from './tsconfig';
+import fs from "fs-extra";
+import path from "path";
+import { copyTemplate } from "../utils/template";
+import { generateESLintConfig } from "./eslint";
+import { generateGitignore } from "./gitignore";
+import { generatePackageJson } from "./package-json";
+import { generatePrettierConfig } from "./prettier";
+import { generateReadme } from "./readme";
+import { generateTsConfig } from "./tsconfig";
 
-export async function generateProject(projectPath: string, config: ProjectConfig) {
-  // Create project directory
-  await fs.ensureDir(projectPath);
+export async function generateProject(
+	projectPath: string,
+	config: ProjectConfig,
+) {
+	// Create project directory
+	await fs.ensureDir(projectPath);
 
-  // Generate base files
-  await fs.writeJson(
-    path.join(projectPath, 'package.json'),
-    generatePackageJson(config),
-    { spaces: 2 }
-  );
+	// Generate base files
+	await fs.writeJson(
+		path.join(projectPath, "package.json"),
+		generatePackageJson(config),
+		{ spaces: 2 },
+	);
 
-  await fs.writeJson(
-    path.join(projectPath, 'tsconfig.json'),
-    generateTsConfig(config),
-    { spaces: 2 }
-  );
+	await fs.writeJson(
+		path.join(projectPath, "tsconfig.json"),
+		generateTsConfig(config),
+		{ spaces: 2 },
+	);
 
-  await fs.writeFile(
-    path.join(projectPath, '.eslintrc.js'),
-    generateESLintConfig(config)
-  );
+	await fs.writeFile(
+		path.join(projectPath, ".eslintrc.js"),
+		generateESLintConfig(config),
+	);
 
-  await fs.writeJson(
-    path.join(projectPath, '.prettierrc'),
-    generatePrettierConfig(config),
-    { spaces: 2 }
-  );
+	await fs.writeJson(
+		path.join(projectPath, ".prettierrc"),
+		generatePrettierConfig(config),
+		{ spaces: 2 },
+	);
 
-  await fs.writeFile(
-    path.join(projectPath, 'README.md'),
-    generateReadme(config)
-  );
+	await fs.writeFile(
+		path.join(projectPath, "README.md"),
+		generateReadme(config),
+	);
 
-  await fs.writeFile(
-    path.join(projectPath, '.gitignore'),
-    generateGitignore(config)
-  );
+	await fs.writeFile(
+		path.join(projectPath, ".gitignore"),
+		generateGitignore(config),
+	);
 
-  // Copy template files
-  const templatePath = path.join(__dirname, '../../templates', config.template);
-  await copyTemplate(templatePath, projectPath, config);
+	// Copy template files
+	const templatePath = path.join(__dirname, "../../templates", config.template);
+	await copyTemplate(templatePath, projectPath, config);
 
-  // Generate components
-  if (config.components.length > 0) {
-    const componentsPath = path.join(projectPath, 'src/components');
-    await fs.ensureDir(componentsPath);
-    
-    for (const component of config.components) {
-      await generateComponent(componentsPath, component, config);
-    }
-  }
+	// Generate components
+	if (config.components.length > 0) {
+		const componentsPath = path.join(projectPath, "src/components");
+		await fs.ensureDir(componentsPath);
 
-  // Generate features
-  if (config.features && config.features.length > 0) {
-    const featuresPath = path.join(projectPath, 'src/features');
-    await fs.ensureDir(featuresPath);
-    
-    for (const feature of config.features) {
-      await generateFeature(featuresPath, feature, config);
-    }
-  }
+		for (const component of config.components) {
+			await generateComponent(componentsPath, component, config);
+		}
+	}
+
+	// Generate features
+	if (config.features && config.features.length > 0) {
+		const featuresPath = path.join(projectPath, "src/features");
+		await fs.ensureDir(featuresPath);
+
+		for (const feature of config.features) {
+			await generateFeature(featuresPath, feature, config);
+		}
+	}
 }
 
 // Component generator
-async function generateComponent(basePath: string, componentType: string, config: ProjectConfig) {
-  const componentGenerators: Record<string, () => Promise<void>> = {
-    button: () => generateButtonComponent(basePath, config),
-    form: () => generateFormComponents(basePath, config),
-    modal: () => generateModalComponent(basePath, config),
-    table: () => generateTableComponent(basePath, config),
-    // Add more component generators
-  };
+async function generateComponent(
+	basePath: string,
+	componentType: string,
+	config: ProjectConfig,
+) {
+	const componentGenerators: Record<string, () => Promise<void>> = {
+		button: () => generateButtonComponent(basePath, config),
+		form: () => generateFormComponents(basePath, config),
+		modal: () => generateModalComponent(basePath, config),
+		table: () => generateTableComponent(basePath, config),
+		// Add more component generators
+	};
 
-  const generator = componentGenerators[componentType];
-  if (generator) {
-    await generator();
-  }
+	const generator = componentGenerators[componentType];
+	if (generator) {
+		await generator();
+	}
 }
 
 // Example: Button component generator
-async function generateButtonComponent(basePath: string, config: ProjectConfig) {
-  const buttonPath = path.join(basePath, 'Button');
-  await fs.ensureDir(buttonPath);
+async function generateButtonComponent(
+	basePath: string,
+	config: ProjectConfig,
+) {
+	const buttonPath = path.join(basePath, "Button");
+	await fs.ensureDir(buttonPath);
 
-  const buttonContent = `import { forwardRef, type ButtonHTMLAttributes } from 'react';
+	const buttonContent = `import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/cn';
 
@@ -476,16 +565,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 `;
 
-  await fs.writeFile(path.join(buttonPath, 'Button.tsx'), buttonContent);
-  
-  // Create index file
-  await fs.writeFile(
-    path.join(buttonPath, 'index.ts'),
-    `export { Button, type ButtonProps } from './Button';\n`
-  );
+	await fs.writeFile(path.join(buttonPath, "Button.tsx"), buttonContent);
 
-  // Create test file
-  const testContent = `import { render, screen } from '@testing-library/react';
+	// Create index file
+	await fs.writeFile(
+		path.join(buttonPath, "index.ts"),
+		`export { Button, type ButtonProps } from './Button';\n`,
+	);
+
+	// Create test file
+	const testContent = `import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from './Button';
 
@@ -516,5 +605,5 @@ describe('Button', () => {
 });
 `;
 
-  await fs.writeFile(path.join(buttonPath, 'Button.test.tsx'), testContent);
+	await fs.writeFile(path.join(buttonPath, "Button.test.tsx"), testContent);
 }

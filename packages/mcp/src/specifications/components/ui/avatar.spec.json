@@ -1,791 +1,823 @@
 {
-  "metadata": {
-    "name": "Avatar",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "ui",
-    "subcategory": "user-display",
-    "description": "Comprehensive avatar component for displaying user photos, initials, or custom content with status indicators, multiple sizes, shapes, and Norwegian compliance. Supports fallback handling, accessibility features, and employee data protection.",
-    "keywords": ["avatar", "profile", "user", "image", "initials", "status", "accessible", "norwegian", "employee"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T15:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["img", "div", "button"],
-      "ariaRoles": ["img", "button"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.1.1 Non-text Content",
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "RESTRICTED",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": true,
-      "employeeDataProtection": true
-    }
-  },
-  "props": {
-    "schema": {
-      "src": {
-        "type": { "primitive": "string" },
-        "description": "Image source URL for the avatar photo",
-        "required": false,
-        "examples": [
-          {
-            "value": "https://example.com/user-photo.jpg",
-            "description": "External image URL",
-            "context": "User profile photo from external service"
-          },
-          {
-            "value": "/images/avatars/user-123.jpg",
-            "description": "Local image path",
-            "context": "Locally stored user photo"
-          }
-        ]
-      },
-      "alt": {
-        "type": { "primitive": "string" },
-        "description": "Alternative text for the avatar image (required for accessibility)",
-        "required": true,
-        "accessibility": {
-          "importance": "critical",
-          "reason": "Essential for screen readers and accessibility compliance"
-        },
-        "examples": [
-          {
-            "value": "Profile photo of John Doe",
-            "description": "Descriptive alt text for user photo",
-            "context": "When displaying user profile photo"
-          },
-          {
-            "value": "Avatar for administrator",
-            "description": "Generic alt text for role-based avatar",
-            "context": "When showing role or function avatar"
-          }
-        ]
-      },
-      "name": {
-        "type": { "primitive": "string" },
-        "description": "Full name used to generate initials fallback when image is not available",
-        "required": false,
-        "examples": [
-          {
-            "value": "John Doe",
-            "description": "Full name for initials generation",
-            "context": "Displays 'JD' when image fails to load"
-          },
-          {
-            "value": "Anna-Karin Lindström",
-            "description": "Norwegian name with special characters",
-            "context": "Displays 'AL' respecting Norwegian naming conventions"
-          }
-        ]
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["xs", "sm", "md", "lg", "xl"]
-        },
-        "description": "Size variant controlling avatar dimensions",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "xs",
-            "description": "Extra small avatar (24x24px)",
-            "context": "Inline mentions, small lists, activity feeds"
-          },
-          {
-            "value": "sm",
-            "description": "Small avatar (32x32px)",
-            "context": "Comments, notifications, compact layouts"
-          },
-          {
-            "value": "md",
-            "description": "Medium avatar (48x48px)",
-            "context": "Default size for most use cases"
-          },
-          {
-            "value": "lg",
-            "description": "Large avatar (64x64px)",
-            "context": "User profiles, cards, prominent displays"
-          },
-          {
-            "value": "xl",
-            "description": "Extra large avatar (96x96px)",
-            "context": "Profile pages, detailed user information"
-          }
-        ]
-      },
-      "shape": {
-        "type": {
-          "custom": "variant",
-          "values": ["circle", "square", "rounded"]
-        },
-        "description": "Shape variant controlling avatar appearance",
-        "required": false,
-        "defaultValue": "circle",
-        "examples": [
-          {
-            "value": "circle",
-            "description": "Circular avatar shape",
-            "context": "Standard user avatars, profiles"
-          },
-          {
-            "value": "square",
-            "description": "Square avatar shape",
-            "context": "Brand logos, system avatars"
-          },
-          {
-            "value": "rounded",
-            "description": "Rounded square avatar shape",
-            "context": "Modern UI, flexible design systems"
-          }
-        ]
-      },
-      "status": {
-        "type": {
-          "custom": "variant",
-          "values": ["online", "offline", "away", "busy"]
-        },
-        "description": "Status indicator showing user's availability",
-        "required": false,
-        "examples": [
-          {
-            "value": "online",
-            "description": "User is currently online and available",
-            "context": "Active user sessions, real-time communication"
-          },
-          {
-            "value": "offline",
-            "description": "User is offline or unavailable",
-            "context": "Inactive users, offline mode"
-          },
-          {
-            "value": "away",
-            "description": "User is away from their device",
-            "context": "Idle detection, temporary unavailability"
-          },
-          {
-            "value": "busy",
-            "description": "User is busy and should not be disturbed",
-            "context": "Do not disturb mode, focused work sessions"
-          }
-        ]
-      },
-      "statusPosition": {
-        "type": {
-          "custom": "variant",
-          "values": ["top-right", "bottom-right", "top-left", "bottom-left"]
-        },
-        "description": "Position of the status indicator relative to the avatar",
-        "required": false,
-        "defaultValue": "bottom-right",
-        "examples": [
-          {
-            "value": "bottom-right",
-            "description": "Status indicator in bottom right corner",
-            "context": "Standard positioning for most layouts"
-          },
-          {
-            "value": "top-right",
-            "description": "Status indicator in top right corner",
-            "context": "When bottom space is occupied by other elements"
-          }
-        ]
-      },
-      "fallback": {
-        "type": { "complex": "node" },
-        "description": "Custom fallback element displayed when image fails to load and no name is provided",
-        "required": false,
-        "examples": [
-          {
-            "value": "<UserIcon className=\"w-6 h-6\" />",
-            "description": "Icon fallback for generic user representation",
-            "context": "System users, anonymous users"
-          },
-          {
-            "value": "<div className=\"bg-gradient-to-br from-blue-400 to-purple-500\" />",
-            "description": "Custom gradient fallback",
-            "context": "Branded or decorative avatars"
-          }
-        ]
-      },
-      "onClick": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent",
-                "required": true,
-                "description": "Click event object"
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Click handler for interactive avatars",
-        "required": false,
-        "examples": [
-          {
-            "value": "(event) => navigate('/profile')",
-            "description": "Navigate to user profile on click",
-            "context": "Clickable user avatars in navigation"
-          },
-          {
-            "value": "(event) => openUserMenu(event)",
-            "description": "Open user menu on avatar click",
-            "context": "Avatar as menu trigger"
-          }
-        ]
-      },
-      "loading": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the avatar is in a loading state",
-        "required": false,
-        "defaultValue": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Show loading placeholder while image loads",
-            "context": "Async image loading, skeleton states"
-          }
-        ]
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the avatar container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": ["alt"],
-      "optional": [
-        "src", "name", "size", "shape", "status", "statusPosition", 
-        "fallback", "onClick", "loading", "className", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false,
-        "description": "Avatar does not support children"
-      },
-      "slots": {
-        "fallback": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom fallback content when image fails to load"
-        },
-        "statusIndicator": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom status indicator element"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "size": {
-        "values": {
-          "xs": "w-6 h-6 text-xs",
-          "sm": "w-8 h-8 text-sm",
-          "md": "w-12 h-12 text-base",
-          "lg": "w-16 h-16 text-lg",
-          "xl": "w-24 h-24 text-xl"
-        },
-        "defaultValue": "md"
-      },
-      "shape": {
-        "values": {
-          "circle": "rounded-full",
-          "square": "rounded-none",
-          "rounded": "rounded-lg"
-        },
-        "defaultValue": "circle"
-      },
-      "status": {
-        "values": {
-          "online": "bg-green-500 border-2 border-white",
-          "offline": "bg-gray-400 border-2 border-white",
-          "away": "bg-yellow-500 border-2 border-white",
-          "busy": "bg-red-500 border-2 border-white"
-        }
-      },
-      "statusPosition": {
-        "values": {
-          "top-right": "-top-0.5 -right-0.5",
-          "bottom-right": "-bottom-0.5 -right-0.5",
-          "top-left": "-top-0.5 -left-0.5",
-          "bottom-left": "-bottom-0.5 -left-0.5"
-        },
-        "defaultValue": "bottom-right"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "size": "xs",
-          "status": "*"
-        },
-        "className": "relative",
-        "statusSize": "w-2 h-2",
-        "description": "Extra small avatar with tiny status indicator"
-      },
-      {
-        "conditions": {
-          "size": "sm",
-          "status": "*"
-        },
-        "className": "relative",
-        "statusSize": "w-2.5 h-2.5",
-        "description": "Small avatar with small status indicator"
-      },
-      {
-        "conditions": {
-          "size": "md",
-          "status": "*"
-        },
-        "className": "relative",
-        "statusSize": "w-3 h-3",
-        "description": "Medium avatar with medium status indicator"
-      },
-      {
-        "conditions": {
-          "size": "lg",
-          "status": "*"
-        },
-        "className": "relative",
-        "statusSize": "w-4 h-4",
-        "description": "Large avatar with large status indicator"
-      },
-      {
-        "conditions": {
-          "size": "xl",
-          "status": "*"
-        },
-        "className": "relative",
-        "statusSize": "w-5 h-5",
-        "description": "Extra large avatar with extra large status indicator"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "img",
-      "additional": ["button"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Enter",
-          "action": "activate",
-          "context": "Activate clickable avatar (when onClick is provided)"
-        },
-        {
-          "key": "Space",
-          "action": "activate",
-          "context": "Activate clickable avatar (when onClick is provided)"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false,
-        "initialFocus": null
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "load",
-          "message": "Avatar loaded",
-          "priority": "polite"
-        },
-        {
-          "trigger": "error",
-          "message": "Avatar image failed to load, showing fallback",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["alt"],
-        "descriptions": {
-          "avatar": "user avatar",
-          "status": "status indicator",
-          "fallback": "avatar fallback"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "alt-text-present",
-        "image-loads-correctly",
-        "fallback-displays-on-error",
-        "initials-generated-correctly",
-        "keyboard-interaction-functional",
-        "focus-visible-when-clickable",
-        "status-indicator-accessible",
-        "color-contrast-aaa",
-        "touch-target-size-adequate"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "keyboard-only-navigation",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "norwegian-character-support"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/avatar.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["useState", "useCallback", "useMemo"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/avatar.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/avatar.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/avatar.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/avatar.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/avatar.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Avatar with Image",
-      "description": "Simple avatar displaying user profile photo",
-      "category": "basic",
-      "code": {
-        "react": "<Avatar\n  src=\"/images/users/john-doe.jpg\"\n  alt=\"Profile photo of John Doe\"\n  name=\"John Doe\"\n  size=\"md\"\n/>",
-        "vue": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
-        "angular": "<xala-avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\"></xala-avatar>",
-        "svelte": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
-        "solid": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
-        "web-components": "<xala-avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\"></xala-avatar>"
-      },
-      "props": {
-        "src": "/images/users/john-doe.jpg",
-        "alt": "Profile photo of John Doe",
-        "name": "John Doe",
-        "size": "md"
-      }
-    },
-    {
-      "name": "Initials Fallback Avatar",
-      "description": "Avatar showing user initials when no image is provided",
-      "category": "fallback",
-      "code": {
-        "react": "<Avatar\n  alt=\"Avatar for Anna Lindström\"\n  name=\"Anna Lindström\"\n  size=\"lg\"\n  shape=\"circle\"\n/>"
-      },
-      "props": {
-        "alt": "Avatar for Anna Lindström",
-        "name": "Anna Lindström",
-        "size": "lg",
-        "shape": "circle"
-      },
-      "notes": "Displays 'AL' initials with auto-generated background color"
-    },
-    {
-      "name": "Avatar with Status Indicator",
-      "description": "Avatar displaying user's online status",
-      "category": "status",
-      "code": {
-        "react": "<Avatar\n  src=\"/images/users/sarah-johnson.jpg\"\n  alt=\"Profile photo of Sarah Johnson\"\n  name=\"Sarah Johnson\"\n  size=\"md\"\n  status=\"online\"\n  statusPosition=\"bottom-right\"\n/>"
-      },
-      "props": {
-        "src": "/images/users/sarah-johnson.jpg",
-        "alt": "Profile photo of Sarah Johnson",
-        "name": "Sarah Johnson",
-        "size": "md",
-        "status": "online",
-        "statusPosition": "bottom-right"
-      }
-    },
-    {
-      "name": "Avatar Group",
-      "description": "Multiple avatars arranged in an overlapping group",
-      "category": "group",
-      "code": {
-        "react": "<div className=\"flex -space-x-2\">\n  <Avatar src=\"/user1.jpg\" alt=\"User 1\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar src=\"/user2.jpg\" alt=\"User 2\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar src=\"/user3.jpg\" alt=\"User 3\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar alt=\"+2 more users\" fallback={<span>+2</span>} size=\"sm\" className=\"border-2 border-white bg-gray-100\" />\n</div>"
-      },
-      "props": {
-        "arrangement": "overlapping",
-        "border": "white",
-        "overflow": "count"
-      },
-      "notes": "Shows group of users with overflow count"
-    },
-    {
-      "name": "Clickable Avatar",
-      "description": "Interactive avatar that opens user profile or menu",
-      "category": "interactive",
-      "code": {
-        "react": "<Avatar\n  src=\"/images/users/admin.jpg\"\n  alt=\"Administrator profile\"\n  name=\"Administrator\"\n  size=\"md\"\n  onClick={(event) => openUserMenu(event)}\n  className=\"cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all\"\n/>"
-      },
-      "props": {
-        "src": "/images/users/admin.jpg",
-        "alt": "Administrator profile",
-        "name": "Administrator",
-        "size": "md",
-        "onClick": "openUserMenu",
-        "interactive": true
-      }
-    },
-    {
-      "name": "Square Avatar with Custom Fallback",
-      "description": "Square-shaped avatar with custom fallback icon",
-      "category": "custom",
-      "code": {
-        "react": "<Avatar\n  alt=\"System bot avatar\"\n  size=\"lg\"\n  shape=\"square\"\n  fallback={<BotIcon className=\"w-8 h-8 text-blue-600\" />}\n/>"
-      },
-      "props": {
-        "alt": "System bot avatar",
-        "size": "lg",
-        "shape": "square",
-        "fallback": "BotIcon"
-      },
-      "notes": "Uses custom icon fallback for non-human entities"
-    },
-    {
-      "name": "Loading Avatar",
-      "description": "Avatar in loading state while image loads",
-      "category": "loading",
-      "code": {
-        "react": "<Avatar\n  src=\"/images/users/loading-user.jpg\"\n  alt=\"Loading user profile\"\n  name=\"Loading User\"\n  size=\"md\"\n  loading={true}\n/>"
-      },
-      "props": {
-        "src": "/images/users/loading-user.jpg",
-        "alt": "Loading user profile",
-        "name": "Loading User",
-        "size": "md",
-        "loading": true
-      }
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Always provide meaningful alt text for accessibility compliance",
-        "Generate initials from user names respecting Norwegian character conventions",
-        "Implement proper image loading states and error handling",
-        "Use semantic HTML elements (img) for better screen reader support",
-        "Apply consistent status indicator positioning across all sizes",
-        "Ensure touch targets meet minimum 44px requirement for interactive avatars",
-        "Support Norwegian characters (æ, ø, å) in name processing",
-        "Apply Norwegian design tokens for government compliance",
-        "Implement proper focus management for interactive avatars",
-        "Use appropriate NSM classification for employee data"
-      ],
-      "patterns": [
-        {
-          "pattern": "useState for image loading state",
-          "context": "React implementation",
-          "recommendation": "Track image loading status to show appropriate fallback"
-        },
-        {
-          "pattern": "useCallback for click handlers",
-          "context": "React implementation",
-          "recommendation": "Memoize click handlers to prevent unnecessary re-renders"
-        },
-        {
-          "pattern": "useMemo for initials generation",
-          "context": "React implementation",
-          "recommendation": "Cache initials calculation for performance"
-        },
-        {
-          "pattern": "onError handler for image fallback",
-          "context": "Image loading",
-          "recommendation": "Gracefully handle image loading failures"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "Missing alt text",
-          "reason": "Violates accessibility requirements and WCAG guidelines",
-          "alternative": "Always provide descriptive alt text for screen readers"
-        },
-        {
-          "pattern": "Hard-coded status colors",
-          "reason": "Reduces maintainability and theme consistency",
-          "alternative": "Use design system tokens for status indicator colors"
-        },
-        {
-          "pattern": "Fixed aspect ratios",
-          "reason": "May distort images and break layout on different screen sizes",
-          "alternative": "Use object-cover for consistent aspect ratio and cropping"
-        },
-        {
-          "pattern": "No keyboard support for interactive avatars",
-          "reason": "Excludes keyboard users from avatar interactions",
-          "alternative": "Implement proper keyboard event handlers for clickable avatars"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate",
-      "estimatedTokens": 2500
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "norwegian-compliance", "status-indicators"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with image source",
-        "displays initials fallback when no image",
-        "shows custom fallback when provided",
-        "handles image loading errors gracefully",
-        "applies size classes correctly",
-        "applies shape classes correctly",
-        "renders status indicator when provided",
-        "positions status indicator correctly",
-        "handles click events when interactive",
-        "generates correct initials from names",
-        "supports Norwegian characters in names",
-        "shows loading state when specified",
-        "applies accessibility attributes",
-        "keyboard navigation works for interactive avatars",
-        "focus visible on interactive avatars",
-        "alt text present and descriptive"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "avatar in user profile cards",
-        "avatar groups with overlapping layout",
-        "avatar as navigation menu trigger",
-        "avatar in comment threads",
-        "avatar in team member lists",
-        "responsive avatar sizing",
-        "keyboard-only interaction flow",
-        "screen reader navigation experience",
-        "Norwegian compliance validation",
-        "employee data protection verification"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true,
-      "statusIndicators": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "800B"
-      },
-      "renderTime": {
-        "initial": "<10ms",
-        "imageLoad": "<50ms",
-        "fallback": "<5ms"
-      }
-    },
-    "optimizations": [
-      "Lazy image loading for off-screen avatars",
-      "Memoized initials generation to prevent recalculation",
-      "CSS-only status indicators for performance",
-      "Efficient fallback rendering without additional requests",
-      "Optimized image handling with proper error boundaries",
-      "Tree-shakeable component structure",
-      "Minimal DOM manipulation for status updates",
-      "Cached color generation for consistent initials backgrounds"
-    ]
-  }
+	"metadata": {
+		"name": "Avatar",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "ui",
+		"subcategory": "user-display",
+		"description": "Comprehensive avatar component for displaying user photos, initials, or custom content with status indicators, multiple sizes, shapes, and Norwegian compliance. Supports fallback handling, accessibility features, and employee data protection.",
+		"keywords": [
+			"avatar",
+			"profile",
+			"user",
+			"image",
+			"initials",
+			"status",
+			"accessible",
+			"norwegian",
+			"employee"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T15:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["img", "div", "button"],
+			"ariaRoles": ["img", "button"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.1.1 Non-text Content",
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "RESTRICTED",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": true,
+			"employeeDataProtection": true
+		}
+	},
+	"props": {
+		"schema": {
+			"src": {
+				"type": { "primitive": "string" },
+				"description": "Image source URL for the avatar photo",
+				"required": false,
+				"examples": [
+					{
+						"value": "https://example.com/user-photo.jpg",
+						"description": "External image URL",
+						"context": "User profile photo from external service"
+					},
+					{
+						"value": "/images/avatars/user-123.jpg",
+						"description": "Local image path",
+						"context": "Locally stored user photo"
+					}
+				]
+			},
+			"alt": {
+				"type": { "primitive": "string" },
+				"description": "Alternative text for the avatar image (required for accessibility)",
+				"required": true,
+				"accessibility": {
+					"importance": "critical",
+					"reason": "Essential for screen readers and accessibility compliance"
+				},
+				"examples": [
+					{
+						"value": "Profile photo of John Doe",
+						"description": "Descriptive alt text for user photo",
+						"context": "When displaying user profile photo"
+					},
+					{
+						"value": "Avatar for administrator",
+						"description": "Generic alt text for role-based avatar",
+						"context": "When showing role or function avatar"
+					}
+				]
+			},
+			"name": {
+				"type": { "primitive": "string" },
+				"description": "Full name used to generate initials fallback when image is not available",
+				"required": false,
+				"examples": [
+					{
+						"value": "John Doe",
+						"description": "Full name for initials generation",
+						"context": "Displays 'JD' when image fails to load"
+					},
+					{
+						"value": "Anna-Karin Lindström",
+						"description": "Norwegian name with special characters",
+						"context": "Displays 'AL' respecting Norwegian naming conventions"
+					}
+				]
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["xs", "sm", "md", "lg", "xl"]
+				},
+				"description": "Size variant controlling avatar dimensions",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "xs",
+						"description": "Extra small avatar (24x24px)",
+						"context": "Inline mentions, small lists, activity feeds"
+					},
+					{
+						"value": "sm",
+						"description": "Small avatar (32x32px)",
+						"context": "Comments, notifications, compact layouts"
+					},
+					{
+						"value": "md",
+						"description": "Medium avatar (48x48px)",
+						"context": "Default size for most use cases"
+					},
+					{
+						"value": "lg",
+						"description": "Large avatar (64x64px)",
+						"context": "User profiles, cards, prominent displays"
+					},
+					{
+						"value": "xl",
+						"description": "Extra large avatar (96x96px)",
+						"context": "Profile pages, detailed user information"
+					}
+				]
+			},
+			"shape": {
+				"type": {
+					"custom": "variant",
+					"values": ["circle", "square", "rounded"]
+				},
+				"description": "Shape variant controlling avatar appearance",
+				"required": false,
+				"defaultValue": "circle",
+				"examples": [
+					{
+						"value": "circle",
+						"description": "Circular avatar shape",
+						"context": "Standard user avatars, profiles"
+					},
+					{
+						"value": "square",
+						"description": "Square avatar shape",
+						"context": "Brand logos, system avatars"
+					},
+					{
+						"value": "rounded",
+						"description": "Rounded square avatar shape",
+						"context": "Modern UI, flexible design systems"
+					}
+				]
+			},
+			"status": {
+				"type": {
+					"custom": "variant",
+					"values": ["online", "offline", "away", "busy"]
+				},
+				"description": "Status indicator showing user's availability",
+				"required": false,
+				"examples": [
+					{
+						"value": "online",
+						"description": "User is currently online and available",
+						"context": "Active user sessions, real-time communication"
+					},
+					{
+						"value": "offline",
+						"description": "User is offline or unavailable",
+						"context": "Inactive users, offline mode"
+					},
+					{
+						"value": "away",
+						"description": "User is away from their device",
+						"context": "Idle detection, temporary unavailability"
+					},
+					{
+						"value": "busy",
+						"description": "User is busy and should not be disturbed",
+						"context": "Do not disturb mode, focused work sessions"
+					}
+				]
+			},
+			"statusPosition": {
+				"type": {
+					"custom": "variant",
+					"values": ["top-right", "bottom-right", "top-left", "bottom-left"]
+				},
+				"description": "Position of the status indicator relative to the avatar",
+				"required": false,
+				"defaultValue": "bottom-right",
+				"examples": [
+					{
+						"value": "bottom-right",
+						"description": "Status indicator in bottom right corner",
+						"context": "Standard positioning for most layouts"
+					},
+					{
+						"value": "top-right",
+						"description": "Status indicator in top right corner",
+						"context": "When bottom space is occupied by other elements"
+					}
+				]
+			},
+			"fallback": {
+				"type": { "complex": "node" },
+				"description": "Custom fallback element displayed when image fails to load and no name is provided",
+				"required": false,
+				"examples": [
+					{
+						"value": "<UserIcon className=\"w-6 h-6\" />",
+						"description": "Icon fallback for generic user representation",
+						"context": "System users, anonymous users"
+					},
+					{
+						"value": "<div className=\"bg-gradient-to-br from-blue-400 to-purple-500\" />",
+						"description": "Custom gradient fallback",
+						"context": "Branded or decorative avatars"
+					}
+				]
+			},
+			"onClick": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent",
+								"required": true,
+								"description": "Click event object"
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Click handler for interactive avatars",
+				"required": false,
+				"examples": [
+					{
+						"value": "(event) => navigate('/profile')",
+						"description": "Navigate to user profile on click",
+						"context": "Clickable user avatars in navigation"
+					},
+					{
+						"value": "(event) => openUserMenu(event)",
+						"description": "Open user menu on avatar click",
+						"context": "Avatar as menu trigger"
+					}
+				]
+			},
+			"loading": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the avatar is in a loading state",
+				"required": false,
+				"defaultValue": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Show loading placeholder while image loads",
+						"context": "Async image loading, skeleton states"
+					}
+				]
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the avatar container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": ["alt"],
+			"optional": [
+				"src",
+				"name",
+				"size",
+				"shape",
+				"status",
+				"statusPosition",
+				"fallback",
+				"onClick",
+				"loading",
+				"className",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false,
+				"description": "Avatar does not support children"
+			},
+			"slots": {
+				"fallback": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom fallback content when image fails to load"
+				},
+				"statusIndicator": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom status indicator element"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"size": {
+				"values": {
+					"xs": "w-6 h-6 text-xs",
+					"sm": "w-8 h-8 text-sm",
+					"md": "w-12 h-12 text-base",
+					"lg": "w-16 h-16 text-lg",
+					"xl": "w-24 h-24 text-xl"
+				},
+				"defaultValue": "md"
+			},
+			"shape": {
+				"values": {
+					"circle": "rounded-full",
+					"square": "rounded-none",
+					"rounded": "rounded-lg"
+				},
+				"defaultValue": "circle"
+			},
+			"status": {
+				"values": {
+					"online": "bg-green-500 border-2 border-white",
+					"offline": "bg-gray-400 border-2 border-white",
+					"away": "bg-yellow-500 border-2 border-white",
+					"busy": "bg-red-500 border-2 border-white"
+				}
+			},
+			"statusPosition": {
+				"values": {
+					"top-right": "-top-0.5 -right-0.5",
+					"bottom-right": "-bottom-0.5 -right-0.5",
+					"top-left": "-top-0.5 -left-0.5",
+					"bottom-left": "-bottom-0.5 -left-0.5"
+				},
+				"defaultValue": "bottom-right"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"size": "xs",
+					"status": "*"
+				},
+				"className": "relative",
+				"statusSize": "w-2 h-2",
+				"description": "Extra small avatar with tiny status indicator"
+			},
+			{
+				"conditions": {
+					"size": "sm",
+					"status": "*"
+				},
+				"className": "relative",
+				"statusSize": "w-2.5 h-2.5",
+				"description": "Small avatar with small status indicator"
+			},
+			{
+				"conditions": {
+					"size": "md",
+					"status": "*"
+				},
+				"className": "relative",
+				"statusSize": "w-3 h-3",
+				"description": "Medium avatar with medium status indicator"
+			},
+			{
+				"conditions": {
+					"size": "lg",
+					"status": "*"
+				},
+				"className": "relative",
+				"statusSize": "w-4 h-4",
+				"description": "Large avatar with large status indicator"
+			},
+			{
+				"conditions": {
+					"size": "xl",
+					"status": "*"
+				},
+				"className": "relative",
+				"statusSize": "w-5 h-5",
+				"description": "Extra large avatar with extra large status indicator"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "img",
+			"additional": ["button"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Enter",
+					"action": "activate",
+					"context": "Activate clickable avatar (when onClick is provided)"
+				},
+				{
+					"key": "Space",
+					"action": "activate",
+					"context": "Activate clickable avatar (when onClick is provided)"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false,
+				"initialFocus": null
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "load",
+					"message": "Avatar loaded",
+					"priority": "polite"
+				},
+				{
+					"trigger": "error",
+					"message": "Avatar image failed to load, showing fallback",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["alt"],
+				"descriptions": {
+					"avatar": "user avatar",
+					"status": "status indicator",
+					"fallback": "avatar fallback"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"alt-text-present",
+				"image-loads-correctly",
+				"fallback-displays-on-error",
+				"initials-generated-correctly",
+				"keyboard-interaction-functional",
+				"focus-visible-when-clickable",
+				"status-indicator-accessible",
+				"color-contrast-aaa",
+				"touch-target-size-adequate"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"keyboard-only-navigation",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"norwegian-character-support"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/avatar.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["useState", "useCallback", "useMemo"]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/avatar.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/avatar.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/avatar.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/avatar.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/avatar.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Avatar with Image",
+			"description": "Simple avatar displaying user profile photo",
+			"category": "basic",
+			"code": {
+				"react": "<Avatar\n  src=\"/images/users/john-doe.jpg\"\n  alt=\"Profile photo of John Doe\"\n  name=\"John Doe\"\n  size=\"md\"\n/>",
+				"vue": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
+				"angular": "<xala-avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\"></xala-avatar>",
+				"svelte": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
+				"solid": "<Avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\" />",
+				"web-components": "<xala-avatar src=\"/images/users/john-doe.jpg\" alt=\"Profile photo of John Doe\" name=\"John Doe\" size=\"md\"></xala-avatar>"
+			},
+			"props": {
+				"src": "/images/users/john-doe.jpg",
+				"alt": "Profile photo of John Doe",
+				"name": "John Doe",
+				"size": "md"
+			}
+		},
+		{
+			"name": "Initials Fallback Avatar",
+			"description": "Avatar showing user initials when no image is provided",
+			"category": "fallback",
+			"code": {
+				"react": "<Avatar\n  alt=\"Avatar for Anna Lindström\"\n  name=\"Anna Lindström\"\n  size=\"lg\"\n  shape=\"circle\"\n/>"
+			},
+			"props": {
+				"alt": "Avatar for Anna Lindström",
+				"name": "Anna Lindström",
+				"size": "lg",
+				"shape": "circle"
+			},
+			"notes": "Displays 'AL' initials with auto-generated background color"
+		},
+		{
+			"name": "Avatar with Status Indicator",
+			"description": "Avatar displaying user's online status",
+			"category": "status",
+			"code": {
+				"react": "<Avatar\n  src=\"/images/users/sarah-johnson.jpg\"\n  alt=\"Profile photo of Sarah Johnson\"\n  name=\"Sarah Johnson\"\n  size=\"md\"\n  status=\"online\"\n  statusPosition=\"bottom-right\"\n/>"
+			},
+			"props": {
+				"src": "/images/users/sarah-johnson.jpg",
+				"alt": "Profile photo of Sarah Johnson",
+				"name": "Sarah Johnson",
+				"size": "md",
+				"status": "online",
+				"statusPosition": "bottom-right"
+			}
+		},
+		{
+			"name": "Avatar Group",
+			"description": "Multiple avatars arranged in an overlapping group",
+			"category": "group",
+			"code": {
+				"react": "<div className=\"flex -space-x-2\">\n  <Avatar src=\"/user1.jpg\" alt=\"User 1\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar src=\"/user2.jpg\" alt=\"User 2\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar src=\"/user3.jpg\" alt=\"User 3\" size=\"sm\" className=\"border-2 border-white\" />\n  <Avatar alt=\"+2 more users\" fallback={<span>+2</span>} size=\"sm\" className=\"border-2 border-white bg-gray-100\" />\n</div>"
+			},
+			"props": {
+				"arrangement": "overlapping",
+				"border": "white",
+				"overflow": "count"
+			},
+			"notes": "Shows group of users with overflow count"
+		},
+		{
+			"name": "Clickable Avatar",
+			"description": "Interactive avatar that opens user profile or menu",
+			"category": "interactive",
+			"code": {
+				"react": "<Avatar\n  src=\"/images/users/admin.jpg\"\n  alt=\"Administrator profile\"\n  name=\"Administrator\"\n  size=\"md\"\n  onClick={(event) => openUserMenu(event)}\n  className=\"cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all\"\n/>"
+			},
+			"props": {
+				"src": "/images/users/admin.jpg",
+				"alt": "Administrator profile",
+				"name": "Administrator",
+				"size": "md",
+				"onClick": "openUserMenu",
+				"interactive": true
+			}
+		},
+		{
+			"name": "Square Avatar with Custom Fallback",
+			"description": "Square-shaped avatar with custom fallback icon",
+			"category": "custom",
+			"code": {
+				"react": "<Avatar\n  alt=\"System bot avatar\"\n  size=\"lg\"\n  shape=\"square\"\n  fallback={<BotIcon className=\"w-8 h-8 text-blue-600\" />}\n/>"
+			},
+			"props": {
+				"alt": "System bot avatar",
+				"size": "lg",
+				"shape": "square",
+				"fallback": "BotIcon"
+			},
+			"notes": "Uses custom icon fallback for non-human entities"
+		},
+		{
+			"name": "Loading Avatar",
+			"description": "Avatar in loading state while image loads",
+			"category": "loading",
+			"code": {
+				"react": "<Avatar\n  src=\"/images/users/loading-user.jpg\"\n  alt=\"Loading user profile\"\n  name=\"Loading User\"\n  size=\"md\"\n  loading={true}\n/>"
+			},
+			"props": {
+				"src": "/images/users/loading-user.jpg",
+				"alt": "Loading user profile",
+				"name": "Loading User",
+				"size": "md",
+				"loading": true
+			}
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Always provide meaningful alt text for accessibility compliance",
+				"Generate initials from user names respecting Norwegian character conventions",
+				"Implement proper image loading states and error handling",
+				"Use semantic HTML elements (img) for better screen reader support",
+				"Apply consistent status indicator positioning across all sizes",
+				"Ensure touch targets meet minimum 44px requirement for interactive avatars",
+				"Support Norwegian characters (æ, ø, å) in name processing",
+				"Apply Norwegian design tokens for government compliance",
+				"Implement proper focus management for interactive avatars",
+				"Use appropriate NSM classification for employee data"
+			],
+			"patterns": [
+				{
+					"pattern": "useState for image loading state",
+					"context": "React implementation",
+					"recommendation": "Track image loading status to show appropriate fallback"
+				},
+				{
+					"pattern": "useCallback for click handlers",
+					"context": "React implementation",
+					"recommendation": "Memoize click handlers to prevent unnecessary re-renders"
+				},
+				{
+					"pattern": "useMemo for initials generation",
+					"context": "React implementation",
+					"recommendation": "Cache initials calculation for performance"
+				},
+				{
+					"pattern": "onError handler for image fallback",
+					"context": "Image loading",
+					"recommendation": "Gracefully handle image loading failures"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "Missing alt text",
+					"reason": "Violates accessibility requirements and WCAG guidelines",
+					"alternative": "Always provide descriptive alt text for screen readers"
+				},
+				{
+					"pattern": "Hard-coded status colors",
+					"reason": "Reduces maintainability and theme consistency",
+					"alternative": "Use design system tokens for status indicator colors"
+				},
+				{
+					"pattern": "Fixed aspect ratios",
+					"reason": "May distort images and break layout on different screen sizes",
+					"alternative": "Use object-cover for consistent aspect ratio and cropping"
+				},
+				{
+					"pattern": "No keyboard support for interactive avatars",
+					"reason": "Excludes keyboard users from avatar interactions",
+					"alternative": "Implement proper keyboard event handlers for clickable avatars"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate",
+			"estimatedTokens": 2500
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"norwegian-compliance",
+				"status-indicators"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with image source",
+				"displays initials fallback when no image",
+				"shows custom fallback when provided",
+				"handles image loading errors gracefully",
+				"applies size classes correctly",
+				"applies shape classes correctly",
+				"renders status indicator when provided",
+				"positions status indicator correctly",
+				"handles click events when interactive",
+				"generates correct initials from names",
+				"supports Norwegian characters in names",
+				"shows loading state when specified",
+				"applies accessibility attributes",
+				"keyboard navigation works for interactive avatars",
+				"focus visible on interactive avatars",
+				"alt text present and descriptive"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"avatar in user profile cards",
+				"avatar groups with overlapping layout",
+				"avatar as navigation menu trigger",
+				"avatar in comment threads",
+				"avatar in team member lists",
+				"responsive avatar sizing",
+				"keyboard-only interaction flow",
+				"screen reader navigation experience",
+				"Norwegian compliance validation",
+				"employee data protection verification"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true,
+			"statusIndicators": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "800B"
+			},
+			"renderTime": {
+				"initial": "<10ms",
+				"imageLoad": "<50ms",
+				"fallback": "<5ms"
+			}
+		},
+		"optimizations": [
+			"Lazy image loading for off-screen avatars",
+			"Memoized initials generation to prevent recalculation",
+			"CSS-only status indicators for performance",
+			"Efficient fallback rendering without additional requests",
+			"Optimized image handling with proper error boundaries",
+			"Tree-shakeable component structure",
+			"Minimal DOM manipulation for status updates",
+			"Cached color generation for consistent initials backgrounds"
+		]
+	}
 }

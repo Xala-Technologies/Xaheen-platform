@@ -1,857 +1,915 @@
 {
-  "metadata": {
-    "name": "Alert",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "action-feedback",
-    "subcategory": "alert",
-    "description": "Comprehensive alert component for notifications, warnings, and status messages with Norwegian compliance, accessibility, and live region support. Supports dismissible alerts, action buttons, auto-close functionality, and toast-style positioning.",
-    "keywords": ["alert", "notification", "warning", "status", "toast", "dismissible", "accessible", "norwegian", "live-region"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-02-01T09:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["div", "section", "button"],
-      "ariaRoles": ["alert", "alertdialog", "status"],
-      "landmarks": false,
-      "headingStructure": false,
-      "liveRegions": true
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value",
-        "4.1.3 Status Messages"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["info", "success", "warning", "error", "neutral"]
-        },
-        "description": "Visual variant determining the alert's semantic meaning and appearance",
-        "required": false,
-        "defaultValue": "info",
-        "examples": [
-          {
-            "value": "success",
-            "description": "Success confirmation messages",
-            "context": "Form submissions, successful operations"
-          },
-          {
-            "value": "error",
-            "description": "Error messages and validation failures",
-            "context": "Form validation, system errors"
-          },
-          {
-            "value": "warning",
-            "description": "Warning messages requiring attention",
-            "context": "Data loss warnings, important notices"
-          }
-        ]
-      },
-      "title": {
-        "type": { "primitive": "string" },
-        "description": "Alert title or heading text",
-        "required": false,
-        "accessibility": {
-          "screenReaderText": "Alert title"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "alert.{componentName}.title",
-          "context": "alert-title"
-        }
-      },
-      "description": {
-        "type": { "primitive": "string" },
-        "description": "Main alert message content",
-        "required": false,
-        "accessibility": {
-          "screenReaderText": "Alert message"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "alert.{componentName}.description",
-          "context": "alert-message"
-        }
-      },
-      "dismissible": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the alert can be dismissed with a close button",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaLabel": "Close alert",
-          "screenReaderText": "Dismissible alert"
-        }
-      },
-      "onDismiss": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void | Promise<void>"
-          }
-        },
-        "description": "Handler called when alert is dismissed",
-        "required": false,
-        "conditions": {
-          "dependsOn": "dismissible",
-          "required": false
-        }
-      },
-      "icon": {
-        "type": {
-          "complex": "component",
-          "signature": {
-            "type": "React.ComponentType<{ className?: string; size?: number }>",
-            "description": "Icon component to display in the alert"
-          }
-        },
-        "description": "Optional custom icon component to display",
-        "required": false,
-        "examples": [
-          {
-            "value": "CheckCircle",
-            "description": "Success checkmark icon",
-            "context": "Success alerts"
-          },
-          {
-            "value": "ExclamationTriangle",
-            "description": "Warning triangle icon",
-            "context": "Warning alerts"
-          }
-        ]
-      },
-      "showIcon": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether to show the default variant icon",
-        "required": false,
-        "defaultValue": true,
-        "examples": [
-          {
-            "value": true,
-            "description": "Show default icons for each variant",
-            "context": "Standard alert display"
-          },
-          {
-            "value": false,
-            "description": "Hide icons for text-only alerts",
-            "context": "Minimal alert styling"
-          }
-        ]
-      },
-      "action": {
-        "type": {
-          "complex": "object",
-          "properties": {
-            "label": { "type": "string", "required": true },
-            "onClick": { "type": "function", "required": true },
-            "variant": { "type": "'primary' | 'secondary' | 'outline'", "required": false },
-            "loading": { "type": "boolean", "required": false },
-            "disabled": { "type": "boolean", "required": false }
-          }
-        },
-        "description": "Optional action button configuration",
-        "required": false,
-        "examples": [
-          {
-            "value": "{ label: 'Retry', onClick: handleRetry, variant: 'primary' }",
-            "description": "Retry action for error alerts",
-            "context": "Network errors, failed operations"
-          },
-          {
-            "value": "{ label: 'View Details', onClick: showDetails, variant: 'outline' }",
-            "description": "Additional information action",
-            "context": "Informational alerts with more details"
-          }
-        ]
-      },
-      "autoClose": {
-        "type": {
-          "primitive": "number",
-          "constraints": {
-            "min": 1000,
-            "max": 30000
-          }
-        },
-        "description": "Auto-dismiss timeout in milliseconds",
-        "required": false,
-        "examples": [
-          {
-            "value": 5000,
-            "description": "Auto-close after 5 seconds",
-            "context": "Success notifications, temporary messages"
-          },
-          {
-            "value": 10000,
-            "description": "Auto-close after 10 seconds",
-            "context": "Important information that needs time to read"
-          }
-        ]
-      },
-      "position": {
-        "type": {
-          "custom": "variant",
-          "values": ["static", "top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]
-        },
-        "description": "Position for toast-style alerts",
-        "required": false,
-        "defaultValue": "static",
-        "examples": [
-          {
-            "value": "top-right",
-            "description": "Toast notification in top-right corner",
-            "context": "System notifications, status updates"
-          },
-          {
-            "value": "static",
-            "description": "Inline alert within content flow",
-            "context": "Form validation, contextual messages"
-          }
-        ]
-      },
-      "role": {
-        "type": {
-          "custom": "variant",
-          "values": ["alert", "status", "alertdialog"]
-        },
-        "description": "ARIA role for the alert",
-        "required": false,
-        "defaultValue": "alert",
-        "accessibility": {
-          "purpose": "Determines how screen readers announce the alert"
-        },
-        "examples": [
-          {
-            "value": "alert",
-            "description": "Important messages requiring immediate attention",
-            "context": "Errors, warnings"
-          },
-          {
-            "value": "status",
-            "description": "Status updates and information",
-            "context": "Success messages, progress updates"
-          }
-        ]
-      },
-      "priority": {
-        "type": {
-          "custom": "variant",
-          "values": ["polite", "assertive", "off"]
-        },
-        "description": "Screen reader announcement priority",
-        "required": false,
-        "defaultValue": "polite",
-        "accessibility": {
-          "purpose": "Controls urgency of screen reader announcements"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false
-      },
-      "children": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Alert content - can be used instead of or alongside title/description",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "alert.{componentName}.content",
-          "context": "alert-content"
-        }
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "variant", "title", "description", "dismissible", "onDismiss", "icon", 
-        "showIcon", "action", "autoClose", "position", "role", "priority", 
-        "className", "children", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element"],
-        "description": "Alert content"
-      },
-      "slots": {
-        "icon": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom icon slot"
-        },
-        "action": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom action button slot"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "info": "bg-blue-50 border-blue-200 text-blue-800",
-          "success": "bg-green-50 border-green-200 text-green-800",
-          "warning": "bg-yellow-50 border-yellow-200 text-yellow-800",
-          "error": "bg-red-50 border-red-200 text-red-800",
-          "neutral": "bg-gray-50 border-gray-200 text-gray-800"
-        },
-        "defaultValue": "info"
-      },
-      "position": {
-        "values": {
-          "static": "relative",
-          "top-left": "fixed top-4 left-4 z-50",
-          "top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
-          "top-right": "fixed top-4 right-4 z-50",
-          "bottom-left": "fixed bottom-4 left-4 z-50",
-          "bottom-center": "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
-          "bottom-right": "fixed bottom-4 right-4 z-50"
-        },
-        "defaultValue": "static"
-      },
-      "dismissible": {
-        "values": {
-          "true": "pr-12",
-          "false": ""
-        },
-        "defaultValue": "false"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "error",
-          "role": "alert"
-        },
-        "className": "border-l-4 border-l-red-500",
-        "description": "Error alerts with emphasized left border"
-      },
-      {
-        "conditions": {
-          "variant": "warning",
-          "role": "alert"
-        },
-        "className": "border-l-4 border-l-yellow-500",
-        "description": "Warning alerts with emphasized left border"
-      },
-      {
-        "conditions": {
-          "variant": "success",
-          "role": "status"
-        },
-        "className": "border-l-4 border-l-green-500",
-        "description": "Success status with emphasized left border"
-      },
-      {
-        "conditions": {
-          "position": ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]
-        },
-        "className": "max-w-sm shadow-lg rounded-lg animate-slide-in",
-        "description": "Toast-style alerts with animation and shadow"
-      },
-      {
-        "conditions": {
-          "dismissible": true
-        },
-        "className": "group",
-        "description": "Dismissible alerts with hover states"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "alert",
-      "additional": ["status", "alertdialog"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Escape",
-          "action": "dismiss",
-          "context": "Dismiss alert if dismissible"
-        },
-        {
-          "key": "Enter",
-          "action": "activate-action",
-          "context": "Activate action button if present"
-        },
-        {
-          "key": "Space",
-          "action": "activate-action",
-          "context": "Activate action button if present"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Navigate to dismiss button or action"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "mount",
-          "message": "Alert: {title} {description}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "error-variant",
-          "message": "Error: {title} {description}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "warning-variant",
-          "message": "Warning: {title} {description}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "success-variant",
-          "message": "Success: {title} {description}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "dismiss",
-          "message": "Alert dismissed",
-          "priority": "polite"
-        },
-        {
-          "trigger": "auto-close",
-          "message": "Alert will close automatically",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["accessible-name"],
-        "descriptions": {
-          "dismiss-button": "Close alert",
-          "action-button": "Alert action",
-          "auto-close": "Auto-closing alert",
-          "toast": "Notification alert"
-        }
-      }
-    },
-    "liveRegions": {
-      "supported": true,
-      "attributes": [
-        {
-          "name": "aria-live",
-          "value": "polite",
-          "conditions": "role=status or priority=polite"
-        },
-        {
-          "name": "aria-live",
-          "value": "assertive",
-          "conditions": "role=alert or priority=assertive"
-        },
-        {
-          "name": "aria-atomic",
-          "value": "true",
-          "conditions": "always"
-        }
-      ]
-    },
-    "testing": {
-      "automated": [
-        "alert-element-present",
-        "accessible-name-present",
-        "live-region-configured",
-        "keyboard-dismissal",
-        "color-contrast-aaa",
-        "icon-alt-text",
-        "action-button-accessible",
-        "auto-close-announced"
-      ],
-      "manual": [
-        "screen-reader-announcements",
-        "keyboard-only-interaction",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "focus-management-flow"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/alert.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useEffect", "useCallback", "HTMLAttributes"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/alert.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/alert.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/alert.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/alert.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/alert.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Alert",
-      "description": "Simple informational alert with title and description",
-      "category": "basic",
-      "code": {
-        "react": "<Alert variant='info' title='Information' description='This is an informational message.' />",
-        "vue": "<Alert variant='info' title='Information' description='This is an informational message.' />",
-        "angular": "<xala-alert variant='info' title='Information' description='This is an informational message.'></xala-alert>",
-        "svelte": "<Alert variant='info' title='Information' description='This is an informational message.' />",
-        "solid": "<Alert variant='info' title='Information' description='This is an informational message.' />",
-        "web-components": "<xala-alert variant='info' title='Information' description='This is an informational message.'></xala-alert>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "Information",
-        "description": "This is an informational message."
-      }
-    },
-    {
-      "name": "Alert Variants",
-      "description": "Different alert variants for various contexts",
-      "category": "variants",
-      "code": {
-        "react": "<Alert variant='success' title='Success' description='Operation completed successfully.' />\n<Alert variant='warning' title='Warning' description='Please review your input.' />\n<Alert variant='error' title='Error' description='Something went wrong.' />\n<Alert variant='neutral' title='Notice' description='General information.' />"
-      },
-      "props": {
-        "variant": ["success", "warning", "error", "neutral"]
-      }
-    },
-    {
-      "name": "Dismissible Alert",
-      "description": "Alert with close button for user dismissal",
-      "category": "interactive",
-      "code": {
-        "react": "<Alert\n  variant='warning'\n  title='Unsaved Changes'\n  description='You have unsaved changes. Please save before leaving.'\n  dismissible\n  onDismiss={() => console.log('Alert dismissed')}\n/>"
-      },
-      "props": {
-        "variant": "warning",
-        "title": "Unsaved Changes",
-        "description": "You have unsaved changes. Please save before leaving.",
-        "dismissible": true
-      },
-      "notes": "Use dismissible alerts for non-critical messages that users can close"
-    },
-    {
-      "name": "Alert with Action",
-      "description": "Alert with action button for user interaction",
-      "category": "interactive",
-      "code": {
-        "react": "<Alert\n  variant='error'\n  title='Connection Failed'\n  description='Unable to connect to the server.'\n  action={{\n    label: 'Retry',\n    onClick: handleRetry,\n    variant: 'primary'\n  }}\n/>"
-      },
-      "props": {
-        "variant": "error",
-        "title": "Connection Failed",
-        "description": "Unable to connect to the server.",
-        "action": {
-          "label": "Retry",
-          "variant": "primary"
-        }
-      },
-      "notes": "Action buttons provide users with immediate ways to resolve issues"
-    },
-    {
-      "name": "Auto-Close Alert",
-      "description": "Alert that automatically dismisses after a timeout",
-      "category": "temporal",
-      "code": {
-        "react": "<Alert\n  variant='success'\n  title='File Saved'\n  description='Your document has been saved successfully.'\n  autoClose={5000}\n/>"
-      },
-      "props": {
-        "variant": "success",
-        "title": "File Saved",
-        "description": "Your document has been saved successfully.",
-        "autoClose": 5000
-      },
-      "notes": "Auto-close is ideal for success messages and temporary notifications"
-    },
-    {
-      "name": "Toast Alert",
-      "description": "Fixed position alert for global notifications",
-      "category": "positioning",
-      "code": {
-        "react": "<Alert\n  variant='info'\n  title='New Update Available'\n  description='Version 2.1.0 is now available.'\n  position='top-right'\n  dismissible\n  autoClose={8000}\n  action={{\n    label: 'Update Now',\n    onClick: handleUpdate,\n    variant: 'outline'\n  }}\n/>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "New Update Available",
-        "description": "Version 2.1.0 is now available.",
-        "position": "top-right",
-        "dismissible": true,
-        "autoClose": 8000
-      },
-      "notes": "Toast alerts are perfect for system-wide notifications"
-    },
-    {
-      "name": "Custom Content Alert",
-      "description": "Alert with custom children content",
-      "category": "composition",
-      "code": {
-        "react": "<Alert variant='warning' title='Data Loss Warning'>\n  <div className='mt-2'>\n    <p className='text-sm'>The following items will be permanently deleted:</p>\n    <ul className='mt-2 text-sm list-disc pl-5'>\n      <li>3 documents</li>\n      <li>2 images</li>\n      <li>1 video file</li>\n    </ul>\n  </div>\n</Alert>"
-      },
-      "props": {
-        "variant": "warning",
-        "title": "Data Loss Warning"
-      },
-      "notes": "Use children for complex alert content beyond simple text"
-    },
-    {
-      "name": "Norwegian Compliance Alert",
-      "description": "Alert with Norwegian text and GDPR compliance considerations",
-      "category": "compliance",
-      "code": {
-        "react": "<Alert\n  variant='info'\n  title='Personvern'\n  description='Vi behandler dine personopplysninger i henhold til GDPR. Les vår personvernpolicy for mer informasjon.'\n  action={{\n    label: 'Les mer',\n    onClick: () => window.open('/personvern'),\n    variant: 'outline'\n  }}\n  role='status'\n  priority='polite'\n/>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "Personvern",
-        "description": "Vi behandler dine personopplysninger i henhold til GDPR.",
-        "role": "status",
-        "priority": "polite"
-      },
-      "notes": "Norwegian compliance requires proper language and GDPR considerations"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use appropriate ARIA roles (alert for urgent, status for informational)",
-        "Implement proper live region announcements for screen readers",
-        "Ensure color contrast meets AAA standards for all variants",
-        "Provide keyboard navigation for interactive elements",
-        "Use semantic HTML and meaningful content structure",
-        "Apply Norwegian design tokens for government compliance",
-        "Handle auto-close gracefully with proper announcements"
-      ],
-      "patterns": [
-        {
-          "pattern": "live regions",
-          "context": "Accessibility",
-          "recommendation": "Use aria-live=polite for status, aria-live=assertive for urgent alerts"
-        },
-        {
-          "pattern": "auto-close with cleanup",
-          "context": "React implementation",
-          "recommendation": "Use useEffect with setTimeout and cleanup to prevent memory leaks"
-        },
-        {
-          "pattern": "compound variants",
-          "context": "Styling",
-          "recommendation": "Use CVA for complex variant combinations and conditional styling"
-        },
-        {
-          "pattern": "portal rendering for toasts",
-          "context": "Positioning",
-          "recommendation": "Render fixed-position alerts in portal to avoid z-index issues"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "Generic div without role",
-          "reason": "Screen readers cannot understand the alert's purpose",
-          "alternative": "Use proper ARIA role (alert, status, or alertdialog)"
-        },
-        {
-          "pattern": "Auto-close without announcement",
-          "reason": "Users may miss important information",
-          "alternative": "Announce auto-close behavior to screen readers"
-        },
-        {
-          "pattern": "Low contrast color combinations",
-          "reason": "Fails WCAG accessibility requirements",
-          "alternative": "Ensure 7:1 contrast ratio for AAA compliance"
-        },
-        {
-          "pattern": "Missing keyboard support for dismissal",
-          "reason": "Keyboard users cannot dismiss alerts",
-          "alternative": "Support Escape key and proper focus management"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate",
-      "estimatedTokens": 2500
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "variant-showcase", "norwegian-compliance"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with correct variant styling",
-        "displays title and description",
-        "shows/hides icon based on showIcon prop",
-        "renders custom icon when provided",
-        "calls onDismiss when dismiss button clicked",
-        "calls onDismiss when Escape key pressed",
-        "renders action button with correct props",
-        "calls action onClick handler",
-        "auto-closes after specified timeout",
-        "clears timeout on unmount",
-        "applies position classes for toast alerts",
-        "sets correct ARIA role and live region",
-        "announces content to screen readers",
-        "supports keyboard navigation",
-        "applies priority for screen reader announcements",
-        "renders children content",
-        "applies custom className",
-        "respects dismissible prop"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "multiple alerts with different positions",
-        "alert with form validation errors",
-        "toast notification system",
-        "alert within modal or dialog",
-        "keyboard-only interaction",
-        "screen reader navigation",
-        "Norwegian compliance validation",
-        "auto-close behavior with user interaction",
-        "responsive behavior on mobile devices"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true,
-      "animations": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "1KB"
-      },
-      "renderTime": {
-        "initial": "<16ms",
-        "update": "<8ms"
-      },
-      "animation": {
-        "duration": "200ms",
-        "fps": "60"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure with semantic HTML",
-      "CSS-only animations for smooth transitions",
-      "Efficient timeout management with cleanup",
-      "Optimized class variance authority patterns",
-      "Tree-shakeable icon imports",
-      "Memoized variant class generation",
-      "Portal rendering only when needed for positioning"
-    ]
-  }
+	"metadata": {
+		"name": "Alert",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "action-feedback",
+		"subcategory": "alert",
+		"description": "Comprehensive alert component for notifications, warnings, and status messages with Norwegian compliance, accessibility, and live region support. Supports dismissible alerts, action buttons, auto-close functionality, and toast-style positioning.",
+		"keywords": [
+			"alert",
+			"notification",
+			"warning",
+			"status",
+			"toast",
+			"dismissible",
+			"accessible",
+			"norwegian",
+			"live-region"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-02-01T09:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["div", "section", "button"],
+			"ariaRoles": ["alert", "alertdialog", "status"],
+			"landmarks": false,
+			"headingStructure": false,
+			"liveRegions": true
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value",
+				"4.1.3 Status Messages"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": ["info", "success", "warning", "error", "neutral"]
+				},
+				"description": "Visual variant determining the alert's semantic meaning and appearance",
+				"required": false,
+				"defaultValue": "info",
+				"examples": [
+					{
+						"value": "success",
+						"description": "Success confirmation messages",
+						"context": "Form submissions, successful operations"
+					},
+					{
+						"value": "error",
+						"description": "Error messages and validation failures",
+						"context": "Form validation, system errors"
+					},
+					{
+						"value": "warning",
+						"description": "Warning messages requiring attention",
+						"context": "Data loss warnings, important notices"
+					}
+				]
+			},
+			"title": {
+				"type": { "primitive": "string" },
+				"description": "Alert title or heading text",
+				"required": false,
+				"accessibility": {
+					"screenReaderText": "Alert title"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "alert.{componentName}.title",
+					"context": "alert-title"
+				}
+			},
+			"description": {
+				"type": { "primitive": "string" },
+				"description": "Main alert message content",
+				"required": false,
+				"accessibility": {
+					"screenReaderText": "Alert message"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "alert.{componentName}.description",
+					"context": "alert-message"
+				}
+			},
+			"dismissible": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the alert can be dismissed with a close button",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaLabel": "Close alert",
+					"screenReaderText": "Dismissible alert"
+				}
+			},
+			"onDismiss": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void | Promise<void>"
+					}
+				},
+				"description": "Handler called when alert is dismissed",
+				"required": false,
+				"conditions": {
+					"dependsOn": "dismissible",
+					"required": false
+				}
+			},
+			"icon": {
+				"type": {
+					"complex": "component",
+					"signature": {
+						"type": "React.ComponentType<{ className?: string; size?: number }>",
+						"description": "Icon component to display in the alert"
+					}
+				},
+				"description": "Optional custom icon component to display",
+				"required": false,
+				"examples": [
+					{
+						"value": "CheckCircle",
+						"description": "Success checkmark icon",
+						"context": "Success alerts"
+					},
+					{
+						"value": "ExclamationTriangle",
+						"description": "Warning triangle icon",
+						"context": "Warning alerts"
+					}
+				]
+			},
+			"showIcon": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether to show the default variant icon",
+				"required": false,
+				"defaultValue": true,
+				"examples": [
+					{
+						"value": true,
+						"description": "Show default icons for each variant",
+						"context": "Standard alert display"
+					},
+					{
+						"value": false,
+						"description": "Hide icons for text-only alerts",
+						"context": "Minimal alert styling"
+					}
+				]
+			},
+			"action": {
+				"type": {
+					"complex": "object",
+					"properties": {
+						"label": { "type": "string", "required": true },
+						"onClick": { "type": "function", "required": true },
+						"variant": {
+							"type": "'primary' | 'secondary' | 'outline'",
+							"required": false
+						},
+						"loading": { "type": "boolean", "required": false },
+						"disabled": { "type": "boolean", "required": false }
+					}
+				},
+				"description": "Optional action button configuration",
+				"required": false,
+				"examples": [
+					{
+						"value": "{ label: 'Retry', onClick: handleRetry, variant: 'primary' }",
+						"description": "Retry action for error alerts",
+						"context": "Network errors, failed operations"
+					},
+					{
+						"value": "{ label: 'View Details', onClick: showDetails, variant: 'outline' }",
+						"description": "Additional information action",
+						"context": "Informational alerts with more details"
+					}
+				]
+			},
+			"autoClose": {
+				"type": {
+					"primitive": "number",
+					"constraints": {
+						"min": 1000,
+						"max": 30000
+					}
+				},
+				"description": "Auto-dismiss timeout in milliseconds",
+				"required": false,
+				"examples": [
+					{
+						"value": 5000,
+						"description": "Auto-close after 5 seconds",
+						"context": "Success notifications, temporary messages"
+					},
+					{
+						"value": 10000,
+						"description": "Auto-close after 10 seconds",
+						"context": "Important information that needs time to read"
+					}
+				]
+			},
+			"position": {
+				"type": {
+					"custom": "variant",
+					"values": [
+						"static",
+						"top-left",
+						"top-center",
+						"top-right",
+						"bottom-left",
+						"bottom-center",
+						"bottom-right"
+					]
+				},
+				"description": "Position for toast-style alerts",
+				"required": false,
+				"defaultValue": "static",
+				"examples": [
+					{
+						"value": "top-right",
+						"description": "Toast notification in top-right corner",
+						"context": "System notifications, status updates"
+					},
+					{
+						"value": "static",
+						"description": "Inline alert within content flow",
+						"context": "Form validation, contextual messages"
+					}
+				]
+			},
+			"role": {
+				"type": {
+					"custom": "variant",
+					"values": ["alert", "status", "alertdialog"]
+				},
+				"description": "ARIA role for the alert",
+				"required": false,
+				"defaultValue": "alert",
+				"accessibility": {
+					"purpose": "Determines how screen readers announce the alert"
+				},
+				"examples": [
+					{
+						"value": "alert",
+						"description": "Important messages requiring immediate attention",
+						"context": "Errors, warnings"
+					},
+					{
+						"value": "status",
+						"description": "Status updates and information",
+						"context": "Success messages, progress updates"
+					}
+				]
+			},
+			"priority": {
+				"type": {
+					"custom": "variant",
+					"values": ["polite", "assertive", "off"]
+				},
+				"description": "Screen reader announcement priority",
+				"required": false,
+				"defaultValue": "polite",
+				"accessibility": {
+					"purpose": "Controls urgency of screen reader announcements"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false
+			},
+			"children": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Alert content - can be used instead of or alongside title/description",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "alert.{componentName}.content",
+					"context": "alert-content"
+				}
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"variant",
+				"title",
+				"description",
+				"dismissible",
+				"onDismiss",
+				"icon",
+				"showIcon",
+				"action",
+				"autoClose",
+				"position",
+				"role",
+				"priority",
+				"className",
+				"children",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element"],
+				"description": "Alert content"
+			},
+			"slots": {
+				"icon": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom icon slot"
+				},
+				"action": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom action button slot"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"info": "bg-blue-50 border-blue-200 text-blue-800",
+					"success": "bg-green-50 border-green-200 text-green-800",
+					"warning": "bg-yellow-50 border-yellow-200 text-yellow-800",
+					"error": "bg-red-50 border-red-200 text-red-800",
+					"neutral": "bg-gray-50 border-gray-200 text-gray-800"
+				},
+				"defaultValue": "info"
+			},
+			"position": {
+				"values": {
+					"static": "relative",
+					"top-left": "fixed top-4 left-4 z-50",
+					"top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
+					"top-right": "fixed top-4 right-4 z-50",
+					"bottom-left": "fixed bottom-4 left-4 z-50",
+					"bottom-center": "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+					"bottom-right": "fixed bottom-4 right-4 z-50"
+				},
+				"defaultValue": "static"
+			},
+			"dismissible": {
+				"values": {
+					"true": "pr-12",
+					"false": ""
+				},
+				"defaultValue": "false"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "error",
+					"role": "alert"
+				},
+				"className": "border-l-4 border-l-red-500",
+				"description": "Error alerts with emphasized left border"
+			},
+			{
+				"conditions": {
+					"variant": "warning",
+					"role": "alert"
+				},
+				"className": "border-l-4 border-l-yellow-500",
+				"description": "Warning alerts with emphasized left border"
+			},
+			{
+				"conditions": {
+					"variant": "success",
+					"role": "status"
+				},
+				"className": "border-l-4 border-l-green-500",
+				"description": "Success status with emphasized left border"
+			},
+			{
+				"conditions": {
+					"position": [
+						"top-left",
+						"top-center",
+						"top-right",
+						"bottom-left",
+						"bottom-center",
+						"bottom-right"
+					]
+				},
+				"className": "max-w-sm shadow-lg rounded-lg animate-slide-in",
+				"description": "Toast-style alerts with animation and shadow"
+			},
+			{
+				"conditions": {
+					"dismissible": true
+				},
+				"className": "group",
+				"description": "Dismissible alerts with hover states"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "alert",
+			"additional": ["status", "alertdialog"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Escape",
+					"action": "dismiss",
+					"context": "Dismiss alert if dismissible"
+				},
+				{
+					"key": "Enter",
+					"action": "activate-action",
+					"context": "Activate action button if present"
+				},
+				{
+					"key": "Space",
+					"action": "activate-action",
+					"context": "Activate action button if present"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Navigate to dismiss button or action"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "mount",
+					"message": "Alert: {title} {description}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "error-variant",
+					"message": "Error: {title} {description}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "warning-variant",
+					"message": "Warning: {title} {description}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "success-variant",
+					"message": "Success: {title} {description}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "dismiss",
+					"message": "Alert dismissed",
+					"priority": "polite"
+				},
+				{
+					"trigger": "auto-close",
+					"message": "Alert will close automatically",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["accessible-name"],
+				"descriptions": {
+					"dismiss-button": "Close alert",
+					"action-button": "Alert action",
+					"auto-close": "Auto-closing alert",
+					"toast": "Notification alert"
+				}
+			}
+		},
+		"liveRegions": {
+			"supported": true,
+			"attributes": [
+				{
+					"name": "aria-live",
+					"value": "polite",
+					"conditions": "role=status or priority=polite"
+				},
+				{
+					"name": "aria-live",
+					"value": "assertive",
+					"conditions": "role=alert or priority=assertive"
+				},
+				{
+					"name": "aria-atomic",
+					"value": "true",
+					"conditions": "always"
+				}
+			]
+		},
+		"testing": {
+			"automated": [
+				"alert-element-present",
+				"accessible-name-present",
+				"live-region-configured",
+				"keyboard-dismissal",
+				"color-contrast-aaa",
+				"icon-alt-text",
+				"action-button-accessible",
+				"auto-close-announced"
+			],
+			"manual": [
+				"screen-reader-announcements",
+				"keyboard-only-interaction",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"focus-management-flow"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/alert.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"useEffect",
+							"useCallback",
+							"HTMLAttributes"
+						]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/alert.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/alert.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/alert.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/alert.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/alert.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Alert",
+			"description": "Simple informational alert with title and description",
+			"category": "basic",
+			"code": {
+				"react": "<Alert variant='info' title='Information' description='This is an informational message.' />",
+				"vue": "<Alert variant='info' title='Information' description='This is an informational message.' />",
+				"angular": "<xala-alert variant='info' title='Information' description='This is an informational message.'></xala-alert>",
+				"svelte": "<Alert variant='info' title='Information' description='This is an informational message.' />",
+				"solid": "<Alert variant='info' title='Information' description='This is an informational message.' />",
+				"web-components": "<xala-alert variant='info' title='Information' description='This is an informational message.'></xala-alert>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "Information",
+				"description": "This is an informational message."
+			}
+		},
+		{
+			"name": "Alert Variants",
+			"description": "Different alert variants for various contexts",
+			"category": "variants",
+			"code": {
+				"react": "<Alert variant='success' title='Success' description='Operation completed successfully.' />\n<Alert variant='warning' title='Warning' description='Please review your input.' />\n<Alert variant='error' title='Error' description='Something went wrong.' />\n<Alert variant='neutral' title='Notice' description='General information.' />"
+			},
+			"props": {
+				"variant": ["success", "warning", "error", "neutral"]
+			}
+		},
+		{
+			"name": "Dismissible Alert",
+			"description": "Alert with close button for user dismissal",
+			"category": "interactive",
+			"code": {
+				"react": "<Alert\n  variant='warning'\n  title='Unsaved Changes'\n  description='You have unsaved changes. Please save before leaving.'\n  dismissible\n  onDismiss={() => console.log('Alert dismissed')}\n/>"
+			},
+			"props": {
+				"variant": "warning",
+				"title": "Unsaved Changes",
+				"description": "You have unsaved changes. Please save before leaving.",
+				"dismissible": true
+			},
+			"notes": "Use dismissible alerts for non-critical messages that users can close"
+		},
+		{
+			"name": "Alert with Action",
+			"description": "Alert with action button for user interaction",
+			"category": "interactive",
+			"code": {
+				"react": "<Alert\n  variant='error'\n  title='Connection Failed'\n  description='Unable to connect to the server.'\n  action={{\n    label: 'Retry',\n    onClick: handleRetry,\n    variant: 'primary'\n  }}\n/>"
+			},
+			"props": {
+				"variant": "error",
+				"title": "Connection Failed",
+				"description": "Unable to connect to the server.",
+				"action": {
+					"label": "Retry",
+					"variant": "primary"
+				}
+			},
+			"notes": "Action buttons provide users with immediate ways to resolve issues"
+		},
+		{
+			"name": "Auto-Close Alert",
+			"description": "Alert that automatically dismisses after a timeout",
+			"category": "temporal",
+			"code": {
+				"react": "<Alert\n  variant='success'\n  title='File Saved'\n  description='Your document has been saved successfully.'\n  autoClose={5000}\n/>"
+			},
+			"props": {
+				"variant": "success",
+				"title": "File Saved",
+				"description": "Your document has been saved successfully.",
+				"autoClose": 5000
+			},
+			"notes": "Auto-close is ideal for success messages and temporary notifications"
+		},
+		{
+			"name": "Toast Alert",
+			"description": "Fixed position alert for global notifications",
+			"category": "positioning",
+			"code": {
+				"react": "<Alert\n  variant='info'\n  title='New Update Available'\n  description='Version 2.1.0 is now available.'\n  position='top-right'\n  dismissible\n  autoClose={8000}\n  action={{\n    label: 'Update Now',\n    onClick: handleUpdate,\n    variant: 'outline'\n  }}\n/>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "New Update Available",
+				"description": "Version 2.1.0 is now available.",
+				"position": "top-right",
+				"dismissible": true,
+				"autoClose": 8000
+			},
+			"notes": "Toast alerts are perfect for system-wide notifications"
+		},
+		{
+			"name": "Custom Content Alert",
+			"description": "Alert with custom children content",
+			"category": "composition",
+			"code": {
+				"react": "<Alert variant='warning' title='Data Loss Warning'>\n  <div className='mt-2'>\n    <p className='text-sm'>The following items will be permanently deleted:</p>\n    <ul className='mt-2 text-sm list-disc pl-5'>\n      <li>3 documents</li>\n      <li>2 images</li>\n      <li>1 video file</li>\n    </ul>\n  </div>\n</Alert>"
+			},
+			"props": {
+				"variant": "warning",
+				"title": "Data Loss Warning"
+			},
+			"notes": "Use children for complex alert content beyond simple text"
+		},
+		{
+			"name": "Norwegian Compliance Alert",
+			"description": "Alert with Norwegian text and GDPR compliance considerations",
+			"category": "compliance",
+			"code": {
+				"react": "<Alert\n  variant='info'\n  title='Personvern'\n  description='Vi behandler dine personopplysninger i henhold til GDPR. Les vår personvernpolicy for mer informasjon.'\n  action={{\n    label: 'Les mer',\n    onClick: () => window.open('/personvern'),\n    variant: 'outline'\n  }}\n  role='status'\n  priority='polite'\n/>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "Personvern",
+				"description": "Vi behandler dine personopplysninger i henhold til GDPR.",
+				"role": "status",
+				"priority": "polite"
+			},
+			"notes": "Norwegian compliance requires proper language and GDPR considerations"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use appropriate ARIA roles (alert for urgent, status for informational)",
+				"Implement proper live region announcements for screen readers",
+				"Ensure color contrast meets AAA standards for all variants",
+				"Provide keyboard navigation for interactive elements",
+				"Use semantic HTML and meaningful content structure",
+				"Apply Norwegian design tokens for government compliance",
+				"Handle auto-close gracefully with proper announcements"
+			],
+			"patterns": [
+				{
+					"pattern": "live regions",
+					"context": "Accessibility",
+					"recommendation": "Use aria-live=polite for status, aria-live=assertive for urgent alerts"
+				},
+				{
+					"pattern": "auto-close with cleanup",
+					"context": "React implementation",
+					"recommendation": "Use useEffect with setTimeout and cleanup to prevent memory leaks"
+				},
+				{
+					"pattern": "compound variants",
+					"context": "Styling",
+					"recommendation": "Use CVA for complex variant combinations and conditional styling"
+				},
+				{
+					"pattern": "portal rendering for toasts",
+					"context": "Positioning",
+					"recommendation": "Render fixed-position alerts in portal to avoid z-index issues"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "Generic div without role",
+					"reason": "Screen readers cannot understand the alert's purpose",
+					"alternative": "Use proper ARIA role (alert, status, or alertdialog)"
+				},
+				{
+					"pattern": "Auto-close without announcement",
+					"reason": "Users may miss important information",
+					"alternative": "Announce auto-close behavior to screen readers"
+				},
+				{
+					"pattern": "Low contrast color combinations",
+					"reason": "Fails WCAG accessibility requirements",
+					"alternative": "Ensure 7:1 contrast ratio for AAA compliance"
+				},
+				{
+					"pattern": "Missing keyboard support for dismissal",
+					"reason": "Keyboard users cannot dismiss alerts",
+					"alternative": "Support Escape key and proper focus management"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate",
+			"estimatedTokens": 2500
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"variant-showcase",
+				"norwegian-compliance"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with correct variant styling",
+				"displays title and description",
+				"shows/hides icon based on showIcon prop",
+				"renders custom icon when provided",
+				"calls onDismiss when dismiss button clicked",
+				"calls onDismiss when Escape key pressed",
+				"renders action button with correct props",
+				"calls action onClick handler",
+				"auto-closes after specified timeout",
+				"clears timeout on unmount",
+				"applies position classes for toast alerts",
+				"sets correct ARIA role and live region",
+				"announces content to screen readers",
+				"supports keyboard navigation",
+				"applies priority for screen reader announcements",
+				"renders children content",
+				"applies custom className",
+				"respects dismissible prop"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"multiple alerts with different positions",
+				"alert with form validation errors",
+				"toast notification system",
+				"alert within modal or dialog",
+				"keyboard-only interaction",
+				"screen reader navigation",
+				"Norwegian compliance validation",
+				"auto-close behavior with user interaction",
+				"responsive behavior on mobile devices"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true,
+			"animations": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "1KB"
+			},
+			"renderTime": {
+				"initial": "<16ms",
+				"update": "<8ms"
+			},
+			"animation": {
+				"duration": "200ms",
+				"fps": "60"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure with semantic HTML",
+			"CSS-only animations for smooth transitions",
+			"Efficient timeout management with cleanup",
+			"Optimized class variance authority patterns",
+			"Tree-shakeable icon imports",
+			"Memoized variant class generation",
+			"Portal rendering only when needed for positioning"
+		]
+	}
 }

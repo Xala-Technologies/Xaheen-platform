@@ -1,933 +1,995 @@
 {
-  "metadata": {
-    "name": "Toast",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "action-feedback",
-    "subcategory": "toast",
-    "description": "Comprehensive toast notification component for temporary status messages, alerts, and user feedback with Norwegian compliance, accessibility, and live region support. Supports stacked toasts, auto-dismiss, pause on hover, and customizable positioning.",
-    "keywords": ["toast", "notification", "alert", "temporary", "feedback", "stacked", "dismissible", "accessible", "norwegian", "live-region"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T15:30:00Z",
-    "updatedAt": "2024-08-04T15:30:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["div", "section", "button"],
-      "ariaRoles": ["alert", "status"],
-      "landmarks": false,
-      "headingStructure": false,
-      "liveRegions": true
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value",
-        "4.1.3 Status Messages"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": false
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["info", "success", "warning", "error"]
-        },
-        "description": "Visual variant determining the toast's semantic meaning and appearance",
-        "required": false,
-        "defaultValue": "info",
-        "examples": [
-          {
-            "value": "success",
-            "description": "Success confirmation messages",
-            "context": "Form submissions, successful operations"
-          },
-          {
-            "value": "error",
-            "description": "Error messages and validation failures",
-            "context": "Network errors, operation failures"
-          },
-          {
-            "value": "warning",
-            "description": "Warning messages requiring attention",
-            "context": "Data loss warnings, important notices"
-          },
-          {
-            "value": "info",
-            "description": "Informational messages and updates",
-            "context": "Status updates, general information"
-          }
-        ]
-      },
-      "title": {
-        "type": { "primitive": "string" },
-        "description": "Toast title or heading text",
-        "required": false,
-        "accessibility": {
-          "screenReaderText": "Toast title"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "toast.{componentName}.title",
-          "context": "toast-title"
-        }
-      },
-      "description": {
-        "type": { "primitive": "string" },
-        "description": "Main toast message content",
-        "required": false,
-        "accessibility": {
-          "screenReaderText": "Toast message"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "toast.{componentName}.description",
-          "context": "toast-message"
-        }
-      },
-      "duration": {
-        "type": {
-          "primitive": "number",
-          "constraints": {
-            "min": 1000,
-            "max": 30000
-          }
-        },
-        "description": "Auto-dismiss timeout in milliseconds",
-        "required": false,
-        "defaultValue": 5000,
-        "examples": [
-          {
-            "value": 3000,
-            "description": "Quick dismissal for simple confirmations",
-            "context": "Success notifications, brief updates"
-          },
-          {
-            "value": 5000,
-            "description": "Standard duration for most toasts",
-            "context": "General notifications, status messages"
-          },
-          {
-            "value": 8000,
-            "description": "Longer duration for important information",
-            "context": "Error messages, complex information"
-          }
-        ]
-      },
-      "position": {
-        "type": {
-          "custom": "variant",
-          "values": ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]
-        },
-        "description": "Toast positioning on screen",
-        "required": false,
-        "defaultValue": "top-right",
-        "examples": [
-          {
-            "value": "top-right",
-            "description": "Most common position for notifications",
-            "context": "Standard toast notifications"
-          },
-          {
-            "value": "bottom-center",
-            "description": "Mobile-friendly bottom position",
-            "context": "Mobile applications, status updates"
-          },
-          {
-            "value": "top-center",
-            "description": "Centered position for important messages",
-            "context": "Critical alerts, system messages"
-          }
-        ]
-      },
-      "action": {
-        "type": {
-          "complex": "object",
-          "properties": {
-            "label": { "type": "string", "required": true },
-            "onClick": { "type": "function", "required": true },
-            "variant": { "type": "'primary' | 'secondary' | 'outline'", "required": false },
-            "loading": { "type": "boolean", "required": false },
-            "disabled": { "type": "boolean", "required": false }
-          }
-        },
-        "description": "Optional action button configuration",
-        "required": false,
-        "examples": [
-          {
-            "value": "{ label: 'Undo', onClick: handleUndo, variant: 'outline' }",
-            "description": "Undo action for reversible operations",
-            "context": "Delete confirmations, data changes"
-          },
-          {
-            "value": "{ label: 'View', onClick: showDetails, variant: 'primary' }",
-            "description": "Navigation action to related content",
-            "context": "New messages, updates available"
-          }
-        ]
-      },
-      "onClose": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement> | 'timeout'",
-                "required": true
-              }
-            ],
-            "returnType": "void | Promise<void>"
-          }
-        },
-        "description": "Handler called when toast is closed (manually or auto-dismiss)",
-        "required": false
-      },
-      "pauseOnHover": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether to pause auto-dismiss when hovering over toast",
-        "required": false,
-        "defaultValue": true,
-        "examples": [
-          {
-            "value": true,
-            "description": "Pause timer on hover for better UX",
-            "context": "Standard toast behavior"
-          },
-          {
-            "value": false,
-            "description": "Continue timer regardless of hover",
-            "context": "Critical notifications that must dismiss"
-          }
-        ]
-      },
-      "stacked": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether this toast is part of a stacked group",
-        "required": false,
-        "defaultValue": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Enable stacked behavior with proper spacing",
-            "context": "Multiple simultaneous notifications"
-          },
-          {
-            "value": false,
-            "description": "Single toast display",
-            "context": "One-off notifications"
-          }
-        ]
-      },
-      "icon": {
-        "type": {
-          "complex": "component",
-          "signature": {
-            "type": "React.ComponentType<{ className?: string; size?: number }>",
-            "description": "Icon component to display in the toast"
-          }
-        },
-        "description": "Optional custom icon component to display",
-        "required": false,
-        "examples": [
-          {
-            "value": "CheckCircle",
-            "description": "Success checkmark icon",
-            "context": "Success toasts"
-          },
-          {
-            "value": "AlertTriangle",
-            "description": "Warning triangle icon",
-            "context": "Warning toasts"
-          }
-        ]
-      },
-      "showIcon": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether to show the default variant icon",
-        "required": false,
-        "defaultValue": true
-      },
-      "role": {
-        "type": {
-          "custom": "variant",
-          "values": ["alert", "status"]
-        },
-        "description": "ARIA role for the toast",
-        "required": false,
-        "defaultValue": "status",
-        "accessibility": {
-          "purpose": "Determines how screen readers announce the toast"
-        },
-        "examples": [
-          {
-            "value": "alert",
-            "description": "Important messages requiring immediate attention",
-            "context": "Errors, critical warnings"
-          },
-          {
-            "value": "status",
-            "description": "Status updates and information",
-            "context": "Success messages, progress updates"
-          }
-        ]
-      },
-      "priority": {
-        "type": {
-          "custom": "variant",
-          "values": ["polite", "assertive", "off"]
-        },
-        "description": "Screen reader announcement priority",
-        "required": false,
-        "defaultValue": "polite",
-        "accessibility": {
-          "purpose": "Controls urgency of screen reader announcements"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false
-      },
-      "children": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Toast content - can be used instead of or alongside title/description",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "toast.{componentName}.content",
-          "context": "toast-content"
-        }
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "variant", "title", "description", "duration", "position", "action", 
-        "onClose", "pauseOnHover", "stacked", "icon", "showIcon", "role", 
-        "priority", "className", "children", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element"],
-        "description": "Toast content"
-      },
-      "slots": {
-        "icon": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom icon slot"
-        },
-        "action": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom action button slot"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "info": "bg-blue-50 border-blue-200 text-blue-900",
-          "success": "bg-green-50 border-green-200 text-green-900",
-          "warning": "bg-yellow-50 border-yellow-200 text-yellow-900",
-          "error": "bg-red-50 border-red-200 text-red-900"
-        },
-        "defaultValue": "info"
-      },
-      "position": {
-        "values": {
-          "top-left": "fixed top-4 left-4 z-50",
-          "top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
-          "top-right": "fixed top-4 right-4 z-50",
-          "bottom-left": "fixed bottom-4 left-4 z-50",
-          "bottom-center": "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
-          "bottom-right": "fixed bottom-4 right-4 z-50"
-        },
-        "defaultValue": "top-right"
-      },
-      "stacked": {
-        "values": {
-          "true": "mb-2 transition-all duration-300 ease-in-out",
-          "false": ""
-        },
-        "defaultValue": "false"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "error",
-          "role": "alert"
-        },
-        "className": "border-l-4 border-l-red-500 shadow-lg",
-        "description": "Error toasts with emphasized left border and shadow"
-      },
-      {
-        "conditions": {
-          "variant": "warning",
-          "role": "alert"
-        },
-        "className": "border-l-4 border-l-yellow-500 shadow-lg",
-        "description": "Warning toasts with emphasized left border and shadow"
-      },
-      {
-        "conditions": {
-          "variant": "success",
-          "role": "status"
-        },
-        "className": "border-l-4 border-l-green-500 shadow-md",
-        "description": "Success toasts with emphasized left border"
-      },
-      {
-        "conditions": {
-          "variant": "info",
-          "role": "status"
-        },
-        "className": "border-l-4 border-l-blue-500 shadow-md",
-        "description": "Info toasts with emphasized left border"
-      },
-      {
-        "conditions": {
-          "position": ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]
-        },
-        "className": "max-w-sm rounded-lg animate-slide-in-toast",
-        "description": "All positioned toasts with animation and max width"
-      },
-      {
-        "conditions": {
-          "stacked": true
-        },
-        "className": "transform transition-transform hover:scale-105",
-        "description": "Stacked toasts with hover scale effect"
-      },
-      {
-        "conditions": {
-          "pauseOnHover": true
-        },
-        "className": "cursor-pointer hover:shadow-xl transition-shadow",
-        "description": "Pausable toasts with hover effects"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "status",
-      "additional": ["alert"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Escape",
-          "action": "dismiss",
-          "context": "Close toast notification"
-        },
-        {
-          "key": "Enter",
-          "action": "activate-action",
-          "context": "Activate action button if present"
-        },
-        {
-          "key": "Space",
-          "action": "activate-action",
-          "context": "Activate action button if present"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Navigate to close button or action"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "mount",
-          "message": "Notification: {title} {description}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "error-variant",
-          "message": "Error notification: {title} {description}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "warning-variant",
-          "message": "Warning notification: {title} {description}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "success-variant",
-          "message": "Success notification: {title} {description}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "close",
-          "message": "Notification closed",
-          "priority": "polite"
-        },
-        {
-          "trigger": "auto-close-warning",
-          "message": "Notification will close in {seconds} seconds",
-          "priority": "polite"
-        },
-        {
-          "trigger": "pause-on-hover",
-          "message": "Timer paused",
-          "priority": "off"
-        },
-        {
-          "trigger": "resume-timer",
-          "message": "Timer resumed",
-          "priority": "off"
-        }
-      ],
-      "labels": {
-        "required": ["accessible-name"],
-        "descriptions": {
-          "close-button": "Close notification",
-          "action-button": "Notification action",
-          "auto-closing": "Auto-closing notification",
-          "paused": "Notification timer paused",
-          "stacked": "Stacked notification"
-        }
-      }
-    },
-    "liveRegions": {
-      "supported": true,
-      "attributes": [
-        {
-          "name": "aria-live",
-          "value": "polite",
-          "conditions": "role=status or priority=polite"
-        },
-        {
-          "name": "aria-live",
-          "value": "assertive",
-          "conditions": "role=alert or priority=assertive"
-        },
-        {
-          "name": "aria-atomic",
-          "value": "true",
-          "conditions": "always"
-        }
-      ]
-    },
-    "testing": {
-      "automated": [
-        "toast-element-present",
-        "accessible-name-present",
-        "live-region-configured",
-        "keyboard-dismissal",
-        "color-contrast-aaa",
-        "icon-alt-text",
-        "action-button-accessible",
-        "auto-close-announced",
-        "hover-pause-behavior",
-        "stacked-toast-spacing"
-      ],
-      "manual": [
-        "screen-reader-announcements",
-        "keyboard-only-interaction",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "focus-management-flow",
-        "mobile-touch-interaction"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/toast.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useEffect", "useCallback", "useState", "useRef", "HTMLAttributes"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/toast.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/toast.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/toast.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/toast.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/toast.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Toast",
-      "description": "Simple toast notification with title and description",
-      "category": "basic",
-      "code": {
-        "react": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
-        "vue": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
-        "angular": "<xala-toast variant='success' title='Success' description='Your changes have been saved.'></xala-toast>",
-        "svelte": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
-        "solid": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
-        "web-components": "<xala-toast variant='success' title='Success' description='Your changes have been saved.'></xala-toast>"
-      },
-      "props": {
-        "variant": "success",
-        "title": "Success",
-        "description": "Your changes have been saved."
-      }
-    },
-    {
-      "name": "Toast Variants",
-      "description": "Different toast variants for various contexts",
-      "category": "variants",
-      "code": {
-        "react": "<Toast variant='info' title='Info' description='New update available.' />\n<Toast variant='success' title='Success' description='File uploaded successfully.' />\n<Toast variant='warning' title='Warning' description='Storage space is running low.' />\n<Toast variant='error' title='Error' description='Failed to connect to server.' />"
-      },
-      "props": {
-        "variant": ["info", "success", "warning", "error"]
-      }
-    },
-    {
-      "name": "Toast with Action",
-      "description": "Toast with action button for user interaction",
-      "category": "interactive",
-      "code": {
-        "react": "<Toast\n  variant='error'\n  title='Connection Lost'\n  description='Unable to sync your data.'\n  action={{\n    label: 'Retry',\n    onClick: handleRetry,\n    variant: 'primary'\n  }}\n  duration={8000}\n/>"
-      },
-      "props": {
-        "variant": "error",
-        "title": "Connection Lost",
-        "description": "Unable to sync your data.",
-        "action": {
-          "label": "Retry",
-          "variant": "primary"
-        },
-        "duration": 8000
-      },
-      "notes": "Action buttons provide users with immediate ways to resolve issues"
-    },
-    {
-      "name": "Stacked Toasts",
-      "description": "Multiple toasts displayed in a stack",
-      "category": "stacking",
-      "code": {
-        "react": "<div>\n  <Toast\n    variant='success'\n    title='File Saved'\n    description='Document.pdf saved successfully.'\n    position='top-right'\n    stacked\n    duration={3000}\n  />\n  <Toast\n    variant='info'\n    title='Backup Complete'\n    description='Your data has been backed up.'\n    position='top-right'\n    stacked\n    duration={5000}\n  />\n  <Toast\n    variant='warning'\n    title='Storage Low'\n    description='Only 2GB of storage remaining.'\n    position='top-right'\n    stacked\n    duration={7000}\n  />\n</div>"
-      },
-      "props": {
-        "stacked": true,
-        "position": "top-right"
-      },
-      "notes": "Stacked toasts automatically arrange themselves with proper spacing"
-    },
-    {
-      "name": "Toast with Pause on Hover",
-      "description": "Toast that pauses auto-dismiss when hovered",
-      "category": "interaction",
-      "code": {
-        "react": "<Toast\n  variant='info'\n  title='New Message'\n  description='You have received a new message from John.'\n  position='bottom-right'\n  duration={6000}\n  pauseOnHover\n  action={{\n    label: 'View',\n    onClick: openMessage,\n    variant: 'outline'\n  }}\n/>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "New Message",
-        "description": "You have received a new message from John.",
-        "position": "bottom-right",
-        "duration": 6000,
-        "pauseOnHover": true
-      },
-      "notes": "Pause on hover allows users to read longer messages without rushing"
-    },
-    {
-      "name": "Different Positions",
-      "description": "Toast notifications in various screen positions",
-      "category": "positioning",
-      "code": {
-        "react": "<Toast\n  variant='success'\n  title='Top Left'\n  description='Notification in top-left corner.'\n  position='top-left'\n/>\n<Toast\n  variant='info'\n  title='Top Center'\n  description='Notification in top-center.'\n  position='top-center'\n/>\n<Toast\n  variant='warning'\n  title='Bottom Right'\n  description='Notification in bottom-right corner.'\n  position='bottom-right'\n/>"
-      },
-      "props": {
-        "position": ["top-left", "top-center", "bottom-right"]
-      },
-      "notes": "Choose positions based on your app layout and user expectations"
-    },
-    {
-      "name": "Custom Content Toast",
-      "description": "Toast with custom children content",
-      "category": "composition",
-      "code": {
-        "react": "<Toast variant='info' title='System Update'>\n  <div className='mt-2'>\n    <p className='text-sm'>New features available:</p>\n    <ul className='mt-2 text-sm list-disc pl-5'>\n      <li>Dark mode support</li>\n      <li>Enhanced performance</li>\n      <li>New integrations</li>\n    </ul>\n    <button className='mt-3 text-sm text-blue-600 hover:text-blue-800'>\n      Learn more →\n    </button>\n  </div>\n</Toast>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "System Update"
-      },
-      "notes": "Use children for complex toast content beyond simple text"
-    },
-    {
-      "name": "Norwegian Compliance Toast",
-      "description": "Toast with Norwegian text and GDPR compliance considerations",
-      "category": "compliance",
-      "code": {
-        "react": "<Toast\n  variant='info'\n  title='Samtykke oppdatert'\n  description='Dine personverninnstillinger har blitt oppdatert i henhold til GDPR.'\n  position='top-center'\n  duration={7000}\n  action={{\n    label: 'Se detaljer',\n    onClick: () => window.open('/personvern'),\n    variant: 'outline'\n  }}\n  role='status'\n  priority='polite'\n/>"
-      },
-      "props": {
-        "variant": "info",
-        "title": "Samtykke oppdatert",
-        "description": "Dine personverninnstillinger har blitt oppdatert i henhold til GDPR.",
-        "position": "top-center",
-        "role": "status",
-        "priority": "polite"
-      },
-      "notes": "Norwegian compliance requires proper language and GDPR considerations"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use appropriate ARIA roles (alert for urgent, status for informational)",
-        "Implement proper live region announcements for screen readers",
-        "Ensure color contrast meets AAA standards for all variants",
-        "Provide keyboard navigation for interactive elements",
-        "Use semantic HTML and meaningful content structure",
-        "Apply Norwegian design tokens for government compliance",
-        "Handle auto-dismiss gracefully with proper announcements",
-        "Implement pause on hover with clear visual feedback",
-        "Stack toasts with proper spacing and z-index management",
-        "Use portal rendering to avoid positioning conflicts"
-      ],
-      "patterns": [
-        {
-          "pattern": "live regions",
-          "context": "Accessibility",
-          "recommendation": "Use aria-live=polite for status, aria-live=assertive for urgent toasts"
-        },
-        {
-          "pattern": "timer management with pause",
-          "context": "React implementation",
-          "recommendation": "Use refs to track timer state and pause/resume functionality"
-        },
-        {
-          "pattern": "compound variants for stacking",
-          "context": "Styling",
-          "recommendation": "Use transform and z-index for proper stacked positioning"
-        },
-        {
-          "pattern": "portal rendering",
-          "context": "Positioning",
-          "recommendation": "Render fixed-position toasts in portal to avoid layout issues"
-        },
-        {
-          "pattern": "animation enter/exit",
-          "context": "User experience",
-          "recommendation": "Use CSS transitions for smooth slide-in and fade-out animations"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "Generic div without role",
-          "reason": "Screen readers cannot understand the toast's purpose",
-          "alternative": "Use proper ARIA role (alert or status)"
-        },
-        {
-          "pattern": "No pause on hover for long content",
-          "reason": "Users cannot read complex messages before auto-dismiss",
-          "alternative": "Implement pauseOnHover for better accessibility"
-        },
-        {
-          "pattern": "Overlapping toasts without stacking",
-          "reason": "Multiple toasts can become unreadable",
-          "alternative": "Use proper stacking with spacing and z-index management"
-        },
-        {
-          "pattern": "Very short durations (<3 seconds)",
-          "reason": "Insufficient time for users to read and act",
-          "alternative": "Use appropriate durations based on content length"
-        },
-        {
-          "pattern": "Missing close handlers",
-          "reason": "No way to track toast dismissals",
-          "alternative": "Always provide onClose handler for analytics and state management"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate-high",
-      "estimatedTokens": 2800
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "variant-showcase", "norwegian-compliance", "stacking-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with correct variant styling",
-        "displays title and description",
-        "shows/hides icon based on showIcon prop",
-        "renders custom icon when provided",
-        "calls onClose when close button clicked",
-        "calls onClose when Escape key pressed",
-        "calls onClose with 'timeout' when auto-dismissed",
-        "renders action button with correct props",
-        "calls action onClick handler",
-        "auto-closes after specified duration",
-        "pauses timer on hover when pauseOnHover is true",
-        "resumes timer on mouse leave",
-        "clears timeout on unmount",
-        "applies position classes correctly",
-        "applies stacked classes when stacked is true",
-        "sets correct ARIA role and live region",
-        "announces content to screen readers",
-        "supports keyboard navigation",
-        "applies priority for screen reader announcements",
-        "renders children content",
-        "applies custom className",
-        "handles portal rendering for positioned toasts"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "multiple stacked toasts with different durations",
-        "toast queue management system",
-        "toast with form interaction",
-        "keyboard-only toast interaction",
-        "screen reader toast announcements",
-        "Norwegian compliance validation",
-        "pause/resume behavior with user interaction",
-        "responsive behavior on mobile devices",
-        "toast persistence across route changes",
-        "toast with external state management"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true,
-      "animations": true,
-      "stacking": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "3KB",
-        "gzipped": "1.2KB"
-      },
-      "renderTime": {
-        "initial": "<16ms",
-        "update": "<8ms",
-        "animation": "<200ms"
-      },
-      "animation": {
-        "duration": "250ms",
-        "fps": "60"
-      },
-      "memory": {
-        "timers": "cleanup on unmount",
-        "eventListeners": "cleanup on unmount"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure with semantic HTML",
-      "CSS-only animations for smooth transitions",
-      "Efficient timer management with cleanup",
-      "Optimized class variance authority patterns",
-      "Tree-shakeable icon imports",
-      "Memoized variant class generation",
-      "Portal rendering only for positioned toasts",
-      "Debounced hover state changes",
-      "Lazy-loaded action components"
-    ]
-  }
+	"metadata": {
+		"name": "Toast",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "action-feedback",
+		"subcategory": "toast",
+		"description": "Comprehensive toast notification component for temporary status messages, alerts, and user feedback with Norwegian compliance, accessibility, and live region support. Supports stacked toasts, auto-dismiss, pause on hover, and customizable positioning.",
+		"keywords": [
+			"toast",
+			"notification",
+			"alert",
+			"temporary",
+			"feedback",
+			"stacked",
+			"dismissible",
+			"accessible",
+			"norwegian",
+			"live-region"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T15:30:00Z",
+		"updatedAt": "2024-08-04T15:30:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["div", "section", "button"],
+			"ariaRoles": ["alert", "status"],
+			"landmarks": false,
+			"headingStructure": false,
+			"liveRegions": true
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value",
+				"4.1.3 Status Messages"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": false
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": ["info", "success", "warning", "error"]
+				},
+				"description": "Visual variant determining the toast's semantic meaning and appearance",
+				"required": false,
+				"defaultValue": "info",
+				"examples": [
+					{
+						"value": "success",
+						"description": "Success confirmation messages",
+						"context": "Form submissions, successful operations"
+					},
+					{
+						"value": "error",
+						"description": "Error messages and validation failures",
+						"context": "Network errors, operation failures"
+					},
+					{
+						"value": "warning",
+						"description": "Warning messages requiring attention",
+						"context": "Data loss warnings, important notices"
+					},
+					{
+						"value": "info",
+						"description": "Informational messages and updates",
+						"context": "Status updates, general information"
+					}
+				]
+			},
+			"title": {
+				"type": { "primitive": "string" },
+				"description": "Toast title or heading text",
+				"required": false,
+				"accessibility": {
+					"screenReaderText": "Toast title"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "toast.{componentName}.title",
+					"context": "toast-title"
+				}
+			},
+			"description": {
+				"type": { "primitive": "string" },
+				"description": "Main toast message content",
+				"required": false,
+				"accessibility": {
+					"screenReaderText": "Toast message"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "toast.{componentName}.description",
+					"context": "toast-message"
+				}
+			},
+			"duration": {
+				"type": {
+					"primitive": "number",
+					"constraints": {
+						"min": 1000,
+						"max": 30000
+					}
+				},
+				"description": "Auto-dismiss timeout in milliseconds",
+				"required": false,
+				"defaultValue": 5000,
+				"examples": [
+					{
+						"value": 3000,
+						"description": "Quick dismissal for simple confirmations",
+						"context": "Success notifications, brief updates"
+					},
+					{
+						"value": 5000,
+						"description": "Standard duration for most toasts",
+						"context": "General notifications, status messages"
+					},
+					{
+						"value": 8000,
+						"description": "Longer duration for important information",
+						"context": "Error messages, complex information"
+					}
+				]
+			},
+			"position": {
+				"type": {
+					"custom": "variant",
+					"values": [
+						"top-left",
+						"top-center",
+						"top-right",
+						"bottom-left",
+						"bottom-center",
+						"bottom-right"
+					]
+				},
+				"description": "Toast positioning on screen",
+				"required": false,
+				"defaultValue": "top-right",
+				"examples": [
+					{
+						"value": "top-right",
+						"description": "Most common position for notifications",
+						"context": "Standard toast notifications"
+					},
+					{
+						"value": "bottom-center",
+						"description": "Mobile-friendly bottom position",
+						"context": "Mobile applications, status updates"
+					},
+					{
+						"value": "top-center",
+						"description": "Centered position for important messages",
+						"context": "Critical alerts, system messages"
+					}
+				]
+			},
+			"action": {
+				"type": {
+					"complex": "object",
+					"properties": {
+						"label": { "type": "string", "required": true },
+						"onClick": { "type": "function", "required": true },
+						"variant": {
+							"type": "'primary' | 'secondary' | 'outline'",
+							"required": false
+						},
+						"loading": { "type": "boolean", "required": false },
+						"disabled": { "type": "boolean", "required": false }
+					}
+				},
+				"description": "Optional action button configuration",
+				"required": false,
+				"examples": [
+					{
+						"value": "{ label: 'Undo', onClick: handleUndo, variant: 'outline' }",
+						"description": "Undo action for reversible operations",
+						"context": "Delete confirmations, data changes"
+					},
+					{
+						"value": "{ label: 'View', onClick: showDetails, variant: 'primary' }",
+						"description": "Navigation action to related content",
+						"context": "New messages, updates available"
+					}
+				]
+			},
+			"onClose": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement> | 'timeout'",
+								"required": true
+							}
+						],
+						"returnType": "void | Promise<void>"
+					}
+				},
+				"description": "Handler called when toast is closed (manually or auto-dismiss)",
+				"required": false
+			},
+			"pauseOnHover": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether to pause auto-dismiss when hovering over toast",
+				"required": false,
+				"defaultValue": true,
+				"examples": [
+					{
+						"value": true,
+						"description": "Pause timer on hover for better UX",
+						"context": "Standard toast behavior"
+					},
+					{
+						"value": false,
+						"description": "Continue timer regardless of hover",
+						"context": "Critical notifications that must dismiss"
+					}
+				]
+			},
+			"stacked": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether this toast is part of a stacked group",
+				"required": false,
+				"defaultValue": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Enable stacked behavior with proper spacing",
+						"context": "Multiple simultaneous notifications"
+					},
+					{
+						"value": false,
+						"description": "Single toast display",
+						"context": "One-off notifications"
+					}
+				]
+			},
+			"icon": {
+				"type": {
+					"complex": "component",
+					"signature": {
+						"type": "React.ComponentType<{ className?: string; size?: number }>",
+						"description": "Icon component to display in the toast"
+					}
+				},
+				"description": "Optional custom icon component to display",
+				"required": false,
+				"examples": [
+					{
+						"value": "CheckCircle",
+						"description": "Success checkmark icon",
+						"context": "Success toasts"
+					},
+					{
+						"value": "AlertTriangle",
+						"description": "Warning triangle icon",
+						"context": "Warning toasts"
+					}
+				]
+			},
+			"showIcon": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether to show the default variant icon",
+				"required": false,
+				"defaultValue": true
+			},
+			"role": {
+				"type": {
+					"custom": "variant",
+					"values": ["alert", "status"]
+				},
+				"description": "ARIA role for the toast",
+				"required": false,
+				"defaultValue": "status",
+				"accessibility": {
+					"purpose": "Determines how screen readers announce the toast"
+				},
+				"examples": [
+					{
+						"value": "alert",
+						"description": "Important messages requiring immediate attention",
+						"context": "Errors, critical warnings"
+					},
+					{
+						"value": "status",
+						"description": "Status updates and information",
+						"context": "Success messages, progress updates"
+					}
+				]
+			},
+			"priority": {
+				"type": {
+					"custom": "variant",
+					"values": ["polite", "assertive", "off"]
+				},
+				"description": "Screen reader announcement priority",
+				"required": false,
+				"defaultValue": "polite",
+				"accessibility": {
+					"purpose": "Controls urgency of screen reader announcements"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false
+			},
+			"children": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Toast content - can be used instead of or alongside title/description",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "toast.{componentName}.content",
+					"context": "toast-content"
+				}
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"variant",
+				"title",
+				"description",
+				"duration",
+				"position",
+				"action",
+				"onClose",
+				"pauseOnHover",
+				"stacked",
+				"icon",
+				"showIcon",
+				"role",
+				"priority",
+				"className",
+				"children",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element"],
+				"description": "Toast content"
+			},
+			"slots": {
+				"icon": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom icon slot"
+				},
+				"action": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom action button slot"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"info": "bg-blue-50 border-blue-200 text-blue-900",
+					"success": "bg-green-50 border-green-200 text-green-900",
+					"warning": "bg-yellow-50 border-yellow-200 text-yellow-900",
+					"error": "bg-red-50 border-red-200 text-red-900"
+				},
+				"defaultValue": "info"
+			},
+			"position": {
+				"values": {
+					"top-left": "fixed top-4 left-4 z-50",
+					"top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
+					"top-right": "fixed top-4 right-4 z-50",
+					"bottom-left": "fixed bottom-4 left-4 z-50",
+					"bottom-center": "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+					"bottom-right": "fixed bottom-4 right-4 z-50"
+				},
+				"defaultValue": "top-right"
+			},
+			"stacked": {
+				"values": {
+					"true": "mb-2 transition-all duration-300 ease-in-out",
+					"false": ""
+				},
+				"defaultValue": "false"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "error",
+					"role": "alert"
+				},
+				"className": "border-l-4 border-l-red-500 shadow-lg",
+				"description": "Error toasts with emphasized left border and shadow"
+			},
+			{
+				"conditions": {
+					"variant": "warning",
+					"role": "alert"
+				},
+				"className": "border-l-4 border-l-yellow-500 shadow-lg",
+				"description": "Warning toasts with emphasized left border and shadow"
+			},
+			{
+				"conditions": {
+					"variant": "success",
+					"role": "status"
+				},
+				"className": "border-l-4 border-l-green-500 shadow-md",
+				"description": "Success toasts with emphasized left border"
+			},
+			{
+				"conditions": {
+					"variant": "info",
+					"role": "status"
+				},
+				"className": "border-l-4 border-l-blue-500 shadow-md",
+				"description": "Info toasts with emphasized left border"
+			},
+			{
+				"conditions": {
+					"position": [
+						"top-left",
+						"top-center",
+						"top-right",
+						"bottom-left",
+						"bottom-center",
+						"bottom-right"
+					]
+				},
+				"className": "max-w-sm rounded-lg animate-slide-in-toast",
+				"description": "All positioned toasts with animation and max width"
+			},
+			{
+				"conditions": {
+					"stacked": true
+				},
+				"className": "transform transition-transform hover:scale-105",
+				"description": "Stacked toasts with hover scale effect"
+			},
+			{
+				"conditions": {
+					"pauseOnHover": true
+				},
+				"className": "cursor-pointer hover:shadow-xl transition-shadow",
+				"description": "Pausable toasts with hover effects"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "status",
+			"additional": ["alert"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Escape",
+					"action": "dismiss",
+					"context": "Close toast notification"
+				},
+				{
+					"key": "Enter",
+					"action": "activate-action",
+					"context": "Activate action button if present"
+				},
+				{
+					"key": "Space",
+					"action": "activate-action",
+					"context": "Activate action button if present"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Navigate to close button or action"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "mount",
+					"message": "Notification: {title} {description}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "error-variant",
+					"message": "Error notification: {title} {description}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "warning-variant",
+					"message": "Warning notification: {title} {description}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "success-variant",
+					"message": "Success notification: {title} {description}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "close",
+					"message": "Notification closed",
+					"priority": "polite"
+				},
+				{
+					"trigger": "auto-close-warning",
+					"message": "Notification will close in {seconds} seconds",
+					"priority": "polite"
+				},
+				{
+					"trigger": "pause-on-hover",
+					"message": "Timer paused",
+					"priority": "off"
+				},
+				{
+					"trigger": "resume-timer",
+					"message": "Timer resumed",
+					"priority": "off"
+				}
+			],
+			"labels": {
+				"required": ["accessible-name"],
+				"descriptions": {
+					"close-button": "Close notification",
+					"action-button": "Notification action",
+					"auto-closing": "Auto-closing notification",
+					"paused": "Notification timer paused",
+					"stacked": "Stacked notification"
+				}
+			}
+		},
+		"liveRegions": {
+			"supported": true,
+			"attributes": [
+				{
+					"name": "aria-live",
+					"value": "polite",
+					"conditions": "role=status or priority=polite"
+				},
+				{
+					"name": "aria-live",
+					"value": "assertive",
+					"conditions": "role=alert or priority=assertive"
+				},
+				{
+					"name": "aria-atomic",
+					"value": "true",
+					"conditions": "always"
+				}
+			]
+		},
+		"testing": {
+			"automated": [
+				"toast-element-present",
+				"accessible-name-present",
+				"live-region-configured",
+				"keyboard-dismissal",
+				"color-contrast-aaa",
+				"icon-alt-text",
+				"action-button-accessible",
+				"auto-close-announced",
+				"hover-pause-behavior",
+				"stacked-toast-spacing"
+			],
+			"manual": [
+				"screen-reader-announcements",
+				"keyboard-only-interaction",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"focus-management-flow",
+				"mobile-touch-interaction"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/toast.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"useEffect",
+							"useCallback",
+							"useState",
+							"useRef",
+							"HTMLAttributes"
+						]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/toast.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/toast.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/toast.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/toast.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/toast.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Toast",
+			"description": "Simple toast notification with title and description",
+			"category": "basic",
+			"code": {
+				"react": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
+				"vue": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
+				"angular": "<xala-toast variant='success' title='Success' description='Your changes have been saved.'></xala-toast>",
+				"svelte": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
+				"solid": "<Toast variant='success' title='Success' description='Your changes have been saved.' />",
+				"web-components": "<xala-toast variant='success' title='Success' description='Your changes have been saved.'></xala-toast>"
+			},
+			"props": {
+				"variant": "success",
+				"title": "Success",
+				"description": "Your changes have been saved."
+			}
+		},
+		{
+			"name": "Toast Variants",
+			"description": "Different toast variants for various contexts",
+			"category": "variants",
+			"code": {
+				"react": "<Toast variant='info' title='Info' description='New update available.' />\n<Toast variant='success' title='Success' description='File uploaded successfully.' />\n<Toast variant='warning' title='Warning' description='Storage space is running low.' />\n<Toast variant='error' title='Error' description='Failed to connect to server.' />"
+			},
+			"props": {
+				"variant": ["info", "success", "warning", "error"]
+			}
+		},
+		{
+			"name": "Toast with Action",
+			"description": "Toast with action button for user interaction",
+			"category": "interactive",
+			"code": {
+				"react": "<Toast\n  variant='error'\n  title='Connection Lost'\n  description='Unable to sync your data.'\n  action={{\n    label: 'Retry',\n    onClick: handleRetry,\n    variant: 'primary'\n  }}\n  duration={8000}\n/>"
+			},
+			"props": {
+				"variant": "error",
+				"title": "Connection Lost",
+				"description": "Unable to sync your data.",
+				"action": {
+					"label": "Retry",
+					"variant": "primary"
+				},
+				"duration": 8000
+			},
+			"notes": "Action buttons provide users with immediate ways to resolve issues"
+		},
+		{
+			"name": "Stacked Toasts",
+			"description": "Multiple toasts displayed in a stack",
+			"category": "stacking",
+			"code": {
+				"react": "<div>\n  <Toast\n    variant='success'\n    title='File Saved'\n    description='Document.pdf saved successfully.'\n    position='top-right'\n    stacked\n    duration={3000}\n  />\n  <Toast\n    variant='info'\n    title='Backup Complete'\n    description='Your data has been backed up.'\n    position='top-right'\n    stacked\n    duration={5000}\n  />\n  <Toast\n    variant='warning'\n    title='Storage Low'\n    description='Only 2GB of storage remaining.'\n    position='top-right'\n    stacked\n    duration={7000}\n  />\n</div>"
+			},
+			"props": {
+				"stacked": true,
+				"position": "top-right"
+			},
+			"notes": "Stacked toasts automatically arrange themselves with proper spacing"
+		},
+		{
+			"name": "Toast with Pause on Hover",
+			"description": "Toast that pauses auto-dismiss when hovered",
+			"category": "interaction",
+			"code": {
+				"react": "<Toast\n  variant='info'\n  title='New Message'\n  description='You have received a new message from John.'\n  position='bottom-right'\n  duration={6000}\n  pauseOnHover\n  action={{\n    label: 'View',\n    onClick: openMessage,\n    variant: 'outline'\n  }}\n/>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "New Message",
+				"description": "You have received a new message from John.",
+				"position": "bottom-right",
+				"duration": 6000,
+				"pauseOnHover": true
+			},
+			"notes": "Pause on hover allows users to read longer messages without rushing"
+		},
+		{
+			"name": "Different Positions",
+			"description": "Toast notifications in various screen positions",
+			"category": "positioning",
+			"code": {
+				"react": "<Toast\n  variant='success'\n  title='Top Left'\n  description='Notification in top-left corner.'\n  position='top-left'\n/>\n<Toast\n  variant='info'\n  title='Top Center'\n  description='Notification in top-center.'\n  position='top-center'\n/>\n<Toast\n  variant='warning'\n  title='Bottom Right'\n  description='Notification in bottom-right corner.'\n  position='bottom-right'\n/>"
+			},
+			"props": {
+				"position": ["top-left", "top-center", "bottom-right"]
+			},
+			"notes": "Choose positions based on your app layout and user expectations"
+		},
+		{
+			"name": "Custom Content Toast",
+			"description": "Toast with custom children content",
+			"category": "composition",
+			"code": {
+				"react": "<Toast variant='info' title='System Update'>\n  <div className='mt-2'>\n    <p className='text-sm'>New features available:</p>\n    <ul className='mt-2 text-sm list-disc pl-5'>\n      <li>Dark mode support</li>\n      <li>Enhanced performance</li>\n      <li>New integrations</li>\n    </ul>\n    <button className='mt-3 text-sm text-blue-600 hover:text-blue-800'>\n      Learn more →\n    </button>\n  </div>\n</Toast>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "System Update"
+			},
+			"notes": "Use children for complex toast content beyond simple text"
+		},
+		{
+			"name": "Norwegian Compliance Toast",
+			"description": "Toast with Norwegian text and GDPR compliance considerations",
+			"category": "compliance",
+			"code": {
+				"react": "<Toast\n  variant='info'\n  title='Samtykke oppdatert'\n  description='Dine personverninnstillinger har blitt oppdatert i henhold til GDPR.'\n  position='top-center'\n  duration={7000}\n  action={{\n    label: 'Se detaljer',\n    onClick: () => window.open('/personvern'),\n    variant: 'outline'\n  }}\n  role='status'\n  priority='polite'\n/>"
+			},
+			"props": {
+				"variant": "info",
+				"title": "Samtykke oppdatert",
+				"description": "Dine personverninnstillinger har blitt oppdatert i henhold til GDPR.",
+				"position": "top-center",
+				"role": "status",
+				"priority": "polite"
+			},
+			"notes": "Norwegian compliance requires proper language and GDPR considerations"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use appropriate ARIA roles (alert for urgent, status for informational)",
+				"Implement proper live region announcements for screen readers",
+				"Ensure color contrast meets AAA standards for all variants",
+				"Provide keyboard navigation for interactive elements",
+				"Use semantic HTML and meaningful content structure",
+				"Apply Norwegian design tokens for government compliance",
+				"Handle auto-dismiss gracefully with proper announcements",
+				"Implement pause on hover with clear visual feedback",
+				"Stack toasts with proper spacing and z-index management",
+				"Use portal rendering to avoid positioning conflicts"
+			],
+			"patterns": [
+				{
+					"pattern": "live regions",
+					"context": "Accessibility",
+					"recommendation": "Use aria-live=polite for status, aria-live=assertive for urgent toasts"
+				},
+				{
+					"pattern": "timer management with pause",
+					"context": "React implementation",
+					"recommendation": "Use refs to track timer state and pause/resume functionality"
+				},
+				{
+					"pattern": "compound variants for stacking",
+					"context": "Styling",
+					"recommendation": "Use transform and z-index for proper stacked positioning"
+				},
+				{
+					"pattern": "portal rendering",
+					"context": "Positioning",
+					"recommendation": "Render fixed-position toasts in portal to avoid layout issues"
+				},
+				{
+					"pattern": "animation enter/exit",
+					"context": "User experience",
+					"recommendation": "Use CSS transitions for smooth slide-in and fade-out animations"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "Generic div without role",
+					"reason": "Screen readers cannot understand the toast's purpose",
+					"alternative": "Use proper ARIA role (alert or status)"
+				},
+				{
+					"pattern": "No pause on hover for long content",
+					"reason": "Users cannot read complex messages before auto-dismiss",
+					"alternative": "Implement pauseOnHover for better accessibility"
+				},
+				{
+					"pattern": "Overlapping toasts without stacking",
+					"reason": "Multiple toasts can become unreadable",
+					"alternative": "Use proper stacking with spacing and z-index management"
+				},
+				{
+					"pattern": "Very short durations (<3 seconds)",
+					"reason": "Insufficient time for users to read and act",
+					"alternative": "Use appropriate durations based on content length"
+				},
+				{
+					"pattern": "Missing close handlers",
+					"reason": "No way to track toast dismissals",
+					"alternative": "Always provide onClose handler for analytics and state management"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate-high",
+			"estimatedTokens": 2800
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"variant-showcase",
+				"norwegian-compliance",
+				"stacking-guide"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with correct variant styling",
+				"displays title and description",
+				"shows/hides icon based on showIcon prop",
+				"renders custom icon when provided",
+				"calls onClose when close button clicked",
+				"calls onClose when Escape key pressed",
+				"calls onClose with 'timeout' when auto-dismissed",
+				"renders action button with correct props",
+				"calls action onClick handler",
+				"auto-closes after specified duration",
+				"pauses timer on hover when pauseOnHover is true",
+				"resumes timer on mouse leave",
+				"clears timeout on unmount",
+				"applies position classes correctly",
+				"applies stacked classes when stacked is true",
+				"sets correct ARIA role and live region",
+				"announces content to screen readers",
+				"supports keyboard navigation",
+				"applies priority for screen reader announcements",
+				"renders children content",
+				"applies custom className",
+				"handles portal rendering for positioned toasts"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"multiple stacked toasts with different durations",
+				"toast queue management system",
+				"toast with form interaction",
+				"keyboard-only toast interaction",
+				"screen reader toast announcements",
+				"Norwegian compliance validation",
+				"pause/resume behavior with user interaction",
+				"responsive behavior on mobile devices",
+				"toast persistence across route changes",
+				"toast with external state management"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true,
+			"animations": true,
+			"stacking": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "3KB",
+				"gzipped": "1.2KB"
+			},
+			"renderTime": {
+				"initial": "<16ms",
+				"update": "<8ms",
+				"animation": "<200ms"
+			},
+			"animation": {
+				"duration": "250ms",
+				"fps": "60"
+			},
+			"memory": {
+				"timers": "cleanup on unmount",
+				"eventListeners": "cleanup on unmount"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure with semantic HTML",
+			"CSS-only animations for smooth transitions",
+			"Efficient timer management with cleanup",
+			"Optimized class variance authority patterns",
+			"Tree-shakeable icon imports",
+			"Memoized variant class generation",
+			"Portal rendering only for positioned toasts",
+			"Debounced hover state changes",
+			"Lazy-loaded action components"
+		]
+	}
 }

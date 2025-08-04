@@ -5,53 +5,59 @@
  */
 
 export interface BackendGeneratorOptions {
-  readonly framework: 'nestjs' | 'express' | 'fastify' | 'hono';
-  readonly database: 'postgresql' | 'mysql' | 'mongodb' | 'sqlite' | 'supabase';
-  readonly orm: 'prisma' | 'typeorm' | 'mongoose' | 'drizzle';
-  readonly authentication: 'jwt' | 'oauth' | 'bankid' | 'firebase' | 'supabase';
-  readonly features: readonly BackendFeature[];
-  readonly deployment: 'docker' | 'kubernetes' | 'serverless' | 'cloud';
-  readonly testing: boolean;
-  readonly documentation: boolean;
-  readonly monitoring: boolean;
+	readonly framework: "nestjs" | "express" | "fastify" | "hono";
+	readonly database: "postgresql" | "mysql" | "mongodb" | "sqlite" | "supabase";
+	readonly orm: "prisma" | "typeorm" | "mongoose" | "drizzle";
+	readonly authentication: "jwt" | "oauth" | "bankid" | "firebase" | "supabase";
+	readonly features: readonly BackendFeature[];
+	readonly deployment: "docker" | "kubernetes" | "serverless" | "cloud";
+	readonly testing: boolean;
+	readonly documentation: boolean;
+	readonly monitoring: boolean;
 }
 
-export type BackendFeature = 
-  | 'rest-api'
-  | 'graphql'
-  | 'websockets'
-  | 'file-upload'
-  | 'email'
-  | 'payments'
-  | 'notifications'
-  | 'caching'
-  | 'queue'
-  | 'cron'
-  | 'audit'
-  | 'logging'
-  | 'metrics';
+export type BackendFeature =
+	| "rest-api"
+	| "graphql"
+	| "websockets"
+	| "file-upload"
+	| "email"
+	| "payments"
+	| "notifications"
+	| "caching"
+	| "queue"
+	| "cron"
+	| "audit"
+	| "logging"
+	| "metrics";
 
 export interface BackendGeneratorResult {
-  readonly success: boolean;
-  readonly files: readonly GeneratedFile[];
-  readonly commands: readonly string[];
-  readonly dependencies: readonly PackageDependency[];
-  readonly message: string;
-  readonly nextSteps: readonly string[];
+	readonly success: boolean;
+	readonly files: readonly GeneratedFile[];
+	readonly commands: readonly string[];
+	readonly dependencies: readonly PackageDependency[];
+	readonly message: string;
+	readonly nextSteps: readonly string[];
 }
 
 export interface GeneratedFile {
-  readonly path: string;
-  readonly content: string;
-  readonly type: 'source' | 'config' | 'test' | 'documentation';
-  readonly language: 'typescript' | 'javascript' | 'yaml' | 'json' | 'dockerfile' | 'sql';
+	readonly path: string;
+	readonly content: string;
+	readonly type: "source" | "config" | "test" | "documentation";
+	readonly language:
+		| "typescript"
+		| "javascript"
+		| "yaml"
+		| "json"
+		| "dockerfile"
+		| "sql";
 }
 
 export interface PackageDependency {
-  readonly name: string;
-  readonly version: string;
-  readonly type: 'dependency' | 'devDependency' | 'peerDependency';
-  readonly description: string;
+	readonly name: string;
+	readonly version: string;
+	readonly type: "dependency" | "devDependency" | "peerDependency";
+	readonly description: string;
 }
 
 /**
@@ -59,61 +65,63 @@ export interface PackageDependency {
  * Generates complete backend application with specified framework and features
  */
 export async function generateBackend(
-  projectPath: string,
-  options: BackendGeneratorOptions
+	projectPath: string,
+	options: BackendGeneratorOptions,
 ): Promise<BackendGeneratorResult> {
-  try {
-    const generator = createBackendGenerator(options.framework);
-    const result = await generator.generate(projectPath, options);
-    
-    return {
-      success: true,
-      files: result.files,
-      commands: result.commands,
-      dependencies: result.dependencies,
-      message: `Successfully generated ${options.framework} backend with ${options.features.length} features`,
-      nextSteps: [
-        'Install dependencies with your package manager',
-        'Configure environment variables',
-        'Set up database connection',
-        'Run database migrations',
-        'Start development server',
-        'Review generated documentation'
-      ]
-    };
-  } catch (error) {
-    return {
-      success: false,
-      files: [],
-      commands: [],
-      dependencies: [],
-      message: `Failed to generate backend: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      nextSteps: ['Check the error message and try again']
-    };
-  }
+	try {
+		const generator = createBackendGenerator(options.framework);
+		const result = await generator.generate(projectPath, options);
+
+		return {
+			success: true,
+			files: result.files,
+			commands: result.commands,
+			dependencies: result.dependencies,
+			message: `Successfully generated ${options.framework} backend with ${options.features.length} features`,
+			nextSteps: [
+				"Install dependencies with your package manager",
+				"Configure environment variables",
+				"Set up database connection",
+				"Run database migrations",
+				"Start development server",
+				"Review generated documentation",
+			],
+		};
+	} catch (error) {
+		return {
+			success: false,
+			files: [],
+			commands: [],
+			dependencies: [],
+			message: `Failed to generate backend: ${error instanceof Error ? error.message : "Unknown error"}`,
+			nextSteps: ["Check the error message and try again"],
+		};
+	}
 }
 
 /**
  * Backend generator factory
  * Creates appropriate generator based on framework choice
  */
-function createBackendGenerator(framework: BackendGeneratorOptions['framework']): BackendGenerator {
-  switch (framework) {
-    case 'nestjs':
-      const { NestJSGenerator } = require('./nestjs/generator');
-      return new NestJSGenerator();
-    case 'express':
-      // TODO: Implement ExpressGenerator
-      throw new Error('Express generator not yet implemented');
-    case 'fastify':
-      // TODO: Implement FastifyGenerator
-      throw new Error('Fastify generator not yet implemented');
-    case 'hono':
-      // TODO: Implement HonoGenerator
-      throw new Error('Hono generator not yet implemented');
-    default:
-      throw new Error(`Unsupported backend framework: ${framework}`);
-  }
+function createBackendGenerator(
+	framework: BackendGeneratorOptions["framework"],
+): BackendGenerator {
+	switch (framework) {
+		case "nestjs":
+			const { NestJSGenerator } = require("./nestjs/generator");
+			return new NestJSGenerator();
+		case "express":
+			// TODO: Implement ExpressGenerator
+			throw new Error("Express generator not yet implemented");
+		case "fastify":
+			// TODO: Implement FastifyGenerator
+			throw new Error("Fastify generator not yet implemented");
+		case "hono":
+			// TODO: Implement HonoGenerator
+			throw new Error("Hono generator not yet implemented");
+		default:
+			throw new Error(`Unsupported backend framework: ${framework}`);
+	}
 }
 
 /**
@@ -121,124 +129,131 @@ function createBackendGenerator(framework: BackendGeneratorOptions['framework'])
  * Provides common functionality for all framework generators
  */
 export abstract class BackendGenerator {
-  abstract readonly framework: string;
-  abstract readonly defaultPort: number;
-  abstract readonly supportedDatabases: readonly string[];
-  abstract readonly supportedFeatures: readonly BackendFeature[];
+	abstract readonly framework: string;
+	abstract readonly defaultPort: number;
+	abstract readonly supportedDatabases: readonly string[];
+	abstract readonly supportedFeatures: readonly BackendFeature[];
 
-  abstract generate(
-    projectPath: string,
-    options: BackendGeneratorOptions
-  ): Promise<BackendGeneratorResult>;
+	abstract generate(
+		projectPath: string,
+		options: BackendGeneratorOptions,
+	): Promise<BackendGeneratorResult>;
 
-  /**
-   * Generate package.json with framework-specific dependencies
-   */
-  protected generatePackageJson(options: BackendGeneratorOptions): GeneratedFile {
-    const baseDependencies = this.getBaseDependencies(options);
-    const featureDependencies = this.getFeatureDependencies(options.features);
-    const databaseDependencies = this.getDatabaseDependencies(options.database, options.orm);
-    
-    const packageJson = {
-      name: 'xaheen-backend',
-      version: '1.0.0',
-      description: `${this.framework} backend application generated by Xaheen CLI`,
-      main: 'dist/main.js',
-      scripts: this.getScripts(options),
-      dependencies: {
-        ...baseDependencies,
-        ...featureDependencies,
-        ...databaseDependencies
-      },
-      devDependencies: this.getDevDependencies(options),
-      engines: {
-        node: '>=18.0.0'
-      }
-    };
+	/**
+	 * Generate package.json with framework-specific dependencies
+	 */
+	protected generatePackageJson(
+		options: BackendGeneratorOptions,
+	): GeneratedFile {
+		const baseDependencies = this.getBaseDependencies(options);
+		const featureDependencies = this.getFeatureDependencies(options.features);
+		const databaseDependencies = this.getDatabaseDependencies(
+			options.database,
+			options.orm,
+		);
 
-    return {
-      path: 'package.json',
-      content: JSON.stringify(packageJson, null, 2),
-      type: 'config',
-      language: 'json'
-    };
-  }
+		const packageJson = {
+			name: "xaheen-backend",
+			version: "1.0.0",
+			description: `${this.framework} backend application generated by Xaheen CLI`,
+			main: "dist/main.js",
+			scripts: this.getScripts(options),
+			dependencies: {
+				...baseDependencies,
+				...featureDependencies,
+				...databaseDependencies,
+			},
+			devDependencies: this.getDevDependencies(options),
+			engines: {
+				node: ">=18.0.0",
+			},
+		};
 
-  /**
-   * Generate TypeScript configuration
-   */
-  protected generateTsConfig(): GeneratedFile {
-    const tsConfig = {
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'commonjs',
-        lib: ['ES2022'],
-        allowJs: true,
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        moduleResolution: 'node',
-        baseUrl: './',
-        paths: {
-          '@/*': ['src/*'],
-          '@/config/*': ['src/config/*'],
-          '@/modules/*': ['src/modules/*'],
-          '@/shared/*': ['src/shared/*']
-        },
-        allowSyntheticDefaultImports: true,
-        esModuleInterop: true,
-        experimentalDecorators: true,
-        emitDecoratorMetadata: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        resolveJsonModule: true,
-        declaration: true,
-        declarationMap: true,
-        sourceMap: true
-      },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist', '**/*.spec.ts', '**/*.test.ts']
-    };
+		return {
+			path: "package.json",
+			content: JSON.stringify(packageJson, null, 2),
+			type: "config",
+			language: "json",
+		};
+	}
 
-    return {
-      path: 'tsconfig.json',
-      content: JSON.stringify(tsConfig, null, 2),
-      type: 'config',
-      language: 'json'
-    };
-  }
+	/**
+	 * Generate TypeScript configuration
+	 */
+	protected generateTsConfig(): GeneratedFile {
+		const tsConfig = {
+			compilerOptions: {
+				target: "ES2022",
+				module: "commonjs",
+				lib: ["ES2022"],
+				allowJs: true,
+				outDir: "./dist",
+				rootDir: "./src",
+				strict: true,
+				moduleResolution: "node",
+				baseUrl: "./",
+				paths: {
+					"@/*": ["src/*"],
+					"@/config/*": ["src/config/*"],
+					"@/modules/*": ["src/modules/*"],
+					"@/shared/*": ["src/shared/*"],
+				},
+				allowSyntheticDefaultImports: true,
+				esModuleInterop: true,
+				experimentalDecorators: true,
+				emitDecoratorMetadata: true,
+				skipLibCheck: true,
+				forceConsistentCasingInFileNames: true,
+				resolveJsonModule: true,
+				declaration: true,
+				declarationMap: true,
+				sourceMap: true,
+			},
+			include: ["src/**/*"],
+			exclude: ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"],
+		};
 
-  /**
-   * Generate environment configuration
-   */
-  protected generateEnvironmentConfig(options: BackendGeneratorOptions): GeneratedFile[] {
-    const envExample = this.getEnvironmentVariables(options);
-    
-    return [
-      {
-        path: '.env.example',
-        content: Object.entries(envExample)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('\n'),
-        type: 'config',
-        language: 'typescript'
-      },
-      {
-        path: '.env',
-        content: Object.entries(envExample)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('\n'),
-        type: 'config',
-        language: 'typescript'
-      }
-    ];
-  }
+		return {
+			path: "tsconfig.json",
+			content: JSON.stringify(tsConfig, null, 2),
+			type: "config",
+			language: "json",
+		};
+	}
 
-  /**
-   * Generate Docker configuration
-   */
-  protected generateDockerConfig(): GeneratedFile[] {
-    const dockerfile = `# Multi-stage build for ${this.framework} application
+	/**
+	 * Generate environment configuration
+	 */
+	protected generateEnvironmentConfig(
+		options: BackendGeneratorOptions,
+	): GeneratedFile[] {
+		const envExample = this.getEnvironmentVariables(options);
+
+		return [
+			{
+				path: ".env.example",
+				content: Object.entries(envExample)
+					.map(([key, value]) => `${key}=${value}`)
+					.join("\n"),
+				type: "config",
+				language: "typescript",
+			},
+			{
+				path: ".env",
+				content: Object.entries(envExample)
+					.map(([key, value]) => `${key}=${value}`)
+					.join("\n"),
+				type: "config",
+				language: "typescript",
+			},
+		];
+	}
+
+	/**
+	 * Generate Docker configuration
+	 */
+	protected generateDockerConfig(): GeneratedFile[] {
+		const dockerfile = `# Multi-stage build for ${this.framework} application
 FROM node:18-alpine AS builder
 
 WORKDIR /app
@@ -260,7 +275,7 @@ RUN npm run build
 EXPOSE ${this.defaultPort}
 CMD ["npm", "start"]`;
 
-    const dockerCompose = `version: '3.8'
+		const dockerCompose = `version: '3.8'
 
 services:
   app:
@@ -300,33 +315,33 @@ volumes:
   postgres_data:
   redis_data:`;
 
-    return [
-      {
-        path: 'Dockerfile',
-        content: dockerfile,
-        type: 'config',
-        language: 'dockerfile'
-      },
-      {
-        path: 'docker-compose.yml',
-        content: dockerCompose,
-        type: 'config',
-        language: 'yaml'
-      }
-    ];
-  }
+		return [
+			{
+				path: "Dockerfile",
+				content: dockerfile,
+				type: "config",
+				language: "dockerfile",
+			},
+			{
+				path: "docker-compose.yml",
+				content: dockerCompose,
+				type: "config",
+				language: "yaml",
+			},
+		];
+	}
 
-  /**
-   * Generate README documentation
-   */
-  protected generateReadme(options: BackendGeneratorOptions): GeneratedFile {
-    const readme = `# ${this.framework.toUpperCase()} Backend Application
+	/**
+	 * Generate README documentation
+	 */
+	protected generateReadme(options: BackendGeneratorOptions): GeneratedFile {
+		const readme = `# ${this.framework.toUpperCase()} Backend Application
 
 Generated by Xaheen CLI - Enterprise-grade ${this.framework} backend with TypeScript.
 
 ## Features
 
-${options.features.map(feature => `- ✅ ${feature.replace('-', ' ').toUpperCase()}`).join('\n')}
+${options.features.map((feature) => `- ✅ ${feature.replace("-", " ").toUpperCase()}`).join("\n")}
 
 ## Quick Start
 
@@ -412,25 +427,38 @@ See \`.env.example\` for all available configuration options.
 MIT License - see LICENSE file for details.
 `;
 
-    return {
-      path: 'README.md',
-      content: readme,
-      type: 'documentation',
-      language: 'typescript'
-    };
-  }
+		return {
+			path: "README.md",
+			content: readme,
+			type: "documentation",
+			language: "typescript",
+		};
+	}
 
-  // Abstract methods to be implemented by framework-specific generators
-  protected abstract getBaseDependencies(options: BackendGeneratorOptions): Record<string, string>;
-  protected abstract getDevDependencies(options: BackendGeneratorOptions): Record<string, string>;
-  protected abstract getScripts(options: BackendGeneratorOptions): Record<string, string>;
-  protected abstract getEnvironmentVariables(options: BackendGeneratorOptions): Record<string, string>;
-  protected abstract getFeatureDependencies(features: readonly BackendFeature[]): Record<string, string>;
-  protected abstract getDatabaseDependencies(database: string, orm: string): Record<string, string>;
+	// Abstract methods to be implemented by framework-specific generators
+	protected abstract getBaseDependencies(
+		options: BackendGeneratorOptions,
+	): Record<string, string>;
+	protected abstract getDevDependencies(
+		options: BackendGeneratorOptions,
+	): Record<string, string>;
+	protected abstract getScripts(
+		options: BackendGeneratorOptions,
+	): Record<string, string>;
+	protected abstract getEnvironmentVariables(
+		options: BackendGeneratorOptions,
+	): Record<string, string>;
+	protected abstract getFeatureDependencies(
+		features: readonly BackendFeature[],
+	): Record<string, string>;
+	protected abstract getDatabaseDependencies(
+		database: string,
+		orm: string,
+	): Record<string, string>;
 }
 
 // Export framework-specific generators
-export { NestJSGenerator } from './nestjs/generator';
+export { NestJSGenerator } from "./nestjs/generator";
 
 // TODO: Implement additional framework generators
 // export { ExpressGenerator } from './express/generator';

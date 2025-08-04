@@ -2,41 +2,40 @@
  * Page Template Generator for Xala UI System
  */
 
-import type { PageTemplateConfig } from '../types/index.js';
+import type { PageTemplateConfig } from "../types/index.js";
 
 export class PageTemplateGenerator {
-  
-  generatePageTemplate(config: PageTemplateConfig): string {
-    switch (config.template) {
-      case 'dashboard':
-        return this.generateDashboardPage(config);
-      case 'landing':
-        return this.generateLandingPage(config);
-      case 'auth':
-        return this.generateAuthPage(config);
-      case 'profile':
-        return this.generateProfilePage(config);
-      case 'settings':
-        return this.generateSettingsPage(config);
-      case 'analytics':
-        return this.generateAnalyticsPage(config);
-      case 'user-management':
-        return this.generateUserManagementPage(config);
-      case 'content-management':
-        return this.generateContentManagementPage(config);
-      case 'e-commerce':
-        return this.generateECommercePage(config);
-      case 'blog':
-        return this.generateBlogPage(config);
-      default:
-        throw new Error(`Unknown page template: ${config.template}`);
-    }
-  }
+	generatePageTemplate(config: PageTemplateConfig): string {
+		switch (config.template) {
+			case "dashboard":
+				return this.generateDashboardPage(config);
+			case "landing":
+				return this.generateLandingPage(config);
+			case "auth":
+				return this.generateAuthPage(config);
+			case "profile":
+				return this.generateProfilePage(config);
+			case "settings":
+				return this.generateSettingsPage(config);
+			case "analytics":
+				return this.generateAnalyticsPage(config);
+			case "user-management":
+				return this.generateUserManagementPage(config);
+			case "content-management":
+				return this.generateContentManagementPage(config);
+			case "e-commerce":
+				return this.generateECommercePage(config);
+			case "blog":
+				return this.generateBlogPage(config);
+			default:
+				throw new Error(`Unknown page template: ${config.template}`);
+		}
+	}
 
-  private generateDashboardPage(config: PageTemplateConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// pages/${config.template}/${componentName}.tsx
+	private generateDashboardPage(config: PageTemplateConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// pages/${config.template}/${componentName}.tsx
 import {
   AdminLayout,
   Container,
@@ -221,12 +220,12 @@ export function ${componentName}({ data }: ${componentName}Props): JSX.Element {
     </AdminLayout>
   );
 }`;
-  }
+	}
 
-  private generateLandingPage(config: PageTemplateConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// pages/${config.template}/${componentName}.tsx
+	private generateLandingPage(config: PageTemplateConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// pages/${config.template}/${componentName}.tsx
 import {
   WebLayout,
   Container,
@@ -390,12 +389,12 @@ export function ${componentName}({ onGetStarted, onLearnMore }: ${componentName}
     </WebLayout>
   );
 }`;
-  }
+	}
 
-  private generateAuthPage(config: PageTemplateConfig): string {
-    const componentName = this.toPascalCase(config.name);
-    
-    return `// pages/${config.template}/${componentName}.tsx
+	private generateAuthPage(config: PageTemplateConfig): string {
+		const componentName = this.toPascalCase(config.name);
+
+		return `// pages/${config.template}/${componentName}.tsx
 import {
   Container,
   Stack,
@@ -570,43 +569,43 @@ export function ${componentName}({
     </Container>
   );
 }`;
-  }
+	}
 
-  // Add other page template generators here (profile, settings, etc.)
-  private generateProfilePage(config: PageTemplateConfig): string {
-    return `// Profile page template - implementation would go here`;
-  }
+	// Add other page template generators here (profile, settings, etc.)
+	private generateProfilePage(config: PageTemplateConfig): string {
+		return `// Profile page template - implementation would go here`;
+	}
 
-  private generateSettingsPage(config: PageTemplateConfig): string {
-    return `// Settings page template - implementation would go here`;
-  }
+	private generateSettingsPage(config: PageTemplateConfig): string {
+		return `// Settings page template - implementation would go here`;
+	}
 
-  private generateAnalyticsPage(config: PageTemplateConfig): string {
-    return `// Analytics page template - implementation would go here`;
-  }
+	private generateAnalyticsPage(config: PageTemplateConfig): string {
+		return `// Analytics page template - implementation would go here`;
+	}
 
-  private generateUserManagementPage(config: PageTemplateConfig): string {
-    return `// User management page template - implementation would go here`;
-  }
+	private generateUserManagementPage(config: PageTemplateConfig): string {
+		return `// User management page template - implementation would go here`;
+	}
 
-  private generateContentManagementPage(config: PageTemplateConfig): string {
-    return `// Content management page template - implementation would go here`;
-  }
+	private generateContentManagementPage(config: PageTemplateConfig): string {
+		return `// Content management page template - implementation would go here`;
+	}
 
-  private generateECommercePage(config: PageTemplateConfig): string {
-    return `// E-commerce page template - implementation would go here`;
-  }
+	private generateECommercePage(config: PageTemplateConfig): string {
+		return `// E-commerce page template - implementation would go here`;
+	}
 
-  private generateBlogPage(config: PageTemplateConfig): string {
-    return `// Blog page template - implementation would go here`;
-  }
+	private generateBlogPage(config: PageTemplateConfig): string {
+		return `// Blog page template - implementation would go here`;
+	}
 
-  private toPascalCase(str: string): string {
-    return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-        return index === 0 ? word.toLowerCase() : word.toUpperCase();
-      })
-      .replace(/\s+/g, '')
-      .replace(/^./, str => str.toUpperCase());
-  }
+	private toPascalCase(str: string): string {
+		return str
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+				return index === 0 ? word.toLowerCase() : word.toUpperCase();
+			})
+			.replace(/\s+/g, "")
+			.replace(/^./, (str) => str.toUpperCase());
+	}
 }

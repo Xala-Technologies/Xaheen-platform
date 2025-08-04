@@ -1,395 +1,381 @@
 {
-  "metadata": {
-    "name": "Progress",
-    "version": "1.0.0",
-    "category": "ui",
-    "description": "A visual indicator showing completion progress of a task or process",
-    "tags": ["progress", "indicator", "loading", "ui"],
-    "author": "Xala Enterprise UI System",
-    "created": "2025-08-04T00:00:00Z",
-    "lastModified": "2025-08-04T00:00:00Z"
-  },
-  "compliance": {
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "wcagLevel": "AAA",
-      "supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "auditTrail": false
-    },
-    "accessibility": {
-      "wcagLevel": "AAA",
-      "keyboardNavigation": true,
-      "screenReaderSupport": true,
-      "highContrast": true,
-      "focusManagement": true,
-      "ariaCompliance": true
-    }
-  },
-  "performance": {
-    "bundleSize": "<2KB",
-    "renderTime": "<16ms",
-    "memoryUsage": "<1MB",
-    "treeshaking": true,
-    "lazy": false
-  },
-  "props": {
-    "value": {
-      "type": "number",
-      "required": false,
-      "default": 0,
-      "description": "Current progress value (0-100 for percentage, or 0-max for custom range)",
-      "validation": {
-        "min": 0,
-        "max": "Infinity"
-      },
-      "examples": [0, 25, 50, 75, 100]
-    },
-    "max": {
-      "type": "number",
-      "required": false,
-      "default": 100,
-      "description": "Maximum value for progress calculation",
-      "validation": {
-        "min": 1
-      },
-      "examples": [100, 200, 1000]
-    },
-    "variant": {
-      "type": "string",
-      "required": false,
-      "default": "default",
-      "description": "Visual variant affecting color scheme",
-      "options": ["default", "success", "warning", "error"],
-      "examples": ["default", "success", "warning", "error"]
-    },
-    "size": {
-      "type": "string",
-      "required": false,
-      "default": "md",
-      "description": "Size variant affecting height and overall dimensions",
-      "options": ["xs", "sm", "md", "lg"],
-      "examples": ["xs", "sm", "md", "lg"]
-    },
-    "showValue": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to display the progress percentage or value",
-      "examples": [true, false]
-    },
-    "label": {
-      "type": "string",
-      "required": false,
-      "default": null,
-      "description": "Optional label text for the progress bar",
-      "examples": ["Loading...", "Upload progress", "Installation progress"]
-    },
-    "indeterminate": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to show indeterminate loading state (ignores value)",
-      "examples": [true, false]
-    },
-    "circular": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to render as circular progress instead of linear",
-      "examples": [true, false]
-    },
-    "striped": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to show striped pattern on progress bar",
-      "examples": [true, false]
-    },
-    "animated": {
-      "type": "boolean",
-      "required": false,
-      "default": false,
-      "description": "Whether to animate striped pattern (requires striped=true)",
-      "examples": [true, false]
-    },
-    "className": {
-      "type": "string",
-      "required": false,
-      "description": "Additional CSS classes for custom styling",
-      "examples": ["custom-progress", "mb-4 border-2"]
-    },
-    "id": {
-      "type": "string",
-      "required": false,
-      "description": "Unique identifier for the progress element",
-      "examples": ["upload-progress", "installation-progress"]
-    },
-    "ariaLabel": {
-      "type": "string",
-      "required": false,
-      "description": "Accessible label for screen readers (overrides computed label)",
-      "examples": ["File upload progress", "Task completion status"]
-    },
-    "ariaDescribedBy": {
-      "type": "string",
-      "required": false,
-      "description": "ID of element(s) that describe the progress bar",
-      "examples": ["progress-description", "status-text"]
-    }
-  },
-  "styling": {
-    "tokens": {
-      "colors": {
-        "default": {
-          "background": "var(--color-gray-200)",
-          "fill": "var(--color-blue-600)",
-          "text": "var(--color-gray-900)"
-        },
-        "success": {
-          "background": "var(--color-gray-200)",
-          "fill": "var(--color-green-600)",
-          "text": "var(--color-gray-900)"
-        },
-        "warning": {
-          "background": "var(--color-gray-200)",
-          "fill": "var(--color-yellow-600)",
-          "text": "var(--color-gray-900)"
-        },
-        "error": {
-          "background": "var(--color-gray-200)",
-          "fill": "var(--color-red-600)",
-          "text": "var(--color-gray-900)"
-        }
-      },
-      "sizes": {
-        "xs": {
-          "height": "4px",
-          "circularSize": "24px",
-          "fontSize": "12px"
-        },
-        "sm": {
-          "height": "6px",
-          "circularSize": "32px",
-          "fontSize": "14px"
-        },
-        "md": {
-          "height": "8px",
-          "circularSize": "40px",
-          "fontSize": "16px"
-        },
-        "lg": {
-          "height": "12px",
-          "circularSize": "48px",
-          "fontSize": "18px"
-        }
-      },
-      "animations": {
-        "duration": "1.5s",
-        "timingFunction": "linear",
-        "iterationCount": "infinite"
-      }
-    },
-    "baseClasses": [
-      "relative",
-      "overflow-hidden",
-      "rounded-full",
-      "transition-all",
-      "duration-300"
-    ],
-    "variantClasses": {
-      "default": ["bg-gray-200"],
-      "success": ["bg-gray-200"],
-      "warning": ["bg-gray-200"],
-      "error": ["bg-gray-200"]
-    },
-    "sizeClasses": {
-      "xs": ["h-1"],
-      "sm": ["h-1.5"],
-      "md": ["h-2"],
-      "lg": ["h-3"]
-    }
-  },
-  "accessibility": {
-    "role": "progressbar",
-    "requiredAttributes": [
-      "aria-valuenow",
-      "aria-valuemin",
-      "aria-valuemax"
-    ],
-    "optionalAttributes": [
-      "aria-label",
-      "aria-describedby",
-      "aria-labelledby"
-    ],
-    "keyboardSupport": {
-      "focusable": false,
-      "description": "Progress bars are not interactive and do not receive keyboard focus"
-    },
-    "screenReader": {
-      "announcements": true,
-      "liveRegion": "polite",
-      "description": "Progress updates are announced to screen readers"
-    },
-    "colorContrast": {
-      "minimum": "4.5:1",
-      "enhanced": "7:1",
-      "description": "All progress variants meet WCAG AAA contrast requirements"
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Progress",
-      "description": "Simple linear progress bar with percentage",
-      "code": {
-        "tsx": "<Progress value={45} showValue />",
-        "props": {
-          "value": 45,
-          "showValue": true
-        }
-      }
-    },
-    {
-      "name": "Circular Progress",
-      "description": "Circular progress indicator with label",
-      "code": {
-        "tsx": "<Progress value={75} circular showValue label=\"Loading...\" />",
-        "props": {
-          "value": 75,
-          "circular": true,
-          "showValue": true,
-          "label": "Loading..."
-        }
-      }
-    },
-    {
-      "name": "Indeterminate Loading",
-      "description": "Indeterminate progress for unknown completion time",
-      "code": {
-        "tsx": "<Progress indeterminate variant=\"default\" label=\"Processing...\" />",
-        "props": {
-          "indeterminate": true,
-          "variant": "default",
-          "label": "Processing..."
-        }
-      }
-    },
-    {
-      "name": "Striped Animated",
-      "description": "Striped progress bar with animation",
-      "code": {
-        "tsx": "<Progress value={60} striped animated variant=\"success\" />",
-        "props": {
-          "value": 60,
-          "striped": true,
-          "animated": true,
-          "variant": "success"
-        }
-      }
-    },
-    {
-      "name": "Size Variants",
-      "description": "Different size options",
-      "code": {
-        "tsx": "<Progress value={40} size=\"lg\" showValue />",
-        "props": {
-          "value": 40,
-          "size": "lg",
-          "showValue": true
-        }
-      }
-    },
-    {
-      "name": "Status Variants",
-      "description": "Different status color variants",
-      "code": {
-        "tsx": "<Progress value={25} variant=\"warning\" label=\"Upload progress\" />",
-        "props": {
-          "value": 25,
-          "variant": "warning",
-          "label": "Upload progress"
-        }
-      }
-    },
-    {
-      "name": "Custom Range",
-      "description": "Progress with custom maximum value",
-      "code": {
-        "tsx": "<Progress value={150} max={200} showValue label=\"Files processed\" />",
-        "props": {
-          "value": 150,
-          "max": 200,
-          "showValue": true,
-          "label": "Files processed"
-        }
-      }
-    },
-    {
-      "name": "Accessible Progress",
-      "description": "Progress with comprehensive accessibility attributes",
-      "code": {
-        "tsx": "<Progress value={80} ariaLabel=\"Installation progress\" ariaDescribedBy=\"progress-status\" />",
-        "props": {
-          "value": 80,
-          "ariaLabel": "Installation progress",
-          "ariaDescribedBy": "progress-status"
-        }
-      }
-    }
-  ],
-  "states": {
-    "default": {
-      "description": "Normal progress state",
-      "visualCues": ["Standard color scheme", "Smooth transitions"]
-    },
-    "indeterminate": {
-      "description": "Loading state with unknown completion time",
-      "visualCues": ["Animated movement", "No specific progress value"]
-    },
-    "complete": {
-      "description": "Progress at 100% completion",
-      "visualCues": ["Full progress bar", "Success indicators if applicable"]
-    },
-    "error": {
-      "description": "Error state during progress",
-      "visualCues": ["Error color variant", "Visual error indicators"]
-    }
-  },
-  "implementation": {
-    "framework": "React",
-    "typescript": true,
-    "dependencies": [
-      "react",
-      "@types/react",
-      "clsx"
-    ],
-    "peerDependencies": [
-      "react@>=18.0.0"
-    ],
-    "exports": {
-      "Progress": "./Progress.tsx",
-      "ProgressProps": "./Progress.types.ts"
-    }
-  },
-  "testing": {
-    "unit": {
-      "coverage": "95%",
-      "framework": "Jest + Testing Library"
-    },
-    "accessibility": {
-      "tools": ["jest-axe", "eslint-plugin-jsx-a11y"],
-      "coverage": "100%"
-    },
-    "visual": {
-      "tool": "Storybook + Chromatic",
-      "coverage": "All variants and states"
-    }
-  },
-  "documentation": {
-    "storybook": true,
-    "playground": true,
-    "designTokens": true,
-    "accessibilityGuidelines": true,
-    "usageExamples": true
-  }
+	"metadata": {
+		"name": "Progress",
+		"version": "1.0.0",
+		"category": "ui",
+		"description": "A visual indicator showing completion progress of a task or process",
+		"tags": ["progress", "indicator", "loading", "ui"],
+		"author": "Xala Enterprise UI System",
+		"created": "2025-08-04T00:00:00Z",
+		"lastModified": "2025-08-04T00:00:00Z"
+	},
+	"compliance": {
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"wcagLevel": "AAA",
+			"supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"auditTrail": false
+		},
+		"accessibility": {
+			"wcagLevel": "AAA",
+			"keyboardNavigation": true,
+			"screenReaderSupport": true,
+			"highContrast": true,
+			"focusManagement": true,
+			"ariaCompliance": true
+		}
+	},
+	"performance": {
+		"bundleSize": "<2KB",
+		"renderTime": "<16ms",
+		"memoryUsage": "<1MB",
+		"treeshaking": true,
+		"lazy": false
+	},
+	"props": {
+		"value": {
+			"type": "number",
+			"required": false,
+			"default": 0,
+			"description": "Current progress value (0-100 for percentage, or 0-max for custom range)",
+			"validation": {
+				"min": 0,
+				"max": "Infinity"
+			},
+			"examples": [0, 25, 50, 75, 100]
+		},
+		"max": {
+			"type": "number",
+			"required": false,
+			"default": 100,
+			"description": "Maximum value for progress calculation",
+			"validation": {
+				"min": 1
+			},
+			"examples": [100, 200, 1000]
+		},
+		"variant": {
+			"type": "string",
+			"required": false,
+			"default": "default",
+			"description": "Visual variant affecting color scheme",
+			"options": ["default", "success", "warning", "error"],
+			"examples": ["default", "success", "warning", "error"]
+		},
+		"size": {
+			"type": "string",
+			"required": false,
+			"default": "md",
+			"description": "Size variant affecting height and overall dimensions",
+			"options": ["xs", "sm", "md", "lg"],
+			"examples": ["xs", "sm", "md", "lg"]
+		},
+		"showValue": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to display the progress percentage or value",
+			"examples": [true, false]
+		},
+		"label": {
+			"type": "string",
+			"required": false,
+			"default": null,
+			"description": "Optional label text for the progress bar",
+			"examples": ["Loading...", "Upload progress", "Installation progress"]
+		},
+		"indeterminate": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to show indeterminate loading state (ignores value)",
+			"examples": [true, false]
+		},
+		"circular": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to render as circular progress instead of linear",
+			"examples": [true, false]
+		},
+		"striped": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to show striped pattern on progress bar",
+			"examples": [true, false]
+		},
+		"animated": {
+			"type": "boolean",
+			"required": false,
+			"default": false,
+			"description": "Whether to animate striped pattern (requires striped=true)",
+			"examples": [true, false]
+		},
+		"className": {
+			"type": "string",
+			"required": false,
+			"description": "Additional CSS classes for custom styling",
+			"examples": ["custom-progress", "mb-4 border-2"]
+		},
+		"id": {
+			"type": "string",
+			"required": false,
+			"description": "Unique identifier for the progress element",
+			"examples": ["upload-progress", "installation-progress"]
+		},
+		"ariaLabel": {
+			"type": "string",
+			"required": false,
+			"description": "Accessible label for screen readers (overrides computed label)",
+			"examples": ["File upload progress", "Task completion status"]
+		},
+		"ariaDescribedBy": {
+			"type": "string",
+			"required": false,
+			"description": "ID of element(s) that describe the progress bar",
+			"examples": ["progress-description", "status-text"]
+		}
+	},
+	"styling": {
+		"tokens": {
+			"colors": {
+				"default": {
+					"background": "var(--color-gray-200)",
+					"fill": "var(--color-blue-600)",
+					"text": "var(--color-gray-900)"
+				},
+				"success": {
+					"background": "var(--color-gray-200)",
+					"fill": "var(--color-green-600)",
+					"text": "var(--color-gray-900)"
+				},
+				"warning": {
+					"background": "var(--color-gray-200)",
+					"fill": "var(--color-yellow-600)",
+					"text": "var(--color-gray-900)"
+				},
+				"error": {
+					"background": "var(--color-gray-200)",
+					"fill": "var(--color-red-600)",
+					"text": "var(--color-gray-900)"
+				}
+			},
+			"sizes": {
+				"xs": {
+					"height": "4px",
+					"circularSize": "24px",
+					"fontSize": "12px"
+				},
+				"sm": {
+					"height": "6px",
+					"circularSize": "32px",
+					"fontSize": "14px"
+				},
+				"md": {
+					"height": "8px",
+					"circularSize": "40px",
+					"fontSize": "16px"
+				},
+				"lg": {
+					"height": "12px",
+					"circularSize": "48px",
+					"fontSize": "18px"
+				}
+			},
+			"animations": {
+				"duration": "1.5s",
+				"timingFunction": "linear",
+				"iterationCount": "infinite"
+			}
+		},
+		"baseClasses": [
+			"relative",
+			"overflow-hidden",
+			"rounded-full",
+			"transition-all",
+			"duration-300"
+		],
+		"variantClasses": {
+			"default": ["bg-gray-200"],
+			"success": ["bg-gray-200"],
+			"warning": ["bg-gray-200"],
+			"error": ["bg-gray-200"]
+		},
+		"sizeClasses": {
+			"xs": ["h-1"],
+			"sm": ["h-1.5"],
+			"md": ["h-2"],
+			"lg": ["h-3"]
+		}
+	},
+	"accessibility": {
+		"role": "progressbar",
+		"requiredAttributes": ["aria-valuenow", "aria-valuemin", "aria-valuemax"],
+		"optionalAttributes": ["aria-label", "aria-describedby", "aria-labelledby"],
+		"keyboardSupport": {
+			"focusable": false,
+			"description": "Progress bars are not interactive and do not receive keyboard focus"
+		},
+		"screenReader": {
+			"announcements": true,
+			"liveRegion": "polite",
+			"description": "Progress updates are announced to screen readers"
+		},
+		"colorContrast": {
+			"minimum": "4.5:1",
+			"enhanced": "7:1",
+			"description": "All progress variants meet WCAG AAA contrast requirements"
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Progress",
+			"description": "Simple linear progress bar with percentage",
+			"code": {
+				"tsx": "<Progress value={45} showValue />",
+				"props": {
+					"value": 45,
+					"showValue": true
+				}
+			}
+		},
+		{
+			"name": "Circular Progress",
+			"description": "Circular progress indicator with label",
+			"code": {
+				"tsx": "<Progress value={75} circular showValue label=\"Loading...\" />",
+				"props": {
+					"value": 75,
+					"circular": true,
+					"showValue": true,
+					"label": "Loading..."
+				}
+			}
+		},
+		{
+			"name": "Indeterminate Loading",
+			"description": "Indeterminate progress for unknown completion time",
+			"code": {
+				"tsx": "<Progress indeterminate variant=\"default\" label=\"Processing...\" />",
+				"props": {
+					"indeterminate": true,
+					"variant": "default",
+					"label": "Processing..."
+				}
+			}
+		},
+		{
+			"name": "Striped Animated",
+			"description": "Striped progress bar with animation",
+			"code": {
+				"tsx": "<Progress value={60} striped animated variant=\"success\" />",
+				"props": {
+					"value": 60,
+					"striped": true,
+					"animated": true,
+					"variant": "success"
+				}
+			}
+		},
+		{
+			"name": "Size Variants",
+			"description": "Different size options",
+			"code": {
+				"tsx": "<Progress value={40} size=\"lg\" showValue />",
+				"props": {
+					"value": 40,
+					"size": "lg",
+					"showValue": true
+				}
+			}
+		},
+		{
+			"name": "Status Variants",
+			"description": "Different status color variants",
+			"code": {
+				"tsx": "<Progress value={25} variant=\"warning\" label=\"Upload progress\" />",
+				"props": {
+					"value": 25,
+					"variant": "warning",
+					"label": "Upload progress"
+				}
+			}
+		},
+		{
+			"name": "Custom Range",
+			"description": "Progress with custom maximum value",
+			"code": {
+				"tsx": "<Progress value={150} max={200} showValue label=\"Files processed\" />",
+				"props": {
+					"value": 150,
+					"max": 200,
+					"showValue": true,
+					"label": "Files processed"
+				}
+			}
+		},
+		{
+			"name": "Accessible Progress",
+			"description": "Progress with comprehensive accessibility attributes",
+			"code": {
+				"tsx": "<Progress value={80} ariaLabel=\"Installation progress\" ariaDescribedBy=\"progress-status\" />",
+				"props": {
+					"value": 80,
+					"ariaLabel": "Installation progress",
+					"ariaDescribedBy": "progress-status"
+				}
+			}
+		}
+	],
+	"states": {
+		"default": {
+			"description": "Normal progress state",
+			"visualCues": ["Standard color scheme", "Smooth transitions"]
+		},
+		"indeterminate": {
+			"description": "Loading state with unknown completion time",
+			"visualCues": ["Animated movement", "No specific progress value"]
+		},
+		"complete": {
+			"description": "Progress at 100% completion",
+			"visualCues": ["Full progress bar", "Success indicators if applicable"]
+		},
+		"error": {
+			"description": "Error state during progress",
+			"visualCues": ["Error color variant", "Visual error indicators"]
+		}
+	},
+	"implementation": {
+		"framework": "React",
+		"typescript": true,
+		"dependencies": ["react", "@types/react", "clsx"],
+		"peerDependencies": ["react@>=18.0.0"],
+		"exports": {
+			"Progress": "./Progress.tsx",
+			"ProgressProps": "./Progress.types.ts"
+		}
+	},
+	"testing": {
+		"unit": {
+			"coverage": "95%",
+			"framework": "Jest + Testing Library"
+		},
+		"accessibility": {
+			"tools": ["jest-axe", "eslint-plugin-jsx-a11y"],
+			"coverage": "100%"
+		},
+		"visual": {
+			"tool": "Storybook + Chromatic",
+			"coverage": "All variants and states"
+		}
+	},
+	"documentation": {
+		"storybook": true,
+		"playground": true,
+		"designTokens": true,
+		"accessibilityGuidelines": true,
+		"usageExamples": true
+	}
 }

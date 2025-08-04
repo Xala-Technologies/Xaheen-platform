@@ -1,392 +1,382 @@
 {
-  "metadata": {
-    "name": "TextArea",
-    "version": "1.0.0",
-    "category": "form",
-    "description": "A multi-line text input component with auto-resize capabilities and character counting",
-    "designSystem": "Xala Enterprise",
-    "lastUpdated": "2025-08-04",
-    "author": "Xala Enterprise UI System",
-    "status": "stable"
-  },
-  "compliance": {
-    "accessibility": {
-      "level": "WCAG AAA",
-      "features": [
-        "Screen reader support",
-        "Keyboard navigation",
-        "Focus management",
-        "High contrast support",
-        "Proper labeling",
-        "Error announcements"
-      ]
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "supportedLanguages": ["nb-NO", "en-US"],
-      "auditTrail": false
-    },
-    "security": {
-      "inputSanitization": true,
-      "xssProtection": true,
-      "maxLengthEnforcement": true
-    }
-  },
-  "props": {
-    "value": {
-      "type": "string",
-      "required": false,
-      "description": "The controlled value of the textarea",
-      "default": null,
-      "validation": {
-        "maxLength": 10000
-      }
-    },
-    "defaultValue": {
-      "type": "string",
-      "required": false,
-      "description": "The uncontrolled default value",
-      "default": "",
-      "validation": {
-        "maxLength": 10000
-      }
-    },
-    "placeholder": {
-      "type": "string",
-      "required": false,
-      "description": "Placeholder text when textarea is empty",
-      "default": "",
-      "i18n": true
-    },
-    "rows": {
-      "type": "number",
-      "required": false,
-      "description": "Number of visible text lines",
-      "default": 4,
-      "validation": {
-        "min": 1,
-        "max": 50
-      }
-    },
-    "maxRows": {
-      "type": "number",
-      "required": false,
-      "description": "Maximum number of rows for auto-resize",
-      "default": null,
-      "validation": {
-        "min": 1,
-        "max": 50
-      }
-    },
-    "minRows": {
-      "type": "number",
-      "required": false,
-      "description": "Minimum number of rows for auto-resize",
-      "default": null,
-      "validation": {
-        "min": 1,
-        "max": 50
-      }
-    },
-    "maxLength": {
-      "type": "number",
-      "required": false,
-      "description": "Maximum number of characters allowed",
-      "default": null,
-      "validation": {
-        "min": 1,
-        "max": 50000
-      }
-    },
-    "showCount": {
-      "type": "boolean",
-      "required": false,
-      "description": "Whether to show character count",
-      "default": false
-    },
-    "resize": {
-      "type": "string",
-      "required": false,
-      "description": "CSS resize property",
-      "default": "vertical",
-      "enum": ["none", "vertical", "horizontal", "both"]
-    },
-    "disabled": {
-      "type": "boolean",
-      "required": false,
-      "description": "Whether the textarea is disabled",
-      "default": false
-    },
-    "readonly": {
-      "type": "boolean",
-      "required": false,
-      "description": "Whether the textarea is read-only",
-      "default": false
-    },
-    "error": {
-      "type": "boolean",
-      "required": false,
-      "description": "Whether the textarea is in error state",
-      "default": false
-    },
-    "errorMessage": {
-      "type": "string",
-      "required": false,
-      "description": "Error message to display",
-      "default": "",
-      "i18n": true
-    },
-    "autoResize": {
-      "type": "boolean",
-      "required": false,
-      "description": "Whether to automatically resize height based on content",
-      "default": false
-    },
-    "name": {
-      "type": "string",
-      "required": false,
-      "description": "Name attribute for form submission",
-      "default": ""
-    },
-    "id": {
-      "type": "string",
-      "required": false,
-      "description": "Unique identifier for the textarea",
-      "default": ""
-    },
-    "className": {
-      "type": "string",
-      "required": false,
-      "description": "Additional CSS classes",
-      "default": ""
-    },
-    "onChange": {
-      "type": "function",
-      "required": false,
-      "description": "Callback fired when textarea value changes",
-      "signature": "(value: string, event: React.ChangeEvent<HTMLTextAreaElement>) => void"
-    },
-    "onFocus": {
-      "type": "function",
-      "required": false,
-      "description": "Callback fired when textarea receives focus",
-      "signature": "(event: React.FocusEvent<HTMLTextAreaElement>) => void"
-    },
-    "onBlur": {
-      "type": "function",
-      "required": false,
-      "description": "Callback fired when textarea loses focus",
-      "signature": "(event: React.FocusEvent<HTMLTextAreaElement>) => void"
-    },
-    "onKeyDown": {
-      "type": "function",
-      "required": false,
-      "description": "Callback fired on key down",
-      "signature": "(event: React.KeyboardEvent<HTMLTextAreaElement>) => void"
-    }
-  },
-  "accessibility": {
-    "ariaAttributes": {
-      "aria-label": {
-        "description": "Accessible name for the textarea",
-        "required": "conditional",
-        "condition": "when no associated label"
-      },
-      "aria-labelledby": {
-        "description": "References to elements that label the textarea",
-        "required": "conditional",
-        "condition": "when using external labels"
-      },
-      "aria-describedby": {
-        "description": "References to elements that describe the textarea",
-        "required": "conditional",
-        "condition": "when error message or help text present"
-      },
-      "aria-invalid": {
-        "description": "Indicates validation state",
-        "required": true,
-        "values": ["true", "false"]
-      },
-      "aria-required": {
-        "description": "Indicates if field is required",
-        "required": "conditional",
-        "condition": "when field is required"
-      }
-    },
-    "keyboardNavigation": {
-      "Tab": "Move focus to/from textarea",
-      "Shift+Tab": "Move focus to previous focusable element",
-      "Escape": "Clear focus (when applicable)",
-      "Enter": "Insert line break",
-      "Ctrl+A": "Select all text"
-    },
-    "screenReader": {
-      "announcements": [
-        "Field type (multiline text input)",
-        "Current value",
-        "Character count (when enabled)",
-        "Error messages",
-        "Required state"
-      ]
-    },
-    "focusManagement": {
-      "focusVisible": "Clear focus ring with proper contrast",
-      "focusWithin": "Maintains focus within component boundaries"
-    }
-  },
-  "styling": {
-    "baseClasses": "w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors duration-200 resize-vertical",
-    "stateClasses": {
-      "default": "border-gray-300 bg-white text-gray-900",
-      "focused": "border-blue-500 ring-2 ring-blue-200",
-      "error": "border-red-500 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-200",
-      "disabled": "border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed opacity-60",
-      "readonly": "border-gray-200 bg-gray-50 text-gray-700"
-    },
-    "resizeClasses": {
-      "none": "resize-none",
-      "vertical": "resize-y",
-      "horizontal": "resize-x",
-      "both": "resize"
-    },
-    "characterCountClasses": "text-sm text-gray-500 mt-2 text-right",
-    "errorMessageClasses": "text-sm text-red-600 mt-2",
-    "tokens": {
-      "minHeight": "6rem",
-      "fontSize": "1rem",
-      "lineHeight": "1.5",
-      "padding": "0.75rem 1rem",
-      "borderRadius": "0.5rem",
-      "borderWidth": "2px"
-    }
-  },
-  "behavior": {
-    "autoResize": {
-      "description": "Automatically adjusts height based on content",
-      "implementation": "Uses ResizeObserver and scrollHeight calculation",
-      "performance": "Debounced to prevent excessive recalculations"
-    },
-    "characterCount": {
-      "description": "Shows current character count vs maximum",
-      "format": "{current}/{max}",
-      "warning": "Changes color when approaching limit (90%+)"
-    },
-    "validation": {
-      "realTime": "Validates on change when error prop is true",
-      "maxLength": "Prevents input beyond maxLength",
-      "required": "Validates on blur for required fields"
-    }
-  },
-  "performance": {
-    "bundleSize": {
-      "target": "<3KB",
-      "gzipped": "<1.2KB"
-    },
-    "renderTime": "<16ms",
-    "memoryUsage": "<2MB",
-    "optimization": [
-      "Memoized resize calculations",
-      "Debounced auto-resize",
-      "Lazy character count updates"
-    ]
-  },
-  "examples": {
-    "basic": {
-      "title": "Basic TextArea",
-      "description": "Simple textarea with placeholder",
-      "code": {
-        "tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function BasicExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Enter your message...\"\n      rows={4}\n    />\n  );\n}"
-      }
-    },
-    "autoResize": {
-      "title": "Auto-Resize TextArea",
-      "description": "TextArea that grows with content",
-      "code": {
-        "tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function AutoResizeExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Start typing and watch me grow...\"\n      autoResize\n      minRows={3}\n      maxRows={10}\n      resize=\"none\"\n    />\n  );\n}"
-      }
-    },
-    "withCharacterCount": {
-      "title": "TextArea with Character Count",
-      "description": "TextArea with character limit and count display",
-      "code": {
-        "tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function CharacterCountExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Write your review (max 500 characters)...\"\n      maxLength={500}\n      showCount\n      rows={5}\n    />\n  );\n}"
-      }
-    },
-    "withValidation": {
-      "title": "TextArea with Validation",
-      "description": "TextArea with error state and message",
-      "code": {
-        "tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function ValidationExample() {\n  const [value, setValue] = useState('');\n  const [error, setError] = useState(false);\n  const [errorMessage, setErrorMessage] = useState('');\n\n  const handleChange = (newValue: string) => {\n    setValue(newValue);\n    if (newValue.length < 10) {\n      setError(true);\n      setErrorMessage('Message must be at least 10 characters long');\n    } else {\n      setError(false);\n      setErrorMessage('');\n    }\n  };\n\n  return (\n    <TextArea\n      value={value}\n      onChange={handleChange}\n      placeholder=\"Enter your feedback...\"\n      error={error}\n      errorMessage={errorMessage}\n      rows={4}\n    />\n  );\n}"
-      }
-    },
-    "formIntegration": {
-      "title": "Form Integration",
-      "description": "TextArea integrated with form validation",
-      "code": {
-        "tsx": "import { TextArea } from '@xala/ui-system';\nimport { useForm } from 'react-hook-form';\n\ninterface FormData {\n  message: string;\n}\n\nexport function FormExample() {\n  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();\n\n  const onSubmit = (data: FormData) => {\n    console.log('Form data:', data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <label htmlFor=\"message\" className=\"block text-sm font-medium mb-2\">\n        Message *\n      </label>\n      <TextArea\n        id=\"message\"\n        {...register('message', { \n          required: 'Message is required',\n          minLength: { value: 10, message: 'Minimum 10 characters' }\n        })}\n        placeholder=\"Enter your message...\"\n        error={!!errors.message}\n        errorMessage={errors.message?.message}\n        maxLength={1000}\n        showCount\n        rows={5}\n      />\n      <button \n        type=\"submit\" \n        className=\"mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700\"\n      >\n        Submit\n      </button>\n    </form>\n  );\n}"
-      }
-    }
-  },
-  "testing": {
-    "unitTests": [
-      "Renders with correct initial state",
-      "Handles controlled value changes",
-      "Handles uncontrolled default value",
-      "Auto-resize functionality",
-      "Character count display",
-      "Error state rendering",
-      "Disabled state behavior",
-      "Readonly state behavior"
-    ],
-    "accessibilityTests": [
-      "ARIA attributes are correctly applied",
-      "Keyboard navigation works",
-      "Screen reader announcements",
-      "Focus management",
-      "Error message association"
-    ],
-    "integrationTests": [
-      "Form submission integration",
-      "Validation framework integration",
-      "Real-time character counting",
-      "Auto-resize performance"
-    ]
-  },
-  "implementation": {
-    "files": {
-      "component": "src/components/form/TextArea/TextArea.tsx",
-      "types": "src/components/form/TextArea/TextArea.types.ts",
-      "styles": "src/components/form/TextArea/TextArea.styles.ts",
-      "tests": "src/components/form/TextArea/TextArea.test.tsx",
-      "stories": "src/components/form/TextArea/TextArea.stories.tsx"
-    },
-    "dependencies": {
-      "external": [
-        "react",
-        "react-dom"
-      ],
-      "internal": [
-        "@xala/ui-tokens",
-        "@xala/ui-utils"
-      ]
-    },
-    "hooks": [
-      "useAutoResize",
-      "useCharacterCount",
-      "useTextAreaValidation"
-    ]
-  },
-  "changelog": {
-    "1.0.0": {
-      "date": "2025-08-04",
-      "changes": [
-        "Initial release",
-        "WCAG AAA compliance",
-        "Auto-resize functionality",
-        "Character count feature",
-        "Norwegian NSM OPEN classification"
-      ]
-    }
-  }
+	"metadata": {
+		"name": "TextArea",
+		"version": "1.0.0",
+		"category": "form",
+		"description": "A multi-line text input component with auto-resize capabilities and character counting",
+		"designSystem": "Xala Enterprise",
+		"lastUpdated": "2025-08-04",
+		"author": "Xala Enterprise UI System",
+		"status": "stable"
+	},
+	"compliance": {
+		"accessibility": {
+			"level": "WCAG AAA",
+			"features": [
+				"Screen reader support",
+				"Keyboard navigation",
+				"Focus management",
+				"High contrast support",
+				"Proper labeling",
+				"Error announcements"
+			]
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"supportedLanguages": ["nb-NO", "en-US"],
+			"auditTrail": false
+		},
+		"security": {
+			"inputSanitization": true,
+			"xssProtection": true,
+			"maxLengthEnforcement": true
+		}
+	},
+	"props": {
+		"value": {
+			"type": "string",
+			"required": false,
+			"description": "The controlled value of the textarea",
+			"default": null,
+			"validation": {
+				"maxLength": 10000
+			}
+		},
+		"defaultValue": {
+			"type": "string",
+			"required": false,
+			"description": "The uncontrolled default value",
+			"default": "",
+			"validation": {
+				"maxLength": 10000
+			}
+		},
+		"placeholder": {
+			"type": "string",
+			"required": false,
+			"description": "Placeholder text when textarea is empty",
+			"default": "",
+			"i18n": true
+		},
+		"rows": {
+			"type": "number",
+			"required": false,
+			"description": "Number of visible text lines",
+			"default": 4,
+			"validation": {
+				"min": 1,
+				"max": 50
+			}
+		},
+		"maxRows": {
+			"type": "number",
+			"required": false,
+			"description": "Maximum number of rows for auto-resize",
+			"default": null,
+			"validation": {
+				"min": 1,
+				"max": 50
+			}
+		},
+		"minRows": {
+			"type": "number",
+			"required": false,
+			"description": "Minimum number of rows for auto-resize",
+			"default": null,
+			"validation": {
+				"min": 1,
+				"max": 50
+			}
+		},
+		"maxLength": {
+			"type": "number",
+			"required": false,
+			"description": "Maximum number of characters allowed",
+			"default": null,
+			"validation": {
+				"min": 1,
+				"max": 50000
+			}
+		},
+		"showCount": {
+			"type": "boolean",
+			"required": false,
+			"description": "Whether to show character count",
+			"default": false
+		},
+		"resize": {
+			"type": "string",
+			"required": false,
+			"description": "CSS resize property",
+			"default": "vertical",
+			"enum": ["none", "vertical", "horizontal", "both"]
+		},
+		"disabled": {
+			"type": "boolean",
+			"required": false,
+			"description": "Whether the textarea is disabled",
+			"default": false
+		},
+		"readonly": {
+			"type": "boolean",
+			"required": false,
+			"description": "Whether the textarea is read-only",
+			"default": false
+		},
+		"error": {
+			"type": "boolean",
+			"required": false,
+			"description": "Whether the textarea is in error state",
+			"default": false
+		},
+		"errorMessage": {
+			"type": "string",
+			"required": false,
+			"description": "Error message to display",
+			"default": "",
+			"i18n": true
+		},
+		"autoResize": {
+			"type": "boolean",
+			"required": false,
+			"description": "Whether to automatically resize height based on content",
+			"default": false
+		},
+		"name": {
+			"type": "string",
+			"required": false,
+			"description": "Name attribute for form submission",
+			"default": ""
+		},
+		"id": {
+			"type": "string",
+			"required": false,
+			"description": "Unique identifier for the textarea",
+			"default": ""
+		},
+		"className": {
+			"type": "string",
+			"required": false,
+			"description": "Additional CSS classes",
+			"default": ""
+		},
+		"onChange": {
+			"type": "function",
+			"required": false,
+			"description": "Callback fired when textarea value changes",
+			"signature": "(value: string, event: React.ChangeEvent<HTMLTextAreaElement>) => void"
+		},
+		"onFocus": {
+			"type": "function",
+			"required": false,
+			"description": "Callback fired when textarea receives focus",
+			"signature": "(event: React.FocusEvent<HTMLTextAreaElement>) => void"
+		},
+		"onBlur": {
+			"type": "function",
+			"required": false,
+			"description": "Callback fired when textarea loses focus",
+			"signature": "(event: React.FocusEvent<HTMLTextAreaElement>) => void"
+		},
+		"onKeyDown": {
+			"type": "function",
+			"required": false,
+			"description": "Callback fired on key down",
+			"signature": "(event: React.KeyboardEvent<HTMLTextAreaElement>) => void"
+		}
+	},
+	"accessibility": {
+		"ariaAttributes": {
+			"aria-label": {
+				"description": "Accessible name for the textarea",
+				"required": "conditional",
+				"condition": "when no associated label"
+			},
+			"aria-labelledby": {
+				"description": "References to elements that label the textarea",
+				"required": "conditional",
+				"condition": "when using external labels"
+			},
+			"aria-describedby": {
+				"description": "References to elements that describe the textarea",
+				"required": "conditional",
+				"condition": "when error message or help text present"
+			},
+			"aria-invalid": {
+				"description": "Indicates validation state",
+				"required": true,
+				"values": ["true", "false"]
+			},
+			"aria-required": {
+				"description": "Indicates if field is required",
+				"required": "conditional",
+				"condition": "when field is required"
+			}
+		},
+		"keyboardNavigation": {
+			"Tab": "Move focus to/from textarea",
+			"Shift+Tab": "Move focus to previous focusable element",
+			"Escape": "Clear focus (when applicable)",
+			"Enter": "Insert line break",
+			"Ctrl+A": "Select all text"
+		},
+		"screenReader": {
+			"announcements": [
+				"Field type (multiline text input)",
+				"Current value",
+				"Character count (when enabled)",
+				"Error messages",
+				"Required state"
+			]
+		},
+		"focusManagement": {
+			"focusVisible": "Clear focus ring with proper contrast",
+			"focusWithin": "Maintains focus within component boundaries"
+		}
+	},
+	"styling": {
+		"baseClasses": "w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors duration-200 resize-vertical",
+		"stateClasses": {
+			"default": "border-gray-300 bg-white text-gray-900",
+			"focused": "border-blue-500 ring-2 ring-blue-200",
+			"error": "border-red-500 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-200",
+			"disabled": "border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed opacity-60",
+			"readonly": "border-gray-200 bg-gray-50 text-gray-700"
+		},
+		"resizeClasses": {
+			"none": "resize-none",
+			"vertical": "resize-y",
+			"horizontal": "resize-x",
+			"both": "resize"
+		},
+		"characterCountClasses": "text-sm text-gray-500 mt-2 text-right",
+		"errorMessageClasses": "text-sm text-red-600 mt-2",
+		"tokens": {
+			"minHeight": "6rem",
+			"fontSize": "1rem",
+			"lineHeight": "1.5",
+			"padding": "0.75rem 1rem",
+			"borderRadius": "0.5rem",
+			"borderWidth": "2px"
+		}
+	},
+	"behavior": {
+		"autoResize": {
+			"description": "Automatically adjusts height based on content",
+			"implementation": "Uses ResizeObserver and scrollHeight calculation",
+			"performance": "Debounced to prevent excessive recalculations"
+		},
+		"characterCount": {
+			"description": "Shows current character count vs maximum",
+			"format": "{current}/{max}",
+			"warning": "Changes color when approaching limit (90%+)"
+		},
+		"validation": {
+			"realTime": "Validates on change when error prop is true",
+			"maxLength": "Prevents input beyond maxLength",
+			"required": "Validates on blur for required fields"
+		}
+	},
+	"performance": {
+		"bundleSize": {
+			"target": "<3KB",
+			"gzipped": "<1.2KB"
+		},
+		"renderTime": "<16ms",
+		"memoryUsage": "<2MB",
+		"optimization": [
+			"Memoized resize calculations",
+			"Debounced auto-resize",
+			"Lazy character count updates"
+		]
+	},
+	"examples": {
+		"basic": {
+			"title": "Basic TextArea",
+			"description": "Simple textarea with placeholder",
+			"code": {
+				"tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function BasicExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Enter your message...\"\n      rows={4}\n    />\n  );\n}"
+			}
+		},
+		"autoResize": {
+			"title": "Auto-Resize TextArea",
+			"description": "TextArea that grows with content",
+			"code": {
+				"tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function AutoResizeExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Start typing and watch me grow...\"\n      autoResize\n      minRows={3}\n      maxRows={10}\n      resize=\"none\"\n    />\n  );\n}"
+			}
+		},
+		"withCharacterCount": {
+			"title": "TextArea with Character Count",
+			"description": "TextArea with character limit and count display",
+			"code": {
+				"tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function CharacterCountExample() {\n  const [value, setValue] = useState('');\n\n  return (\n    <TextArea\n      value={value}\n      onChange={(newValue) => setValue(newValue)}\n      placeholder=\"Write your review (max 500 characters)...\"\n      maxLength={500}\n      showCount\n      rows={5}\n    />\n  );\n}"
+			}
+		},
+		"withValidation": {
+			"title": "TextArea with Validation",
+			"description": "TextArea with error state and message",
+			"code": {
+				"tsx": "import { TextArea } from '@xala/ui-system';\n\nexport function ValidationExample() {\n  const [value, setValue] = useState('');\n  const [error, setError] = useState(false);\n  const [errorMessage, setErrorMessage] = useState('');\n\n  const handleChange = (newValue: string) => {\n    setValue(newValue);\n    if (newValue.length < 10) {\n      setError(true);\n      setErrorMessage('Message must be at least 10 characters long');\n    } else {\n      setError(false);\n      setErrorMessage('');\n    }\n  };\n\n  return (\n    <TextArea\n      value={value}\n      onChange={handleChange}\n      placeholder=\"Enter your feedback...\"\n      error={error}\n      errorMessage={errorMessage}\n      rows={4}\n    />\n  );\n}"
+			}
+		},
+		"formIntegration": {
+			"title": "Form Integration",
+			"description": "TextArea integrated with form validation",
+			"code": {
+				"tsx": "import { TextArea } from '@xala/ui-system';\nimport { useForm } from 'react-hook-form';\n\ninterface FormData {\n  message: string;\n}\n\nexport function FormExample() {\n  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();\n\n  const onSubmit = (data: FormData) => {\n    console.log('Form data:', data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <label htmlFor=\"message\" className=\"block text-sm font-medium mb-2\">\n        Message *\n      </label>\n      <TextArea\n        id=\"message\"\n        {...register('message', { \n          required: 'Message is required',\n          minLength: { value: 10, message: 'Minimum 10 characters' }\n        })}\n        placeholder=\"Enter your message...\"\n        error={!!errors.message}\n        errorMessage={errors.message?.message}\n        maxLength={1000}\n        showCount\n        rows={5}\n      />\n      <button \n        type=\"submit\" \n        className=\"mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700\"\n      >\n        Submit\n      </button>\n    </form>\n  );\n}"
+			}
+		}
+	},
+	"testing": {
+		"unitTests": [
+			"Renders with correct initial state",
+			"Handles controlled value changes",
+			"Handles uncontrolled default value",
+			"Auto-resize functionality",
+			"Character count display",
+			"Error state rendering",
+			"Disabled state behavior",
+			"Readonly state behavior"
+		],
+		"accessibilityTests": [
+			"ARIA attributes are correctly applied",
+			"Keyboard navigation works",
+			"Screen reader announcements",
+			"Focus management",
+			"Error message association"
+		],
+		"integrationTests": [
+			"Form submission integration",
+			"Validation framework integration",
+			"Real-time character counting",
+			"Auto-resize performance"
+		]
+	},
+	"implementation": {
+		"files": {
+			"component": "src/components/form/TextArea/TextArea.tsx",
+			"types": "src/components/form/TextArea/TextArea.types.ts",
+			"styles": "src/components/form/TextArea/TextArea.styles.ts",
+			"tests": "src/components/form/TextArea/TextArea.test.tsx",
+			"stories": "src/components/form/TextArea/TextArea.stories.tsx"
+		},
+		"dependencies": {
+			"external": ["react", "react-dom"],
+			"internal": ["@xala/ui-tokens", "@xala/ui-utils"]
+		},
+		"hooks": ["useAutoResize", "useCharacterCount", "useTextAreaValidation"]
+	},
+	"changelog": {
+		"1.0.0": {
+			"date": "2025-08-04",
+			"changes": [
+				"Initial release",
+				"WCAG AAA compliance",
+				"Auto-resize functionality",
+				"Character count feature",
+				"Norwegian NSM OPEN classification"
+			]
+		}
+	}
 }

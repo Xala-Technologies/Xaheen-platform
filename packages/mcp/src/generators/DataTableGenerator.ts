@@ -2,31 +2,40 @@
  * Data Table Generator for Xala UI System
  */
 
-import type { DataTableConfig } from '../types/index.js';
+import type { DataTableConfig } from "../types/index.js";
 
 export class DataTableGenerator {
-  public generateDataTable(config: DataTableConfig): string {
-    const { name, columns, features, actions } = config;
-    
-    const columnDefinitions = columns.map(col => `
+	public generateDataTable(config: DataTableConfig): string {
+		const { name, columns, features, actions } = config;
+
+		const columnDefinitions = columns
+			.map(
+				(col) => `
     {
       key: '${col.key}',
       label: t('table.columns.${col.key}'),
       type: '${col.type}',
       sortable: ${col.sortable || false},
       filterable: ${col.filterable || false}
-    }`).join(',');
+    }`,
+			)
+			.join(",");
 
-    const actionButtons = actions?.map(action => `
+		const actionButtons =
+			actions
+				?.map(
+					(action) => `
     {
       key: '${action.key}',
       label: t('table.actions.${action.key}'),
       icon: '${action.icon}',
       variant: '${action.variant}',
       onClick: (row: Record<string, unknown>) => handle${action.key.charAt(0).toUpperCase() + action.key.slice(1)}(row)
-    }`).join(',') || '';
+    }`,
+				)
+				.join(",") || "";
 
-    return `
+		return `
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -56,10 +65,16 @@ export function ${name}({
 
   const actions = [${actionButtons}];
 
-  ${actions?.map(action => `
+  ${
+		actions
+			?.map(
+				(action) => `
   const handle${action.key.charAt(0).toUpperCase() + action.key.slice(1)} = (row: Record<string, unknown>): void => {
     console.log('${action.key}', row);
-  };`).join('\n') || ''}
+  };`,
+			)
+			.join("\n") || ""
+	}
 
   return (
     <DataTable
@@ -80,32 +95,32 @@ export function ${name}({
     />
   );
 }`;
-  }
+	}
 
-  /**
-   * Generate a data table using the DataTable specification (async version for MCP tools)
-   */
-  public async generateAdvancedDataTable(config: {
-    name: string;
-    columns: Array<{
-      key: string;
-      label?: string;
-      type?: string;
-      sortable?: boolean;
-      filterable?: boolean;
-    }>;
-    features: {
-      sorting?: boolean;
-      filtering?: boolean;
-      pagination?: boolean;
-      selection?: boolean;
-      virtualScrolling?: boolean;
-    };
-    nsmClassification: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
-  }): Promise<string> {
-    const { name, columns, features, nsmClassification } = config;
-    
-    const tableCode = `
+	/**
+	 * Generate a data table using the DataTable specification (async version for MCP tools)
+	 */
+	public async generateAdvancedDataTable(config: {
+		name: string;
+		columns: Array<{
+			key: string;
+			label?: string;
+			type?: string;
+			sortable?: boolean;
+			filterable?: boolean;
+		}>;
+		features: {
+			sorting?: boolean;
+			filtering?: boolean;
+			pagination?: boolean;
+			selection?: boolean;
+			virtualScrolling?: boolean;
+		};
+		nsmClassification: "OPEN" | "RESTRICTED" | "CONFIDENTIAL" | "SECRET";
+	}): Promise<string> {
+		const { name, columns, features, nsmClassification } = config;
+
+		const tableCode = `
 /**
  * Generated Data Table: \${name}
  * NSM Classification: \${nsmClassification}
@@ -137,7 +152,9 @@ export const \${name}: React.FC<\${name}Props> = ({
 
   // Column definitions
   const columns = [
-${columns.map(col => `
+${columns
+	.map(
+		(col) => `
     {
       key: '${col.key}',
       label: t('${name.toLowerCase()}.columns.${col.key}'),
@@ -149,7 +166,9 @@ ${columns.map(col => `
         }
         return value?.toString() || '-';
       }
-    }`).join(',')}
+    }`,
+	)
+	.join(",")}
   ];
 
   // Data processing
@@ -218,13 +237,17 @@ ${columns.map(col => `
   return (
     <div className="space-y-4">
       {/* NSM Classification Badge */}
-      ${nsmClassification !== 'OPEN' ? `
+      ${
+				nsmClassification !== "OPEN"
+					? `
       <div className="flex justify-between items-center">
         <Badge variant="destructive" className="text-xs">
           NSM: ${nsmClassification}
         </Badge>
       </div>
-      ` : ''}
+      `
+					: ""
+			}
       
       {/* Data Table */}
       <DataTable
@@ -243,7 +266,9 @@ ${columns.map(col => `
         aria-label={t('${name.toLowerCase()}.tableLabel')}
       />
       
-      ${features.pagination ? `
+      ${
+				features.pagination
+					? `
       {/* Pagination */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
@@ -272,7 +297,9 @@ ${columns.map(col => `
           </Button>
         </Stack>
       </div>
-      ` : ''}
+      `
+					: ""
+			}
       
       {/* Selected rows actions */}
       {${features.selection || false} && selectedRows.length > 0 && (
@@ -305,6 +332,6 @@ ${columns.map(col => `
 \${name}.displayName = '\${name}';
 `;
 
-    return tableCode;
-  }
+		return tableCode;
+	}
 }

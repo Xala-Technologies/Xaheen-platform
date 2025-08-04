@@ -3,647 +3,736 @@
  * @description Installs UI system into existing or new SaaS applications
  */
 
-import { Command } from 'commander';
-import path from 'path';
-import fs from 'fs/promises';
-import { existsSync } from 'fs';
-import chalk from 'chalk';
-import ora from 'ora';
-import inquirer from 'inquirer';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import chalk from "chalk";
+import { exec } from "child_process";
+import { Command } from "commander";
+import { existsSync } from "fs";
+import fs from "fs/promises";
+import inquirer from "inquirer";
+import ora from "ora";
+import path from "path";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
 interface InstallOptions {
-  force?: boolean;
-  skipDeps?: boolean;
-  template?: string;
-  industry?: string;
-  platform?: 'react' | 'nextjs' | 'vue' | 'nuxt' | 'angular';
-  theme?: string;
-  compliance?: 'nsm' | 'gdpr' | 'healthcare' | 'finance';
-  backup?: boolean;
+	force?: boolean;
+	skipDeps?: boolean;
+	template?: string;
+	industry?: string;
+	platform?: "react" | "nextjs" | "vue" | "nuxt" | "angular";
+	theme?: string;
+	compliance?: "nsm" | "gdpr" | "healthcare" | "finance";
+	backup?: boolean;
 }
 
 interface ProjectDetection {
-  type: 'react' | 'nextjs' | 'vue' | 'nuxt' | 'angular' | 'unknown';
-  packageManager: 'npm' | 'yarn' | 'pnpm';
-  hasTypeScript: boolean;
-  hasTailwind: boolean;
-  hasDesignSystem: boolean;
-  structure: ProjectStructure;
-  recommendations: string[];
+	type: "react" | "nextjs" | "vue" | "nuxt" | "angular" | "unknown";
+	packageManager: "npm" | "yarn" | "pnpm";
+	hasTypeScript: boolean;
+	hasTailwind: boolean;
+	hasDesignSystem: boolean;
+	structure: ProjectStructure;
+	recommendations: string[];
 }
 
 interface ProjectStructure {
-  srcDir: string;
-  componentsDir: string;
-  stylesDir: string;
-  configFiles: string[];
-  mainFiles: string[];
+	srcDir: string;
+	componentsDir: string;
+	stylesDir: string;
+	configFiles: string[];
+	mainFiles: string[];
 }
 
-export const install = new Command('install')
-  .description('Install Xala UI system into existing or new SaaS application')
-  .option('-f, --force', 'Force installation even if conflicts detected')
-  .option('--skip-deps', 'Skip dependency installation')
-  .option('-t, --template <template>', 'Project template (saas, healthcare, finance, etc.)')
-  .option('-i, --industry <industry>', 'Industry preset (healthcare, finance, government, etc.)')
-  .option('-p, --platform <platform>', 'Platform (react, nextjs, vue, nuxt, angular)')
-  .option('--theme <theme>', 'Default theme to apply')
-  .option('-c, --compliance <compliance>', 'Compliance preset (nsm, gdpr, healthcare, finance)')
-  .option('--backup', 'Create backup before installation')
-  .action(async (options: InstallOptions) => {
-    try {
-      console.log(chalk.blue('\n🚀 Xala UI System Installation\n'));
-      
-      // Step 1: Detect existing project
-      const detection = await detectProject();
-      await displayDetectionResults(detection);
-      
-      // Step 2: Confirm installation
-      const confirmed = await confirmInstallation(detection, options);
-      if (!confirmed) {
-        console.log(chalk.yellow('Installation cancelled.'));
-        return;
-      }
-      
-      // Step 3: Create backup if requested
-      if (options.backup) {
-        await createBackup();
-      }
-      
-      // Step 4: Install dependencies
-      if (!options.skipDeps) {
-        await installDependencies(detection, options);
-      }
-      
-      // Step 5: Setup project structure
-      await setupProjectStructure(detection, options);
-      
-      // Step 6: Install providers and basic structure
-      await installProviders(detection, options);
-      
-      // Step 7: Setup design tokens
-      await setupDesignTokens(detection, options);
-      
-      // Step 8: Update Tailwind CSS configuration
-      await updateTailwindConfig(detection, options);
-      
-      // Step 9: Generate initial theme
-      await generateInitialTheme(options);
-      
-      // Step 10: Update CSS files
-      await updateCSSFiles(detection, options);
-      
-      // Step 11: Generate example components
-      await generateExampleComponents(detection, options);
-      
-      // Step 12: Setup development tools
-      await setupDevTools(detection, options);
-      
-      console.log(chalk.green('\n✅ Installation completed successfully!\n'));
-      await displayNextSteps(detection, options);
-      
-    } catch (error) {
-      console.error(chalk.red('\n❌ Installation failed:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
-    }
-  });
+export const install = new Command("install")
+	.description("Install Xala UI system into existing or new SaaS application")
+	.option("-f, --force", "Force installation even if conflicts detected")
+	.option("--skip-deps", "Skip dependency installation")
+	.option(
+		"-t, --template <template>",
+		"Project template (saas, healthcare, finance, etc.)",
+	)
+	.option(
+		"-i, --industry <industry>",
+		"Industry preset (healthcare, finance, government, etc.)",
+	)
+	.option(
+		"-p, --platform <platform>",
+		"Platform (react, nextjs, vue, nuxt, angular)",
+	)
+	.option("--theme <theme>", "Default theme to apply")
+	.option(
+		"-c, --compliance <compliance>",
+		"Compliance preset (nsm, gdpr, healthcare, finance)",
+	)
+	.option("--backup", "Create backup before installation")
+	.action(async (options: InstallOptions) => {
+		try {
+			console.log(chalk.blue("\n🚀 Xala UI System Installation\n"));
+
+			// Step 1: Detect existing project
+			const detection = await detectProject();
+			await displayDetectionResults(detection);
+
+			// Step 2: Confirm installation
+			const confirmed = await confirmInstallation(detection, options);
+			if (!confirmed) {
+				console.log(chalk.yellow("Installation cancelled."));
+				return;
+			}
+
+			// Step 3: Create backup if requested
+			if (options.backup) {
+				await createBackup();
+			}
+
+			// Step 4: Install dependencies
+			if (!options.skipDeps) {
+				await installDependencies(detection, options);
+			}
+
+			// Step 5: Setup project structure
+			await setupProjectStructure(detection, options);
+
+			// Step 6: Install providers and basic structure
+			await installProviders(detection, options);
+
+			// Step 7: Setup design tokens
+			await setupDesignTokens(detection, options);
+
+			// Step 8: Update Tailwind CSS configuration
+			await updateTailwindConfig(detection, options);
+
+			// Step 9: Generate initial theme
+			await generateInitialTheme(options);
+
+			// Step 10: Update CSS files
+			await updateCSSFiles(detection, options);
+
+			// Step 11: Generate example components
+			await generateExampleComponents(detection, options);
+
+			// Step 12: Setup development tools
+			await setupDevTools(detection, options);
+
+			console.log(chalk.green("\n✅ Installation completed successfully!\n"));
+			await displayNextSteps(detection, options);
+		} catch (error) {
+			console.error(
+				chalk.red("\n❌ Installation failed:"),
+				error instanceof Error ? error.message : String(error),
+			);
+			process.exit(1);
+		}
+	});
 
 async function detectProject(): Promise<ProjectDetection> {
-  const spinner = ora('Detecting project structure...').start();
-  
-  try {
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
-    const hasPackageJson = existsSync(packageJsonPath);
-    
-    let packageJson: any = {};
-    if (hasPackageJson) {
-      const content = await fs.readFile(packageJsonPath, 'utf-8');
-      packageJson = JSON.parse(content);
-    }
-    
-    // Detect project type
-    const type = detectProjectType(packageJson);
-    
-    // Detect package manager
-    const packageManager = detectPackageManager();
-    
-    // Check TypeScript
-    const hasTypeScript = existsSync('tsconfig.json') || 
-                         packageJson.devDependencies?.typescript ||
-                         packageJson.dependencies?.typescript;
-    
-    // Check Tailwind
-    const hasTailwind = packageJson.devDependencies?.tailwindcss ||
-                       packageJson.dependencies?.tailwindcss ||
-                       existsSync('tailwind.config.js') ||
-                       existsSync('tailwind.config.ts');
-    
-    // Check existing design system
-    const hasDesignSystem = await checkExistingDesignSystem();
-    
-    // Analyze project structure
-    const structure = await analyzeProjectStructure(type);
-    
-    // Generate recommendations
-    const recommendations = generateRecommendations({
-      type,
-      hasTypeScript,
-      hasTailwind,
-      hasDesignSystem,
-      structure
-    });
-    
-    spinner.succeed('Project detection completed');
-    
-    return {
-      type,
-      packageManager,
-      hasTypeScript,
-      hasTailwind,
-      hasDesignSystem,
-      structure,
-      recommendations
-    };
-    
-  } catch (error) {
-    spinner.fail('Project detection failed');
-    throw error;
-  }
+	const spinner = ora("Detecting project structure...").start();
+
+	try {
+		const packageJsonPath = path.join(process.cwd(), "package.json");
+		const hasPackageJson = existsSync(packageJsonPath);
+
+		let packageJson: any = {};
+		if (hasPackageJson) {
+			const content = await fs.readFile(packageJsonPath, "utf-8");
+			packageJson = JSON.parse(content);
+		}
+
+		// Detect project type
+		const type = detectProjectType(packageJson);
+
+		// Detect package manager
+		const packageManager = detectPackageManager();
+
+		// Check TypeScript
+		const hasTypeScript =
+			existsSync("tsconfig.json") ||
+			packageJson.devDependencies?.typescript ||
+			packageJson.dependencies?.typescript;
+
+		// Check Tailwind
+		const hasTailwind =
+			packageJson.devDependencies?.tailwindcss ||
+			packageJson.dependencies?.tailwindcss ||
+			existsSync("tailwind.config.js") ||
+			existsSync("tailwind.config.ts");
+
+		// Check existing design system
+		const hasDesignSystem = await checkExistingDesignSystem();
+
+		// Analyze project structure
+		const structure = await analyzeProjectStructure(type);
+
+		// Generate recommendations
+		const recommendations = generateRecommendations({
+			type,
+			hasTypeScript,
+			hasTailwind,
+			hasDesignSystem,
+			structure,
+		});
+
+		spinner.succeed("Project detection completed");
+
+		return {
+			type,
+			packageManager,
+			hasTypeScript,
+			hasTailwind,
+			hasDesignSystem,
+			structure,
+			recommendations,
+		};
+	} catch (error) {
+		spinner.fail("Project detection failed");
+		throw error;
+	}
 }
 
-function detectProjectType(packageJson: any): ProjectDetection['type'] {
-  const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-  
-  if (deps.next) return 'nextjs';
-  if (deps.nuxt) return 'nuxt';
-  if (deps['@angular/core']) return 'angular';
-  if (deps.vue) return 'vue';
-  if (deps.react) return 'react';
-  
-  return 'unknown';
+function detectProjectType(packageJson: any): ProjectDetection["type"] {
+	const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+
+	if (deps.next) return "nextjs";
+	if (deps.nuxt) return "nuxt";
+	if (deps["@angular/core"]) return "angular";
+	if (deps.vue) return "vue";
+	if (deps.react) return "react";
+
+	return "unknown";
 }
 
-function detectPackageManager(): 'npm' | 'yarn' | 'pnpm' {
-  if (existsSync('pnpm-lock.yaml')) return 'pnpm';
-  if (existsSync('yarn.lock')) return 'yarn';
-  return 'npm';
+function detectPackageManager(): "npm" | "yarn" | "pnpm" {
+	if (existsSync("pnpm-lock.yaml")) return "pnpm";
+	if (existsSync("yarn.lock")) return "yarn";
+	return "npm";
 }
 
 async function checkExistingDesignSystem(): Promise<boolean> {
-  const designSystemIndicators = [
-    'src/components/ui',
-    'src/design-system',
-    'src/lib/utils',
-    'components/ui',
-    'lib/utils.ts',
-    'lib/cn.ts'
-  ];
-  
-  for (const indicator of designSystemIndicators) {
-    if (existsSync(indicator)) return true;
-  }
-  
-  return false;
+	const designSystemIndicators = [
+		"src/components/ui",
+		"src/design-system",
+		"src/lib/utils",
+		"components/ui",
+		"lib/utils.ts",
+		"lib/cn.ts",
+	];
+
+	for (const indicator of designSystemIndicators) {
+		if (existsSync(indicator)) return true;
+	}
+
+	return false;
 }
 
-async function analyzeProjectStructure(type: ProjectDetection['type']): Promise<ProjectStructure> {
-  const structures = {
-    react: {
-      srcDir: 'src',
-      componentsDir: 'src/components',
-      stylesDir: 'src/styles',
-      configFiles: ['package.json', 'tsconfig.json', 'vite.config.ts'],
-      mainFiles: ['src/main.tsx', 'src/App.tsx']
-    },
-    nextjs: {
-      srcDir: 'src',
-      componentsDir: 'src/components',
-      stylesDir: 'src/styles',
-      configFiles: ['package.json', 'tsconfig.json', 'next.config.js'],
-      mainFiles: ['src/app/page.tsx', 'src/pages/_app.tsx']
-    },
-    vue: {
-      srcDir: 'src',
-      componentsDir: 'src/components',
-      stylesDir: 'src/assets/styles',
-      configFiles: ['package.json', 'tsconfig.json', 'vite.config.ts'],
-      mainFiles: ['src/main.ts', 'src/App.vue']
-    },
-    nuxt: {
-      srcDir: '.',
-      componentsDir: 'components',
-      stylesDir: 'assets/css',
-      configFiles: ['package.json', 'nuxt.config.ts'],
-      mainFiles: ['app.vue', 'pages/index.vue']
-    },
-    angular: {
-      srcDir: 'src',
-      componentsDir: 'src/app/components',
-      stylesDir: 'src/styles',
-      configFiles: ['package.json', 'tsconfig.json', 'angular.json'],
-      mainFiles: ['src/main.ts', 'src/app/app.component.ts']
-    },
-    unknown: {
-      srcDir: 'src',
-      componentsDir: 'src/components',
-      stylesDir: 'src/styles',
-      configFiles: ['package.json'],
-      mainFiles: ['src/index.js']
-    }
-  };
-  
-  return structures[type];
+async function analyzeProjectStructure(
+	type: ProjectDetection["type"],
+): Promise<ProjectStructure> {
+	const structures = {
+		react: {
+			srcDir: "src",
+			componentsDir: "src/components",
+			stylesDir: "src/styles",
+			configFiles: ["package.json", "tsconfig.json", "vite.config.ts"],
+			mainFiles: ["src/main.tsx", "src/App.tsx"],
+		},
+		nextjs: {
+			srcDir: "src",
+			componentsDir: "src/components",
+			stylesDir: "src/styles",
+			configFiles: ["package.json", "tsconfig.json", "next.config.js"],
+			mainFiles: ["src/app/page.tsx", "src/pages/_app.tsx"],
+		},
+		vue: {
+			srcDir: "src",
+			componentsDir: "src/components",
+			stylesDir: "src/assets/styles",
+			configFiles: ["package.json", "tsconfig.json", "vite.config.ts"],
+			mainFiles: ["src/main.ts", "src/App.vue"],
+		},
+		nuxt: {
+			srcDir: ".",
+			componentsDir: "components",
+			stylesDir: "assets/css",
+			configFiles: ["package.json", "nuxt.config.ts"],
+			mainFiles: ["app.vue", "pages/index.vue"],
+		},
+		angular: {
+			srcDir: "src",
+			componentsDir: "src/app/components",
+			stylesDir: "src/styles",
+			configFiles: ["package.json", "tsconfig.json", "angular.json"],
+			mainFiles: ["src/main.ts", "src/app/app.component.ts"],
+		},
+		unknown: {
+			srcDir: "src",
+			componentsDir: "src/components",
+			stylesDir: "src/styles",
+			configFiles: ["package.json"],
+			mainFiles: ["src/index.js"],
+		},
+	};
+
+	return structures[type];
 }
 
-function generateRecommendations(detection: Partial<ProjectDetection>): string[] {
-  const recommendations: string[] = [];
-  
-  if (!detection.hasTypeScript) {
-    recommendations.push('Enable TypeScript for better type safety and development experience');
-  }
-  
-  if (!detection.hasTailwind) {
-    recommendations.push('Install Tailwind CSS for optimal styling integration');
-  }
-  
-  if (detection.hasDesignSystem) {
-    recommendations.push('Existing design system detected - migration strategy will be provided');
-  }
-  
-  if (detection.type === 'unknown') {
-    recommendations.push('Project type could not be determined - manual configuration may be required');
-  }
-  
-  return recommendations;
+function generateRecommendations(
+	detection: Partial<ProjectDetection>,
+): string[] {
+	const recommendations: string[] = [];
+
+	if (!detection.hasTypeScript) {
+		recommendations.push(
+			"Enable TypeScript for better type safety and development experience",
+		);
+	}
+
+	if (!detection.hasTailwind) {
+		recommendations.push(
+			"Install Tailwind CSS for optimal styling integration",
+		);
+	}
+
+	if (detection.hasDesignSystem) {
+		recommendations.push(
+			"Existing design system detected - migration strategy will be provided",
+		);
+	}
+
+	if (detection.type === "unknown") {
+		recommendations.push(
+			"Project type could not be determined - manual configuration may be required",
+		);
+	}
+
+	return recommendations;
 }
 
 async function displayDetectionResults(detection: ProjectDetection) {
-  console.log(chalk.cyan('\n📊 Project Analysis Results:\n'));
-  
-  console.log(`${chalk.bold('Project Type:')} ${chalk.green(detection.type)}`);
-  console.log(`${chalk.bold('Package Manager:')} ${chalk.green(detection.packageManager)}`);
-  console.log(`${chalk.bold('TypeScript:')} ${detection.hasTypeScript ? chalk.green('✓') : chalk.red('✗')}`);
-  console.log(`${chalk.bold('Tailwind CSS:')} ${detection.hasTailwind ? chalk.green('✓') : chalk.red('✗')}`);
-  console.log(`${chalk.bold('Design System:')} ${detection.hasDesignSystem ? chalk.yellow('Existing') : chalk.red('None')}`);
-  
-  if (detection.recommendations.length > 0) {
-    console.log(chalk.cyan('\n💡 Recommendations:'));
-    detection.recommendations.forEach(rec => {
-      console.log(`  • ${rec}`);
-    });
-  }
+	console.log(chalk.cyan("\n📊 Project Analysis Results:\n"));
+
+	console.log(`${chalk.bold("Project Type:")} ${chalk.green(detection.type)}`);
+	console.log(
+		`${chalk.bold("Package Manager:")} ${chalk.green(detection.packageManager)}`,
+	);
+	console.log(
+		`${chalk.bold("TypeScript:")} ${detection.hasTypeScript ? chalk.green("✓") : chalk.red("✗")}`,
+	);
+	console.log(
+		`${chalk.bold("Tailwind CSS:")} ${detection.hasTailwind ? chalk.green("✓") : chalk.red("✗")}`,
+	);
+	console.log(
+		`${chalk.bold("Design System:")} ${detection.hasDesignSystem ? chalk.yellow("Existing") : chalk.red("None")}`,
+	);
+
+	if (detection.recommendations.length > 0) {
+		console.log(chalk.cyan("\n💡 Recommendations:"));
+		detection.recommendations.forEach((rec) => {
+			console.log(`  • ${rec}`);
+		});
+	}
 }
 
-async function confirmInstallation(detection: ProjectDetection, options: InstallOptions): Promise<boolean> {
-  if (options.force) return true;
-  
-  const questions = [
-    {
-      type: 'confirm',
-      name: 'proceed',
-      message: 'Proceed with Xala UI system installation?',
-      default: true
-    }
-  ];
-  
-  if (detection.hasDesignSystem) {
-    questions.unshift({
-      type: 'confirm',
-      name: 'migrationConfirm',
-      message: 'Existing design system detected. This will require migration. Continue?',
-      default: false
-    });
-  }
-  
-  const answers = await inquirer.prompt(questions);
-  return answers.migrationConfirm !== false && answers.proceed;
+async function confirmInstallation(
+	detection: ProjectDetection,
+	options: InstallOptions,
+): Promise<boolean> {
+	if (options.force) return true;
+
+	const questions = [
+		{
+			type: "confirm",
+			name: "proceed",
+			message: "Proceed with Xala UI system installation?",
+			default: true,
+		},
+	];
+
+	if (detection.hasDesignSystem) {
+		questions.unshift({
+			type: "confirm",
+			name: "migrationConfirm",
+			message:
+				"Existing design system detected. This will require migration. Continue?",
+			default: false,
+		});
+	}
+
+	const answers = await inquirer.prompt(questions);
+	return answers.migrationConfirm !== false && answers.proceed;
 }
 
 async function createBackup() {
-  const spinner = ora('Creating backup...').start();
-  
-  try {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupDir = `xala-backup-${timestamp}`;
-    
-    await execAsync(`cp -r . ../${backupDir}`);
-    spinner.succeed(`Backup created: ../${backupDir}`);
-  } catch (error) {
-    spinner.fail('Backup creation failed');
-    throw error;
-  }
+	const spinner = ora("Creating backup...").start();
+
+	try {
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const backupDir = `xala-backup-${timestamp}`;
+
+		await execAsync(`cp -r . ../${backupDir}`);
+		spinner.succeed(`Backup created: ../${backupDir}`);
+	} catch (error) {
+		spinner.fail("Backup creation failed");
+		throw error;
+	}
 }
 
-async function installDependencies(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Installing dependencies...').start();
-  
-  try {
-    const deps = generateDependencyList(detection, options);
-    const { packageManager } = detection;
-    
-    // Install production dependencies
-    if (deps.dependencies.length > 0) {
-      const depsList = deps.dependencies.join(' ');
-      await execAsync(`${packageManager} ${packageManager === 'npm' ? 'install' : 'add'} ${depsList}`);
-    }
-    
-    // Install dev dependencies
-    if (deps.devDependencies.length > 0) {
-      const devDepsList = deps.devDependencies.join(' ');
-      const devFlag = packageManager === 'npm' ? '--save-dev' : '--dev';
-      await execAsync(`${packageManager} ${packageManager === 'npm' ? 'install' : 'add'} ${devFlag} ${devDepsList}`);
-    }
-    
-    spinner.succeed('Dependencies installed successfully');
-  } catch (error) {
-    spinner.fail('Dependency installation failed');
-    throw error;
-  }
+async function installDependencies(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Installing dependencies...").start();
+
+	try {
+		const deps = generateDependencyList(detection, options);
+		const { packageManager } = detection;
+
+		// Install production dependencies
+		if (deps.dependencies.length > 0) {
+			const depsList = deps.dependencies.join(" ");
+			await execAsync(
+				`${packageManager} ${packageManager === "npm" ? "install" : "add"} ${depsList}`,
+			);
+		}
+
+		// Install dev dependencies
+		if (deps.devDependencies.length > 0) {
+			const devDepsList = deps.devDependencies.join(" ");
+			const devFlag = packageManager === "npm" ? "--save-dev" : "--dev";
+			await execAsync(
+				`${packageManager} ${packageManager === "npm" ? "install" : "add"} ${devFlag} ${devDepsList}`,
+			);
+		}
+
+		spinner.succeed("Dependencies installed successfully");
+	} catch (error) {
+		spinner.fail("Dependency installation failed");
+		throw error;
+	}
 }
 
-function generateDependencyList(detection: ProjectDetection, options: InstallOptions) {
-  const dependencies = [
-    'class-variance-authority',
-    'clsx',
-    'tailwind-merge',
-    '@radix-ui/react-slot',
-    'lucide-react'
-  ];
-  
-  const devDependencies = [];
-  
-  // Add TypeScript if not present
-  if (!detection.hasTypeScript) {
-    devDependencies.push('typescript', '@types/node');
-    
-    if (detection.type === 'react') {
-      devDependencies.push('@types/react', '@types/react-dom');
-    }
-  }
-  
-  // Add Tailwind if not present
-  if (!detection.hasTailwind) {
-    devDependencies.push('tailwindcss', 'autoprefixer', 'postcss');
-  }
-  
-  // Add compliance packages based on options
-  if (options.compliance) {
-    switch (options.compliance) {
-      case 'nsm':
-        dependencies.push('@xala-technologies/norwegian-compliance');
-        break;
-      case 'healthcare':
-        dependencies.push('@xala-technologies/healthcare-compliance');
-        break;
-      case 'finance':
-        dependencies.push('@xala-technologies/finance-compliance');
-        break;
-    }
-  }
-  
-  return { dependencies, devDependencies };
+function generateDependencyList(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const dependencies = [
+		"class-variance-authority",
+		"clsx",
+		"tailwind-merge",
+		"@radix-ui/react-slot",
+		"lucide-react",
+	];
+
+	const devDependencies = [];
+
+	// Add TypeScript if not present
+	if (!detection.hasTypeScript) {
+		devDependencies.push("typescript", "@types/node");
+
+		if (detection.type === "react") {
+			devDependencies.push("@types/react", "@types/react-dom");
+		}
+	}
+
+	// Add Tailwind if not present
+	if (!detection.hasTailwind) {
+		devDependencies.push("tailwindcss", "autoprefixer", "postcss");
+	}
+
+	// Add compliance packages based on options
+	if (options.compliance) {
+		switch (options.compliance) {
+			case "nsm":
+				dependencies.push("@xala-technologies/norwegian-compliance");
+				break;
+			case "healthcare":
+				dependencies.push("@xala-technologies/healthcare-compliance");
+				break;
+			case "finance":
+				dependencies.push("@xala-technologies/finance-compliance");
+				break;
+		}
+	}
+
+	return { dependencies, devDependencies };
 }
 
-async function setupProjectStructure(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Setting up project structure...').start();
-  
-  try {
-    const { structure } = detection;
-    
-    // Create necessary directories
-    const dirs = [
-      path.join(structure.componentsDir, 'ui'),
-      path.join(structure.componentsDir, 'providers'),
-      path.join(structure.stylesDir),
-      path.join(structure.srcDir, 'lib'),
-      path.join(structure.srcDir, 'hooks'),
-      path.join(structure.srcDir, 'types'),
-      path.join(structure.srcDir, 'tokens')
-    ];
-    
-    for (const dir of dirs) {
-      await fs.mkdir(dir, { recursive: true });
-    }
-    
-    spinner.succeed('Project structure created');
-  } catch (error) {
-    spinner.fail('Project structure setup failed');
-    throw error;
-  }
+async function setupProjectStructure(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Setting up project structure...").start();
+
+	try {
+		const { structure } = detection;
+
+		// Create necessary directories
+		const dirs = [
+			path.join(structure.componentsDir, "ui"),
+			path.join(structure.componentsDir, "providers"),
+			path.join(structure.stylesDir),
+			path.join(structure.srcDir, "lib"),
+			path.join(structure.srcDir, "hooks"),
+			path.join(structure.srcDir, "types"),
+			path.join(structure.srcDir, "tokens"),
+		];
+
+		for (const dir of dirs) {
+			await fs.mkdir(dir, { recursive: true });
+		}
+
+		spinner.succeed("Project structure created");
+	} catch (error) {
+		spinner.fail("Project structure setup failed");
+		throw error;
+	}
 }
 
-async function installProviders(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Installing providers and basic structure...').start();
-  
-  try {
-    const { structure } = detection;
-    
-    // Create theme provider
-    const themeProvider = generateThemeProvider(detection.type);
-    await fs.writeFile(
-      path.join(structure.componentsDir, 'providers', 'theme-provider.tsx'),
-      themeProvider
-    );
-    
-    // Create token provider
-    const tokenProvider = generateTokenProvider(detection.type);
-    await fs.writeFile(
-      path.join(structure.componentsDir, 'providers', 'token-provider.tsx'),
-      tokenProvider
-    );
-    
-    // Create utils
-    const utilsFile = generateUtils();
-    await fs.writeFile(
-      path.join(structure.srcDir, 'lib', 'utils.ts'),
-      utilsFile
-    );
-    
-    spinner.succeed('Providers and utilities installed');
-  } catch (error) {
-    spinner.fail('Provider installation failed');
-    throw error;
-  }
+async function installProviders(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Installing providers and basic structure...").start();
+
+	try {
+		const { structure } = detection;
+
+		// Create theme provider
+		const themeProvider = generateThemeProvider(detection.type);
+		await fs.writeFile(
+			path.join(structure.componentsDir, "providers", "theme-provider.tsx"),
+			themeProvider,
+		);
+
+		// Create token provider
+		const tokenProvider = generateTokenProvider(detection.type);
+		await fs.writeFile(
+			path.join(structure.componentsDir, "providers", "token-provider.tsx"),
+			tokenProvider,
+		);
+
+		// Create utils
+		const utilsFile = generateUtils();
+		await fs.writeFile(
+			path.join(structure.srcDir, "lib", "utils.ts"),
+			utilsFile,
+		);
+
+		spinner.succeed("Providers and utilities installed");
+	} catch (error) {
+		spinner.fail("Provider installation failed");
+		throw error;
+	}
 }
 
-async function setupDesignTokens(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Setting up design tokens...').start();
-  
-  try {
-    const { structure } = detection;
-    const tokensDir = path.join(structure.srcDir, 'tokens');
-    
-    // Generate base tokens
-    const baseTokens = generateBaseTokens(options);
-    await fs.writeFile(
-      path.join(tokensDir, 'base.json'),
-      JSON.stringify(baseTokens, null, 2)
-    );
-    
-    // Generate theme tokens
-    const themeTokens = generateThemeTokens(options);
-    await fs.writeFile(
-      path.join(tokensDir, 'themes.json'),
-      JSON.stringify(themeTokens, null, 2)
-    );
-    
-    // Generate token types
-    const tokenTypes = generateTokenTypes();
-    await fs.writeFile(
-      path.join(structure.srcDir, 'types', 'tokens.ts'),
-      tokenTypes
-    );
-    
-    spinner.succeed('Design tokens configured');
-  } catch (error) {
-    spinner.fail('Design tokens setup failed');
-    throw error;
-  }
+async function setupDesignTokens(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Setting up design tokens...").start();
+
+	try {
+		const { structure } = detection;
+		const tokensDir = path.join(structure.srcDir, "tokens");
+
+		// Generate base tokens
+		const baseTokens = generateBaseTokens(options);
+		await fs.writeFile(
+			path.join(tokensDir, "base.json"),
+			JSON.stringify(baseTokens, null, 2),
+		);
+
+		// Generate theme tokens
+		const themeTokens = generateThemeTokens(options);
+		await fs.writeFile(
+			path.join(tokensDir, "themes.json"),
+			JSON.stringify(themeTokens, null, 2),
+		);
+
+		// Generate token types
+		const tokenTypes = generateTokenTypes();
+		await fs.writeFile(
+			path.join(structure.srcDir, "types", "tokens.ts"),
+			tokenTypes,
+		);
+
+		spinner.succeed("Design tokens configured");
+	} catch (error) {
+		spinner.fail("Design tokens setup failed");
+		throw error;
+	}
 }
 
-async function updateTailwindConfig(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Updating Tailwind CSS configuration...').start();
-  
-  try {
-    const tailwindConfig = generateTailwindConfig(detection, options);
-    const configPath = detection.hasTypeScript ? 'tailwind.config.ts' : 'tailwind.config.js';
-    
-    await fs.writeFile(configPath, tailwindConfig);
-    
-    // Create PostCSS config if needed
-    if (!existsSync('postcss.config.js')) {
-      const postcssConfig = generatePostCSSConfig();
-      await fs.writeFile('postcss.config.js', postcssConfig);
-    }
-    
-    spinner.succeed('Tailwind CSS configuration updated');
-  } catch (error) {
-    spinner.fail('Tailwind configuration failed');
-    throw error;
-  }
+async function updateTailwindConfig(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Updating Tailwind CSS configuration...").start();
+
+	try {
+		const tailwindConfig = generateTailwindConfig(detection, options);
+		const configPath = detection.hasTypeScript
+			? "tailwind.config.ts"
+			: "tailwind.config.js";
+
+		await fs.writeFile(configPath, tailwindConfig);
+
+		// Create PostCSS config if needed
+		if (!existsSync("postcss.config.js")) {
+			const postcssConfig = generatePostCSSConfig();
+			await fs.writeFile("postcss.config.js", postcssConfig);
+		}
+
+		spinner.succeed("Tailwind CSS configuration updated");
+	} catch (error) {
+		spinner.fail("Tailwind configuration failed");
+		throw error;
+	}
 }
 
 async function generateInitialTheme(options: InstallOptions) {
-  const spinner = ora('Generating initial theme...').start();
-  
-  try {
-    // This would call the theme generation service
-    await execAsync(`xala themes create default --industry ${options.industry || 'general'}`);
-    spinner.succeed('Initial theme generated');
-  } catch (error) {
-    // Fallback to basic theme generation
-    spinner.succeed('Basic theme configured');
-  }
+	const spinner = ora("Generating initial theme...").start();
+
+	try {
+		// This would call the theme generation service
+		await execAsync(
+			`xala themes create default --industry ${options.industry || "general"}`,
+		);
+		spinner.succeed("Initial theme generated");
+	} catch (error) {
+		// Fallback to basic theme generation
+		spinner.succeed("Basic theme configured");
+	}
 }
 
-async function updateCSSFiles(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Updating CSS files...').start();
-  
-  try {
-    const { structure } = detection;
-    
-    // Generate main CSS file with Tailwind imports and custom properties
-    const mainCSS = generateMainCSS(options);
-    await fs.writeFile(
-      path.join(structure.stylesDir, 'globals.css'),
-      mainCSS
-    );
-    
-    // Generate component-specific CSS if needed
-    const componentCSS = generateComponentCSS(options);
-    await fs.writeFile(
-      path.join(structure.stylesDir, 'components.css'),
-      componentCSS
-    );
-    
-    spinner.succeed('CSS files updated');
-  } catch (error) {
-    spinner.fail('CSS update failed');
-    throw error;
-  }
+async function updateCSSFiles(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Updating CSS files...").start();
+
+	try {
+		const { structure } = detection;
+
+		// Generate main CSS file with Tailwind imports and custom properties
+		const mainCSS = generateMainCSS(options);
+		await fs.writeFile(path.join(structure.stylesDir, "globals.css"), mainCSS);
+
+		// Generate component-specific CSS if needed
+		const componentCSS = generateComponentCSS(options);
+		await fs.writeFile(
+			path.join(structure.stylesDir, "components.css"),
+			componentCSS,
+		);
+
+		spinner.succeed("CSS files updated");
+	} catch (error) {
+		spinner.fail("CSS update failed");
+		throw error;
+	}
 }
 
-async function generateExampleComponents(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Generating example components...').start();
-  
-  try {
-    const { structure } = detection;
-    const componentsDir = path.join(structure.componentsDir, 'ui');
-    
-    // Generate basic UI components
-    const components = ['button', 'input', 'card', 'badge'];
-    
-    for (const component of components) {
-      try {
-        await execAsync(`xala generate component ${component} --template ${component} --output ${componentsDir}`);
-      } catch {
-        // Fallback to basic component generation
-        const basicComponent = generateBasicComponent(component, detection.type);
-        await fs.writeFile(
-          path.join(componentsDir, `${component}.tsx`),
-          basicComponent
-        );
-      }
-    }
-    
-    spinner.succeed('Example components generated');
-  } catch (error) {
-    spinner.fail('Component generation failed');
-    throw error;
-  }
+async function generateExampleComponents(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Generating example components...").start();
+
+	try {
+		const { structure } = detection;
+		const componentsDir = path.join(structure.componentsDir, "ui");
+
+		// Generate basic UI components
+		const components = ["button", "input", "card", "badge"];
+
+		for (const component of components) {
+			try {
+				await execAsync(
+					`xala generate component ${component} --template ${component} --output ${componentsDir}`,
+				);
+			} catch {
+				// Fallback to basic component generation
+				const basicComponent = generateBasicComponent(
+					component,
+					detection.type,
+				);
+				await fs.writeFile(
+					path.join(componentsDir, `${component}.tsx`),
+					basicComponent,
+				);
+			}
+		}
+
+		spinner.succeed("Example components generated");
+	} catch (error) {
+		spinner.fail("Component generation failed");
+		throw error;
+	}
 }
 
-async function setupDevTools(detection: ProjectDetection, options: InstallOptions) {
-  const spinner = ora('Setting up development tools...').start();
-  
-  try {
-    // Create xala.config.js
-    const xalaConfig = generateXalaConfig(detection, options);
-    await fs.writeFile('xala.config.js', xalaConfig);
-    
-    // Update package.json scripts
-    await updatePackageJsonScripts(detection);
-    
-    spinner.succeed('Development tools configured');
-  } catch (error) {
-    spinner.fail('Development tools setup failed');
-    throw error;
-  }
+async function setupDevTools(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	const spinner = ora("Setting up development tools...").start();
+
+	try {
+		// Create xala.config.js
+		const xalaConfig = generateXalaConfig(detection, options);
+		await fs.writeFile("xala.config.js", xalaConfig);
+
+		// Update package.json scripts
+		await updatePackageJsonScripts(detection);
+
+		spinner.succeed("Development tools configured");
+	} catch (error) {
+		spinner.fail("Development tools setup failed");
+		throw error;
+	}
 }
 
-async function displayNextSteps(detection: ProjectDetection, options: InstallOptions) {
-  console.log(chalk.cyan('🎉 Next Steps:\n'));
-  
-  console.log('1. ' + chalk.green('Import providers in your main app file:'));
-  console.log(`   ${chalk.gray('// In your App.tsx or main.tsx')}`);
-  console.log(`   ${chalk.yellow('import { ThemeProvider } from "./components/providers/theme-provider"')}`);
-  console.log(`   ${chalk.yellow('import { TokenProvider } from "./components/providers/token-provider"')}`);
-  
-  console.log('\n2. ' + chalk.green('Start using UI components:'));
-  console.log(`   ${chalk.yellow('import { Button } from "./components/ui/button"')}`);
-  
-  console.log('\n3. ' + chalk.green('Customize your theme:'));
-  console.log(`   ${chalk.yellow('xala themes customize default')}`);
-  
-  console.log('\n4. ' + chalk.green('Generate more components:'));
-  console.log(`   ${chalk.yellow('xala generate component MyAwesomeComponent')}`);
-  
-  console.log('\n5. ' + chalk.green('Analyze your project:'));
-  console.log(`   ${chalk.yellow('xala analyze --comprehensive')}`);
-  
-  if (detection.hasDesignSystem) {
-    console.log('\n⚠️  ' + chalk.yellow('Migration Required:'));
-    console.log(`   Run ${chalk.cyan('xala migrate analyze')} to plan your migration strategy`);
-  }
+async function displayNextSteps(
+	detection: ProjectDetection,
+	options: InstallOptions,
+) {
+	console.log(chalk.cyan("🎉 Next Steps:\n"));
+
+	console.log("1. " + chalk.green("Import providers in your main app file:"));
+	console.log(`   ${chalk.gray("// In your App.tsx or main.tsx")}`);
+	console.log(
+		`   ${chalk.yellow('import { ThemeProvider } from "./components/providers/theme-provider"')}`,
+	);
+	console.log(
+		`   ${chalk.yellow('import { TokenProvider } from "./components/providers/token-provider"')}`,
+	);
+
+	console.log("\n2. " + chalk.green("Start using UI components:"));
+	console.log(
+		`   ${chalk.yellow('import { Button } from "./components/ui/button"')}`,
+	);
+
+	console.log("\n3. " + chalk.green("Customize your theme:"));
+	console.log(`   ${chalk.yellow("xala themes customize default")}`);
+
+	console.log("\n4. " + chalk.green("Generate more components:"));
+	console.log(
+		`   ${chalk.yellow("xala generate component MyAwesomeComponent")}`,
+	);
+
+	console.log("\n5. " + chalk.green("Analyze your project:"));
+	console.log(`   ${chalk.yellow("xala analyze --comprehensive")}`);
+
+	if (detection.hasDesignSystem) {
+		console.log("\n⚠️  " + chalk.yellow("Migration Required:"));
+		console.log(
+			`   Run ${chalk.cyan("xala migrate analyze")} to plan your migration strategy`,
+		);
+	}
 }
 
 // Helper functions for generating code...
 function generateThemeProvider(projectType: string): string {
-  return `'use client'
+	return `'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
@@ -721,7 +810,7 @@ export const useTheme = () => {
 }
 
 function generateTokenProvider(projectType: string): string {
-  return `'use client'
+	return `'use client'
 
 import React, { createContext, useContext } from 'react'
 import { tokens } from '../tokens/base.json'
@@ -753,7 +842,7 @@ export const useTokens = () => {
 }
 
 function generateUtils(): string {
-  return `import { type ClassValue, clsx } from "clsx"
+	return `import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -762,73 +851,73 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 function generateBaseTokens(options: InstallOptions) {
-  return {
-    colors: {
-      primary: "#0066cc",
-      secondary: "#6b7280",
-      accent: "#f59e0b",
-      background: "#ffffff",
-      foreground: "#1f2937",
-      muted: "#f9fafb",
-      "muted-foreground": "#6b7280",
-      border: "#d1d5db",
-      input: "#ffffff",
-      ring: "#3b82f6"
-    },
-    spacing: {
-      xs: "0.25rem",
-      sm: "0.5rem",
-      md: "1rem",
-      lg: "1.5rem",
-      xl: "2rem",
-      "2xl": "3rem"
-    },
-    typography: {
-      fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"]
-      },
-      fontSize: {
-        xs: "0.75rem",
-        sm: "0.875rem",
-        base: "1rem",
-        lg: "1.125rem",
-        xl: "1.25rem",
-        "2xl": "1.5rem"
-      }
-    },
-    borderRadius: {
-      sm: "0.125rem",
-      md: "0.375rem",
-      lg: "0.5rem",
-      xl: "0.75rem"
-    }
-  };
+	return {
+		colors: {
+			primary: "#0066cc",
+			secondary: "#6b7280",
+			accent: "#f59e0b",
+			background: "#ffffff",
+			foreground: "#1f2937",
+			muted: "#f9fafb",
+			"muted-foreground": "#6b7280",
+			border: "#d1d5db",
+			input: "#ffffff",
+			ring: "#3b82f6",
+		},
+		spacing: {
+			xs: "0.25rem",
+			sm: "0.5rem",
+			md: "1rem",
+			lg: "1.5rem",
+			xl: "2rem",
+			"2xl": "3rem",
+		},
+		typography: {
+			fontFamily: {
+				sans: ["Inter", "sans-serif"],
+				mono: ["JetBrains Mono", "monospace"],
+			},
+			fontSize: {
+				xs: "0.75rem",
+				sm: "0.875rem",
+				base: "1rem",
+				lg: "1.125rem",
+				xl: "1.25rem",
+				"2xl": "1.5rem",
+			},
+		},
+		borderRadius: {
+			sm: "0.125rem",
+			md: "0.375rem",
+			lg: "0.5rem",
+			xl: "0.75rem",
+		},
+	};
 }
 
 function generateThemeTokens(options: InstallOptions) {
-  return {
-    light: {
-      colors: {
-        background: "#ffffff",
-        foreground: "#1f2937",
-        muted: "#f9fafb",
-        "muted-foreground": "#6b7280"
-      }
-    },
-    dark: {
-      colors: {
-        background: "#1f2937",
-        foreground: "#f9fafb",
-        muted: "#374151",
-        "muted-foreground": "#9ca3af"
-      }
-    }
-  };
+	return {
+		light: {
+			colors: {
+				background: "#ffffff",
+				foreground: "#1f2937",
+				muted: "#f9fafb",
+				"muted-foreground": "#6b7280",
+			},
+		},
+		dark: {
+			colors: {
+				background: "#1f2937",
+				foreground: "#f9fafb",
+				muted: "#374151",
+				"muted-foreground": "#9ca3af",
+			},
+		},
+	};
 }
 
 function generateTokenTypes(): string {
-  return `export interface DesignTokens {
+	return `export interface DesignTokens {
   colors: {
     primary: string;
     secondary: string;
@@ -872,20 +961,25 @@ function generateTokenTypes(): string {
 }`;
 }
 
-function generateTailwindConfig(detection: ProjectDetection, options: InstallOptions): string {
-  const isTS = detection.hasTypeScript;
-  const importStatement = isTS ? 'import type { Config } from "tailwindcss"' : '';
-  const exportType = isTS ? ': Config' : '';
-  
-  return `${importStatement}
+function generateTailwindConfig(
+	detection: ProjectDetection,
+	options: InstallOptions,
+): string {
+	const isTS = detection.hasTypeScript;
+	const importStatement = isTS
+		? 'import type { Config } from "tailwindcss"'
+		: "";
+	const exportType = isTS ? ": Config" : "";
 
-${isTS ? 'const config' : 'module.exports'} = {
+	return `${importStatement}
+
+${isTS ? "const config" : "module.exports"} = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{${isTS ? 'ts,tsx' : 'js,jsx'}}',
-    './components/**/*.{${isTS ? 'ts,tsx' : 'js,jsx'}}',
-    './app/**/*.{${isTS ? 'ts,tsx' : 'js,jsx'}}',
-    './src/**/*.{${isTS ? 'ts,tsx' : 'js,jsx'}}',
+    './pages/**/*.{${isTS ? "ts,tsx" : "js,jsx"}}',
+    './components/**/*.{${isTS ? "ts,tsx" : "js,jsx"}}',
+    './app/**/*.{${isTS ? "ts,tsx" : "js,jsx"}}',
+    './src/**/*.{${isTS ? "ts,tsx" : "js,jsx"}}',
   ],
   prefix: "",
   theme: {
@@ -954,13 +1048,13 @@ ${isTS ? 'const config' : 'module.exports'} = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}${isTS ? ' satisfies Config' : ''}
+}${isTS ? " satisfies Config" : ""}
 
-${isTS ? 'export default config' : ''}`;
+${isTS ? "export default config" : ""}`;
 }
 
 function generatePostCSSConfig(): string {
-  return `module.exports = {
+	return `module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
@@ -969,7 +1063,7 @@ function generatePostCSSConfig(): string {
 }
 
 function generateMainCSS(options: InstallOptions): string {
-  return `@tailwind base;
+	return `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -1031,14 +1125,17 @@ function generateMainCSS(options: InstallOptions): string {
 }
 
 function generateComponentCSS(options: InstallOptions): string {
-  return `/* Component-specific styles */
+	return `/* Component-specific styles */
 .xala-component {
   /* Base component styles */
 }`;
 }
 
-function generateBasicComponent(componentName: string, projectType: string): string {
-  return `import * as React from "react"
+function generateBasicComponent(
+	componentName: string,
+	projectType: string,
+): string {
+	return `import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -1089,13 +1186,16 @@ ${componentName.charAt(0).toUpperCase() + componentName.slice(1)}.displayName = 
 export { ${componentName.charAt(0).toUpperCase() + componentName.slice(1)}, ${componentName}Variants }`;
 }
 
-function generateXalaConfig(detection: ProjectDetection, options: InstallOptions): string {
-  return `module.exports = {
-  name: '${require(path.join(process.cwd(), 'package.json')).name || 'my-app'}',
+function generateXalaConfig(
+	detection: ProjectDetection,
+	options: InstallOptions,
+): string {
+	return `module.exports = {
+  name: '${require(path.join(process.cwd(), "package.json")).name || "my-app"}',
   platform: '${detection.type}',
-  industry: '${options.industry || 'general'}',
+  industry: '${options.industry || "general"}',
   theme: {
-    default: '${options.theme || 'default'}',
+    default: '${options.theme || "default"}',
     darkMode: true
   },
   i18n: {
@@ -1107,7 +1207,7 @@ function generateXalaConfig(detection: ProjectDetection, options: InstallOptions
     enforceContrastRatios: true
   },
   compliance: {
-    ${options.compliance ? `${options.compliance}Compliance: true,` : ''}
+    ${options.compliance ? `${options.compliance}Compliance: true,` : ""}
     auditTrail: true
   },
   typescript: ${detection.hasTypeScript},
@@ -1116,16 +1216,16 @@ function generateXalaConfig(detection: ProjectDetection, options: InstallOptions
 }
 
 async function updatePackageJsonScripts(detection: ProjectDetection) {
-  const packageJsonPath = path.join(process.cwd(), 'package.json');
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-  
-  packageJson.scripts = {
-    ...packageJson.scripts,
-    'xala:dev': 'xala dev',
-    'xala:build': 'xala build',
-    'xala:analyze': 'xala analyze --comprehensive',
-    'xala:migrate': 'xala migrate analyze'
-  };
-  
-  await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+	const packageJsonPath = path.join(process.cwd(), "package.json");
+	const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
+
+	packageJson.scripts = {
+		...packageJson.scripts,
+		"xala:dev": "xala dev",
+		"xala:build": "xala build",
+		"xala:analyze": "xala analyze --comprehensive",
+		"xala:migrate": "xala migrate analyze",
+	};
+
+	await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }

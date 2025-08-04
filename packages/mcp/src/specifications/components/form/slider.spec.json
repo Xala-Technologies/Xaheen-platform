@@ -1,953 +1,992 @@
 {
-  "metadata": {
-    "name": "Slider",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "form",
-    "subcategory": "range-input",
-    "description": "Accessible slider component for selecting numeric values or ranges with Norwegian compliance, WCAG AAA accessibility, and comprehensive interaction support. Supports single value and range selection with customizable marks and orientations.",
-    "keywords": ["slider", "range", "input", "form", "accessible", "norwegian", "controlled", "value-selection"],
-    "maintainer": {
-      "name": "Xala Form Team",
-      "email": "forms@xala.no",
-      "team": "Form Components"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T10:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"],
-      "numberFormatting": {
-        "norwegian": "123 456,78",
-        "international": "123,456.78"
-      }
-    },
-    "semantic": {
-      "htmlElements": ["div", "input", "label", "span", "button"],
-      "ariaRoles": ["slider", "group", "presentation"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)", 
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.6 Headings and Labels",
-        "2.4.7 Focus Visible",
-        "2.5.5 Target Size",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "value": {
-        "type": {
-          "union": [
-            { "primitive": "number" },
-            { 
-              "array": {
-                "items": { "primitive": "number" },
-                "minItems": 2,
-                "maxItems": 2
-              }
-            }
-          ]
-        },
-        "description": "Controlled component value - single number for single slider, [min, max] array for range slider",
-        "required": false,
-        "examples": [
-          {
-            "value": 50,
-            "description": "Single value slider at 50",
-            "context": "Volume control"
-          },
-          {
-            "value": [20, 80],
-            "description": "Range slider from 20 to 80",
-            "context": "Price range filter"
-          }
-        ]
-      },
-      "defaultValue": {
-        "type": {
-          "union": [
-            { "primitive": "number" },
-            { 
-              "array": {
-                "items": { "primitive": "number" },
-                "minItems": 2,
-                "maxItems": 2
-              }
-            }
-          ]
-        },
-        "description": "Default value for uncontrolled component",
-        "required": false,
-        "examples": [
-          {
-            "value": 0,
-            "description": "Default single value",
-            "context": "Uncontrolled single slider"
-          },
-          {
-            "value": [0, 100],
-            "description": "Default range values",
-            "context": "Uncontrolled range slider"
-          }
-        ]
-      },
-      "min": {
-        "type": { 
-          "primitive": "number",
-          "constraints": {
-            "finite": true
-          }
-        },
-        "description": "Minimum value of the slider range",
-        "required": false,
-        "defaultValue": 0,
-        "examples": [
-          {
-            "value": 0,
-            "description": "Standard minimum value",
-            "context": "Volume or percentage controls"
-          },
-          {
-            "value": -100,
-            "description": "Negative minimum for balance controls",
-            "context": "Audio balance slider"
-          }
-        ]
-      },
-      "max": {
-        "type": { 
-          "primitive": "number",
-          "constraints": {
-            "finite": true
-          }
-        },
-        "description": "Maximum value of the slider range",
-        "required": false,
-        "defaultValue": 100,
-        "examples": [
-          {
-            "value": 100,
-            "description": "Standard maximum value",
-            "context": "Percentage controls"
-          },
-          {
-            "value": 1000000,
-            "description": "Large maximum for price ranges",
-            "context": "Property price filter"
-          }
-        ]
-      },
-      "step": {
-        "type": { 
-          "primitive": "number",
-          "constraints": {
-            "minimum": 0,
-            "exclusiveMinimum": true
-          }
-        },
-        "description": "Step increment for slider values",
-        "required": false,
-        "defaultValue": 1,
-        "examples": [
-          {
-            "value": 1,
-            "description": "Integer steps",
-            "context": "Quantity selectors"
-          },
-          {
-            "value": 0.1,
-            "description": "Decimal steps for precision",
-            "context": "Rating or score inputs"
-          },
-          {
-            "value": 5,
-            "description": "Large steps for ranges",
-            "context": "Price increment controls"
-          }
-        ]
-      },
-      "disabled": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the slider is disabled",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-disabled",
-          "screenReaderText": "Slider is disabled"
-        }
-      },
-      "marks": {
-        "type": {
-          "union": [
-            { "primitive": "boolean" },
-            {
-              "array": {
-                "items": { "primitive": "number" }
-              }
-            },
-            {
-              "array": {
-                "items": {
-                  "object": {
-                    "properties": {
-                      "value": { "primitive": "number" },
-                      "label": { "primitive": "string" }
-                    },
-                    "required": ["value"]
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "description": "Mark positions on the slider - true for automatic marks, array of numbers for custom positions, or array of objects with value and label",
-        "required": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Automatic marks based on step",
-            "context": "Simple percentage slider"
-          },
-          {
-            "value": [0, 25, 50, 75, 100],
-            "description": "Custom mark positions",
-            "context": "Quartile indicators"
-          },
-          {
-            "value": [
-              { "value": 0, "label": "Min" },
-              { "value": 50, "label": "Default" },
-              { "value": 100, "label": "Max" }
-            ],
-            "description": "Labeled marks",
-            "context": "Setting levels with descriptions"
-          }
-        ]
-      },
-      "showValue": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether to display the current value(s)",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "screenReaderText": "Current slider value is displayed"
-        }
-      },
-      "orientation": {
-        "type": {
-          "custom": "variant",
-          "values": ["horizontal", "vertical"]
-        },
-        "description": "Slider orientation",
-        "required": false,
-        "defaultValue": "horizontal",
-        "accessibility": {
-          "ariaAttribute": "aria-orientation"
-        }
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["sm", "md", "lg"]
-        },
-        "description": "Visual size of the slider",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "sm",
-            "description": "Compact slider for tight spaces",
-            "context": "Mobile interfaces or sidebars"
-          },
-          {
-            "value": "lg",
-            "description": "Large slider for primary controls",
-            "context": "Main volume or important settings"
-          }
-        ]
-      },
-      "label": {
-        "type": { "primitive": "string" },
-        "description": "Associated label text for the slider",
-        "required": false,
-        "accessibility": {
-          "required": true,
-          "screenReaderText": "Slider field label"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "slider.label.{fieldName}",
-          "context": "form-label"
-        }
-      },
-      "ariaLabel": {
-        "type": { "primitive": "string" },
-        "description": "Accessible label when no visible label is present",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Slider description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.slider.{fieldName}",
-          "context": "accessibility"
-        }
-      },
-      "ariaLabelledBy": {
-        "type": { "primitive": "string" },
-        "description": "ID of element that labels this slider",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-labelledby"
-        }
-      },
-      "ariaDescribedBy": {
-        "type": { "primitive": "string" },
-        "description": "ID of elements that describe the slider",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby"
-        }
-      },
-      "formatValue": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "value",
-                "type": "number",
-                "required": true
-              }
-            ],
-            "returnType": "string"
-          }
-        },
-        "description": "Function to format displayed values",
-        "required": false,
-        "examples": [
-          {
-            "value": "(value) => `${value}%`",
-            "description": "Format as percentage",
-            "context": "Progress or completion sliders"
-          },
-          {
-            "value": "(value) => `$${value.toLocaleString()}`",
-            "description": "Format as currency",
-            "context": "Price range sliders"
-          }
-        ]
-      },
-      "onChange": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "value",
-                "type": "number | [number, number]",
-                "required": true
-              },
-              {
-                "name": "event",
-                "type": "Event",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when slider value changes during interaction",
-        "required": false
-      },
-      "onChangeEnd": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "value",
-                "type": "number | [number, number]",
-                "required": true
-              },
-              {
-                "name": "event",
-                "type": "Event",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when slider interaction ends (mouse up, touch end, key release)",
-        "required": false
-      },
-      "onFocus": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when slider receives focus",
-        "required": false
-      },
-      "onBlur": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when slider loses focus",
-        "required": false
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the slider container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "value", "defaultValue", "min", "max", "step", "disabled", "marks", "showValue",
-        "orientation", "size", "label", "ariaLabel", "ariaLabelledBy", "ariaDescribedBy",
-        "formatValue", "onChange", "onChangeEnd", "onFocus", "onBlur", "className", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false
-      },
-      "slots": {
-        "thumb": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom thumb/handle content"
-        },
-        "track": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom track content"
-        },
-        "mark": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom mark content"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "size": {
-        "values": {
-          "sm": "h-4",
-          "md": "h-6", 
-          "lg": "h-8"
-        },
-        "defaultValue": "md"
-      },
-      "orientation": {
-        "values": {
-          "horizontal": "w-full",
-          "vertical": "h-48 w-6"
-        },
-        "defaultValue": "horizontal"
-      },
-      "state": {
-        "values": {
-          "normal": "cursor-pointer",
-          "disabled": "cursor-not-allowed opacity-50",
-          "focused": "ring-2 ring-blue-500 ring-offset-2"
-        },
-        "defaultValue": "normal"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "orientation": "vertical",
-          "size": "sm"
-        },
-        "className": "h-32 w-4",
-        "description": "Small vertical slider"
-      },
-      {
-        "conditions": {
-          "orientation": "vertical", 
-          "size": "md"
-        },
-        "className": "h-48 w-6",
-        "description": "Medium vertical slider"
-      },
-      {
-        "conditions": {
-          "orientation": "vertical",
-          "size": "lg"
-        },
-        "className": "h-64 w-8",
-        "description": "Large vertical slider"
-      },
-      {
-        "conditions": {
-          "showValue": true,
-          "orientation": "horizontal"
-        },
-        "className": "pb-8",
-        "description": "Horizontal slider with value display spacing"
-      },
-      {
-        "conditions": {
-          "showValue": true,
-          "orientation": "vertical"
-        },
-        "className": "pr-12",
-        "description": "Vertical slider with value display spacing"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "slider"
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Arrow Right / Arrow Up",
-          "action": "increase",
-          "context": "Increase value by step amount"
-        },
-        {
-          "key": "Arrow Left / Arrow Down", 
-          "action": "decrease",
-          "context": "Decrease value by step amount"
-        },
-        {
-          "key": "Page Up",
-          "action": "increase-large",
-          "context": "Increase value by large step (10% of range)"
-        },
-        {
-          "key": "Page Down",
-          "action": "decrease-large", 
-          "context": "Decrease value by large step (10% of range)"
-        },
-        {
-          "key": "Home",
-          "action": "minimum",
-          "context": "Set to minimum value"
-        },
-        {
-          "key": "End",
-          "action": "maximum",
-          "context": "Set to maximum value"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move to next focusable element"
-        },
-        {
-          "key": "Shift+Tab",
-          "action": "navigate",
-          "context": "Move to previous focusable element"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false,
-        "multipleHandles": "Tab between handles in range sliders"
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "valueChange",
-          "message": "{label} slider, value {value}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "rangeChange",
-          "message": "{label} range slider, minimum {minValue}, maximum {maxValue}",
-          "priority": "assertive"  
-        },
-        {
-          "trigger": "focus",
-          "message": "{label} slider, current value {value}, minimum {min}, maximum {max}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "disabled",
-          "message": "{label} slider is disabled",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["label", "aria-label", "aria-labelledby"],
-        "descriptions": {
-          "slider": "Interactive slider control",
-          "rangeSlider": "Range selection slider",
-          "disabled": "Disabled slider control", 
-          "minimum": "Minimum value",
-          "maximum": "Maximum value",
-          "currentValue": "Current value"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "slider-label-association",
-        "keyboard-navigation-all-keys",
-        "value-announcements",
-        "focus-management",
-        "color-contrast-aaa",
-        "minimum-target-size-44px",
-        "range-slider-dual-focus"
-      ],
-      "manual": [
-        "screen-reader-value-announcements",
-        "keyboard-only-interaction",
-        "high-contrast-mode-visibility",
-        "zoom-250-percent-usability",
-        "voice-control-compatibility",
-        "touch-interaction-accuracy"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/slider.tsx",
-        "dependencies": ["react", "clsx"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useState", "useCallback", "useId", "useRef", "useEffect"]
-          },
-          {
-            "module": "clsx", 
-            "imports": ["clsx"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/slider.vue",
-        "dependencies": ["vue"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/slider.component.ts",
-        "dependencies": ["@angular/core", "@angular/forms"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/slider.svelte",
-        "dependencies": ["svelte"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Slider",
-      "description": "Simple single-value slider with default settings",
-      "category": "basic",
-      "code": {
-        "react": "<Slider label='Volume' min={0} max={100} defaultValue={50} />",
-        "vue": "<Slider label='Volume' :min='0' :max='100' :defaultValue='50' />",
-        "angular": "<xala-slider label='Volume' [min]='0' [max]='100' [defaultValue]='50'></xala-slider>",
-        "svelte": "<Slider label='Volume' min={0} max={100} defaultValue={50} />"
-      },
-      "props": {
-        "label": "Volume",
-        "min": 0,
-        "max": 100,
-        "defaultValue": 50
-      }
-    },
-    {
-      "name": "Range Slider",
-      "description": "Dual-handle slider for selecting a range of values",
-      "category": "range",
-      "code": {
-        "react": "<Slider label='Price Range' min={0} max={1000} defaultValue={[100, 500]} showValue formatValue={(value) => `$${value}`} />"
-      },
-      "props": {
-        "label": "Price Range",
-        "min": 0,
-        "max": 1000,
-        "defaultValue": [100, 500],
-        "showValue": true,
-        "formatValue": "(value) => `$${value}`"
-      }
-    },
-    {
-      "name": "Slider with Marks",
-      "description": "Slider with visible tick marks and labels",
-      "category": "enhanced",
-      "code": {
-        "react": "<Slider label='Quality Level' min={0} max={100} step={25} defaultValue={50} marks={[{ value: 0, label: 'Low' }, { value: 25, label: 'Fair' }, { value: 50, label: 'Good' }, { value: 75, label: 'High' }, { value: 100, label: 'Excellent' }]} showValue />"
-      },
-      "props": {
-        "label": "Quality Level",
-        "min": 0,
-        "max": 100,
-        "step": 25,
-        "defaultValue": 50,
-        "marks": [
-          { "value": 0, "label": "Low" },
-          { "value": 25, "label": "Fair" },
-          { "value": 50, "label": "Good" },
-          { "value": 75, "label": "High" },
-          { "value": 100, "label": "Excellent" }
-        ],
-        "showValue": true
-      }
-    },
-    {
-      "name": "Vertical Slider",
-      "description": "Vertical orientation slider for height-constrained layouts",
-      "category": "orientation",
-      "code": {
-        "react": "<Slider label='Balance' min={-100} max={100} defaultValue={0} orientation='vertical' showValue formatValue={(value) => value > 0 ? `R+${value}` : value < 0 ? `L${Math.abs(value)}` : 'CENTER'} />"
-      },
-      "props": {
-        "label": "Balance",
-        "min": -100,
-        "max": 100,
-        "defaultValue": 0,
-        "orientation": "vertical",
-        "showValue": true,
-        "formatValue": "(value) => value > 0 ? `R+${value}` : value < 0 ? `L${Math.abs(value)}` : 'CENTER'"
-      }
-    },
-    {
-      "name": "Large Precision Slider",
-      "description": "Large slider with decimal precision for fine adjustments",
-      "category": "precision",
-      "code": {
-        "react": "<Slider label='Temperature' min={15.0} max={30.0} step={0.5} defaultValue={22.5} size='lg' showValue formatValue={(value) => `${value.toFixed(1)}°C`} marks={true} />"
-      },
-      "props": {
-        "label": "Temperature",
-        "min": 15.0,
-        "max": 30.0,
-        "step": 0.5,
-        "defaultValue": 22.5,
-        "size": "lg",
-        "showValue": true,
-        "formatValue": "(value) => `${value.toFixed(1)}°C`",
-        "marks": true
-      }
-    },
-    {
-      "name": "Disabled Slider",
-      "description": "Disabled slider showing read-only state",
-      "category": "state",
-      "code": {
-        "react": "<Slider label='System Volume' min={0} max={100} value={75} disabled showValue formatValue={(value) => `${value}%`} />"
-      },
-      "props": {
-        "label": "System Volume",
-        "min": 0,
-        "max": 100,
-        "value": 75,
-        "disabled": true,
-        "showValue": true,
-        "formatValue": "(value) => `${value}%`"
-      }
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Always provide labels for accessibility compliance",
-        "Use appropriate step values for the data type and use case",
-        "Consider Norwegian number formatting for localized applications",
-        "Implement proper keyboard navigation for all slider variants",
-        "Ensure minimum 44px touch target size for mobile usability",
-        "Use semantic value formatting for better user understanding"
-      ],
-      "patterns": [
-        {
-          "pattern": "controlled component",
-          "context": "React implementation", 
-          "recommendation": "Use controlled components with value and onChange props for form integration"
-        },
-        {
-          "pattern": "range selection",
-          "context": "Range sliders",
-          "recommendation": "Provide clear visual feedback for both handles and current range"
-        },
-        {
-          "pattern": "value formatting",
-          "context": "Display values",
-          "recommendation": "Always format values appropriately for the domain (currency, percentage, units)"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "missing labels",
-          "reason": "Poor accessibility and user understanding",
-          "alternative": "Always provide labels or aria-label for context"
-        },
-        {
-          "pattern": "inappropriate step values",
-          "reason": "Poor user experience and precision issues",
-          "alternative": "Choose step values that match the expected precision and use case"
-        },
-        {
-          "pattern": "no keyboard support",
-          "reason": "Accessibility violation and poor UX",
-          "alternative": "Implement full keyboard navigation with arrow keys, page up/down, home/end"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "high",
-      "estimatedTokens": 3200
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "keyboard-navigation-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with default props",
-        "handles single value changes",
-        "handles range value changes", 
-        "responds to keyboard navigation",
-        "manages focus states correctly",
-        "displays marks correctly",
-        "formats values properly",
-        "handles disabled state",
-        "supports vertical orientation",
-        "fires event callbacks",
-        "accessibility attributes",
-        "label association",
-        "ARIA value announcements",
-        "minimum target size compliance",
-        "step value constraints"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "form integration with validation",
-        "range selection workflow",
-        "keyboard-only interaction",
-        "screen reader slider interaction", 
-        "touch interaction on mobile",
-        "value formatting and display",
-        "mark positioning and labeling",
-        "Norwegian locale number formatting"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "themes": ["light", "dark", "high-contrast"],
-      "orientations": ["horizontal", "vertical"]
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "3KB",
-        "gzipped": "1.1KB"
-      },
-      "renderTime": {
-        "initial": "<8ms",
-        "update": "<3ms"
-      },
-      "interactionLatency": {
-        "keyboardResponse": "<16ms",
-        "mouseResponse": "<16ms",
-        "touchResponse": "<32ms"
-      }
-    },
-    "optimizations": [
-      "Memoized drag calculations and value updates",
-      "Throttled onChange events during continuous interaction",
-      "Lazy mark rendering for sliders with many marks",
-      "Optimized DOM updates using RAF for smooth interactions",
-      "Minimal re-renders with React.memo and useMemo",
-      "Efficient keyboard event handling with debouncing"
-    ]
-  }
+	"metadata": {
+		"name": "Slider",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "form",
+		"subcategory": "range-input",
+		"description": "Accessible slider component for selecting numeric values or ranges with Norwegian compliance, WCAG AAA accessibility, and comprehensive interaction support. Supports single value and range selection with customizable marks and orientations.",
+		"keywords": [
+			"slider",
+			"range",
+			"input",
+			"form",
+			"accessible",
+			"norwegian",
+			"controlled",
+			"value-selection"
+		],
+		"maintainer": {
+			"name": "Xala Form Team",
+			"email": "forms@xala.no",
+			"team": "Form Components"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T10:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"],
+			"numberFormatting": {
+				"norwegian": "123 456,78",
+				"international": "123,456.78"
+			}
+		},
+		"semantic": {
+			"htmlElements": ["div", "input", "label", "span", "button"],
+			"ariaRoles": ["slider", "group", "presentation"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.6 Headings and Labels",
+				"2.4.7 Focus Visible",
+				"2.5.5 Target Size",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"value": {
+				"type": {
+					"union": [
+						{ "primitive": "number" },
+						{
+							"array": {
+								"items": { "primitive": "number" },
+								"minItems": 2,
+								"maxItems": 2
+							}
+						}
+					]
+				},
+				"description": "Controlled component value - single number for single slider, [min, max] array for range slider",
+				"required": false,
+				"examples": [
+					{
+						"value": 50,
+						"description": "Single value slider at 50",
+						"context": "Volume control"
+					},
+					{
+						"value": [20, 80],
+						"description": "Range slider from 20 to 80",
+						"context": "Price range filter"
+					}
+				]
+			},
+			"defaultValue": {
+				"type": {
+					"union": [
+						{ "primitive": "number" },
+						{
+							"array": {
+								"items": { "primitive": "number" },
+								"minItems": 2,
+								"maxItems": 2
+							}
+						}
+					]
+				},
+				"description": "Default value for uncontrolled component",
+				"required": false,
+				"examples": [
+					{
+						"value": 0,
+						"description": "Default single value",
+						"context": "Uncontrolled single slider"
+					},
+					{
+						"value": [0, 100],
+						"description": "Default range values",
+						"context": "Uncontrolled range slider"
+					}
+				]
+			},
+			"min": {
+				"type": {
+					"primitive": "number",
+					"constraints": {
+						"finite": true
+					}
+				},
+				"description": "Minimum value of the slider range",
+				"required": false,
+				"defaultValue": 0,
+				"examples": [
+					{
+						"value": 0,
+						"description": "Standard minimum value",
+						"context": "Volume or percentage controls"
+					},
+					{
+						"value": -100,
+						"description": "Negative minimum for balance controls",
+						"context": "Audio balance slider"
+					}
+				]
+			},
+			"max": {
+				"type": {
+					"primitive": "number",
+					"constraints": {
+						"finite": true
+					}
+				},
+				"description": "Maximum value of the slider range",
+				"required": false,
+				"defaultValue": 100,
+				"examples": [
+					{
+						"value": 100,
+						"description": "Standard maximum value",
+						"context": "Percentage controls"
+					},
+					{
+						"value": 1000000,
+						"description": "Large maximum for price ranges",
+						"context": "Property price filter"
+					}
+				]
+			},
+			"step": {
+				"type": {
+					"primitive": "number",
+					"constraints": {
+						"minimum": 0,
+						"exclusiveMinimum": true
+					}
+				},
+				"description": "Step increment for slider values",
+				"required": false,
+				"defaultValue": 1,
+				"examples": [
+					{
+						"value": 1,
+						"description": "Integer steps",
+						"context": "Quantity selectors"
+					},
+					{
+						"value": 0.1,
+						"description": "Decimal steps for precision",
+						"context": "Rating or score inputs"
+					},
+					{
+						"value": 5,
+						"description": "Large steps for ranges",
+						"context": "Price increment controls"
+					}
+				]
+			},
+			"disabled": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the slider is disabled",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-disabled",
+					"screenReaderText": "Slider is disabled"
+				}
+			},
+			"marks": {
+				"type": {
+					"union": [
+						{ "primitive": "boolean" },
+						{
+							"array": {
+								"items": { "primitive": "number" }
+							}
+						},
+						{
+							"array": {
+								"items": {
+									"object": {
+										"properties": {
+											"value": { "primitive": "number" },
+											"label": { "primitive": "string" }
+										},
+										"required": ["value"]
+									}
+								}
+							}
+						}
+					]
+				},
+				"description": "Mark positions on the slider - true for automatic marks, array of numbers for custom positions, or array of objects with value and label",
+				"required": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Automatic marks based on step",
+						"context": "Simple percentage slider"
+					},
+					{
+						"value": [0, 25, 50, 75, 100],
+						"description": "Custom mark positions",
+						"context": "Quartile indicators"
+					},
+					{
+						"value": [
+							{ "value": 0, "label": "Min" },
+							{ "value": 50, "label": "Default" },
+							{ "value": 100, "label": "Max" }
+						],
+						"description": "Labeled marks",
+						"context": "Setting levels with descriptions"
+					}
+				]
+			},
+			"showValue": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether to display the current value(s)",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"screenReaderText": "Current slider value is displayed"
+				}
+			},
+			"orientation": {
+				"type": {
+					"custom": "variant",
+					"values": ["horizontal", "vertical"]
+				},
+				"description": "Slider orientation",
+				"required": false,
+				"defaultValue": "horizontal",
+				"accessibility": {
+					"ariaAttribute": "aria-orientation"
+				}
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["sm", "md", "lg"]
+				},
+				"description": "Visual size of the slider",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "sm",
+						"description": "Compact slider for tight spaces",
+						"context": "Mobile interfaces or sidebars"
+					},
+					{
+						"value": "lg",
+						"description": "Large slider for primary controls",
+						"context": "Main volume or important settings"
+					}
+				]
+			},
+			"label": {
+				"type": { "primitive": "string" },
+				"description": "Associated label text for the slider",
+				"required": false,
+				"accessibility": {
+					"required": true,
+					"screenReaderText": "Slider field label"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "slider.label.{fieldName}",
+					"context": "form-label"
+				}
+			},
+			"ariaLabel": {
+				"type": { "primitive": "string" },
+				"description": "Accessible label when no visible label is present",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Slider description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.slider.{fieldName}",
+					"context": "accessibility"
+				}
+			},
+			"ariaLabelledBy": {
+				"type": { "primitive": "string" },
+				"description": "ID of element that labels this slider",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-labelledby"
+				}
+			},
+			"ariaDescribedBy": {
+				"type": { "primitive": "string" },
+				"description": "ID of elements that describe the slider",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby"
+				}
+			},
+			"formatValue": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "value",
+								"type": "number",
+								"required": true
+							}
+						],
+						"returnType": "string"
+					}
+				},
+				"description": "Function to format displayed values",
+				"required": false,
+				"examples": [
+					{
+						"value": "(value) => `${value}%`",
+						"description": "Format as percentage",
+						"context": "Progress or completion sliders"
+					},
+					{
+						"value": "(value) => `$${value.toLocaleString()}`",
+						"description": "Format as currency",
+						"context": "Price range sliders"
+					}
+				]
+			},
+			"onChange": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "value",
+								"type": "number | [number, number]",
+								"required": true
+							},
+							{
+								"name": "event",
+								"type": "Event",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when slider value changes during interaction",
+				"required": false
+			},
+			"onChangeEnd": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "value",
+								"type": "number | [number, number]",
+								"required": true
+							},
+							{
+								"name": "event",
+								"type": "Event",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when slider interaction ends (mouse up, touch end, key release)",
+				"required": false
+			},
+			"onFocus": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when slider receives focus",
+				"required": false
+			},
+			"onBlur": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when slider loses focus",
+				"required": false
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the slider container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"value",
+				"defaultValue",
+				"min",
+				"max",
+				"step",
+				"disabled",
+				"marks",
+				"showValue",
+				"orientation",
+				"size",
+				"label",
+				"ariaLabel",
+				"ariaLabelledBy",
+				"ariaDescribedBy",
+				"formatValue",
+				"onChange",
+				"onChangeEnd",
+				"onFocus",
+				"onBlur",
+				"className",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false
+			},
+			"slots": {
+				"thumb": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom thumb/handle content"
+				},
+				"track": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom track content"
+				},
+				"mark": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom mark content"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"size": {
+				"values": {
+					"sm": "h-4",
+					"md": "h-6",
+					"lg": "h-8"
+				},
+				"defaultValue": "md"
+			},
+			"orientation": {
+				"values": {
+					"horizontal": "w-full",
+					"vertical": "h-48 w-6"
+				},
+				"defaultValue": "horizontal"
+			},
+			"state": {
+				"values": {
+					"normal": "cursor-pointer",
+					"disabled": "cursor-not-allowed opacity-50",
+					"focused": "ring-2 ring-blue-500 ring-offset-2"
+				},
+				"defaultValue": "normal"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"orientation": "vertical",
+					"size": "sm"
+				},
+				"className": "h-32 w-4",
+				"description": "Small vertical slider"
+			},
+			{
+				"conditions": {
+					"orientation": "vertical",
+					"size": "md"
+				},
+				"className": "h-48 w-6",
+				"description": "Medium vertical slider"
+			},
+			{
+				"conditions": {
+					"orientation": "vertical",
+					"size": "lg"
+				},
+				"className": "h-64 w-8",
+				"description": "Large vertical slider"
+			},
+			{
+				"conditions": {
+					"showValue": true,
+					"orientation": "horizontal"
+				},
+				"className": "pb-8",
+				"description": "Horizontal slider with value display spacing"
+			},
+			{
+				"conditions": {
+					"showValue": true,
+					"orientation": "vertical"
+				},
+				"className": "pr-12",
+				"description": "Vertical slider with value display spacing"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "slider"
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Arrow Right / Arrow Up",
+					"action": "increase",
+					"context": "Increase value by step amount"
+				},
+				{
+					"key": "Arrow Left / Arrow Down",
+					"action": "decrease",
+					"context": "Decrease value by step amount"
+				},
+				{
+					"key": "Page Up",
+					"action": "increase-large",
+					"context": "Increase value by large step (10% of range)"
+				},
+				{
+					"key": "Page Down",
+					"action": "decrease-large",
+					"context": "Decrease value by large step (10% of range)"
+				},
+				{
+					"key": "Home",
+					"action": "minimum",
+					"context": "Set to minimum value"
+				},
+				{
+					"key": "End",
+					"action": "maximum",
+					"context": "Set to maximum value"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move to next focusable element"
+				},
+				{
+					"key": "Shift+Tab",
+					"action": "navigate",
+					"context": "Move to previous focusable element"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false,
+				"multipleHandles": "Tab between handles in range sliders"
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "valueChange",
+					"message": "{label} slider, value {value}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "rangeChange",
+					"message": "{label} range slider, minimum {minValue}, maximum {maxValue}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "focus",
+					"message": "{label} slider, current value {value}, minimum {min}, maximum {max}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "disabled",
+					"message": "{label} slider is disabled",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["label", "aria-label", "aria-labelledby"],
+				"descriptions": {
+					"slider": "Interactive slider control",
+					"rangeSlider": "Range selection slider",
+					"disabled": "Disabled slider control",
+					"minimum": "Minimum value",
+					"maximum": "Maximum value",
+					"currentValue": "Current value"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"slider-label-association",
+				"keyboard-navigation-all-keys",
+				"value-announcements",
+				"focus-management",
+				"color-contrast-aaa",
+				"minimum-target-size-44px",
+				"range-slider-dual-focus"
+			],
+			"manual": [
+				"screen-reader-value-announcements",
+				"keyboard-only-interaction",
+				"high-contrast-mode-visibility",
+				"zoom-250-percent-usability",
+				"voice-control-compatibility",
+				"touch-interaction-accuracy"
+			]
+		}
+	},
+	"platforms": {
+		"supported": ["react", "vue", "angular", "svelte"],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/slider.tsx",
+				"dependencies": ["react", "clsx"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"useState",
+							"useCallback",
+							"useId",
+							"useRef",
+							"useEffect"
+						]
+					},
+					{
+						"module": "clsx",
+						"imports": ["clsx"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/slider.vue",
+				"dependencies": ["vue"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/slider.component.ts",
+				"dependencies": ["@angular/core", "@angular/forms"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/slider.svelte",
+				"dependencies": ["svelte"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Slider",
+			"description": "Simple single-value slider with default settings",
+			"category": "basic",
+			"code": {
+				"react": "<Slider label='Volume' min={0} max={100} defaultValue={50} />",
+				"vue": "<Slider label='Volume' :min='0' :max='100' :defaultValue='50' />",
+				"angular": "<xala-slider label='Volume' [min]='0' [max]='100' [defaultValue]='50'></xala-slider>",
+				"svelte": "<Slider label='Volume' min={0} max={100} defaultValue={50} />"
+			},
+			"props": {
+				"label": "Volume",
+				"min": 0,
+				"max": 100,
+				"defaultValue": 50
+			}
+		},
+		{
+			"name": "Range Slider",
+			"description": "Dual-handle slider for selecting a range of values",
+			"category": "range",
+			"code": {
+				"react": "<Slider label='Price Range' min={0} max={1000} defaultValue={[100, 500]} showValue formatValue={(value) => `$${value}`} />"
+			},
+			"props": {
+				"label": "Price Range",
+				"min": 0,
+				"max": 1000,
+				"defaultValue": [100, 500],
+				"showValue": true,
+				"formatValue": "(value) => `$${value}`"
+			}
+		},
+		{
+			"name": "Slider with Marks",
+			"description": "Slider with visible tick marks and labels",
+			"category": "enhanced",
+			"code": {
+				"react": "<Slider label='Quality Level' min={0} max={100} step={25} defaultValue={50} marks={[{ value: 0, label: 'Low' }, { value: 25, label: 'Fair' }, { value: 50, label: 'Good' }, { value: 75, label: 'High' }, { value: 100, label: 'Excellent' }]} showValue />"
+			},
+			"props": {
+				"label": "Quality Level",
+				"min": 0,
+				"max": 100,
+				"step": 25,
+				"defaultValue": 50,
+				"marks": [
+					{ "value": 0, "label": "Low" },
+					{ "value": 25, "label": "Fair" },
+					{ "value": 50, "label": "Good" },
+					{ "value": 75, "label": "High" },
+					{ "value": 100, "label": "Excellent" }
+				],
+				"showValue": true
+			}
+		},
+		{
+			"name": "Vertical Slider",
+			"description": "Vertical orientation slider for height-constrained layouts",
+			"category": "orientation",
+			"code": {
+				"react": "<Slider label='Balance' min={-100} max={100} defaultValue={0} orientation='vertical' showValue formatValue={(value) => value > 0 ? `R+${value}` : value < 0 ? `L${Math.abs(value)}` : 'CENTER'} />"
+			},
+			"props": {
+				"label": "Balance",
+				"min": -100,
+				"max": 100,
+				"defaultValue": 0,
+				"orientation": "vertical",
+				"showValue": true,
+				"formatValue": "(value) => value > 0 ? `R+${value}` : value < 0 ? `L${Math.abs(value)}` : 'CENTER'"
+			}
+		},
+		{
+			"name": "Large Precision Slider",
+			"description": "Large slider with decimal precision for fine adjustments",
+			"category": "precision",
+			"code": {
+				"react": "<Slider label='Temperature' min={15.0} max={30.0} step={0.5} defaultValue={22.5} size='lg' showValue formatValue={(value) => `${value.toFixed(1)}°C`} marks={true} />"
+			},
+			"props": {
+				"label": "Temperature",
+				"min": 15.0,
+				"max": 30.0,
+				"step": 0.5,
+				"defaultValue": 22.5,
+				"size": "lg",
+				"showValue": true,
+				"formatValue": "(value) => `${value.toFixed(1)}°C`",
+				"marks": true
+			}
+		},
+		{
+			"name": "Disabled Slider",
+			"description": "Disabled slider showing read-only state",
+			"category": "state",
+			"code": {
+				"react": "<Slider label='System Volume' min={0} max={100} value={75} disabled showValue formatValue={(value) => `${value}%`} />"
+			},
+			"props": {
+				"label": "System Volume",
+				"min": 0,
+				"max": 100,
+				"value": 75,
+				"disabled": true,
+				"showValue": true,
+				"formatValue": "(value) => `${value}%`"
+			}
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Always provide labels for accessibility compliance",
+				"Use appropriate step values for the data type and use case",
+				"Consider Norwegian number formatting for localized applications",
+				"Implement proper keyboard navigation for all slider variants",
+				"Ensure minimum 44px touch target size for mobile usability",
+				"Use semantic value formatting for better user understanding"
+			],
+			"patterns": [
+				{
+					"pattern": "controlled component",
+					"context": "React implementation",
+					"recommendation": "Use controlled components with value and onChange props for form integration"
+				},
+				{
+					"pattern": "range selection",
+					"context": "Range sliders",
+					"recommendation": "Provide clear visual feedback for both handles and current range"
+				},
+				{
+					"pattern": "value formatting",
+					"context": "Display values",
+					"recommendation": "Always format values appropriately for the domain (currency, percentage, units)"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "missing labels",
+					"reason": "Poor accessibility and user understanding",
+					"alternative": "Always provide labels or aria-label for context"
+				},
+				{
+					"pattern": "inappropriate step values",
+					"reason": "Poor user experience and precision issues",
+					"alternative": "Choose step values that match the expected precision and use case"
+				},
+				{
+					"pattern": "no keyboard support",
+					"reason": "Accessibility violation and poor UX",
+					"alternative": "Implement full keyboard navigation with arrow keys, page up/down, home/end"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "high",
+			"estimatedTokens": 3200
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"keyboard-navigation-guide"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with default props",
+				"handles single value changes",
+				"handles range value changes",
+				"responds to keyboard navigation",
+				"manages focus states correctly",
+				"displays marks correctly",
+				"formats values properly",
+				"handles disabled state",
+				"supports vertical orientation",
+				"fires event callbacks",
+				"accessibility attributes",
+				"label association",
+				"ARIA value announcements",
+				"minimum target size compliance",
+				"step value constraints"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"form integration with validation",
+				"range selection workflow",
+				"keyboard-only interaction",
+				"screen reader slider interaction",
+				"touch interaction on mobile",
+				"value formatting and display",
+				"mark positioning and labeling",
+				"Norwegian locale number formatting"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"themes": ["light", "dark", "high-contrast"],
+			"orientations": ["horizontal", "vertical"]
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "3KB",
+				"gzipped": "1.1KB"
+			},
+			"renderTime": {
+				"initial": "<8ms",
+				"update": "<3ms"
+			},
+			"interactionLatency": {
+				"keyboardResponse": "<16ms",
+				"mouseResponse": "<16ms",
+				"touchResponse": "<32ms"
+			}
+		},
+		"optimizations": [
+			"Memoized drag calculations and value updates",
+			"Throttled onChange events during continuous interaction",
+			"Lazy mark rendering for sliders with many marks",
+			"Optimized DOM updates using RAF for smooth interactions",
+			"Minimal re-renders with React.memo and useMemo",
+			"Efficient keyboard event handling with debouncing"
+		]
+	}
 }

@@ -1,673 +1,719 @@
 {
-  "metadata": {
-    "name": "Button",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "action-feedback",
-    "subcategory": "button",
-    "description": "Comprehensive button component with multiple variants, loading states, icon support, and Norwegian compliance. Supports all interaction patterns and accessibility requirements.",
-    "keywords": ["button", "action", "interaction", "feedback", "loading", "icon", "norwegian", "accessible"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-02-01T09:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["button", "a"],
-      "ariaRoles": ["button", "link"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["primary", "secondary", "outline", "ghost", "destructive", "success", "warning", "link"]
-        },
-        "description": "Visual variant of the button determining appearance and behavior",
-        "required": false,
-        "defaultValue": "primary",
-        "examples": [
-          {
-            "value": "primary",
-            "description": "Main call-to-action button",
-            "context": "Form submissions, primary actions"
-          },
-          {
-            "value": "destructive",
-            "description": "Dangerous actions like delete",
-            "context": "Delete confirmations, destructive operations"
-          }
-        ]
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["xs", "sm", "md", "lg", "xl", "icon"]
-        },
-        "description": "Size variant affecting padding, text size, and overall dimensions",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "xs",
-            "description": "Extra small button for compact interfaces",
-            "context": "Table actions, inline controls"
-          },
-          {
-            "value": "icon",
-            "description": "Square button optimized for icons only",
-            "context": "Icon-only actions, toolbar buttons"
-          }
-        ]
-      },
-      "disabled": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the button is disabled and non-interactive",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-disabled",
-          "screenReaderText": "Button disabled"
-        }
-      },
-      "loading": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the button is in a loading state with spinner",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-busy",
-          "screenReaderText": "Loading"
-        }
-      },
-      "fullWidth": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the button should take full width of its container",
-        "required": false,
-        "defaultValue": false
-      },
-      "type": {
-        "type": {
-          "custom": "variant",
-          "values": ["button", "submit", "reset"]
-        },
-        "description": "HTML button type attribute for form behavior",
-        "required": false,
-        "defaultValue": "button"
-      },
-      "onClick": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void | Promise<void>"
-          }
-        },
-        "description": "Click event handler",
-        "required": false
-      },
-      "icon": {
-        "type": {
-          "complex": "component",
-          "signature": {
-            "type": "React.ComponentType<{ className?: string; size?: number }>",
-            "description": "Icon component to display in the button"
-          }
-        },
-        "description": "Optional icon component to display alongside or instead of text",
-        "required": false,
-        "examples": [
-          {
-            "value": "ChevronRight",
-            "description": "Right arrow icon for navigation",
-            "context": "Next actions, forward navigation"
-          }
-        ]
-      },
-      "iconPosition": {
-        "type": {
-          "custom": "variant",
-          "values": ["left", "right"]
-        },
-        "description": "Position of the icon relative to button text",
-        "required": false,
-        "defaultValue": "left",
-        "conditions": {
-          "dependsOn": "icon",
-          "required": false
-        }
-      },
-      "children": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Button content - text or elements to display inside the button",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "button.{componentName}.text",
-          "context": "button-text"
-        }
-      },
-      "ariaLabel": {
-        "type": { "primitive": "string" },
-        "description": "Accessible label for the button, required for icon-only buttons",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Button action"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.button.{componentName}",
-          "context": "accessibility"
-        },
-        "validation": {
-          "requiredWhen": {
-            "condition": "children is empty or icon-only",
-            "message": "ariaLabel is required for icon-only buttons"
-          }
-        }
-      },
-      "href": {
-        "type": { "primitive": "string" },
-        "description": "URL to navigate to when button is used as a link",
-        "required": false,
-        "mutuallyExclusive": ["onClick", "type"]
-      },
-      "target": {
-        "type": {
-          "custom": "variant",
-          "values": ["_self", "_blank", "_parent", "_top"]
-        },
-        "description": "Link target attribute when used as link",
-        "required": false,
-        "defaultValue": "_self",
-        "conditions": {
-          "dependsOn": "href",
-          "required": false
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "variant", "size", "disabled", "loading", "fullWidth", "type", 
-        "onClick", "icon", "iconPosition", "children", "ariaLabel", 
-        "href", "target", "className", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element"],
-        "description": "Button content"
-      },
-      "slots": {
-        "icon": {
-          "required": false,
-          "types": ["element"],
-          "description": "Icon slot for custom icon components"
-        },
-        "spinner": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom loading spinner component"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "primary": "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-          "secondary": "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
-          "outline": "border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500",
-          "ghost": "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
-          "destructive": "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-          "success": "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
-          "warning": "bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500",
-          "link": "text-blue-600 underline hover:text-blue-700 focus:ring-blue-500"
-        },
-        "defaultValue": "primary"
-      },
-      "size": {
-        "values": {
-          "xs": "h-8 px-3 text-xs",
-          "sm": "h-10 px-4 text-sm",
-          "md": "h-12 px-6 text-base",
-          "lg": "h-14 px-8 text-lg",
-          "xl": "h-16 px-10 text-xl",
-          "icon": "h-10 w-10 p-0"
-        },
-        "defaultValue": "md"
-      },
-      "fullWidth": {
-        "values": {
-          "true": "w-full",
-          "false": "w-auto"
-        },
-        "defaultValue": "false"
-      },
-      "disabled": {
-        "values": {
-          "true": "opacity-50 cursor-not-allowed pointer-events-none",
-          "false": "cursor-pointer"
-        },
-        "defaultValue": "false"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "link",
-          "size": "xs"
-        },
-        "className": "text-xs underline",
-        "description": "Extra small link buttons"
-      },
-      {
-        "conditions": {
-          "variant": "outline",
-          "disabled": "true"
-        },
-        "className": "border-gray-200 text-gray-400",
-        "description": "Disabled outline buttons with muted colors"
-      },
-      {
-        "conditions": {
-          "size": "icon",
-          "loading": "true"
-        },
-        "className": "p-2",
-        "description": "Icon buttons with loading state padding adjustment"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "button",
-      "additional": ["link"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Enter",
-          "action": "activate",
-          "context": "Activate button action"
-        },
-        {
-          "key": "Space",
-          "action": "activate",
-          "context": "Activate button action"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus to/from button"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "loading",
-          "message": "Button loading",
-          "priority": "polite"
-        },
-        {
-          "trigger": "disabled",
-          "message": "Button disabled",
-          "priority": "polite"
-        },
-        {
-          "trigger": "click",
-          "message": "Button activated",
-          "priority": "assertive"
-        }
-      ],
-      "labels": {
-        "required": ["accessible-name"],
-        "descriptions": {
-          "loading": "Loading",
-          "disabled": "Disabled",
-          "icon-only": "Action button",
-          "destructive": "Destructive action"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "button-element-present",
-        "accessible-name-present",
-        "keyboard-activation",
-        "focus-management",
-        "color-contrast-aaa",
-        "loading-state-announced",
-        "disabled-state-handled"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "keyboard-only-interaction"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/button.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "ButtonHTMLAttributes", "AnchorHTMLAttributes"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/button.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/button.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/button.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/button.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/button.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Button",
-      "description": "Simple primary button with text",
-      "category": "basic",
-      "code": {
-        "react": "<Button>Click me</Button>",
-        "vue": "<Button>Click me</Button>",
-        "angular": "<xala-button>Click me</xala-button>",
-        "svelte": "<Button>Click me</Button>",
-        "solid": "<Button>Click me</Button>",
-        "web-components": "<xala-button>Click me</xala-button>"
-      },
-      "props": {
-        "children": "Click me"
-      }
-    },
-    {
-      "name": "Button Variants",
-      "description": "Different visual variants",
-      "category": "variants",
-      "code": {
-        "react": "<Button variant='primary'>Primary</Button>\n<Button variant='secondary'>Secondary</Button>\n<Button variant='outline'>Outline</Button>\n<Button variant='destructive'>Delete</Button>"
-      },
-      "props": {
-        "variant": ["primary", "secondary", "outline", "destructive"]
-      }
-    },
-    {
-      "name": "Loading Button",
-      "description": "Button with loading state and spinner",
-      "category": "states",
-      "code": {
-        "react": "<Button loading disabled>Saving...</Button>"
-      },
-      "props": {
-        "loading": true,
-        "disabled": true,
-        "children": "Saving..."
-      },
-      "notes": "Loading buttons should be disabled to prevent multiple submissions"
-    },
-    {
-      "name": "Icon Button",
-      "description": "Button with icon and text",
-      "category": "composition",
-      "code": {
-        "react": "<Button icon={ChevronRight} iconPosition='right'>Next</Button>\n<Button size='icon' icon={Search} ariaLabel='Search' />"
-      },
-      "props": {
-        "icon": "ChevronRight | Search",
-        "iconPosition": "right",
-        "size": "icon",
-        "ariaLabel": "Search"
-      },
-      "notes": "Icon-only buttons must have ariaLabel for accessibility"
-    },
-    {
-      "name": "Button Group",
-      "description": "Multiple buttons in a group layout",
-      "category": "composition",
-      "code": {
-        "react": "<div className='inline-flex rounded-md shadow-sm' role='group'>\n  <Button variant='outline' className='rounded-r-none'>Previous</Button>\n  <Button variant='outline' className='rounded-none border-l-0'>Current</Button>\n  <Button variant='outline' className='rounded-l-none border-l-0'>Next</Button>\n</div>"
-      },
-      "notes": "Button groups should use role='group' for accessibility"
-    },
-    {
-      "name": "Link Button",
-      "description": "Button that navigates to a URL",
-      "category": "navigation",
-      "code": {
-        "react": "<Button href='/dashboard' target='_self'>Go to Dashboard</Button>"
-      },
-      "props": {
-        "href": "/dashboard",
-        "target": "_self",
-        "children": "Go to Dashboard"
-      },
-      "notes": "Renders as anchor tag when href is provided"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use semantic button or anchor elements based on behavior",
-        "Always provide accessible names for icon-only buttons",
-        "Implement proper focus management and keyboard navigation",
-        "Use loading states to prevent double submissions",
-        "Apply Norwegian design tokens for government compliance",
-        "Ensure color contrast meets AAA standards for all variants"
-      ],
-      "patterns": [
-        {
-          "pattern": "class-variance-authority (cva)",
-          "context": "React implementation",
-          "recommendation": "Use CVA for type-safe variant management and compound variants"
-        },
-        {
-          "pattern": "forwardRef",
-          "context": "React implementation",
-          "recommendation": "Use forwardRef for proper ref handling in form libraries"
-        },
-        {
-          "pattern": "loading + disabled",
-          "context": "Async operations",
-          "recommendation": "Always disable buttons during loading to prevent double submissions"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div with onClick as button",
-          "reason": "Poor accessibility and semantic meaning",
-          "alternative": "Use proper button element with keyboard support"
-        },
-        {
-          "pattern": "Icon-only buttons without aria-label",
-          "reason": "Not accessible to screen readers",
-          "alternative": "Always provide ariaLabel for icon-only buttons"
-        },
-        {
-          "pattern": "Low color contrast variants",
-          "reason": "Fails WCAG AA/AAA compliance",
-          "alternative": "Ensure minimum 4.5:1 contrast ratio, 7:1 for AAA"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate",
-      "estimatedTokens": 2000
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "variant-showcase"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with text",
-        "handles click events",
-        "applies variant classes",
-        "applies size classes",
-        "disabled state prevents clicks",
-        "loading state shows spinner",
-        "icon positioning works",
-        "full width styling",
-        "accessibility attributes",
-        "keyboard activation",
-        "link behavior with href",
-        "aria-label for icon buttons",
-        "focus management"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "form submission with button type",
-        "navigation with href buttons",
-        "async operations with loading state",
-        "button groups and compound layouts",
-        "keyboard-only interaction",
-        "screen reader navigation",
-        "Norwegian compliance validation"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "1KB"
-      },
-      "renderTime": {
-        "initial": "<16ms",
-        "update": "<8ms"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure with single element",
-      "CSS-only state transitions and hover effects",
-      "Optimized class variance authority patterns",
-      "Tree-shakeable icon imports",
-      "Memoized variant class generation"
-    ]
-  }
+	"metadata": {
+		"name": "Button",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "action-feedback",
+		"subcategory": "button",
+		"description": "Comprehensive button component with multiple variants, loading states, icon support, and Norwegian compliance. Supports all interaction patterns and accessibility requirements.",
+		"keywords": [
+			"button",
+			"action",
+			"interaction",
+			"feedback",
+			"loading",
+			"icon",
+			"norwegian",
+			"accessible"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-02-01T09:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["button", "a"],
+			"ariaRoles": ["button", "link"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": [
+						"primary",
+						"secondary",
+						"outline",
+						"ghost",
+						"destructive",
+						"success",
+						"warning",
+						"link"
+					]
+				},
+				"description": "Visual variant of the button determining appearance and behavior",
+				"required": false,
+				"defaultValue": "primary",
+				"examples": [
+					{
+						"value": "primary",
+						"description": "Main call-to-action button",
+						"context": "Form submissions, primary actions"
+					},
+					{
+						"value": "destructive",
+						"description": "Dangerous actions like delete",
+						"context": "Delete confirmations, destructive operations"
+					}
+				]
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["xs", "sm", "md", "lg", "xl", "icon"]
+				},
+				"description": "Size variant affecting padding, text size, and overall dimensions",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "xs",
+						"description": "Extra small button for compact interfaces",
+						"context": "Table actions, inline controls"
+					},
+					{
+						"value": "icon",
+						"description": "Square button optimized for icons only",
+						"context": "Icon-only actions, toolbar buttons"
+					}
+				]
+			},
+			"disabled": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the button is disabled and non-interactive",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-disabled",
+					"screenReaderText": "Button disabled"
+				}
+			},
+			"loading": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the button is in a loading state with spinner",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-busy",
+					"screenReaderText": "Loading"
+				}
+			},
+			"fullWidth": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the button should take full width of its container",
+				"required": false,
+				"defaultValue": false
+			},
+			"type": {
+				"type": {
+					"custom": "variant",
+					"values": ["button", "submit", "reset"]
+				},
+				"description": "HTML button type attribute for form behavior",
+				"required": false,
+				"defaultValue": "button"
+			},
+			"onClick": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void | Promise<void>"
+					}
+				},
+				"description": "Click event handler",
+				"required": false
+			},
+			"icon": {
+				"type": {
+					"complex": "component",
+					"signature": {
+						"type": "React.ComponentType<{ className?: string; size?: number }>",
+						"description": "Icon component to display in the button"
+					}
+				},
+				"description": "Optional icon component to display alongside or instead of text",
+				"required": false,
+				"examples": [
+					{
+						"value": "ChevronRight",
+						"description": "Right arrow icon for navigation",
+						"context": "Next actions, forward navigation"
+					}
+				]
+			},
+			"iconPosition": {
+				"type": {
+					"custom": "variant",
+					"values": ["left", "right"]
+				},
+				"description": "Position of the icon relative to button text",
+				"required": false,
+				"defaultValue": "left",
+				"conditions": {
+					"dependsOn": "icon",
+					"required": false
+				}
+			},
+			"children": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Button content - text or elements to display inside the button",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "button.{componentName}.text",
+					"context": "button-text"
+				}
+			},
+			"ariaLabel": {
+				"type": { "primitive": "string" },
+				"description": "Accessible label for the button, required for icon-only buttons",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Button action"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.button.{componentName}",
+					"context": "accessibility"
+				},
+				"validation": {
+					"requiredWhen": {
+						"condition": "children is empty or icon-only",
+						"message": "ariaLabel is required for icon-only buttons"
+					}
+				}
+			},
+			"href": {
+				"type": { "primitive": "string" },
+				"description": "URL to navigate to when button is used as a link",
+				"required": false,
+				"mutuallyExclusive": ["onClick", "type"]
+			},
+			"target": {
+				"type": {
+					"custom": "variant",
+					"values": ["_self", "_blank", "_parent", "_top"]
+				},
+				"description": "Link target attribute when used as link",
+				"required": false,
+				"defaultValue": "_self",
+				"conditions": {
+					"dependsOn": "href",
+					"required": false
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"variant",
+				"size",
+				"disabled",
+				"loading",
+				"fullWidth",
+				"type",
+				"onClick",
+				"icon",
+				"iconPosition",
+				"children",
+				"ariaLabel",
+				"href",
+				"target",
+				"className",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element"],
+				"description": "Button content"
+			},
+			"slots": {
+				"icon": {
+					"required": false,
+					"types": ["element"],
+					"description": "Icon slot for custom icon components"
+				},
+				"spinner": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom loading spinner component"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"primary": "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+					"secondary": "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
+					"outline": "border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500",
+					"ghost": "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
+					"destructive": "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+					"success": "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
+					"warning": "bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500",
+					"link": "text-blue-600 underline hover:text-blue-700 focus:ring-blue-500"
+				},
+				"defaultValue": "primary"
+			},
+			"size": {
+				"values": {
+					"xs": "h-8 px-3 text-xs",
+					"sm": "h-10 px-4 text-sm",
+					"md": "h-12 px-6 text-base",
+					"lg": "h-14 px-8 text-lg",
+					"xl": "h-16 px-10 text-xl",
+					"icon": "h-10 w-10 p-0"
+				},
+				"defaultValue": "md"
+			},
+			"fullWidth": {
+				"values": {
+					"true": "w-full",
+					"false": "w-auto"
+				},
+				"defaultValue": "false"
+			},
+			"disabled": {
+				"values": {
+					"true": "opacity-50 cursor-not-allowed pointer-events-none",
+					"false": "cursor-pointer"
+				},
+				"defaultValue": "false"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "link",
+					"size": "xs"
+				},
+				"className": "text-xs underline",
+				"description": "Extra small link buttons"
+			},
+			{
+				"conditions": {
+					"variant": "outline",
+					"disabled": "true"
+				},
+				"className": "border-gray-200 text-gray-400",
+				"description": "Disabled outline buttons with muted colors"
+			},
+			{
+				"conditions": {
+					"size": "icon",
+					"loading": "true"
+				},
+				"className": "p-2",
+				"description": "Icon buttons with loading state padding adjustment"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "button",
+			"additional": ["link"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Enter",
+					"action": "activate",
+					"context": "Activate button action"
+				},
+				{
+					"key": "Space",
+					"action": "activate",
+					"context": "Activate button action"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus to/from button"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "loading",
+					"message": "Button loading",
+					"priority": "polite"
+				},
+				{
+					"trigger": "disabled",
+					"message": "Button disabled",
+					"priority": "polite"
+				},
+				{
+					"trigger": "click",
+					"message": "Button activated",
+					"priority": "assertive"
+				}
+			],
+			"labels": {
+				"required": ["accessible-name"],
+				"descriptions": {
+					"loading": "Loading",
+					"disabled": "Disabled",
+					"icon-only": "Action button",
+					"destructive": "Destructive action"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"button-element-present",
+				"accessible-name-present",
+				"keyboard-activation",
+				"focus-management",
+				"color-contrast-aaa",
+				"loading-state-announced",
+				"disabled-state-handled"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"keyboard-only-interaction"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/button.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"ButtonHTMLAttributes",
+							"AnchorHTMLAttributes"
+						]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/button.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/button.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/button.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/button.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/button.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Button",
+			"description": "Simple primary button with text",
+			"category": "basic",
+			"code": {
+				"react": "<Button>Click me</Button>",
+				"vue": "<Button>Click me</Button>",
+				"angular": "<xala-button>Click me</xala-button>",
+				"svelte": "<Button>Click me</Button>",
+				"solid": "<Button>Click me</Button>",
+				"web-components": "<xala-button>Click me</xala-button>"
+			},
+			"props": {
+				"children": "Click me"
+			}
+		},
+		{
+			"name": "Button Variants",
+			"description": "Different visual variants",
+			"category": "variants",
+			"code": {
+				"react": "<Button variant='primary'>Primary</Button>\n<Button variant='secondary'>Secondary</Button>\n<Button variant='outline'>Outline</Button>\n<Button variant='destructive'>Delete</Button>"
+			},
+			"props": {
+				"variant": ["primary", "secondary", "outline", "destructive"]
+			}
+		},
+		{
+			"name": "Loading Button",
+			"description": "Button with loading state and spinner",
+			"category": "states",
+			"code": {
+				"react": "<Button loading disabled>Saving...</Button>"
+			},
+			"props": {
+				"loading": true,
+				"disabled": true,
+				"children": "Saving..."
+			},
+			"notes": "Loading buttons should be disabled to prevent multiple submissions"
+		},
+		{
+			"name": "Icon Button",
+			"description": "Button with icon and text",
+			"category": "composition",
+			"code": {
+				"react": "<Button icon={ChevronRight} iconPosition='right'>Next</Button>\n<Button size='icon' icon={Search} ariaLabel='Search' />"
+			},
+			"props": {
+				"icon": "ChevronRight | Search",
+				"iconPosition": "right",
+				"size": "icon",
+				"ariaLabel": "Search"
+			},
+			"notes": "Icon-only buttons must have ariaLabel for accessibility"
+		},
+		{
+			"name": "Button Group",
+			"description": "Multiple buttons in a group layout",
+			"category": "composition",
+			"code": {
+				"react": "<div className='inline-flex rounded-md shadow-sm' role='group'>\n  <Button variant='outline' className='rounded-r-none'>Previous</Button>\n  <Button variant='outline' className='rounded-none border-l-0'>Current</Button>\n  <Button variant='outline' className='rounded-l-none border-l-0'>Next</Button>\n</div>"
+			},
+			"notes": "Button groups should use role='group' for accessibility"
+		},
+		{
+			"name": "Link Button",
+			"description": "Button that navigates to a URL",
+			"category": "navigation",
+			"code": {
+				"react": "<Button href='/dashboard' target='_self'>Go to Dashboard</Button>"
+			},
+			"props": {
+				"href": "/dashboard",
+				"target": "_self",
+				"children": "Go to Dashboard"
+			},
+			"notes": "Renders as anchor tag when href is provided"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use semantic button or anchor elements based on behavior",
+				"Always provide accessible names for icon-only buttons",
+				"Implement proper focus management and keyboard navigation",
+				"Use loading states to prevent double submissions",
+				"Apply Norwegian design tokens for government compliance",
+				"Ensure color contrast meets AAA standards for all variants"
+			],
+			"patterns": [
+				{
+					"pattern": "class-variance-authority (cva)",
+					"context": "React implementation",
+					"recommendation": "Use CVA for type-safe variant management and compound variants"
+				},
+				{
+					"pattern": "forwardRef",
+					"context": "React implementation",
+					"recommendation": "Use forwardRef for proper ref handling in form libraries"
+				},
+				{
+					"pattern": "loading + disabled",
+					"context": "Async operations",
+					"recommendation": "Always disable buttons during loading to prevent double submissions"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div with onClick as button",
+					"reason": "Poor accessibility and semantic meaning",
+					"alternative": "Use proper button element with keyboard support"
+				},
+				{
+					"pattern": "Icon-only buttons without aria-label",
+					"reason": "Not accessible to screen readers",
+					"alternative": "Always provide ariaLabel for icon-only buttons"
+				},
+				{
+					"pattern": "Low color contrast variants",
+					"reason": "Fails WCAG AA/AAA compliance",
+					"alternative": "Ensure minimum 4.5:1 contrast ratio, 7:1 for AAA"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate",
+			"estimatedTokens": 2000
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"variant-showcase"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with text",
+				"handles click events",
+				"applies variant classes",
+				"applies size classes",
+				"disabled state prevents clicks",
+				"loading state shows spinner",
+				"icon positioning works",
+				"full width styling",
+				"accessibility attributes",
+				"keyboard activation",
+				"link behavior with href",
+				"aria-label for icon buttons",
+				"focus management"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"form submission with button type",
+				"navigation with href buttons",
+				"async operations with loading state",
+				"button groups and compound layouts",
+				"keyboard-only interaction",
+				"screen reader navigation",
+				"Norwegian compliance validation"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "1KB"
+			},
+			"renderTime": {
+				"initial": "<16ms",
+				"update": "<8ms"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure with single element",
+			"CSS-only state transitions and hover effects",
+			"Optimized class variance authority patterns",
+			"Tree-shakeable icon imports",
+			"Memoized variant class generation"
+		]
+	}
 }

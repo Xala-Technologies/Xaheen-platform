@@ -1,314 +1,342 @@
 /**
  * Make Domain - Laravel Artisan-inspired creation commands
- * 
+ *
  * Provides a consistent, high-quality interface for generating
  * application components with intelligent defaults and AI enhancement.
  */
 
-import type { CLICommand } from '../../types/index.js';
-import { AIGeneratorService } from '../../services/generators/ai-generator.service.js';
-import { ConfigManager } from '../../core/config-manager/index.js';
-import { logger } from '../../utils/logger.js';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import chalk from 'chalk';
+import chalk from "chalk";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { ConfigManager } from "../../core/config-manager/index.js";
+import { AIGeneratorService } from "../../services/generators/ai-generator.service.js";
+import type { CLICommand } from "../../types/index.js";
+import { logger } from "../../utils/logger.js";
 
 interface MakeOptions {
-  migration?: boolean;
-  controller?: boolean;
-  resource?: boolean;
-  factory?: boolean;
-  seeder?: boolean;
-  all?: boolean;
-  api?: boolean;
-  force?: boolean;
-  test?: boolean;
-  // AI-enhanced options
-  ai?: boolean;
-  description?: string;
-  withStories?: boolean;
-  accessibility?: 'A' | 'AA' | 'AAA';
-  norwegian?: boolean;
-  gdpr?: boolean;
-  styling?: 'tailwind' | 'css-modules' | 'styled-components';
-  features?: string[];
+	migration?: boolean;
+	controller?: boolean;
+	resource?: boolean;
+	factory?: boolean;
+	seeder?: boolean;
+	all?: boolean;
+	api?: boolean;
+	force?: boolean;
+	test?: boolean;
+	// AI-enhanced options
+	ai?: boolean;
+	description?: string;
+	withStories?: boolean;
+	accessibility?: "A" | "AA" | "AAA";
+	norwegian?: boolean;
+	gdpr?: boolean;
+	styling?: "tailwind" | "css-modules" | "styled-components";
+	features?: string[];
 }
 
 export default class MakeDomain {
-  private readonly generators: Map<string, Function>;
-  private readonly aiGenerator: AIGeneratorService;
-  private readonly configManager: ConfigManager;
+	private readonly generators: Map<string, Function>;
+	private readonly aiGenerator: AIGeneratorService;
+	private readonly configManager: ConfigManager;
 
-  constructor() {
-    this.generators = this.initializeGenerators();
-    this.configManager = new ConfigManager();
-    this.aiGenerator = new AIGeneratorService(this.configManager.getConfig());
-  }
+	constructor() {
+		this.generators = this.initializeGenerators();
+		this.configManager = new ConfigManager();
+		this.aiGenerator = new AIGeneratorService(this.configManager.getConfig());
+	}
 
-  private initializeGenerators(): Map<string, Function> {
-    const generators = new Map<string, Function>();
-    
-    // Model generators
-    generators.set('model', this.makeModel.bind(this));
-    generators.set('migration', this.makeMigration.bind(this));
-    generators.set('seeder', this.makeSeeder.bind(this));
-    generators.set('factory', this.makeFactory.bind(this));
-    
-    // Controller generators
-    generators.set('controller', this.makeController.bind(this));
-    generators.set('request', this.makeRequest.bind(this));
-    generators.set('resource', this.makeResource.bind(this));
-    generators.set('middleware', this.makeMiddleware.bind(this));
-    
-    // Frontend generators
-    generators.set('component', this.makeComponent.bind(this));
-    generators.set('page', this.makePage.bind(this));
-    generators.set('layout', this.makeLayout.bind(this));
-    
-    // Service layer generators
-    generators.set('service', this.makeService.bind(this));
-    generators.set('repository', this.makeRepository.bind(this));
-    generators.set('provider', this.makeProvider.bind(this));
-    
-    // Job & Event generators
-    generators.set('job', this.makeJob.bind(this));
-    generators.set('event', this.makeEvent.bind(this));
-    generators.set('listener', this.makeListener.bind(this));
-    generators.set('observer', this.makeObserver.bind(this));
-    
-    // Testing generators
-    generators.set('test', this.makeTest.bind(this));
-    generators.set('unit-test', this.makeUnitTest.bind(this));
-    generators.set('feature-test', this.makeFeatureTest.bind(this));
-    
-    // Special generators
-    generators.set('crud', this.makeCrud.bind(this));
-    generators.set('api-resource', this.makeApiResource.bind(this));
-    generators.set('feature', this.makeFeature.bind(this));
-    
-    // AI-specific generators
-    generators.set('analyze', this.makeAnalyze.bind(this));
-    
-    return generators;
-  }
+	private initializeGenerators(): Map<string, Function> {
+		const generators = new Map<string, Function>();
 
-  /**
-   * Main entry point for make commands
-   * Follows Laravel's pattern: make:type Name [options]
-   */
-  async execute(command: CLICommand): Promise<void> {
-    // Parse make:type format
-    const makeType = command.action; // e.g., "model", "controller"
-    const name = command.target;
-    const options = command.options as MakeOptions;
+		// Model generators
+		generators.set("model", this.makeModel.bind(this));
+		generators.set("migration", this.makeMigration.bind(this));
+		generators.set("seeder", this.makeSeeder.bind(this));
+		generators.set("factory", this.makeFactory.bind(this));
 
-    if (!makeType || !this.generators.has(makeType)) {
-      this.showAvailableGenerators();
-      return;
-    }
+		// Controller generators
+		generators.set("controller", this.makeController.bind(this));
+		generators.set("request", this.makeRequest.bind(this));
+		generators.set("resource", this.makeResource.bind(this));
+		generators.set("middleware", this.makeMiddleware.bind(this));
 
-    if (!name) {
-      logger.error(`Name is required for make:${makeType}`);
-      this.showUsageExample(makeType);
-      return;
-    }
+		// Frontend generators
+		generators.set("component", this.makeComponent.bind(this));
+		generators.set("page", this.makePage.bind(this));
+		generators.set("layout", this.makeLayout.bind(this));
 
-    // Execute the appropriate generator
-    const generator = this.generators.get(makeType)!;
-    await generator(name, options);
-  }
+		// Service layer generators
+		generators.set("service", this.makeService.bind(this));
+		generators.set("repository", this.makeRepository.bind(this));
+		generators.set("provider", this.makeProvider.bind(this));
 
-  /**
-   * Make Model - Creates a model with optional related files
-   * Usage: xaheen make:model User --migration --controller --resource
-   */
-  private async makeModel(name: string, options: MakeOptions): Promise<void> {
-    const startTime = Date.now();
-    
-    logger.info(chalk.green('Creating model...'));
-    
-    // Generate model file
-    const modelPath = await this.generateModel(name);
-    logger.success(`  ${chalk.green('✓')} Model created: ${chalk.dim(modelPath)}`);
+		// Job & Event generators
+		generators.set("job", this.makeJob.bind(this));
+		generators.set("event", this.makeEvent.bind(this));
+		generators.set("listener", this.makeListener.bind(this));
+		generators.set("observer", this.makeObserver.bind(this));
 
-    // Handle --all flag (creates everything)
-    if (options.all) {
-      options.migration = true;
-      options.factory = true;
-      options.seeder = true;
-      options.controller = true;
-      options.resource = true;
-    }
+		// Testing generators
+		generators.set("test", this.makeTest.bind(this));
+		generators.set("unit-test", this.makeUnitTest.bind(this));
+		generators.set("feature-test", this.makeFeatureTest.bind(this));
 
-    // Generate related files based on options
-    if (options.migration) {
-      const migrationPath = await this.generateMigration(name);
-      logger.success(`  ${chalk.green('✓')} Migration created: ${chalk.dim(migrationPath)}`);
-    }
+		// Special generators
+		generators.set("crud", this.makeCrud.bind(this));
+		generators.set("api-resource", this.makeApiResource.bind(this));
+		generators.set("feature", this.makeFeature.bind(this));
 
-    if (options.factory) {
-      const factoryPath = await this.generateFactory(name);
-      logger.success(`  ${chalk.green('✓')} Factory created: ${chalk.dim(factoryPath)}`);
-    }
+		// AI-specific generators
+		generators.set("analyze", this.makeAnalyze.bind(this));
 
-    if (options.seeder) {
-      const seederPath = await this.generateSeeder(name);
-      logger.success(`  ${chalk.green('✓')} Seeder created: ${chalk.dim(seederPath)}`);
-    }
+		return generators;
+	}
 
-    if (options.controller) {
-      const controllerPath = await this.generateController(name, { 
-        resource: options.resource,
-        api: options.api 
-      });
-      logger.success(`  ${chalk.green('✓')} Controller created: ${chalk.dim(controllerPath)}`);
-    }
+	/**
+	 * Main entry point for make commands
+	 * Follows Laravel's pattern: make:type Name [options]
+	 */
+	async execute(command: CLICommand): Promise<void> {
+		// Parse make:type format
+		const makeType = command.action; // e.g., "model", "controller"
+		const name = command.target;
+		const options = command.options as MakeOptions;
 
-    const elapsed = Date.now() - startTime;
-    logger.info(chalk.gray(`\nCompleted in ${elapsed}ms`));
-  }
+		if (!makeType || !this.generators.has(makeType)) {
+			this.showAvailableGenerators();
+			return;
+		}
 
-  /**
-   * Make Controller - Creates a controller with optional resource methods
-   * Usage: xaheen make:controller UserController --resource --api
-   */
-  private async makeController(name: string, options: MakeOptions): Promise<void> {
-    const controllerPath = await this.generateController(name, options);
-    logger.success(`Controller created successfully: ${chalk.cyan(controllerPath)}`);
-    
-    if (options.resource) {
-      logger.info(chalk.gray('  Resource methods: index, create, store, show, edit, update, destroy'));
-    }
-    
-    if (options.api) {
-      logger.info(chalk.gray('  API methods: index, store, show, update, destroy'));
-    }
-  }
+		if (!name) {
+			logger.error(`Name is required for make:${makeType}`);
+			this.showUsageExample(makeType);
+			return;
+		}
 
-  /**
-   * Make Migration - Creates a database migration file
-   * Usage: xaheen make:migration create_users_table
-   */
-  private async makeMigration(name: string, options: MakeOptions): Promise<void> {
-    const migrationPath = await this.generateMigration(name);
-    logger.success(`Migration created successfully: ${chalk.cyan(migrationPath)}`);
-    logger.info(chalk.gray('\nRun migrations with:'));
-    logger.info(chalk.cyan('  xaheen migrate'));
-  }
+		// Execute the appropriate generator
+		const generator = this.generators.get(makeType)!;
+		await generator(name, options);
+	}
 
-  /**
-   * Make Component - Creates a frontend component
-   * Usage: xaheen make:component UserCard --ai --description "A user profile card with avatar and actions"
-   */
-  private async makeComponent(name: string, options: MakeOptions): Promise<void> {
-    if (options.ai) {
-      // Use AI-powered generation
-      logger.info(chalk.blue('🤖 Using AI-powered component generation...'));
-      
-      const files = await this.aiGenerator.generateComponent(
-        name, 
-        'component',
-        {
-          description: options.description,
-          withTests: options.test,
-          withStories: options.withStories,
-          accessibility: options.accessibility,
-          norwegian: options.norwegian,
-          gdpr: options.gdpr,
-          styling: options.styling,
-          features: options.features
-        }
-      );
-      
-      logger.success(`AI-powered component created with ${files.length} files`);
-      
-    } else {
-      // Use traditional generation
-      const componentPath = await this.generateComponent(name, options);
-      logger.success(`Component created successfully: ${chalk.cyan(componentPath)}`);
-      
-      if (options.test) {
-        const testPath = await this.generateComponentTest(name);
-        logger.success(`Test created: ${chalk.cyan(testPath)}`);
-      }
-    }
-  }
+	/**
+	 * Make Model - Creates a model with optional related files
+	 * Usage: xaheen make:model User --migration --controller --resource
+	 */
+	private async makeModel(name: string, options: MakeOptions): Promise<void> {
+		const startTime = Date.now();
 
-  /**
-   * Make Service - Creates a service class
-   * Usage: xaheen make:service UserService --ai --description "A service for managing user authentication and profiles"
-   */
-  private async makeService(name: string, options: MakeOptions): Promise<void> {
-    if (options.ai) {
-      // Use AI-powered generation
-      logger.info(chalk.blue('🤖 Using AI-powered service generation...'));
-      
-      const files = await this.aiGenerator.generateService(
-        name,
-        'business',
-        {
-          description: options.description,
-          withTests: options.test,
-          features: options.features
-        }
-      );
-      
-      logger.success(`AI-powered service created with ${files.length} files`);
-      
-    } else {
-      // Use traditional generation
-      const servicePath = await this.generateService(name);
-      logger.success(`Service created successfully: ${chalk.cyan(servicePath)}`);
-    }
-  }
+		logger.info(chalk.green("Creating model..."));
 
-  /**
-   * Make CRUD - Creates complete CRUD operations
-   * Usage: xaheen make:crud Product --ai --description "A product management system with inventory tracking"
-   */
-  private async makeCrud(name: string, options: MakeOptions): Promise<void> {
-    if (options.ai) {
-      // Use AI-powered CRUD generation
-      logger.info(chalk.blue('🤖 Using AI-powered CRUD generation...'));
-      
-      const files = await this.aiGenerator.generateCRUD(name, {
-        description: options.description,
-        withTests: options.test,
-        withStories: options.withStories,
-        accessibility: options.accessibility,
-        norwegian: options.norwegian,
-        gdpr: options.gdpr,
-        styling: options.styling,
-        features: options.features
-      });
-      
-      logger.success(`AI-powered CRUD system created with ${files.length} files`);
-      
-    } else {
-      // Use traditional generation
-      logger.info(chalk.green('Creating complete CRUD...'));
-      
-      const files = await this.generateCrud(name, options);
-      
-      files.forEach(file => {
-        logger.success(`  ${chalk.green('✓')} Created: ${chalk.dim(file)}`);
-      });
-      
-      logger.info(chalk.yellow('\n📋 Next steps:'));
-      logger.info('  1. Run migrations: ' + chalk.cyan('xaheen migrate'));
-      logger.info('  2. Add routes to your router');
-      logger.info('  3. Update navigation links');
-    }
-  }
+		// Generate model file
+		const modelPath = await this.generateModel(name);
+		logger.success(
+			`  ${chalk.green("✓")} Model created: ${chalk.dim(modelPath)}`,
+		);
 
-  // Generator implementations
-  private async generateModel(name: string): Promise<string> {
-    const modelName = this.pascalCase(name);
-    const tableName = this.snakeCase(name) + 's';
-    const prismaPath = `./prisma/schema.prisma`;
-    
-    // Generate Prisma model
-    const prismaModel = `
+		// Handle --all flag (creates everything)
+		if (options.all) {
+			options.migration = true;
+			options.factory = true;
+			options.seeder = true;
+			options.controller = true;
+			options.resource = true;
+		}
+
+		// Generate related files based on options
+		if (options.migration) {
+			const migrationPath = await this.generateMigration(name);
+			logger.success(
+				`  ${chalk.green("✓")} Migration created: ${chalk.dim(migrationPath)}`,
+			);
+		}
+
+		if (options.factory) {
+			const factoryPath = await this.generateFactory(name);
+			logger.success(
+				`  ${chalk.green("✓")} Factory created: ${chalk.dim(factoryPath)}`,
+			);
+		}
+
+		if (options.seeder) {
+			const seederPath = await this.generateSeeder(name);
+			logger.success(
+				`  ${chalk.green("✓")} Seeder created: ${chalk.dim(seederPath)}`,
+			);
+		}
+
+		if (options.controller) {
+			const controllerPath = await this.generateController(name, {
+				resource: options.resource,
+				api: options.api,
+			});
+			logger.success(
+				`  ${chalk.green("✓")} Controller created: ${chalk.dim(controllerPath)}`,
+			);
+		}
+
+		const elapsed = Date.now() - startTime;
+		logger.info(chalk.gray(`\nCompleted in ${elapsed}ms`));
+	}
+
+	/**
+	 * Make Controller - Creates a controller with optional resource methods
+	 * Usage: xaheen make:controller UserController --resource --api
+	 */
+	private async makeController(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		const controllerPath = await this.generateController(name, options);
+		logger.success(
+			`Controller created successfully: ${chalk.cyan(controllerPath)}`,
+		);
+
+		if (options.resource) {
+			logger.info(
+				chalk.gray(
+					"  Resource methods: index, create, store, show, edit, update, destroy",
+				),
+			);
+		}
+
+		if (options.api) {
+			logger.info(
+				chalk.gray("  API methods: index, store, show, update, destroy"),
+			);
+		}
+	}
+
+	/**
+	 * Make Migration - Creates a database migration file
+	 * Usage: xaheen make:migration create_users_table
+	 */
+	private async makeMigration(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		const migrationPath = await this.generateMigration(name);
+		logger.success(
+			`Migration created successfully: ${chalk.cyan(migrationPath)}`,
+		);
+		logger.info(chalk.gray("\nRun migrations with:"));
+		logger.info(chalk.cyan("  xaheen migrate"));
+	}
+
+	/**
+	 * Make Component - Creates a frontend component
+	 * Usage: xaheen make:component UserCard --ai --description "A user profile card with avatar and actions"
+	 */
+	private async makeComponent(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		if (options.ai) {
+			// Use AI-powered generation
+			logger.info(chalk.blue("🤖 Using AI-powered component generation..."));
+
+			const files = await this.aiGenerator.generateComponent(
+				name,
+				"component",
+				{
+					description: options.description,
+					withTests: options.test,
+					withStories: options.withStories,
+					accessibility: options.accessibility,
+					norwegian: options.norwegian,
+					gdpr: options.gdpr,
+					styling: options.styling,
+					features: options.features,
+				},
+			);
+
+			logger.success(`AI-powered component created with ${files.length} files`);
+		} else {
+			// Use traditional generation
+			const componentPath = await this.generateComponent(name, options);
+			logger.success(
+				`Component created successfully: ${chalk.cyan(componentPath)}`,
+			);
+
+			if (options.test) {
+				const testPath = await this.generateComponentTest(name);
+				logger.success(`Test created: ${chalk.cyan(testPath)}`);
+			}
+		}
+	}
+
+	/**
+	 * Make Service - Creates a service class
+	 * Usage: xaheen make:service UserService --ai --description "A service for managing user authentication and profiles"
+	 */
+	private async makeService(name: string, options: MakeOptions): Promise<void> {
+		if (options.ai) {
+			// Use AI-powered generation
+			logger.info(chalk.blue("🤖 Using AI-powered service generation..."));
+
+			const files = await this.aiGenerator.generateService(name, "business", {
+				description: options.description,
+				withTests: options.test,
+				features: options.features,
+			});
+
+			logger.success(`AI-powered service created with ${files.length} files`);
+		} else {
+			// Use traditional generation
+			const servicePath = await this.generateService(name);
+			logger.success(
+				`Service created successfully: ${chalk.cyan(servicePath)}`,
+			);
+		}
+	}
+
+	/**
+	 * Make CRUD - Creates complete CRUD operations
+	 * Usage: xaheen make:crud Product --ai --description "A product management system with inventory tracking"
+	 */
+	private async makeCrud(name: string, options: MakeOptions): Promise<void> {
+		if (options.ai) {
+			// Use AI-powered CRUD generation
+			logger.info(chalk.blue("🤖 Using AI-powered CRUD generation..."));
+
+			const files = await this.aiGenerator.generateCRUD(name, {
+				description: options.description,
+				withTests: options.test,
+				withStories: options.withStories,
+				accessibility: options.accessibility,
+				norwegian: options.norwegian,
+				gdpr: options.gdpr,
+				styling: options.styling,
+				features: options.features,
+			});
+
+			logger.success(
+				`AI-powered CRUD system created with ${files.length} files`,
+			);
+		} else {
+			// Use traditional generation
+			logger.info(chalk.green("Creating complete CRUD..."));
+
+			const files = await this.generateCrud(name, options);
+
+			files.forEach((file) => {
+				logger.success(`  ${chalk.green("✓")} Created: ${chalk.dim(file)}`);
+			});
+
+			logger.info(chalk.yellow("\n📋 Next steps:"));
+			logger.info("  1. Run migrations: " + chalk.cyan("xaheen migrate"));
+			logger.info("  2. Add routes to your router");
+			logger.info("  3. Update navigation links");
+		}
+	}
+
+	// Generator implementations
+	private async generateModel(name: string): Promise<string> {
+		const modelName = this.pascalCase(name);
+		const tableName = this.snakeCase(name) + "s";
+		const prismaPath = `./prisma/schema.prisma`;
+
+		// Generate Prisma model
+		const prismaModel = `
 model ${modelName} {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -331,21 +359,21 @@ enum Status {
   PENDING
 }`;
 
-    // Append to Prisma schema
-    try {
-      const existingSchema = await fs.readFile(prismaPath, 'utf-8');
-      if (!existingSchema.includes(`model ${modelName}`)) {
-        await fs.writeFile(prismaPath, existingSchema + '\n' + prismaModel);
-        logger.info(`  ${chalk.gray('Added to Prisma schema')}`);
-      }
-    } catch (error) {
-      logger.warn('  Prisma schema not found, creating model file instead');
-      await this.writeFile(`./prisma/models/${modelName}.prisma`, prismaModel);
-    }
+		// Append to Prisma schema
+		try {
+			const existingSchema = await fs.readFile(prismaPath, "utf-8");
+			if (!existingSchema.includes(`model ${modelName}`)) {
+				await fs.writeFile(prismaPath, existingSchema + "\n" + prismaModel);
+				logger.info(`  ${chalk.gray("Added to Prisma schema")}`);
+			}
+		} catch (error) {
+			logger.warn("  Prisma schema not found, creating model file instead");
+			await this.writeFile(`./prisma/models/${modelName}.prisma`, prismaModel);
+		}
 
-    // Generate TypeScript types
-    const typePath = `./src/types/${this.kebabCase(name)}.ts`;
-    const typeContent = `// Auto-generated types for ${modelName}
+		// Generate TypeScript types
+		const typePath = `./src/types/${this.kebabCase(name)}.ts`;
+		const typeContent = `// Auto-generated types for ${modelName}
 import { Prisma, ${modelName} as Prisma${modelName} } from '@prisma/client';
 
 export type ${modelName} = Prisma${modelName};
@@ -369,22 +397,25 @@ export interface ${modelName}Response {
   };
 }`;
 
-    await this.writeFile(typePath, typeContent);
-    
-    return prismaPath;
-  }
+		await this.writeFile(typePath, typeContent);
 
-  private async generateController(name: string, options: any): Promise<string> {
-    const resourceName = name.replace(/Controller$/i, '');
-    const modelName = this.pascalCase(resourceName);
-    const routeName = this.kebabCase(resourceName) + 's';
-    
-    // Generate Next.js App Router API routes
-    const apiDir = `./src/app/api/${routeName}`;
-    
-    // Route handler for collection (GET all, POST create)
-    const routeHandlerPath = `${apiDir}/route.ts`;
-    const routeHandlerContent = `import { NextRequest, NextResponse } from 'next/server';
+		return prismaPath;
+	}
+
+	private async generateController(
+		name: string,
+		options: any,
+	): Promise<string> {
+		const resourceName = name.replace(/Controller$/i, "");
+		const modelName = this.pascalCase(resourceName);
+		const routeName = this.kebabCase(resourceName) + "s";
+
+		// Generate Next.js App Router API routes
+		const apiDir = `./src/app/api/${routeName}`;
+
+		// Route handler for collection (GET all, POST create)
+		const routeHandlerPath = `${apiDir}/route.ts`;
+		const routeHandlerContent = `import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ${modelName}Schema } from '@/lib/validations/${this.kebabCase(resourceName)}';
 import { z } from 'zod';
@@ -464,12 +495,12 @@ export async function POST(request: NextRequest) {
     );
   }
 }`;
-    
-    await this.writeFile(routeHandlerPath, routeHandlerContent);
-    
-    // Route handler for individual items (GET one, PUT update, DELETE)
-    const itemRoutePath = `${apiDir}/[id]/route.ts`;
-    const itemRouteContent = `import { NextRequest, NextResponse } from 'next/server';
+
+		await this.writeFile(routeHandlerPath, routeHandlerContent);
+
+		// Route handler for individual items (GET one, PUT update, DELETE)
+		const itemRoutePath = `${apiDir}/[id]/route.ts`;
+		const itemRouteContent = `import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ${modelName}UpdateSchema } from '@/lib/validations/${this.kebabCase(resourceName)}';
 import { z } from 'zod';
@@ -553,12 +584,12 @@ export async function DELETE(
     );
   }
 }`;
-    
-    await this.writeFile(itemRoutePath, itemRouteContent);
-    
-    // Generate validation schema
-    const validationPath = `./src/lib/validations/${this.kebabCase(resourceName)}.ts`;
-    const validationContent = `import { z } from 'zod';
+
+		await this.writeFile(itemRoutePath, itemRouteContent);
+
+		// Generate validation schema
+		const validationPath = `./src/lib/validations/${this.kebabCase(resourceName)}.ts`;
+		const validationContent = `import { z } from 'zod';
 
 export const ${modelName}Schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -570,21 +601,27 @@ export const ${modelName}UpdateSchema = ${modelName}Schema.partial();
 
 export type ${modelName}Input = z.infer<typeof ${modelName}Schema>;
 export type ${modelName}UpdateInput = z.infer<typeof ${modelName}UpdateSchema>;`;
-    
-    await this.writeFile(validationPath, validationContent);
-    
-    return apiDir;
-  }
 
-  private async generateMigration(name: string): Promise<string> {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('-').slice(0, -1).join('');
-    const fileName = `${timestamp}_${this.snakeCase(name)}.ts`;
-    const migrationPath = `./database/migrations/${fileName}`;
-    
-    const tableName = this.extractTableName(name);
-    const isCreate = name.toLowerCase().includes('create');
-    
-    const content = isCreate ? `import { Migration } from '@/core/migration';
+		await this.writeFile(validationPath, validationContent);
+
+		return apiDir;
+	}
+
+	private async generateMigration(name: string): Promise<string> {
+		const timestamp = new Date()
+			.toISOString()
+			.replace(/[:.]/g, "-")
+			.split("-")
+			.slice(0, -1)
+			.join("");
+		const fileName = `${timestamp}_${this.snakeCase(name)}.ts`;
+		const migrationPath = `./database/migrations/${fileName}`;
+
+		const tableName = this.extractTableName(name);
+		const isCreate = name.toLowerCase().includes("create");
+
+		const content = isCreate
+			? `import { Migration } from '@/core/migration';
 
 export class ${this.pascalCase(name)} extends Migration {
   async up(): Promise<void> {
@@ -597,7 +634,8 @@ export class ${this.pascalCase(name)} extends Migration {
   async down(): Promise<void> {
     await this.schema.dropTable('${tableName}');
   }
-}` : `import { Migration } from '@/core/migration';
+}`
+			: `import { Migration } from '@/core/migration';
 
 export class ${this.pascalCase(name)} extends Migration {
   async up(): Promise<void> {
@@ -612,17 +650,17 @@ export class ${this.pascalCase(name)} extends Migration {
     });
   }
 }`;
-    
-    await this.writeFile(migrationPath, content);
-    return migrationPath;
-  }
 
-  private async generateFactory(name: string): Promise<string> {
-    const modelName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const factoryPath = `./database/factories/${fileName}.factory.ts`;
-    
-    const content = `import { Factory } from '@/core/factory';
+		await this.writeFile(migrationPath, content);
+		return migrationPath;
+	}
+
+	private async generateFactory(name: string): Promise<string> {
+		const modelName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const factoryPath = `./database/factories/${fileName}.factory.ts`;
+
+		const content = `import { Factory } from '@/core/factory';
 import { ${modelName} } from '@/models/${fileName}.model';
 import { faker } from '@faker-js/faker';
 
@@ -638,17 +676,17 @@ export class ${modelName}Factory extends Factory<${modelName}> {
     };
   }
 }`;
-    
-    await this.writeFile(factoryPath, content);
-    return factoryPath;
-  }
 
-  private async generateSeeder(name: string): Promise<string> {
-    const seederName = this.pascalCase(name) + 'Seeder';
-    const fileName = this.kebabCase(name) + '.seeder';
-    const seederPath = `./database/seeders/${fileName}.ts`;
-    
-    const content = `import { Seeder } from '@/core/seeder';
+		await this.writeFile(factoryPath, content);
+		return factoryPath;
+	}
+
+	private async generateSeeder(name: string): Promise<string> {
+		const seederName = this.pascalCase(name) + "Seeder";
+		const fileName = this.kebabCase(name) + ".seeder";
+		const seederPath = `./database/seeders/${fileName}.ts`;
+
+		const content = `import { Seeder } from '@/core/seeder';
 import { ${this.pascalCase(name)}Factory } from '@/database/factories/${this.kebabCase(name)}.factory';
 
 export class ${seederName} extends Seeder {
@@ -659,17 +697,17 @@ export class ${seederName} extends Seeder {
     console.log('✓ ${seederName} completed');
   }
 }`;
-    
-    await this.writeFile(seederPath, content);
-    return seederPath;
-  }
 
-  private async generateComponent(name: string, options: any): Promise<string> {
-    const componentName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const componentPath = `./src/components/${fileName}.tsx`;
-    
-    const content = `'use client';
+		await this.writeFile(seederPath, content);
+		return seederPath;
+	}
+
+	private async generateComponent(name: string, options: any): Promise<string> {
+		const componentName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const componentPath = `./src/components/${fileName}.tsx`;
+
+		const content = `'use client';
 
 import React from 'react';
 import { 
@@ -703,17 +741,17 @@ export const ${componentName}: React.FC<${componentName}Props> = ({
 ${componentName}.displayName = '${componentName}';
 
 export default ${componentName};`;
-    
-    await this.writeFile(componentPath, content);
-    return componentPath;
-  }
 
-  private async generateComponentTest(name: string): Promise<string> {
-    const componentName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const testPath = `./src/components/__tests__/${fileName}.test.tsx`;
-    
-    const content = `import React from 'react';
+		await this.writeFile(componentPath, content);
+		return componentPath;
+	}
+
+	private async generateComponentTest(name: string): Promise<string> {
+		const componentName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const testPath = `./src/components/__tests__/${fileName}.test.tsx`;
+
+		const content = `import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ${componentName} } from '../${fileName}';
 
@@ -725,17 +763,17 @@ describe('${componentName}', () => {
   
   // Add more tests here
 });`;
-    
-    await this.writeFile(testPath, content);
-    return testPath;
-  }
 
-  private async generateService(name: string): Promise<string> {
-    const serviceName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const servicePath = `./src/services/${fileName}.service.ts`;
-    
-    const content = `import { Service } from '@/core/service';
+		await this.writeFile(testPath, content);
+		return testPath;
+	}
+
+	private async generateService(name: string): Promise<string> {
+		const serviceName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const servicePath = `./src/services/${fileName}.service.ts`;
+
+		const content = `import { Service } from '@/core/service';
 
 export class ${serviceName} extends Service {
   /**
@@ -765,51 +803,55 @@ export class ${serviceName} extends Service {
     // Implementation here
   }
 }`;
-    
-    await this.writeFile(servicePath, content);
-    return servicePath;
-  }
 
-  private async generateCrud(name: string, options: any): Promise<string[]> {
-    const files: string[] = [];
-    const modelName = this.pascalCase(name);
-    
-    logger.info(chalk.gray(`\n  Generating full-stack CRUD for ${modelName}...`));
-    
-    // 1. Database layer (Prisma)
-    logger.info(chalk.gray('  📦 Database layer...'));
-    files.push(await this.generateModel(name));
-    
-    // 2. API layer (Next.js API routes)
-    logger.info(chalk.gray('  🔌 API layer...'));
-    files.push(await this.generateController(name, { resource: true, api: true }));
-    
-    // 3. Frontend components
-    logger.info(chalk.gray('  🎨 UI components...'));
-    files.push(await this.generatePage(name));
-    files.push(await this.generateFormComponent(name));
-    files.push(await this.generateTableComponent(name));
-    
-    // 4. Hooks for data fetching
-    logger.info(chalk.gray('  🔗 React hooks...'));
-    files.push(await this.generateHook(name));
-    
-    // 5. Generate factory and seeder for testing
-    if (options.test || options.seed) {
-      logger.info(chalk.gray('  🧪 Test utilities...'));
-      files.push(await this.generateFactory(name));
-      files.push(await this.generateSeeder(name));
-    }
-    
-    return files;
-  }
+		await this.writeFile(servicePath, content);
+		return servicePath;
+	}
 
-  private async generateFormComponent(name: string): Promise<string> {
-    const componentName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const componentPath = `./src/components/${fileName}-form.tsx`;
-    
-    const content = `'use client';
+	private async generateCrud(name: string, options: any): Promise<string[]> {
+		const files: string[] = [];
+		const modelName = this.pascalCase(name);
+
+		logger.info(
+			chalk.gray(`\n  Generating full-stack CRUD for ${modelName}...`),
+		);
+
+		// 1. Database layer (Prisma)
+		logger.info(chalk.gray("  📦 Database layer..."));
+		files.push(await this.generateModel(name));
+
+		// 2. API layer (Next.js API routes)
+		logger.info(chalk.gray("  🔌 API layer..."));
+		files.push(
+			await this.generateController(name, { resource: true, api: true }),
+		);
+
+		// 3. Frontend components
+		logger.info(chalk.gray("  🎨 UI components..."));
+		files.push(await this.generatePage(name));
+		files.push(await this.generateFormComponent(name));
+		files.push(await this.generateTableComponent(name));
+
+		// 4. Hooks for data fetching
+		logger.info(chalk.gray("  🔗 React hooks..."));
+		files.push(await this.generateHook(name));
+
+		// 5. Generate factory and seeder for testing
+		if (options.test || options.seed) {
+			logger.info(chalk.gray("  🧪 Test utilities..."));
+			files.push(await this.generateFactory(name));
+			files.push(await this.generateSeeder(name));
+		}
+
+		return files;
+	}
+
+	private async generateFormComponent(name: string): Promise<string> {
+		const componentName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const componentPath = `./src/components/${fileName}-form.tsx`;
+
+		const content = `'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -910,17 +952,17 @@ export const ${componentName}Form: React.FC<${componentName}FormProps> = ({
     </form>
   );
 };`;
-    
-    await this.writeFile(componentPath, content);
-    return componentPath;
-  }
 
-  private async generateTableComponent(name: string): Promise<string> {
-    const componentName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const componentPath = `./src/components/${fileName}-table.tsx`;
-    
-    const content = `'use client';
+		await this.writeFile(componentPath, content);
+		return componentPath;
+	}
+
+	private async generateTableComponent(name: string): Promise<string> {
+		const componentName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const componentPath = `./src/components/${fileName}-table.tsx`;
+
+		const content = `'use client';
 
 import React from 'react';
 import { 
@@ -1017,18 +1059,18 @@ export const ${componentName}Table: React.FC<${componentName}TableProps> = ({
     </Table>
   );
 };`;
-    
-    await this.writeFile(componentPath, content);
-    return componentPath;
-  }
 
-  private async generateHook(name: string): Promise<string> {
-    const modelName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const routeName = this.pluralize(fileName);
-    const hookPath = `./src/hooks/use-${fileName}.ts`;
-    
-    const content = `import { useState, useEffect, useCallback } from 'react';
+		await this.writeFile(componentPath, content);
+		return componentPath;
+	}
+
+	private async generateHook(name: string): Promise<string> {
+		const modelName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const routeName = this.pluralize(fileName);
+		const hookPath = `./src/hooks/use-${fileName}.ts`;
+
+		const content = `import { useState, useEffect, useCallback } from 'react';
 
 interface ${modelName} {
   id: string;
@@ -1136,17 +1178,17 @@ export function use${modelName}(): Use${modelName}Return {
     deleteItem,
   };
 }`;
-    
-    await this.writeFile(hookPath, content);
-    return hookPath;
-  }
 
-  private async generateRequest(name: string): Promise<string> {
-    const requestName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const requestPath = `./src/requests/${fileName}.request.ts`;
-    
-    const content = `import { Request } from '@/core/request';
+		await this.writeFile(hookPath, content);
+		return hookPath;
+	}
+
+	private async generateRequest(name: string): Promise<string> {
+		const requestName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const requestPath = `./src/requests/${fileName}.request.ts`;
+
+		const content = `import { Request } from '@/core/request';
 import { z } from 'zod';
 
 export class ${requestName} extends Request {
@@ -1158,17 +1200,17 @@ export class ${requestName} extends Request {
     // Custom error messages
   };
 }`;
-    
-    await this.writeFile(requestPath, content);
-    return requestPath;
-  }
 
-  private async generateResource(name: string): Promise<string> {
-    const resourceName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const resourcePath = `./src/resources/${fileName}.resource.ts`;
-    
-    const content = `import { Resource } from '@/core/resource';
+		await this.writeFile(requestPath, content);
+		return requestPath;
+	}
+
+	private async generateResource(name: string): Promise<string> {
+		const resourceName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const resourcePath = `./src/resources/${fileName}.resource.ts`;
+
+		const content = `import { Resource } from '@/core/resource';
 
 export class ${resourceName}Resource extends Resource {
   toArray(): any {
@@ -1180,18 +1222,18 @@ export class ${resourceName}Resource extends Resource {
     };
   }
 }`;
-    
-    await this.writeFile(resourcePath, content);
-    return resourcePath;
-  }
 
-  private async generatePage(name: string): Promise<string> {
-    const pageName = this.pascalCase(name);
-    const fileName = this.kebabCase(name);
-    const routeName = this.pluralize(fileName);
-    const pagePath = `./src/app/${routeName}/page.tsx`;
-    
-    const content = `'use client';
+		await this.writeFile(resourcePath, content);
+		return resourcePath;
+	}
+
+	private async generatePage(name: string): Promise<string> {
+		const pageName = this.pascalCase(name);
+		const fileName = this.kebabCase(name);
+		const routeName = this.pluralize(fileName);
+		const pagePath = `./src/app/${routeName}/page.tsx`;
+
+		const content = `'use client';
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -1342,218 +1384,291 @@ export default function ${pageName}Page() {
     </Container>
   );
 }`;
-    
-    await this.writeFile(pagePath, content);
-    return pagePath;
-  }
 
-  // Stub methods for remaining generators
-  private async makeSeeder(name: string, options: MakeOptions): Promise<void> {
-    const seederPath = await this.generateSeeder(name);
-    logger.success(`Seeder created successfully: ${chalk.cyan(seederPath)}`);
-  }
+		await this.writeFile(pagePath, content);
+		return pagePath;
+	}
 
-  private async makeFactory(name: string, options: MakeOptions): Promise<void> {
-    const factoryPath = await this.generateFactory(name);
-    logger.success(`Factory created successfully: ${chalk.cyan(factoryPath)}`);
-  }
+	// Stub methods for remaining generators
+	private async makeSeeder(name: string, options: MakeOptions): Promise<void> {
+		const seederPath = await this.generateSeeder(name);
+		logger.success(`Seeder created successfully: ${chalk.cyan(seederPath)}`);
+	}
 
-  private async makeRequest(name: string, options: MakeOptions): Promise<void> {
-    const requestPath = await this.generateRequest(name);
-    logger.success(`Request created successfully: ${chalk.cyan(requestPath)}`);
-  }
+	private async makeFactory(name: string, options: MakeOptions): Promise<void> {
+		const factoryPath = await this.generateFactory(name);
+		logger.success(`Factory created successfully: ${chalk.cyan(factoryPath)}`);
+	}
 
-  private async makeResource(name: string, options: MakeOptions): Promise<void> {
-    const resourcePath = await this.generateResource(name);
-    logger.success(`Resource created successfully: ${chalk.cyan(resourcePath)}`);
-  }
+	private async makeRequest(name: string, options: MakeOptions): Promise<void> {
+		const requestPath = await this.generateRequest(name);
+		logger.success(`Request created successfully: ${chalk.cyan(requestPath)}`);
+	}
 
-  private async makeMiddleware(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Middleware generator coming soon...');
-  }
+	private async makeResource(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		const resourcePath = await this.generateResource(name);
+		logger.success(
+			`Resource created successfully: ${chalk.cyan(resourcePath)}`,
+		);
+	}
 
-  private async makePage(name: string, options: MakeOptions): Promise<void> {
-    const pagePath = await this.generatePage(name);
-    logger.success(`Page created successfully: ${chalk.cyan(pagePath)}`);
-  }
+	private async makeMiddleware(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Middleware generator coming soon...");
+	}
 
-  private async makeLayout(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Layout generator coming soon...');
-  }
+	private async makePage(name: string, options: MakeOptions): Promise<void> {
+		const pagePath = await this.generatePage(name);
+		logger.success(`Page created successfully: ${chalk.cyan(pagePath)}`);
+	}
 
-  private async makeRepository(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Repository generator coming soon...');
-  }
+	private async makeLayout(name: string, options: MakeOptions): Promise<void> {
+		logger.info("Layout generator coming soon...");
+	}
 
-  private async makeProvider(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Provider generator coming soon...');
-  }
+	private async makeRepository(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Repository generator coming soon...");
+	}
 
-  private async makeJob(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Job generator coming soon...');
-  }
+	private async makeProvider(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Provider generator coming soon...");
+	}
 
-  private async makeEvent(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Event generator coming soon...');
-  }
+	private async makeJob(name: string, options: MakeOptions): Promise<void> {
+		logger.info("Job generator coming soon...");
+	}
 
-  private async makeListener(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Listener generator coming soon...');
-  }
+	private async makeEvent(name: string, options: MakeOptions): Promise<void> {
+		logger.info("Event generator coming soon...");
+	}
 
-  private async makeObserver(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Observer generator coming soon...');
-  }
+	private async makeListener(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Listener generator coming soon...");
+	}
 
-  private async makeTest(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Test generator coming soon...');
-  }
+	private async makeObserver(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Observer generator coming soon...");
+	}
 
-  private async makeUnitTest(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Unit test generator coming soon...');
-  }
+	private async makeTest(name: string, options: MakeOptions): Promise<void> {
+		logger.info("Test generator coming soon...");
+	}
 
-  private async makeFeatureTest(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Feature test generator coming soon...');
-  }
+	private async makeUnitTest(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Unit test generator coming soon...");
+	}
 
-  private async makeApiResource(name: string, options: MakeOptions): Promise<void> {
-    logger.info('API resource generator coming soon...');
-  }
+	private async makeFeatureTest(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("Feature test generator coming soon...");
+	}
 
-  private async makeFeature(name: string, options: MakeOptions): Promise<void> {
-    logger.info('Feature generator coming soon...');
-  }
+	private async makeApiResource(
+		name: string,
+		options: MakeOptions,
+	): Promise<void> {
+		logger.info("API resource generator coming soon...");
+	}
 
-  /**
-   * Make Analyze - AI code analysis
-   * Usage: xaheen make:analyze src/components/UserCard.tsx
-   */
-  private async makeAnalyze(filePath: string, options: MakeOptions): Promise<void> {
-    if (!filePath) {
-      logger.error('File path is required for analysis');
-      logger.info(chalk.gray('Example: xaheen make:analyze src/components/UserCard.tsx'));
-      return;
-    }
+	private async makeFeature(name: string, options: MakeOptions): Promise<void> {
+		logger.info("Feature generator coming soon...");
+	}
 
-    try {
-      await this.aiGenerator.analyzeCode(filePath);
-    } catch (error) {
-      logger.error(`Failed to analyze code: ${error}`);
-    }
-  }
+	/**
+	 * Make Analyze - AI code analysis
+	 * Usage: xaheen make:analyze src/components/UserCard.tsx
+	 */
+	private async makeAnalyze(
+		filePath: string,
+		options: MakeOptions,
+	): Promise<void> {
+		if (!filePath) {
+			logger.error("File path is required for analysis");
+			logger.info(
+				chalk.gray("Example: xaheen make:analyze src/components/UserCard.tsx"),
+			);
+			return;
+		}
 
-  // Helper methods
-  private async writeFile(filePath: string, content: string): Promise<void> {
-    const dir = path.dirname(filePath);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(filePath, content);
-  }
+		try {
+			await this.aiGenerator.analyzeCode(filePath);
+		} catch (error) {
+			logger.error(`Failed to analyze code: ${error}`);
+		}
+	}
 
-  private showAvailableGenerators(): void {
-    logger.info(chalk.yellow('\n📚 Available make commands:\n'));
-    
-    const commands = [
-      { cmd: 'make:model User --migration --controller --resource', desc: 'Create a model class' },
-      { cmd: 'make:controller UserController --resource', desc: 'Create a controller class' },
-      { cmd: 'make:migration create_users_table', desc: 'Create a migration file' },
-      { cmd: 'make:seeder UserSeeder', desc: 'Create a seeder class' },
-      { cmd: 'make:factory UserFactory', desc: 'Create a model factory' },
-      { cmd: 'make:request StoreUserRequest', desc: 'Create a form request' },
-      { cmd: 'make:resource UserResource', desc: 'Create a resource class' },
-      { cmd: 'make:service UserService', desc: 'Create a service class' },
-      { cmd: 'make:component UserCard', desc: 'Create a React component' },
-      { cmd: 'make:page users/index', desc: 'Create a page component' },
-      { cmd: 'make:crud Product --api', desc: 'Create complete CRUD' },
-    ];
-    
-    commands.forEach(({ cmd, desc }) => {
-      logger.info(`  ${chalk.cyan(cmd.padEnd(50))} ${chalk.gray(desc)}`);
-    });
-    
-    logger.info(chalk.blue('\n🤖 AI-Enhanced Commands (add --ai flag):'));
-    const aiCommands = [
-      { cmd: 'make:component UserCard --ai --description "Card component with avatar"', desc: 'AI-powered component' },
-      { cmd: 'make:service AuthService --ai --description "JWT authentication service"', desc: 'AI-powered service' },
-      { cmd: 'make:crud Product --ai --description "E-commerce product manager"', desc: 'AI-powered CRUD system' },
-      { cmd: 'make:analyze src/components/UserCard.tsx', desc: 'AI code analysis & suggestions' },
-    ];
-    
-    aiCommands.forEach(({ cmd, desc }) => {
-      logger.info(`  ${chalk.magenta(cmd.padEnd(65))} ${chalk.gray(desc)}`);
-    });
-    
-    logger.info(chalk.blue('\n💡 AI Options:'));
-    logger.info(`  ${chalk.dim('--ai')}                    Enable AI-powered generation`);
-    logger.info(`  ${chalk.dim('--description "..."')}      Describe what you want to build`);
-    logger.info(`  ${chalk.dim('--test')}                  Generate unit tests`);
-    logger.info(`  ${chalk.dim('--withStories')}           Generate Storybook stories`);
-    logger.info(`  ${chalk.dim('--accessibility AAA')}     Set accessibility level (A/AA/AAA)`);
-    logger.info(`  ${chalk.dim('--norwegian')}             Enable Norwegian compliance`);
-    logger.info(`  ${chalk.dim('--gdpr')}                  Enable GDPR compliance`);
-    
-    logger.info(chalk.gray('\nFor more information, run: xaheen help make:<command>'));
-  }
+	// Helper methods
+	private async writeFile(filePath: string, content: string): Promise<void> {
+		const dir = path.dirname(filePath);
+		await fs.mkdir(dir, { recursive: true });
+		await fs.writeFile(filePath, content);
+	}
 
-  private showUsageExample(type: string): void {
-    const examples: Record<string, string> = {
-      model: 'xaheen make:model User --migration --controller --resource',
-      controller: 'xaheen make:controller UserController --resource --api',
-      migration: 'xaheen make:migration create_users_table',
-      component: 'xaheen make:component UserCard --typescript',
-      service: 'xaheen make:service UserService',
-    };
-    
-    if (examples[type]) {
-      logger.info(chalk.gray(`\nExample: ${examples[type]}`));
-    }
-  }
+	private showAvailableGenerators(): void {
+		logger.info(chalk.yellow("\n📚 Available make commands:\n"));
 
-  private extractTableName(migrationName: string): string {
-    // Extract table name from migration name
-    // create_users_table -> users
-    // add_email_to_users -> users
-    const match = migrationName.match(/(?:create_)?(\w+)(?:_table)?|(?:to_)(\w+)/);
-    return match ? (match[1] || match[2]) : 'table';
-  }
+		const commands = [
+			{
+				cmd: "make:model User --migration --controller --resource",
+				desc: "Create a model class",
+			},
+			{
+				cmd: "make:controller UserController --resource",
+				desc: "Create a controller class",
+			},
+			{
+				cmd: "make:migration create_users_table",
+				desc: "Create a migration file",
+			},
+			{ cmd: "make:seeder UserSeeder", desc: "Create a seeder class" },
+			{ cmd: "make:factory UserFactory", desc: "Create a model factory" },
+			{ cmd: "make:request StoreUserRequest", desc: "Create a form request" },
+			{ cmd: "make:resource UserResource", desc: "Create a resource class" },
+			{ cmd: "make:service UserService", desc: "Create a service class" },
+			{ cmd: "make:component UserCard", desc: "Create a React component" },
+			{ cmd: "make:page users/index", desc: "Create a page component" },
+			{ cmd: "make:crud Product --api", desc: "Create complete CRUD" },
+		];
 
-  // String transformation utilities
-  private pascalCase(str: string): string {
-    return str
-      .replace(/[-_\s]+(.)?/g, (_, char) => char ? char.toUpperCase() : '')
-      .replace(/^(.)/, (_, char) => char.toUpperCase());
-  }
+		commands.forEach(({ cmd, desc }) => {
+			logger.info(`  ${chalk.cyan(cmd.padEnd(50))} ${chalk.gray(desc)}`);
+		});
 
-  private camelCase(str: string): string {
-    return str
-      .replace(/[-_\s]+(.)?/g, (_, char) => char ? char.toUpperCase() : '')
-      .replace(/^(.)/, (_, char) => char.toLowerCase());
-  }
+		logger.info(chalk.blue("\n🤖 AI-Enhanced Commands (add --ai flag):"));
+		const aiCommands = [
+			{
+				cmd: 'make:component UserCard --ai --description "Card component with avatar"',
+				desc: "AI-powered component",
+			},
+			{
+				cmd: 'make:service AuthService --ai --description "JWT authentication service"',
+				desc: "AI-powered service",
+			},
+			{
+				cmd: 'make:crud Product --ai --description "E-commerce product manager"',
+				desc: "AI-powered CRUD system",
+			},
+			{
+				cmd: "make:analyze src/components/UserCard.tsx",
+				desc: "AI code analysis & suggestions",
+			},
+		];
 
-  private kebabCase(str: string): string {
-    return str
-      .replace(/([A-Z])/g, '-$1')
-      .toLowerCase()
-      .replace(/^-/, '')
-      .replace(/\s+/g, '-');
-  }
+		aiCommands.forEach(({ cmd, desc }) => {
+			logger.info(`  ${chalk.magenta(cmd.padEnd(65))} ${chalk.gray(desc)}`);
+		});
 
-  private snakeCase(str: string): string {
-    return str
-      .replace(/([A-Z])/g, '_$1')
-      .toLowerCase()
-      .replace(/^_/, '')
-      .replace(/\s+/g, '_');
-  }
+		logger.info(chalk.blue("\n💡 AI Options:"));
+		logger.info(
+			`  ${chalk.dim("--ai")}                    Enable AI-powered generation`,
+		);
+		logger.info(
+			`  ${chalk.dim('--description "..."')}      Describe what you want to build`,
+		);
+		logger.info(
+			`  ${chalk.dim("--test")}                  Generate unit tests`,
+		);
+		logger.info(
+			`  ${chalk.dim("--withStories")}           Generate Storybook stories`,
+		);
+		logger.info(
+			`  ${chalk.dim("--accessibility AAA")}     Set accessibility level (A/AA/AAA)`,
+		);
+		logger.info(
+			`  ${chalk.dim("--norwegian")}             Enable Norwegian compliance`,
+		);
+		logger.info(
+			`  ${chalk.dim("--gdpr")}                  Enable GDPR compliance`,
+		);
 
-  private pluralize(str: string): string {
-    // Simple pluralization
-    if (str.endsWith('y')) {
-      return str.slice(0, -1) + 'ies';
-    } else if (str.endsWith('s') || str.endsWith('x') || str.endsWith('ch')) {
-      return str + 'es';
-    } else {
-      return str + 's';
-    }
-  }
+		logger.info(
+			chalk.gray("\nFor more information, run: xaheen help make:<command>"),
+		);
+	}
+
+	private showUsageExample(type: string): void {
+		const examples: Record<string, string> = {
+			model: "xaheen make:model User --migration --controller --resource",
+			controller: "xaheen make:controller UserController --resource --api",
+			migration: "xaheen make:migration create_users_table",
+			component: "xaheen make:component UserCard --typescript",
+			service: "xaheen make:service UserService",
+		};
+
+		if (examples[type]) {
+			logger.info(chalk.gray(`\nExample: ${examples[type]}`));
+		}
+	}
+
+	private extractTableName(migrationName: string): string {
+		// Extract table name from migration name
+		// create_users_table -> users
+		// add_email_to_users -> users
+		const match = migrationName.match(
+			/(?:create_)?(\w+)(?:_table)?|(?:to_)(\w+)/,
+		);
+		return match ? match[1] || match[2] : "table";
+	}
+
+	// String transformation utilities
+	private pascalCase(str: string): string {
+		return str
+			.replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ""))
+			.replace(/^(.)/, (_, char) => char.toUpperCase());
+	}
+
+	private camelCase(str: string): string {
+		return str
+			.replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ""))
+			.replace(/^(.)/, (_, char) => char.toLowerCase());
+	}
+
+	private kebabCase(str: string): string {
+		return str
+			.replace(/([A-Z])/g, "-$1")
+			.toLowerCase()
+			.replace(/^-/, "")
+			.replace(/\s+/g, "-");
+	}
+
+	private snakeCase(str: string): string {
+		return str
+			.replace(/([A-Z])/g, "_$1")
+			.toLowerCase()
+			.replace(/^_/, "")
+			.replace(/\s+/g, "_");
+	}
+
+	private pluralize(str: string): string {
+		// Simple pluralization
+		if (str.endsWith("y")) {
+			return str.slice(0, -1) + "ies";
+		} else if (str.endsWith("s") || str.endsWith("x") || str.endsWith("ch")) {
+			return str + "es";
+		} else {
+			return str + "s";
+		}
+	}
 }

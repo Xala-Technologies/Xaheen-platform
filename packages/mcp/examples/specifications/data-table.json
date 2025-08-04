@@ -1,843 +1,901 @@
 {
-  "metadata": {
-    "name": "DataTable",
-    "version": "2.1.0",
-    "semanticVersion": "v5.1",
-    "category": "data-display",
-    "subcategory": "table",
-    "description": "Advanced data table component with sorting, filtering, pagination, and Norwegian compliance. Supports complex data structures and accessibility features.",
-    "keywords": ["table", "data", "grid", "sorting", "filtering", "pagination", "norwegian", "accessible"],
-    "maintainer": {
-      "name": "Xala Data Team",
-      "email": "data@xala.no",
-      "team": "Data Visualization"
-    },
-    "stability": "stable",
-    "createdAt": "2024-02-01T09:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["table", "thead", "tbody", "tr", "th", "td", "caption"],
-      "ariaRoles": ["table", "grid", "columnheader", "rowheader", "cell", "row"],
-      "landmarks": true,
-      "headingStructure": true
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "2.1.1 Keyboard",
-        "2.4.6 Headings and Labels",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": false
-    },
-    "norwegian": {
-      "nsmClassification": "RESTRICTED",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": true
-    }
-  },
-  "props": {
-    "schema": {
-      "data": {
-        "type": {
-          "array": {
-            "object": {
-              "id": {
-                "type": { "primitive": "string" },
-                "description": "Unique identifier for row",
-                "required": true
-              }
-            },
-            "strict": false
-          },
-          "constraints": {
-            "minItems": 0,
-            "maxItems": 10000,
-            "uniqueItems": false
-          }
-        },
-        "description": "Array of data objects to display in the table",
-        "required": true,
-        "examples": [
-          {
-            "value": [{ "id": "1", "name": "John Doe", "email": "john@example.com" }],
-            "description": "Simple user data",
-            "context": "Basic usage"
-          }
-        ]
-      },
-      "columns": {
-        "type": {
-          "array": {
-            "object": {
-              "key": {
-                "type": { "primitive": "string" },
-                "description": "Property key from data object",
-                "required": true
-              },
-              "label": {
-                "type": { "primitive": "string" },
-                "description": "Display label for column header",
-                "required": true
-              },
-              "type": {
-                "type": {
-                  "custom": "variant",
-                  "values": ["text", "number", "date", "boolean", "badge", "avatar", "actions"]
-                },
-                "description": "Data type for proper rendering",
-                "required": false
-              },
-              "sortable": {
-                "type": { "primitive": "boolean" },
-                "description": "Whether column can be sorted",
-                "required": false
-              },
-              "filterable": {
-                "type": { "primitive": "boolean" },
-                "description": "Whether column can be filtered",
-                "required": false
-              },
-              "width": {
-                "type": { "primitive": "string" },
-                "description": "Column width (CSS value)",
-                "required": false
-              },
-              "align": {
-                "type": {
-                  "custom": "variant",
-                  "values": ["left", "center", "right"]
-                },
-                "description": "Text alignment",
-                "required": false
-              }
-            }
-          },
-          "constraints": {
-            "minItems": 1,
-            "maxItems": 50
-          }
-        },
-        "description": "Column definitions for the table",
-        "required": true,
-        "examples": [
-          {
-            "value": [{ "key": "name", "label": "Name", "sortable": true }],
-            "description": "Basic column definition",
-            "context": "Simple table"
-          }
-        ]
-      },
-      "sorting": {
-        "type": {
-          "object": {
-            "enabled": {
-              "type": { "primitive": "boolean" },
-              "description": "Enable sorting functionality",
-              "required": false
-            },
-            "defaultSort": {
-              "type": {
-                "object": {
-                  "column": {
-                    "type": { "primitive": "string" },
-                    "description": "Column key to sort by default",
-                    "required": true
-                  },
-                  "direction": {
-                    "type": {
-                      "custom": "variant",
-                      "values": ["asc", "desc"]
-                    },
-                    "description": "Sort direction",
-                    "required": false
-                  }
-                }
-              },
-              "description": "Default sort configuration",
-              "required": false
-            }
-          }
-        },
-        "description": "Sorting configuration for the table",
-        "required": false,
-        "defaultValue": { "enabled": true }
-      },
-      "filtering": {
-        "type": {
-          "object": {
-            "enabled": {
-              "type": { "primitive": "boolean" },
-              "description": "Enable filtering functionality",
-              "required": false
-            },
-            "searchable": {
-              "type": { "primitive": "boolean" },
-              "description": "Enable global search",
-              "required": false
-            },
-            "filters": {
-              "type": {
-                "object": {},
-                "strict": false
-              },
-              "description": "Current filter values",
-              "required": false
-            }
-          }
-        },
-        "description": "Filtering configuration for the table",
-        "required": false,
-        "defaultValue": { "enabled": true, "searchable": true }
-      },
-      "pagination": {
-        "type": {
-          "object": {
-            "enabled": {
-              "type": { "primitive": "boolean" },
-              "description": "Enable pagination",
-              "required": false
-            },
-            "pageSize": {
-              "type": {
-                "primitive": "number",
-                "constraints": {
-                  "minimum": 1,
-                  "maximum": 1000,
-                  "integer": true
-                }
-              },
-              "description": "Number of rows per page",
-              "required": false
-            },
-            "currentPage": {
-              "type": {
-                "primitive": "number",
-                "constraints": {
-                  "minimum": 1,
-                  "integer": true
-                }
-              },
-              "description": "Current page number",
-              "required": false
-            },
-            "showPageSizeSelector": {
-              "type": { "primitive": "boolean" },
-              "description": "Show page size selector",
-              "required": false
-            }
-          }
-        },
-        "description": "Pagination configuration for the table",
-        "required": false,
-        "defaultValue": { "enabled": true, "pageSize": 10, "currentPage": 1 }
-      },
-      "selection": {
-        "type": {
-          "object": {
-            "enabled": {
-              "type": { "primitive": "boolean" },
-              "description": "Enable row selection",
-              "required": false
-            },
-            "multiple": {
-              "type": { "primitive": "boolean" },
-              "description": "Allow multiple row selection",
-              "required": false
-            },
-            "selectedRows": {
-              "type": {
-                "array": { "primitive": "string" }
-              },
-              "description": "Array of selected row IDs",
-              "required": false
-            }
-          }
-        },
-        "description": "Row selection configuration",
-        "required": false,
-        "defaultValue": { "enabled": false, "multiple": false }
-      },
-      "loading": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the table is in a loading state",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-busy",
-          "screenReaderText": "Loading table data"
-        }
-      },
-      "empty": {
-        "type": {
-          "object": {
-            "message": {
-              "type": { "primitive": "string" },
-              "description": "Message to show when no data",
-              "required": false
-            },
-            "icon": {
-              "type": { "primitive": "string" },
-              "description": "Icon to show when empty",
-              "required": false
-            },
-            "action": {
-              "type": {
-                "object": {
-                  "label": {
-                    "type": { "primitive": "string" },
-                    "description": "Action button label",
-                    "required": true
-                  },
-                  "onClick": {
-                    "type": {
-                      "complex": "function",
-                      "signature": {
-                        "parameters": [],
-                        "returnType": "void"
-                      }
-                    },
-                    "description": "Action button handler",
-                    "required": true
-                  }
-                }
-              },
-              "description": "Action to show when empty",
-              "required": false
-            }
-          }
-        },
-        "description": "Empty state configuration",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "table.empty.{componentName}",
-          "context": "empty-state"
-        }
-      },
-      "onSort": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "column",
-                "type": "string",
-                "required": true
-              },
-              {
-                "name": "direction",
-                "type": "'asc' | 'desc'",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Sort change event handler",
-        "required": false
-      },
-      "onFilter": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "filters",
-                "type": "Record<string, unknown>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Filter change event handler",
-        "required": false
-      },
-      "onPageChange": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "page",
-                "type": "number",
-                "required": true
-              },
-              {
-                "name": "pageSize",
-                "type": "number",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Page change event handler",
-        "required": false
-      },
-      "onRowSelect": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "selectedRows",
-                "type": "string[]",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Row selection change event handler",
-        "required": false
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      },
-      "ariaLabel": {
-        "type": { "primitive": "string" },
-        "description": "Accessible label for the table",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Data table"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.table.{componentName}",
-          "context": "accessibility"
-        }
-      },
-      "caption": {
-        "type": { "primitive": "string" },
-        "description": "Table caption for accessibility",
-        "required": false,
-        "accessibility": {
-          "screenReaderText": "Table description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "table.caption.{componentName}",
-          "context": "description"
-        }
-      }
-    },
-    "groups": {
-      "required": ["data", "columns"],
-      "optional": [
-        "sorting", "filtering", "pagination", "selection", "loading", 
-        "empty", "onSort", "onFilter", "onPageChange", "onRowSelect",
-        "className", "testId", "ariaLabel", "caption"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false
-      },
-      "slots": {
-        "header": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom header content"
-        },
-        "footer": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom footer content"
-        },
-        "empty": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom empty state content"
-        },
-        "loading": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom loading indicator"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "size": {
-        "values": {
-          "sm": "text-sm",
-          "md": "text-base",
-          "lg": "text-lg"
-        },
-        "defaultValue": "md"
-      },
-      "density": {
-        "values": {
-          "compact": "py-1 px-2",
-          "comfortable": "py-3 px-4",
-          "spacious": "py-4 px-6"
-        },
-        "defaultValue": "comfortable"
-      },
-      "border": {
-        "values": {
-          "none": "border-0",
-          "horizontal": "border-t border-b",
-          "vertical": "border-l border-r",
-          "all": "border"
-        },
-        "defaultValue": "all"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "size": "sm",
-          "density": "compact"
-        },
-        "className": "text-xs py-1 px-1",
-        "description": "Extra compact small tables"
-      },
-      {
-        "conditions": {
-          "size": "lg",
-          "density": "spacious"
-        },
-        "className": "text-xl py-6 px-8",
-        "description": "Extra spacious large tables"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "table",
-      "additional": ["grid"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move between table elements"
-        },
-        {
-          "key": "Enter",
-          "action": "select",
-          "context": "Select row or activate control"
-        },
-        {
-          "key": "Space",
-          "action": "select",
-          "context": "Toggle row selection"
-        },
-        {
-          "key": "ArrowUp",
-          "action": "navigate",
-          "context": "Move to previous row"
-        },
-        {
-          "key": "ArrowDown",
-          "action": "navigate",
-          "context": "Move to next row"
-        },
-        {
-          "key": "ArrowLeft",
-          "action": "navigate",
-          "context": "Move to previous column"
-        },
-        {
-          "key": "ArrowRight",
-          "action": "navigate",
-          "context": "Move to next column"
-        },
-        {
-          "key": "Home",
-          "action": "navigate",
-          "context": "Move to first cell in row"
-        },
-        {
-          "key": "End",
-          "action": "navigate",
-          "context": "Move to last cell in row"
-        },
-        {
-          "key": "Ctrl+Home",
-          "action": "navigate",
-          "context": "Move to first cell in table"
-        },
-        {
-          "key": "Ctrl+End",
-          "action": "navigate",
-          "context": "Move to last cell in table"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": true,
-        "skipLinks": true
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "sort",
-          "message": "Table sorted by {column} {direction}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "filter",
-          "message": "Table filtered, showing {count} results",
-          "priority": "polite"
-        },
-        {
-          "trigger": "page",
-          "message": "Page {current} of {total}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "select",
-          "message": "{count} rows selected",
-          "priority": "polite"
-        },
-        {
-          "trigger": "loading",
-          "message": "Loading table data",
-          "priority": "assertive"
-        }
-      ],
-      "labels": {
-        "required": ["caption", "aria-label", "columnheaders"],
-        "descriptions": {
-          "sortable": "Column header, sortable",
-          "sorted-asc": "Column sorted ascending",
-          "sorted-desc": "Column sorted descending",
-          "selected": "Row selected",
-          "loading": "Table loading",
-          "empty": "No data available"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "table-structure-valid",
-        "column-headers-accessible",
-        "keyboard-navigation",
-        "screen-reader-announcements",
-        "color-contrast-aaa",
-        "focus-management"
-      ],
-      "manual": [
-        "complex-keyboard-patterns",
-        "screen-reader-experience",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/data-table.tsx",
-        "dependencies": ["react", "@tanstack/react-table", "clsx"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useMemo", "useState", "useCallback"]
-          },
-          {
-            "module": "@tanstack/react-table",
-            "imports": ["useReactTable", "getCoreRowModel", "getSortedRowModel", "getFilteredRowModel", "getPaginationRowModel"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/data-table.vue",
-        "dependencies": ["vue", "@tanstack/vue-table"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/data-table.component.ts",
-        "dependencies": ["@angular/core", "@angular/cdk/table"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Data Table",
-      "description": "Simple table with user data",
-      "category": "basic",
-      "code": {
-        "react": "<DataTable data={users} columns={userColumns} />",
-        "vue": "<DataTable :data='users' :columns='userColumns' />",
-        "angular": "<xala-data-table [data]='users' [columns]='userColumns'></xala-data-table>"
-      },
-      "props": {
-        "data": [
-          { "id": "1", "name": "John Doe", "email": "john@example.com", "role": "Admin" },
-          { "id": "2", "name": "Jane Smith", "email": "jane@example.com", "role": "User" }
-        ],
-        "columns": [
-          { "key": "name", "label": "Name", "sortable": true },
-          { "key": "email", "label": "Email", "sortable": true },
-          { "key": "role", "label": "Role", "filterable": true }
-        ]
-      }
-    },
-    {
-      "name": "Advanced Data Table",
-      "description": "Table with all features enabled",
-      "category": "advanced",
-      "code": {
-        "react": "<DataTable data={data} columns={columns} sorting={{ enabled: true }} filtering={{ enabled: true, searchable: true }} pagination={{ enabled: true, pageSize: 20 }} selection={{ enabled: true, multiple: true }} onSort={handleSort} onFilter={handleFilter} />"
-      },
-      "props": {
-        "sorting": { "enabled": true },
-        "filtering": { "enabled": true, "searchable": true },
-        "pagination": { "enabled": true, "pageSize": 20 },
-        "selection": { "enabled": true, "multiple": true }
-      },
-      "notes": "Full-featured table with Norwegian compliance and accessibility"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use semantic table elements for proper accessibility",
-        "Implement virtual scrolling for large datasets",
-        "Provide keyboard navigation for all interactive elements",
-        "Use proper ARIA attributes for screen readers",
-        "Implement Norwegian data classification when handling sensitive data"
-      ],
-      "patterns": [
-        {
-          "pattern": "@tanstack/react-table",
-          "context": "React implementation",
-          "recommendation": "Use TanStack Table for robust table functionality"
-        },
-        {
-          "pattern": "virtual scrolling",
-          "context": "Large datasets",
-          "recommendation": "Implement virtual scrolling for tables with 1000+ rows"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div-based tables",
-          "reason": "Poor accessibility and semantic meaning",
-          "alternative": "Use proper HTML table elements"
-        },
-        {
-          "pattern": "client-side filtering of large datasets",
-          "reason": "Performance issues and memory consumption",
-          "alternative": "Implement server-side filtering and pagination"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "complex",
-      "estimatedTokens": 3500
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "performance-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with data",
-        "handles sorting",
-        "handles filtering",
-        "handles pagination",
-        "handles selection",
-        "keyboard navigation",
-        "accessibility attributes",
-        "empty state",
-        "loading state",
-        "event callbacks"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "data loading and display",
-        "sorting and filtering workflow",
-        "pagination navigation",
-        "bulk selection operations",
-        "keyboard-only interaction",
-        "screen reader navigation"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "15KB",
-        "gzipped": "5KB"
-      },
-      "renderTime": {
-        "initial": "<50ms (100 rows)",
-        "update": "<20ms (sort/filter)"
-      }
-    },
-    "optimizations": [
-      "Virtual scrolling for large datasets",
-      "Memoized column definitions",
-      "Optimized re-renders",
-      "Lazy loading of non-visible data",
-      "Debounced search and filter inputs"
-    ]
-  }
+	"metadata": {
+		"name": "DataTable",
+		"version": "2.1.0",
+		"semanticVersion": "v5.1",
+		"category": "data-display",
+		"subcategory": "table",
+		"description": "Advanced data table component with sorting, filtering, pagination, and Norwegian compliance. Supports complex data structures and accessibility features.",
+		"keywords": [
+			"table",
+			"data",
+			"grid",
+			"sorting",
+			"filtering",
+			"pagination",
+			"norwegian",
+			"accessible"
+		],
+		"maintainer": {
+			"name": "Xala Data Team",
+			"email": "data@xala.no",
+			"team": "Data Visualization"
+		},
+		"stability": "stable",
+		"createdAt": "2024-02-01T09:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["table", "thead", "tbody", "tr", "th", "td", "caption"],
+			"ariaRoles": [
+				"table",
+				"grid",
+				"columnheader",
+				"rowheader",
+				"cell",
+				"row"
+			],
+			"landmarks": true,
+			"headingStructure": true
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"2.1.1 Keyboard",
+				"2.4.6 Headings and Labels",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": false
+		},
+		"norwegian": {
+			"nsmClassification": "RESTRICTED",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": true
+		}
+	},
+	"props": {
+		"schema": {
+			"data": {
+				"type": {
+					"array": {
+						"object": {
+							"id": {
+								"type": { "primitive": "string" },
+								"description": "Unique identifier for row",
+								"required": true
+							}
+						},
+						"strict": false
+					},
+					"constraints": {
+						"minItems": 0,
+						"maxItems": 10000,
+						"uniqueItems": false
+					}
+				},
+				"description": "Array of data objects to display in the table",
+				"required": true,
+				"examples": [
+					{
+						"value": [
+							{ "id": "1", "name": "John Doe", "email": "john@example.com" }
+						],
+						"description": "Simple user data",
+						"context": "Basic usage"
+					}
+				]
+			},
+			"columns": {
+				"type": {
+					"array": {
+						"object": {
+							"key": {
+								"type": { "primitive": "string" },
+								"description": "Property key from data object",
+								"required": true
+							},
+							"label": {
+								"type": { "primitive": "string" },
+								"description": "Display label for column header",
+								"required": true
+							},
+							"type": {
+								"type": {
+									"custom": "variant",
+									"values": [
+										"text",
+										"number",
+										"date",
+										"boolean",
+										"badge",
+										"avatar",
+										"actions"
+									]
+								},
+								"description": "Data type for proper rendering",
+								"required": false
+							},
+							"sortable": {
+								"type": { "primitive": "boolean" },
+								"description": "Whether column can be sorted",
+								"required": false
+							},
+							"filterable": {
+								"type": { "primitive": "boolean" },
+								"description": "Whether column can be filtered",
+								"required": false
+							},
+							"width": {
+								"type": { "primitive": "string" },
+								"description": "Column width (CSS value)",
+								"required": false
+							},
+							"align": {
+								"type": {
+									"custom": "variant",
+									"values": ["left", "center", "right"]
+								},
+								"description": "Text alignment",
+								"required": false
+							}
+						}
+					},
+					"constraints": {
+						"minItems": 1,
+						"maxItems": 50
+					}
+				},
+				"description": "Column definitions for the table",
+				"required": true,
+				"examples": [
+					{
+						"value": [{ "key": "name", "label": "Name", "sortable": true }],
+						"description": "Basic column definition",
+						"context": "Simple table"
+					}
+				]
+			},
+			"sorting": {
+				"type": {
+					"object": {
+						"enabled": {
+							"type": { "primitive": "boolean" },
+							"description": "Enable sorting functionality",
+							"required": false
+						},
+						"defaultSort": {
+							"type": {
+								"object": {
+									"column": {
+										"type": { "primitive": "string" },
+										"description": "Column key to sort by default",
+										"required": true
+									},
+									"direction": {
+										"type": {
+											"custom": "variant",
+											"values": ["asc", "desc"]
+										},
+										"description": "Sort direction",
+										"required": false
+									}
+								}
+							},
+							"description": "Default sort configuration",
+							"required": false
+						}
+					}
+				},
+				"description": "Sorting configuration for the table",
+				"required": false,
+				"defaultValue": { "enabled": true }
+			},
+			"filtering": {
+				"type": {
+					"object": {
+						"enabled": {
+							"type": { "primitive": "boolean" },
+							"description": "Enable filtering functionality",
+							"required": false
+						},
+						"searchable": {
+							"type": { "primitive": "boolean" },
+							"description": "Enable global search",
+							"required": false
+						},
+						"filters": {
+							"type": {
+								"object": {},
+								"strict": false
+							},
+							"description": "Current filter values",
+							"required": false
+						}
+					}
+				},
+				"description": "Filtering configuration for the table",
+				"required": false,
+				"defaultValue": { "enabled": true, "searchable": true }
+			},
+			"pagination": {
+				"type": {
+					"object": {
+						"enabled": {
+							"type": { "primitive": "boolean" },
+							"description": "Enable pagination",
+							"required": false
+						},
+						"pageSize": {
+							"type": {
+								"primitive": "number",
+								"constraints": {
+									"minimum": 1,
+									"maximum": 1000,
+									"integer": true
+								}
+							},
+							"description": "Number of rows per page",
+							"required": false
+						},
+						"currentPage": {
+							"type": {
+								"primitive": "number",
+								"constraints": {
+									"minimum": 1,
+									"integer": true
+								}
+							},
+							"description": "Current page number",
+							"required": false
+						},
+						"showPageSizeSelector": {
+							"type": { "primitive": "boolean" },
+							"description": "Show page size selector",
+							"required": false
+						}
+					}
+				},
+				"description": "Pagination configuration for the table",
+				"required": false,
+				"defaultValue": { "enabled": true, "pageSize": 10, "currentPage": 1 }
+			},
+			"selection": {
+				"type": {
+					"object": {
+						"enabled": {
+							"type": { "primitive": "boolean" },
+							"description": "Enable row selection",
+							"required": false
+						},
+						"multiple": {
+							"type": { "primitive": "boolean" },
+							"description": "Allow multiple row selection",
+							"required": false
+						},
+						"selectedRows": {
+							"type": {
+								"array": { "primitive": "string" }
+							},
+							"description": "Array of selected row IDs",
+							"required": false
+						}
+					}
+				},
+				"description": "Row selection configuration",
+				"required": false,
+				"defaultValue": { "enabled": false, "multiple": false }
+			},
+			"loading": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the table is in a loading state",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-busy",
+					"screenReaderText": "Loading table data"
+				}
+			},
+			"empty": {
+				"type": {
+					"object": {
+						"message": {
+							"type": { "primitive": "string" },
+							"description": "Message to show when no data",
+							"required": false
+						},
+						"icon": {
+							"type": { "primitive": "string" },
+							"description": "Icon to show when empty",
+							"required": false
+						},
+						"action": {
+							"type": {
+								"object": {
+									"label": {
+										"type": { "primitive": "string" },
+										"description": "Action button label",
+										"required": true
+									},
+									"onClick": {
+										"type": {
+											"complex": "function",
+											"signature": {
+												"parameters": [],
+												"returnType": "void"
+											}
+										},
+										"description": "Action button handler",
+										"required": true
+									}
+								}
+							},
+							"description": "Action to show when empty",
+							"required": false
+						}
+					}
+				},
+				"description": "Empty state configuration",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "table.empty.{componentName}",
+					"context": "empty-state"
+				}
+			},
+			"onSort": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "column",
+								"type": "string",
+								"required": true
+							},
+							{
+								"name": "direction",
+								"type": "'asc' | 'desc'",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Sort change event handler",
+				"required": false
+			},
+			"onFilter": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "filters",
+								"type": "Record<string, unknown>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Filter change event handler",
+				"required": false
+			},
+			"onPageChange": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "page",
+								"type": "number",
+								"required": true
+							},
+							{
+								"name": "pageSize",
+								"type": "number",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Page change event handler",
+				"required": false
+			},
+			"onRowSelect": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "selectedRows",
+								"type": "string[]",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Row selection change event handler",
+				"required": false
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			},
+			"ariaLabel": {
+				"type": { "primitive": "string" },
+				"description": "Accessible label for the table",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Data table"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.table.{componentName}",
+					"context": "accessibility"
+				}
+			},
+			"caption": {
+				"type": { "primitive": "string" },
+				"description": "Table caption for accessibility",
+				"required": false,
+				"accessibility": {
+					"screenReaderText": "Table description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "table.caption.{componentName}",
+					"context": "description"
+				}
+			}
+		},
+		"groups": {
+			"required": ["data", "columns"],
+			"optional": [
+				"sorting",
+				"filtering",
+				"pagination",
+				"selection",
+				"loading",
+				"empty",
+				"onSort",
+				"onFilter",
+				"onPageChange",
+				"onRowSelect",
+				"className",
+				"testId",
+				"ariaLabel",
+				"caption"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false
+			},
+			"slots": {
+				"header": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom header content"
+				},
+				"footer": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom footer content"
+				},
+				"empty": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom empty state content"
+				},
+				"loading": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom loading indicator"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"size": {
+				"values": {
+					"sm": "text-sm",
+					"md": "text-base",
+					"lg": "text-lg"
+				},
+				"defaultValue": "md"
+			},
+			"density": {
+				"values": {
+					"compact": "py-1 px-2",
+					"comfortable": "py-3 px-4",
+					"spacious": "py-4 px-6"
+				},
+				"defaultValue": "comfortable"
+			},
+			"border": {
+				"values": {
+					"none": "border-0",
+					"horizontal": "border-t border-b",
+					"vertical": "border-l border-r",
+					"all": "border"
+				},
+				"defaultValue": "all"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"size": "sm",
+					"density": "compact"
+				},
+				"className": "text-xs py-1 px-1",
+				"description": "Extra compact small tables"
+			},
+			{
+				"conditions": {
+					"size": "lg",
+					"density": "spacious"
+				},
+				"className": "text-xl py-6 px-8",
+				"description": "Extra spacious large tables"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "table",
+			"additional": ["grid"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move between table elements"
+				},
+				{
+					"key": "Enter",
+					"action": "select",
+					"context": "Select row or activate control"
+				},
+				{
+					"key": "Space",
+					"action": "select",
+					"context": "Toggle row selection"
+				},
+				{
+					"key": "ArrowUp",
+					"action": "navigate",
+					"context": "Move to previous row"
+				},
+				{
+					"key": "ArrowDown",
+					"action": "navigate",
+					"context": "Move to next row"
+				},
+				{
+					"key": "ArrowLeft",
+					"action": "navigate",
+					"context": "Move to previous column"
+				},
+				{
+					"key": "ArrowRight",
+					"action": "navigate",
+					"context": "Move to next column"
+				},
+				{
+					"key": "Home",
+					"action": "navigate",
+					"context": "Move to first cell in row"
+				},
+				{
+					"key": "End",
+					"action": "navigate",
+					"context": "Move to last cell in row"
+				},
+				{
+					"key": "Ctrl+Home",
+					"action": "navigate",
+					"context": "Move to first cell in table"
+				},
+				{
+					"key": "Ctrl+End",
+					"action": "navigate",
+					"context": "Move to last cell in table"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": true,
+				"skipLinks": true
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "sort",
+					"message": "Table sorted by {column} {direction}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "filter",
+					"message": "Table filtered, showing {count} results",
+					"priority": "polite"
+				},
+				{
+					"trigger": "page",
+					"message": "Page {current} of {total}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "select",
+					"message": "{count} rows selected",
+					"priority": "polite"
+				},
+				{
+					"trigger": "loading",
+					"message": "Loading table data",
+					"priority": "assertive"
+				}
+			],
+			"labels": {
+				"required": ["caption", "aria-label", "columnheaders"],
+				"descriptions": {
+					"sortable": "Column header, sortable",
+					"sorted-asc": "Column sorted ascending",
+					"sorted-desc": "Column sorted descending",
+					"selected": "Row selected",
+					"loading": "Table loading",
+					"empty": "No data available"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"table-structure-valid",
+				"column-headers-accessible",
+				"keyboard-navigation",
+				"screen-reader-announcements",
+				"color-contrast-aaa",
+				"focus-management"
+			],
+			"manual": [
+				"complex-keyboard-patterns",
+				"screen-reader-experience",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility"
+			]
+		}
+	},
+	"platforms": {
+		"supported": ["react", "vue", "angular"],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/data-table.tsx",
+				"dependencies": ["react", "@tanstack/react-table", "clsx"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["forwardRef", "useMemo", "useState", "useCallback"]
+					},
+					{
+						"module": "@tanstack/react-table",
+						"imports": [
+							"useReactTable",
+							"getCoreRowModel",
+							"getSortedRowModel",
+							"getFilteredRowModel",
+							"getPaginationRowModel"
+						]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/data-table.vue",
+				"dependencies": ["vue", "@tanstack/vue-table"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/data-table.component.ts",
+				"dependencies": ["@angular/core", "@angular/cdk/table"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Data Table",
+			"description": "Simple table with user data",
+			"category": "basic",
+			"code": {
+				"react": "<DataTable data={users} columns={userColumns} />",
+				"vue": "<DataTable :data='users' :columns='userColumns' />",
+				"angular": "<xala-data-table [data]='users' [columns]='userColumns'></xala-data-table>"
+			},
+			"props": {
+				"data": [
+					{
+						"id": "1",
+						"name": "John Doe",
+						"email": "john@example.com",
+						"role": "Admin"
+					},
+					{
+						"id": "2",
+						"name": "Jane Smith",
+						"email": "jane@example.com",
+						"role": "User"
+					}
+				],
+				"columns": [
+					{ "key": "name", "label": "Name", "sortable": true },
+					{ "key": "email", "label": "Email", "sortable": true },
+					{ "key": "role", "label": "Role", "filterable": true }
+				]
+			}
+		},
+		{
+			"name": "Advanced Data Table",
+			"description": "Table with all features enabled",
+			"category": "advanced",
+			"code": {
+				"react": "<DataTable data={data} columns={columns} sorting={{ enabled: true }} filtering={{ enabled: true, searchable: true }} pagination={{ enabled: true, pageSize: 20 }} selection={{ enabled: true, multiple: true }} onSort={handleSort} onFilter={handleFilter} />"
+			},
+			"props": {
+				"sorting": { "enabled": true },
+				"filtering": { "enabled": true, "searchable": true },
+				"pagination": { "enabled": true, "pageSize": 20 },
+				"selection": { "enabled": true, "multiple": true }
+			},
+			"notes": "Full-featured table with Norwegian compliance and accessibility"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use semantic table elements for proper accessibility",
+				"Implement virtual scrolling for large datasets",
+				"Provide keyboard navigation for all interactive elements",
+				"Use proper ARIA attributes for screen readers",
+				"Implement Norwegian data classification when handling sensitive data"
+			],
+			"patterns": [
+				{
+					"pattern": "@tanstack/react-table",
+					"context": "React implementation",
+					"recommendation": "Use TanStack Table for robust table functionality"
+				},
+				{
+					"pattern": "virtual scrolling",
+					"context": "Large datasets",
+					"recommendation": "Implement virtual scrolling for tables with 1000+ rows"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div-based tables",
+					"reason": "Poor accessibility and semantic meaning",
+					"alternative": "Use proper HTML table elements"
+				},
+				{
+					"pattern": "client-side filtering of large datasets",
+					"reason": "Performance issues and memory consumption",
+					"alternative": "Implement server-side filtering and pagination"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "complex",
+			"estimatedTokens": 3500
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"performance-guide"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with data",
+				"handles sorting",
+				"handles filtering",
+				"handles pagination",
+				"handles selection",
+				"keyboard navigation",
+				"accessibility attributes",
+				"empty state",
+				"loading state",
+				"event callbacks"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"data loading and display",
+				"sorting and filtering workflow",
+				"pagination navigation",
+				"bulk selection operations",
+				"keyboard-only interaction",
+				"screen reader navigation"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "15KB",
+				"gzipped": "5KB"
+			},
+			"renderTime": {
+				"initial": "<50ms (100 rows)",
+				"update": "<20ms (sort/filter)"
+			}
+		},
+		"optimizations": [
+			"Virtual scrolling for large datasets",
+			"Memoized column definitions",
+			"Optimized re-renders",
+			"Lazy loading of non-visible data",
+			"Debounced search and filter inputs"
+		]
+	}
 }

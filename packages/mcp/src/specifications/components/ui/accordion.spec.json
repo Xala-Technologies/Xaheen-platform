@@ -1,663 +1,699 @@
 {
-  "metadata": {
-    "name": "Accordion",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "ui",
-    "subcategory": "disclosure",
-    "description": "Comprehensive accordion component with collapsible content sections, multiple expansion modes, keyboard navigation, and Norwegian compliance. Supports single/multiple expansion patterns with full accessibility.",
-    "keywords": ["accordion", "collapse", "disclosure", "expandable", "sections", "navigation", "accessible", "norwegian"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T15:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["div", "button", "h1", "h2", "h3", "h4", "h5", "h6"],
-      "ariaRoles": ["button", "region", "group"],
-      "landmarks": false,
-      "headingStructure": true
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.6 Headings and Labels",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value",
-        "4.1.3 Status Messages"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "items": {
-        "type": {
-          "complex": "array",
-          "itemType": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "required": true,
-                "description": "Unique identifier for the accordion item"
-              },
-              "title": {
-                "type": "string",
-                "required": true,
-                "description": "Title text displayed in the accordion header"
-              },
-              "content": {
-                "type": "node",
-                "required": true,
-                "description": "Content to display when accordion item is expanded"
-              },
-              "disabled": {
-                "type": "boolean",
-                "required": false,
-                "defaultValue": false,
-                "description": "Whether this accordion item is disabled"
-              }
-            }
-          }
-        },
-        "description": "Array of accordion items with id, title, content, and optional disabled state",
-        "required": true,
-        "examples": [
-          {
-            "value": "[{id: '1', title: 'Section 1', content: 'Content 1'}, {id: '2', title: 'Section 2', content: 'Content 2'}]",
-            "description": "Basic accordion items",
-            "context": "FAQ sections, content organization"
-          }
-        ]
-      },
-      "multiple": {
-        "type": { "primitive": "boolean" },
-        "description": "Allow multiple accordion items to be expanded simultaneously",
-        "required": false,
-        "defaultValue": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Multiple sections can be open at once",
-            "context": "Complex forms, detailed information sections"
-          },
-          {
-            "value": false,
-            "description": "Only one section open at a time",
-            "context": "FAQ, simple navigation"
-          }
-        ]
-      },
-      "defaultExpanded": {
-        "type": {
-          "complex": "array",
-          "itemType": { "primitive": "string" }
-        },
-        "description": "Array of item IDs that should be expanded by default",
-        "required": false,
-        "defaultValue": "[]",
-        "examples": [
-          {
-            "value": "['1', '3']",
-            "description": "Items with IDs '1' and '3' expanded initially",
-            "context": "Important sections shown by default"
-          }
-        ]
-      },
-      "expandIcon": {
-        "type": {
-          "complex": "component",
-          "signature": {
-            "type": "React.ComponentType<{ className?: string; size?: number; expanded?: boolean }>",
-            "description": "Custom expand/collapse icon component"
-          }
-        },
-        "description": "Custom icon component for expand/collapse indicator",
-        "required": false,
-        "examples": [
-          {
-            "value": "ChevronDown",
-            "description": "Downward chevron that rotates when expanded",
-            "context": "Standard accordion behavior"
-          }
-        ]
-      },
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["default", "bordered", "separated"]
-        },
-        "description": "Visual variant determining appearance and spacing",
-        "required": false,
-        "defaultValue": "default",
-        "examples": [
-          {
-            "value": "default",
-            "description": "Clean minimal design with subtle borders",
-            "context": "General content, forms"
-          },
-          {
-            "value": "bordered",
-            "description": "Strong borders around each item",
-            "context": "Formal documents, structured content"
-          },
-          {
-            "value": "separated",
-            "description": "Spaced items with shadows",
-            "context": "Card-like presentation"
-          }
-        ]
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["sm", "md", "lg"]
-        },
-        "description": "Size variant affecting padding, text size, and spacing",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "sm",
-            "description": "Compact accordion for dense layouts",
-            "context": "Sidebar navigation, mobile interfaces"
-          },
-          {
-            "value": "lg",
-            "description": "Spacious accordion for main content",
-            "context": "Landing pages, feature showcases"
-          }
-        ]
-      },
-      "onChange": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "expandedItems",
-                "type": "string[]",
-                "required": true,
-                "description": "Array of currently expanded item IDs"
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when accordion expansion state changes",
-        "required": false,
-        "examples": [
-          {
-            "value": "(expandedItems) => console.log('Expanded:', expandedItems)",
-            "description": "Log expanded items for analytics",
-            "context": "User behavior tracking"
-          }
-        ]
-      },
-      "headingLevel": {
-        "type": {
-          "custom": "variant",
-          "values": ["h1", "h2", "h3", "h4", "h5", "h6"]
-        },
-        "description": "Semantic heading level for accordion headers",
-        "required": false,
-        "defaultValue": "h3",
-        "accessibility": {
-          "importance": "critical",
-          "reason": "Proper heading hierarchy for screen readers and document structure"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the accordion container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": ["items"],
-      "optional": [
-        "multiple", "defaultExpanded", "expandIcon", "variant", "size", 
-        "onChange", "headingLevel", "className", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false,
-        "description": "Content is provided via items prop"
-      },
-      "slots": {
-        "expandIcon": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom expand/collapse icon"
-        },
-        "itemHeader": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom header content for each item"
-        },
-        "itemContent": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom content wrapper for each item"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "default": "border-b border-gray-200 last:border-b-0",
-          "bordered": "border border-gray-300 rounded-lg mb-2 last:mb-0",
-          "separated": "bg-white border border-gray-200 rounded-lg shadow-sm mb-4 last:mb-0"
-        },
-        "defaultValue": "default"
-      },
-      "size": {
-        "values": {
-          "sm": "text-sm",
-          "md": "text-base",
-          "lg": "text-lg"
-        },
-        "defaultValue": "md"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "bordered",
-          "size": "sm"
-        },
-        "className": "border border-gray-300 rounded-md mb-1",
-        "description": "Small bordered accordion items"
-      },
-      {
-        "conditions": {
-          "variant": "separated",
-          "size": "lg"
-        },
-        "className": "bg-white border border-gray-200 rounded-xl shadow-lg mb-6 p-1",
-        "description": "Large separated accordion with enhanced shadows"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "region",
-      "additional": ["button", "group"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Enter",
-          "action": "toggle",
-          "context": "Toggle accordion item expansion"
-        },
-        {
-          "key": "Space",
-          "action": "toggle",
-          "context": "Toggle accordion item expansion"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus between accordion headers"
-        },
-        {
-          "key": "ArrowDown",
-          "action": "navigate",
-          "context": "Move focus to next accordion header"
-        },
-        {
-          "key": "ArrowUp",
-          "action": "navigate",
-          "context": "Move focus to previous accordion header"
-        },
-        {
-          "key": "Home",
-          "action": "navigate",
-          "context": "Move focus to first accordion header"
-        },
-        {
-          "key": "End",
-          "action": "navigate",
-          "context": "Move focus to last accordion header"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": true,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "expand",
-          "message": "Section expanded",
-          "priority": "polite"
-        },
-        {
-          "trigger": "collapse",
-          "message": "Section collapsed",
-          "priority": "polite"
-        },
-        {
-          "trigger": "disabled",
-          "message": "Section unavailable",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["accessible-name", "expanded-state"],
-        "descriptions": {
-          "expanded": "expanded",
-          "collapsed": "collapsed",
-          "disabled": "disabled",
-          "section": "section"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "accordion-structure-present",
-        "heading-hierarchy-correct",
-        "expanded-state-announced",
-        "keyboard-navigation-functional",
-        "focus-management-correct",
-        "color-contrast-aaa",
-        "disabled-state-handled",
-        "aria-attributes-present"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "keyboard-only-navigation",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/accordion.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["useState", "useCallback", "KeyboardEvent"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/accordion.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/accordion.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/accordion.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/accordion.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/accordion.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Accordion",
-      "description": "Simple accordion with single expansion",
-      "category": "basic",
-      "code": {
-        "react": "const items = [\n  { id: '1', title: 'What is Xala UI?', content: 'A comprehensive Norwegian-compliant design system.' },\n  { id: '2', title: 'How to get started?', content: 'Install the package and follow our guide.' }\n];\n\n<Accordion items={items} />",
-        "vue": "<Accordion :items=\"items\" />",
-        "angular": "<xala-accordion [items]=\"items\"></xala-accordion>",
-        "svelte": "<Accordion {items} />",
-        "solid": "<Accordion items={items} />",
-        "web-components": "<xala-accordion items=\"{items}\"></xala-accordion>"
-      },
-      "props": {
-        "items": [
-          { "id": "1", "title": "What is Xala UI?", "content": "A comprehensive Norwegian-compliant design system." },
-          { "id": "2", "title": "How to get started?", "content": "Install the package and follow our guide." }
-        ]
-      }
-    },
-    {
-      "name": "Multiple Expansion",
-      "description": "Accordion allowing multiple items to be expanded",
-      "category": "multiple",
-      "code": {
-        "react": "<Accordion items={items} multiple defaultExpanded={['1', '3']} />"
-      },
-      "props": {
-        "multiple": true,
-        "defaultExpanded": ["1", "3"]
-      },
-      "notes": "Multiple expansion mode allows users to compare content across sections"
-    },
-    {
-      "name": "Controlled Accordion",
-      "description": "Accordion with external state control",
-      "category": "controlled",
-      "code": {
-        "react": "const [expanded, setExpanded] = useState(['1']);\n\n<Accordion \n  items={items} \n  multiple \n  defaultExpanded={expanded}\n  onChange={setExpanded}\n/>"
-      },
-      "props": {
-        "multiple": true,
-        "onChange": "setExpanded"
-      },
-      "notes": "Controlled mode enables external state management and analytics tracking"
-    },
-    {
-      "name": "Bordered Variant",
-      "description": "Accordion with bordered styling",
-      "category": "variants",
-      "code": {
-        "react": "<Accordion items={items} variant='bordered' size='lg' />"
-      },
-      "props": {
-        "variant": "bordered",
-        "size": "lg"
-      }
-    },
-    {
-      "name": "Custom Icon",
-      "description": "Accordion with custom expand icon",
-      "category": "customization",
-      "code": {
-        "react": "<Accordion items={items} expandIcon={PlusMinusIcon} variant='separated' />"
-      },
-      "props": {
-        "expandIcon": "PlusMinusIcon",
-        "variant": "separated"
-      }
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use proper heading hierarchy with headingLevel prop for document structure",
-        "Implement keyboard navigation with arrow keys for better accessibility",
-        "Always announce state changes to screen readers",
-        "Use ARIA attributes for expanded/collapsed states",
-        "Provide proper focus management between accordion items",
-        "Apply Norwegian design tokens for government compliance",
-        "Ensure color contrast meets AAA standards for all variants"
-      ],
-      "patterns": [
-        {
-          "pattern": "useState for expansion state",
-          "context": "React implementation",
-          "recommendation": "Use Set or array to track expanded items efficiently"
-        },
-        {
-          "pattern": "useCallback for handlers",
-          "context": "React implementation", 
-          "recommendation": "Memoize toggle handlers to prevent unnecessary re-renders"
-        },
-        {
-          "pattern": "aria-expanded attribute",
-          "context": "Accessibility",
-          "recommendation": "Always sync aria-expanded with actual expansion state"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div with onClick as accordion header",
-          "reason": "Poor accessibility and semantic meaning",
-          "alternative": "Use button element with proper ARIA attributes"
-        },
-        {
-          "pattern": "Missing heading structure",
-          "reason": "Breaks document outline for screen readers",
-          "alternative": "Use proper heading elements with headingLevel prop"
-        },
-        {
-          "pattern": "No keyboard navigation",
-          "reason": "Excludes keyboard users",
-          "alternative": "Implement full arrow key navigation between headers"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate",
-      "estimatedTokens": 2500
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "keyboard-navigation"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders accordion items",
-        "toggles expansion on click",
-        "handles keyboard navigation",
-        "respects multiple prop",
-        "applies variant classes",
-        "applies size classes",
-        "disabled items cannot expand",
-        "defaultExpanded works correctly",
-        "onChange callback fires",
-        "accessibility attributes present",
-        "heading hierarchy correct",
-        "focus management works",
-        "custom icons render",
-        "aria-expanded updates"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "accordion within forms",
-        "nested content with interactive elements",
-        "keyboard-only interaction flow",
-        "screen reader navigation experience",
-        "multiple accordions on same page",
-        "responsive behavior across devices",
-        "Norwegian compliance validation"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "3KB",
-        "gzipped": "1.2KB"
-      },
-      "renderTime": {
-        "initial": "<20ms",
-        "toggle": "<10ms"
-      }
-    },
-    "optimizations": [
-      "Efficient state management with Set for expanded items",
-      "Memoized event handlers to prevent re-renders",
-      "CSS-only animations for smooth transitions",
-      "Lazy rendering of collapsed content sections",
-      "Optimized class variance authority patterns",
-      "Tree-shakeable icon imports"
-    ]
-  }
+	"metadata": {
+		"name": "Accordion",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "ui",
+		"subcategory": "disclosure",
+		"description": "Comprehensive accordion component with collapsible content sections, multiple expansion modes, keyboard navigation, and Norwegian compliance. Supports single/multiple expansion patterns with full accessibility.",
+		"keywords": [
+			"accordion",
+			"collapse",
+			"disclosure",
+			"expandable",
+			"sections",
+			"navigation",
+			"accessible",
+			"norwegian"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T15:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["div", "button", "h1", "h2", "h3", "h4", "h5", "h6"],
+			"ariaRoles": ["button", "region", "group"],
+			"landmarks": false,
+			"headingStructure": true
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.6 Headings and Labels",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value",
+				"4.1.3 Status Messages"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"items": {
+				"type": {
+					"complex": "array",
+					"itemType": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string",
+								"required": true,
+								"description": "Unique identifier for the accordion item"
+							},
+							"title": {
+								"type": "string",
+								"required": true,
+								"description": "Title text displayed in the accordion header"
+							},
+							"content": {
+								"type": "node",
+								"required": true,
+								"description": "Content to display when accordion item is expanded"
+							},
+							"disabled": {
+								"type": "boolean",
+								"required": false,
+								"defaultValue": false,
+								"description": "Whether this accordion item is disabled"
+							}
+						}
+					}
+				},
+				"description": "Array of accordion items with id, title, content, and optional disabled state",
+				"required": true,
+				"examples": [
+					{
+						"value": "[{id: '1', title: 'Section 1', content: 'Content 1'}, {id: '2', title: 'Section 2', content: 'Content 2'}]",
+						"description": "Basic accordion items",
+						"context": "FAQ sections, content organization"
+					}
+				]
+			},
+			"multiple": {
+				"type": { "primitive": "boolean" },
+				"description": "Allow multiple accordion items to be expanded simultaneously",
+				"required": false,
+				"defaultValue": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Multiple sections can be open at once",
+						"context": "Complex forms, detailed information sections"
+					},
+					{
+						"value": false,
+						"description": "Only one section open at a time",
+						"context": "FAQ, simple navigation"
+					}
+				]
+			},
+			"defaultExpanded": {
+				"type": {
+					"complex": "array",
+					"itemType": { "primitive": "string" }
+				},
+				"description": "Array of item IDs that should be expanded by default",
+				"required": false,
+				"defaultValue": "[]",
+				"examples": [
+					{
+						"value": "['1', '3']",
+						"description": "Items with IDs '1' and '3' expanded initially",
+						"context": "Important sections shown by default"
+					}
+				]
+			},
+			"expandIcon": {
+				"type": {
+					"complex": "component",
+					"signature": {
+						"type": "React.ComponentType<{ className?: string; size?: number; expanded?: boolean }>",
+						"description": "Custom expand/collapse icon component"
+					}
+				},
+				"description": "Custom icon component for expand/collapse indicator",
+				"required": false,
+				"examples": [
+					{
+						"value": "ChevronDown",
+						"description": "Downward chevron that rotates when expanded",
+						"context": "Standard accordion behavior"
+					}
+				]
+			},
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": ["default", "bordered", "separated"]
+				},
+				"description": "Visual variant determining appearance and spacing",
+				"required": false,
+				"defaultValue": "default",
+				"examples": [
+					{
+						"value": "default",
+						"description": "Clean minimal design with subtle borders",
+						"context": "General content, forms"
+					},
+					{
+						"value": "bordered",
+						"description": "Strong borders around each item",
+						"context": "Formal documents, structured content"
+					},
+					{
+						"value": "separated",
+						"description": "Spaced items with shadows",
+						"context": "Card-like presentation"
+					}
+				]
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["sm", "md", "lg"]
+				},
+				"description": "Size variant affecting padding, text size, and spacing",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "sm",
+						"description": "Compact accordion for dense layouts",
+						"context": "Sidebar navigation, mobile interfaces"
+					},
+					{
+						"value": "lg",
+						"description": "Spacious accordion for main content",
+						"context": "Landing pages, feature showcases"
+					}
+				]
+			},
+			"onChange": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "expandedItems",
+								"type": "string[]",
+								"required": true,
+								"description": "Array of currently expanded item IDs"
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when accordion expansion state changes",
+				"required": false,
+				"examples": [
+					{
+						"value": "(expandedItems) => console.log('Expanded:', expandedItems)",
+						"description": "Log expanded items for analytics",
+						"context": "User behavior tracking"
+					}
+				]
+			},
+			"headingLevel": {
+				"type": {
+					"custom": "variant",
+					"values": ["h1", "h2", "h3", "h4", "h5", "h6"]
+				},
+				"description": "Semantic heading level for accordion headers",
+				"required": false,
+				"defaultValue": "h3",
+				"accessibility": {
+					"importance": "critical",
+					"reason": "Proper heading hierarchy for screen readers and document structure"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the accordion container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": ["items"],
+			"optional": [
+				"multiple",
+				"defaultExpanded",
+				"expandIcon",
+				"variant",
+				"size",
+				"onChange",
+				"headingLevel",
+				"className",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false,
+				"description": "Content is provided via items prop"
+			},
+			"slots": {
+				"expandIcon": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom expand/collapse icon"
+				},
+				"itemHeader": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom header content for each item"
+				},
+				"itemContent": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom content wrapper for each item"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"default": "border-b border-gray-200 last:border-b-0",
+					"bordered": "border border-gray-300 rounded-lg mb-2 last:mb-0",
+					"separated": "bg-white border border-gray-200 rounded-lg shadow-sm mb-4 last:mb-0"
+				},
+				"defaultValue": "default"
+			},
+			"size": {
+				"values": {
+					"sm": "text-sm",
+					"md": "text-base",
+					"lg": "text-lg"
+				},
+				"defaultValue": "md"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "bordered",
+					"size": "sm"
+				},
+				"className": "border border-gray-300 rounded-md mb-1",
+				"description": "Small bordered accordion items"
+			},
+			{
+				"conditions": {
+					"variant": "separated",
+					"size": "lg"
+				},
+				"className": "bg-white border border-gray-200 rounded-xl shadow-lg mb-6 p-1",
+				"description": "Large separated accordion with enhanced shadows"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "region",
+			"additional": ["button", "group"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Enter",
+					"action": "toggle",
+					"context": "Toggle accordion item expansion"
+				},
+				{
+					"key": "Space",
+					"action": "toggle",
+					"context": "Toggle accordion item expansion"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus between accordion headers"
+				},
+				{
+					"key": "ArrowDown",
+					"action": "navigate",
+					"context": "Move focus to next accordion header"
+				},
+				{
+					"key": "ArrowUp",
+					"action": "navigate",
+					"context": "Move focus to previous accordion header"
+				},
+				{
+					"key": "Home",
+					"action": "navigate",
+					"context": "Move focus to first accordion header"
+				},
+				{
+					"key": "End",
+					"action": "navigate",
+					"context": "Move focus to last accordion header"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": true,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "expand",
+					"message": "Section expanded",
+					"priority": "polite"
+				},
+				{
+					"trigger": "collapse",
+					"message": "Section collapsed",
+					"priority": "polite"
+				},
+				{
+					"trigger": "disabled",
+					"message": "Section unavailable",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["accessible-name", "expanded-state"],
+				"descriptions": {
+					"expanded": "expanded",
+					"collapsed": "collapsed",
+					"disabled": "disabled",
+					"section": "section"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"accordion-structure-present",
+				"heading-hierarchy-correct",
+				"expanded-state-announced",
+				"keyboard-navigation-functional",
+				"focus-management-correct",
+				"color-contrast-aaa",
+				"disabled-state-handled",
+				"aria-attributes-present"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"keyboard-only-navigation",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/accordion.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["useState", "useCallback", "KeyboardEvent"]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/accordion.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/accordion.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/accordion.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/accordion.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/accordion.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Accordion",
+			"description": "Simple accordion with single expansion",
+			"category": "basic",
+			"code": {
+				"react": "const items = [\n  { id: '1', title: 'What is Xala UI?', content: 'A comprehensive Norwegian-compliant design system.' },\n  { id: '2', title: 'How to get started?', content: 'Install the package and follow our guide.' }\n];\n\n<Accordion items={items} />",
+				"vue": "<Accordion :items=\"items\" />",
+				"angular": "<xala-accordion [items]=\"items\"></xala-accordion>",
+				"svelte": "<Accordion {items} />",
+				"solid": "<Accordion items={items} />",
+				"web-components": "<xala-accordion items=\"{items}\"></xala-accordion>"
+			},
+			"props": {
+				"items": [
+					{
+						"id": "1",
+						"title": "What is Xala UI?",
+						"content": "A comprehensive Norwegian-compliant design system."
+					},
+					{
+						"id": "2",
+						"title": "How to get started?",
+						"content": "Install the package and follow our guide."
+					}
+				]
+			}
+		},
+		{
+			"name": "Multiple Expansion",
+			"description": "Accordion allowing multiple items to be expanded",
+			"category": "multiple",
+			"code": {
+				"react": "<Accordion items={items} multiple defaultExpanded={['1', '3']} />"
+			},
+			"props": {
+				"multiple": true,
+				"defaultExpanded": ["1", "3"]
+			},
+			"notes": "Multiple expansion mode allows users to compare content across sections"
+		},
+		{
+			"name": "Controlled Accordion",
+			"description": "Accordion with external state control",
+			"category": "controlled",
+			"code": {
+				"react": "const [expanded, setExpanded] = useState(['1']);\n\n<Accordion \n  items={items} \n  multiple \n  defaultExpanded={expanded}\n  onChange={setExpanded}\n/>"
+			},
+			"props": {
+				"multiple": true,
+				"onChange": "setExpanded"
+			},
+			"notes": "Controlled mode enables external state management and analytics tracking"
+		},
+		{
+			"name": "Bordered Variant",
+			"description": "Accordion with bordered styling",
+			"category": "variants",
+			"code": {
+				"react": "<Accordion items={items} variant='bordered' size='lg' />"
+			},
+			"props": {
+				"variant": "bordered",
+				"size": "lg"
+			}
+		},
+		{
+			"name": "Custom Icon",
+			"description": "Accordion with custom expand icon",
+			"category": "customization",
+			"code": {
+				"react": "<Accordion items={items} expandIcon={PlusMinusIcon} variant='separated' />"
+			},
+			"props": {
+				"expandIcon": "PlusMinusIcon",
+				"variant": "separated"
+			}
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use proper heading hierarchy with headingLevel prop for document structure",
+				"Implement keyboard navigation with arrow keys for better accessibility",
+				"Always announce state changes to screen readers",
+				"Use ARIA attributes for expanded/collapsed states",
+				"Provide proper focus management between accordion items",
+				"Apply Norwegian design tokens for government compliance",
+				"Ensure color contrast meets AAA standards for all variants"
+			],
+			"patterns": [
+				{
+					"pattern": "useState for expansion state",
+					"context": "React implementation",
+					"recommendation": "Use Set or array to track expanded items efficiently"
+				},
+				{
+					"pattern": "useCallback for handlers",
+					"context": "React implementation",
+					"recommendation": "Memoize toggle handlers to prevent unnecessary re-renders"
+				},
+				{
+					"pattern": "aria-expanded attribute",
+					"context": "Accessibility",
+					"recommendation": "Always sync aria-expanded with actual expansion state"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div with onClick as accordion header",
+					"reason": "Poor accessibility and semantic meaning",
+					"alternative": "Use button element with proper ARIA attributes"
+				},
+				{
+					"pattern": "Missing heading structure",
+					"reason": "Breaks document outline for screen readers",
+					"alternative": "Use proper heading elements with headingLevel prop"
+				},
+				{
+					"pattern": "No keyboard navigation",
+					"reason": "Excludes keyboard users",
+					"alternative": "Implement full arrow key navigation between headers"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate",
+			"estimatedTokens": 2500
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"keyboard-navigation"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders accordion items",
+				"toggles expansion on click",
+				"handles keyboard navigation",
+				"respects multiple prop",
+				"applies variant classes",
+				"applies size classes",
+				"disabled items cannot expand",
+				"defaultExpanded works correctly",
+				"onChange callback fires",
+				"accessibility attributes present",
+				"heading hierarchy correct",
+				"focus management works",
+				"custom icons render",
+				"aria-expanded updates"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"accordion within forms",
+				"nested content with interactive elements",
+				"keyboard-only interaction flow",
+				"screen reader navigation experience",
+				"multiple accordions on same page",
+				"responsive behavior across devices",
+				"Norwegian compliance validation"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "3KB",
+				"gzipped": "1.2KB"
+			},
+			"renderTime": {
+				"initial": "<20ms",
+				"toggle": "<10ms"
+			}
+		},
+		"optimizations": [
+			"Efficient state management with Set for expanded items",
+			"Memoized event handlers to prevent re-renders",
+			"CSS-only animations for smooth transitions",
+			"Lazy rendering of collapsed content sections",
+			"Optimized class variance authority patterns",
+			"Tree-shakeable icon imports"
+		]
+	}
 }

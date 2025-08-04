@@ -1,209 +1,206 @@
 {
-  "metadata": {
-    "name": "Table",
-    "version": "1.0.0",
-    "category": "ui",
-    "description": "A simple table component for displaying tabular data with semantic HTML structure",
-    "complexity": "low",
-    "bundle_size": "<2KB"
-  },
-  "compliance": {
-    "wcag": "AAA",
-    "nsm_classification": "OPEN",
-    "gdpr_compliant": true,
-    "supported_languages": ["nb-NO", "en-US", "fr-FR", "ar-SA"]
-  },
-  "component": {
-    "name": "Table",
-    "props": {
-      "headers": {
-        "type": "readonly string[]",
-        "required": true,
-        "description": "Array of column header labels",
-        "example": "['Name', 'Email', 'Role', 'Status']"
-      },
-      "rows": {
-        "type": "readonly (string | React.ReactNode)[][]",
-        "required": true,
-        "description": "2D array representing table rows and cells",
-        "example": "[['John Doe', 'john@example.com', 'Admin', 'Active'], ['Jane Smith', 'jane@example.com', 'User', 'Inactive']]"
-      },
-      "variant": {
-        "type": "'default' | 'striped' | 'bordered'",
-        "required": false,
-        "default": "'default'",
-        "description": "Visual style variant of the table"
-      },
-      "size": {
-        "type": "'sm' | 'md' | 'lg'",
-        "required": false,
-        "default": "'md'",
-        "description": "Size variant affecting padding and font size"
-      },
-      "responsive": {
-        "type": "boolean",
-        "required": false,
-        "default": "false",
-        "description": "Whether to wrap table in horizontal scroll container on small screens"
-      },
-      "caption": {
-        "type": "string",
-        "required": false,
-        "description": "Table caption for accessibility and context"
-      },
-      "className": {
-        "type": "string",
-        "required": false,
-        "description": "Additional CSS classes for styling customization"
-      }
-    },
-    "return_type": "JSX.Element"
-  },
-  "accessibility": {
-    "wcag_level": "AAA",
-    "features": [
-      "Semantic table structure with proper thead, tbody elements",
-      "Table caption support for screen readers",
-      "Proper th elements with scope attributes for headers",
-      "High contrast borders and text for visibility",
-      "Focus management for interactive elements within cells",
-      "Screen reader friendly table navigation"
-    ],
-    "aria_attributes": [
-      "role=\"table\" (implicit via table element)",
-      "aria-labelledby (when caption is provided)",
-      "scope=\"col\" on header cells"
-    ],
-    "keyboard_navigation": [
-      "Tab navigation through interactive elements in cells",
-      "Standard table navigation with screen readers"
-    ]
-  },
-  "styling": {
-    "base_classes": "w-full border-collapse bg-white",
-    "variants": {
-      "default": {
-        "table": "border-gray-200",
-        "header": "bg-gray-50 border-b-2 border-gray-200",
-        "cell": "border-b border-gray-100",
-        "row": "hover:bg-gray-50"
-      },
-      "striped": {
-        "table": "border-gray-200",
-        "header": "bg-gray-50 border-b-2 border-gray-200",
-        "cell": "border-b border-gray-100",
-        "row": "even:bg-gray-50 hover:bg-gray-100"
-      },
-      "bordered": {
-        "table": "border border-gray-200",
-        "header": "bg-gray-50 border-b-2 border-gray-200",
-        "cell": "border-b border-r border-gray-200 last:border-r-0",
-        "row": "hover:bg-gray-50"
-      }
-    },
-    "sizes": {
-      "sm": {
-        "header_cell": "px-3 py-2 text-sm font-medium",
-        "body_cell": "px-3 py-2 text-sm"
-      },
-      "md": {
-        "header_cell": "px-4 py-3 text-sm font-semibold",
-        "body_cell": "px-4 py-3 text-sm"
-      },
-      "lg": {
-        "header_cell": "px-6 py-4 text-base font-semibold",
-        "body_cell": "px-6 py-4 text-base"
-      }
-    },
-    "responsive": {
-      "wrapper": "overflow-x-auto shadow-sm rounded-lg",
-      "table": "min-w-full"
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Table",
-      "description": "Simple table with headers and data rows",
-      "code": "const headers = ['Name', 'Email', 'Role'];\nconst rows = [\n  ['John Doe', 'john@example.com', 'Admin'],\n  ['Jane Smith', 'jane@example.com', 'User'],\n  ['Bob Johnson', 'bob@example.com', 'Editor']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  caption=\"User management table\"\n/>"
-    },
-    {
-      "name": "Striped Table",
-      "description": "Table with alternating row backgrounds",
-      "code": "const headers = ['Product', 'Price', 'Stock', 'Status'];\nconst rows = [\n  ['MacBook Pro', '$2,399', '12', 'In Stock'],\n  ['iPhone 14', '$999', '45', 'In Stock'],\n  ['iPad Air', '$599', '0', 'Out of Stock'],\n  ['Apple Watch', '$399', '23', 'In Stock']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  variant=\"striped\"\n  size=\"lg\"\n  caption=\"Product inventory table\"\n/>"
-    },
-    {
-      "name": "Responsive Bordered Table",
-      "description": "Bordered table with responsive horizontal scrolling",
-      "code": "const headers = ['Order ID', 'Customer', 'Date', 'Amount', 'Status', 'Actions'];\nconst rows = [\n  ['#12345', 'John Doe', '2024-01-15', '$249.99', 'Shipped', 'View Details'],\n  ['#12346', 'Jane Smith', '2024-01-16', '$89.50', 'Processing', 'View Details'],\n  ['#12347', 'Bob Johnson', '2024-01-17', '$156.75', 'Delivered', 'View Details']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  variant=\"bordered\"\n  size=\"md\"\n  responsive={true}\n  caption=\"Recent orders summary\"\n/>"
-    }
-  ],
-  "implementation": {
-    "file_path": "src/components/ui/Table.tsx",
-    "dependencies": [
-      "react",
-      "clsx"
-    ],
-    "key_features": [
-      "Semantic HTML table structure",
-      "Multiple visual variants (default, striped, bordered)",
-      "Responsive design with horizontal scrolling",
-      "Configurable sizing (sm, md, lg)",
-      "WCAG AAA compliant with proper semantics",
-      "Support for React nodes in cells",
-      "Optional table caption for accessibility"
-    ]
-  },
-  "testing": {
-    "unit_tests": [
-      "Renders table with correct headers and rows",
-      "Applies correct variant classes",
-      "Handles responsive wrapper correctly",
-      "Renders caption when provided",
-      "Applies correct size classes",
-      "Handles empty rows gracefully",
-      "Supports React nodes in cells"
-    ],
-    "accessibility_tests": [
-      "Table has proper semantic structure",
-      "Headers have correct scope attributes",
-      "Caption is properly associated",
-      "Color contrast meets WCAG AAA standards",
-      "Screen reader navigation works correctly"
-    ],
-    "visual_tests": [
-      "Default table styling",
-      "Striped table alternating rows",
-      "Bordered table with cell borders",
-      "Responsive horizontal scrolling",
-      "Different size variants",
-      "Hover states on rows"
-    ]
-  },
-  "performance": {
-    "bundle_size": "<2KB",
-    "render_time": "<5ms",
-    "memory_usage": "<1MB",
-    "optimization_notes": [
-      "Minimal CSS classes for variants",
-      "No complex state management",
-      "Efficient row rendering",
-      "Optional responsive wrapper to reduce DOM when not needed"
-    ]
-  },
-  "validation": {
-    "props_validation": {
-      "headers": "Must be non-empty array of strings",
-      "rows": "Must be 2D array matching headers length",
-      "variant": "Must be one of: 'default', 'striped', 'bordered'",
-      "size": "Must be one of: 'sm', 'md', 'lg'",
-      "responsive": "Must be boolean",
-      "caption": "Must be string if provided"
-    },
-    "error_handling": [
-      "Graceful handling of mismatched row/header lengths",
-      "Empty state when no rows provided",
-      "Type safety for all props",
-      "Console warnings for invalid prop combinations"
-    ]
-  }
+	"metadata": {
+		"name": "Table",
+		"version": "1.0.0",
+		"category": "ui",
+		"description": "A simple table component for displaying tabular data with semantic HTML structure",
+		"complexity": "low",
+		"bundle_size": "<2KB"
+	},
+	"compliance": {
+		"wcag": "AAA",
+		"nsm_classification": "OPEN",
+		"gdpr_compliant": true,
+		"supported_languages": ["nb-NO", "en-US", "fr-FR", "ar-SA"]
+	},
+	"component": {
+		"name": "Table",
+		"props": {
+			"headers": {
+				"type": "readonly string[]",
+				"required": true,
+				"description": "Array of column header labels",
+				"example": "['Name', 'Email', 'Role', 'Status']"
+			},
+			"rows": {
+				"type": "readonly (string | React.ReactNode)[][]",
+				"required": true,
+				"description": "2D array representing table rows and cells",
+				"example": "[['John Doe', 'john@example.com', 'Admin', 'Active'], ['Jane Smith', 'jane@example.com', 'User', 'Inactive']]"
+			},
+			"variant": {
+				"type": "'default' | 'striped' | 'bordered'",
+				"required": false,
+				"default": "'default'",
+				"description": "Visual style variant of the table"
+			},
+			"size": {
+				"type": "'sm' | 'md' | 'lg'",
+				"required": false,
+				"default": "'md'",
+				"description": "Size variant affecting padding and font size"
+			},
+			"responsive": {
+				"type": "boolean",
+				"required": false,
+				"default": "false",
+				"description": "Whether to wrap table in horizontal scroll container on small screens"
+			},
+			"caption": {
+				"type": "string",
+				"required": false,
+				"description": "Table caption for accessibility and context"
+			},
+			"className": {
+				"type": "string",
+				"required": false,
+				"description": "Additional CSS classes for styling customization"
+			}
+		},
+		"return_type": "JSX.Element"
+	},
+	"accessibility": {
+		"wcag_level": "AAA",
+		"features": [
+			"Semantic table structure with proper thead, tbody elements",
+			"Table caption support for screen readers",
+			"Proper th elements with scope attributes for headers",
+			"High contrast borders and text for visibility",
+			"Focus management for interactive elements within cells",
+			"Screen reader friendly table navigation"
+		],
+		"aria_attributes": [
+			"role=\"table\" (implicit via table element)",
+			"aria-labelledby (when caption is provided)",
+			"scope=\"col\" on header cells"
+		],
+		"keyboard_navigation": [
+			"Tab navigation through interactive elements in cells",
+			"Standard table navigation with screen readers"
+		]
+	},
+	"styling": {
+		"base_classes": "w-full border-collapse bg-white",
+		"variants": {
+			"default": {
+				"table": "border-gray-200",
+				"header": "bg-gray-50 border-b-2 border-gray-200",
+				"cell": "border-b border-gray-100",
+				"row": "hover:bg-gray-50"
+			},
+			"striped": {
+				"table": "border-gray-200",
+				"header": "bg-gray-50 border-b-2 border-gray-200",
+				"cell": "border-b border-gray-100",
+				"row": "even:bg-gray-50 hover:bg-gray-100"
+			},
+			"bordered": {
+				"table": "border border-gray-200",
+				"header": "bg-gray-50 border-b-2 border-gray-200",
+				"cell": "border-b border-r border-gray-200 last:border-r-0",
+				"row": "hover:bg-gray-50"
+			}
+		},
+		"sizes": {
+			"sm": {
+				"header_cell": "px-3 py-2 text-sm font-medium",
+				"body_cell": "px-3 py-2 text-sm"
+			},
+			"md": {
+				"header_cell": "px-4 py-3 text-sm font-semibold",
+				"body_cell": "px-4 py-3 text-sm"
+			},
+			"lg": {
+				"header_cell": "px-6 py-4 text-base font-semibold",
+				"body_cell": "px-6 py-4 text-base"
+			}
+		},
+		"responsive": {
+			"wrapper": "overflow-x-auto shadow-sm rounded-lg",
+			"table": "min-w-full"
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Table",
+			"description": "Simple table with headers and data rows",
+			"code": "const headers = ['Name', 'Email', 'Role'];\nconst rows = [\n  ['John Doe', 'john@example.com', 'Admin'],\n  ['Jane Smith', 'jane@example.com', 'User'],\n  ['Bob Johnson', 'bob@example.com', 'Editor']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  caption=\"User management table\"\n/>"
+		},
+		{
+			"name": "Striped Table",
+			"description": "Table with alternating row backgrounds",
+			"code": "const headers = ['Product', 'Price', 'Stock', 'Status'];\nconst rows = [\n  ['MacBook Pro', '$2,399', '12', 'In Stock'],\n  ['iPhone 14', '$999', '45', 'In Stock'],\n  ['iPad Air', '$599', '0', 'Out of Stock'],\n  ['Apple Watch', '$399', '23', 'In Stock']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  variant=\"striped\"\n  size=\"lg\"\n  caption=\"Product inventory table\"\n/>"
+		},
+		{
+			"name": "Responsive Bordered Table",
+			"description": "Bordered table with responsive horizontal scrolling",
+			"code": "const headers = ['Order ID', 'Customer', 'Date', 'Amount', 'Status', 'Actions'];\nconst rows = [\n  ['#12345', 'John Doe', '2024-01-15', '$249.99', 'Shipped', 'View Details'],\n  ['#12346', 'Jane Smith', '2024-01-16', '$89.50', 'Processing', 'View Details'],\n  ['#12347', 'Bob Johnson', '2024-01-17', '$156.75', 'Delivered', 'View Details']\n];\n\n<Table\n  headers={headers}\n  rows={rows}\n  variant=\"bordered\"\n  size=\"md\"\n  responsive={true}\n  caption=\"Recent orders summary\"\n/>"
+		}
+	],
+	"implementation": {
+		"file_path": "src/components/ui/Table.tsx",
+		"dependencies": ["react", "clsx"],
+		"key_features": [
+			"Semantic HTML table structure",
+			"Multiple visual variants (default, striped, bordered)",
+			"Responsive design with horizontal scrolling",
+			"Configurable sizing (sm, md, lg)",
+			"WCAG AAA compliant with proper semantics",
+			"Support for React nodes in cells",
+			"Optional table caption for accessibility"
+		]
+	},
+	"testing": {
+		"unit_tests": [
+			"Renders table with correct headers and rows",
+			"Applies correct variant classes",
+			"Handles responsive wrapper correctly",
+			"Renders caption when provided",
+			"Applies correct size classes",
+			"Handles empty rows gracefully",
+			"Supports React nodes in cells"
+		],
+		"accessibility_tests": [
+			"Table has proper semantic structure",
+			"Headers have correct scope attributes",
+			"Caption is properly associated",
+			"Color contrast meets WCAG AAA standards",
+			"Screen reader navigation works correctly"
+		],
+		"visual_tests": [
+			"Default table styling",
+			"Striped table alternating rows",
+			"Bordered table with cell borders",
+			"Responsive horizontal scrolling",
+			"Different size variants",
+			"Hover states on rows"
+		]
+	},
+	"performance": {
+		"bundle_size": "<2KB",
+		"render_time": "<5ms",
+		"memory_usage": "<1MB",
+		"optimization_notes": [
+			"Minimal CSS classes for variants",
+			"No complex state management",
+			"Efficient row rendering",
+			"Optional responsive wrapper to reduce DOM when not needed"
+		]
+	},
+	"validation": {
+		"props_validation": {
+			"headers": "Must be non-empty array of strings",
+			"rows": "Must be 2D array matching headers length",
+			"variant": "Must be one of: 'default', 'striped', 'bordered'",
+			"size": "Must be one of: 'sm', 'md', 'lg'",
+			"responsive": "Must be boolean",
+			"caption": "Must be string if provided"
+		},
+		"error_handling": [
+			"Graceful handling of mismatched row/header lengths",
+			"Empty state when no rows provided",
+			"Type safety for all props",
+			"Console warnings for invalid prop combinations"
+		]
+	}
 }

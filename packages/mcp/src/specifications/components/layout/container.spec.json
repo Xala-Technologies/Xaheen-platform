@@ -1,600 +1,633 @@
 {
-  "metadata": {
-    "name": "Container",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "layout",
-    "subcategory": "container",
-    "description": "Flexible container component for centering and constraining content width with responsive breakpoints. Provides consistent spacing, semantic HTML elements, and Norwegian design system compliance.",
-    "keywords": ["container", "layout", "responsive", "center", "width", "wrapper", "semantic", "norwegian", "accessible"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T15:30:00Z",
-    "updatedAt": "2024-08-04T15:30:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["div", "section", "main", "article"],
-      "ariaRoles": ["main", "region", "article"],
-      "landmarks": true,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.10 Reflow",
-        "1.4.12 Text Spacing",
-        "2.1.1 Keyboard",
-        "2.4.2 Page Titled",
-        "4.1.1 Parsing",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.0,
-        "large": 4.5,
-        "enhanced": 7.0
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "maxWidth": {
-        "type": {
-          "custom": "variant",
-          "values": ["xs", "sm", "md", "lg", "xl", "2xl", "full"]
-        },
-        "description": "Maximum width constraint for container content",
-        "required": false,
-        "defaultValue": "lg",
-        "examples": [
-          {
-            "value": "xs",
-            "description": "Extra small container (max-width: 20rem / 320px)",
-            "context": "Narrow forms, mobile-first layouts"
-          },
-          {
-            "value": "sm",
-            "description": "Small container (max-width: 24rem / 384px)",
-            "context": "Compact content, simple forms"
-          },
-          {
-            "value": "md",
-            "description": "Medium container (max-width: 28rem / 448px)",
-            "context": "Standard forms, content blocks"
-          },
-          {
-            "value": "lg",
-            "description": "Large container (max-width: 32rem / 512px)",
-            "context": "Main content areas, articles"
-          },
-          {
-            "value": "xl",
-            "description": "Extra large container (max-width: 36rem / 576px)",
-            "context": "Wide content, dashboard layouts"
-          },
-          {
-            "value": "2xl",
-            "description": "2X large container (max-width: 42rem / 672px)",
-            "context": "Hero sections, feature content"
-          },
-          {
-            "value": "full",
-            "description": "Full width container (no max-width constraint)",
-            "context": "Full-width layouts, fluid designs"
-          }
-        ]
-      },
-      "padding": {
-        "type": {
-          "custom": "variant",
-          "values": ["none", "sm", "md", "lg", "xl"]
-        },
-        "description": "Internal padding applied to container content",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "none",
-            "description": "No padding (p-0)",
-            "context": "Full-width content, edge-to-edge layouts"
-          },
-          {
-            "value": "sm",
-            "description": "Small padding (px-4 py-2)",
-            "context": "Compact layouts, mobile screens"
-          },
-          {
-            "value": "md",
-            "description": "Medium padding (px-6 py-4)",
-            "context": "Standard content spacing"
-          },
-          {
-            "value": "lg",
-            "description": "Large padding (px-8 py-6)",
-            "context": "Generous spacing, feature sections"
-          },
-          {
-            "value": "xl",
-            "description": "Extra large padding (px-12 py-8)",
-            "context": "Hero sections, prominent content"
-          }
-        ]
-      },
-      "center": {
-        "type": { "primitive": "boolean" },
-        "description": "Centers the container horizontally using margin auto",
-        "required": false,
-        "defaultValue": true,
-        "accessibility": {
-          "impact": "Layout centering improves content readability and structure"
-        }
-      },
-      "fluid": {
-        "type": { "primitive": "boolean" },
-        "description": "Makes container take full width regardless of maxWidth setting",
-        "required": false,
-        "defaultValue": false,
-        "mutuallyExclusive": ["center"],
-        "examples": [
-          {
-            "value": true,
-            "description": "Full-width fluid container",
-            "context": "Hero banners, full-width sections"
-          },
-          {
-            "value": false,
-            "description": "Constrained width container",
-            "context": "Standard content layouts"
-          }
-        ]
-      },
-      "as": {
-        "type": {
-          "custom": "variant",
-          "values": ["div", "section", "main", "article"]
-        },
-        "description": "Semantic HTML element to render as container",
-        "required": false,
-        "defaultValue": "div",
-        "accessibility": {
-          "role": "semantic-element",
-          "impact": "Proper semantic elements improve screen reader navigation"
-        },
-        "examples": [
-          {
-            "value": "div",
-            "description": "Generic container without semantic meaning",
-            "context": "Layout wrappers, styling containers"
-          },
-          {
-            "value": "section",
-            "description": "Thematic grouping of content",
-            "context": "Content sections, feature areas"
-          },
-          {
-            "value": "main",
-            "description": "Primary content area of page",
-            "context": "Main page content, single per page"
-          },
-          {
-            "value": "article",
-            "description": "Standalone piece of content",
-            "context": "Blog posts, news articles, independent content"
-          }
-        ]
-      },
-      "children": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Content to be contained within the container",
-        "required": true,
-        "accessibility": {
-          "description": "Container content should maintain proper heading hierarchy"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": ["children"],
-      "optional": [
-        "maxWidth", "padding", "center", "fluid", "as", "className", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element"],
-        "description": "Any valid React content to be contained"
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "maxWidth": {
-        "values": {
-          "xs": "max-w-xs",
-          "sm": "max-w-sm", 
-          "md": "max-w-md",
-          "lg": "max-w-lg",
-          "xl": "max-w-xl",
-          "2xl": "max-w-2xl",
-          "full": "max-w-full"
-        },
-        "defaultValue": "lg"
-      },
-      "padding": {
-        "values": {
-          "none": "p-0",
-          "sm": "px-4 py-2",
-          "md": "px-6 py-4",
-          "lg": "px-8 py-6",
-          "xl": "px-12 py-8"
-        },
-        "defaultValue": "md"
-      },
-      "center": {
-        "values": {
-          "true": "mx-auto",
-          "false": ""
-        },
-        "defaultValue": "true"
-      },
-      "fluid": {
-        "values": {
-          "true": "w-full",
-          "false": ""
-        },
-        "defaultValue": "false"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "fluid": "true",
-          "center": "true"
-        },
-        "className": "w-full",
-        "description": "Fluid containers override center alignment"
-      },
-      {
-        "conditions": {
-          "maxWidth": "full",
-          "padding": "none"
-        },
-        "className": "w-full",
-        "description": "Full-width containers with no constraints"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "generic",
-      "additional": ["main", "region", "article"]
-    },
-    "keyboardNavigation": {
-      "supported": false,
-      "patterns": [],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "mount",
-          "message": "Content container",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": [],
-        "descriptions": {
-          "semantic": "Content container with semantic element",
-          "main": "Main content area",
-          "section": "Content section",
-          "article": "Article content"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "semantic-element-correct",
-        "max-width-applied",
-        "padding-applied",
-        "centering-applied",
-        "fluid-width-applied",
-        "accessibility-attributes-present"
-      ],
-      "manual": [
-        "content-readability",
-        "responsive-behavior",
-        "semantic-structure-logical",
-        "keyboard-navigation-smooth"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/container.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "HTMLAttributes", "ReactNode", "ElementType"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/container.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/container.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/container.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/container.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/container.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Container",
-      "description": "Simple centered container with default medium width and padding",
-      "category": "basic",
-      "code": {
-        "react": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
-        "vue": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
-        "angular": "<xala-container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</xala-container>",
-        "svelte": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
-        "solid": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
-        "web-components": "<xala-container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</xala-container>"
-      },
-      "props": {
-        "children": "Content elements"
-      },
-      "notes": "Uses default lg max-width, md padding, and center alignment"
-    },
-    {
-      "name": "Centered Container",
-      "description": "Container with specific width constraint and centered alignment",
-      "category": "basic",
-      "code": {
-        "react": "<Container maxWidth='md' center>\n  <div className='text-center'>\n    <h2>Centered Content</h2>\n    <p>This container is explicitly centered with medium width.</p>\n  </div>\n</Container>"
-      },
-      "props": {
-        "maxWidth": "md",
-        "center": true
-      },
-      "notes": "Explicitly sets centering for clarity, though it's the default behavior"
-    },
-    {
-      "name": "Fluid Container",
-      "description": "Full-width container that takes up the entire available width",
-      "category": "basic",
-      "code": {
-        "react": "<Container fluid padding='xl'>\n  <div className='bg-blue-50 rounded-lg'>\n    <h2>Full Width Hero Section</h2>\n    <p>This container spans the full width of its parent.</p>\n  </div>\n</Container>"
-      },
-      "props": {
-        "fluid": true,
-        "padding": "xl"
-      },
-      "notes": "Fluid containers ignore maxWidth constraints and center settings"
-    },
-    {
-      "name": "Semantic Main Container",
-      "description": "Container using semantic main element for primary page content",
-      "category": "basic",
-      "code": {
-        "react": "<Container as='main' maxWidth='xl' padding='lg'>\n  <h1>Main Page Content</h1>\n  <article>\n    <h2>Article Title</h2>\n    <p>This is the primary content area of the page.</p>\n  </article>\n</Container>"
-      },
-      "props": {
-        "as": "main",
-        "maxWidth": "xl",
-        "padding": "lg"
-      },
-      "notes": "Uses semantic main element for better accessibility and SEO"
-    },
-    {
-      "name": "Section Container",
-      "description": "Container as section element for thematic content grouping",
-      "category": "basic",
-      "code": {
-        "react": "<Container as='section' maxWidth='2xl' padding='lg'>\n  <h2>Feature Section</h2>\n  <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>\n    <div>Feature 1</div>\n    <div>Feature 2</div>\n    <div>Feature 3</div>\n  </div>\n</Container>"
-      },
-      "props": {
-        "as": "section",
-        "maxWidth": "2xl",
-        "padding": "lg"
-      },
-      "notes": "Section elements are ideal for thematic content groups"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use semantic HTML elements (main, section, article) for better content structure",
-        "Choose appropriate maxWidth based on content type and reading comfort",
-        "Apply Norwegian design tokens for government compliance",
-        "Consider mobile-first responsive behavior with padding adjustments",
-        "Use fluid containers for full-width sections like heroes or banners",
-        "Ensure proper heading hierarchy within container content"
-      ],
-      "patterns": [
-        {
-          "pattern": "class-variance-authority (cva)",
-          "context": "React implementation",
-          "recommendation": "Use CVA for type-safe variant management with responsive utilities"
-        },
-        {
-          "pattern": "semantic HTML structure",
-          "context": "All implementations",
-          "recommendation": "Use appropriate semantic elements based on content purpose"
-        },
-        {
-          "pattern": "responsive design",
-          "context": "Mobile-first layouts",
-          "recommendation": "Apply mobile-friendly padding and width constraints"
-        },
-        {
-          "pattern": "polymorphic components",
-          "context": "React TypeScript",
-          "recommendation": "Use ElementType for flexible semantic element rendering"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "Fixed pixel widths in containers",
-          "reason": "Breaks responsive design and accessibility",
-          "alternative": "Use Tailwind's responsive max-width utilities"
-        },
-        {
-          "pattern": "Nested containers with same maxWidth",
-          "reason": "Redundant constraints and confusing layout",
-          "alternative": "Use single container at appropriate level"
-        },
-        {
-          "pattern": "Container without semantic meaning for main content",
-          "reason": "Poor accessibility and content structure",
-          "alternative": "Use main, section, or article elements appropriately"
-        },
-        {
-          "pattern": "Fluid containers with centering",
-          "reason": "Conflicting layout intentions",
-          "alternative": "Choose either fluid full-width or centered constrained width"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "simple",
-      "estimatedTokens": 800
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "responsive-guide", "semantic-usage"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with children content",
-        "applies maxWidth classes correctly",
-        "applies padding classes correctly",
-        "centers container when center=true",
-        "applies fluid width when fluid=true",
-        "renders correct semantic element",
-        "forwards additional className",
-        "handles testId prop",
-        "compound variant conditions work",
-        "accessibility attributes present"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "container in responsive layouts",
-        "nested content with proper spacing",
-        "semantic element accessibility",
-        "Norwegian design token usage",
-        "mobile responsive behavior",
-        "fluid vs constrained width behavior"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": false
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "1KB",
-        "gzipped": "400B"
-      },
-      "renderTime": {
-        "initial": "<5ms",
-        "update": "<2ms"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure with single wrapper element",
-      "CSS-only responsive behavior using Tailwind utilities",
-      "Efficient class variance authority patterns",
-      "No JavaScript interactivity overhead",
-      "Tree-shakeable semantic element variants",
-      "Optimized compound variant conditions"
-    ]
-  }
+	"metadata": {
+		"name": "Container",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "layout",
+		"subcategory": "container",
+		"description": "Flexible container component for centering and constraining content width with responsive breakpoints. Provides consistent spacing, semantic HTML elements, and Norwegian design system compliance.",
+		"keywords": [
+			"container",
+			"layout",
+			"responsive",
+			"center",
+			"width",
+			"wrapper",
+			"semantic",
+			"norwegian",
+			"accessible"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T15:30:00Z",
+		"updatedAt": "2024-08-04T15:30:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["div", "section", "main", "article"],
+			"ariaRoles": ["main", "region", "article"],
+			"landmarks": true,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.10 Reflow",
+				"1.4.12 Text Spacing",
+				"2.1.1 Keyboard",
+				"2.4.2 Page Titled",
+				"4.1.1 Parsing",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.0,
+				"large": 4.5,
+				"enhanced": 7.0
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"maxWidth": {
+				"type": {
+					"custom": "variant",
+					"values": ["xs", "sm", "md", "lg", "xl", "2xl", "full"]
+				},
+				"description": "Maximum width constraint for container content",
+				"required": false,
+				"defaultValue": "lg",
+				"examples": [
+					{
+						"value": "xs",
+						"description": "Extra small container (max-width: 20rem / 320px)",
+						"context": "Narrow forms, mobile-first layouts"
+					},
+					{
+						"value": "sm",
+						"description": "Small container (max-width: 24rem / 384px)",
+						"context": "Compact content, simple forms"
+					},
+					{
+						"value": "md",
+						"description": "Medium container (max-width: 28rem / 448px)",
+						"context": "Standard forms, content blocks"
+					},
+					{
+						"value": "lg",
+						"description": "Large container (max-width: 32rem / 512px)",
+						"context": "Main content areas, articles"
+					},
+					{
+						"value": "xl",
+						"description": "Extra large container (max-width: 36rem / 576px)",
+						"context": "Wide content, dashboard layouts"
+					},
+					{
+						"value": "2xl",
+						"description": "2X large container (max-width: 42rem / 672px)",
+						"context": "Hero sections, feature content"
+					},
+					{
+						"value": "full",
+						"description": "Full width container (no max-width constraint)",
+						"context": "Full-width layouts, fluid designs"
+					}
+				]
+			},
+			"padding": {
+				"type": {
+					"custom": "variant",
+					"values": ["none", "sm", "md", "lg", "xl"]
+				},
+				"description": "Internal padding applied to container content",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "none",
+						"description": "No padding (p-0)",
+						"context": "Full-width content, edge-to-edge layouts"
+					},
+					{
+						"value": "sm",
+						"description": "Small padding (px-4 py-2)",
+						"context": "Compact layouts, mobile screens"
+					},
+					{
+						"value": "md",
+						"description": "Medium padding (px-6 py-4)",
+						"context": "Standard content spacing"
+					},
+					{
+						"value": "lg",
+						"description": "Large padding (px-8 py-6)",
+						"context": "Generous spacing, feature sections"
+					},
+					{
+						"value": "xl",
+						"description": "Extra large padding (px-12 py-8)",
+						"context": "Hero sections, prominent content"
+					}
+				]
+			},
+			"center": {
+				"type": { "primitive": "boolean" },
+				"description": "Centers the container horizontally using margin auto",
+				"required": false,
+				"defaultValue": true,
+				"accessibility": {
+					"impact": "Layout centering improves content readability and structure"
+				}
+			},
+			"fluid": {
+				"type": { "primitive": "boolean" },
+				"description": "Makes container take full width regardless of maxWidth setting",
+				"required": false,
+				"defaultValue": false,
+				"mutuallyExclusive": ["center"],
+				"examples": [
+					{
+						"value": true,
+						"description": "Full-width fluid container",
+						"context": "Hero banners, full-width sections"
+					},
+					{
+						"value": false,
+						"description": "Constrained width container",
+						"context": "Standard content layouts"
+					}
+				]
+			},
+			"as": {
+				"type": {
+					"custom": "variant",
+					"values": ["div", "section", "main", "article"]
+				},
+				"description": "Semantic HTML element to render as container",
+				"required": false,
+				"defaultValue": "div",
+				"accessibility": {
+					"role": "semantic-element",
+					"impact": "Proper semantic elements improve screen reader navigation"
+				},
+				"examples": [
+					{
+						"value": "div",
+						"description": "Generic container without semantic meaning",
+						"context": "Layout wrappers, styling containers"
+					},
+					{
+						"value": "section",
+						"description": "Thematic grouping of content",
+						"context": "Content sections, feature areas"
+					},
+					{
+						"value": "main",
+						"description": "Primary content area of page",
+						"context": "Main page content, single per page"
+					},
+					{
+						"value": "article",
+						"description": "Standalone piece of content",
+						"context": "Blog posts, news articles, independent content"
+					}
+				]
+			},
+			"children": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Content to be contained within the container",
+				"required": true,
+				"accessibility": {
+					"description": "Container content should maintain proper heading hierarchy"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": ["children"],
+			"optional": [
+				"maxWidth",
+				"padding",
+				"center",
+				"fluid",
+				"as",
+				"className",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element"],
+				"description": "Any valid React content to be contained"
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"maxWidth": {
+				"values": {
+					"xs": "max-w-xs",
+					"sm": "max-w-sm",
+					"md": "max-w-md",
+					"lg": "max-w-lg",
+					"xl": "max-w-xl",
+					"2xl": "max-w-2xl",
+					"full": "max-w-full"
+				},
+				"defaultValue": "lg"
+			},
+			"padding": {
+				"values": {
+					"none": "p-0",
+					"sm": "px-4 py-2",
+					"md": "px-6 py-4",
+					"lg": "px-8 py-6",
+					"xl": "px-12 py-8"
+				},
+				"defaultValue": "md"
+			},
+			"center": {
+				"values": {
+					"true": "mx-auto",
+					"false": ""
+				},
+				"defaultValue": "true"
+			},
+			"fluid": {
+				"values": {
+					"true": "w-full",
+					"false": ""
+				},
+				"defaultValue": "false"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"fluid": "true",
+					"center": "true"
+				},
+				"className": "w-full",
+				"description": "Fluid containers override center alignment"
+			},
+			{
+				"conditions": {
+					"maxWidth": "full",
+					"padding": "none"
+				},
+				"className": "w-full",
+				"description": "Full-width containers with no constraints"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "generic",
+			"additional": ["main", "region", "article"]
+		},
+		"keyboardNavigation": {
+			"supported": false,
+			"patterns": [],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "mount",
+					"message": "Content container",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": [],
+				"descriptions": {
+					"semantic": "Content container with semantic element",
+					"main": "Main content area",
+					"section": "Content section",
+					"article": "Article content"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"semantic-element-correct",
+				"max-width-applied",
+				"padding-applied",
+				"centering-applied",
+				"fluid-width-applied",
+				"accessibility-attributes-present"
+			],
+			"manual": [
+				"content-readability",
+				"responsive-behavior",
+				"semantic-structure-logical",
+				"keyboard-navigation-smooth"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/container.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"HTMLAttributes",
+							"ReactNode",
+							"ElementType"
+						]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/container.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/container.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/container.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/container.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/container.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Container",
+			"description": "Simple centered container with default medium width and padding",
+			"category": "basic",
+			"code": {
+				"react": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
+				"vue": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
+				"angular": "<xala-container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</xala-container>",
+				"svelte": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
+				"solid": "<Container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</Container>",
+				"web-components": "<xala-container>\n  <h1>Welcome to our application</h1>\n  <p>This content is contained within a responsive container.</p>\n</xala-container>"
+			},
+			"props": {
+				"children": "Content elements"
+			},
+			"notes": "Uses default lg max-width, md padding, and center alignment"
+		},
+		{
+			"name": "Centered Container",
+			"description": "Container with specific width constraint and centered alignment",
+			"category": "basic",
+			"code": {
+				"react": "<Container maxWidth='md' center>\n  <div className='text-center'>\n    <h2>Centered Content</h2>\n    <p>This container is explicitly centered with medium width.</p>\n  </div>\n</Container>"
+			},
+			"props": {
+				"maxWidth": "md",
+				"center": true
+			},
+			"notes": "Explicitly sets centering for clarity, though it's the default behavior"
+		},
+		{
+			"name": "Fluid Container",
+			"description": "Full-width container that takes up the entire available width",
+			"category": "basic",
+			"code": {
+				"react": "<Container fluid padding='xl'>\n  <div className='bg-blue-50 rounded-lg'>\n    <h2>Full Width Hero Section</h2>\n    <p>This container spans the full width of its parent.</p>\n  </div>\n</Container>"
+			},
+			"props": {
+				"fluid": true,
+				"padding": "xl"
+			},
+			"notes": "Fluid containers ignore maxWidth constraints and center settings"
+		},
+		{
+			"name": "Semantic Main Container",
+			"description": "Container using semantic main element for primary page content",
+			"category": "basic",
+			"code": {
+				"react": "<Container as='main' maxWidth='xl' padding='lg'>\n  <h1>Main Page Content</h1>\n  <article>\n    <h2>Article Title</h2>\n    <p>This is the primary content area of the page.</p>\n  </article>\n</Container>"
+			},
+			"props": {
+				"as": "main",
+				"maxWidth": "xl",
+				"padding": "lg"
+			},
+			"notes": "Uses semantic main element for better accessibility and SEO"
+		},
+		{
+			"name": "Section Container",
+			"description": "Container as section element for thematic content grouping",
+			"category": "basic",
+			"code": {
+				"react": "<Container as='section' maxWidth='2xl' padding='lg'>\n  <h2>Feature Section</h2>\n  <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>\n    <div>Feature 1</div>\n    <div>Feature 2</div>\n    <div>Feature 3</div>\n  </div>\n</Container>"
+			},
+			"props": {
+				"as": "section",
+				"maxWidth": "2xl",
+				"padding": "lg"
+			},
+			"notes": "Section elements are ideal for thematic content groups"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use semantic HTML elements (main, section, article) for better content structure",
+				"Choose appropriate maxWidth based on content type and reading comfort",
+				"Apply Norwegian design tokens for government compliance",
+				"Consider mobile-first responsive behavior with padding adjustments",
+				"Use fluid containers for full-width sections like heroes or banners",
+				"Ensure proper heading hierarchy within container content"
+			],
+			"patterns": [
+				{
+					"pattern": "class-variance-authority (cva)",
+					"context": "React implementation",
+					"recommendation": "Use CVA for type-safe variant management with responsive utilities"
+				},
+				{
+					"pattern": "semantic HTML structure",
+					"context": "All implementations",
+					"recommendation": "Use appropriate semantic elements based on content purpose"
+				},
+				{
+					"pattern": "responsive design",
+					"context": "Mobile-first layouts",
+					"recommendation": "Apply mobile-friendly padding and width constraints"
+				},
+				{
+					"pattern": "polymorphic components",
+					"context": "React TypeScript",
+					"recommendation": "Use ElementType for flexible semantic element rendering"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "Fixed pixel widths in containers",
+					"reason": "Breaks responsive design and accessibility",
+					"alternative": "Use Tailwind's responsive max-width utilities"
+				},
+				{
+					"pattern": "Nested containers with same maxWidth",
+					"reason": "Redundant constraints and confusing layout",
+					"alternative": "Use single container at appropriate level"
+				},
+				{
+					"pattern": "Container without semantic meaning for main content",
+					"reason": "Poor accessibility and content structure",
+					"alternative": "Use main, section, or article elements appropriately"
+				},
+				{
+					"pattern": "Fluid containers with centering",
+					"reason": "Conflicting layout intentions",
+					"alternative": "Choose either fluid full-width or centered constrained width"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "simple",
+			"estimatedTokens": 800
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"responsive-guide",
+				"semantic-usage"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with children content",
+				"applies maxWidth classes correctly",
+				"applies padding classes correctly",
+				"centers container when center=true",
+				"applies fluid width when fluid=true",
+				"renders correct semantic element",
+				"forwards additional className",
+				"handles testId prop",
+				"compound variant conditions work",
+				"accessibility attributes present"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"container in responsive layouts",
+				"nested content with proper spacing",
+				"semantic element accessibility",
+				"Norwegian design token usage",
+				"mobile responsive behavior",
+				"fluid vs constrained width behavior"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": false
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "1KB",
+				"gzipped": "400B"
+			},
+			"renderTime": {
+				"initial": "<5ms",
+				"update": "<2ms"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure with single wrapper element",
+			"CSS-only responsive behavior using Tailwind utilities",
+			"Efficient class variance authority patterns",
+			"No JavaScript interactivity overhead",
+			"Tree-shakeable semantic element variants",
+			"Optimized compound variant conditions"
+		]
+	}
 }

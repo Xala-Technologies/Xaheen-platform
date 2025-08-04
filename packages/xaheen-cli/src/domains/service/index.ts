@@ -1,122 +1,161 @@
-import type { CLICommand } from '../../types/index.js';
-import { CLIError } from '../../types/index.js';
-import { cliLogger } from '../../utils/logger.js';
-import chalk from 'chalk';
+import chalk from "chalk";
+import type { CLICommand } from "../../types/index.js";
+import { CLIError } from "../../types/index.js";
+import { cliLogger } from "../../utils/logger.js";
 
 export default class ServiceDomain {
-  private get configManager() {
-    return global.__xaheen_cli.configManager;
-  }
+	private get configManager() {
+		return global.__xaheen_cli.configManager;
+	}
 
-  private get registry() {
-    return global.__xaheen_cli.registry;
-  }
+	private get registry() {
+		return global.__xaheen_cli.registry;
+	}
 
-  public async add(command: CLICommand): Promise<void> {
-    const serviceName = command.target;
-    
-    if (!serviceName) {
-      throw new CLIError('Service name is required', 'MISSING_SERVICE_NAME', 'service', 'add');
-    }
+	public async add(command: CLICommand): Promise<void> {
+		const serviceName = command.target;
 
-    cliLogger.info(`Adding service: ${serviceName}`);
+		if (!serviceName) {
+			throw new CLIError(
+				"Service name is required",
+				"MISSING_SERVICE_NAME",
+				"service",
+				"add",
+			);
+		}
 
-    try {
-      // Find service template
-      const template = this.registry.getServiceTemplate(serviceName);
-      
-      if (!template) {
-        // Show available services
-        const availableServices = this.registry.getAllServiceTemplates();
-        cliLogger.error(`Service "${serviceName}" not found.`);
-        
-        if (availableServices.length > 0) {
-          cliLogger.info('Available services:');
-          availableServices.forEach(service => {
-            console.log(`  ${chalk.cyan(service.id)} - ${service.description}`);
-          });
-        }
-        return;
-      }
+		cliLogger.info(`Adding service: ${serviceName}`);
 
-      // Add service to configuration
-      await this.configManager.addService(serviceName, {
-        provider: template.provider,
-        version: template.version,
-        config: template.config
-      });
+		try {
+			// Find service template
+			const template = this.registry.getServiceTemplate(serviceName);
 
-      cliLogger.success(`Service "${serviceName}" added successfully!`);
-      
-      // Show next steps
-      if (template.dependencies.length > 0) {
-        cliLogger.info(`Dependencies required: ${template.dependencies.join(', ')}`);
-      }
+			if (!template) {
+				// Show available services
+				const availableServices = this.registry.getAllServiceTemplates();
+				cliLogger.error(`Service "${serviceName}" not found.`);
 
-    } catch (error) {
-      if (error instanceof CLIError) {
-        throw error;
-      }
-      throw new CLIError(`Failed to add service: ${error}`, 'SERVICE_ADD_FAILED', 'service', 'add');
-    }
-  }
+				if (availableServices.length > 0) {
+					cliLogger.info("Available services:");
+					availableServices.forEach((service) => {
+						console.log(`  ${chalk.cyan(service.id)} - ${service.description}`);
+					});
+				}
+				return;
+			}
 
-  public async remove(command: CLICommand): Promise<void> {
-    const serviceName = command.target;
-    
-    if (!serviceName) {
-      throw new CLIError('Service name is required', 'MISSING_SERVICE_NAME', 'service', 'remove');
-    }
+			// Add service to configuration
+			await this.configManager.addService(serviceName, {
+				provider: template.provider,
+				version: template.version,
+				config: template.config,
+			});
 
-    cliLogger.info(`Removing service: ${serviceName}`);
+			cliLogger.success(`Service "${serviceName}" added successfully!`);
 
-    try {
-      await this.configManager.removeService(serviceName);
-      cliLogger.success(`Service "${serviceName}" removed successfully!`);
-    } catch (error) {
-      throw new CLIError(`Failed to remove service: ${error}`, 'SERVICE_REMOVE_FAILED', 'service', 'remove');
-    }
-  }
+			// Show next steps
+			if (template.dependencies.length > 0) {
+				cliLogger.info(
+					`Dependencies required: ${template.dependencies.join(", ")}`,
+				);
+			}
+		} catch (error) {
+			if (error instanceof CLIError) {
+				throw error;
+			}
+			throw new CLIError(
+				`Failed to add service: ${error}`,
+				"SERVICE_ADD_FAILED",
+				"service",
+				"add",
+			);
+		}
+	}
 
-  public async list(command: CLICommand): Promise<void> {
-    cliLogger.info('Available services:');
+	public async remove(command: CLICommand): Promise<void> {
+		const serviceName = command.target;
 
-    try {
-      const services = this.registry.getAllServiceTemplates();
-      const registryStats = this.registry.getRegistryStats();
-      
-      console.log(`\n${chalk.bold('Service Registry')} (${registryStats.services} services available)\n`);
-      
-      // Group by category
-      const categories = [...new Set(services.map(s => s.category))];
-      
-      for (const category of categories) {
-        console.log(chalk.bold.blue(`${category.toUpperCase()}:`));
-        
-        const categoryServices = services.filter(s => s.category === category);
-        
-        for (const service of categoryServices) {
-          console.log(`  ${chalk.cyan(service.id.padEnd(20))} ${chalk.gray(service.description)}`);
-          console.log(`    ${chalk.gray(`Provider: ${service.provider} v${service.version}`)}`);
-        }
-        
-        console.log();
-      }
-      
-      // Show configured services
-      const config = await this.configManager.loadConfig();
-      if (config.services && Object.keys(config.services).length > 0) {
-        console.log(chalk.bold.green('CONFIGURED SERVICES:'));
-        for (const [serviceId, serviceConfig] of Object.entries(config.services)) {
-          console.log(`  ${chalk.green('✓')} ${chalk.cyan(serviceId)} (${serviceConfig.provider} v${serviceConfig.version || 'latest'})`);
-        }
-      } else {
-        console.log(chalk.gray('No services configured yet.'));
-        console.log(chalk.gray('Use `xaheen service add <service>` to add services.'));
-      }
+		if (!serviceName) {
+			throw new CLIError(
+				"Service name is required",
+				"MISSING_SERVICE_NAME",
+				"service",
+				"remove",
+			);
+		}
 
-    } catch (error) {
-      throw new CLIError(`Failed to list services: ${error}`, 'SERVICE_LIST_FAILED', 'service', 'list');
-    }
-  }
+		cliLogger.info(`Removing service: ${serviceName}`);
+
+		try {
+			await this.configManager.removeService(serviceName);
+			cliLogger.success(`Service "${serviceName}" removed successfully!`);
+		} catch (error) {
+			throw new CLIError(
+				`Failed to remove service: ${error}`,
+				"SERVICE_REMOVE_FAILED",
+				"service",
+				"remove",
+			);
+		}
+	}
+
+	public async list(command: CLICommand): Promise<void> {
+		cliLogger.info("Available services:");
+
+		try {
+			const services = this.registry.getAllServiceTemplates();
+			const registryStats = this.registry.getRegistryStats();
+
+			console.log(
+				`\n${chalk.bold("Service Registry")} (${registryStats.services} services available)\n`,
+			);
+
+			// Group by category
+			const categories = [...new Set(services.map((s) => s.category))];
+
+			for (const category of categories) {
+				console.log(chalk.bold.blue(`${category.toUpperCase()}:`));
+
+				const categoryServices = services.filter(
+					(s) => s.category === category,
+				);
+
+				for (const service of categoryServices) {
+					console.log(
+						`  ${chalk.cyan(service.id.padEnd(20))} ${chalk.gray(service.description)}`,
+					);
+					console.log(
+						`    ${chalk.gray(`Provider: ${service.provider} v${service.version}`)}`,
+					);
+				}
+
+				console.log();
+			}
+
+			// Show configured services
+			const config = await this.configManager.loadConfig();
+			if (config.services && Object.keys(config.services).length > 0) {
+				console.log(chalk.bold.green("CONFIGURED SERVICES:"));
+				for (const [serviceId, serviceConfig] of Object.entries(
+					config.services,
+				)) {
+					console.log(
+						`  ${chalk.green("✓")} ${chalk.cyan(serviceId)} (${serviceConfig.provider} v${serviceConfig.version || "latest"})`,
+					);
+				}
+			} else {
+				console.log(chalk.gray("No services configured yet."));
+				console.log(
+					chalk.gray("Use `xaheen service add <service>` to add services."),
+				);
+			}
+		} catch (error) {
+			throw new CLIError(
+				`Failed to list services: ${error}`,
+				"SERVICE_LIST_FAILED",
+				"service",
+				"list",
+			);
+		}
+	}
 }

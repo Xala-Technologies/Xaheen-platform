@@ -1,232 +1,259 @@
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger.js";
 
 export interface TokenGenerationOptions {
-  readonly platform: string;
-  readonly outputDir: string;
-  readonly format: string;
-  readonly validate: boolean;
+	readonly platform: string;
+	readonly outputDir: string;
+	readonly format: string;
+	readonly validate: boolean;
 }
 
 export interface TokenValidationOptions {
-  readonly sourceDir: string;
-  readonly strict: boolean;
-  readonly checkReferences: boolean;
-  readonly checkNaming: boolean;
+	readonly sourceDir: string;
+	readonly strict: boolean;
+	readonly checkReferences: boolean;
+	readonly checkNaming: boolean;
 }
 
 export interface TokenSyncOptions {
-  readonly platform: string;
-  readonly sourceDir: string;
-  readonly outputDir: string;
-  readonly format: string;
+	readonly platform: string;
+	readonly sourceDir: string;
+	readonly outputDir: string;
+	readonly format: string;
 }
 
 export interface TokenTransformOptions {
-  readonly sourceDir: string;
-  readonly outputDir: string;
-  readonly targetFormat: string;
-  readonly platform: string;
+	readonly sourceDir: string;
+	readonly outputDir: string;
+	readonly targetFormat: string;
+	readonly platform: string;
 }
 
 export interface TokenWatchOptions {
-  readonly sourceDir: string;
-  readonly outputDir: string;
-  readonly platform: string;
-  readonly format: string;
+	readonly sourceDir: string;
+	readonly outputDir: string;
+	readonly platform: string;
+	readonly format: string;
 }
 
 export interface TokenGenerationResult {
-  readonly platform: string;
-  readonly filePath: string;
-  readonly format: string;
-  readonly tokenCount: number;
-  readonly fileSize: string;
+	readonly platform: string;
+	readonly filePath: string;
+	readonly format: string;
+	readonly tokenCount: number;
+	readonly fileSize: string;
 }
 
 export interface TokenValidationResult {
-  readonly isValid: boolean;
-  readonly tokenCount: number;
-  readonly errors: ReadonlyArray<ValidationError>;
-  readonly warnings: ReadonlyArray<ValidationWarning>;
+	readonly isValid: boolean;
+	readonly tokenCount: number;
+	readonly errors: ReadonlyArray<ValidationError>;
+	readonly warnings: ReadonlyArray<ValidationWarning>;
 }
 
 export interface TokenTransformResult {
-  readonly sourceFormat: string;
-  readonly targetFormat: string;
-  readonly outputPath: string;
-  readonly tokenCount: number;
+	readonly sourceFormat: string;
+	readonly targetFormat: string;
+	readonly outputPath: string;
+	readonly tokenCount: number;
 }
 
 export interface ValidationError {
-  readonly message: string;
-  readonly file: string;
-  readonly line: number;
-  readonly severity: 'error';
+	readonly message: string;
+	readonly file: string;
+	readonly line: number;
+	readonly severity: "error";
 }
 
 export interface ValidationWarning {
-  readonly message: string;
-  readonly file: string;
-  readonly line: number;
-  readonly severity: 'warning';
+	readonly message: string;
+	readonly file: string;
+	readonly line: number;
+	readonly severity: "warning";
 }
 
 export class TokenManager {
-  async generate(options: TokenGenerationOptions): Promise<ReadonlyArray<TokenGenerationResult>> {
-    logger.info(`Generating tokens for ${options.platform}`);
+	async generate(
+		options: TokenGenerationOptions,
+	): Promise<ReadonlyArray<TokenGenerationResult>> {
+		logger.info(`Generating tokens for ${options.platform}`);
 
-    if (options.platform === 'all') {
-      return await this.generateForAllPlatforms(options);
-    }
+		if (options.platform === "all") {
+			return await this.generateForAllPlatforms(options);
+		}
 
-    return [await this.generateForPlatform(options.platform, options)];
-  }
+		return [await this.generateForPlatform(options.platform, options)];
+	}
 
-  async validate(options: TokenValidationOptions): Promise<TokenValidationResult> {
-    logger.info('Validating design tokens...');
+	async validate(
+		options: TokenValidationOptions,
+	): Promise<TokenValidationResult> {
+		logger.info("Validating design tokens...");
 
-    // Mock validation - in production, parse and validate actual token files
-    await this.simulateOperation(1000);
+		// Mock validation - in production, parse and validate actual token files
+		await this.simulateOperation(1000);
 
-    const errors: ValidationError[] = [];
-    const warnings: ValidationWarning[] = [];
+		const errors: ValidationError[] = [];
+		const warnings: ValidationWarning[] = [];
 
-    // Mock validation results
-    if (!options.strict) {
-      warnings.push({
-        message: 'Token naming convention not enforced',
-        file: 'colors.json',
-        line: 1,
-        severity: 'warning'
-      });
-    }
+		// Mock validation results
+		if (!options.strict) {
+			warnings.push({
+				message: "Token naming convention not enforced",
+				file: "colors.json",
+				line: 1,
+				severity: "warning",
+			});
+		}
 
-    return {
-      isValid: errors.length === 0,
-      tokenCount: 142,
-      errors,
-      warnings
-    };
-  }
+		return {
+			isValid: errors.length === 0,
+			tokenCount: 142,
+			errors,
+			warnings,
+		};
+	}
 
-  async sync(options: TokenSyncOptions): Promise<void> {
-    logger.info(`Syncing tokens for ${options.platform}`);
+	async sync(options: TokenSyncOptions): Promise<void> {
+		logger.info(`Syncing tokens for ${options.platform}`);
 
-    await this.simulateOperation(800);
-    
-    // Mock sync operation
-    logger.debug(`Synchronized tokens from ${options.sourceDir} to ${options.outputDir}`);
-  }
+		await this.simulateOperation(800);
 
-  async transform(options: TokenTransformOptions): Promise<ReadonlyArray<TokenTransformResult>> {
-    logger.info(`Transforming tokens to ${options.targetFormat}`);
+		// Mock sync operation
+		logger.debug(
+			`Synchronized tokens from ${options.sourceDir} to ${options.outputDir}`,
+		);
+	}
 
-    await this.simulateOperation(1200);
+	async transform(
+		options: TokenTransformOptions,
+	): Promise<ReadonlyArray<TokenTransformResult>> {
+		logger.info(`Transforming tokens to ${options.targetFormat}`);
 
-    const results: TokenTransformResult[] = [];
+		await this.simulateOperation(1200);
 
-    if (options.platform === 'all') {
-      const platforms = ['react', 'vue', 'angular', 'flutter', 'ios', 'android'];
-      
-      for (const platform of platforms) {
-        results.push({
-          sourceFormat: 'json',
-          targetFormat: options.targetFormat,
-          outputPath: `${options.outputDir}/${platform}/tokens.${this.getFileExtension(options.targetFormat)}`,
-          tokenCount: 142
-        });
-      }
-    } else {
-      results.push({
-        sourceFormat: 'json',
-        targetFormat: options.targetFormat,
-        outputPath: `${options.outputDir}/${options.platform}/tokens.${this.getFileExtension(options.targetFormat)}`,
-        tokenCount: 142
-      });
-    }
+		const results: TokenTransformResult[] = [];
 
-    return results;
-  }
+		if (options.platform === "all") {
+			const platforms = [
+				"react",
+				"vue",
+				"angular",
+				"flutter",
+				"ios",
+				"android",
+			];
 
-  async watch(options: TokenWatchOptions): Promise<void> {
-    logger.info('Starting token watch mode...');
+			for (const platform of platforms) {
+				results.push({
+					sourceFormat: "json",
+					targetFormat: options.targetFormat,
+					outputPath: `${options.outputDir}/${platform}/tokens.${this.getFileExtension(options.targetFormat)}`,
+					tokenCount: 142,
+				});
+			}
+		} else {
+			results.push({
+				sourceFormat: "json",
+				targetFormat: options.targetFormat,
+				outputPath: `${options.outputDir}/${options.platform}/tokens.${this.getFileExtension(options.targetFormat)}`,
+				tokenCount: 142,
+			});
+		}
 
-    // Mock file watcher setup
-    await this.simulateOperation(500);
-    
-    logger.success('Token watcher started');
+		return results;
+	}
 
-    // In production, set up file system watcher
-    // chokidar.watch(options.sourceDir).on('change', async (path) => {
-    //   await this.generate({
-    //     platform: options.platform,
-    //     outputDir: options.outputDir,
-    //     format: options.format,
-    //     validate: true
-    //   });
-    // });
-  }
+	async watch(options: TokenWatchOptions): Promise<void> {
+		logger.info("Starting token watch mode...");
 
-  private async generateForAllPlatforms(options: TokenGenerationOptions): Promise<ReadonlyArray<TokenGenerationResult>> {
-    const platforms = ['react', 'vue', 'angular', 'flutter', 'ios', 'android'];
-    const results: TokenGenerationResult[] = [];
+		// Mock file watcher setup
+		await this.simulateOperation(500);
 
-    for (const platform of platforms) {
-      const result = await this.generateForPlatform(platform, {
-        ...options,
-        platform
-      });
-      results.push(result);
-    }
+		logger.success("Token watcher started");
 
-    return results;
-  }
+		// In production, set up file system watcher
+		// chokidar.watch(options.sourceDir).on('change', async (path) => {
+		//   await this.generate({
+		//     platform: options.platform,
+		//     outputDir: options.outputDir,
+		//     format: options.format,
+		//     validate: true
+		//   });
+		// });
+	}
 
-  private async generateForPlatform(platform: string, options: TokenGenerationOptions): Promise<TokenGenerationResult> {
-    logger.debug(`Generating tokens for ${platform}...`);
+	private async generateForAllPlatforms(
+		options: TokenGenerationOptions,
+	): Promise<ReadonlyArray<TokenGenerationResult>> {
+		const platforms = ["react", "vue", "angular", "flutter", "ios", "android"];
+		const results: TokenGenerationResult[] = [];
 
-    // Simulate token generation
-    await this.simulateOperation(800);
+		for (const platform of platforms) {
+			const result = await this.generateForPlatform(platform, {
+				...options,
+				platform,
+			});
+			results.push(result);
+		}
 
-    const fileExtension = this.getFileExtension(options.format);
-    const filePath = `${options.outputDir}/${platform}/tokens.${fileExtension}`;
+		return results;
+	}
 
-    // Mock token generation
-    await this.generateTokenFile(platform, options.format, filePath);
+	private async generateForPlatform(
+		platform: string,
+		options: TokenGenerationOptions,
+	): Promise<TokenGenerationResult> {
+		logger.debug(`Generating tokens for ${platform}...`);
 
-    return {
-      platform,
-      filePath,
-      format: options.format,
-      tokenCount: 142,
-      fileSize: this.getEstimatedFileSize(options.format)
-    };
-  }
+		// Simulate token generation
+		await this.simulateOperation(800);
 
-  private async generateTokenFile(platform: string, format: string, filePath: string): Promise<void> {
-    // Mock file generation - in production, generate actual token files
-    logger.debug(`Generated ${format} tokens for ${platform} at ${filePath}`);
+		const fileExtension = this.getFileExtension(options.format);
+		const filePath = `${options.outputDir}/${platform}/tokens.${fileExtension}`;
 
-    switch (format) {
-      case 'ts':
-        await this.generateTypeScriptTokens(platform, filePath);
-        break;
-      case 'css':
-        await this.generateCSSTokens(platform, filePath);
-        break;
-      case 'json':
-        await this.generateJSONTokens(platform, filePath);
-        break;
-      case 'tailwind':
-        await this.generateTailwindTokens(platform, filePath);
-        break;
-      default:
-        logger.warn(`Format ${format} not specifically handled`);
-    }
-  }
+		// Mock token generation
+		await this.generateTokenFile(platform, options.format, filePath);
 
-  private async generateTypeScriptTokens(platform: string, filePath: string): Promise<void> {
-    const content = `// Generated design tokens for ${platform}
+		return {
+			platform,
+			filePath,
+			format: options.format,
+			tokenCount: 142,
+			fileSize: this.getEstimatedFileSize(options.format),
+		};
+	}
+
+	private async generateTokenFile(
+		platform: string,
+		format: string,
+		filePath: string,
+	): Promise<void> {
+		// Mock file generation - in production, generate actual token files
+		logger.debug(`Generated ${format} tokens for ${platform} at ${filePath}`);
+
+		switch (format) {
+			case "ts":
+				await this.generateTypeScriptTokens(platform, filePath);
+				break;
+			case "css":
+				await this.generateCSSTokens(platform, filePath);
+				break;
+			case "json":
+				await this.generateJSONTokens(platform, filePath);
+				break;
+			case "tailwind":
+				await this.generateTailwindTokens(platform, filePath);
+				break;
+			default:
+				logger.warn(`Format ${format} not specifically handled`);
+		}
+	}
+
+	private async generateTypeScriptTokens(
+		platform: string,
+		filePath: string,
+	): Promise<void> {
+		const content = `// Generated design tokens for ${platform}
 // Generated on: ${new Date().toISOString()}
 
 export interface DesignTokens {
@@ -298,12 +325,15 @@ export const tokens: DesignTokens = {
 
 export default tokens;`;
 
-    // Mock file write
-    logger.debug(`Generated TypeScript tokens: ${filePath}`);
-  }
+		// Mock file write
+		logger.debug(`Generated TypeScript tokens: ${filePath}`);
+	}
 
-  private async generateCSSTokens(platform: string, filePath: string): Promise<void> {
-    const content = `/* Generated design tokens for ${platform} */
+	private async generateCSSTokens(
+		platform: string,
+		filePath: string,
+	): Promise<void> {
+		const content = `/* Generated design tokens for ${platform} */
 /* Generated on: ${new Date().toISOString()} */
 
 :root {
@@ -358,37 +388,43 @@ export default tokens;`;
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
 }`;
 
-    logger.debug(`Generated CSS tokens: ${filePath}`);
-  }
+		logger.debug(`Generated CSS tokens: ${filePath}`);
+	}
 
-  private async generateJSONTokens(platform: string, filePath: string): Promise<void> {
-    const content = {
-      $schema: 'https://schemas.xala.dev/design-tokens.json',
-      $version: '1.0.0',
-      $description: `Design tokens for ${platform}`,
-      $generatedOn: new Date().toISOString(),
-      color: {
-        primary: {
-          50: { value: '#eff6ff' },
-          100: { value: '#dbeafe' },
-          500: { value: '#3b82f6' },
-          900: { value: '#1e3a8a' }
-        }
-      },
-      space: {
-        xs: { value: '4px' },
-        sm: { value: '8px' },
-        md: { value: '16px' },
-        lg: { value: '24px' },
-        xl: { value: '32px' }
-      }
-    };
+	private async generateJSONTokens(
+		platform: string,
+		filePath: string,
+	): Promise<void> {
+		const content = {
+			$schema: "https://schemas.xala.dev/design-tokens.json",
+			$version: "1.0.0",
+			$description: `Design tokens for ${platform}`,
+			$generatedOn: new Date().toISOString(),
+			color: {
+				primary: {
+					50: { value: "#eff6ff" },
+					100: { value: "#dbeafe" },
+					500: { value: "#3b82f6" },
+					900: { value: "#1e3a8a" },
+				},
+			},
+			space: {
+				xs: { value: "4px" },
+				sm: { value: "8px" },
+				md: { value: "16px" },
+				lg: { value: "24px" },
+				xl: { value: "32px" },
+			},
+		};
 
-    logger.debug(`Generated JSON tokens: ${filePath}`);
-  }
+		logger.debug(`Generated JSON tokens: ${filePath}`);
+	}
 
-  private async generateTailwindTokens(platform: string, filePath: string): Promise<void> {
-    const content = `// Tailwind CSS configuration for ${platform}
+	private async generateTailwindTokens(
+		platform: string,
+		filePath: string,
+	): Promise<void> {
+		const content = `// Tailwind CSS configuration for ${platform}
 // Generated on: ${new Date().toISOString()}
 
 module.exports = {
@@ -436,53 +472,53 @@ module.exports = {
   }
 };`;
 
-    logger.debug(`Generated Tailwind tokens: ${filePath}`);
-  }
+		logger.debug(`Generated Tailwind tokens: ${filePath}`);
+	}
 
-  private getFileExtension(format: string): string {
-    switch (format) {
-      case 'ts':
-      case 'typescript':
-        return 'ts';
-      case 'js':
-      case 'javascript':
-        return 'js';
-      case 'css':
-        return 'css';
-      case 'scss':
-      case 'sass':
-        return 'scss';
-      case 'json':
-        return 'json';
-      case 'tailwind':
-        return 'js';
-      default:
-        return format;
-    }
-  }
+	private getFileExtension(format: string): string {
+		switch (format) {
+			case "ts":
+			case "typescript":
+				return "ts";
+			case "js":
+			case "javascript":
+				return "js";
+			case "css":
+				return "css";
+			case "scss":
+			case "sass":
+				return "scss";
+			case "json":
+				return "json";
+			case "tailwind":
+				return "js";
+			default:
+				return format;
+		}
+	}
 
-  private getEstimatedFileSize(format: string): string {
-    switch (format) {
-      case 'ts':
-      case 'typescript':
-        return '15.2 KB';
-      case 'js':
-      case 'javascript':
-        return '12.8 KB';
-      case 'css':
-        return '8.4 KB';
-      case 'scss':
-        return '9.1 KB';
-      case 'json':
-        return '6.7 KB';
-      case 'tailwind':
-        return '11.3 KB';
-      default:
-        return '10.0 KB';
-    }
-  }
+	private getEstimatedFileSize(format: string): string {
+		switch (format) {
+			case "ts":
+			case "typescript":
+				return "15.2 KB";
+			case "js":
+			case "javascript":
+				return "12.8 KB";
+			case "css":
+				return "8.4 KB";
+			case "scss":
+				return "9.1 KB";
+			case "json":
+				return "6.7 KB";
+			case "tailwind":
+				return "11.3 KB";
+			default:
+				return "10.0 KB";
+		}
+	}
 
-  private async simulateOperation(duration: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, duration));
-  }
+	private async simulateOperation(duration: number): Promise<void> {
+		return new Promise((resolve) => setTimeout(resolve, duration));
+	}
 }

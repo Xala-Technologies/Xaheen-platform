@@ -8,25 +8,28 @@
  */
 
 import {
-	intro,
-	outro,
-	text,
-	select,
-	multiselect,
-	confirm,
-	spinner,
-	isCancel,
 	cancel,
+	confirm,
+	intro,
+	isCancel,
+	multiselect,
+	outro,
+	select,
+	spinner,
+	text,
 } from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
 import consola from "consola";
+import {
+	executeFullStackGenerator,
+	getGeneratorHelp,
+} from "../generators/index.js";
 import type {
-	GeneratorType,
 	GeneratorOptions,
 	GeneratorResult,
+	GeneratorType,
 } from "../types/index.js";
-import { executeFullStackGenerator, getGeneratorHelp } from "../generators/index.js";
 
 // Generator types inspired by Rails - Full-Stack Development
 const GENERATOR_TYPES = [
@@ -84,8 +87,14 @@ export const generateCommand = new Command("generate")
 	.argument("[type]", `Generator type: ${GENERATOR_TYPES.join(", ")}`)
 	.argument("[name]", "Name of the item to generate")
 	.option("--fields <fields>", "Model fields (e.g., 'name:string email:email')")
-	.option("--actions <actions>", "Controller actions (e.g., 'index,show,create,update,destroy')")
-	.option("--ai <description>", "AI-powered generation with natural language description")
+	.option(
+		"--actions <actions>",
+		"Controller actions (e.g., 'index,show,create,update,destroy')",
+	)
+	.option(
+		"--ai <description>",
+		"AI-powered generation with natural language description",
+	)
 	.option("--platform <platform>", "Target platform (web, mobile, api)")
 	.option("--layout <layout>", "Layout to use (default, admin, auth)")
 	.option("--provider <provider>", "Service provider for integrations")
@@ -112,7 +121,7 @@ export const generateCommand = new Command("generate")
 			if (!type) {
 				const selectedType = await select({
 					message: "What would you like to generate?",
-					options: GENERATOR_TYPES.map(t => ({
+					options: GENERATOR_TYPES.map((t) => ({
 						value: t,
 						label: `${t.charAt(0).toUpperCase()}${t.slice(1)}`,
 						hint: getGeneratorDescription(t),
@@ -171,19 +180,45 @@ export const generateCommand = new Command("generate")
 					result = await generateModel(name, options, projectContext, registry);
 					break;
 				case "controller":
-					result = await generateController(name, options, projectContext, registry);
+					result = await generateController(
+						name,
+						options,
+						projectContext,
+						registry,
+					);
 					break;
 				case "service":
-					result = await generateService(name, options, projectContext, registry);
+					result = await generateService(
+						name,
+						options,
+						projectContext,
+						registry,
+					);
 					break;
 				case "component":
-					result = await generateComponent(name, options, projectContext, xalaService);
+					result = await generateComponent(
+						name,
+						options,
+						projectContext,
+						xalaService,
+					);
 					break;
 				case "page":
-					result = await generatePage(name, options, projectContext, xalaService);
+					result = await generatePage(
+						name,
+						options,
+						projectContext,
+						xalaService,
+					);
 					break;
 				case "scaffold":
-					result = await generateScaffold(name, options, projectContext, registry, xalaService);
+					result = await generateScaffold(
+						name,
+						options,
+						projectContext,
+						registry,
+						xalaService,
+					);
 					break;
 				default:
 					throw new Error(`Generator type '${type}' not implemented yet`);
@@ -193,12 +228,12 @@ export const generateCommand = new Command("generate")
 
 			if (result.success) {
 				outro(chalk.green(`✅ ${result.message}`));
-				
+
 				// Display generated files
 				if (result.files && result.files.length > 0) {
 					consola.info(chalk.cyan("📁 Generated files:"));
 					for (const file of result.files) {
-						consola.info(`  ${chalk.green('+')} ${file}`);
+						consola.info(`  ${chalk.green("+")} ${file}`);
 					}
 				}
 
@@ -206,7 +241,7 @@ export const generateCommand = new Command("generate")
 				if (result.commands && result.commands.length > 0) {
 					consola.info(chalk.cyan("🔧 Commands to run:"));
 					for (const command of result.commands) {
-						consola.info(`  ${chalk.yellow('$')} ${command}`);
+						consola.info(`  ${chalk.yellow("$")} ${command}`);
 					}
 				}
 
@@ -214,14 +249,13 @@ export const generateCommand = new Command("generate")
 				if (result.nextSteps && result.nextSteps.length > 0) {
 					consola.info(chalk.cyan("📋 Next steps:"));
 					for (const step of result.nextSteps) {
-						consola.info(`  ${chalk.blue('•')} ${step}`);
+						consola.info(`  ${chalk.blue("•")} ${step}`);
 					}
 				}
 			} else {
 				outro(chalk.red(`❌ ${result.message}`));
 				process.exit(1);
 			}
-
 		} catch (error) {
 			consola.error("Failed to generate:", error);
 			process.exit(1);
@@ -231,7 +265,7 @@ export const generateCommand = new Command("generate")
 function getGeneratorDescription(type: string): string {
 	const descriptions = {
 		model: "Database model with TypeScript types",
-		controller: "API controller with CRUD operations", 
+		controller: "API controller with CRUD operations",
 		service: "Business logic service class",
 		component: "UI component with Xala UI System",
 		page: "Full page with routing and layout",
@@ -256,10 +290,7 @@ async function generateModel(
 	return {
 		success: true,
 		files: [`src/models/${name.toLowerCase()}.ts`],
-		nextSteps: [
-			"Run database migration",
-			"Add model to service layer",
-		],
+		nextSteps: ["Run database migration", "Add model to service layer"],
 	};
 }
 
@@ -274,10 +305,7 @@ async function generateController(
 	return {
 		success: true,
 		files: [`src/controllers/${name.toLowerCase()}.controller.ts`],
-		nextSteps: [
-			"Add routes to router",
-			"Implement business logic in service",
-		],
+		nextSteps: ["Add routes to router", "Implement business logic in service"],
 	};
 }
 
@@ -292,10 +320,7 @@ async function generateService(
 	return {
 		success: true,
 		files: [`src/services/${name.toLowerCase()}.service.ts`],
-		nextSteps: [
-			"Inject service into controller",
-			"Add unit tests",
-		],
+		nextSteps: ["Inject service into controller", "Add unit tests"],
 	};
 }
 
@@ -308,7 +333,7 @@ async function generateComponent(
 	// Implementation for component generation with AI
 	// This would use Xala UI System + MCP for AI content
 	const files: string[] = [];
-	
+
 	if (context.framework === "next") {
 		files.push(`src/components/${name}/${name}.tsx`);
 		files.push(`src/components/${name}/${name}.stories.tsx`);
@@ -318,10 +343,7 @@ async function generateComponent(
 	return {
 		success: true,
 		files,
-		nextSteps: [
-			"Import component in your page",
-			"Add component to Storybook",
-		],
+		nextSteps: ["Import component in your page", "Add component to Storybook"],
 	};
 }
 
@@ -334,7 +356,7 @@ async function generatePage(
 	// Implementation for page generation
 	// This would create full pages with routing
 	const files: string[] = [];
-	
+
 	if (context.framework === "next") {
 		files.push(`src/app/${name.toLowerCase()}/page.tsx`);
 		files.push(`src/app/${name.toLowerCase()}/layout.tsx`);
@@ -343,10 +365,7 @@ async function generatePage(
 	return {
 		success: true,
 		files,
-		nextSteps: [
-			"Add navigation link",
-			"Configure page metadata",
-		],
+		nextSteps: ["Add navigation link", "Configure page metadata"],
 	};
 }
 
@@ -360,16 +379,16 @@ async function generateScaffold(
 	// Implementation for full scaffold (Rails-style)
 	// This would generate model + controller + views + routes
 	const files: string[] = [];
-	
+
 	// Generate model
 	files.push(`src/models/${name.toLowerCase()}.ts`);
-	
+
 	// Generate controller
 	files.push(`src/controllers/${name.toLowerCase()}.controller.ts`);
-	
+
 	// Generate service
 	files.push(`src/services/${name.toLowerCase()}.service.ts`);
-	
+
 	// Generate pages (if web app)
 	if (context.framework === "next") {
 		files.push(`src/app/${name.toLowerCase()}/page.tsx`);

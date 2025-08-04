@@ -2,44 +2,46 @@
  * Form Generator for Xala UI System
  */
 
-import type { FormConfig } from '../types/index.js';
+import type { FormConfig } from "../types/index.js";
 
 export class FormGenerator {
-  public generateForm(config: FormConfig): string {
-    const { name, fields, validation, submission } = config;
-    
-    const fieldComponents = fields.map(field => {
-      switch (field.type) {
-        case 'input':
-          return `
+	public generateForm(config: FormConfig): string {
+		const { name, fields, validation, submission } = config;
+
+		const fieldComponents = fields
+			.map((field) => {
+				switch (field.type) {
+					case "input":
+						return `
             <Input
               name="${field.name}"
               label="${field.label}"
               required={${field.required || false}}
               placeholder={t('form.${field.name}.placeholder')}
             />`;
-        case 'textarea':
-          return `
+					case "textarea":
+						return `
             <Textarea
               name="${field.name}"
               label="${field.label}"
               required={${field.required || false}}
               placeholder={t('form.${field.name}.placeholder')}
             />`;
-        case 'select':
-          return `
+					case "select":
+						return `
             <Select
               name="${field.name}"
               label="${field.label}"
               required={${field.required || false}}
               options={${field.name}Options}
             />`;
-        default:
-          return `<Input name="${field.name}" label="${field.label}" />`;
-      }
-    }).join('\n');
+					default:
+						return `<Input name="${field.name}" label="${field.label}" />`;
+				}
+			})
+			.join("\n");
 
-    return `
+		return `
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -89,28 +91,28 @@ export function ${name}({ onSubmit, onCancel }: ${name}Props): JSX.Element {
     </Form>
   );
 }`;
-  }
+	}
 
-  /**
-   * Generate a complete form using form component specifications (async version for MCP tools)
-   */
-  public async generateAdvancedForm(config: {
-    name: string;
-    fields: Array<{
-      component: string;
-      name: string;
-      label?: string;
-      required?: boolean;
-      validation?: any;
-      specification?: any;
-    }>;
-    layout: 'vertical' | 'horizontal' | 'inline' | 'grid';
-    validation: boolean;
-    norwegianCompliance: boolean;
-  }): Promise<string> {
-    const { name, fields, layout, norwegianCompliance } = config;
-    
-    const formCode = `
+	/**
+	 * Generate a complete form using form component specifications (async version for MCP tools)
+	 */
+	public async generateAdvancedForm(config: {
+		name: string;
+		fields: Array<{
+			component: string;
+			name: string;
+			label?: string;
+			required?: boolean;
+			validation?: any;
+			specification?: any;
+		}>;
+		layout: "vertical" | "horizontal" | "inline" | "grid";
+		validation: boolean;
+		norwegianCompliance: boolean;
+	}): Promise<string> {
+		const { name, fields, layout, norwegianCompliance } = config;
+
+		const formCode = `
 /**
  * Generated Form: ${name}
  * Layout: ${layout}
@@ -122,18 +124,24 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { t } from '@xala-technologies/ui-system/i18n';
-${fields.map(field => `import { ${field.component} } from '@xala-technologies/ui-system';`).join('\n')}
+${fields.map((field) => `import { ${field.component} } from '@xala-technologies/ui-system';`).join("\n")}
 
 // Form validation schema
 const ${name}Schema = z.object({
-${fields.map(field => {
-  const zodType = field.component === 'Input' ? 'z.string()' :
-                  field.component === 'Checkbox' ? 'z.boolean()' :
-                  field.component === 'Select' ? 'z.string()' :
-                  'z.string()';
-  const validation = field.required ? zodType : `${zodType}.optional()`;
-  return `  ${field.name}: ${validation}`;
-}).join(',\n')}
+${fields
+	.map((field) => {
+		const zodType =
+			field.component === "Input"
+				? "z.string()"
+				: field.component === "Checkbox"
+					? "z.boolean()"
+					: field.component === "Select"
+						? "z.string()"
+						: "z.string()";
+		const validation = field.required ? zodType : `${zodType}.optional()`;
+		return `  ${field.name}: ${validation}`;
+	})
+	.join(",\n")}
 });
 
 type ${name}Data = z.infer<typeof ${name}Schema>;
@@ -171,14 +179,16 @@ export const ${name}: React.FC<${name}Props> = ({
         {t('${name.toLowerCase()}.title')}
       </h2>
       
-${fields.map(field => `
+${fields
+	.map(
+		(field) => `
       <div className="space-y-2">
         <label 
           htmlFor="${field.name}" 
           className="block text-sm font-medium text-foreground"
         >
           {t('${name.toLowerCase()}.${field.name}.label')}
-          ${field.required ? '<span className="text-red-500 ml-1">*</span>' : ''}
+          ${field.required ? '<span className="text-red-500 ml-1">*</span>' : ""}
         </label>
         <${field.component}
           id="${field.name}"
@@ -186,7 +196,7 @@ ${fields.map(field => `
           placeholder={t('${name.toLowerCase()}.${field.name}.placeholder')}
           error={errors.${field.name}?.message}
           aria-describedby={errors.${field.name} ? '${field.name}-error' : undefined}
-          ${field.required ? 'required' : ''}
+          ${field.required ? "required" : ""}
         />
         {errors.${field.name} && (
           <p 
@@ -197,7 +207,9 @@ ${fields.map(field => `
             {errors.${field.name}?.message}
           </p>
         )}
-      </div>`).join('\n')}
+      </div>`,
+	)
+	.join("\n")}
       
       <div className="flex justify-end gap-4 pt-4">
         <button
@@ -229,6 +241,6 @@ ${fields.map(field => `
 ${name}.displayName = '${name}';
 `;
 
-    return formCode;
-  }
+		return formCode;
+	}
 }

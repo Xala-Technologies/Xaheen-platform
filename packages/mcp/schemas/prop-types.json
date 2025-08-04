@@ -1,681 +1,699 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://xala-technologies.com/schemas/prop-types/v5.0.0",
-  "title": "Xala UI Component Prop Types Schema v5.0",
-  "description": "Reusable prop type definitions for UI components with TypeScript and multi-platform support",
-  "type": "object",
-  "definitions": {
-    "propType": {
-      "type": "object",
-      "required": ["type", "description"],
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/primitiveType"
-            },
-            {
-              "$ref": "#/definitions/complexType"
-            },
-            {
-              "$ref": "#/definitions/customType"
-            },
-            {
-              "$ref": "#/definitions/unionType"
-            },
-            {
-              "$ref": "#/definitions/arrayType"
-            },
-            {
-              "$ref": "#/definitions/objectType"
-            }
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 5,
-          "description": "Clear description of the prop's purpose and usage"
-        },
-        "required": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether this prop is required"
-        },
-        "defaultValue": {
-          "description": "Default value for the prop"
-        },
-        "deprecated": {
-          "type": "object",
-          "properties": {
-            "since": {
-              "type": "string",
-              "description": "Version when deprecated"
-            },
-            "reason": {
-              "type": "string",
-              "description": "Reason for deprecation"
-            },
-            "alternative": {
-              "type": "string",
-              "description": "Recommended alternative"
-            }
-          }
-        },
-        "validation": {
-          "$ref": "#/definitions/validationRules"
-        },
-        "platforms": {
-          "type": "object",
-          "description": "Platform-specific prop configurations",
-          "patternProperties": {
-            "^(react|vue|angular|svelte|solid|web-components)$": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "description": "Platform-specific type definition"
-                },
-                "defaultValue": {
-                  "description": "Platform-specific default value"
-                },
-                "binding": {
-                  "type": "string",
-                  "description": "How to bind this prop in the platform"
-                },
-                "transformer": {
-                  "type": "string",
-                  "description": "Function to transform prop value"
-                }
-              }
-            }
-          }
-        },
-        "examples": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "description": "Example value"
-              },
-              "description": {
-                "type": "string"
-              },
-              "context": {
-                "type": "string",
-                "description": "When to use this example"
-              }
-            }
-          }
-        },
-        "accessibility": {
-          "type": "object",
-          "properties": {
-            "ariaAttribute": {
-              "type": "string",
-              "description": "Corresponding ARIA attribute"
-            },
-            "screenReaderText": {
-              "type": "string",
-              "description": "Text for screen readers"
-            },
-            "keyboardInteraction": {
-              "type": "boolean",
-              "description": "Affects keyboard interaction"
-            }
-          }
-        },
-        "i18n": {
-          "type": "object",
-          "properties": {
-            "translatable": {
-              "type": "boolean",
-              "description": "Whether this prop should be translated"
-            },
-            "key": {
-              "type": "string",
-              "description": "Translation key pattern"
-            },
-            "context": {
-              "type": "string",
-              "description": "Translation context"
-            }
-          }
-        }
-      }
-    },
-    "primitiveType": {
-      "type": "object",
-      "required": ["primitive"],
-      "properties": {
-        "primitive": {
-          "type": "string",
-          "enum": ["string", "number", "boolean", "null", "undefined"]
-        },
-        "constraints": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/stringConstraints"
-            },
-            {
-              "$ref": "#/definitions/numberConstraints"
-            }
-          ]
-        }
-      }
-    },
-    "complexType": {
-      "type": "object",
-      "required": ["complex"],
-      "properties": {
-        "complex": {
-          "type": "string",
-          "enum": ["function", "node", "element", "component", "ref", "date", "file"]
-        },
-        "signature": {
-          "type": "object",
-          "description": "Type signature for complex types",
-          "properties": {
-            "parameters": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string"
-                  },
-                  "required": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            },
-            "returnType": {
-              "type": "string"
-            }
-          }
-        },
-        "elementConstraints": {
-          "type": "object",
-          "properties": {
-            "allowedElements": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "forbiddenElements": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    },
-    "customType": {
-      "type": "object",
-      "required": ["custom"],
-      "properties": {
-        "custom": {
-          "type": "string",
-          "enum": [
-            "color",
-            "size",
-            "spacing",
-            "breakpoint",
-            "theme",
-            "variant",
-            "icon",
-            "url",
-            "email",
-            "phone",
-            "currency",
-            "percentage",
-            "duration",
-            "cssClass",
-            "cssProperty",
-            "keyboardKey",
-            "locale",
-            "timezone"
-          ]
-        },
-        "format": {
-          "type": "string",
-          "description": "Expected format for custom types"
-        },
-        "values": {
-          "type": "array",
-          "description": "Allowed values for enumerated custom types"
-        },
-        "pattern": {
-          "type": "string",
-          "description": "Regex pattern for validation"
-        }
-      }
-    },
-    "unionType": {
-      "type": "object",
-      "required": ["union"],
-      "properties": {
-        "union": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/primitiveType"
-              },
-              {
-                "$ref": "#/definitions/complexType"
-              },
-              {
-                "$ref": "#/definitions/customType"
-              }
-            ]
-          },
-          "minItems": 2
-        },
-        "discriminant": {
-          "type": "string",
-          "description": "Property to discriminate union types"
-        }
-      }
-    },
-    "arrayType": {
-      "type": "object",
-      "required": ["array"],
-      "properties": {
-        "array": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/primitiveType"
-            },
-            {
-              "$ref": "#/definitions/complexType"
-            },
-            {
-              "$ref": "#/definitions/customType"
-            },
-            {
-              "$ref": "#/definitions/objectType"
-            }
-          ]
-        },
-        "constraints": {
-          "type": "object",
-          "properties": {
-            "minItems": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "maxItems": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "uniqueItems": {
-              "type": "boolean"
-            }
-          }
-        }
-      }
-    },
-    "objectType": {
-      "type": "object",
-      "required": ["object"],
-      "properties": {
-        "object": {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z][a-zA-Z0-9]*$": {
-              "$ref": "#/definitions/propType"
-            }
-          }
-        },
-        "strict": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether additional properties are allowed"
-        }
-      }
-    },
-    "stringConstraints": {
-      "type": "object",
-      "properties": {
-        "minLength": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "maxLength": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "pattern": {
-          "type": "string",
-          "description": "Regex pattern"
-        },
-        "format": {
-          "type": "string",
-          "enum": ["email", "uri", "uuid", "date", "time", "datetime", "hostname", "ipv4", "ipv6"]
-        },
-        "enum": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "numberConstraints": {
-      "type": "object",
-      "properties": {
-        "minimum": {
-          "type": "number"
-        },
-        "maximum": {
-          "type": "number"
-        },
-        "exclusiveMinimum": {
-          "type": "number"
-        },
-        "exclusiveMaximum": {
-          "type": "number"
-        },
-        "multipleOf": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        },
-        "integer": {
-          "type": "boolean",
-          "description": "Must be an integer"
-        },
-        "positive": {
-          "type": "boolean",
-          "description": "Must be positive"
-        },
-        "enum": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
-        }
-      }
-    },
-    "validationRules": {
-      "type": "object",
-      "properties": {
-        "rules": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["type"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "required",
-                  "minLength",
-                  "maxLength",
-                  "pattern",
-                  "email",
-                  "url",
-                  "min",
-                  "max",
-                  "integer",
-                  "positive",
-                  "custom"
-                ]
-              },
-              "value": {
-                "description": "Rule parameter value"
-              },
-              "message": {
-                "type": "string",
-                "description": "Error message"
-              },
-              "severity": {
-                "type": "string",
-                "enum": ["error", "warning"],
-                "default": "error"
-              },
-              "customValidator": {
-                "type": "string",
-                "description": "Name of custom validator function"
-              }
-            }
-          }
-        },
-        "dependencies": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["prop", "condition"],
-            "properties": {
-              "prop": {
-                "type": "string",
-                "description": "Dependent prop name"
-              },
-              "condition": {
-                "type": "string",
-                "description": "Condition that triggers dependency"
-              },
-              "rules": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Rules to apply when condition is met"
-              }
-            }
-          }
-        },
-        "crossValidation": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "props": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Props involved in cross-validation"
-              },
-              "validator": {
-                "type": "string",
-                "description": "Cross-validation function name"
-              },
-              "message": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "commonTypes": {
-    "description": "Pre-defined common prop types for reuse",
-    "children": {
-      "type": {
-        "union": [
-          {
-            "primitive": "string"
-          },
-          {
-            "primitive": "number"
-          },
-          {
-            "complex": "node"
-          },
-          {
-            "complex": "element"
-          }
-        ]
-      },
-      "description": "Child content of the component",
-      "accessibility": {
-        "screenReaderText": "Child content"
-      }
-    },
-    "className": {
-      "type": {
-        "primitive": "string"
-      },
-      "description": "Additional CSS classes to apply",
-      "defaultValue": "",
-      "validation": {
-        "rules": [
-          {
-            "type": "pattern",
-            "value": "^[a-zA-Z0-9\\s\\-_]*$",
-            "message": "Invalid CSS class name format"
-          }
-        ]
-      }
-    },
-    "id": {
-      "type": {
-        "primitive": "string"
-      },
-      "description": "Unique identifier for the component",
-      "validation": {
-        "rules": [
-          {
-            "type": "pattern",
-            "value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
-            "message": "ID must start with a letter and contain only alphanumeric characters, hyphens, and underscores"
-          }
-        ]
-      },
-      "accessibility": {
-        "ariaAttribute": "id"
-      }
-    },
-    "ariaLabel": {
-      "type": {
-        "primitive": "string"
-      },
-      "description": "Accessible label for screen readers",
-      "accessibility": {
-        "ariaAttribute": "aria-label",
-        "screenReaderText": "Accessible label"
-      },
-      "i18n": {
-        "translatable": true,
-        "key": "aria.label.{componentName}",
-        "context": "accessibility"
-      }
-    },
-    "disabled": {
-      "type": {
-        "primitive": "boolean"
-      },
-      "description": "Whether the component is disabled",
-      "defaultValue": false,
-      "accessibility": {
-        "ariaAttribute": "aria-disabled",
-        "keyboardInteraction": true
-      }
-    },
-    "loading": {
-      "type": {
-        "primitive": "boolean"
-      },
-      "description": "Whether the component is in a loading state",
-      "defaultValue": false,
-      "accessibility": {
-        "ariaAttribute": "aria-busy",
-        "screenReaderText": "Loading"
-      }
-    },
-    "size": {
-      "type": {
-        "custom": "size"
-      },
-      "description": "Size variant of the component",
-      "values": ["xs", "sm", "md", "lg", "xl"],
-      "defaultValue": "md"
-    },
-    "variant": {
-      "type": {
-        "custom": "variant"
-      },
-      "description": "Visual variant of the component",
-      "values": ["primary", "secondary", "success", "warning", "error"],
-      "defaultValue": "primary"
-    },
-    "color": {
-      "type": {
-        "custom": "color"
-      },
-      "description": "Color theme for the component",
-      "format": "hex|rgb|hsl|named",
-      "validation": {
-        "rules": [
-          {
-            "type": "pattern",
-            "value": "^(#[0-9A-Fa-f]{6}|rgb\\(\\d+,\\s*\\d+,\\s*\\d+\\)|hsl\\(\\d+,\\s*\\d+%,\\s*\\d+%\\)|[a-zA-Z]+)$",
-            "message": "Invalid color format"
-          }
-        ]
-      }
-    },
-    "onClick": {
-      "type": {
-        "complex": "function"
-      },
-      "description": "Click event handler",
-      "signature": {
-        "parameters": [
-          {
-            "name": "event",
-            "type": "MouseEvent",
-            "required": true
-          }
-        ],
-        "returnType": "void"
-      },
-      "accessibility": {
-        "keyboardInteraction": true
-      }
-    },
-    "onKeyDown": {
-      "type": {
-        "complex": "function"
-      },
-      "description": "Keyboard event handler",
-      "signature": {
-        "parameters": [
-          {
-            "name": "event",
-            "type": "KeyboardEvent",
-            "required": true
-          }
-        ],
-        "returnType": "void"
-      },
-      "accessibility": {
-        "keyboardInteraction": true
-      }
-    },
-    "testId": {
-      "type": {
-        "primitive": "string"
-      },
-      "description": "Test identifier for automated testing",
-      "validation": {
-        "rules": [
-          {
-            "type": "pattern",
-            "value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
-            "message": "Test ID must start with a letter"
-          }
-        ]
-      }
-    }
-  }
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://xala-technologies.com/schemas/prop-types/v5.0.0",
+	"title": "Xala UI Component Prop Types Schema v5.0",
+	"description": "Reusable prop type definitions for UI components with TypeScript and multi-platform support",
+	"type": "object",
+	"definitions": {
+		"propType": {
+			"type": "object",
+			"required": ["type", "description"],
+			"properties": {
+				"type": {
+					"anyOf": [
+						{
+							"$ref": "#/definitions/primitiveType"
+						},
+						{
+							"$ref": "#/definitions/complexType"
+						},
+						{
+							"$ref": "#/definitions/customType"
+						},
+						{
+							"$ref": "#/definitions/unionType"
+						},
+						{
+							"$ref": "#/definitions/arrayType"
+						},
+						{
+							"$ref": "#/definitions/objectType"
+						}
+					]
+				},
+				"description": {
+					"type": "string",
+					"minLength": 5,
+					"description": "Clear description of the prop's purpose and usage"
+				},
+				"required": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether this prop is required"
+				},
+				"defaultValue": {
+					"description": "Default value for the prop"
+				},
+				"deprecated": {
+					"type": "object",
+					"properties": {
+						"since": {
+							"type": "string",
+							"description": "Version when deprecated"
+						},
+						"reason": {
+							"type": "string",
+							"description": "Reason for deprecation"
+						},
+						"alternative": {
+							"type": "string",
+							"description": "Recommended alternative"
+						}
+					}
+				},
+				"validation": {
+					"$ref": "#/definitions/validationRules"
+				},
+				"platforms": {
+					"type": "object",
+					"description": "Platform-specific prop configurations",
+					"patternProperties": {
+						"^(react|vue|angular|svelte|solid|web-components)$": {
+							"type": "object",
+							"properties": {
+								"type": {
+									"type": "string",
+									"description": "Platform-specific type definition"
+								},
+								"defaultValue": {
+									"description": "Platform-specific default value"
+								},
+								"binding": {
+									"type": "string",
+									"description": "How to bind this prop in the platform"
+								},
+								"transformer": {
+									"type": "string",
+									"description": "Function to transform prop value"
+								}
+							}
+						}
+					}
+				},
+				"examples": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"value": {
+								"description": "Example value"
+							},
+							"description": {
+								"type": "string"
+							},
+							"context": {
+								"type": "string",
+								"description": "When to use this example"
+							}
+						}
+					}
+				},
+				"accessibility": {
+					"type": "object",
+					"properties": {
+						"ariaAttribute": {
+							"type": "string",
+							"description": "Corresponding ARIA attribute"
+						},
+						"screenReaderText": {
+							"type": "string",
+							"description": "Text for screen readers"
+						},
+						"keyboardInteraction": {
+							"type": "boolean",
+							"description": "Affects keyboard interaction"
+						}
+					}
+				},
+				"i18n": {
+					"type": "object",
+					"properties": {
+						"translatable": {
+							"type": "boolean",
+							"description": "Whether this prop should be translated"
+						},
+						"key": {
+							"type": "string",
+							"description": "Translation key pattern"
+						},
+						"context": {
+							"type": "string",
+							"description": "Translation context"
+						}
+					}
+				}
+			}
+		},
+		"primitiveType": {
+			"type": "object",
+			"required": ["primitive"],
+			"properties": {
+				"primitive": {
+					"type": "string",
+					"enum": ["string", "number", "boolean", "null", "undefined"]
+				},
+				"constraints": {
+					"anyOf": [
+						{
+							"$ref": "#/definitions/stringConstraints"
+						},
+						{
+							"$ref": "#/definitions/numberConstraints"
+						}
+					]
+				}
+			}
+		},
+		"complexType": {
+			"type": "object",
+			"required": ["complex"],
+			"properties": {
+				"complex": {
+					"type": "string",
+					"enum": [
+						"function",
+						"node",
+						"element",
+						"component",
+						"ref",
+						"date",
+						"file"
+					]
+				},
+				"signature": {
+					"type": "object",
+					"description": "Type signature for complex types",
+					"properties": {
+						"parameters": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "string"
+									},
+									"type": {
+										"type": "string"
+									},
+									"required": {
+										"type": "boolean"
+									}
+								}
+							}
+						},
+						"returnType": {
+							"type": "string"
+						}
+					}
+				},
+				"elementConstraints": {
+					"type": "object",
+					"properties": {
+						"allowedElements": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"forbiddenElements": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		},
+		"customType": {
+			"type": "object",
+			"required": ["custom"],
+			"properties": {
+				"custom": {
+					"type": "string",
+					"enum": [
+						"color",
+						"size",
+						"spacing",
+						"breakpoint",
+						"theme",
+						"variant",
+						"icon",
+						"url",
+						"email",
+						"phone",
+						"currency",
+						"percentage",
+						"duration",
+						"cssClass",
+						"cssProperty",
+						"keyboardKey",
+						"locale",
+						"timezone"
+					]
+				},
+				"format": {
+					"type": "string",
+					"description": "Expected format for custom types"
+				},
+				"values": {
+					"type": "array",
+					"description": "Allowed values for enumerated custom types"
+				},
+				"pattern": {
+					"type": "string",
+					"description": "Regex pattern for validation"
+				}
+			}
+		},
+		"unionType": {
+			"type": "object",
+			"required": ["union"],
+			"properties": {
+				"union": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"$ref": "#/definitions/primitiveType"
+							},
+							{
+								"$ref": "#/definitions/complexType"
+							},
+							{
+								"$ref": "#/definitions/customType"
+							}
+						]
+					},
+					"minItems": 2
+				},
+				"discriminant": {
+					"type": "string",
+					"description": "Property to discriminate union types"
+				}
+			}
+		},
+		"arrayType": {
+			"type": "object",
+			"required": ["array"],
+			"properties": {
+				"array": {
+					"anyOf": [
+						{
+							"$ref": "#/definitions/primitiveType"
+						},
+						{
+							"$ref": "#/definitions/complexType"
+						},
+						{
+							"$ref": "#/definitions/customType"
+						},
+						{
+							"$ref": "#/definitions/objectType"
+						}
+					]
+				},
+				"constraints": {
+					"type": "object",
+					"properties": {
+						"minItems": {
+							"type": "integer",
+							"minimum": 0
+						},
+						"maxItems": {
+							"type": "integer",
+							"minimum": 0
+						},
+						"uniqueItems": {
+							"type": "boolean"
+						}
+					}
+				}
+			}
+		},
+		"objectType": {
+			"type": "object",
+			"required": ["object"],
+			"properties": {
+				"object": {
+					"type": "object",
+					"patternProperties": {
+						"^[a-zA-Z][a-zA-Z0-9]*$": {
+							"$ref": "#/definitions/propType"
+						}
+					}
+				},
+				"strict": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether additional properties are allowed"
+				}
+			}
+		},
+		"stringConstraints": {
+			"type": "object",
+			"properties": {
+				"minLength": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"maxLength": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"pattern": {
+					"type": "string",
+					"description": "Regex pattern"
+				},
+				"format": {
+					"type": "string",
+					"enum": [
+						"email",
+						"uri",
+						"uuid",
+						"date",
+						"time",
+						"datetime",
+						"hostname",
+						"ipv4",
+						"ipv6"
+					]
+				},
+				"enum": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"numberConstraints": {
+			"type": "object",
+			"properties": {
+				"minimum": {
+					"type": "number"
+				},
+				"maximum": {
+					"type": "number"
+				},
+				"exclusiveMinimum": {
+					"type": "number"
+				},
+				"exclusiveMaximum": {
+					"type": "number"
+				},
+				"multipleOf": {
+					"type": "number",
+					"exclusiveMinimum": 0
+				},
+				"integer": {
+					"type": "boolean",
+					"description": "Must be an integer"
+				},
+				"positive": {
+					"type": "boolean",
+					"description": "Must be positive"
+				},
+				"enum": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					}
+				}
+			}
+		},
+		"validationRules": {
+			"type": "object",
+			"properties": {
+				"rules": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["type"],
+						"properties": {
+							"type": {
+								"type": "string",
+								"enum": [
+									"required",
+									"minLength",
+									"maxLength",
+									"pattern",
+									"email",
+									"url",
+									"min",
+									"max",
+									"integer",
+									"positive",
+									"custom"
+								]
+							},
+							"value": {
+								"description": "Rule parameter value"
+							},
+							"message": {
+								"type": "string",
+								"description": "Error message"
+							},
+							"severity": {
+								"type": "string",
+								"enum": ["error", "warning"],
+								"default": "error"
+							},
+							"customValidator": {
+								"type": "string",
+								"description": "Name of custom validator function"
+							}
+						}
+					}
+				},
+				"dependencies": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["prop", "condition"],
+						"properties": {
+							"prop": {
+								"type": "string",
+								"description": "Dependent prop name"
+							},
+							"condition": {
+								"type": "string",
+								"description": "Condition that triggers dependency"
+							},
+							"rules": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Rules to apply when condition is met"
+							}
+						}
+					}
+				},
+				"crossValidation": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"props": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Props involved in cross-validation"
+							},
+							"validator": {
+								"type": "string",
+								"description": "Cross-validation function name"
+							},
+							"message": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"commonTypes": {
+		"description": "Pre-defined common prop types for reuse",
+		"children": {
+			"type": {
+				"union": [
+					{
+						"primitive": "string"
+					},
+					{
+						"primitive": "number"
+					},
+					{
+						"complex": "node"
+					},
+					{
+						"complex": "element"
+					}
+				]
+			},
+			"description": "Child content of the component",
+			"accessibility": {
+				"screenReaderText": "Child content"
+			}
+		},
+		"className": {
+			"type": {
+				"primitive": "string"
+			},
+			"description": "Additional CSS classes to apply",
+			"defaultValue": "",
+			"validation": {
+				"rules": [
+					{
+						"type": "pattern",
+						"value": "^[a-zA-Z0-9\\s\\-_]*$",
+						"message": "Invalid CSS class name format"
+					}
+				]
+			}
+		},
+		"id": {
+			"type": {
+				"primitive": "string"
+			},
+			"description": "Unique identifier for the component",
+			"validation": {
+				"rules": [
+					{
+						"type": "pattern",
+						"value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+						"message": "ID must start with a letter and contain only alphanumeric characters, hyphens, and underscores"
+					}
+				]
+			},
+			"accessibility": {
+				"ariaAttribute": "id"
+			}
+		},
+		"ariaLabel": {
+			"type": {
+				"primitive": "string"
+			},
+			"description": "Accessible label for screen readers",
+			"accessibility": {
+				"ariaAttribute": "aria-label",
+				"screenReaderText": "Accessible label"
+			},
+			"i18n": {
+				"translatable": true,
+				"key": "aria.label.{componentName}",
+				"context": "accessibility"
+			}
+		},
+		"disabled": {
+			"type": {
+				"primitive": "boolean"
+			},
+			"description": "Whether the component is disabled",
+			"defaultValue": false,
+			"accessibility": {
+				"ariaAttribute": "aria-disabled",
+				"keyboardInteraction": true
+			}
+		},
+		"loading": {
+			"type": {
+				"primitive": "boolean"
+			},
+			"description": "Whether the component is in a loading state",
+			"defaultValue": false,
+			"accessibility": {
+				"ariaAttribute": "aria-busy",
+				"screenReaderText": "Loading"
+			}
+		},
+		"size": {
+			"type": {
+				"custom": "size"
+			},
+			"description": "Size variant of the component",
+			"values": ["xs", "sm", "md", "lg", "xl"],
+			"defaultValue": "md"
+		},
+		"variant": {
+			"type": {
+				"custom": "variant"
+			},
+			"description": "Visual variant of the component",
+			"values": ["primary", "secondary", "success", "warning", "error"],
+			"defaultValue": "primary"
+		},
+		"color": {
+			"type": {
+				"custom": "color"
+			},
+			"description": "Color theme for the component",
+			"format": "hex|rgb|hsl|named",
+			"validation": {
+				"rules": [
+					{
+						"type": "pattern",
+						"value": "^(#[0-9A-Fa-f]{6}|rgb\\(\\d+,\\s*\\d+,\\s*\\d+\\)|hsl\\(\\d+,\\s*\\d+%,\\s*\\d+%\\)|[a-zA-Z]+)$",
+						"message": "Invalid color format"
+					}
+				]
+			}
+		},
+		"onClick": {
+			"type": {
+				"complex": "function"
+			},
+			"description": "Click event handler",
+			"signature": {
+				"parameters": [
+					{
+						"name": "event",
+						"type": "MouseEvent",
+						"required": true
+					}
+				],
+				"returnType": "void"
+			},
+			"accessibility": {
+				"keyboardInteraction": true
+			}
+		},
+		"onKeyDown": {
+			"type": {
+				"complex": "function"
+			},
+			"description": "Keyboard event handler",
+			"signature": {
+				"parameters": [
+					{
+						"name": "event",
+						"type": "KeyboardEvent",
+						"required": true
+					}
+				],
+				"returnType": "void"
+			},
+			"accessibility": {
+				"keyboardInteraction": true
+			}
+		},
+		"testId": {
+			"type": {
+				"primitive": "string"
+			},
+			"description": "Test identifier for automated testing",
+			"validation": {
+				"rules": [
+					{
+						"type": "pattern",
+						"value": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+						"message": "Test ID must start with a letter"
+					}
+				]
+			}
+		}
+	}
 }

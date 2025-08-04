@@ -1,354 +1,402 @@
 /**
  * AI-Enhanced Generator Service
- * 
+ *
  * Integrates AI capabilities with make: commands for intelligent code generation
  */
 
-import { AIService, ComponentContext, ServiceContext, GenerationContext } from '../ai/ai-service.js';
-import { StackAdapterRegistry, UniversalGenerator } from '../../core/stack-adapters/index.js';
-import { ConfigManager } from '../../core/config-manager/index.js';
-import { logger } from '../../utils/logger.js';
-import type { XaheenConfig, GeneratedFile, Field } from '../../types/index.js';
-import chalk from 'chalk';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import chalk from "chalk";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { ConfigManager } from "../../core/config-manager/index.js";
+import {
+	StackAdapterRegistry,
+	UniversalGenerator,
+} from "../../core/stack-adapters/index.js";
+import type { Field, GeneratedFile, XaheenConfig } from "../../types/index.js";
+import { logger } from "../../utils/logger.js";
+import {
+	AIService,
+	ComponentContext,
+	GenerationContext,
+	ServiceContext,
+} from "../ai/ai-service.js";
 
 interface AIGenerationOptions {
-  description?: string;
-  withTests?: boolean;
-  withStories?: boolean;
-  accessibility?: 'A' | 'AA' | 'AAA';
-  norwegian?: boolean;
-  gdpr?: boolean;
-  styling?: 'tailwind' | 'css-modules' | 'styled-components';
-  features?: string[];
-  fields?: Field[];
+	description?: string;
+	withTests?: boolean;
+	withStories?: boolean;
+	accessibility?: "A" | "AA" | "AAA";
+	norwegian?: boolean;
+	gdpr?: boolean;
+	styling?: "tailwind" | "css-modules" | "styled-components";
+	features?: string[];
+	fields?: Field[];
 }
 
 export class AIGeneratorService {
-  private aiService: AIService;
-  private stackRegistry: StackAdapterRegistry;
-  private universalGenerator: UniversalGenerator;
-  private config: XaheenConfig;
+	private aiService: AIService;
+	private stackRegistry: StackAdapterRegistry;
+	private universalGenerator: UniversalGenerator;
+	private config: XaheenConfig;
 
-  constructor(config?: XaheenConfig) {
-    this.aiService = new AIService(config);
-    this.stackRegistry = StackAdapterRegistry.getInstance();
-    this.universalGenerator = new UniversalGenerator();
-    this.config = config || this.getDefaultConfig();
-  }
+	constructor(config?: XaheenConfig) {
+		this.aiService = new AIService(config);
+		this.stackRegistry = StackAdapterRegistry.getInstance();
+		this.universalGenerator = new UniversalGenerator();
+		this.config = config || this.getDefaultConfig();
+	}
 
-  /**
-   * Generate an AI-powered React component
-   */
-  async generateComponent(
-    name: string, 
-    type: 'page' | 'component' | 'layout' | 'form' | 'modal' = 'component',
-    options: AIGenerationOptions = {}
-  ): Promise<GeneratedFile[]> {
-    logger.info(chalk.green(`🤖 Generating AI-powered ${type}: ${name}`));
-    
-    const context = this.buildComponentContext(name, type, options);
-    
-    try {
-      // Use AI service to generate intelligent component
-      const aiResult = await this.aiService.generateComponent(
-        options.description || `Create a ${type} component named ${name}`,
-        context
-      );
+	/**
+	 * Generate an AI-powered React component
+	 */
+	async generateComponent(
+		name: string,
+		type: "page" | "component" | "layout" | "form" | "modal" = "component",
+		options: AIGenerationOptions = {},
+	): Promise<GeneratedFile[]> {
+		logger.info(chalk.green(`🤖 Generating AI-powered ${type}: ${name}`));
 
-      // Combine AI generation with stack adapter patterns
-      const stackFiles = await this.generateWithStackAdapter(name, 'component', options);
-      
-      // Merge AI-generated code with stack-specific patterns
-      const enhancedFiles = await this.enhanceWithAI(stackFiles, aiResult, context);
-      
-      // Generate additional files if requested
-      const additionalFiles: GeneratedFile[] = [];
-      
-      if (options.withTests) {
-        additionalFiles.push(...await this.generateComponentTests(name, context));
-      }
-      
-      if (options.withStories) {
-        additionalFiles.push(...await this.generateStorybook(name, context));
-      }
+		const context = this.buildComponentContext(name, type, options);
 
-      const allFiles = [...enhancedFiles, ...additionalFiles];
-      
-      // Write files to disk
-      await this.writeFiles(allFiles);
-      
-      logger.success(`✅ Generated ${allFiles.length} files with AI assistance`);
-      this.logGeneratedFiles(allFiles);
-      
-      return allFiles;
+		try {
+			// Use AI service to generate intelligent component
+			const aiResult = await this.aiService.generateComponent(
+				options.description || `Create a ${type} component named ${name}`,
+				context,
+			);
 
-    } catch (error) {
-      logger.error(`Failed to generate AI-powered component: ${error}`);
-      // Fallback to traditional generation
-      logger.info(chalk.yellow('Falling back to traditional generation...'));
-      return this.generateWithStackAdapter(name, 'component', options);
-    }
-  }
+			// Combine AI generation with stack adapter patterns
+			const stackFiles = await this.generateWithStackAdapter(
+				name,
+				"component",
+				options,
+			);
 
-  /**
-   * Generate an AI-powered service
-   */
-  async generateService(
-    name: string,
-    type: 'api' | 'business' | 'data' | 'utility' = 'business',
-    options: AIGenerationOptions = {}
-  ): Promise<GeneratedFile[]> {
-    logger.info(chalk.green(`🤖 Generating AI-powered service: ${name}`));
-    
-    const context = this.buildServiceContext(name, type, options);
-    
-    try {
-      // Use AI service to generate intelligent service
-      const aiResult = await this.aiService.generateService(
-        options.description || `Create a ${type} service named ${name}`,
-        context
-      );
+			// Merge AI-generated code with stack-specific patterns
+			const enhancedFiles = await this.enhanceWithAI(
+				stackFiles,
+				aiResult,
+				context,
+			);
 
-      // Combine AI generation with stack adapter patterns
-      const stackFiles = await this.generateWithStackAdapter(name, 'service', options);
-      
-      // Merge AI-generated code with stack-specific patterns
-      const enhancedFiles = await this.enhanceWithAI(stackFiles, aiResult, context);
-      
-      // Generate tests if requested
-      if (options.withTests) {
-        const testFiles = await this.generateServiceTests(name, context);
-        enhancedFiles.push(...testFiles);
-      }
+			// Generate additional files if requested
+			const additionalFiles: GeneratedFile[] = [];
 
-      // Write files to disk
-      await this.writeFiles(enhancedFiles);
-      
-      logger.success(`✅ Generated ${enhancedFiles.length} files with AI assistance`);
-      this.logGeneratedFiles(enhancedFiles);
-      
-      return enhancedFiles;
+			if (options.withTests) {
+				additionalFiles.push(
+					...(await this.generateComponentTests(name, context)),
+				);
+			}
 
-    } catch (error) {
-      logger.error(`Failed to generate AI-powered service: ${error}`);
-      // Fallback to traditional generation
-      logger.info(chalk.yellow('Falling back to traditional generation...'));
-      return this.generateWithStackAdapter(name, 'service', options);
-    }
-  }
+			if (options.withStories) {
+				additionalFiles.push(...(await this.generateStorybook(name, context)));
+			}
 
-  /**
-   * Generate a complete AI-powered CRUD system
-   */
-  async generateCRUD(
-    name: string,
-    options: AIGenerationOptions = {}
-  ): Promise<GeneratedFile[]> {
-    logger.info(chalk.green(`🤖 Generating AI-powered CRUD: ${name}`));
-    
-    const allFiles: GeneratedFile[] = [];
-    
-    try {
-      // 1. Generate Prisma model
-      logger.info(chalk.gray('  📦 Generating database model...'));
-      const modelFiles = await this.generateModel(name, options);
-      allFiles.push(...modelFiles);
+			const allFiles = [...enhancedFiles, ...additionalFiles];
 
-      // 2. Generate API endpoints with AI
-      logger.info(chalk.gray('  🔌 Generating API endpoints...'));
-      const apiFiles = await this.generateService(name, 'api', {
-        ...options,
-        description: `Create REST API endpoints for ${name} with full CRUD operations`
-      });
-      allFiles.push(...apiFiles);
+			// Write files to disk
+			await this.writeFiles(allFiles);
 
-      // 3. Generate frontend components with AI
-      logger.info(chalk.gray('  🎨 Generating UI components...'));
-      
-      // List component
-      const listFiles = await this.generateComponent(`${name}List`, 'component', {
-        ...options,
-        description: `Create a data table component to display and manage ${name} items with search, pagination, and actions`
-      });
-      allFiles.push(...listFiles);
-      
-      // Form component
-      const formFiles = await this.generateComponent(`${name}Form`, 'form', {
-        ...options,
-        description: `Create a form component for creating and editing ${name} with validation and error handling`
-      });
-      allFiles.push(...formFiles);
-      
-      // Page component
-      const pageFiles = await this.generateComponent(`${name}Page`, 'page', {
-        ...options,
-        description: `Create a complete page component that combines list and form for ${name} management`
-      });
-      allFiles.push(...pageFiles);
+			logger.success(
+				`✅ Generated ${allFiles.length} files with AI assistance`,
+			);
+			this.logGeneratedFiles(allFiles);
 
-      // 4. Generate React hooks
-      logger.info(chalk.gray('  🔗 Generating React hooks...'));
-      const hookFiles = await this.generateHook(name, options);
-      allFiles.push(...hookFiles);
+			return allFiles;
+		} catch (error) {
+			logger.error(`Failed to generate AI-powered component: ${error}`);
+			// Fallback to traditional generation
+			logger.info(chalk.yellow("Falling back to traditional generation..."));
+			return this.generateWithStackAdapter(name, "component", options);
+		}
+	}
 
-      // 5. Generate validation schemas
-      logger.info(chalk.gray('  ✅ Generating validation schemas...'));
-      const validationFiles = await this.generateValidation(name, options);
-      allFiles.push(...validationFiles);
+	/**
+	 * Generate an AI-powered service
+	 */
+	async generateService(
+		name: string,
+		type: "api" | "business" | "data" | "utility" = "business",
+		options: AIGenerationOptions = {},
+	): Promise<GeneratedFile[]> {
+		logger.info(chalk.green(`🤖 Generating AI-powered service: ${name}`));
 
-      // Write all files
-      await this.writeFiles(allFiles);
-      
-      logger.success(`✅ Generated complete CRUD system with ${allFiles.length} files`);
-      this.logGeneratedFiles(allFiles);
-      
-      // Show next steps
-      this.showCRUDNextSteps(name);
-      
-      return allFiles;
+		const context = this.buildServiceContext(name, type, options);
 
-    } catch (error) {
-      logger.error(`Failed to generate AI-powered CRUD: ${error}`);
-      throw error;
-    }
-  }
+		try {
+			// Use AI service to generate intelligent service
+			const aiResult = await this.aiService.generateService(
+				options.description || `Create a ${type} service named ${name}`,
+				context,
+			);
 
-  /**
-   * Analyze existing code with AI
-   */
-  async analyzeCode(filePath: string): Promise<void> {
-    try {
-      const code = await fs.readFile(filePath, 'utf-8');
-      const analysis = await this.aiService.analyzeCode(code);
-      
-      logger.info(chalk.blue(`\n📊 AI Code Analysis for ${path.basename(filePath)}:`));
-      logger.info(`Quality Score: ${chalk.green(analysis.quality + '/100')}`);
-      logger.info(`Complexity: ${chalk.yellow(analysis.complexity + '/100')}`);
-      logger.info(`Maintainability: ${chalk.green(analysis.maintainability + '/100')}`);
-      
-      if (analysis.issues.length > 0) {
-        logger.info(chalk.yellow('\n⚠️  Issues Found:'));
-        analysis.issues.forEach(issue => {
-          const icon = issue.type === 'error' ? '❌' : issue.type === 'warning' ? '⚠️' : '💡';
-          logger.info(`  ${icon} ${issue.message}${issue.line ? ` (line ${issue.line})` : ''}`);
-          if (issue.fix) {
-            logger.info(`    💡 Fix: ${issue.fix}`);
-          }
-        });
-      }
-      
-      if (analysis.suggestions.length > 0) {
-        logger.info(chalk.blue('\n💡 Suggestions:'));
-        analysis.suggestions.forEach(suggestion => {
-          logger.info(`  • ${suggestion}`);
-        });
-      }
+			// Combine AI generation with stack adapter patterns
+			const stackFiles = await this.generateWithStackAdapter(
+				name,
+				"service",
+				options,
+			);
 
-    } catch (error) {
-      logger.error(`Failed to analyze code: ${error}`);
-    }
-  }
+			// Merge AI-generated code with stack-specific patterns
+			const enhancedFiles = await this.enhanceWithAI(
+				stackFiles,
+				aiResult,
+				context,
+			);
 
-  private buildComponentContext(
-    name: string, 
-    type: 'page' | 'component' | 'layout' | 'form' | 'modal',
-    options: AIGenerationOptions
-  ): ComponentContext {
-    const currentStack = this.stackRegistry.getCurrentStack();
-    
-    return {
-      framework: currentStack === 'nextjs' ? 'Next.js' : 'React',
-      platform: 'web',
-      stack: currentStack,
-      projectPath: process.cwd(),
-      dependencies: ['@xala-technologies/ui-system', 'react', 'typescript'],
-      codeStyle: 'typescript',
-      uiSystem: '@xala-technologies/ui-system',
-      compliance: {
-        accessibility: options.accessibility || this.config.compliance?.accessibility || 'AAA',
-        norwegian: options.norwegian || this.config.compliance?.norwegian || false,
-        gdpr: options.gdpr || this.config.compliance?.gdpr || false
-      },
-      componentType: type,
-      styling: options.styling || 'tailwind',
-      features: options.features || []
-    };
-  }
+			// Generate tests if requested
+			if (options.withTests) {
+				const testFiles = await this.generateServiceTests(name, context);
+				enhancedFiles.push(...testFiles);
+			}
 
-  private buildServiceContext(
-    name: string,
-    type: 'api' | 'business' | 'data' | 'utility',
-    options: AIGenerationOptions
-  ): ServiceContext {
-    const currentStack = this.stackRegistry.getCurrentStack();
-    
-    return {
-      framework: currentStack === 'nestjs' ? 'NestJS' : 'Next.js',
-      platform: 'server',
-      stack: currentStack,
-      projectPath: process.cwd(),
-      dependencies: ['prisma', '@prisma/client', 'zod'],
-      codeStyle: 'typescript',
-      uiSystem: '',
-      compliance: {
-        accessibility: 'AAA',
-        norwegian: options.norwegian || this.config.compliance?.norwegian || false,
-        gdpr: options.gdpr || this.config.compliance?.gdpr || false
-      },
-      serviceType: type,
-      database: 'postgresql',
-      authentication: type === 'api',
-      caching: type === 'api' || type === 'data'
-    };
-  }
+			// Write files to disk
+			await this.writeFiles(enhancedFiles);
 
-  private async generateWithStackAdapter(
-    name: string,
-    type: 'component' | 'service' | 'model',
-    options: AIGenerationOptions
-  ): Promise<GeneratedFile[]> {
-    const currentStack = this.stackRegistry.getCurrentStack();
-    const context = {
-      name,
-      fields: options.fields || [],
-      options: options as any,
-      projectPath: process.cwd(),
-      stackType: currentStack
-    };
+			logger.success(
+				`✅ Generated ${enhancedFiles.length} files with AI assistance`,
+			);
+			this.logGeneratedFiles(enhancedFiles);
 
-    switch (type) {
-      case 'component':
-        return this.universalGenerator.generateController(context); // Frontend controller
-      case 'service':
-        return this.universalGenerator.generateService(context);
-      case 'model':
-        return this.universalGenerator.generateModel(context);
-      default:
-        return [];
-    }
-  }
+			return enhancedFiles;
+		} catch (error) {
+			logger.error(`Failed to generate AI-powered service: ${error}`);
+			// Fallback to traditional generation
+			logger.info(chalk.yellow("Falling back to traditional generation..."));
+			return this.generateWithStackAdapter(name, "service", options);
+		}
+	}
 
-  private async enhanceWithAI(
-    stackFiles: GeneratedFile[],
-    aiResult: any,
-    context: ComponentContext | ServiceContext
-  ): Promise<GeneratedFile[]> {
-    // Merge AI-generated patterns with stack-specific structure
-    return stackFiles.map(file => ({
-      ...file,
-      content: this.mergeAIWithTemplate(file.content, aiResult, context)
-    }));
-  }
+	/**
+	 * Generate a complete AI-powered CRUD system
+	 */
+	async generateCRUD(
+		name: string,
+		options: AIGenerationOptions = {},
+	): Promise<GeneratedFile[]> {
+		logger.info(chalk.green(`🤖 Generating AI-powered CRUD: ${name}`));
 
-  private mergeAIWithTemplate(
-    templateContent: string,
-    aiResult: any,
-    context: ComponentContext | ServiceContext
-  ): string {
-    // For now, enhance template with AI suggestions
-    const aiComments = `
+		const allFiles: GeneratedFile[] = [];
+
+		try {
+			// 1. Generate Prisma model
+			logger.info(chalk.gray("  📦 Generating database model..."));
+			const modelFiles = await this.generateModel(name, options);
+			allFiles.push(...modelFiles);
+
+			// 2. Generate API endpoints with AI
+			logger.info(chalk.gray("  🔌 Generating API endpoints..."));
+			const apiFiles = await this.generateService(name, "api", {
+				...options,
+				description: `Create REST API endpoints for ${name} with full CRUD operations`,
+			});
+			allFiles.push(...apiFiles);
+
+			// 3. Generate frontend components with AI
+			logger.info(chalk.gray("  🎨 Generating UI components..."));
+
+			// List component
+			const listFiles = await this.generateComponent(
+				`${name}List`,
+				"component",
+				{
+					...options,
+					description: `Create a data table component to display and manage ${name} items with search, pagination, and actions`,
+				},
+			);
+			allFiles.push(...listFiles);
+
+			// Form component
+			const formFiles = await this.generateComponent(`${name}Form`, "form", {
+				...options,
+				description: `Create a form component for creating and editing ${name} with validation and error handling`,
+			});
+			allFiles.push(...formFiles);
+
+			// Page component
+			const pageFiles = await this.generateComponent(`${name}Page`, "page", {
+				...options,
+				description: `Create a complete page component that combines list and form for ${name} management`,
+			});
+			allFiles.push(...pageFiles);
+
+			// 4. Generate React hooks
+			logger.info(chalk.gray("  🔗 Generating React hooks..."));
+			const hookFiles = await this.generateHook(name, options);
+			allFiles.push(...hookFiles);
+
+			// 5. Generate validation schemas
+			logger.info(chalk.gray("  ✅ Generating validation schemas..."));
+			const validationFiles = await this.generateValidation(name, options);
+			allFiles.push(...validationFiles);
+
+			// Write all files
+			await this.writeFiles(allFiles);
+
+			logger.success(
+				`✅ Generated complete CRUD system with ${allFiles.length} files`,
+			);
+			this.logGeneratedFiles(allFiles);
+
+			// Show next steps
+			this.showCRUDNextSteps(name);
+
+			return allFiles;
+		} catch (error) {
+			logger.error(`Failed to generate AI-powered CRUD: ${error}`);
+			throw error;
+		}
+	}
+
+	/**
+	 * Analyze existing code with AI
+	 */
+	async analyzeCode(filePath: string): Promise<void> {
+		try {
+			const code = await fs.readFile(filePath, "utf-8");
+			const analysis = await this.aiService.analyzeCode(code);
+
+			logger.info(
+				chalk.blue(`\n📊 AI Code Analysis for ${path.basename(filePath)}:`),
+			);
+			logger.info(`Quality Score: ${chalk.green(analysis.quality + "/100")}`);
+			logger.info(`Complexity: ${chalk.yellow(analysis.complexity + "/100")}`);
+			logger.info(
+				`Maintainability: ${chalk.green(analysis.maintainability + "/100")}`,
+			);
+
+			if (analysis.issues.length > 0) {
+				logger.info(chalk.yellow("\n⚠️  Issues Found:"));
+				analysis.issues.forEach((issue) => {
+					const icon =
+						issue.type === "error"
+							? "❌"
+							: issue.type === "warning"
+								? "⚠️"
+								: "💡";
+					logger.info(
+						`  ${icon} ${issue.message}${issue.line ? ` (line ${issue.line})` : ""}`,
+					);
+					if (issue.fix) {
+						logger.info(`    💡 Fix: ${issue.fix}`);
+					}
+				});
+			}
+
+			if (analysis.suggestions.length > 0) {
+				logger.info(chalk.blue("\n💡 Suggestions:"));
+				analysis.suggestions.forEach((suggestion) => {
+					logger.info(`  • ${suggestion}`);
+				});
+			}
+		} catch (error) {
+			logger.error(`Failed to analyze code: ${error}`);
+		}
+	}
+
+	private buildComponentContext(
+		name: string,
+		type: "page" | "component" | "layout" | "form" | "modal",
+		options: AIGenerationOptions,
+	): ComponentContext {
+		const currentStack = this.stackRegistry.getCurrentStack();
+
+		return {
+			framework: currentStack === "nextjs" ? "Next.js" : "React",
+			platform: "web",
+			stack: currentStack,
+			projectPath: process.cwd(),
+			dependencies: ["@xala-technologies/ui-system", "react", "typescript"],
+			codeStyle: "typescript",
+			uiSystem: "@xala-technologies/ui-system",
+			compliance: {
+				accessibility:
+					options.accessibility ||
+					this.config.compliance?.accessibility ||
+					"AAA",
+				norwegian:
+					options.norwegian || this.config.compliance?.norwegian || false,
+				gdpr: options.gdpr || this.config.compliance?.gdpr || false,
+			},
+			componentType: type,
+			styling: options.styling || "tailwind",
+			features: options.features || [],
+		};
+	}
+
+	private buildServiceContext(
+		name: string,
+		type: "api" | "business" | "data" | "utility",
+		options: AIGenerationOptions,
+	): ServiceContext {
+		const currentStack = this.stackRegistry.getCurrentStack();
+
+		return {
+			framework: currentStack === "nestjs" ? "NestJS" : "Next.js",
+			platform: "server",
+			stack: currentStack,
+			projectPath: process.cwd(),
+			dependencies: ["prisma", "@prisma/client", "zod"],
+			codeStyle: "typescript",
+			uiSystem: "",
+			compliance: {
+				accessibility: "AAA",
+				norwegian:
+					options.norwegian || this.config.compliance?.norwegian || false,
+				gdpr: options.gdpr || this.config.compliance?.gdpr || false,
+			},
+			serviceType: type,
+			database: "postgresql",
+			authentication: type === "api",
+			caching: type === "api" || type === "data",
+		};
+	}
+
+	private async generateWithStackAdapter(
+		name: string,
+		type: "component" | "service" | "model",
+		options: AIGenerationOptions,
+	): Promise<GeneratedFile[]> {
+		const currentStack = this.stackRegistry.getCurrentStack();
+		const context = {
+			name,
+			fields: options.fields || [],
+			options: options as any,
+			projectPath: process.cwd(),
+			stackType: currentStack,
+		};
+
+		switch (type) {
+			case "component":
+				return this.universalGenerator.generateController(context); // Frontend controller
+			case "service":
+				return this.universalGenerator.generateService(context);
+			case "model":
+				return this.universalGenerator.generateModel(context);
+			default:
+				return [];
+		}
+	}
+
+	private async enhanceWithAI(
+		stackFiles: GeneratedFile[],
+		aiResult: any,
+		context: ComponentContext | ServiceContext,
+	): Promise<GeneratedFile[]> {
+		// Merge AI-generated patterns with stack-specific structure
+		return stackFiles.map((file) => ({
+			...file,
+			content: this.mergeAIWithTemplate(file.content, aiResult, context),
+		}));
+	}
+
+	private mergeAIWithTemplate(
+		templateContent: string,
+		aiResult: any,
+		context: ComponentContext | ServiceContext,
+	): string {
+		// For now, enhance template with AI suggestions
+		const aiComments = `
 /**
  * AI-Enhanced Component
  * 
@@ -357,31 +405,42 @@ export class AIGeneratorService {
  */
 
 `;
-    
-    return aiComments + templateContent;
-  }
 
-  private async generateModel(name: string, options: AIGenerationOptions): Promise<GeneratedFile[]> {
-    const context = {
-      name,
-      fields: options.fields || [
-        { name: 'name', type: 'string', required: true },
-        { name: 'email', type: 'string', required: false, unique: true },
-        { name: 'status', type: 'enum', defaultValue: 'ACTIVE', validation: ['ACTIVE', 'INACTIVE', 'PENDING'] }
-      ],
-      options: options as any,
-      projectPath: process.cwd(),
-      stackType: this.stackRegistry.getCurrentStack()
-    };
+		return aiComments + templateContent;
+	}
 
-    return this.universalGenerator.generateModel(context);
-  }
+	private async generateModel(
+		name: string,
+		options: AIGenerationOptions,
+	): Promise<GeneratedFile[]> {
+		const context = {
+			name,
+			fields: options.fields || [
+				{ name: "name", type: "string", required: true },
+				{ name: "email", type: "string", required: false, unique: true },
+				{
+					name: "status",
+					type: "enum",
+					defaultValue: "ACTIVE",
+					validation: ["ACTIVE", "INACTIVE", "PENDING"],
+				},
+			],
+			options: options as any,
+			projectPath: process.cwd(),
+			stackType: this.stackRegistry.getCurrentStack(),
+		};
 
-  private async generateComponentTests(name: string, context: ComponentContext): Promise<GeneratedFile[]> {
-    const fileName = this.kebabCase(name);
-    const testPath = `src/components/__tests__/${fileName}.test.tsx`;
-    
-    const content = `import React from 'react';
+		return this.universalGenerator.generateModel(context);
+	}
+
+	private async generateComponentTests(
+		name: string,
+		context: ComponentContext,
+	): Promise<GeneratedFile[]> {
+		const fileName = this.kebabCase(name);
+		const testPath = `src/components/__tests__/${fileName}.test.tsx`;
+
+		const content = `import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ${this.pascalCase(name)} } from '../${fileName}';
 
@@ -420,18 +479,23 @@ describe('${this.pascalCase(name)}', () => {
   });
 });`;
 
-    return [{
-      path: testPath,
-      content,
-      type: 'create'
-    }];
-  }
+		return [
+			{
+				path: testPath,
+				content,
+				type: "create",
+			},
+		];
+	}
 
-  private async generateStorybook(name: string, context: ComponentContext): Promise<GeneratedFile[]> {
-    const fileName = this.kebabCase(name);
-    const storyPath = `src/components/__stories__/${fileName}.stories.tsx`;
-    
-    const content = `import type { Meta, StoryObj } from '@storybook/react';
+	private async generateStorybook(
+		name: string,
+		context: ComponentContext,
+	): Promise<GeneratedFile[]> {
+		const fileName = this.kebabCase(name);
+		const storyPath = `src/components/__stories__/${fileName}.stories.tsx`;
+
+		const content = `import type { Meta, StoryObj } from '@storybook/react';
 import { ${this.pascalCase(name)} } from '../${fileName}';
 
 const meta: Meta<typeof ${this.pascalCase(name)}> = {
@@ -481,18 +545,23 @@ export const Interactive: Story = {
   },
 };`;
 
-    return [{
-      path: storyPath,
-      content,
-      type: 'create'
-    }];
-  }
+		return [
+			{
+				path: storyPath,
+				content,
+				type: "create",
+			},
+		];
+	}
 
-  private async generateServiceTests(name: string, context: ServiceContext): Promise<GeneratedFile[]> {
-    const fileName = this.kebabCase(name);
-    const testPath = `src/services/__tests__/${fileName}.service.test.ts`;
-    
-    const content = `import { ${this.pascalCase(name)}Service } from '../${fileName}.service';
+	private async generateServiceTests(
+		name: string,
+		context: ServiceContext,
+	): Promise<GeneratedFile[]> {
+		const fileName = this.kebabCase(name);
+		const testPath = `src/services/__tests__/${fileName}.service.test.ts`;
+
+		const content = `import { ${this.pascalCase(name)}Service } from '../${fileName}.service';
 
 describe('${this.pascalCase(name)}Service', () => {
   let service: ${this.pascalCase(name)}Service;
@@ -546,19 +615,24 @@ describe('${this.pascalCase(name)}Service', () => {
   });
 });`;
 
-    return [{
-      path: testPath,
-      content,
-      type: 'create'
-    }];
-  }
+		return [
+			{
+				path: testPath,
+				content,
+				type: "create",
+			},
+		];
+	}
 
-  private async generateHook(name: string, options: AIGenerationOptions): Promise<GeneratedFile[]> {
-    const fileName = this.kebabCase(name);
-    const routeName = this.pluralize(fileName);
-    const hookPath = `src/hooks/use-${fileName}.ts`;
-    
-    const content = `import { useState, useEffect, useCallback } from 'react';
+	private async generateHook(
+		name: string,
+		options: AIGenerationOptions,
+	): Promise<GeneratedFile[]> {
+		const fileName = this.kebabCase(name);
+		const routeName = this.pluralize(fileName);
+		const hookPath = `src/hooks/use-${fileName}.ts`;
+
+		const content = `import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface ${this.pascalCase(name)} {
@@ -701,18 +775,23 @@ export function use${this.pascalCase(name)}(): Use${this.pascalCase(name)}Return
   };
 }`;
 
-    return [{
-      path: hookPath,
-      content,
-      type: 'create'
-    }];
-  }
+		return [
+			{
+				path: hookPath,
+				content,
+				type: "create",
+			},
+		];
+	}
 
-  private async generateValidation(name: string, options: AIGenerationOptions): Promise<GeneratedFile[]> {
-    const fileName = this.kebabCase(name);
-    const validationPath = `src/lib/validations/${fileName}.ts`;
-    
-    const content = `import { z } from 'zod';
+	private async generateValidation(
+		name: string,
+		options: AIGenerationOptions,
+	): Promise<GeneratedFile[]> {
+		const fileName = this.kebabCase(name);
+		const validationPath = `src/lib/validations/${fileName}.ts`;
+
+		const content = `import { z } from 'zod';
 
 // Base schema for ${this.pascalCase(name)}
 export const ${this.pascalCase(name)}Schema = z.object({
@@ -770,86 +849,93 @@ export const validateQuery = (data: unknown) => {
   return ${this.pascalCase(name)}QuerySchema.safeParse(data);
 };`;
 
-    return [{
-      path: validationPath,
-      content,
-      type: 'create'
-    }];
-  }
+		return [
+			{
+				path: validationPath,
+				content,
+				type: "create",
+			},
+		];
+	}
 
-  private async writeFiles(files: GeneratedFile[]): Promise<void> {
-    for (const file of files) {
-      const dir = path.dirname(file.path);
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(file.path, file.content);
-    }
-  }
+	private async writeFiles(files: GeneratedFile[]): Promise<void> {
+		for (const file of files) {
+			const dir = path.dirname(file.path);
+			await fs.mkdir(dir, { recursive: true });
+			await fs.writeFile(file.path, file.content);
+		}
+	}
 
-  private logGeneratedFiles(files: GeneratedFile[]): void {
-    logger.info(chalk.gray('\n📁 Generated files:'));
-    files.forEach(file => {
-      const icon = file.type === 'create' ? '📄' : file.type === 'update' ? '✏️' : '➕';
-      logger.info(`  ${icon} ${chalk.dim(file.path)}`);
-    });
-  }
+	private logGeneratedFiles(files: GeneratedFile[]): void {
+		logger.info(chalk.gray("\n📁 Generated files:"));
+		files.forEach((file) => {
+			const icon =
+				file.type === "create" ? "📄" : file.type === "update" ? "✏️" : "➕";
+			logger.info(`  ${icon} ${chalk.dim(file.path)}`);
+		});
+	}
 
-  private showCRUDNextSteps(name: string): void {
-    const routeName = this.pluralize(this.kebabCase(name));
-    
-    logger.info(chalk.yellow('\n📋 Next steps:'));
-    logger.info(`  1. ${chalk.cyan('xaheen migrate')} - Run database migrations`);
-    logger.info(`  2. Add route to your navigation: ${chalk.dim(`/${routeName}`)}`);
-    logger.info(`  3. Customize generated components as needed`);
-    logger.info(`  4. ${chalk.cyan('xaheen test')} - Run the generated tests`);
-    logger.info(`  5. Review and adjust validation rules`);
-    
-    logger.info(chalk.blue('\n🎯 Generated CRUD includes:'));
-    logger.info('  • Database model with Prisma schema');
-    logger.info('  • REST API endpoints with validation');
-    logger.info('  • React components with UI system');
-    logger.info('  • Custom hooks for data management');
-    logger.info('  • Form validation with Zod schemas');
-    logger.info('  • Unit tests and accessibility compliance');
-  }
+	private showCRUDNextSteps(name: string): void {
+		const routeName = this.pluralize(this.kebabCase(name));
 
-  private getDefaultConfig(): XaheenConfig {
-    return {
-      version: '3.0.0',
-      project: {
-        name: 'My Project',
-        framework: 'nextjs',
-        packageManager: 'bun'
-      },
-      compliance: {
-        accessibility: 'AAA',
-        norwegian: false,
-        gdpr: false
-      }
-    };
-  }
+		logger.info(chalk.yellow("\n📋 Next steps:"));
+		logger.info(
+			`  1. ${chalk.cyan("xaheen migrate")} - Run database migrations`,
+		);
+		logger.info(
+			`  2. Add route to your navigation: ${chalk.dim(`/${routeName}`)}`,
+		);
+		logger.info(`  3. Customize generated components as needed`);
+		logger.info(`  4. ${chalk.cyan("xaheen test")} - Run the generated tests`);
+		logger.info(`  5. Review and adjust validation rules`);
 
-  // String transformation utilities
-  private pascalCase(str: string): string {
-    return str
-      .replace(/[-_\s]+(.)?/g, (_, char) => char ? char.toUpperCase() : '')
-      .replace(/^(.)/, (_, char) => char.toUpperCase());
-  }
+		logger.info(chalk.blue("\n🎯 Generated CRUD includes:"));
+		logger.info("  • Database model with Prisma schema");
+		logger.info("  • REST API endpoints with validation");
+		logger.info("  • React components with UI system");
+		logger.info("  • Custom hooks for data management");
+		logger.info("  • Form validation with Zod schemas");
+		logger.info("  • Unit tests and accessibility compliance");
+	}
 
-  private kebabCase(str: string): string {
-    return str
-      .replace(/([A-Z])/g, '-$1')
-      .toLowerCase()
-      .replace(/^-/, '')
-      .replace(/\s+/g, '-');
-  }
+	private getDefaultConfig(): XaheenConfig {
+		return {
+			version: "3.0.0",
+			project: {
+				name: "My Project",
+				framework: "nextjs",
+				packageManager: "bun",
+			},
+			compliance: {
+				accessibility: "AAA",
+				norwegian: false,
+				gdpr: false,
+			},
+		};
+	}
 
-  private pluralize(str: string): string {
-    if (str.endsWith('y')) {
-      return str.slice(0, -1) + 'ies';
-    } else if (str.endsWith('s') || str.endsWith('x') || str.endsWith('ch')) {
-      return str + 'es';
-    } else {
-      return str + 's';
-    }
-  }
+	// String transformation utilities
+	private pascalCase(str: string): string {
+		return str
+			.replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ""))
+			.replace(/^(.)/, (_, char) => char.toUpperCase());
+	}
+
+	private kebabCase(str: string): string {
+		return str
+			.replace(/([A-Z])/g, "-$1")
+			.toLowerCase()
+			.replace(/^-/, "")
+			.replace(/\s+/g, "-");
+	}
+
+	private pluralize(str: string): string {
+		if (str.endsWith("y")) {
+			return str.slice(0, -1) + "ies";
+		} else if (str.endsWith("s") || str.endsWith("x") || str.endsWith("ch")) {
+			return str + "es";
+		} else {
+			return str + "s";
+		}
+	}
 }

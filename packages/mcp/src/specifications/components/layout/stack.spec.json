@@ -1,330 +1,314 @@
 {
-  "metadata": {
-    "name": "Stack",
-    "version": "1.0.0",
-    "category": "layout",
-    "description": "A flexible container component that arranges items in horizontal or vertical stacks with customizable spacing and alignment",
-    "tags": ["layout", "flexbox", "container", "spacing"],
-    "compliance": {
-      "nsm": "OPEN",
-      "gdpr": true,
-      "wcag": "AAA"
-    },
-    "performance": {
-      "bundleSize": "<1KB",
-      "renderTime": "<16ms",
-      "memoryUsage": "<100KB"
-    }
-  },
-  "props": {
-    "direction": {
-      "type": "enum",
-      "values": ["horizontal", "vertical"],
-      "default": "vertical",
-      "description": "The direction to stack items",
-      "required": false,
-      "examples": ["horizontal", "vertical"]
-    },
-    "spacing": {
-      "type": "enum",
-      "values": ["none", "xs", "sm", "md", "lg", "xl"],
-      "default": "md",
-      "description": "Spacing between stack items",
-      "required": false,
-      "mapping": {
-        "none": "0",
-        "xs": "0.25rem",
-        "sm": "0.5rem",
-        "md": "1rem",
-        "lg": "1.5rem",
-        "xl": "2rem"
-      }
-    },
-    "align": {
-      "type": "enum",
-      "values": ["start", "center", "end", "stretch", "baseline"],
-      "default": "stretch",
-      "description": "Cross-axis alignment of items",
-      "required": false,
-      "mapping": {
-        "start": "flex-start",
-        "center": "center",
-        "end": "flex-end",
-        "stretch": "stretch",
-        "baseline": "baseline"
-      }
-    },
-    "justify": {
-      "type": "enum",
-      "values": ["start", "center", "end", "between", "around", "evenly"],
-      "default": "start",
-      "description": "Main-axis justification of items",
-      "required": false,
-      "mapping": {
-        "start": "flex-start",
-        "center": "center",
-        "end": "flex-end",
-        "between": "space-between",
-        "around": "space-around",
-        "evenly": "space-evenly"
-      }
-    },
-    "wrap": {
-      "type": "boolean",
-      "default": false,
-      "description": "Whether items should wrap to new lines",
-      "required": false
-    },
-    "reverse": {
-      "type": "boolean",
-      "default": false,
-      "description": "Whether to reverse the order of items",
-      "required": false
-    },
-    "children": {
-      "type": "ReactNode",
-      "description": "The items to be stacked",
-      "required": true
-    },
-    "divider": {
-      "type": "ReactNode",
-      "description": "Optional divider element between items",
-      "required": false,
-      "default": null
-    },
-    "className": {
-      "type": "string",
-      "description": "Additional CSS classes",
-      "required": false
-    },
-    "testId": {
-      "type": "string",
-      "description": "Test identifier for automated testing",
-      "required": false
-    }
-  },
-  "implementation": {
-    "technology": "flexbox",
-    "baseClasses": "flex",
-    "conditionalClasses": {
-      "direction": {
-        "horizontal": "flex-row",
-        "vertical": "flex-col"
-      },
-      "reverse": {
-        "true": {
-          "horizontal": "flex-row-reverse",
-          "vertical": "flex-col-reverse"
-        }
-      },
-      "align": {
-        "start": "items-start",
-        "center": "items-center",
-        "end": "items-end",
-        "stretch": "items-stretch",
-        "baseline": "items-baseline"
-      },
-      "justify": {
-        "start": "justify-start",
-        "center": "justify-center",
-        "end": "justify-end",
-        "between": "justify-between",
-        "around": "justify-around",
-        "evenly": "justify-evenly"
-      },
-      "wrap": {
-        "true": "flex-wrap",
-        "false": "flex-nowrap"
-      },
-      "spacing": {
-        "horizontal": {
-          "none": "space-x-0",
-          "xs": "space-x-1",
-          "sm": "space-x-2",
-          "md": "space-x-4",
-          "lg": "space-x-6",
-          "xl": "space-x-8"
-        },
-        "vertical": {
-          "none": "space-y-0",
-          "xs": "space-y-1",
-          "sm": "space-y-2",
-          "md": "space-y-4",
-          "lg": "space-y-6",
-          "xl": "space-y-8"
-        }
-      }
-    }
-  },
-  "accessibility": {
-    "role": "group",
-    "keyboardNavigation": true,
-    "screenReaderSupport": true,
-    "focusManagement": "natural-flow",
-    "ariaAttributes": [
-      "aria-label",
-      "aria-labelledby",
-      "aria-describedby"
-    ]
-  },
-  "examples": [
-    {
-      "name": "Basic Vertical Stack",
-      "description": "Simple vertical stack with medium spacing",
-      "code": "<Stack spacing=\"md\">\n  <div>Item 1</div>\n  <div>Item 2</div>\n  <div>Item 3</div>\n</Stack>",
-      "props": {
-        "direction": "vertical",
-        "spacing": "md"
-      }
-    },
-    {
-      "name": "Horizontal Stack (HStack)",
-      "description": "Horizontal stack with center alignment",
-      "code": "<Stack direction=\"horizontal\" align=\"center\" spacing=\"lg\">\n  <Button>Save</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Stack>",
-      "props": {
-        "direction": "horizontal",
-        "align": "center",
-        "spacing": "lg"
-      }
-    },
-    {
-      "name": "Stack with Dividers",
-      "description": "Vertical stack with divider elements",
-      "code": "<Stack spacing=\"sm\" divider={<hr className=\"border-gray-200\" />}>\n  <div>Section 1</div>\n  <div>Section 2</div>\n  <div>Section 3</div>\n</Stack>",
-      "props": {
-        "direction": "vertical",
-        "spacing": "sm",
-        "divider": "<hr />"
-      }
-    },
-    {
-      "name": "Justified Stack",
-      "description": "Horizontal stack with space-between justification",
-      "code": "<Stack direction=\"horizontal\" justify=\"between\" align=\"center\">\n  <h2>Title</h2>\n  <Button>Action</Button>\n</Stack>",
-      "props": {
-        "direction": "horizontal",
-        "justify": "between",
-        "align": "center"
-      }
-    },
-    {
-      "name": "Wrapped Stack",
-      "description": "Horizontal stack that wraps items",
-      "code": "<Stack direction=\"horizontal\" wrap spacing=\"sm\">\n  <Badge>Tag 1</Badge>\n  <Badge>Tag 2</Badge>\n  <Badge>Tag 3</Badge>\n  <Badge>Very Long Tag Name</Badge>\n</Stack>",
-      "props": {
-        "direction": "horizontal",
-        "wrap": true,
-        "spacing": "sm"
-      }
-    },
-    {
-      "name": "Reverse Stack",
-      "description": "Vertical stack with reversed order",
-      "code": "<Stack reverse spacing=\"md\">\n  <div>First (appears last)</div>\n  <div>Second (appears middle)</div>\n  <div>Third (appears first)</div>\n</Stack>",
-      "props": {
-        "direction": "vertical",
-        "reverse": true,
-        "spacing": "md"
-      }
-    }
-  ],
-  "variants": [
-    {
-      "name": "HStack",
-      "description": "Horizontal stack shorthand",
-      "defaultProps": {
-        "direction": "horizontal"
-      }
-    },
-    {
-      "name": "VStack",
-      "description": "Vertical stack shorthand",
-      "defaultProps": {
-        "direction": "vertical"
-      }
-    }
-  ],
-  "composition": {
-    "canContain": [
-      "any React elements",
-      "Button",
-      "Input",
-      "Card",
-      "Text",
-      "Image",
-      "other layout components"
-    ],
-    "commonPatterns": [
-      "Form action buttons",
-      "Navigation items",
-      "Card collections",
-      "Content sections",
-      "Tag lists"
-    ]
-  },
-  "theming": {
-    "cssVariables": {
-      "--stack-spacing-xs": "0.25rem",
-      "--stack-spacing-sm": "0.5rem",
-      "--stack-spacing-md": "1rem",
-      "--stack-spacing-lg": "1.5rem",
-      "--stack-spacing-xl": "2rem"
-    },
-    "customization": [
-      "Spacing values",
-      "Divider styling",
-      "Container padding"
-    ]
-  },
-  "testing": {
-    "testCases": [
-      "Renders children in correct order",
-      "Applies correct spacing classes",
-      "Handles direction changes",
-      "Renders dividers between items",
-      "Supports wrapping when enabled",
-      "Applies alignment and justification",
-      "Handles reverse order correctly",
-      "Maintains accessibility attributes"
-    ],
-    "selectors": {
-      "component": "[data-testid='stack']",
-      "item": "[data-testid='stack-item']",
-      "divider": "[data-testid='stack-divider']"
-    }
-  },
-  "performance": {
-    "optimization": [
-      "Uses CSS flexbox for efficient layout",
-      "Minimal conditional class computation",
-      "No JavaScript layout calculations",
-      "Efficient divider rendering"
-    ],
-    "metrics": {
-      "bundleSize": "<1KB gzipped",
-      "renderTime": "<16ms for 100 items",
-      "layoutTime": "<8ms",
-      "memoryFootprint": "<100KB"
-    }
-  },
-  "dependencies": {
-    "internal": [],
-    "external": [
-      "react",
-      "clsx"
-    ]
-  },
-  "migration": {
-    "from": {
-      "flexbox-div": "Replace div with flex classes with Stack component",
-      "css-grid": "Consider Grid component for 2D layouts"
-    },
-    "breaking-changes": []
-  },
-  "related": [
-    "Grid",
-    "Container",
-    "Box",
-    "Flex"
-  ]
+	"metadata": {
+		"name": "Stack",
+		"version": "1.0.0",
+		"category": "layout",
+		"description": "A flexible container component that arranges items in horizontal or vertical stacks with customizable spacing and alignment",
+		"tags": ["layout", "flexbox", "container", "spacing"],
+		"compliance": {
+			"nsm": "OPEN",
+			"gdpr": true,
+			"wcag": "AAA"
+		},
+		"performance": {
+			"bundleSize": "<1KB",
+			"renderTime": "<16ms",
+			"memoryUsage": "<100KB"
+		}
+	},
+	"props": {
+		"direction": {
+			"type": "enum",
+			"values": ["horizontal", "vertical"],
+			"default": "vertical",
+			"description": "The direction to stack items",
+			"required": false,
+			"examples": ["horizontal", "vertical"]
+		},
+		"spacing": {
+			"type": "enum",
+			"values": ["none", "xs", "sm", "md", "lg", "xl"],
+			"default": "md",
+			"description": "Spacing between stack items",
+			"required": false,
+			"mapping": {
+				"none": "0",
+				"xs": "0.25rem",
+				"sm": "0.5rem",
+				"md": "1rem",
+				"lg": "1.5rem",
+				"xl": "2rem"
+			}
+		},
+		"align": {
+			"type": "enum",
+			"values": ["start", "center", "end", "stretch", "baseline"],
+			"default": "stretch",
+			"description": "Cross-axis alignment of items",
+			"required": false,
+			"mapping": {
+				"start": "flex-start",
+				"center": "center",
+				"end": "flex-end",
+				"stretch": "stretch",
+				"baseline": "baseline"
+			}
+		},
+		"justify": {
+			"type": "enum",
+			"values": ["start", "center", "end", "between", "around", "evenly"],
+			"default": "start",
+			"description": "Main-axis justification of items",
+			"required": false,
+			"mapping": {
+				"start": "flex-start",
+				"center": "center",
+				"end": "flex-end",
+				"between": "space-between",
+				"around": "space-around",
+				"evenly": "space-evenly"
+			}
+		},
+		"wrap": {
+			"type": "boolean",
+			"default": false,
+			"description": "Whether items should wrap to new lines",
+			"required": false
+		},
+		"reverse": {
+			"type": "boolean",
+			"default": false,
+			"description": "Whether to reverse the order of items",
+			"required": false
+		},
+		"children": {
+			"type": "ReactNode",
+			"description": "The items to be stacked",
+			"required": true
+		},
+		"divider": {
+			"type": "ReactNode",
+			"description": "Optional divider element between items",
+			"required": false,
+			"default": null
+		},
+		"className": {
+			"type": "string",
+			"description": "Additional CSS classes",
+			"required": false
+		},
+		"testId": {
+			"type": "string",
+			"description": "Test identifier for automated testing",
+			"required": false
+		}
+	},
+	"implementation": {
+		"technology": "flexbox",
+		"baseClasses": "flex",
+		"conditionalClasses": {
+			"direction": {
+				"horizontal": "flex-row",
+				"vertical": "flex-col"
+			},
+			"reverse": {
+				"true": {
+					"horizontal": "flex-row-reverse",
+					"vertical": "flex-col-reverse"
+				}
+			},
+			"align": {
+				"start": "items-start",
+				"center": "items-center",
+				"end": "items-end",
+				"stretch": "items-stretch",
+				"baseline": "items-baseline"
+			},
+			"justify": {
+				"start": "justify-start",
+				"center": "justify-center",
+				"end": "justify-end",
+				"between": "justify-between",
+				"around": "justify-around",
+				"evenly": "justify-evenly"
+			},
+			"wrap": {
+				"true": "flex-wrap",
+				"false": "flex-nowrap"
+			},
+			"spacing": {
+				"horizontal": {
+					"none": "space-x-0",
+					"xs": "space-x-1",
+					"sm": "space-x-2",
+					"md": "space-x-4",
+					"lg": "space-x-6",
+					"xl": "space-x-8"
+				},
+				"vertical": {
+					"none": "space-y-0",
+					"xs": "space-y-1",
+					"sm": "space-y-2",
+					"md": "space-y-4",
+					"lg": "space-y-6",
+					"xl": "space-y-8"
+				}
+			}
+		}
+	},
+	"accessibility": {
+		"role": "group",
+		"keyboardNavigation": true,
+		"screenReaderSupport": true,
+		"focusManagement": "natural-flow",
+		"ariaAttributes": ["aria-label", "aria-labelledby", "aria-describedby"]
+	},
+	"examples": [
+		{
+			"name": "Basic Vertical Stack",
+			"description": "Simple vertical stack with medium spacing",
+			"code": "<Stack spacing=\"md\">\n  <div>Item 1</div>\n  <div>Item 2</div>\n  <div>Item 3</div>\n</Stack>",
+			"props": {
+				"direction": "vertical",
+				"spacing": "md"
+			}
+		},
+		{
+			"name": "Horizontal Stack (HStack)",
+			"description": "Horizontal stack with center alignment",
+			"code": "<Stack direction=\"horizontal\" align=\"center\" spacing=\"lg\">\n  <Button>Save</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Stack>",
+			"props": {
+				"direction": "horizontal",
+				"align": "center",
+				"spacing": "lg"
+			}
+		},
+		{
+			"name": "Stack with Dividers",
+			"description": "Vertical stack with divider elements",
+			"code": "<Stack spacing=\"sm\" divider={<hr className=\"border-gray-200\" />}>\n  <div>Section 1</div>\n  <div>Section 2</div>\n  <div>Section 3</div>\n</Stack>",
+			"props": {
+				"direction": "vertical",
+				"spacing": "sm",
+				"divider": "<hr />"
+			}
+		},
+		{
+			"name": "Justified Stack",
+			"description": "Horizontal stack with space-between justification",
+			"code": "<Stack direction=\"horizontal\" justify=\"between\" align=\"center\">\n  <h2>Title</h2>\n  <Button>Action</Button>\n</Stack>",
+			"props": {
+				"direction": "horizontal",
+				"justify": "between",
+				"align": "center"
+			}
+		},
+		{
+			"name": "Wrapped Stack",
+			"description": "Horizontal stack that wraps items",
+			"code": "<Stack direction=\"horizontal\" wrap spacing=\"sm\">\n  <Badge>Tag 1</Badge>\n  <Badge>Tag 2</Badge>\n  <Badge>Tag 3</Badge>\n  <Badge>Very Long Tag Name</Badge>\n</Stack>",
+			"props": {
+				"direction": "horizontal",
+				"wrap": true,
+				"spacing": "sm"
+			}
+		},
+		{
+			"name": "Reverse Stack",
+			"description": "Vertical stack with reversed order",
+			"code": "<Stack reverse spacing=\"md\">\n  <div>First (appears last)</div>\n  <div>Second (appears middle)</div>\n  <div>Third (appears first)</div>\n</Stack>",
+			"props": {
+				"direction": "vertical",
+				"reverse": true,
+				"spacing": "md"
+			}
+		}
+	],
+	"variants": [
+		{
+			"name": "HStack",
+			"description": "Horizontal stack shorthand",
+			"defaultProps": {
+				"direction": "horizontal"
+			}
+		},
+		{
+			"name": "VStack",
+			"description": "Vertical stack shorthand",
+			"defaultProps": {
+				"direction": "vertical"
+			}
+		}
+	],
+	"composition": {
+		"canContain": [
+			"any React elements",
+			"Button",
+			"Input",
+			"Card",
+			"Text",
+			"Image",
+			"other layout components"
+		],
+		"commonPatterns": [
+			"Form action buttons",
+			"Navigation items",
+			"Card collections",
+			"Content sections",
+			"Tag lists"
+		]
+	},
+	"theming": {
+		"cssVariables": {
+			"--stack-spacing-xs": "0.25rem",
+			"--stack-spacing-sm": "0.5rem",
+			"--stack-spacing-md": "1rem",
+			"--stack-spacing-lg": "1.5rem",
+			"--stack-spacing-xl": "2rem"
+		},
+		"customization": ["Spacing values", "Divider styling", "Container padding"]
+	},
+	"testing": {
+		"testCases": [
+			"Renders children in correct order",
+			"Applies correct spacing classes",
+			"Handles direction changes",
+			"Renders dividers between items",
+			"Supports wrapping when enabled",
+			"Applies alignment and justification",
+			"Handles reverse order correctly",
+			"Maintains accessibility attributes"
+		],
+		"selectors": {
+			"component": "[data-testid='stack']",
+			"item": "[data-testid='stack-item']",
+			"divider": "[data-testid='stack-divider']"
+		}
+	},
+	"performance": {
+		"optimization": [
+			"Uses CSS flexbox for efficient layout",
+			"Minimal conditional class computation",
+			"No JavaScript layout calculations",
+			"Efficient divider rendering"
+		],
+		"metrics": {
+			"bundleSize": "<1KB gzipped",
+			"renderTime": "<16ms for 100 items",
+			"layoutTime": "<8ms",
+			"memoryFootprint": "<100KB"
+		}
+	},
+	"dependencies": {
+		"internal": [],
+		"external": ["react", "clsx"]
+	},
+	"migration": {
+		"from": {
+			"flexbox-div": "Replace div with flex classes with Stack component",
+			"css-grid": "Consider Grid component for 2D layouts"
+		},
+		"breaking-changes": []
+	},
+	"related": ["Grid", "Container", "Box", "Flex"]
 }

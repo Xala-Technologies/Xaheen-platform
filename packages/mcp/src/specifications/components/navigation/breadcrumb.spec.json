@@ -1,266 +1,258 @@
 {
-  "metadata": {
-    "name": "Breadcrumb",
-    "version": "1.0.0",
-    "category": "navigation",
-    "description": "Navigation component that shows the current page's location within a hierarchy",
-    "tags": ["navigation", "breadcrumb", "hierarchy", "path"],
-    "compliance": {
-      "wcag": "AAA",
-      "nsm": "OPEN",
-      "gdpr": "compliant"
-    },
-    "performance": {
-      "bundleSize": "<2KB",
-      "renderTime": "<16ms",
-      "memoryUsage": "<1MB"
-    }
-  },
-  "props": {
-    "items": {
-      "type": "array",
-      "required": true,
-      "description": "Array of breadcrumb items",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "required": true,
-            "description": "Display text for the breadcrumb item"
-          },
-          "href": {
-            "type": "string",
-            "required": false,
-            "description": "URL for the breadcrumb link"
-          },
-          "icon": {
-            "type": "React.ReactNode",
-            "required": false,
-            "description": "Optional icon to display before the label"
-          },
-          "active": {
-            "type": "boolean",
-            "required": false,
-            "default": false,
-            "description": "Whether this item is the current/active page"
-          }
-        }
-      }
-    },
-    "separator": {
-      "type": "string | React.ReactNode",
-      "required": false,
-      "default": "/",
-      "description": "Custom separator between breadcrumb items"
-    },
-    "maxItems": {
-      "type": "number",
-      "required": false,
-      "description": "Maximum number of items to show before collapsing with ellipsis"
-    },
-    "homeIcon": {
-      "type": "React.ReactNode",
-      "required": false,
-      "description": "Optional home icon for the first breadcrumb item"
-    },
-    "size": {
-      "type": "enum",
-      "required": false,
-      "default": "md",
-      "values": ["sm", "md", "lg"],
-      "description": "Size variant of the breadcrumb"
-    },
-    "className": {
-      "type": "string",
-      "required": false,
-      "description": "Additional CSS classes"
-    },
-    "onItemClick": {
-      "type": "(item: BreadcrumbItem, index: number) => void",
-      "required": false,
-      "description": "Callback fired when a breadcrumb item is clicked"
-    }
-  },
-  "accessibility": {
-    "wcag": {
-      "level": "AAA",
-      "guidelines": [
-        "2.1.1 - Keyboard navigation support",
-        "2.4.8 - Location identification",
-        "3.2.4 - Consistent identification",
-        "4.1.2 - Name, Role, Value"
-      ]
-    },
-    "aria": {
-      "nav": "Required nav element wrapper",
-      "aria-label": "Required 'breadcrumb' label on nav",
-      "aria-current": "Set to 'page' on active item"
-    },
-    "keyboard": {
-      "Tab": "Navigate between breadcrumb links",
-      "Enter": "Activate focused breadcrumb link",
-      "Space": "Activate focused breadcrumb link"
-    },
-    "screenReader": "Full breadcrumb path announced with proper navigation context"
-  },
-  "design": {
-    "tokens": {
-      "colors": {
-        "text": "var(--color-text-secondary)",
-        "textActive": "var(--color-text-primary)",
-        "textHover": "var(--color-text-primary)",
-        "separator": "var(--color-text-muted)",
-        "link": "var(--color-primary-600)",
-        "linkHover": "var(--color-primary-700)"
-      },
-      "spacing": {
-        "itemGap": "var(--spacing-2)",
-        "separatorGap": "var(--spacing-2)"
-      },
-      "typography": {
-        "sm": "var(--text-sm)",
-        "md": "var(--text-base)",
-        "lg": "var(--text-lg)"
-      }
-    },
-    "variants": {
-      "size": {
-        "sm": {
-          "fontSize": "var(--text-sm)",
-          "padding": "var(--spacing-1) 0",
-          "iconSize": "16px"
-        },
-        "md": {
-          "fontSize": "var(--text-base)",
-          "padding": "var(--spacing-2) 0",
-          "iconSize": "18px"
-        },
-        "lg": {
-          "fontSize": "var(--text-lg)",
-          "padding": "var(--spacing-3) 0",
-          "iconSize": "20px"
-        }
-      }
-    }
-  },
-  "behavior": {
-    "navigation": {
-      "clickable": "All non-active items are clickable links",
-      "activeItem": "Last item is typically non-clickable and marked as current page",
-      "ellipsis": "When maxItems is exceeded, middle items collapse to '...'"
-    },
-    "responsive": {
-      "mobile": "Considers collapsing to show only current and parent items",
-      "desktop": "Shows full breadcrumb trail"
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Breadcrumb",
-      "description": "Simple breadcrumb with text labels",
-      "code": {
-        "tsx": "const items = [\n  { label: 'Home', href: '/' },\n  { label: 'Products', href: '/products' },\n  { label: 'Electronics', href: '/products/electronics' },\n  { label: 'Smartphones', active: true }\n];\n\n<Breadcrumb items={items} />"
-      }
-    },
-    {
-      "name": "With Icons",
-      "description": "Breadcrumb with home icon and item icons",
-      "code": {
-        "tsx": "const items = [\n  { label: 'Home', href: '/', icon: <HomeIcon /> },\n  { label: 'Products', href: '/products', icon: <ProductIcon /> },\n  { label: 'Electronics', href: '/products/electronics', icon: <ElectronicsIcon /> },\n  { label: 'Smartphones', active: true, icon: <PhoneIcon /> }\n];\n\n<Breadcrumb \n  items={items} \n  homeIcon={<HomeIcon />}\n  size=\"md\"\n/>"
-      }
-    },
-    {
-      "name": "Collapsed with Ellipsis",
-      "description": "Breadcrumb that collapses middle items when maxItems is exceeded",
-      "code": {
-        "tsx": "const items = [\n  { label: 'Home', href: '/' },\n  { label: 'Level 1', href: '/level1' },\n  { label: 'Level 2', href: '/level1/level2' },\n  { label: 'Level 3', href: '/level1/level2/level3' },\n  { label: 'Level 4', href: '/level1/level2/level3/level4' },\n  { label: 'Current Page', active: true }\n];\n\n<Breadcrumb \n  items={items} \n  maxItems={4}\n  separator={<ChevronRightIcon />}\n/>"
-      }
-    },
-    {
-      "name": "Custom Separator",
-      "description": "Breadcrumb with custom separator",
-      "code": {
-        "tsx": "const items = [\n  { label: 'Dashboard', href: '/dashboard' },\n  { label: 'Users', href: '/dashboard/users' },\n  { label: 'Profile', active: true }\n];\n\n<Breadcrumb \n  items={items} \n  separator={<ArrowRightIcon className=\"h-4 w-4\" />}\n  size=\"lg\"\n/>"
-      }
-    }
-  ],
-  "testing": {
-    "unit": [
-      "Renders all breadcrumb items correctly",
-      "Applies active state to current item",
-      "Handles click events on breadcrumb links",
-      "Collapses items when maxItems is exceeded",
-      "Renders custom separators correctly",
-      "Applies size variants correctly"
-    ],
-    "integration": [
-      "Integrates with routing libraries (Next.js, React Router)",
-      "Works with different link components",
-      "Handles dynamic breadcrumb generation"
-    ],
-    "accessibility": [
-      "Has proper nav and aria-label attributes",
-      "Active item has aria-current='page'",
-      "Keyboard navigation works correctly",
-      "Screen reader announces breadcrumb path",
-      "Focus management is proper"
-    ],
-    "visual": [
-      "All size variants render correctly",
-      "Icons align properly with text",
-      "Separators are positioned correctly",
-      "Ellipsis displays when items are collapsed",
-      "Hover states work correctly"
-    ]
-  },
-  "implementation": {
-    "files": [
-      "src/components/navigation/Breadcrumb.tsx",
-      "src/components/navigation/Breadcrumb.test.tsx",
-      "src/components/navigation/Breadcrumb.stories.tsx"
-    ],
-    "dependencies": [
-      "React",
-      "TypeScript",
-      "Tailwind CSS"
-    ],
-    "exports": [
-      "Breadcrumb",
-      "BreadcrumbProps",
-      "BreadcrumbItem"
-    ]
-  },
-  "validation": {
-    "norwegian": {
-      "nsm": {
-        "classification": "OPEN",
-        "reasoning": "Navigation component with no sensitive data handling"
-      },
-      "language": {
-        "primary": "nb-NO",
-        "fallback": "en-US",
-        "rtl": false
-      }
-    },
-    "performance": {
-      "bundleSize": {
-        "target": "<2KB",
-        "gzipped": "<1KB"
-      },
-      "rendering": {
-        "initialRender": "<16ms",
-        "rerender": "<8ms"
-      },
-      "memory": {
-        "baseline": "<1MB",
-        "withLargeDataset": "<2MB"
-      }
-    },
-    "security": {
-      "xss": "All user content is properly escaped",
-      "injection": "No dynamic code execution",
-      "disclosure": "No sensitive information exposed"
-    }
-  }
+	"metadata": {
+		"name": "Breadcrumb",
+		"version": "1.0.0",
+		"category": "navigation",
+		"description": "Navigation component that shows the current page's location within a hierarchy",
+		"tags": ["navigation", "breadcrumb", "hierarchy", "path"],
+		"compliance": {
+			"wcag": "AAA",
+			"nsm": "OPEN",
+			"gdpr": "compliant"
+		},
+		"performance": {
+			"bundleSize": "<2KB",
+			"renderTime": "<16ms",
+			"memoryUsage": "<1MB"
+		}
+	},
+	"props": {
+		"items": {
+			"type": "array",
+			"required": true,
+			"description": "Array of breadcrumb items",
+			"items": {
+				"type": "object",
+				"properties": {
+					"label": {
+						"type": "string",
+						"required": true,
+						"description": "Display text for the breadcrumb item"
+					},
+					"href": {
+						"type": "string",
+						"required": false,
+						"description": "URL for the breadcrumb link"
+					},
+					"icon": {
+						"type": "React.ReactNode",
+						"required": false,
+						"description": "Optional icon to display before the label"
+					},
+					"active": {
+						"type": "boolean",
+						"required": false,
+						"default": false,
+						"description": "Whether this item is the current/active page"
+					}
+				}
+			}
+		},
+		"separator": {
+			"type": "string | React.ReactNode",
+			"required": false,
+			"default": "/",
+			"description": "Custom separator between breadcrumb items"
+		},
+		"maxItems": {
+			"type": "number",
+			"required": false,
+			"description": "Maximum number of items to show before collapsing with ellipsis"
+		},
+		"homeIcon": {
+			"type": "React.ReactNode",
+			"required": false,
+			"description": "Optional home icon for the first breadcrumb item"
+		},
+		"size": {
+			"type": "enum",
+			"required": false,
+			"default": "md",
+			"values": ["sm", "md", "lg"],
+			"description": "Size variant of the breadcrumb"
+		},
+		"className": {
+			"type": "string",
+			"required": false,
+			"description": "Additional CSS classes"
+		},
+		"onItemClick": {
+			"type": "(item: BreadcrumbItem, index: number) => void",
+			"required": false,
+			"description": "Callback fired when a breadcrumb item is clicked"
+		}
+	},
+	"accessibility": {
+		"wcag": {
+			"level": "AAA",
+			"guidelines": [
+				"2.1.1 - Keyboard navigation support",
+				"2.4.8 - Location identification",
+				"3.2.4 - Consistent identification",
+				"4.1.2 - Name, Role, Value"
+			]
+		},
+		"aria": {
+			"nav": "Required nav element wrapper",
+			"aria-label": "Required 'breadcrumb' label on nav",
+			"aria-current": "Set to 'page' on active item"
+		},
+		"keyboard": {
+			"Tab": "Navigate between breadcrumb links",
+			"Enter": "Activate focused breadcrumb link",
+			"Space": "Activate focused breadcrumb link"
+		},
+		"screenReader": "Full breadcrumb path announced with proper navigation context"
+	},
+	"design": {
+		"tokens": {
+			"colors": {
+				"text": "var(--color-text-secondary)",
+				"textActive": "var(--color-text-primary)",
+				"textHover": "var(--color-text-primary)",
+				"separator": "var(--color-text-muted)",
+				"link": "var(--color-primary-600)",
+				"linkHover": "var(--color-primary-700)"
+			},
+			"spacing": {
+				"itemGap": "var(--spacing-2)",
+				"separatorGap": "var(--spacing-2)"
+			},
+			"typography": {
+				"sm": "var(--text-sm)",
+				"md": "var(--text-base)",
+				"lg": "var(--text-lg)"
+			}
+		},
+		"variants": {
+			"size": {
+				"sm": {
+					"fontSize": "var(--text-sm)",
+					"padding": "var(--spacing-1) 0",
+					"iconSize": "16px"
+				},
+				"md": {
+					"fontSize": "var(--text-base)",
+					"padding": "var(--spacing-2) 0",
+					"iconSize": "18px"
+				},
+				"lg": {
+					"fontSize": "var(--text-lg)",
+					"padding": "var(--spacing-3) 0",
+					"iconSize": "20px"
+				}
+			}
+		}
+	},
+	"behavior": {
+		"navigation": {
+			"clickable": "All non-active items are clickable links",
+			"activeItem": "Last item is typically non-clickable and marked as current page",
+			"ellipsis": "When maxItems is exceeded, middle items collapse to '...'"
+		},
+		"responsive": {
+			"mobile": "Considers collapsing to show only current and parent items",
+			"desktop": "Shows full breadcrumb trail"
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Breadcrumb",
+			"description": "Simple breadcrumb with text labels",
+			"code": {
+				"tsx": "const items = [\n  { label: 'Home', href: '/' },\n  { label: 'Products', href: '/products' },\n  { label: 'Electronics', href: '/products/electronics' },\n  { label: 'Smartphones', active: true }\n];\n\n<Breadcrumb items={items} />"
+			}
+		},
+		{
+			"name": "With Icons",
+			"description": "Breadcrumb with home icon and item icons",
+			"code": {
+				"tsx": "const items = [\n  { label: 'Home', href: '/', icon: <HomeIcon /> },\n  { label: 'Products', href: '/products', icon: <ProductIcon /> },\n  { label: 'Electronics', href: '/products/electronics', icon: <ElectronicsIcon /> },\n  { label: 'Smartphones', active: true, icon: <PhoneIcon /> }\n];\n\n<Breadcrumb \n  items={items} \n  homeIcon={<HomeIcon />}\n  size=\"md\"\n/>"
+			}
+		},
+		{
+			"name": "Collapsed with Ellipsis",
+			"description": "Breadcrumb that collapses middle items when maxItems is exceeded",
+			"code": {
+				"tsx": "const items = [\n  { label: 'Home', href: '/' },\n  { label: 'Level 1', href: '/level1' },\n  { label: 'Level 2', href: '/level1/level2' },\n  { label: 'Level 3', href: '/level1/level2/level3' },\n  { label: 'Level 4', href: '/level1/level2/level3/level4' },\n  { label: 'Current Page', active: true }\n];\n\n<Breadcrumb \n  items={items} \n  maxItems={4}\n  separator={<ChevronRightIcon />}\n/>"
+			}
+		},
+		{
+			"name": "Custom Separator",
+			"description": "Breadcrumb with custom separator",
+			"code": {
+				"tsx": "const items = [\n  { label: 'Dashboard', href: '/dashboard' },\n  { label: 'Users', href: '/dashboard/users' },\n  { label: 'Profile', active: true }\n];\n\n<Breadcrumb \n  items={items} \n  separator={<ArrowRightIcon className=\"h-4 w-4\" />}\n  size=\"lg\"\n/>"
+			}
+		}
+	],
+	"testing": {
+		"unit": [
+			"Renders all breadcrumb items correctly",
+			"Applies active state to current item",
+			"Handles click events on breadcrumb links",
+			"Collapses items when maxItems is exceeded",
+			"Renders custom separators correctly",
+			"Applies size variants correctly"
+		],
+		"integration": [
+			"Integrates with routing libraries (Next.js, React Router)",
+			"Works with different link components",
+			"Handles dynamic breadcrumb generation"
+		],
+		"accessibility": [
+			"Has proper nav and aria-label attributes",
+			"Active item has aria-current='page'",
+			"Keyboard navigation works correctly",
+			"Screen reader announces breadcrumb path",
+			"Focus management is proper"
+		],
+		"visual": [
+			"All size variants render correctly",
+			"Icons align properly with text",
+			"Separators are positioned correctly",
+			"Ellipsis displays when items are collapsed",
+			"Hover states work correctly"
+		]
+	},
+	"implementation": {
+		"files": [
+			"src/components/navigation/Breadcrumb.tsx",
+			"src/components/navigation/Breadcrumb.test.tsx",
+			"src/components/navigation/Breadcrumb.stories.tsx"
+		],
+		"dependencies": ["React", "TypeScript", "Tailwind CSS"],
+		"exports": ["Breadcrumb", "BreadcrumbProps", "BreadcrumbItem"]
+	},
+	"validation": {
+		"norwegian": {
+			"nsm": {
+				"classification": "OPEN",
+				"reasoning": "Navigation component with no sensitive data handling"
+			},
+			"language": {
+				"primary": "nb-NO",
+				"fallback": "en-US",
+				"rtl": false
+			}
+		},
+		"performance": {
+			"bundleSize": {
+				"target": "<2KB",
+				"gzipped": "<1KB"
+			},
+			"rendering": {
+				"initialRender": "<16ms",
+				"rerender": "<8ms"
+			},
+			"memory": {
+				"baseline": "<1MB",
+				"withLargeDataset": "<2MB"
+			}
+		},
+		"security": {
+			"xss": "All user content is properly escaped",
+			"injection": "No dynamic code execution",
+			"disclosure": "No sensitive information exposed"
+		}
+	}
 }

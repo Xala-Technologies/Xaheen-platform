@@ -1,853 +1,890 @@
 {
-  "metadata": {
-    "name": "Checkbox",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "form",
-    "subcategory": "selection-control",
-    "description": "Accessible checkbox component for multi-state selection control with Norwegian compliance, WCAG AAA accessibility, and comprehensive form integration. Supports indeterminate state and checkbox groups.",
-    "keywords": ["checkbox", "form", "selection", "control", "indeterminate", "accessible", "norwegian", "controlled"],
-    "maintainer": {
-      "name": "Xala Form Team",
-      "email": "forms@xala.no",
-      "team": "Form Components"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T10:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["input", "label", "div", "span"],
-      "ariaRoles": ["checkbox"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.4.6 Headings and Labels",
-        "2.5.5 Target Size",
-        "3.2.2 On Input",
-        "3.3.2 Labels or Instructions",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "checked": {
-        "type": {
-          "union": [
-            { "primitive": "boolean" },
-            { "custom": "literal", "value": "indeterminate" }
-          ]
-        },
-        "description": "Controlled component state - checked (true), unchecked (false), or indeterminate state",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-checked",
-          "screenReaderText": "Checkbox is checked/unchecked/mixed"
-        },
-        "examples": [
-          {
-            "value": true,
-            "description": "Checkbox is checked",
-            "context": "Controlled component - selected state"
-          },
-          {
-            "value": false,
-            "description": "Checkbox is unchecked",
-            "context": "Controlled component - unselected state"
-          },
-          {
-            "value": "indeterminate",
-            "description": "Mixed state (some children selected)",
-            "context": "Parent checkbox with partially selected children"
-          }
-        ]
-      },
-      "defaultChecked": {
-        "type": { "primitive": "boolean" },
-        "description": "Default checked state for uncontrolled component",
-        "required": false,
-        "defaultValue": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Checkbox starts in checked state",
-            "context": "Uncontrolled component initialization"
-          }
-        ]
-      },
-      "onChange": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "checked",
-                "type": "boolean",
-                "required": true
-              },
-              {
-                "name": "event",
-                "type": "ChangeEvent<HTMLInputElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when checkbox state changes",
-        "required": false,
-        "examples": [
-          {
-            "value": "(checked, event) => setSelected(checked)",
-            "description": "Update state when checkbox changes",
-            "context": "State management"
-          }
-        ]
-      },
-      "disabled": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the checkbox is disabled",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "disabled",
-          "screenReaderText": "Checkbox is disabled"
-        }
-      },
-      "indeterminate": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the checkbox displays indeterminate state (mixed selection)",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-checked",
-          "screenReaderText": "Checkbox is in mixed state"
-        },
-        "examples": [
-          {
-            "value": true,
-            "description": "Show indeterminate/mixed state",
-            "context": "Parent checkbox with some children selected"
-          }
-        ]
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["sm", "md", "lg"]
-        },
-        "description": "Size variant of the checkbox",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "sm",
-            "description": "Small checkbox (16px)",
-            "context": "Compact interfaces"
-          },
-          {
-            "value": "md",
-            "description": "Medium checkbox (20px)",
-            "context": "Standard forms"
-          },
-          {
-            "value": "lg",
-            "description": "Large checkbox (24px)",
-            "context": "Touch interfaces"
-          }
-        ]
-      },
-      "label": {
-        "type": { "primitive": "string" },
-        "description": "Label text for the checkbox",
-        "required": false,
-        "accessibility": {
-          "required": true,
-          "screenReaderText": "Checkbox label"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "checkbox.label.{fieldName}",
-          "context": "form-label"
-        },
-        "examples": [
-          {
-            "value": "Accept terms and conditions",
-            "description": "Clear descriptive label",
-            "context": "Form agreement"
-          }
-        ]
-      },
-      "error": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the checkbox is in error state",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-invalid",
-          "screenReaderText": "Checkbox has error"
-        },
-        "examples": [
-          {
-            "value": true,
-            "description": "Show error styling and state",
-            "context": "Form validation failed"
-          }
-        ]
-      },
-      "errorMessage": {
-        "type": { "primitive": "string" },
-        "description": "Error message to display when checkbox is in error state",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby",
-          "screenReaderText": "Error message"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "checkbox.error.{fieldName}",
-          "context": "validation-error"
-        },
-        "examples": [
-          {
-            "value": "You must accept the terms to continue",
-            "description": "Validation error message",
-            "context": "Required checkbox not checked"
-          }
-        ]
-      },
-      "required": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the checkbox is required for form submission",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-required",
-          "screenReaderText": "Checkbox is required"
-        }
-      },
-      "name": {
-        "type": { "primitive": "string" },
-        "description": "Name attribute for form integration",
-        "required": false,
-        "examples": [
-          {
-            "value": "acceptTerms",
-            "description": "Form field name",
-            "context": "Form data collection"
-          }
-        ]
-      },
-      "value": {
-        "type": { "primitive": "string" },
-        "description": "Value attribute for form integration",
-        "required": false,
-        "defaultValue": "on",
-        "examples": [
-          {
-            "value": "agreed",
-            "description": "Custom value when checked",
-            "context": "Form submission data"
-          }
-        ]
-      },
-      "description": {
-        "type": { "primitive": "string" },
-        "description": "Additional descriptive text for the checkbox",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby",
-          "screenReaderText": "Checkbox description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "checkbox.description.{fieldName}",
-          "context": "form-hint"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the checkbox container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      },
-      "ariaLabel": {
-        "type": { "primitive": "string" },
-        "description": "Accessible label when no visible label is present",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Checkbox description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.checkbox.{fieldName}",
-          "context": "accessibility"
-        }
-      },
-      "ariaDescribedBy": {
-        "type": { "primitive": "string" },
-        "description": "ID of elements that describe the checkbox",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby"
-        }
-      },
-      "onFocus": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent<HTMLInputElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when checkbox receives focus",
-        "required": false
-      },
-      "onBlur": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent<HTMLInputElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when checkbox loses focus",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "checked", "defaultChecked", "onChange", "disabled", "indeterminate", "size", "label",
-        "error", "errorMessage", "required", "name", "value", "description", "className",
-        "testId", "ariaLabel", "ariaDescribedBy", "onFocus", "onBlur"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false
-      },
-      "slots": {
-        "label": {
-          "required": false,
-          "types": ["element", "string"],
-          "description": "Custom label content"
-        },
-        "description": {
-          "required": false,
-          "types": ["element", "string"],
-          "description": "Custom description content"
-        },
-        "errorMessage": {
-          "required": false,
-          "types": ["element", "string"],
-          "description": "Custom error message content"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "size": {
-        "values": {
-          "sm": "h-4 w-4",
-          "md": "h-5 w-5",
-          "lg": "h-6 w-6"
-        },
-        "defaultValue": "md"
-      },
-      "state": {
-        "values": {
-          "normal": "border-gray-300 text-blue-600",
-          "checked": "bg-blue-600 border-blue-600 text-white",
-          "indeterminate": "bg-blue-600 border-blue-600 text-white",
-          "disabled": "opacity-50 cursor-not-allowed bg-gray-100",
-          "error": "border-red-500 text-red-600",
-          "focused": "ring-2 ring-blue-500 ring-offset-2"
-        },
-        "defaultValue": "normal"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "size": "sm",
-          "label": true
-        },
-        "className": "gap-2 text-sm",
-        "description": "Small checkbox with label"
-      },
-      {
-        "conditions": {
-          "size": "md",
-          "label": true
-        },
-        "className": "gap-3 text-base",
-        "description": "Medium checkbox with label"
-      },
-      {
-        "conditions": {
-          "size": "lg",
-          "label": true
-        },
-        "className": "gap-4 text-lg",
-        "description": "Large checkbox with label"
-      },
-      {
-        "conditions": {
-          "error": true
-        },
-        "className": "border-red-500 text-red-600",
-        "description": "Error state styling"
-      },
-      {
-        "conditions": {
-          "disabled": true
-        },
-        "className": "pointer-events-none opacity-50 cursor-not-allowed",
-        "description": "Disabled state styling"
-      },
-      {
-        "conditions": {
-          "indeterminate": true
-        },
-        "className": "bg-blue-600 border-blue-600",
-        "description": "Indeterminate state styling"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "checkbox"
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Space",
-          "action": "toggle",
-          "context": "Toggle checkbox state"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus to next element"
-        },
-        {
-          "key": "Shift+Tab",
-          "action": "navigate",
-          "context": "Move focus to previous element"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "toggle",
-          "message": "Checkbox {label} is now {checked ? 'checked' : 'unchecked'}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "indeterminate",
-          "message": "Checkbox {label} is in mixed state",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "focus",
-          "message": "Checkbox {label}, {checked ? 'checked' : indeterminate ? 'mixed' : 'unchecked'}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "required",
-          "message": "Required checkbox {label}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "error",
-          "message": "Invalid checkbox {label}, {errorMessage}",
-          "priority": "assertive"
-        }
-      ],
-      "labels": {
-        "required": ["label", "aria-label"],
-        "descriptions": {
-          "checked": "Checked",
-          "unchecked": "Unchecked",
-          "mixed": "Mixed",
-          "required": "Required",
-          "disabled": "Disabled",
-          "invalid": "Invalid"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "checkbox-label-association",
-        "keyboard-navigation",
-        "state-announcements",
-        "focus-management",
-        "color-contrast-aaa",
-        "target-size-minimum",
-        "role-checkbox-implementation",
-        "indeterminate-state-support",
-        "form-integration-attributes"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "keyboard-only-interaction",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "touch-target-accessibility",
-        "group-checkbox-interaction"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/checkbox.tsx",
-        "dependencies": ["react", "clsx"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useState", "useCallback", "useId", "useEffect"]
-          },
-          {
-            "module": "clsx",
-            "imports": ["clsx"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/checkbox.vue",
-        "dependencies": ["vue"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/checkbox.component.ts",
-        "dependencies": ["@angular/core", "@angular/forms"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/checkbox.svelte",
-        "dependencies": ["svelte"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Checkbox",
-      "description": "Simple checkbox with label",
-      "category": "basic",
-      "code": {
-        "react": "<Checkbox label='Accept terms and conditions' defaultChecked={false} />",
-        "vue": "<Checkbox label='Accept terms and conditions' :defaultChecked='false' />",
-        "angular": "<xala-checkbox label='Accept terms and conditions' [defaultChecked]='false'></xala-checkbox>",
-        "svelte": "<Checkbox label='Accept terms and conditions' defaultChecked={false} />"
-      },
-      "props": {
-        "label": "Accept terms and conditions",
-        "defaultChecked": false
-      }
-    },
-    {
-      "name": "Controlled Checkbox",
-      "description": "Checkbox with controlled state management",
-      "category": "controlled",
-      "code": {
-        "react": "<Checkbox label='Marketing emails' checked={acceptMarketing} onChange={(checked) => setAcceptMarketing(checked)} />"
-      },
-      "props": {
-        "label": "Marketing emails",
-        "checked": true,
-        "onChange": "(checked) => setAcceptMarketing(checked)"
-      }
-    },
-    {
-      "name": "Indeterminate Checkbox",
-      "description": "Parent checkbox showing mixed state when some children are selected",
-      "category": "indeterminate",
-      "code": {
-        "react": "<Checkbox label='Select all items' checked={allSelected} indeterminate={someSelected && !allSelected} onChange={handleSelectAll} />"
-      },
-      "props": {
-        "label": "Select all items",
-        "checked": false,
-        "indeterminate": true,
-        "onChange": "handleSelectAll"
-      }
-    },
-    {
-      "name": "Checkbox Group",
-      "description": "Group of related checkboxes with parent selection",
-      "category": "group",
-      "code": {
-        "react": "const CheckboxGroup = () => {\n  const [items, setItems] = useState(['item1', 'item2']);\n  const [selected, setSelected] = useState(['item1']);\n  \n  return (\n    <div>\n      <Checkbox \n        label='Select all'\n        checked={selected.length === items.length}\n        indeterminate={selected.length > 0 && selected.length < items.length}\n        onChange={(checked) => setSelected(checked ? items : [])}\n      />\n      {items.map(item => (\n        <Checkbox\n          key={item}\n          label={item}\n          checked={selected.includes(item)}\n          onChange={(checked) => {\n            setSelected(prev => \n              checked \n                ? [...prev, item]\n                : prev.filter(i => i !== item)\n            );\n          }}\n        />\n      ))}\n    </div>\n  );\n};"
-      },
-      "props": {
-        "multiple": true,
-        "indeterminate": true
-      },
-      "notes": "Demonstrates parent-child checkbox relationship with indeterminate state"
-    },
-    {
-      "name": "Required Checkbox with Error",
-      "description": "Required checkbox with validation error state",
-      "category": "validation",
-      "code": {
-        "react": "<Checkbox label='I agree to the terms' required error={!agreed} errorMessage='You must accept the terms to continue' name='agreement' />"
-      },
-      "props": {
-        "label": "I agree to the terms",
-        "required": true,
-        "error": true,
-        "errorMessage": "You must accept the terms to continue",
-        "name": "agreement"
-      }
-    },
-    {
-      "name": "Large Checkbox with Description",
-      "description": "Large checkbox with additional descriptive text",
-      "category": "enhanced",
-      "code": {
-        "react": "<Checkbox label='Email notifications' description='Receive updates about your account activity and important announcements' size='lg' defaultChecked={true} />"
-      },
-      "props": {
-        "label": "Email notifications",
-        "description": "Receive updates about your account activity and important announcements",
-        "size": "lg",
-        "defaultChecked": true
-      }
-    },
-    {
-      "name": "Disabled Checkbox",
-      "description": "Checkbox in disabled state",
-      "category": "state",
-      "code": {
-        "react": "<Checkbox label='Premium feature' disabled defaultChecked={false} description='Upgrade to enable this feature' />"
-      },
-      "props": {
-        "label": "Premium feature",
-        "disabled": true,
-        "defaultChecked": false,
-        "description": "Upgrade to enable this feature"
-      }
-    },
-    {
-      "name": "Form Integration Checkbox",
-      "description": "Checkbox integrated with form data collection",
-      "category": "form",
-      "code": {
-        "react": "<Checkbox label='GDPR consent' name='gdprConsent' value='granted' onChange={(checked) => handleConsentChange('gdpr', checked)} required />"
-      },
-      "props": {
-        "label": "GDPR consent",
-        "name": "gdprConsent",
-        "value": "granted",
-        "onChange": "(checked) => handleConsentChange('gdpr', checked)",
-        "required": true
-      },
-      "notes": "Checkbox for Norwegian GDPR compliance requirements"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Always provide accessible labels for checkboxes",
-        "Use proper ARIA attributes for checkbox role and states",
-        "Support indeterminate state for parent-child checkbox relationships",
-        "Consider Norwegian GDPR requirements for consent checkboxes",
-        "Ensure minimum 44px touch target size for mobile accessibility",
-        "Provide clear error messages and validation feedback"
-      ],
-      "patterns": [
-        {
-          "pattern": "controlled component",
-          "context": "React implementation",
-          "recommendation": "Use controlled components with checked and onChange props for predictable state management"
-        },
-        {
-          "pattern": "checkbox group",
-          "context": "Multiple related selections",
-          "recommendation": "Implement parent checkbox with indeterminate state for group selection control"
-        },
-        {
-          "pattern": "form integration",
-          "context": "Form data collection",
-          "recommendation": "Include name and value props for proper form submission and data handling"
-        },
-        {
-          "pattern": "accessibility",
-          "context": "Screen readers and keyboard navigation",
-          "recommendation": "Always provide labels, use checkbox role, and support Space key for toggling"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div with click handler instead of input",
-          "reason": "Loses native accessibility and form integration",
-          "alternative": "Use proper HTML input[type=checkbox] with custom styling"
-        },
-        {
-          "pattern": "missing indeterminate support",
-          "reason": "Poor UX for hierarchical selections",
-          "alternative": "Implement indeterminate state for parent checkboxes in groups"
-        },
-        {
-          "pattern": "insufficient error feedback",
-          "reason": "Users don't understand validation failures",
-          "alternative": "Provide clear error messages and visual error states"
-        },
-        {
-          "pattern": "too small touch targets",
-          "reason": "Difficult to use on mobile devices",
-          "alternative": "Ensure minimum 44px touch target size including label"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "medium",
-      "estimatedTokens": 1900
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "form-integration-guide", "checkbox-groups-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with default props",
-        "handles controlled state changes",
-        "handles uncontrolled state changes",
-        "responds to click events",
-        "responds to keyboard events (Space)",
-        "manages focus states correctly",
-        "displays labels and descriptions",
-        "handles disabled state",
-        "applies size variants correctly",
-        "handles error state and messages",
-        "supports indeterminate state",
-        "handles required validation",
-        "fires event callbacks with correct parameters",
-        "accessibility attributes (role, aria-checked, aria-label)",
-        "screen reader announcements",
-        "form integration (name, value attributes)",
-        "checkbox group interactions"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "form integration and data submission",
-        "keyboard-only interaction workflow",
-        "screen reader checkbox interaction",
-        "touch device interaction",
-        "checkbox group state management",
-        "indeterminate state handling",
-        "validation error display and recovery",
-        "GDPR consent checkbox flow",
-        "Norwegian locale text rendering",
-        "high contrast mode appearance"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "themes": ["light", "dark", "high-contrast"]
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "0.8KB"
-      },
-      "renderTime": {
-        "initial": "<3ms",
-        "update": "<1ms"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure for fast rendering",
-      "Optimized event handlers with useCallback",
-      "CSS transitions for smooth state changes",
-      "Memoized computed styles",
-      "Efficient indeterminate state management",
-      "Optimized focus management"
-    ]
-  }
+	"metadata": {
+		"name": "Checkbox",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "form",
+		"subcategory": "selection-control",
+		"description": "Accessible checkbox component for multi-state selection control with Norwegian compliance, WCAG AAA accessibility, and comprehensive form integration. Supports indeterminate state and checkbox groups.",
+		"keywords": [
+			"checkbox",
+			"form",
+			"selection",
+			"control",
+			"indeterminate",
+			"accessible",
+			"norwegian",
+			"controlled"
+		],
+		"maintainer": {
+			"name": "Xala Form Team",
+			"email": "forms@xala.no",
+			"team": "Form Components"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T10:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["input", "label", "div", "span"],
+			"ariaRoles": ["checkbox"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.4.6 Headings and Labels",
+				"2.5.5 Target Size",
+				"3.2.2 On Input",
+				"3.3.2 Labels or Instructions",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"checked": {
+				"type": {
+					"union": [
+						{ "primitive": "boolean" },
+						{ "custom": "literal", "value": "indeterminate" }
+					]
+				},
+				"description": "Controlled component state - checked (true), unchecked (false), or indeterminate state",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-checked",
+					"screenReaderText": "Checkbox is checked/unchecked/mixed"
+				},
+				"examples": [
+					{
+						"value": true,
+						"description": "Checkbox is checked",
+						"context": "Controlled component - selected state"
+					},
+					{
+						"value": false,
+						"description": "Checkbox is unchecked",
+						"context": "Controlled component - unselected state"
+					},
+					{
+						"value": "indeterminate",
+						"description": "Mixed state (some children selected)",
+						"context": "Parent checkbox with partially selected children"
+					}
+				]
+			},
+			"defaultChecked": {
+				"type": { "primitive": "boolean" },
+				"description": "Default checked state for uncontrolled component",
+				"required": false,
+				"defaultValue": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Checkbox starts in checked state",
+						"context": "Uncontrolled component initialization"
+					}
+				]
+			},
+			"onChange": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "checked",
+								"type": "boolean",
+								"required": true
+							},
+							{
+								"name": "event",
+								"type": "ChangeEvent<HTMLInputElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when checkbox state changes",
+				"required": false,
+				"examples": [
+					{
+						"value": "(checked, event) => setSelected(checked)",
+						"description": "Update state when checkbox changes",
+						"context": "State management"
+					}
+				]
+			},
+			"disabled": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the checkbox is disabled",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "disabled",
+					"screenReaderText": "Checkbox is disabled"
+				}
+			},
+			"indeterminate": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the checkbox displays indeterminate state (mixed selection)",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-checked",
+					"screenReaderText": "Checkbox is in mixed state"
+				},
+				"examples": [
+					{
+						"value": true,
+						"description": "Show indeterminate/mixed state",
+						"context": "Parent checkbox with some children selected"
+					}
+				]
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["sm", "md", "lg"]
+				},
+				"description": "Size variant of the checkbox",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "sm",
+						"description": "Small checkbox (16px)",
+						"context": "Compact interfaces"
+					},
+					{
+						"value": "md",
+						"description": "Medium checkbox (20px)",
+						"context": "Standard forms"
+					},
+					{
+						"value": "lg",
+						"description": "Large checkbox (24px)",
+						"context": "Touch interfaces"
+					}
+				]
+			},
+			"label": {
+				"type": { "primitive": "string" },
+				"description": "Label text for the checkbox",
+				"required": false,
+				"accessibility": {
+					"required": true,
+					"screenReaderText": "Checkbox label"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "checkbox.label.{fieldName}",
+					"context": "form-label"
+				},
+				"examples": [
+					{
+						"value": "Accept terms and conditions",
+						"description": "Clear descriptive label",
+						"context": "Form agreement"
+					}
+				]
+			},
+			"error": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the checkbox is in error state",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-invalid",
+					"screenReaderText": "Checkbox has error"
+				},
+				"examples": [
+					{
+						"value": true,
+						"description": "Show error styling and state",
+						"context": "Form validation failed"
+					}
+				]
+			},
+			"errorMessage": {
+				"type": { "primitive": "string" },
+				"description": "Error message to display when checkbox is in error state",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby",
+					"screenReaderText": "Error message"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "checkbox.error.{fieldName}",
+					"context": "validation-error"
+				},
+				"examples": [
+					{
+						"value": "You must accept the terms to continue",
+						"description": "Validation error message",
+						"context": "Required checkbox not checked"
+					}
+				]
+			},
+			"required": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the checkbox is required for form submission",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-required",
+					"screenReaderText": "Checkbox is required"
+				}
+			},
+			"name": {
+				"type": { "primitive": "string" },
+				"description": "Name attribute for form integration",
+				"required": false,
+				"examples": [
+					{
+						"value": "acceptTerms",
+						"description": "Form field name",
+						"context": "Form data collection"
+					}
+				]
+			},
+			"value": {
+				"type": { "primitive": "string" },
+				"description": "Value attribute for form integration",
+				"required": false,
+				"defaultValue": "on",
+				"examples": [
+					{
+						"value": "agreed",
+						"description": "Custom value when checked",
+						"context": "Form submission data"
+					}
+				]
+			},
+			"description": {
+				"type": { "primitive": "string" },
+				"description": "Additional descriptive text for the checkbox",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby",
+					"screenReaderText": "Checkbox description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "checkbox.description.{fieldName}",
+					"context": "form-hint"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the checkbox container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			},
+			"ariaLabel": {
+				"type": { "primitive": "string" },
+				"description": "Accessible label when no visible label is present",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Checkbox description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.checkbox.{fieldName}",
+					"context": "accessibility"
+				}
+			},
+			"ariaDescribedBy": {
+				"type": { "primitive": "string" },
+				"description": "ID of elements that describe the checkbox",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby"
+				}
+			},
+			"onFocus": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent<HTMLInputElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when checkbox receives focus",
+				"required": false
+			},
+			"onBlur": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent<HTMLInputElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when checkbox loses focus",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"checked",
+				"defaultChecked",
+				"onChange",
+				"disabled",
+				"indeterminate",
+				"size",
+				"label",
+				"error",
+				"errorMessage",
+				"required",
+				"name",
+				"value",
+				"description",
+				"className",
+				"testId",
+				"ariaLabel",
+				"ariaDescribedBy",
+				"onFocus",
+				"onBlur"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false
+			},
+			"slots": {
+				"label": {
+					"required": false,
+					"types": ["element", "string"],
+					"description": "Custom label content"
+				},
+				"description": {
+					"required": false,
+					"types": ["element", "string"],
+					"description": "Custom description content"
+				},
+				"errorMessage": {
+					"required": false,
+					"types": ["element", "string"],
+					"description": "Custom error message content"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"size": {
+				"values": {
+					"sm": "h-4 w-4",
+					"md": "h-5 w-5",
+					"lg": "h-6 w-6"
+				},
+				"defaultValue": "md"
+			},
+			"state": {
+				"values": {
+					"normal": "border-gray-300 text-blue-600",
+					"checked": "bg-blue-600 border-blue-600 text-white",
+					"indeterminate": "bg-blue-600 border-blue-600 text-white",
+					"disabled": "opacity-50 cursor-not-allowed bg-gray-100",
+					"error": "border-red-500 text-red-600",
+					"focused": "ring-2 ring-blue-500 ring-offset-2"
+				},
+				"defaultValue": "normal"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"size": "sm",
+					"label": true
+				},
+				"className": "gap-2 text-sm",
+				"description": "Small checkbox with label"
+			},
+			{
+				"conditions": {
+					"size": "md",
+					"label": true
+				},
+				"className": "gap-3 text-base",
+				"description": "Medium checkbox with label"
+			},
+			{
+				"conditions": {
+					"size": "lg",
+					"label": true
+				},
+				"className": "gap-4 text-lg",
+				"description": "Large checkbox with label"
+			},
+			{
+				"conditions": {
+					"error": true
+				},
+				"className": "border-red-500 text-red-600",
+				"description": "Error state styling"
+			},
+			{
+				"conditions": {
+					"disabled": true
+				},
+				"className": "pointer-events-none opacity-50 cursor-not-allowed",
+				"description": "Disabled state styling"
+			},
+			{
+				"conditions": {
+					"indeterminate": true
+				},
+				"className": "bg-blue-600 border-blue-600",
+				"description": "Indeterminate state styling"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "checkbox"
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Space",
+					"action": "toggle",
+					"context": "Toggle checkbox state"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus to next element"
+				},
+				{
+					"key": "Shift+Tab",
+					"action": "navigate",
+					"context": "Move focus to previous element"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "toggle",
+					"message": "Checkbox {label} is now {checked ? 'checked' : 'unchecked'}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "indeterminate",
+					"message": "Checkbox {label} is in mixed state",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "focus",
+					"message": "Checkbox {label}, {checked ? 'checked' : indeterminate ? 'mixed' : 'unchecked'}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "required",
+					"message": "Required checkbox {label}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "error",
+					"message": "Invalid checkbox {label}, {errorMessage}",
+					"priority": "assertive"
+				}
+			],
+			"labels": {
+				"required": ["label", "aria-label"],
+				"descriptions": {
+					"checked": "Checked",
+					"unchecked": "Unchecked",
+					"mixed": "Mixed",
+					"required": "Required",
+					"disabled": "Disabled",
+					"invalid": "Invalid"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"checkbox-label-association",
+				"keyboard-navigation",
+				"state-announcements",
+				"focus-management",
+				"color-contrast-aaa",
+				"target-size-minimum",
+				"role-checkbox-implementation",
+				"indeterminate-state-support",
+				"form-integration-attributes"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"keyboard-only-interaction",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"touch-target-accessibility",
+				"group-checkbox-interaction"
+			]
+		}
+	},
+	"platforms": {
+		"supported": ["react", "vue", "angular", "svelte"],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/checkbox.tsx",
+				"dependencies": ["react", "clsx"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": [
+							"forwardRef",
+							"useState",
+							"useCallback",
+							"useId",
+							"useEffect"
+						]
+					},
+					{
+						"module": "clsx",
+						"imports": ["clsx"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/checkbox.vue",
+				"dependencies": ["vue"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/checkbox.component.ts",
+				"dependencies": ["@angular/core", "@angular/forms"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/checkbox.svelte",
+				"dependencies": ["svelte"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Checkbox",
+			"description": "Simple checkbox with label",
+			"category": "basic",
+			"code": {
+				"react": "<Checkbox label='Accept terms and conditions' defaultChecked={false} />",
+				"vue": "<Checkbox label='Accept terms and conditions' :defaultChecked='false' />",
+				"angular": "<xala-checkbox label='Accept terms and conditions' [defaultChecked]='false'></xala-checkbox>",
+				"svelte": "<Checkbox label='Accept terms and conditions' defaultChecked={false} />"
+			},
+			"props": {
+				"label": "Accept terms and conditions",
+				"defaultChecked": false
+			}
+		},
+		{
+			"name": "Controlled Checkbox",
+			"description": "Checkbox with controlled state management",
+			"category": "controlled",
+			"code": {
+				"react": "<Checkbox label='Marketing emails' checked={acceptMarketing} onChange={(checked) => setAcceptMarketing(checked)} />"
+			},
+			"props": {
+				"label": "Marketing emails",
+				"checked": true,
+				"onChange": "(checked) => setAcceptMarketing(checked)"
+			}
+		},
+		{
+			"name": "Indeterminate Checkbox",
+			"description": "Parent checkbox showing mixed state when some children are selected",
+			"category": "indeterminate",
+			"code": {
+				"react": "<Checkbox label='Select all items' checked={allSelected} indeterminate={someSelected && !allSelected} onChange={handleSelectAll} />"
+			},
+			"props": {
+				"label": "Select all items",
+				"checked": false,
+				"indeterminate": true,
+				"onChange": "handleSelectAll"
+			}
+		},
+		{
+			"name": "Checkbox Group",
+			"description": "Group of related checkboxes with parent selection",
+			"category": "group",
+			"code": {
+				"react": "const CheckboxGroup = () => {\n  const [items, setItems] = useState(['item1', 'item2']);\n  const [selected, setSelected] = useState(['item1']);\n  \n  return (\n    <div>\n      <Checkbox \n        label='Select all'\n        checked={selected.length === items.length}\n        indeterminate={selected.length > 0 && selected.length < items.length}\n        onChange={(checked) => setSelected(checked ? items : [])}\n      />\n      {items.map(item => (\n        <Checkbox\n          key={item}\n          label={item}\n          checked={selected.includes(item)}\n          onChange={(checked) => {\n            setSelected(prev => \n              checked \n                ? [...prev, item]\n                : prev.filter(i => i !== item)\n            );\n          }}\n        />\n      ))}\n    </div>\n  );\n};"
+			},
+			"props": {
+				"multiple": true,
+				"indeterminate": true
+			},
+			"notes": "Demonstrates parent-child checkbox relationship with indeterminate state"
+		},
+		{
+			"name": "Required Checkbox with Error",
+			"description": "Required checkbox with validation error state",
+			"category": "validation",
+			"code": {
+				"react": "<Checkbox label='I agree to the terms' required error={!agreed} errorMessage='You must accept the terms to continue' name='agreement' />"
+			},
+			"props": {
+				"label": "I agree to the terms",
+				"required": true,
+				"error": true,
+				"errorMessage": "You must accept the terms to continue",
+				"name": "agreement"
+			}
+		},
+		{
+			"name": "Large Checkbox with Description",
+			"description": "Large checkbox with additional descriptive text",
+			"category": "enhanced",
+			"code": {
+				"react": "<Checkbox label='Email notifications' description='Receive updates about your account activity and important announcements' size='lg' defaultChecked={true} />"
+			},
+			"props": {
+				"label": "Email notifications",
+				"description": "Receive updates about your account activity and important announcements",
+				"size": "lg",
+				"defaultChecked": true
+			}
+		},
+		{
+			"name": "Disabled Checkbox",
+			"description": "Checkbox in disabled state",
+			"category": "state",
+			"code": {
+				"react": "<Checkbox label='Premium feature' disabled defaultChecked={false} description='Upgrade to enable this feature' />"
+			},
+			"props": {
+				"label": "Premium feature",
+				"disabled": true,
+				"defaultChecked": false,
+				"description": "Upgrade to enable this feature"
+			}
+		},
+		{
+			"name": "Form Integration Checkbox",
+			"description": "Checkbox integrated with form data collection",
+			"category": "form",
+			"code": {
+				"react": "<Checkbox label='GDPR consent' name='gdprConsent' value='granted' onChange={(checked) => handleConsentChange('gdpr', checked)} required />"
+			},
+			"props": {
+				"label": "GDPR consent",
+				"name": "gdprConsent",
+				"value": "granted",
+				"onChange": "(checked) => handleConsentChange('gdpr', checked)",
+				"required": true
+			},
+			"notes": "Checkbox for Norwegian GDPR compliance requirements"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Always provide accessible labels for checkboxes",
+				"Use proper ARIA attributes for checkbox role and states",
+				"Support indeterminate state for parent-child checkbox relationships",
+				"Consider Norwegian GDPR requirements for consent checkboxes",
+				"Ensure minimum 44px touch target size for mobile accessibility",
+				"Provide clear error messages and validation feedback"
+			],
+			"patterns": [
+				{
+					"pattern": "controlled component",
+					"context": "React implementation",
+					"recommendation": "Use controlled components with checked and onChange props for predictable state management"
+				},
+				{
+					"pattern": "checkbox group",
+					"context": "Multiple related selections",
+					"recommendation": "Implement parent checkbox with indeterminate state for group selection control"
+				},
+				{
+					"pattern": "form integration",
+					"context": "Form data collection",
+					"recommendation": "Include name and value props for proper form submission and data handling"
+				},
+				{
+					"pattern": "accessibility",
+					"context": "Screen readers and keyboard navigation",
+					"recommendation": "Always provide labels, use checkbox role, and support Space key for toggling"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div with click handler instead of input",
+					"reason": "Loses native accessibility and form integration",
+					"alternative": "Use proper HTML input[type=checkbox] with custom styling"
+				},
+				{
+					"pattern": "missing indeterminate support",
+					"reason": "Poor UX for hierarchical selections",
+					"alternative": "Implement indeterminate state for parent checkboxes in groups"
+				},
+				{
+					"pattern": "insufficient error feedback",
+					"reason": "Users don't understand validation failures",
+					"alternative": "Provide clear error messages and visual error states"
+				},
+				{
+					"pattern": "too small touch targets",
+					"reason": "Difficult to use on mobile devices",
+					"alternative": "Ensure minimum 44px touch target size including label"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "medium",
+			"estimatedTokens": 1900
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"form-integration-guide",
+				"checkbox-groups-guide"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with default props",
+				"handles controlled state changes",
+				"handles uncontrolled state changes",
+				"responds to click events",
+				"responds to keyboard events (Space)",
+				"manages focus states correctly",
+				"displays labels and descriptions",
+				"handles disabled state",
+				"applies size variants correctly",
+				"handles error state and messages",
+				"supports indeterminate state",
+				"handles required validation",
+				"fires event callbacks with correct parameters",
+				"accessibility attributes (role, aria-checked, aria-label)",
+				"screen reader announcements",
+				"form integration (name, value attributes)",
+				"checkbox group interactions"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"form integration and data submission",
+				"keyboard-only interaction workflow",
+				"screen reader checkbox interaction",
+				"touch device interaction",
+				"checkbox group state management",
+				"indeterminate state handling",
+				"validation error display and recovery",
+				"GDPR consent checkbox flow",
+				"Norwegian locale text rendering",
+				"high contrast mode appearance"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"themes": ["light", "dark", "high-contrast"]
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "0.8KB"
+			},
+			"renderTime": {
+				"initial": "<3ms",
+				"update": "<1ms"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure for fast rendering",
+			"Optimized event handlers with useCallback",
+			"CSS transitions for smooth state changes",
+			"Memoized computed styles",
+			"Efficient indeterminate state management",
+			"Optimized focus management"
+		]
+	}
 }

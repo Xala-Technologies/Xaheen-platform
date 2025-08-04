@@ -1,360 +1,364 @@
 {
-  "metadata": {
-    "name": "Skeleton",
-    "version": "1.0.0",
-    "category": "ui",
-    "description": "A loading placeholder component that displays animated placeholders while content is being loaded",
-    "tags": ["loading", "placeholder", "skeleton", "ui", "accessibility"],
-    "lastUpdated": "2025-01-14T00:00:00Z",
-    "maintainer": "Xala Enterprise UI System",
-    "status": "stable"
-  },
-  "compliance": {
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "wcagLevel": "AAA",
-      "supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "auditTrail": false
-    },
-    "accessibility": {
-      "wcagLevel": "AAA",
-      "keyboardNavigation": false,
-      "screenReaderSupport": true,
-      "colorContrast": "AAA",
-      "focusManagement": false,
-      "ariaSupport": true,
-      "requirements": [
-        "Must include aria-busy='true' when loading",
-        "Must provide meaningful aria-label for screen readers",
-        "Must maintain sufficient color contrast for visibility"
-      ]
-    },
-    "security": {
-      "dataHandling": "none",
-      "sanitization": "not-required",
-      "validation": "props-only"
-    }
-  },
-  "api": {
-    "props": {
-      "variant": {
-        "type": "string",
-        "required": false,
-        "default": "rectangular",
-        "description": "The shape variant of the skeleton",
-        "options": ["text", "circular", "rectangular", "button"],
-        "examples": ["text", "circular", "rectangular", "button"]
-      },
-      "width": {
-        "type": "string | number",
-        "required": false,
-        "default": "100%",
-        "description": "Width of the skeleton element",
-        "examples": ["100%", "200px", 300, "50vw"]
-      },
-      "height": {
-        "type": "string | number",
-        "required": false,
-        "default": "auto",
-        "description": "Height of the skeleton element",
-        "examples": ["20px", 40, "2rem", "auto"]
-      },
-      "count": {
-        "type": "number",
-        "required": false,
-        "default": 1,
-        "description": "Number of skeleton items to render",
-        "minimum": 1,
-        "maximum": 50,
-        "examples": [1, 3, 5, 10]
-      },
-      "animation": {
-        "type": "string",
-        "required": false,
-        "default": "wave",
-        "description": "Animation type for the skeleton",
-        "options": ["wave", "pulse", "none"],
-        "examples": ["wave", "pulse", "none"]
-      },
-      "speed": {
-        "type": "string",
-        "required": false,
-        "default": "normal",
-        "description": "Animation speed",
-        "options": ["slow", "normal", "fast"],
-        "examples": ["slow", "normal", "fast"]
-      },
-      "rounded": {
-        "type": "boolean",
-        "required": false,
-        "default": false,
-        "description": "Whether to apply rounded corners",
-        "examples": [true, false]
-      },
-      "className": {
-        "type": "string",
-        "required": false,
-        "description": "Additional CSS classes to apply",
-        "examples": ["custom-skeleton", "mb-4", "border-2"]
-      },
-      "ariaLabel": {
-        "type": "string",
-        "required": false,
-        "default": "Loading content",
-        "description": "Accessible label for screen readers",
-        "examples": ["Loading user profile", "Loading article content", "Loading navigation menu"]
-      }
-    },
-    "events": {},
-    "methods": {},
-    "slots": {}
-  },
-  "design": {
-    "tokens": {
-      "colors": {
-        "skeleton-base": "var(--color-gray-200)",
-        "skeleton-highlight": "var(--color-gray-50)",
-        "skeleton-base-dark": "var(--color-gray-700)",
-        "skeleton-highlight-dark": "var(--color-gray-600)"
-      },
-      "spacing": {
-        "skeleton-gap": "var(--spacing-2)",
-        "skeleton-radius": "var(--radius-sm)",
-        "skeleton-radius-circular": "50%"
-      },
-      "animation": {
-        "skeleton-wave-duration": "1.5s",
-        "skeleton-pulse-duration": "2s",
-        "skeleton-slow-duration": "3s",
-        "skeleton-fast-duration": "1s"
-      }
-    },
-    "variants": {
-      "text": {
-        "defaultHeight": "1rem",
-        "borderRadius": "var(--radius-sm)"
-      },
-      "circular": {
-        "aspectRatio": "1",
-        "borderRadius": "50%"
-      },
-      "rectangular": {
-        "borderRadius": "var(--radius-sm)"
-      },
-      "button": {
-        "defaultHeight": "2.5rem",
-        "borderRadius": "var(--radius-md)",
-        "minWidth": "4rem"
-      }
-    },
-    "responsive": {
-      "mobile": {
-        "fontSize": "0.875rem",
-        "spacing": "var(--spacing-1)"
-      },
-      "tablet": {
-        "fontSize": "1rem",
-        "spacing": "var(--spacing-2)"
-      },
-      "desktop": {
-        "fontSize": "1rem",
-        "spacing": "var(--spacing-2)"
-      }
-    }
-  },
-  "implementation": {
-    "framework": "React",
-    "typescript": true,
-    "styling": "TailwindCSS",
-    "bundle": {
-      "maxSize": "2KB",
-      "dependencies": ["react", "@types/react"],
-      "peerDependencies": ["tailwindcss"]
-    },
-    "files": [
-      {
-        "path": "src/components/ui/Skeleton.tsx",
-        "type": "component",
-        "required": true
-      },
-      {
-        "path": "src/components/ui/Skeleton.test.tsx",
-        "type": "test",
-        "required": true
-      },
-      {
-        "path": "src/components/ui/index.ts",
-        "type": "export",
-        "required": true
-      }
-    ]
-  },
-  "examples": [
-    {
-      "name": "Text Skeleton",
-      "description": "Basic text loading placeholder",
-      "code": "<Skeleton variant=\"text\" width=\"80%\" height=\"1rem\" />",
-      "props": {
-        "variant": "text",
-        "width": "80%",
-        "height": "1rem"
-      }
-    },
-    {
-      "name": "Multiple Text Lines",
-      "description": "Multiple text line placeholders",
-      "code": "<Skeleton variant=\"text\" count={3} />",
-      "props": {
-        "variant": "text",
-        "count": 3
-      }
-    },
-    {
-      "name": "Circular Avatar",
-      "description": "Circular avatar placeholder",
-      "code": "<Skeleton variant=\"circular\" width={48} height={48} />",
-      "props": {
-        "variant": "circular",
-        "width": 48,
-        "height": 48
-      }
-    },
-    {
-      "name": "Card Skeleton",
-      "description": "Card layout with multiple skeleton elements",
-      "code": "<div className=\"space-y-4\">\n  <Skeleton variant=\"rectangular\" width=\"100%\" height={200} />\n  <Skeleton variant=\"text\" width=\"60%\" />\n  <Skeleton variant=\"text\" count={2} />\n</div>",
-      "props": {
-        "variant": "rectangular",
-        "width": "100%",
-        "height": 200
-      }
-    },
-    {
-      "name": "List Skeleton",
-      "description": "List items with avatar and text",
-      "code": "<div className=\"space-y-4\">\n  {Array.from({ length: 3 }).map((_, i) => (\n    <div key={i} className=\"flex items-center space-x-4\">\n      <Skeleton variant=\"circular\" width={40} height={40} />\n      <div className=\"flex-1 space-y-2\">\n        <Skeleton variant=\"text\" width=\"75%\" />\n        <Skeleton variant=\"text\" width=\"50%\" />\n      </div>\n    </div>\n  ))}\n</div>",
-      "props": {
-        "variant": "circular",
-        "width": 40,
-        "height": 40
-      }
-    },
-    {
-      "name": "Button Skeleton",
-      "description": "Button placeholder with pulse animation",
-      "code": "<Skeleton variant=\"button\" animation=\"pulse\" width={120} />",
-      "props": {
-        "variant": "button",
-        "animation": "pulse",
-        "width": 120
-      }
-    },
-    {
-      "name": "Custom Styled",
-      "description": "Skeleton with custom styling and no animation",
-      "code": "<Skeleton\n  variant=\"rectangular\"\n  width=\"100%\"\n  height={100}\n  animation=\"none\"\n  rounded\n  className=\"bg-blue-100\"\n/>",
-      "props": {
-        "variant": "rectangular",
-        "width": "100%",
-        "height": 100,
-        "animation": "none",
-        "rounded": true,
-        "className": "bg-blue-100"
-      }
-    }
-  ],
-  "testing": {
-    "unit": {
-      "coverage": {
-        "minimum": 95,
-        "statements": 95,
-        "branches": 95,
-        "functions": 95,
-        "lines": 95
-      },
-      "scenarios": [
-        "renders with default props",
-        "renders with all variant types",
-        "renders multiple skeleton items with count prop",
-        "applies correct animation classes",
-        "applies custom className",
-        "renders with proper accessibility attributes",
-        "handles different width and height formats",
-        "applies rounded corners when specified"
-      ]
-    },
-    "accessibility": {
-      "scenarios": [
-        "includes aria-busy='true' attribute",
-        "provides meaningful aria-label",
-        "maintains proper color contrast",
-        "works with screen readers"
-      ],
-      "tools": ["@testing-library/jest-dom", "jest-axe"]
-    },
-    "visual": {
-      "scenarios": [
-        "text variant appearance",
-        "circular variant appearance",
-        "rectangular variant appearance",
-        "button variant appearance",
-        "wave animation",
-        "pulse animation",
-        "no animation state",
-        "multiple skeleton items",
-        "responsive behavior"
-      ]
-    },
-    "performance": {
-      "scenarios": [
-        "bundle size under 2KB",
-        "renders multiple items efficiently",
-        "animation performance",
-        "memory usage"
-      ]
-    }
-  },
-  "documentation": {
-    "overview": "The Skeleton component provides an elegant loading placeholder that improves perceived performance by showing users that content is being loaded. It supports multiple variants, animations, and is fully accessible.",
-    "useCases": [
-      "Loading states for content that takes time to fetch",
-      "Placeholder during data fetching",
-      "Progressive loading experiences",
-      "Improving perceived performance"
-    ],
-    "bestPractices": [
-      "Use appropriate variant for the content type being loaded",
-      "Match skeleton dimensions to actual content when possible",
-      "Provide meaningful aria-label for better accessibility",
-      "Consider using multiple skeleton items for complex layouts",
-      "Choose animation type based on content and brand guidelines"
-    ],
-    "accessibility": [
-      "Always include aria-busy='true' when content is loading",
-      "Provide descriptive aria-label for screen readers",
-      "Ensure sufficient color contrast for visibility",
-      "Consider reduced motion preferences for animations"
-    ],
-    "performance": [
-      "Lightweight implementation under 2KB",
-      "Efficient CSS animations",
-      "Minimal re-renders",
-      "Optimized for multiple instances"
-    ]
-  },
-  "changelog": [
-    {
-      "version": "1.0.0",
-      "date": "2025-01-14",
-      "type": "initial",
-      "changes": [
-        "Initial Skeleton component specification",
-        "Support for text, circular, rectangular, and button variants",
-        "Wave, pulse, and no animation options",
-        "Full WCAG AAA accessibility compliance",
-        "Norwegian NSM OPEN classification"
-      ]
-    }
-  ]
+	"metadata": {
+		"name": "Skeleton",
+		"version": "1.0.0",
+		"category": "ui",
+		"description": "A loading placeholder component that displays animated placeholders while content is being loaded",
+		"tags": ["loading", "placeholder", "skeleton", "ui", "accessibility"],
+		"lastUpdated": "2025-01-14T00:00:00Z",
+		"maintainer": "Xala Enterprise UI System",
+		"status": "stable"
+	},
+	"compliance": {
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"wcagLevel": "AAA",
+			"supportedLanguages": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"auditTrail": false
+		},
+		"accessibility": {
+			"wcagLevel": "AAA",
+			"keyboardNavigation": false,
+			"screenReaderSupport": true,
+			"colorContrast": "AAA",
+			"focusManagement": false,
+			"ariaSupport": true,
+			"requirements": [
+				"Must include aria-busy='true' when loading",
+				"Must provide meaningful aria-label for screen readers",
+				"Must maintain sufficient color contrast for visibility"
+			]
+		},
+		"security": {
+			"dataHandling": "none",
+			"sanitization": "not-required",
+			"validation": "props-only"
+		}
+	},
+	"api": {
+		"props": {
+			"variant": {
+				"type": "string",
+				"required": false,
+				"default": "rectangular",
+				"description": "The shape variant of the skeleton",
+				"options": ["text", "circular", "rectangular", "button"],
+				"examples": ["text", "circular", "rectangular", "button"]
+			},
+			"width": {
+				"type": "string | number",
+				"required": false,
+				"default": "100%",
+				"description": "Width of the skeleton element",
+				"examples": ["100%", "200px", 300, "50vw"]
+			},
+			"height": {
+				"type": "string | number",
+				"required": false,
+				"default": "auto",
+				"description": "Height of the skeleton element",
+				"examples": ["20px", 40, "2rem", "auto"]
+			},
+			"count": {
+				"type": "number",
+				"required": false,
+				"default": 1,
+				"description": "Number of skeleton items to render",
+				"minimum": 1,
+				"maximum": 50,
+				"examples": [1, 3, 5, 10]
+			},
+			"animation": {
+				"type": "string",
+				"required": false,
+				"default": "wave",
+				"description": "Animation type for the skeleton",
+				"options": ["wave", "pulse", "none"],
+				"examples": ["wave", "pulse", "none"]
+			},
+			"speed": {
+				"type": "string",
+				"required": false,
+				"default": "normal",
+				"description": "Animation speed",
+				"options": ["slow", "normal", "fast"],
+				"examples": ["slow", "normal", "fast"]
+			},
+			"rounded": {
+				"type": "boolean",
+				"required": false,
+				"default": false,
+				"description": "Whether to apply rounded corners",
+				"examples": [true, false]
+			},
+			"className": {
+				"type": "string",
+				"required": false,
+				"description": "Additional CSS classes to apply",
+				"examples": ["custom-skeleton", "mb-4", "border-2"]
+			},
+			"ariaLabel": {
+				"type": "string",
+				"required": false,
+				"default": "Loading content",
+				"description": "Accessible label for screen readers",
+				"examples": [
+					"Loading user profile",
+					"Loading article content",
+					"Loading navigation menu"
+				]
+			}
+		},
+		"events": {},
+		"methods": {},
+		"slots": {}
+	},
+	"design": {
+		"tokens": {
+			"colors": {
+				"skeleton-base": "var(--color-gray-200)",
+				"skeleton-highlight": "var(--color-gray-50)",
+				"skeleton-base-dark": "var(--color-gray-700)",
+				"skeleton-highlight-dark": "var(--color-gray-600)"
+			},
+			"spacing": {
+				"skeleton-gap": "var(--spacing-2)",
+				"skeleton-radius": "var(--radius-sm)",
+				"skeleton-radius-circular": "50%"
+			},
+			"animation": {
+				"skeleton-wave-duration": "1.5s",
+				"skeleton-pulse-duration": "2s",
+				"skeleton-slow-duration": "3s",
+				"skeleton-fast-duration": "1s"
+			}
+		},
+		"variants": {
+			"text": {
+				"defaultHeight": "1rem",
+				"borderRadius": "var(--radius-sm)"
+			},
+			"circular": {
+				"aspectRatio": "1",
+				"borderRadius": "50%"
+			},
+			"rectangular": {
+				"borderRadius": "var(--radius-sm)"
+			},
+			"button": {
+				"defaultHeight": "2.5rem",
+				"borderRadius": "var(--radius-md)",
+				"minWidth": "4rem"
+			}
+		},
+		"responsive": {
+			"mobile": {
+				"fontSize": "0.875rem",
+				"spacing": "var(--spacing-1)"
+			},
+			"tablet": {
+				"fontSize": "1rem",
+				"spacing": "var(--spacing-2)"
+			},
+			"desktop": {
+				"fontSize": "1rem",
+				"spacing": "var(--spacing-2)"
+			}
+		}
+	},
+	"implementation": {
+		"framework": "React",
+		"typescript": true,
+		"styling": "TailwindCSS",
+		"bundle": {
+			"maxSize": "2KB",
+			"dependencies": ["react", "@types/react"],
+			"peerDependencies": ["tailwindcss"]
+		},
+		"files": [
+			{
+				"path": "src/components/ui/Skeleton.tsx",
+				"type": "component",
+				"required": true
+			},
+			{
+				"path": "src/components/ui/Skeleton.test.tsx",
+				"type": "test",
+				"required": true
+			},
+			{
+				"path": "src/components/ui/index.ts",
+				"type": "export",
+				"required": true
+			}
+		]
+	},
+	"examples": [
+		{
+			"name": "Text Skeleton",
+			"description": "Basic text loading placeholder",
+			"code": "<Skeleton variant=\"text\" width=\"80%\" height=\"1rem\" />",
+			"props": {
+				"variant": "text",
+				"width": "80%",
+				"height": "1rem"
+			}
+		},
+		{
+			"name": "Multiple Text Lines",
+			"description": "Multiple text line placeholders",
+			"code": "<Skeleton variant=\"text\" count={3} />",
+			"props": {
+				"variant": "text",
+				"count": 3
+			}
+		},
+		{
+			"name": "Circular Avatar",
+			"description": "Circular avatar placeholder",
+			"code": "<Skeleton variant=\"circular\" width={48} height={48} />",
+			"props": {
+				"variant": "circular",
+				"width": 48,
+				"height": 48
+			}
+		},
+		{
+			"name": "Card Skeleton",
+			"description": "Card layout with multiple skeleton elements",
+			"code": "<div className=\"space-y-4\">\n  <Skeleton variant=\"rectangular\" width=\"100%\" height={200} />\n  <Skeleton variant=\"text\" width=\"60%\" />\n  <Skeleton variant=\"text\" count={2} />\n</div>",
+			"props": {
+				"variant": "rectangular",
+				"width": "100%",
+				"height": 200
+			}
+		},
+		{
+			"name": "List Skeleton",
+			"description": "List items with avatar and text",
+			"code": "<div className=\"space-y-4\">\n  {Array.from({ length: 3 }).map((_, i) => (\n    <div key={i} className=\"flex items-center space-x-4\">\n      <Skeleton variant=\"circular\" width={40} height={40} />\n      <div className=\"flex-1 space-y-2\">\n        <Skeleton variant=\"text\" width=\"75%\" />\n        <Skeleton variant=\"text\" width=\"50%\" />\n      </div>\n    </div>\n  ))}\n</div>",
+			"props": {
+				"variant": "circular",
+				"width": 40,
+				"height": 40
+			}
+		},
+		{
+			"name": "Button Skeleton",
+			"description": "Button placeholder with pulse animation",
+			"code": "<Skeleton variant=\"button\" animation=\"pulse\" width={120} />",
+			"props": {
+				"variant": "button",
+				"animation": "pulse",
+				"width": 120
+			}
+		},
+		{
+			"name": "Custom Styled",
+			"description": "Skeleton with custom styling and no animation",
+			"code": "<Skeleton\n  variant=\"rectangular\"\n  width=\"100%\"\n  height={100}\n  animation=\"none\"\n  rounded\n  className=\"bg-blue-100\"\n/>",
+			"props": {
+				"variant": "rectangular",
+				"width": "100%",
+				"height": 100,
+				"animation": "none",
+				"rounded": true,
+				"className": "bg-blue-100"
+			}
+		}
+	],
+	"testing": {
+		"unit": {
+			"coverage": {
+				"minimum": 95,
+				"statements": 95,
+				"branches": 95,
+				"functions": 95,
+				"lines": 95
+			},
+			"scenarios": [
+				"renders with default props",
+				"renders with all variant types",
+				"renders multiple skeleton items with count prop",
+				"applies correct animation classes",
+				"applies custom className",
+				"renders with proper accessibility attributes",
+				"handles different width and height formats",
+				"applies rounded corners when specified"
+			]
+		},
+		"accessibility": {
+			"scenarios": [
+				"includes aria-busy='true' attribute",
+				"provides meaningful aria-label",
+				"maintains proper color contrast",
+				"works with screen readers"
+			],
+			"tools": ["@testing-library/jest-dom", "jest-axe"]
+		},
+		"visual": {
+			"scenarios": [
+				"text variant appearance",
+				"circular variant appearance",
+				"rectangular variant appearance",
+				"button variant appearance",
+				"wave animation",
+				"pulse animation",
+				"no animation state",
+				"multiple skeleton items",
+				"responsive behavior"
+			]
+		},
+		"performance": {
+			"scenarios": [
+				"bundle size under 2KB",
+				"renders multiple items efficiently",
+				"animation performance",
+				"memory usage"
+			]
+		}
+	},
+	"documentation": {
+		"overview": "The Skeleton component provides an elegant loading placeholder that improves perceived performance by showing users that content is being loaded. It supports multiple variants, animations, and is fully accessible.",
+		"useCases": [
+			"Loading states for content that takes time to fetch",
+			"Placeholder during data fetching",
+			"Progressive loading experiences",
+			"Improving perceived performance"
+		],
+		"bestPractices": [
+			"Use appropriate variant for the content type being loaded",
+			"Match skeleton dimensions to actual content when possible",
+			"Provide meaningful aria-label for better accessibility",
+			"Consider using multiple skeleton items for complex layouts",
+			"Choose animation type based on content and brand guidelines"
+		],
+		"accessibility": [
+			"Always include aria-busy='true' when content is loading",
+			"Provide descriptive aria-label for screen readers",
+			"Ensure sufficient color contrast for visibility",
+			"Consider reduced motion preferences for animations"
+		],
+		"performance": [
+			"Lightweight implementation under 2KB",
+			"Efficient CSS animations",
+			"Minimal re-renders",
+			"Optimized for multiple instances"
+		]
+	},
+	"changelog": [
+		{
+			"version": "1.0.0",
+			"date": "2025-01-14",
+			"type": "initial",
+			"changes": [
+				"Initial Skeleton component specification",
+				"Support for text, circular, rectangular, and button variants",
+				"Wave, pulse, and no animation options",
+				"Full WCAG AAA accessibility compliance",
+				"Norwegian NSM OPEN classification"
+			]
+		}
+	]
 }

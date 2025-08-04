@@ -1,399 +1,389 @@
 {
-  "metadata": {
-    "name": "Popover",
-    "version": "1.0.0",
-    "category": "ui",
-    "description": "Interactive popover component for displaying rich content triggered by user interaction",
-    "status": "stable",
-    "lastUpdated": "2025-08-04",
-    "author": "Xala Enterprise UI System"
-  },
-  "specification": {
-    "props": {
-      "content": {
-        "type": "React.ReactNode",
-        "required": true,
-        "description": "Rich content to display in the popover - supports complex layouts, forms, and interactive elements",
-        "examples": [
-          "Simple text content",
-          "<div><h3>Title</h3><p>Description</p></div>",
-          "<form>...</form>"
-        ]
-      },
-      "children": {
-        "type": "React.ReactElement",
-        "required": true,
-        "description": "Trigger element that opens the popover when interacted with",
-        "constraints": {
-          "mustBeInteractive": true,
-          "singleChild": true
-        }
-      },
-      "open": {
-        "type": "boolean",
-        "required": false,
-        "description": "Controlled state - when provided, component operates in controlled mode",
-        "controlledMode": true
-      },
-      "defaultOpen": {
-        "type": "boolean",
-        "required": false,
-        "default": false,
-        "description": "Default open state for uncontrolled mode",
-        "uncontrolledMode": true
-      },
-      "onOpenChange": {
-        "type": "(open: boolean) => void",
-        "required": false,
-        "description": "Callback fired when popover open state changes",
-        "parameters": {
-          "open": "New open state"
-        }
-      },
-      "placement": {
-        "type": "'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end'",
-        "required": false,
-        "default": "bottom",
-        "description": "Placement of popover relative to trigger element with automatic repositioning"
-      },
-      "trigger": {
-        "type": "'click' | 'hover' | 'focus' | Array<'click' | 'hover' | 'focus'>",
-        "required": false,
-        "default": "click",
-        "description": "Interaction methods that trigger the popover",
-        "examples": [
-          "click",
-          "hover",
-          "focus",
-          "['click', 'focus']"
-        ]
-      },
-      "closeOnClickOutside": {
-        "type": "boolean",
-        "required": false,
-        "default": true,
-        "description": "Whether to close popover when clicking outside of it"
-      },
-      "closeOnEscape": {
-        "type": "boolean",
-        "required": false,
-        "default": true,
-        "description": "Whether to close popover when pressing Escape key"
-      },
-      "arrow": {
-        "type": "boolean",
-        "required": false,
-        "default": true,
-        "description": "Whether to show arrow pointing to trigger element"
-      },
-      "width": {
-        "type": "number | 'auto' | 'trigger'",
-        "required": false,
-        "default": "auto",
-        "description": "Popover width - number for fixed width, 'auto' for content-based, 'trigger' to match trigger width"
-      },
-      "maxWidth": {
-        "type": "number",
-        "required": false,
-        "default": 400,
-        "description": "Maximum width of popover in pixels"
-      },
-      "offset": {
-        "type": "number",
-        "required": false,
-        "default": 8,
-        "description": "Distance between popover and trigger element in pixels"
-      },
-      "focusTrap": {
-        "type": "boolean",
-        "required": false,
-        "default": false,
-        "description": "Whether to trap focus within popover when open (recommended for interactive content)"
-      },
-      "portal": {
-        "type": "boolean",
-        "required": false,
-        "default": true,
-        "description": "Whether to render popover in a portal (recommended for z-index management)"
-      },
-      "className": {
-        "type": "string",
-        "required": false,
-        "description": "Additional CSS classes for popover container"
-      },
-      "style": {
-        "type": "React.CSSProperties",
-        "required": false,
-        "description": "Inline styles for popover container"
-      },
-      "id": {
-        "type": "string",
-        "required": false,
-        "description": "Unique identifier for popover element"
-      },
-      "disabled": {
-        "type": "boolean",
-        "required": false,
-        "default": false,
-        "description": "Whether the popover is disabled and cannot be triggered"
-      }
-    },
-    "styling": {
-      "baseClasses": [
-        "absolute",
-        "z-50",
-        "min-w-32",
-        "max-w-96",
-        "p-4",
-        "bg-white",
-        "border",
-        "border-gray-200",
-        "rounded-lg",
-        "shadow-lg",
-        "animate-in",
-        "fade-in-0",
-        "zoom-in-95"
-      ],
-      "variants": {
-        "size": {
-          "sm": ["p-3", "text-sm", "max-w-64"],
-          "md": ["p-4", "text-base", "max-w-80"],
-          "lg": ["p-6", "text-base", "max-w-96"]
-        },
-        "theme": {
-          "light": ["bg-white", "border-gray-200", "text-gray-900"],
-          "dark": ["bg-gray-800", "border-gray-700", "text-gray-100"]
-        }
-      },
-      "arrowClasses": [
-        "absolute",
-        "w-2",
-        "h-2",
-        "bg-white",
-        "border",
-        "border-gray-200",
-        "rotate-45"
-      ]
-    },
-    "behavior": {
-      "positioning": {
-        "strategy": "absolute",
-        "middleware": ["offset", "flip", "shift", "arrow"],
-        "autoUpdate": true
-      },
-      "animation": {
-        "enter": "fade-in-0 zoom-in-95",
-        "exit": "fade-out-0 zoom-out-95",
-        "duration": "150ms"
-      },
-      "focusManagement": {
-        "trapFocus": "optional",
-        "restoreFocus": true,
-        "initialFocus": "first-tabbable"
-      },
-      "clickOutside": {
-        "enabled": true,
-        "configurable": true
-      },
-      "keyboard": {
-        "Escape": "close",
-        "Tab": "navigate-within-if-trapped"
-      }
-    }
-  },
-  "accessibility": {
-    "wcagLevel": "AAA",
-    "requirements": {
-      "keyboardNavigation": {
-        "required": true,
-        "implementation": [
-          "Tab/Shift+Tab: Navigate within popover content",
-          "Escape: Close popover and return focus to trigger",
-          "Arrow keys: Navigate within popover content if applicable"
-        ]
-      },
-      "screenReader": {
-        "required": true,
-        "implementation": [
-          "aria-expanded on trigger element",
-          "aria-haspopup='dialog' on trigger element",
-          "aria-describedby linking trigger to popover",
-          "role='dialog' on popover content",
-          "aria-label or aria-labelledby on popover"
-        ]
-      },
-      "focusManagement": {
-        "required": true,
-        "implementation": [
-          "Focus trap option for interactive content",
-          "Focus restoration to trigger on close",
-          "Initial focus to first tabbable element",
-          "Visible focus indicators"
-        ]
-      },
-      "colorContrast": {
-        "required": true,
-        "ratios": {
-          "normalText": "7:1",
-          "largeText": "4.5:1",
-          "nonTextElements": "3:1"
-        }
-      }
-    },
-    "ariaAttributes": {
-      "trigger": [
-        "aria-expanded",
-        "aria-haspopup='dialog'",
-        "aria-describedby"
-      ],
-      "popover": [
-        "role='dialog'",
-        "aria-label",
-        "aria-labelledby",
-        "id"
-      ]
-    },
-    "testing": {
-      "automatedTests": [
-        "Keyboard navigation",
-        "Screen reader announcements",
-        "Focus management",
-        "Color contrast validation"
-      ],
-      "manualTests": [
-        "Screen reader compatibility",
-        "High contrast mode",
-        "Zoom up to 200%",
-        "Keyboard-only navigation"
-      ]
-    }
-  },
-  "compliance": {
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "wcagLevel": "AAA",
-      "languageSupport": ["nb-NO", "en-US"],
-      "auditTrail": false,
-      "dataProcessing": "none"
-    },
-    "security": {
-      "xssProtection": true,
-      "sanitizeContent": false,
-      "allowDangerousHTML": false,
-      "contentSecurityPolicy": "compliant"
-    }
-  },
-  "examples": {
-    "basic": {
-      "name": "Basic Popover",
-      "description": "Simple popover with text content",
-      "code": "import { Popover } from '@xala/ui-system';\n\nexport const BasicPopover = (): JSX.Element => {\n  return (\n    <Popover\n      content={\n        <div className=\"space-y-2\">\n          <h3 className=\"font-semibold text-gray-900\">Popover Title</h3>\n          <p className=\"text-sm text-gray-600\">\n            This is the popover content with rich formatting.\n          </p>\n        </div>\n      }\n    >\n      <button className=\"h-12 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700\">\n        Open Popover\n      </button>\n    </Popover>\n  );\n};"
-    },
-    "controlled": {
-      "name": "Controlled Popover",
-      "description": "Popover with controlled open state",
-      "code": "import { useState } from 'react';\nimport { Popover } from '@xala/ui-system';\n\nexport const ControlledPopover = (): JSX.Element => {\n  const [isOpen, setIsOpen] = useState(false);\n\n  return (\n    <div className=\"space-x-4\">\n      <Popover\n        open={isOpen}\n        onOpenChange={setIsOpen}\n        content={\n          <div className=\"space-y-4\">\n            <h3 className=\"font-semibold text-gray-900\">Settings</h3>\n            <div className=\"space-y-2\">\n              <label className=\"flex items-center space-x-2\">\n                <input type=\"checkbox\" className=\"rounded\" />\n                <span className=\"text-sm\">Enable notifications</span>\n              </label>\n              <label className=\"flex items-center space-x-2\">\n                <input type=\"checkbox\" className=\"rounded\" />\n                <span className=\"text-sm\">Auto-save</span>\n              </label>\n            </div>\n            <button\n              onClick={() => setIsOpen(false)}\n              className=\"h-10 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200\"\n            >\n              Close\n            </button>\n          </div>\n        }\n        focusTrap\n      >\n        <button className=\"h-12 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700\">\n          Settings {isOpen ? '(Open)' : ''}\n        </button>\n      </Popover>\n\n      <button\n        onClick={() => setIsOpen(!isOpen)}\n        className=\"h-12 px-6 bg-gray-600 text-white rounded-lg hover:bg-gray-700\"\n      >\n        Toggle Externally\n      </button>\n    </div>\n  );\n};"
-    },
-    "withForm": {
-      "name": "Popover with Form",
-      "description": "Interactive popover containing a form",
-      "code": "import { useState } from 'react';\nimport { Popover } from '@xala/ui-system';\n\ninterface FormData {\n  readonly name: string;\n  readonly email: string;\n}\n\nexport const PopoverWithForm = (): JSX.Element => {\n  const [formData, setFormData] = useState<FormData>({ name: '', email: '' });\n  const [isOpen, setIsOpen] = useState(false);\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    console.log('Submitted:', formData);\n    setIsOpen(false);\n    setFormData({ name: '', email: '' });\n  };\n\n  return (\n    <Popover\n      open={isOpen}\n      onOpenChange={setIsOpen}\n      placement=\"bottom-start\"\n      focusTrap\n      content={\n        <form onSubmit={handleSubmit} className=\"space-y-4 w-80\">\n          <h3 className=\"text-lg font-semibold text-gray-900\">Quick Contact</h3>\n          \n          <div>\n            <label htmlFor=\"name\" className=\"block text-sm font-medium text-gray-700 mb-1\">\n              Name\n            </label>\n            <input\n              id=\"name\"\n              type=\"text\"\n              value={formData.name}\n              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}\n              className=\"h-12 w-full px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500\"\n              required\n            />\n          </div>\n\n          <div>\n            <label htmlFor=\"email\" className=\"block text-sm font-medium text-gray-700 mb-1\">\n              Email\n            </label>\n            <input\n              id=\"email\"\n              type=\"email\"\n              value={formData.email}\n              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}\n              className=\"h-12 w-full px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500\"\n              required\n            />\n          </div>\n\n          <div className=\"flex space-x-3\">\n            <button\n              type=\"submit\"\n              className=\"h-12 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-1\"\n            >\n              Submit\n            </button>\n            <button\n              type=\"button\"\n              onClick={() => setIsOpen(false)}\n              className=\"h-12 px-6 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300\"\n            >\n              Cancel\n            </button>\n          </div>\n        </form>\n      }\n    >\n      <button className=\"h-12 px-6 bg-purple-600 text-white rounded-lg hover:bg-purple-700\">\n        Contact Form\n      </button>\n    </Popover>\n  );\n};"
-    },
-    "multiTrigger": {
-      "name": "Multi-Trigger Popover",
-      "description": "Popover with multiple trigger methods",
-      "code": "import { Popover } from '@xala/ui-system';\n\nexport const MultiTriggerPopover = (): JSX.Element => {\n  return (\n    <div className=\"space-x-4\">\n      <Popover\n        trigger={['click', 'focus']}\n        placement=\"top\"\n        content={\n          <div className=\"space-y-2\">\n            <h4 className=\"font-medium text-gray-900\">Help Information</h4>\n            <p className=\"text-sm text-gray-600\">\n              This popover opens on click or focus for better accessibility.\n              Use Tab to navigate and Escape to close.\n            </p>\n          </div>\n        }\n      >\n        <button className=\"h-12 px-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2\">\n          Help (Click/Focus)\n        </button>\n      </Popover>\n\n      <Popover\n        trigger=\"hover\"\n        placement=\"right\"\n        content={\n          <div className=\"space-y-2\">\n            <h4 className=\"font-medium text-gray-900\">Quick Info</h4>\n            <p className=\"text-sm text-gray-600\">\n              This shows on hover for quick reference.\n            </p>\n          </div>\n        }\n      >\n        <button className=\"h-12 px-6 bg-orange-600 text-white rounded-lg hover:bg-orange-700\">\n          Hover Me\n        </button>\n      </Popover>\n    </div>\n  );\n};"
-    }
-  },
-  "performance": {
-    "bundleSize": {
-      "target": "<4KB",
-      "gzipped": "<1.5KB",
-      "treeshaking": true
-    },
-    "rendering": {
-      "lazyLoading": true,
-      "virtualScrolling": false,
-      "memoization": true
-    },
-    "benchmarks": {
-      "initialRender": "<16ms",
-      "reRender": "<8ms",
-      "memoryUsage": "<2MB"
-    }
-  },
-  "testing": {
-    "coverage": {
-      "statements": 95,
-      "branches": 95,
-      "functions": 95,
-      "lines": 95
-    },
-    "testTypes": [
-      "unit",
-      "integration",
-      "accessibility",
-      "visual",
-      "performance"
-    ],
-    "scenarios": [
-      "Basic rendering and interaction",
-      "Controlled vs uncontrolled modes",
-      "All trigger types (click, hover, focus)",
-      "All placement positions",
-      "Focus trap functionality",
-      "Keyboard navigation",
-      "Screen reader compatibility",
-      "Click outside behavior",
-      "Escape key handling",
-      "Portal rendering",
-      "Animation states",
-      "Error boundaries"
-    ]
-  },
-  "implementation": {
-    "dependencies": [
-      "@floating-ui/react",
-      "@radix-ui/react-focus-scope",
-      "react",
-      "react-dom"
-    ],
-    "peerDependencies": {
-      "react": ">=18.0.0",
-      "react-dom": ">=18.0.0"
-    },
-    "hooks": [
-      "useFloating",
-      "useInteractions",
-      "useClick",
-      "useHover",
-      "useFocus",
-      "useDismiss",
-      "useRole",
-      "useId",
-      "useState",
-      "useEffect",
-      "useRef"
-    ],
-    "internalComponents": [
-      "PopoverTrigger",
-      "PopoverContent",
-      "PopoverArrow",
-      "PopoverPortal"
-    ]
-  },
-  "changelog": {
-    "1.0.0": {
-      "date": "2025-08-04",
-      "changes": [
-        "Initial implementation",
-        "WCAG AAA compliance",
-        "Norwegian compliance (NSM OPEN)",
-        "Focus trap support",
-        "Multiple trigger methods",
-        "Comprehensive positioning system"
-      ]
-    }
-  }
+	"metadata": {
+		"name": "Popover",
+		"version": "1.0.0",
+		"category": "ui",
+		"description": "Interactive popover component for displaying rich content triggered by user interaction",
+		"status": "stable",
+		"lastUpdated": "2025-08-04",
+		"author": "Xala Enterprise UI System"
+	},
+	"specification": {
+		"props": {
+			"content": {
+				"type": "React.ReactNode",
+				"required": true,
+				"description": "Rich content to display in the popover - supports complex layouts, forms, and interactive elements",
+				"examples": [
+					"Simple text content",
+					"<div><h3>Title</h3><p>Description</p></div>",
+					"<form>...</form>"
+				]
+			},
+			"children": {
+				"type": "React.ReactElement",
+				"required": true,
+				"description": "Trigger element that opens the popover when interacted with",
+				"constraints": {
+					"mustBeInteractive": true,
+					"singleChild": true
+				}
+			},
+			"open": {
+				"type": "boolean",
+				"required": false,
+				"description": "Controlled state - when provided, component operates in controlled mode",
+				"controlledMode": true
+			},
+			"defaultOpen": {
+				"type": "boolean",
+				"required": false,
+				"default": false,
+				"description": "Default open state for uncontrolled mode",
+				"uncontrolledMode": true
+			},
+			"onOpenChange": {
+				"type": "(open: boolean) => void",
+				"required": false,
+				"description": "Callback fired when popover open state changes",
+				"parameters": {
+					"open": "New open state"
+				}
+			},
+			"placement": {
+				"type": "'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end'",
+				"required": false,
+				"default": "bottom",
+				"description": "Placement of popover relative to trigger element with automatic repositioning"
+			},
+			"trigger": {
+				"type": "'click' | 'hover' | 'focus' | Array<'click' | 'hover' | 'focus'>",
+				"required": false,
+				"default": "click",
+				"description": "Interaction methods that trigger the popover",
+				"examples": ["click", "hover", "focus", "['click', 'focus']"]
+			},
+			"closeOnClickOutside": {
+				"type": "boolean",
+				"required": false,
+				"default": true,
+				"description": "Whether to close popover when clicking outside of it"
+			},
+			"closeOnEscape": {
+				"type": "boolean",
+				"required": false,
+				"default": true,
+				"description": "Whether to close popover when pressing Escape key"
+			},
+			"arrow": {
+				"type": "boolean",
+				"required": false,
+				"default": true,
+				"description": "Whether to show arrow pointing to trigger element"
+			},
+			"width": {
+				"type": "number | 'auto' | 'trigger'",
+				"required": false,
+				"default": "auto",
+				"description": "Popover width - number for fixed width, 'auto' for content-based, 'trigger' to match trigger width"
+			},
+			"maxWidth": {
+				"type": "number",
+				"required": false,
+				"default": 400,
+				"description": "Maximum width of popover in pixels"
+			},
+			"offset": {
+				"type": "number",
+				"required": false,
+				"default": 8,
+				"description": "Distance between popover and trigger element in pixels"
+			},
+			"focusTrap": {
+				"type": "boolean",
+				"required": false,
+				"default": false,
+				"description": "Whether to trap focus within popover when open (recommended for interactive content)"
+			},
+			"portal": {
+				"type": "boolean",
+				"required": false,
+				"default": true,
+				"description": "Whether to render popover in a portal (recommended for z-index management)"
+			},
+			"className": {
+				"type": "string",
+				"required": false,
+				"description": "Additional CSS classes for popover container"
+			},
+			"style": {
+				"type": "React.CSSProperties",
+				"required": false,
+				"description": "Inline styles for popover container"
+			},
+			"id": {
+				"type": "string",
+				"required": false,
+				"description": "Unique identifier for popover element"
+			},
+			"disabled": {
+				"type": "boolean",
+				"required": false,
+				"default": false,
+				"description": "Whether the popover is disabled and cannot be triggered"
+			}
+		},
+		"styling": {
+			"baseClasses": [
+				"absolute",
+				"z-50",
+				"min-w-32",
+				"max-w-96",
+				"p-4",
+				"bg-white",
+				"border",
+				"border-gray-200",
+				"rounded-lg",
+				"shadow-lg",
+				"animate-in",
+				"fade-in-0",
+				"zoom-in-95"
+			],
+			"variants": {
+				"size": {
+					"sm": ["p-3", "text-sm", "max-w-64"],
+					"md": ["p-4", "text-base", "max-w-80"],
+					"lg": ["p-6", "text-base", "max-w-96"]
+				},
+				"theme": {
+					"light": ["bg-white", "border-gray-200", "text-gray-900"],
+					"dark": ["bg-gray-800", "border-gray-700", "text-gray-100"]
+				}
+			},
+			"arrowClasses": [
+				"absolute",
+				"w-2",
+				"h-2",
+				"bg-white",
+				"border",
+				"border-gray-200",
+				"rotate-45"
+			]
+		},
+		"behavior": {
+			"positioning": {
+				"strategy": "absolute",
+				"middleware": ["offset", "flip", "shift", "arrow"],
+				"autoUpdate": true
+			},
+			"animation": {
+				"enter": "fade-in-0 zoom-in-95",
+				"exit": "fade-out-0 zoom-out-95",
+				"duration": "150ms"
+			},
+			"focusManagement": {
+				"trapFocus": "optional",
+				"restoreFocus": true,
+				"initialFocus": "first-tabbable"
+			},
+			"clickOutside": {
+				"enabled": true,
+				"configurable": true
+			},
+			"keyboard": {
+				"Escape": "close",
+				"Tab": "navigate-within-if-trapped"
+			}
+		}
+	},
+	"accessibility": {
+		"wcagLevel": "AAA",
+		"requirements": {
+			"keyboardNavigation": {
+				"required": true,
+				"implementation": [
+					"Tab/Shift+Tab: Navigate within popover content",
+					"Escape: Close popover and return focus to trigger",
+					"Arrow keys: Navigate within popover content if applicable"
+				]
+			},
+			"screenReader": {
+				"required": true,
+				"implementation": [
+					"aria-expanded on trigger element",
+					"aria-haspopup='dialog' on trigger element",
+					"aria-describedby linking trigger to popover",
+					"role='dialog' on popover content",
+					"aria-label or aria-labelledby on popover"
+				]
+			},
+			"focusManagement": {
+				"required": true,
+				"implementation": [
+					"Focus trap option for interactive content",
+					"Focus restoration to trigger on close",
+					"Initial focus to first tabbable element",
+					"Visible focus indicators"
+				]
+			},
+			"colorContrast": {
+				"required": true,
+				"ratios": {
+					"normalText": "7:1",
+					"largeText": "4.5:1",
+					"nonTextElements": "3:1"
+				}
+			}
+		},
+		"ariaAttributes": {
+			"trigger": [
+				"aria-expanded",
+				"aria-haspopup='dialog'",
+				"aria-describedby"
+			],
+			"popover": ["role='dialog'", "aria-label", "aria-labelledby", "id"]
+		},
+		"testing": {
+			"automatedTests": [
+				"Keyboard navigation",
+				"Screen reader announcements",
+				"Focus management",
+				"Color contrast validation"
+			],
+			"manualTests": [
+				"Screen reader compatibility",
+				"High contrast mode",
+				"Zoom up to 200%",
+				"Keyboard-only navigation"
+			]
+		}
+	},
+	"compliance": {
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"wcagLevel": "AAA",
+			"languageSupport": ["nb-NO", "en-US"],
+			"auditTrail": false,
+			"dataProcessing": "none"
+		},
+		"security": {
+			"xssProtection": true,
+			"sanitizeContent": false,
+			"allowDangerousHTML": false,
+			"contentSecurityPolicy": "compliant"
+		}
+	},
+	"examples": {
+		"basic": {
+			"name": "Basic Popover",
+			"description": "Simple popover with text content",
+			"code": "import { Popover } from '@xala/ui-system';\n\nexport const BasicPopover = (): JSX.Element => {\n  return (\n    <Popover\n      content={\n        <div className=\"space-y-2\">\n          <h3 className=\"font-semibold text-gray-900\">Popover Title</h3>\n          <p className=\"text-sm text-gray-600\">\n            This is the popover content with rich formatting.\n          </p>\n        </div>\n      }\n    >\n      <button className=\"h-12 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700\">\n        Open Popover\n      </button>\n    </Popover>\n  );\n};"
+		},
+		"controlled": {
+			"name": "Controlled Popover",
+			"description": "Popover with controlled open state",
+			"code": "import { useState } from 'react';\nimport { Popover } from '@xala/ui-system';\n\nexport const ControlledPopover = (): JSX.Element => {\n  const [isOpen, setIsOpen] = useState(false);\n\n  return (\n    <div className=\"space-x-4\">\n      <Popover\n        open={isOpen}\n        onOpenChange={setIsOpen}\n        content={\n          <div className=\"space-y-4\">\n            <h3 className=\"font-semibold text-gray-900\">Settings</h3>\n            <div className=\"space-y-2\">\n              <label className=\"flex items-center space-x-2\">\n                <input type=\"checkbox\" className=\"rounded\" />\n                <span className=\"text-sm\">Enable notifications</span>\n              </label>\n              <label className=\"flex items-center space-x-2\">\n                <input type=\"checkbox\" className=\"rounded\" />\n                <span className=\"text-sm\">Auto-save</span>\n              </label>\n            </div>\n            <button\n              onClick={() => setIsOpen(false)}\n              className=\"h-10 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200\"\n            >\n              Close\n            </button>\n          </div>\n        }\n        focusTrap\n      >\n        <button className=\"h-12 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700\">\n          Settings {isOpen ? '(Open)' : ''}\n        </button>\n      </Popover>\n\n      <button\n        onClick={() => setIsOpen(!isOpen)}\n        className=\"h-12 px-6 bg-gray-600 text-white rounded-lg hover:bg-gray-700\"\n      >\n        Toggle Externally\n      </button>\n    </div>\n  );\n};"
+		},
+		"withForm": {
+			"name": "Popover with Form",
+			"description": "Interactive popover containing a form",
+			"code": "import { useState } from 'react';\nimport { Popover } from '@xala/ui-system';\n\ninterface FormData {\n  readonly name: string;\n  readonly email: string;\n}\n\nexport const PopoverWithForm = (): JSX.Element => {\n  const [formData, setFormData] = useState<FormData>({ name: '', email: '' });\n  const [isOpen, setIsOpen] = useState(false);\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    console.log('Submitted:', formData);\n    setIsOpen(false);\n    setFormData({ name: '', email: '' });\n  };\n\n  return (\n    <Popover\n      open={isOpen}\n      onOpenChange={setIsOpen}\n      placement=\"bottom-start\"\n      focusTrap\n      content={\n        <form onSubmit={handleSubmit} className=\"space-y-4 w-80\">\n          <h3 className=\"text-lg font-semibold text-gray-900\">Quick Contact</h3>\n          \n          <div>\n            <label htmlFor=\"name\" className=\"block text-sm font-medium text-gray-700 mb-1\">\n              Name\n            </label>\n            <input\n              id=\"name\"\n              type=\"text\"\n              value={formData.name}\n              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}\n              className=\"h-12 w-full px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500\"\n              required\n            />\n          </div>\n\n          <div>\n            <label htmlFor=\"email\" className=\"block text-sm font-medium text-gray-700 mb-1\">\n              Email\n            </label>\n            <input\n              id=\"email\"\n              type=\"email\"\n              value={formData.email}\n              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}\n              className=\"h-12 w-full px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500\"\n              required\n            />\n          </div>\n\n          <div className=\"flex space-x-3\">\n            <button\n              type=\"submit\"\n              className=\"h-12 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-1\"\n            >\n              Submit\n            </button>\n            <button\n              type=\"button\"\n              onClick={() => setIsOpen(false)}\n              className=\"h-12 px-6 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300\"\n            >\n              Cancel\n            </button>\n          </div>\n        </form>\n      }\n    >\n      <button className=\"h-12 px-6 bg-purple-600 text-white rounded-lg hover:bg-purple-700\">\n        Contact Form\n      </button>\n    </Popover>\n  );\n};"
+		},
+		"multiTrigger": {
+			"name": "Multi-Trigger Popover",
+			"description": "Popover with multiple trigger methods",
+			"code": "import { Popover } from '@xala/ui-system';\n\nexport const MultiTriggerPopover = (): JSX.Element => {\n  return (\n    <div className=\"space-x-4\">\n      <Popover\n        trigger={['click', 'focus']}\n        placement=\"top\"\n        content={\n          <div className=\"space-y-2\">\n            <h4 className=\"font-medium text-gray-900\">Help Information</h4>\n            <p className=\"text-sm text-gray-600\">\n              This popover opens on click or focus for better accessibility.\n              Use Tab to navigate and Escape to close.\n            </p>\n          </div>\n        }\n      >\n        <button className=\"h-12 px-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2\">\n          Help (Click/Focus)\n        </button>\n      </Popover>\n\n      <Popover\n        trigger=\"hover\"\n        placement=\"right\"\n        content={\n          <div className=\"space-y-2\">\n            <h4 className=\"font-medium text-gray-900\">Quick Info</h4>\n            <p className=\"text-sm text-gray-600\">\n              This shows on hover for quick reference.\n            </p>\n          </div>\n        }\n      >\n        <button className=\"h-12 px-6 bg-orange-600 text-white rounded-lg hover:bg-orange-700\">\n          Hover Me\n        </button>\n      </Popover>\n    </div>\n  );\n};"
+		}
+	},
+	"performance": {
+		"bundleSize": {
+			"target": "<4KB",
+			"gzipped": "<1.5KB",
+			"treeshaking": true
+		},
+		"rendering": {
+			"lazyLoading": true,
+			"virtualScrolling": false,
+			"memoization": true
+		},
+		"benchmarks": {
+			"initialRender": "<16ms",
+			"reRender": "<8ms",
+			"memoryUsage": "<2MB"
+		}
+	},
+	"testing": {
+		"coverage": {
+			"statements": 95,
+			"branches": 95,
+			"functions": 95,
+			"lines": 95
+		},
+		"testTypes": [
+			"unit",
+			"integration",
+			"accessibility",
+			"visual",
+			"performance"
+		],
+		"scenarios": [
+			"Basic rendering and interaction",
+			"Controlled vs uncontrolled modes",
+			"All trigger types (click, hover, focus)",
+			"All placement positions",
+			"Focus trap functionality",
+			"Keyboard navigation",
+			"Screen reader compatibility",
+			"Click outside behavior",
+			"Escape key handling",
+			"Portal rendering",
+			"Animation states",
+			"Error boundaries"
+		]
+	},
+	"implementation": {
+		"dependencies": [
+			"@floating-ui/react",
+			"@radix-ui/react-focus-scope",
+			"react",
+			"react-dom"
+		],
+		"peerDependencies": {
+			"react": ">=18.0.0",
+			"react-dom": ">=18.0.0"
+		},
+		"hooks": [
+			"useFloating",
+			"useInteractions",
+			"useClick",
+			"useHover",
+			"useFocus",
+			"useDismiss",
+			"useRole",
+			"useId",
+			"useState",
+			"useEffect",
+			"useRef"
+		],
+		"internalComponents": [
+			"PopoverTrigger",
+			"PopoverContent",
+			"PopoverArrow",
+			"PopoverPortal"
+		]
+	},
+	"changelog": {
+		"1.0.0": {
+			"date": "2025-08-04",
+			"changes": [
+				"Initial implementation",
+				"WCAG AAA compliance",
+				"Norwegian compliance (NSM OPEN)",
+				"Focus trap support",
+				"Multiple trigger methods",
+				"Comprehensive positioning system"
+			]
+		}
+	}
 }

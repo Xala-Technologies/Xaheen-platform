@@ -5,24 +5,24 @@
  */
 
 export interface DashboardLayoutProps {
-  readonly className?: string;
-  readonly children?: React.ReactNode;
-  readonly variant?: 'default';
-  readonly size?: 'md';
-  readonly disabled?: boolean;
-  readonly loading?: boolean;
-  readonly 'data-testid'?: string;
+	readonly className?: string;
+	readonly children?: React.ReactNode;
+	readonly variant?: "default";
+	readonly size?: "md";
+	readonly disabled?: boolean;
+	readonly loading?: boolean;
+	readonly "data-testid"?: string;
 }
 
 export interface DashboardLayoutConfig {
-  readonly theme: 'enterprise';
-  readonly locale: 'en';
-  readonly accessibility: {
-    readonly level: 'AAA';
-    readonly screenReader: true;
-    readonly keyboardNavigation: true;
-  };
+	readonly theme: "enterprise";
+	readonly locale: "en";
+	readonly accessibility: {
+		readonly level: "AAA";
+		readonly screenReader: true;
+		readonly keyboardNavigation: true;
+	};
 }
 
-export type DashboardLayoutVariant = 'default';
-export type DashboardLayoutSize = 'md';
+export type DashboardLayoutVariant = "default";
+export type DashboardLayoutSize = "md";

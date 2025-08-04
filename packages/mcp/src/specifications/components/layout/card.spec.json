@@ -1,819 +1,858 @@
 {
-  "metadata": {
-    "name": "Card",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "layout",
-    "subcategory": "card",
-    "description": "Comprehensive card component for displaying structured content with Norwegian compliance. Supports images, actions, interactive states, and flexible composition patterns.",
-    "keywords": ["card", "content", "layout", "container", "article", "interactive", "norwegian", "accessible"],
-    "maintainer": {
-      "name": "Xala UI Team",
-      "email": "ui@xala.no",
-      "team": "User Interface"
-    },
-    "stability": "stable",
-    "createdAt": "2024-02-01T09:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["article", "section", "div"],
-      "ariaRoles": ["article", "region", "button"],
-      "landmarks": true,
-      "headingStructure": true
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.1.2 No Keyboard Trap",
-        "2.4.2 Page Titled",
-        "2.4.6 Headings and Labels",
-        "2.4.7 Focus Visible",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "title": {
-        "type": { "primitive": "string" },
-        "description": "Main title of the card, rendered as heading",
-        "required": false,
-        "accessibility": {
-          "role": "heading",
-          "level": "dynamic"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "card.{componentName}.title",
-          "context": "card-title"
-        }
-      },
-      "subtitle": {
-        "type": { "primitive": "string" },
-        "description": "Optional subtitle text below the main title",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "card.{componentName}.subtitle", 
-          "context": "card-subtitle"
-        }
-      },
-      "description": {
-        "type": { "primitive": "string" },
-        "description": "Main body text content of the card",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "card.{componentName}.description",
-          "context": "card-body"
-        }
-      },
-      "image": {
-        "type": {
-          "complex": "object",
-          "signature": {
-            "src": {
-              "type": "string",
-              "required": true,
-              "description": "Image source URL"
-            },
-            "alt": {
-              "type": "string", 
-              "required": true,
-              "description": "Alternative text for accessibility"
-            },
-            "position": {
-              "type": "variant",
-              "values": ["top", "left", "right"],
-              "required": false,
-              "defaultValue": "top",
-              "description": "Position of image relative to content"
-            }
-          }
-        },
-        "description": "Optional image with source, alt text, and positioning",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "img",
-          "screenReaderText": "Card image"
-        }
-      },
-      "variant": {
-        "type": {
-          "custom": "variant",
-          "values": ["default", "elevated", "outlined", "filled"]
-        },
-        "description": "Visual variant determining card appearance and elevation",
-        "required": false,
-        "defaultValue": "default",
-        "examples": [
-          {
-            "value": "default",
-            "description": "Standard card with subtle border",
-            "context": "General content display"
-          },
-          {
-            "value": "elevated",
-            "description": "Card with prominent shadow elevation",
-            "context": "Important content, hero cards"
-          },
-          {
-            "value": "outlined",
-            "description": "Card with prominent border, no shadow",
-            "context": "Form cards, structured data"
-          },
-          {
-            "value": "filled",
-            "description": "Card with filled background color",
-            "context": "Highlighted content, callouts"
-          }
-        ]
-      },
-      "padding": {
-        "type": {
-          "custom": "variant",
-          "values": ["sm", "md", "lg", "xl"]
-        },
-        "description": "Internal padding size for card content",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "sm",
-            "description": "Compact padding for dense layouts",
-            "context": "List items, compact grids"
-          },
-          {
-            "value": "xl",
-            "description": "Generous padding for prominent content",
-            "context": "Hero cards, featured content"
-          }
-        ]
-      },
-      "interactive": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the card responds to hover and focus interactions",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "keyboardNavigation": true,
-          "focusable": true
-        }
-      },
-      "onClick": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void | Promise<void>"
-          }
-        },
-        "description": "Click event handler for interactive cards",
-        "required": false,
-        "mutuallyExclusive": ["href"]
-      },
-      "href": {
-        "type": { "primitive": "string" },
-        "description": "URL to navigate to when card is clicked",
-        "required": false,
-        "mutuallyExclusive": ["onClick"],
-        "accessibility": {
-          "role": "link",
-          "navigable": true
-        }
-      },
-      "footer": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Optional footer content at bottom of card",
-        "required": false,
-        "i18n": {
-          "translatable": true,
-          "key": "card.{componentName}.footer",
-          "context": "card-footer"
-        }
-      },
-      "actions": {
-        "type": {
-          "complex": "array",
-          "signature": {
-            "element": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "type": "string",
-                  "required": true,
-                  "description": "Action button text"
-                },
-                "onClick": {
-                  "type": "function",
-                  "required": true,
-                  "description": "Action handler"
-                },
-                "variant": {
-                  "type": "variant",
-                  "values": ["primary", "secondary", "outline", "ghost"],
-                  "required": false,
-                  "defaultValue": "secondary"
-                },
-                "disabled": {
-                  "type": "boolean",
-                  "required": false,
-                  "defaultValue": false
-                }
-              }
-            }
-          }
-        },
-        "description": "Array of action buttons displayed in card footer",
-        "required": false,
-        "accessibility": {
-          "role": "group",
-          "ariaLabel": "Card actions"
-        }
-      },
-      "badge": {
-        "type": {
-          "complex": "object",
-          "signature": {
-            "text": {
-              "type": "string",
-              "required": true,
-              "description": "Badge text content"
-            },
-            "variant": {
-              "type": "variant",
-              "values": ["default", "success", "warning", "error", "info"],
-              "required": false,
-              "defaultValue": "default",
-              "description": "Badge color variant"
-            },
-            "position": {
-              "type": "variant",
-              "values": ["top-left", "top-right", "bottom-left", "bottom-right"],
-              "required": false,
-              "defaultValue": "top-right",
-              "description": "Badge positioning"
-            }
-          }
-        },
-        "description": "Optional status badge positioned on card",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "status",
-          "screenReaderText": "Card status"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply",
-        "required": false
-      },
-      "children": {
-        "type": {
-          "complex": "node",
-          "types": ["string", "element"]
-        },
-        "description": "Custom content to render in card body, overrides description",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "title", "subtitle", "description", "image", "variant", "padding",
-        "interactive", "onClick", "href", "footer", "actions", "badge",
-        "className", "children", "testId"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": true,
-        "types": ["string", "element"],
-        "description": "Custom card content"
-      },
-      "slots": {
-        "header": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom header content slot, replaces title/subtitle"
-        },
-        "body": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom body content slot, replaces description"
-        },
-        "footer": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom footer content slot"
-        },
-        "media": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom media content slot, replaces image"
-        },
-        "actions": {
-          "required": false,
-          "types": ["element"],
-          "description": "Custom actions area slot"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "variant": {
-        "values": {
-          "default": "bg-white border border-gray-200 rounded-lg shadow-sm",
-          "elevated": "bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow",
-          "outlined": "bg-white border-2 border-gray-300 rounded-lg shadow-none",
-          "filled": "bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
-        },
-        "defaultValue": "default"
-      },
-      "padding": {
-        "values": {
-          "sm": "p-4",
-          "md": "p-6",
-          "lg": "p-8",
-          "xl": "p-10"
-        },
-        "defaultValue": "md"
-      },
-      "interactive": {
-        "values": {
-          "true": "cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors",
-          "false": "cursor-default"
-        },
-        "defaultValue": "false"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "variant": "elevated",
-          "interactive": "true"
-        },
-        "className": "hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200",
-        "description": "Interactive elevated cards with lift effect"
-      },
-      {
-        "conditions": {
-          "variant": "outlined",
-          "interactive": "true"
-        },
-        "className": "hover:border-blue-300 hover:bg-blue-50",
-        "description": "Interactive outlined cards with color change"
-      },
-      {
-        "conditions": {
-          "image.position": "left",
-          "padding": "sm"
-        },
-        "className": "flex flex-row items-start space-x-3",
-        "description": "Compact horizontal layout with left image"
-      },
-      {
-        "conditions": {
-          "image.position": "right",
-          "padding": "sm"
-        },
-        "className": "flex flex-row-reverse items-start space-x-reverse space-x-3",
-        "description": "Compact horizontal layout with right image"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "article",
-      "additional": ["section", "button", "link"]
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Enter",
-          "action": "activate",
-          "context": "Activate interactive card action",
-          "condition": "interactive=true or href present"
-        },
-        {
-          "key": "Space", 
-          "action": "activate",
-          "context": "Activate interactive card action",
-          "condition": "interactive=true or href present"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus to/from card or internal focusable elements"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "focus",
-          "message": "Card content",
-          "priority": "polite"
-        },
-        {
-          "trigger": "click",
-          "message": "Card activated",
-          "priority": "assertive",
-          "condition": "interactive=true"
-        }
-      ],
-      "labels": {
-        "required": ["accessible-name"],
-        "descriptions": {
-          "interactive": "Interactive content card",
-          "clickable": "Clickable card",
-          "media": "Card with image",
-          "actions": "Card with actions"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "semantic-element-present",
-        "accessible-name-present",
-        "heading-structure-valid",
-        "keyboard-navigation",
-        "focus-management",
-        "color-contrast-aaa",
-        "image-alt-text-present",
-        "interactive-state-announced"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "keyboard-only-interaction",
-        "content-structure-logical"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte", "solid", "web-components"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/card.tsx",
-        "dependencies": ["react", "clsx", "class-variance-authority"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "HTMLAttributes", "ReactNode"]
-          },
-          {
-            "module": "class-variance-authority",
-            "imports": ["cva", "VariantProps"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/card.vue",
-        "dependencies": ["vue", "clsx"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/card.component.ts",
-        "dependencies": ["@angular/core", "@angular/common"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/card.svelte",
-        "dependencies": ["svelte"]
-      },
-      "solid": {
-        "templatePath": "./templates/solid/card.tsx",
-        "dependencies": ["solid-js"]
-      },
-      "web-components": {
-        "templatePath": "./templates/web-components/card.ts",
-        "dependencies": ["lit"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Card",
-      "description": "Simple card with title and description",
-      "category": "basic",
-      "code": {
-        "react": "<Card title='Card Title' description='This is a basic card with some content.' />",
-        "vue": "<Card title='Card Title' description='This is a basic card with some content.' />",
-        "angular": "<xala-card title='Card Title' description='This is a basic card with some content.'></xala-card>",
-        "svelte": "<Card title='Card Title' description='This is a basic card with some content.' />",
-        "solid": "<Card title='Card Title' description='This is a basic card with some content.' />",
-        "web-components": "<xala-card title='Card Title' description='This is a basic card with some content.'></xala-card>"
-      },
-      "props": {
-        "title": "Card Title",
-        "description": "This is a basic card with some content."
-      }
-    },
-    {
-      "name": "Card with Image",
-      "description": "Card featuring an image with different positioning options",
-      "category": "media",
-      "code": {
-        "react": "<Card \n  title='Product Card'\n  description='Amazing product description'\n  image={{\n    src: '/product.jpg',\n    alt: 'Product image',\n    position: 'top'\n  }}\n/>"
-      },
-      "props": {
-        "title": "Product Card",
-        "description": "Amazing product description",
-        "image": {
-          "src": "/product.jpg",
-          "alt": "Product image", 
-          "position": "top"
-        }
-      }
-    },
-    {
-      "name": "Interactive Card",
-      "description": "Clickable card with hover effects",
-      "category": "interactive",
-      "code": {
-        "react": "<Card \n  title='Clickable Card'\n  description='This card responds to interactions'\n  interactive\n  onClick={() => console.log('Card clicked')}\n  variant='elevated'\n/>"
-      },
-      "props": {
-        "title": "Clickable Card",
-        "description": "This card responds to interactions",
-        "interactive": true,
-        "variant": "elevated"
-      },
-      "notes": "Interactive cards should provide clear visual feedback on hover/focus"
-    },
-    {
-      "name": "Card with Actions",
-      "description": "Card with action buttons in footer",
-      "category": "actions",
-      "code": {
-        "react": "<Card \n  title='Action Card'\n  description='Card with multiple action buttons'\n  actions={[\n    {\n      label: 'View Details',\n      onClick: () => viewDetails(),\n      variant: 'primary'\n    },\n    {\n      label: 'Edit',\n      onClick: () => editItem(),\n      variant: 'secondary'\n    },\n    {\n      label: 'Delete',\n      onClick: () => deleteItem(),\n      variant: 'outline',\n      disabled: !canDelete\n    }\n  ]}\n/>"
-      },
-      "props": {
-        "title": "Action Card",
-        "description": "Card with multiple action buttons",
-        "actions": [
-          {
-            "label": "View Details",
-            "variant": "primary"
-          },
-          {
-            "label": "Edit", 
-            "variant": "secondary"
-          },
-          {
-            "label": "Delete",
-            "variant": "outline",
-            "disabled": true
-          }
-        ]
-      }
-    },
-    {
-      "name": "Card with Badge",
-      "description": "Card featuring a status badge",
-      "category": "status",
-      "code": {
-        "react": "<Card \n  title='Status Card'\n  description='Card with status indicator'\n  badge={{\n    text: 'New',\n    variant: 'success',\n    position: 'top-right'\n  }}\n  variant='outlined'\n/>"
-      },
-      "props": {
-        "title": "Status Card",
-        "description": "Card with status indicator",
-        "badge": {
-          "text": "New",
-          "variant": "success",
-          "position": "top-right"
-        },
-        "variant": "outlined"
-      }
-    },
-    {
-      "name": "Horizontal Card Layout",
-      "description": "Card with side-by-side image and content",
-      "category": "layout",
-      "code": {
-        "react": "<Card \n  title='Horizontal Card'\n  description='Side-by-side layout with image'\n  image={{\n    src: '/avatar.jpg',\n    alt: 'User avatar',\n    position: 'left'\n  }}\n  padding='sm'\n  actions={[\n    { label: 'Contact', onClick: () => contact() }\n  ]}\n/>"
-      },
-      "props": {
-        "title": "Horizontal Card",
-        "description": "Side-by-side layout with image",
-        "image": {
-          "position": "left"
-        },
-        "padding": "sm"
-      },
-      "notes": "Horizontal layouts work best with smaller padding values"
-    },
-    {
-      "name": "Custom Content Card",
-      "description": "Card with custom slot-based content",
-      "category": "composition",
-      "code": {
-        "react": "<Card variant='filled' padding='lg'>\n  <div className='text-center'>\n    <h3 className='text-xl font-bold mb-4'>Custom Content</h3>\n    <p className='text-gray-600 mb-6'>This card uses children for custom layout</p>\n    <button className='bg-blue-600 text-white px-6 py-2 rounded'>Custom Action</button>\n  </div>\n</Card>"
-      },
-      "props": {
-        "variant": "filled",
-        "padding": "lg"
-      },
-      "notes": "Using children prop overrides default title/description layout"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Use semantic article/section elements for better content structure",
-        "Implement proper heading hierarchy when title is present",
-        "Ensure interactive cards have proper keyboard navigation",
-        "Apply Norwegian design tokens for government compliance",
-        "Use appropriate card variants based on content importance",
-        "Optimize image loading with proper alt text for accessibility"
-      ],
-      "patterns": [
-        {
-          "pattern": "class-variance-authority (cva)",
-          "context": "React implementation",
-          "recommendation": "Use CVA for type-safe variant management with compound variants for interactive states"
-        },
-        {
-          "pattern": "semantic HTML structure",
-          "context": "All implementations",
-          "recommendation": "Use article for standalone content, section for grouped content, div for pure layout"
-        },
-        {
-          "pattern": "progressive enhancement",
-          "context": "Interactive cards",
-          "recommendation": "Ensure cards work without JavaScript, add interactivity as enhancement"
-        },
-        {
-          "pattern": "responsive image handling",
-          "context": "Cards with images",
-          "recommendation": "Use responsive images with appropriate aspect ratios and loading optimization"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "div without semantic meaning for content cards",
-          "reason": "Poor accessibility and SEO, lacks content structure",
-          "alternative": "Use article or section elements for better semantic meaning"
-        },
-        {
-          "pattern": "Interactive cards without keyboard support",
-          "reason": "Not accessible to keyboard users",
-          "alternative": "Implement proper focus management and Enter/Space activation"
-        },
-        {
-          "pattern": "Images without alt text",
-          "reason": "Fails accessibility requirements",
-          "alternative": "Always provide meaningful alt text for card images"
-        },
-        {
-          "pattern": "Actions outside card container",
-          "reason": "Breaks content association and accessibility",
-          "alternative": "Include actions within card structure with proper grouping"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "moderate-high",
-      "estimatedTokens": 2500
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "variant-showcase", "composition-patterns"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with title and description",
-        "handles image positioning variants",
-        "applies variant classes correctly",
-        "applies padding classes correctly",
-        "interactive state management",
-        "click event handling",
-        "href navigation behavior",
-        "action buttons rendering and functionality",
-        "badge positioning and variants",
-        "accessibility attributes present",
-        "keyboard navigation support",
-        "semantic HTML structure",
-        "custom children content",
-        "slot-based composition",
-        "Norwegian compliance validation"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "card in responsive grid layouts",
-        "nested interactive elements handling",
-        "keyboard-only navigation through card content",
-        "screen reader content announcement",
-        "image loading and error states",
-        "action button integration with forms",
-        "Norwegian design system token usage",
-        "multi-language content display"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "colorContrast": true,
-      "imageHandling": true
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "4KB",
-        "gzipped": "1.5KB"
-      },
-      "renderTime": {
-        "initial": "<20ms",
-        "update": "<10ms"
-      },
-      "imageLoading": {
-        "lazy": true,
-        "responsive": true
-      }
-    },
-    "optimizations": [
-      "Efficient DOM structure with minimal nesting",
-      "CSS-only hover and focus transitions",
-      "Optimized class variance authority patterns",
-      "Lazy loading for card images",
-      "Memoized variant class generation",
-      "Tree-shakeable action button components"
-    ]
-  }
+	"metadata": {
+		"name": "Card",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "layout",
+		"subcategory": "card",
+		"description": "Comprehensive card component for displaying structured content with Norwegian compliance. Supports images, actions, interactive states, and flexible composition patterns.",
+		"keywords": [
+			"card",
+			"content",
+			"layout",
+			"container",
+			"article",
+			"interactive",
+			"norwegian",
+			"accessible"
+		],
+		"maintainer": {
+			"name": "Xala UI Team",
+			"email": "ui@xala.no",
+			"team": "User Interface"
+		},
+		"stability": "stable",
+		"createdAt": "2024-02-01T09:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["article", "section", "div"],
+			"ariaRoles": ["article", "region", "button"],
+			"landmarks": true,
+			"headingStructure": true
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.1.2 No Keyboard Trap",
+				"2.4.2 Page Titled",
+				"2.4.6 Headings and Labels",
+				"2.4.7 Focus Visible",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"title": {
+				"type": { "primitive": "string" },
+				"description": "Main title of the card, rendered as heading",
+				"required": false,
+				"accessibility": {
+					"role": "heading",
+					"level": "dynamic"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "card.{componentName}.title",
+					"context": "card-title"
+				}
+			},
+			"subtitle": {
+				"type": { "primitive": "string" },
+				"description": "Optional subtitle text below the main title",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "card.{componentName}.subtitle",
+					"context": "card-subtitle"
+				}
+			},
+			"description": {
+				"type": { "primitive": "string" },
+				"description": "Main body text content of the card",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "card.{componentName}.description",
+					"context": "card-body"
+				}
+			},
+			"image": {
+				"type": {
+					"complex": "object",
+					"signature": {
+						"src": {
+							"type": "string",
+							"required": true,
+							"description": "Image source URL"
+						},
+						"alt": {
+							"type": "string",
+							"required": true,
+							"description": "Alternative text for accessibility"
+						},
+						"position": {
+							"type": "variant",
+							"values": ["top", "left", "right"],
+							"required": false,
+							"defaultValue": "top",
+							"description": "Position of image relative to content"
+						}
+					}
+				},
+				"description": "Optional image with source, alt text, and positioning",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "img",
+					"screenReaderText": "Card image"
+				}
+			},
+			"variant": {
+				"type": {
+					"custom": "variant",
+					"values": ["default", "elevated", "outlined", "filled"]
+				},
+				"description": "Visual variant determining card appearance and elevation",
+				"required": false,
+				"defaultValue": "default",
+				"examples": [
+					{
+						"value": "default",
+						"description": "Standard card with subtle border",
+						"context": "General content display"
+					},
+					{
+						"value": "elevated",
+						"description": "Card with prominent shadow elevation",
+						"context": "Important content, hero cards"
+					},
+					{
+						"value": "outlined",
+						"description": "Card with prominent border, no shadow",
+						"context": "Form cards, structured data"
+					},
+					{
+						"value": "filled",
+						"description": "Card with filled background color",
+						"context": "Highlighted content, callouts"
+					}
+				]
+			},
+			"padding": {
+				"type": {
+					"custom": "variant",
+					"values": ["sm", "md", "lg", "xl"]
+				},
+				"description": "Internal padding size for card content",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "sm",
+						"description": "Compact padding for dense layouts",
+						"context": "List items, compact grids"
+					},
+					{
+						"value": "xl",
+						"description": "Generous padding for prominent content",
+						"context": "Hero cards, featured content"
+					}
+				]
+			},
+			"interactive": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the card responds to hover and focus interactions",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"keyboardNavigation": true,
+					"focusable": true
+				}
+			},
+			"onClick": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLElement>",
+								"required": true
+							}
+						],
+						"returnType": "void | Promise<void>"
+					}
+				},
+				"description": "Click event handler for interactive cards",
+				"required": false,
+				"mutuallyExclusive": ["href"]
+			},
+			"href": {
+				"type": { "primitive": "string" },
+				"description": "URL to navigate to when card is clicked",
+				"required": false,
+				"mutuallyExclusive": ["onClick"],
+				"accessibility": {
+					"role": "link",
+					"navigable": true
+				}
+			},
+			"footer": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Optional footer content at bottom of card",
+				"required": false,
+				"i18n": {
+					"translatable": true,
+					"key": "card.{componentName}.footer",
+					"context": "card-footer"
+				}
+			},
+			"actions": {
+				"type": {
+					"complex": "array",
+					"signature": {
+						"element": {
+							"type": "object",
+							"properties": {
+								"label": {
+									"type": "string",
+									"required": true,
+									"description": "Action button text"
+								},
+								"onClick": {
+									"type": "function",
+									"required": true,
+									"description": "Action handler"
+								},
+								"variant": {
+									"type": "variant",
+									"values": ["primary", "secondary", "outline", "ghost"],
+									"required": false,
+									"defaultValue": "secondary"
+								},
+								"disabled": {
+									"type": "boolean",
+									"required": false,
+									"defaultValue": false
+								}
+							}
+						}
+					}
+				},
+				"description": "Array of action buttons displayed in card footer",
+				"required": false,
+				"accessibility": {
+					"role": "group",
+					"ariaLabel": "Card actions"
+				}
+			},
+			"badge": {
+				"type": {
+					"complex": "object",
+					"signature": {
+						"text": {
+							"type": "string",
+							"required": true,
+							"description": "Badge text content"
+						},
+						"variant": {
+							"type": "variant",
+							"values": ["default", "success", "warning", "error", "info"],
+							"required": false,
+							"defaultValue": "default",
+							"description": "Badge color variant"
+						},
+						"position": {
+							"type": "variant",
+							"values": [
+								"top-left",
+								"top-right",
+								"bottom-left",
+								"bottom-right"
+							],
+							"required": false,
+							"defaultValue": "top-right",
+							"description": "Badge positioning"
+						}
+					}
+				},
+				"description": "Optional status badge positioned on card",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "status",
+					"screenReaderText": "Card status"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply",
+				"required": false
+			},
+			"children": {
+				"type": {
+					"complex": "node",
+					"types": ["string", "element"]
+				},
+				"description": "Custom content to render in card body, overrides description",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"title",
+				"subtitle",
+				"description",
+				"image",
+				"variant",
+				"padding",
+				"interactive",
+				"onClick",
+				"href",
+				"footer",
+				"actions",
+				"badge",
+				"className",
+				"children",
+				"testId"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": true,
+				"types": ["string", "element"],
+				"description": "Custom card content"
+			},
+			"slots": {
+				"header": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom header content slot, replaces title/subtitle"
+				},
+				"body": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom body content slot, replaces description"
+				},
+				"footer": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom footer content slot"
+				},
+				"media": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom media content slot, replaces image"
+				},
+				"actions": {
+					"required": false,
+					"types": ["element"],
+					"description": "Custom actions area slot"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"variant": {
+				"values": {
+					"default": "bg-white border border-gray-200 rounded-lg shadow-sm",
+					"elevated": "bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow",
+					"outlined": "bg-white border-2 border-gray-300 rounded-lg shadow-none",
+					"filled": "bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+				},
+				"defaultValue": "default"
+			},
+			"padding": {
+				"values": {
+					"sm": "p-4",
+					"md": "p-6",
+					"lg": "p-8",
+					"xl": "p-10"
+				},
+				"defaultValue": "md"
+			},
+			"interactive": {
+				"values": {
+					"true": "cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors",
+					"false": "cursor-default"
+				},
+				"defaultValue": "false"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"variant": "elevated",
+					"interactive": "true"
+				},
+				"className": "hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200",
+				"description": "Interactive elevated cards with lift effect"
+			},
+			{
+				"conditions": {
+					"variant": "outlined",
+					"interactive": "true"
+				},
+				"className": "hover:border-blue-300 hover:bg-blue-50",
+				"description": "Interactive outlined cards with color change"
+			},
+			{
+				"conditions": {
+					"image.position": "left",
+					"padding": "sm"
+				},
+				"className": "flex flex-row items-start space-x-3",
+				"description": "Compact horizontal layout with left image"
+			},
+			{
+				"conditions": {
+					"image.position": "right",
+					"padding": "sm"
+				},
+				"className": "flex flex-row-reverse items-start space-x-reverse space-x-3",
+				"description": "Compact horizontal layout with right image"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "article",
+			"additional": ["section", "button", "link"]
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Enter",
+					"action": "activate",
+					"context": "Activate interactive card action",
+					"condition": "interactive=true or href present"
+				},
+				{
+					"key": "Space",
+					"action": "activate",
+					"context": "Activate interactive card action",
+					"condition": "interactive=true or href present"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus to/from card or internal focusable elements"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "focus",
+					"message": "Card content",
+					"priority": "polite"
+				},
+				{
+					"trigger": "click",
+					"message": "Card activated",
+					"priority": "assertive",
+					"condition": "interactive=true"
+				}
+			],
+			"labels": {
+				"required": ["accessible-name"],
+				"descriptions": {
+					"interactive": "Interactive content card",
+					"clickable": "Clickable card",
+					"media": "Card with image",
+					"actions": "Card with actions"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"semantic-element-present",
+				"accessible-name-present",
+				"heading-structure-valid",
+				"keyboard-navigation",
+				"focus-management",
+				"color-contrast-aaa",
+				"image-alt-text-present",
+				"interactive-state-announced"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"keyboard-only-interaction",
+				"content-structure-logical"
+			]
+		}
+	},
+	"platforms": {
+		"supported": [
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"solid",
+			"web-components"
+		],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/card.tsx",
+				"dependencies": ["react", "clsx", "class-variance-authority"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["forwardRef", "HTMLAttributes", "ReactNode"]
+					},
+					{
+						"module": "class-variance-authority",
+						"imports": ["cva", "VariantProps"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/card.vue",
+				"dependencies": ["vue", "clsx"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/card.component.ts",
+				"dependencies": ["@angular/core", "@angular/common"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/card.svelte",
+				"dependencies": ["svelte"]
+			},
+			"solid": {
+				"templatePath": "./templates/solid/card.tsx",
+				"dependencies": ["solid-js"]
+			},
+			"web-components": {
+				"templatePath": "./templates/web-components/card.ts",
+				"dependencies": ["lit"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Card",
+			"description": "Simple card with title and description",
+			"category": "basic",
+			"code": {
+				"react": "<Card title='Card Title' description='This is a basic card with some content.' />",
+				"vue": "<Card title='Card Title' description='This is a basic card with some content.' />",
+				"angular": "<xala-card title='Card Title' description='This is a basic card with some content.'></xala-card>",
+				"svelte": "<Card title='Card Title' description='This is a basic card with some content.' />",
+				"solid": "<Card title='Card Title' description='This is a basic card with some content.' />",
+				"web-components": "<xala-card title='Card Title' description='This is a basic card with some content.'></xala-card>"
+			},
+			"props": {
+				"title": "Card Title",
+				"description": "This is a basic card with some content."
+			}
+		},
+		{
+			"name": "Card with Image",
+			"description": "Card featuring an image with different positioning options",
+			"category": "media",
+			"code": {
+				"react": "<Card \n  title='Product Card'\n  description='Amazing product description'\n  image={{\n    src: '/product.jpg',\n    alt: 'Product image',\n    position: 'top'\n  }}\n/>"
+			},
+			"props": {
+				"title": "Product Card",
+				"description": "Amazing product description",
+				"image": {
+					"src": "/product.jpg",
+					"alt": "Product image",
+					"position": "top"
+				}
+			}
+		},
+		{
+			"name": "Interactive Card",
+			"description": "Clickable card with hover effects",
+			"category": "interactive",
+			"code": {
+				"react": "<Card \n  title='Clickable Card'\n  description='This card responds to interactions'\n  interactive\n  onClick={() => console.log('Card clicked')}\n  variant='elevated'\n/>"
+			},
+			"props": {
+				"title": "Clickable Card",
+				"description": "This card responds to interactions",
+				"interactive": true,
+				"variant": "elevated"
+			},
+			"notes": "Interactive cards should provide clear visual feedback on hover/focus"
+		},
+		{
+			"name": "Card with Actions",
+			"description": "Card with action buttons in footer",
+			"category": "actions",
+			"code": {
+				"react": "<Card \n  title='Action Card'\n  description='Card with multiple action buttons'\n  actions={[\n    {\n      label: 'View Details',\n      onClick: () => viewDetails(),\n      variant: 'primary'\n    },\n    {\n      label: 'Edit',\n      onClick: () => editItem(),\n      variant: 'secondary'\n    },\n    {\n      label: 'Delete',\n      onClick: () => deleteItem(),\n      variant: 'outline',\n      disabled: !canDelete\n    }\n  ]}\n/>"
+			},
+			"props": {
+				"title": "Action Card",
+				"description": "Card with multiple action buttons",
+				"actions": [
+					{
+						"label": "View Details",
+						"variant": "primary"
+					},
+					{
+						"label": "Edit",
+						"variant": "secondary"
+					},
+					{
+						"label": "Delete",
+						"variant": "outline",
+						"disabled": true
+					}
+				]
+			}
+		},
+		{
+			"name": "Card with Badge",
+			"description": "Card featuring a status badge",
+			"category": "status",
+			"code": {
+				"react": "<Card \n  title='Status Card'\n  description='Card with status indicator'\n  badge={{\n    text: 'New',\n    variant: 'success',\n    position: 'top-right'\n  }}\n  variant='outlined'\n/>"
+			},
+			"props": {
+				"title": "Status Card",
+				"description": "Card with status indicator",
+				"badge": {
+					"text": "New",
+					"variant": "success",
+					"position": "top-right"
+				},
+				"variant": "outlined"
+			}
+		},
+		{
+			"name": "Horizontal Card Layout",
+			"description": "Card with side-by-side image and content",
+			"category": "layout",
+			"code": {
+				"react": "<Card \n  title='Horizontal Card'\n  description='Side-by-side layout with image'\n  image={{\n    src: '/avatar.jpg',\n    alt: 'User avatar',\n    position: 'left'\n  }}\n  padding='sm'\n  actions={[\n    { label: 'Contact', onClick: () => contact() }\n  ]}\n/>"
+			},
+			"props": {
+				"title": "Horizontal Card",
+				"description": "Side-by-side layout with image",
+				"image": {
+					"position": "left"
+				},
+				"padding": "sm"
+			},
+			"notes": "Horizontal layouts work best with smaller padding values"
+		},
+		{
+			"name": "Custom Content Card",
+			"description": "Card with custom slot-based content",
+			"category": "composition",
+			"code": {
+				"react": "<Card variant='filled' padding='lg'>\n  <div className='text-center'>\n    <h3 className='text-xl font-bold mb-4'>Custom Content</h3>\n    <p className='text-gray-600 mb-6'>This card uses children for custom layout</p>\n    <button className='bg-blue-600 text-white px-6 py-2 rounded'>Custom Action</button>\n  </div>\n</Card>"
+			},
+			"props": {
+				"variant": "filled",
+				"padding": "lg"
+			},
+			"notes": "Using children prop overrides default title/description layout"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Use semantic article/section elements for better content structure",
+				"Implement proper heading hierarchy when title is present",
+				"Ensure interactive cards have proper keyboard navigation",
+				"Apply Norwegian design tokens for government compliance",
+				"Use appropriate card variants based on content importance",
+				"Optimize image loading with proper alt text for accessibility"
+			],
+			"patterns": [
+				{
+					"pattern": "class-variance-authority (cva)",
+					"context": "React implementation",
+					"recommendation": "Use CVA for type-safe variant management with compound variants for interactive states"
+				},
+				{
+					"pattern": "semantic HTML structure",
+					"context": "All implementations",
+					"recommendation": "Use article for standalone content, section for grouped content, div for pure layout"
+				},
+				{
+					"pattern": "progressive enhancement",
+					"context": "Interactive cards",
+					"recommendation": "Ensure cards work without JavaScript, add interactivity as enhancement"
+				},
+				{
+					"pattern": "responsive image handling",
+					"context": "Cards with images",
+					"recommendation": "Use responsive images with appropriate aspect ratios and loading optimization"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "div without semantic meaning for content cards",
+					"reason": "Poor accessibility and SEO, lacks content structure",
+					"alternative": "Use article or section elements for better semantic meaning"
+				},
+				{
+					"pattern": "Interactive cards without keyboard support",
+					"reason": "Not accessible to keyboard users",
+					"alternative": "Implement proper focus management and Enter/Space activation"
+				},
+				{
+					"pattern": "Images without alt text",
+					"reason": "Fails accessibility requirements",
+					"alternative": "Always provide meaningful alt text for card images"
+				},
+				{
+					"pattern": "Actions outside card container",
+					"reason": "Breaks content association and accessibility",
+					"alternative": "Include actions within card structure with proper grouping"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "moderate-high",
+			"estimatedTokens": 2500
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"variant-showcase",
+				"composition-patterns"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with title and description",
+				"handles image positioning variants",
+				"applies variant classes correctly",
+				"applies padding classes correctly",
+				"interactive state management",
+				"click event handling",
+				"href navigation behavior",
+				"action buttons rendering and functionality",
+				"badge positioning and variants",
+				"accessibility attributes present",
+				"keyboard navigation support",
+				"semantic HTML structure",
+				"custom children content",
+				"slot-based composition",
+				"Norwegian compliance validation"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"card in responsive grid layouts",
+				"nested interactive elements handling",
+				"keyboard-only navigation through card content",
+				"screen reader content announcement",
+				"image loading and error states",
+				"action button integration with forms",
+				"Norwegian design system token usage",
+				"multi-language content display"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"colorContrast": true,
+			"imageHandling": true
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "4KB",
+				"gzipped": "1.5KB"
+			},
+			"renderTime": {
+				"initial": "<20ms",
+				"update": "<10ms"
+			},
+			"imageLoading": {
+				"lazy": true,
+				"responsive": true
+			}
+		},
+		"optimizations": [
+			"Efficient DOM structure with minimal nesting",
+			"CSS-only hover and focus transitions",
+			"Optimized class variance authority patterns",
+			"Lazy loading for card images",
+			"Memoized variant class generation",
+			"Tree-shakeable action button components"
+		]
+	}
 }

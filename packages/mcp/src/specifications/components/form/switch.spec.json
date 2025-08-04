@@ -1,810 +1,839 @@
 {
-  "metadata": {
-    "name": "Switch",
-    "version": "1.0.0",
-    "semanticVersion": "v5.1",
-    "category": "form",
-    "subcategory": "toggle-control",
-    "description": "Accessible toggle switch component for binary state control with Norwegian compliance, WCAG AAA accessibility, and comprehensive form integration. Provides clear on/off states with enhanced UX features.",
-    "keywords": ["switch", "toggle", "form", "control", "binary", "accessible", "norwegian", "controlled"],
-    "maintainer": {
-      "name": "Xala Form Team",
-      "email": "forms@xala.no",
-      "team": "Form Components"
-    },
-    "stability": "stable",
-    "createdAt": "2024-08-04T10:00:00Z",
-    "updatedAt": "2024-08-04T15:00:00Z"
-  },
-  "compliance": {
-    "i18n": {
-      "supported": true,
-      "defaultLocale": "nb-NO",
-      "supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
-      "textDirection": ["ltr", "rtl"]
-    },
-    "semantic": {
-      "htmlElements": ["button", "span", "label", "div"],
-      "ariaRoles": ["switch"],
-      "landmarks": false,
-      "headingStructure": false
-    },
-    "wcag": {
-      "level": "AAA",
-      "tested": true,
-      "guidelines": [
-        "1.3.1 Info and Relationships",
-        "1.4.3 Contrast (Minimum)",
-        "1.4.6 Contrast (Enhanced)",
-        "1.4.11 Non-text Contrast",
-        "2.1.1 Keyboard",
-        "2.4.6 Headings and Labels",
-        "2.5.5 Target Size",
-        "3.2.2 On Input",
-        "4.1.2 Name, Role, Value"
-      ],
-      "colorContrast": {
-        "normal": 7.5,
-        "large": 5.2,
-        "enhanced": 9.1
-      }
-    },
-    "ssr": {
-      "supported": true,
-      "hydrationSafe": true,
-      "staticGeneration": true
-    },
-    "norwegian": {
-      "nsmClassification": "OPEN",
-      "gdprCompliant": true,
-      "designSystem": {
-        "altinnCompliant": true,
-        "governmentApproved": true
-      },
-      "auditTrail": false
-    }
-  },
-  "props": {
-    "schema": {
-      "checked": {
-        "type": { "primitive": "boolean" },
-        "description": "Controlled component state - whether the switch is checked",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-checked",
-          "screenReaderText": "Switch is on/off"
-        },
-        "examples": [
-          {
-            "value": true,
-            "description": "Switch is enabled/on",
-            "context": "Controlled component"
-          },
-          {
-            "value": false,
-            "description": "Switch is disabled/off",
-            "context": "Controlled component"
-          }
-        ]
-      },
-      "defaultChecked": {
-        "type": { "primitive": "boolean" },
-        "description": "Default checked state for uncontrolled component",
-        "required": false,
-        "defaultValue": false,
-        "examples": [
-          {
-            "value": true,
-            "description": "Switch starts in checked state",
-            "context": "Uncontrolled component initialization"
-          }
-        ]
-      },
-      "onChange": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "checked",
-                "type": "boolean",
-                "required": true
-              },
-              {
-                "name": "event",
-                "type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when switch state changes",
-        "required": false,
-        "examples": [
-          {
-            "value": "(checked, event) => setEnabled(checked)",
-            "description": "Update state when switch changes",
-            "context": "State management"
-          }
-        ]
-      },
-      "disabled": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the switch is disabled",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-disabled",
-          "screenReaderText": "Switch is disabled"
-        }
-      },
-      "size": {
-        "type": {
-          "custom": "variant",
-          "values": ["sm", "md", "lg"]
-        },
-        "description": "Size variant of the switch",
-        "required": false,
-        "defaultValue": "md",
-        "examples": [
-          {
-            "value": "sm",
-            "description": "Small switch (24px height)",
-            "context": "Compact interfaces"
-          },
-          {
-            "value": "md",
-            "description": "Medium switch (32px height)",
-            "context": "Standard forms"
-          },
-          {
-            "value": "lg",
-            "description": "Large switch (40px height)",
-            "context": "Touch interfaces"
-          }
-        ]
-      },
-      "label": {
-        "type": { "primitive": "string" },
-        "description": "Label text for the switch",
-        "required": false,
-        "accessibility": {
-          "required": true,
-          "screenReaderText": "Switch label"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "switch.label.{fieldName}",
-          "context": "form-label"
-        },
-        "examples": [
-          {
-            "value": "Enable notifications",
-            "description": "Clear descriptive label",
-            "context": "Settings form"
-          }
-        ]
-      },
-      "labelPosition": {
-        "type": {
-          "custom": "variant",
-          "values": ["left", "right"]
-        },
-        "description": "Position of the label relative to the switch",
-        "required": false,
-        "defaultValue": "right",
-        "examples": [
-          {
-            "value": "left",
-            "description": "Label appears to the left of switch",
-            "context": "Form alignment requirements"
-          },
-          {
-            "value": "right",
-            "description": "Label appears to the right of switch",
-            "context": "Standard form layout"
-          }
-        ]
-      },
-      "color": {
-        "type": {
-          "custom": "variant",
-          "values": ["primary", "secondary", "success", "warning", "error"]
-        },
-        "description": "Color theme for the switch when checked",
-        "required": false,
-        "defaultValue": "primary",
-        "examples": [
-          {
-            "value": "success",
-            "description": "Green color for positive actions",
-            "context": "Enable/activate features"
-          },
-          {
-            "value": "error",
-            "description": "Red color for destructive actions",
-            "context": "Disable critical features"
-          }
-        ]
-      },
-      "required": {
-        "type": { "primitive": "boolean" },
-        "description": "Whether the switch is required for form submission",
-        "required": false,
-        "defaultValue": false,
-        "accessibility": {
-          "ariaAttribute": "aria-required",
-          "screenReaderText": "Switch is required"
-        }
-      },
-      "name": {
-        "type": { "primitive": "string" },
-        "description": "Name attribute for form integration",
-        "required": false,
-        "examples": [
-          {
-            "value": "emailNotifications",
-            "description": "Form field name",
-            "context": "Form data collection"
-          }
-        ]
-      },
-      "value": {
-        "type": { "primitive": "string" },
-        "description": "Value attribute for form integration",
-        "required": false,
-        "defaultValue": "on",
-        "examples": [
-          {
-            "value": "enabled",
-            "description": "Custom value when checked",
-            "context": "Form submission data"
-          }
-        ]
-      },
-      "description": {
-        "type": { "primitive": "string" },
-        "description": "Additional descriptive text for the switch",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby",
-          "screenReaderText": "Switch description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "switch.description.{fieldName}",
-          "context": "form-hint"
-        }
-      },
-      "className": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z0-9\\s\\-_]*$"
-          }
-        },
-        "description": "Additional CSS classes to apply to the switch container",
-        "required": false
-      },
-      "testId": {
-        "type": {
-          "primitive": "string",
-          "constraints": {
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
-          }
-        },
-        "description": "Test identifier for automated testing",
-        "required": false
-      },
-      "ariaLabel": {
-        "type": { "primitive": "string" },
-        "description": "Accessible label when no visible label is present",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-label",
-          "screenReaderText": "Switch description"
-        },
-        "i18n": {
-          "translatable": true,
-          "key": "aria.label.switch.{fieldName}",
-          "context": "accessibility"
-        }
-      },
-      "ariaDescribedBy": {
-        "type": { "primitive": "string" },
-        "description": "ID of elements that describe the switch",
-        "required": false,
-        "accessibility": {
-          "ariaAttribute": "aria-describedby"
-        }
-      },
-      "onFocus": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when switch receives focus",
-        "required": false
-      },
-      "onBlur": {
-        "type": {
-          "complex": "function",
-          "signature": {
-            "parameters": [
-              {
-                "name": "event",
-                "type": "FocusEvent<HTMLButtonElement>",
-                "required": true
-              }
-            ],
-            "returnType": "void"
-          }
-        },
-        "description": "Callback fired when switch loses focus",
-        "required": false
-      }
-    },
-    "groups": {
-      "required": [],
-      "optional": [
-        "checked", "defaultChecked", "onChange", "disabled", "size", "label", "labelPosition",
-        "color", "required", "name", "value", "description", "className", "testId",
-        "ariaLabel", "ariaDescribedBy", "onFocus", "onBlur"
-      ],
-      "deprecated": []
-    },
-    "composition": {
-      "children": {
-        "supported": false
-      },
-      "slots": {
-        "label": {
-          "required": false,
-          "types": ["element", "string"],
-          "description": "Custom label content"
-        },
-        "description": {
-          "required": false,
-          "types": ["element", "string"],
-          "description": "Custom description content"
-        }
-      }
-    }
-  },
-  "variants": {
-    "simple": {
-      "size": {
-        "values": {
-          "sm": "h-6 w-10",
-          "md": "h-8 w-14",
-          "lg": "h-10 w-18"
-        },
-        "defaultValue": "md"
-      },
-      "color": {
-        "values": {
-          "primary": "bg-blue-600 checked:bg-blue-600",
-          "secondary": "bg-gray-600 checked:bg-gray-600",
-          "success": "bg-green-600 checked:bg-green-600",
-          "warning": "bg-yellow-600 checked:bg-yellow-600",
-          "error": "bg-red-600 checked:bg-red-600"
-        },
-        "defaultValue": "primary"
-      },
-      "state": {
-        "values": {
-          "normal": "",
-          "disabled": "opacity-50 cursor-not-allowed",
-          "focused": "ring-2 ring-blue-500 ring-offset-2"
-        },
-        "defaultValue": "normal"
-      }
-    },
-    "compound": [
-      {
-        "conditions": {
-          "size": "sm",
-          "labelPosition": "left"
-        },
-        "className": "gap-2 text-sm",
-        "description": "Small switch with left label"
-      },
-      {
-        "conditions": {
-          "size": "md",
-          "labelPosition": "left"
-        },
-        "className": "gap-3 text-base",
-        "description": "Medium switch with left label"
-      },
-      {
-        "conditions": {
-          "size": "lg",
-          "labelPosition": "left"
-        },
-        "className": "gap-4 text-lg",
-        "description": "Large switch with left label"
-      },
-      {
-        "conditions": {
-          "color": "error",
-          "checked": true
-        },
-        "className": "bg-red-600 hover:bg-red-700",
-        "description": "Error color when checked"
-      },
-      {
-        "conditions": {
-          "color": "success",
-          "checked": true
-        },
-        "className": "bg-green-600 hover:bg-green-700",
-        "description": "Success color when checked"
-      },
-      {
-        "conditions": {
-          "disabled": true
-        },
-        "className": "pointer-events-none opacity-50",
-        "description": "Disabled state styling"
-      }
-    ]
-  },
-  "accessibility": {
-    "role": {
-      "primary": "switch"
-    },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        {
-          "key": "Space",
-          "action": "toggle",
-          "context": "Toggle switch state"
-        },
-        {
-          "key": "Enter",
-          "action": "toggle",
-          "context": "Toggle switch state"
-        },
-        {
-          "key": "Tab",
-          "action": "navigate",
-          "context": "Move focus to next element"
-        },
-        {
-          "key": "Shift+Tab",
-          "action": "navigate",
-          "context": "Move focus to previous element"
-        }
-      ],
-      "focusManagement": {
-        "trapFocus": false,
-        "restoreFocus": false,
-        "skipLinks": false
-      }
-    },
-    "screenReader": {
-      "announcements": [
-        {
-          "trigger": "toggle",
-          "message": "Switch {label} is now {checked ? 'on' : 'off'}",
-          "priority": "assertive"
-        },
-        {
-          "trigger": "focus",
-          "message": "Switch {label}, {checked ? 'on' : 'off'}",
-          "priority": "polite"
-        },
-        {
-          "trigger": "required",
-          "message": "Required switch {label}",
-          "priority": "polite"
-        }
-      ],
-      "labels": {
-        "required": ["label", "aria-label"],
-        "descriptions": {
-          "on": "On",
-          "off": "Off",
-          "required": "Required",
-          "disabled": "Disabled",
-          "toggle": "Toggle switch"
-        }
-      }
-    },
-    "testing": {
-      "automated": [
-        "switch-label-association",
-        "keyboard-navigation",
-        "state-announcements",
-        "focus-management",
-        "color-contrast-aaa",
-        "target-size-minimum",
-        "role-switch-implementation"
-      ],
-      "manual": [
-        "screen-reader-experience",
-        "keyboard-only-interaction",
-        "high-contrast-mode",
-        "zoom-250-percent",
-        "voice-control-compatibility",
-        "touch-target-accessibility"
-      ]
-    }
-  },
-  "platforms": {
-    "supported": ["react", "vue", "angular", "svelte"],
-    "primary": "react",
-    "implementations": {
-      "react": {
-        "templatePath": "./templates/react/switch.tsx",
-        "dependencies": ["react", "clsx"],
-        "imports": [
-          {
-            "module": "react",
-            "imports": ["forwardRef", "useState", "useCallback", "useId"]
-          },
-          {
-            "module": "clsx",
-            "imports": ["clsx"]
-          }
-        ]
-      },
-      "vue": {
-        "templatePath": "./templates/vue/switch.vue",
-        "dependencies": ["vue"]
-      },
-      "angular": {
-        "templatePath": "./templates/angular/switch.component.ts",
-        "dependencies": ["@angular/core", "@angular/forms"]
-      },
-      "svelte": {
-        "templatePath": "./templates/svelte/switch.svelte",
-        "dependencies": ["svelte"]
-      }
-    }
-  },
-  "examples": [
-    {
-      "name": "Basic Switch",
-      "description": "Simple toggle switch with label",
-      "category": "basic",
-      "code": {
-        "react": "<Switch label='Enable notifications' defaultChecked={false} />",
-        "vue": "<Switch label='Enable notifications' :defaultChecked='false' />",
-        "angular": "<xala-switch label='Enable notifications' [defaultChecked]='false'></xala-switch>",
-        "svelte": "<Switch label='Enable notifications' defaultChecked={false} />"
-      },
-      "props": {
-        "label": "Enable notifications",
-        "defaultChecked": false
-      }
-    },
-    {
-      "name": "Controlled Switch",
-      "description": "Switch with controlled state management",
-      "category": "controlled",
-      "code": {
-        "react": "<Switch label='Dark mode' checked={isDarkMode} onChange={(checked) => setIsDarkMode(checked)} />"
-      },
-      "props": {
-        "label": "Dark mode",
-        "checked": true,
-        "onChange": "(checked) => setIsDarkMode(checked)"
-      }
-    },
-    {
-      "name": "Switch with Description",
-      "description": "Switch with additional descriptive text",
-      "category": "enhanced",
-      "code": {
-        "react": "<Switch label='Email notifications' description='Receive updates about your account activity' defaultChecked={true} />"
-      },
-      "props": {
-        "label": "Email notifications",
-        "description": "Receive updates about your account activity",
-        "defaultChecked": true
-      }
-    },
-    {
-      "name": "Large Success Switch",
-      "description": "Large switch with success color theme",
-      "category": "styling",
-      "code": {
-        "react": "<Switch label='Feature enabled' size='lg' color='success' defaultChecked={true} />"
-      },
-      "props": {
-        "label": "Feature enabled",
-        "size": "lg",
-        "color": "success",
-        "defaultChecked": true
-      }
-    },
-    {
-      "name": "Required Switch with Left Label",
-      "description": "Required switch for form submission with label on left",
-      "category": "form",
-      "code": {
-        "react": "<Switch label='Accept terms and conditions' labelPosition='left' required name='acceptTerms' />"
-      },
-      "props": {
-        "label": "Accept terms and conditions",
-        "labelPosition": "left",
-        "required": true,
-        "name": "acceptTerms"
-      }
-    },
-    {
-      "name": "Disabled Switch",
-      "description": "Switch in disabled state",
-      "category": "state",
-      "code": {
-        "react": "<Switch label='Premium feature' disabled defaultChecked={false} description='Upgrade to enable this feature' />"
-      },
-      "props": {
-        "label": "Premium feature",
-        "disabled": true,
-        "defaultChecked": false,
-        "description": "Upgrade to enable this feature"
-      }
-    },
-    {
-      "name": "Error State Switch",
-      "description": "Switch with error color for critical settings",
-      "category": "validation",
-      "code": {
-        "react": "<Switch label='Delete account on inactivity' color='error' description='This action cannot be undone' />"
-      },
-      "props": {
-        "label": "Delete account on inactivity",
-        "color": "error",
-        "description": "This action cannot be undone"
-      }
-    },
-    {
-      "name": "Form Integration Switch",
-      "description": "Switch integrated with form data",
-      "category": "form",
-      "code": {
-        "react": "<Switch label='Marketing emails' name='marketingConsent' value='yes' onChange={(checked) => handleConsentChange('marketing', checked)} />"
-      },
-      "props": {
-        "label": "Marketing emails",
-        "name": "marketingConsent",
-        "value": "yes",
-        "onChange": "(checked) => handleConsentChange('marketing', checked)"
-      },
-      "notes": "Switch for GDPR consent management"
-    }
-  ],
-  "ai": {
-    "optimization": {
-      "hints": [
-        "Always provide accessible labels for switches",
-        "Use appropriate ARIA attributes for switch role",
-        "Consider Norwegian GDPR requirements for consent switches",
-        "Ensure minimum 44px touch target size for mobile",
-        "Use semantic colors that convey meaning clearly"
-      ],
-      "patterns": [
-        {
-          "pattern": "controlled component",
-          "context": "React implementation",
-          "recommendation": "Use controlled components with checked and onChange props"
-        },
-        {
-          "pattern": "form integration",
-          "context": "Form data collection",
-          "recommendation": "Include name and value props for proper form submission"
-        },
-        {
-          "pattern": "accessibility",
-          "context": "Screen readers",
-          "recommendation": "Always provide labels and use switch role with aria-checked"
-        }
-      ],
-      "antiPatterns": [
-        {
-          "pattern": "checkbox role for switch",
-          "reason": "Semantically incorrect and confusing for users",
-          "alternative": "Use proper switch role with aria-checked attribute"
-        },
-        {
-          "pattern": "missing toggle feedback",
-          "reason": "Users don't know if action was successful",
-          "alternative": "Provide visual and screen reader feedback on state changes"
-        },
-        {
-          "pattern": "insufficient color contrast",
-          "reason": "Poor visibility and accessibility",
-          "alternative": "Ensure AAA contrast ratios for all color combinations"
-        },
-        {
-          "pattern": "too small touch targets",
-          "reason": "Difficult to use on mobile devices",
-          "alternative": "Ensure minimum 44px touch target size"
-        }
-      ]
-    },
-    "generation": {
-      "priority": "high",
-      "complexity": "medium",
-      "estimatedTokens": 1800
-    },
-    "documentation": {
-      "autoGenerate": true,
-      "templates": ["api-reference", "usage-examples", "accessibility-guide", "form-integration-guide"]
-    }
-  },
-  "testing": {
-    "unit": {
-      "required": [
-        "renders with default props",
-        "handles controlled state changes",
-        "handles uncontrolled state changes",
-        "responds to click events",
-        "responds to keyboard events (Space, Enter)",
-        "manages focus states correctly",
-        "displays labels and descriptions",
-        "handles disabled state",
-        "applies size variants correctly",
-        "applies color variants correctly",
-        "handles label positioning",
-        "fires event callbacks with correct parameters",
-        "accessibility attributes (role, aria-checked, aria-label)",
-        "screen reader announcements",
-        "form integration (name, value attributes)"
-      ],
-      "coverage": {
-        "minimum": 95
-      }
-    },
-    "integration": {
-      "scenarios": [
-        "form integration and data submission",
-        "keyboard-only interaction workflow",
-        "screen reader switch interaction",
-        "touch device interaction",
-        "state synchronization in controlled mode",
-        "GDPR consent management integration",
-        "Norwegian locale text rendering",
-        "high contrast mode appearance"
-      ]
-    },
-    "visual": {
-      "regression": true,
-      "responsive": true,
-      "themes": ["light", "dark", "high-contrast"]
-    }
-  },
-  "performance": {
-    "metrics": {
-      "bundleSize": {
-        "max": "2KB",
-        "gzipped": "0.8KB"
-      },
-      "renderTime": {
-        "initial": "<3ms",
-        "update": "<1ms"
-      }
-    },
-    "optimizations": [
-      "Minimal DOM structure for fast rendering",
-      "Optimized event handlers with useCallback",
-      "CSS transitions for smooth state changes",
-      "Memoized computed styles",
-      "Efficient focus management"
-    ]
-  }
+	"metadata": {
+		"name": "Switch",
+		"version": "1.0.0",
+		"semanticVersion": "v5.1",
+		"category": "form",
+		"subcategory": "toggle-control",
+		"description": "Accessible toggle switch component for binary state control with Norwegian compliance, WCAG AAA accessibility, and comprehensive form integration. Provides clear on/off states with enhanced UX features.",
+		"keywords": [
+			"switch",
+			"toggle",
+			"form",
+			"control",
+			"binary",
+			"accessible",
+			"norwegian",
+			"controlled"
+		],
+		"maintainer": {
+			"name": "Xala Form Team",
+			"email": "forms@xala.no",
+			"team": "Form Components"
+		},
+		"stability": "stable",
+		"createdAt": "2024-08-04T10:00:00Z",
+		"updatedAt": "2024-08-04T15:00:00Z"
+	},
+	"compliance": {
+		"i18n": {
+			"supported": true,
+			"defaultLocale": "nb-NO",
+			"supportedLocales": ["nb-NO", "en-US", "fr-FR", "ar-SA"],
+			"textDirection": ["ltr", "rtl"]
+		},
+		"semantic": {
+			"htmlElements": ["button", "span", "label", "div"],
+			"ariaRoles": ["switch"],
+			"landmarks": false,
+			"headingStructure": false
+		},
+		"wcag": {
+			"level": "AAA",
+			"tested": true,
+			"guidelines": [
+				"1.3.1 Info and Relationships",
+				"1.4.3 Contrast (Minimum)",
+				"1.4.6 Contrast (Enhanced)",
+				"1.4.11 Non-text Contrast",
+				"2.1.1 Keyboard",
+				"2.4.6 Headings and Labels",
+				"2.5.5 Target Size",
+				"3.2.2 On Input",
+				"4.1.2 Name, Role, Value"
+			],
+			"colorContrast": {
+				"normal": 7.5,
+				"large": 5.2,
+				"enhanced": 9.1
+			}
+		},
+		"ssr": {
+			"supported": true,
+			"hydrationSafe": true,
+			"staticGeneration": true
+		},
+		"norwegian": {
+			"nsmClassification": "OPEN",
+			"gdprCompliant": true,
+			"designSystem": {
+				"altinnCompliant": true,
+				"governmentApproved": true
+			},
+			"auditTrail": false
+		}
+	},
+	"props": {
+		"schema": {
+			"checked": {
+				"type": { "primitive": "boolean" },
+				"description": "Controlled component state - whether the switch is checked",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-checked",
+					"screenReaderText": "Switch is on/off"
+				},
+				"examples": [
+					{
+						"value": true,
+						"description": "Switch is enabled/on",
+						"context": "Controlled component"
+					},
+					{
+						"value": false,
+						"description": "Switch is disabled/off",
+						"context": "Controlled component"
+					}
+				]
+			},
+			"defaultChecked": {
+				"type": { "primitive": "boolean" },
+				"description": "Default checked state for uncontrolled component",
+				"required": false,
+				"defaultValue": false,
+				"examples": [
+					{
+						"value": true,
+						"description": "Switch starts in checked state",
+						"context": "Uncontrolled component initialization"
+					}
+				]
+			},
+			"onChange": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "checked",
+								"type": "boolean",
+								"required": true
+							},
+							{
+								"name": "event",
+								"type": "MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when switch state changes",
+				"required": false,
+				"examples": [
+					{
+						"value": "(checked, event) => setEnabled(checked)",
+						"description": "Update state when switch changes",
+						"context": "State management"
+					}
+				]
+			},
+			"disabled": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the switch is disabled",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-disabled",
+					"screenReaderText": "Switch is disabled"
+				}
+			},
+			"size": {
+				"type": {
+					"custom": "variant",
+					"values": ["sm", "md", "lg"]
+				},
+				"description": "Size variant of the switch",
+				"required": false,
+				"defaultValue": "md",
+				"examples": [
+					{
+						"value": "sm",
+						"description": "Small switch (24px height)",
+						"context": "Compact interfaces"
+					},
+					{
+						"value": "md",
+						"description": "Medium switch (32px height)",
+						"context": "Standard forms"
+					},
+					{
+						"value": "lg",
+						"description": "Large switch (40px height)",
+						"context": "Touch interfaces"
+					}
+				]
+			},
+			"label": {
+				"type": { "primitive": "string" },
+				"description": "Label text for the switch",
+				"required": false,
+				"accessibility": {
+					"required": true,
+					"screenReaderText": "Switch label"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "switch.label.{fieldName}",
+					"context": "form-label"
+				},
+				"examples": [
+					{
+						"value": "Enable notifications",
+						"description": "Clear descriptive label",
+						"context": "Settings form"
+					}
+				]
+			},
+			"labelPosition": {
+				"type": {
+					"custom": "variant",
+					"values": ["left", "right"]
+				},
+				"description": "Position of the label relative to the switch",
+				"required": false,
+				"defaultValue": "right",
+				"examples": [
+					{
+						"value": "left",
+						"description": "Label appears to the left of switch",
+						"context": "Form alignment requirements"
+					},
+					{
+						"value": "right",
+						"description": "Label appears to the right of switch",
+						"context": "Standard form layout"
+					}
+				]
+			},
+			"color": {
+				"type": {
+					"custom": "variant",
+					"values": ["primary", "secondary", "success", "warning", "error"]
+				},
+				"description": "Color theme for the switch when checked",
+				"required": false,
+				"defaultValue": "primary",
+				"examples": [
+					{
+						"value": "success",
+						"description": "Green color for positive actions",
+						"context": "Enable/activate features"
+					},
+					{
+						"value": "error",
+						"description": "Red color for destructive actions",
+						"context": "Disable critical features"
+					}
+				]
+			},
+			"required": {
+				"type": { "primitive": "boolean" },
+				"description": "Whether the switch is required for form submission",
+				"required": false,
+				"defaultValue": false,
+				"accessibility": {
+					"ariaAttribute": "aria-required",
+					"screenReaderText": "Switch is required"
+				}
+			},
+			"name": {
+				"type": { "primitive": "string" },
+				"description": "Name attribute for form integration",
+				"required": false,
+				"examples": [
+					{
+						"value": "emailNotifications",
+						"description": "Form field name",
+						"context": "Form data collection"
+					}
+				]
+			},
+			"value": {
+				"type": { "primitive": "string" },
+				"description": "Value attribute for form integration",
+				"required": false,
+				"defaultValue": "on",
+				"examples": [
+					{
+						"value": "enabled",
+						"description": "Custom value when checked",
+						"context": "Form submission data"
+					}
+				]
+			},
+			"description": {
+				"type": { "primitive": "string" },
+				"description": "Additional descriptive text for the switch",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby",
+					"screenReaderText": "Switch description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "switch.description.{fieldName}",
+					"context": "form-hint"
+				}
+			},
+			"className": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z0-9\\s\\-_]*$"
+					}
+				},
+				"description": "Additional CSS classes to apply to the switch container",
+				"required": false
+			},
+			"testId": {
+				"type": {
+					"primitive": "string",
+					"constraints": {
+						"pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$"
+					}
+				},
+				"description": "Test identifier for automated testing",
+				"required": false
+			},
+			"ariaLabel": {
+				"type": { "primitive": "string" },
+				"description": "Accessible label when no visible label is present",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-label",
+					"screenReaderText": "Switch description"
+				},
+				"i18n": {
+					"translatable": true,
+					"key": "aria.label.switch.{fieldName}",
+					"context": "accessibility"
+				}
+			},
+			"ariaDescribedBy": {
+				"type": { "primitive": "string" },
+				"description": "ID of elements that describe the switch",
+				"required": false,
+				"accessibility": {
+					"ariaAttribute": "aria-describedby"
+				}
+			},
+			"onFocus": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when switch receives focus",
+				"required": false
+			},
+			"onBlur": {
+				"type": {
+					"complex": "function",
+					"signature": {
+						"parameters": [
+							{
+								"name": "event",
+								"type": "FocusEvent<HTMLButtonElement>",
+								"required": true
+							}
+						],
+						"returnType": "void"
+					}
+				},
+				"description": "Callback fired when switch loses focus",
+				"required": false
+			}
+		},
+		"groups": {
+			"required": [],
+			"optional": [
+				"checked",
+				"defaultChecked",
+				"onChange",
+				"disabled",
+				"size",
+				"label",
+				"labelPosition",
+				"color",
+				"required",
+				"name",
+				"value",
+				"description",
+				"className",
+				"testId",
+				"ariaLabel",
+				"ariaDescribedBy",
+				"onFocus",
+				"onBlur"
+			],
+			"deprecated": []
+		},
+		"composition": {
+			"children": {
+				"supported": false
+			},
+			"slots": {
+				"label": {
+					"required": false,
+					"types": ["element", "string"],
+					"description": "Custom label content"
+				},
+				"description": {
+					"required": false,
+					"types": ["element", "string"],
+					"description": "Custom description content"
+				}
+			}
+		}
+	},
+	"variants": {
+		"simple": {
+			"size": {
+				"values": {
+					"sm": "h-6 w-10",
+					"md": "h-8 w-14",
+					"lg": "h-10 w-18"
+				},
+				"defaultValue": "md"
+			},
+			"color": {
+				"values": {
+					"primary": "bg-blue-600 checked:bg-blue-600",
+					"secondary": "bg-gray-600 checked:bg-gray-600",
+					"success": "bg-green-600 checked:bg-green-600",
+					"warning": "bg-yellow-600 checked:bg-yellow-600",
+					"error": "bg-red-600 checked:bg-red-600"
+				},
+				"defaultValue": "primary"
+			},
+			"state": {
+				"values": {
+					"normal": "",
+					"disabled": "opacity-50 cursor-not-allowed",
+					"focused": "ring-2 ring-blue-500 ring-offset-2"
+				},
+				"defaultValue": "normal"
+			}
+		},
+		"compound": [
+			{
+				"conditions": {
+					"size": "sm",
+					"labelPosition": "left"
+				},
+				"className": "gap-2 text-sm",
+				"description": "Small switch with left label"
+			},
+			{
+				"conditions": {
+					"size": "md",
+					"labelPosition": "left"
+				},
+				"className": "gap-3 text-base",
+				"description": "Medium switch with left label"
+			},
+			{
+				"conditions": {
+					"size": "lg",
+					"labelPosition": "left"
+				},
+				"className": "gap-4 text-lg",
+				"description": "Large switch with left label"
+			},
+			{
+				"conditions": {
+					"color": "error",
+					"checked": true
+				},
+				"className": "bg-red-600 hover:bg-red-700",
+				"description": "Error color when checked"
+			},
+			{
+				"conditions": {
+					"color": "success",
+					"checked": true
+				},
+				"className": "bg-green-600 hover:bg-green-700",
+				"description": "Success color when checked"
+			},
+			{
+				"conditions": {
+					"disabled": true
+				},
+				"className": "pointer-events-none opacity-50",
+				"description": "Disabled state styling"
+			}
+		]
+	},
+	"accessibility": {
+		"role": {
+			"primary": "switch"
+		},
+		"keyboardNavigation": {
+			"supported": true,
+			"patterns": [
+				{
+					"key": "Space",
+					"action": "toggle",
+					"context": "Toggle switch state"
+				},
+				{
+					"key": "Enter",
+					"action": "toggle",
+					"context": "Toggle switch state"
+				},
+				{
+					"key": "Tab",
+					"action": "navigate",
+					"context": "Move focus to next element"
+				},
+				{
+					"key": "Shift+Tab",
+					"action": "navigate",
+					"context": "Move focus to previous element"
+				}
+			],
+			"focusManagement": {
+				"trapFocus": false,
+				"restoreFocus": false,
+				"skipLinks": false
+			}
+		},
+		"screenReader": {
+			"announcements": [
+				{
+					"trigger": "toggle",
+					"message": "Switch {label} is now {checked ? 'on' : 'off'}",
+					"priority": "assertive"
+				},
+				{
+					"trigger": "focus",
+					"message": "Switch {label}, {checked ? 'on' : 'off'}",
+					"priority": "polite"
+				},
+				{
+					"trigger": "required",
+					"message": "Required switch {label}",
+					"priority": "polite"
+				}
+			],
+			"labels": {
+				"required": ["label", "aria-label"],
+				"descriptions": {
+					"on": "On",
+					"off": "Off",
+					"required": "Required",
+					"disabled": "Disabled",
+					"toggle": "Toggle switch"
+				}
+			}
+		},
+		"testing": {
+			"automated": [
+				"switch-label-association",
+				"keyboard-navigation",
+				"state-announcements",
+				"focus-management",
+				"color-contrast-aaa",
+				"target-size-minimum",
+				"role-switch-implementation"
+			],
+			"manual": [
+				"screen-reader-experience",
+				"keyboard-only-interaction",
+				"high-contrast-mode",
+				"zoom-250-percent",
+				"voice-control-compatibility",
+				"touch-target-accessibility"
+			]
+		}
+	},
+	"platforms": {
+		"supported": ["react", "vue", "angular", "svelte"],
+		"primary": "react",
+		"implementations": {
+			"react": {
+				"templatePath": "./templates/react/switch.tsx",
+				"dependencies": ["react", "clsx"],
+				"imports": [
+					{
+						"module": "react",
+						"imports": ["forwardRef", "useState", "useCallback", "useId"]
+					},
+					{
+						"module": "clsx",
+						"imports": ["clsx"]
+					}
+				]
+			},
+			"vue": {
+				"templatePath": "./templates/vue/switch.vue",
+				"dependencies": ["vue"]
+			},
+			"angular": {
+				"templatePath": "./templates/angular/switch.component.ts",
+				"dependencies": ["@angular/core", "@angular/forms"]
+			},
+			"svelte": {
+				"templatePath": "./templates/svelte/switch.svelte",
+				"dependencies": ["svelte"]
+			}
+		}
+	},
+	"examples": [
+		{
+			"name": "Basic Switch",
+			"description": "Simple toggle switch with label",
+			"category": "basic",
+			"code": {
+				"react": "<Switch label='Enable notifications' defaultChecked={false} />",
+				"vue": "<Switch label='Enable notifications' :defaultChecked='false' />",
+				"angular": "<xala-switch label='Enable notifications' [defaultChecked]='false'></xala-switch>",
+				"svelte": "<Switch label='Enable notifications' defaultChecked={false} />"
+			},
+			"props": {
+				"label": "Enable notifications",
+				"defaultChecked": false
+			}
+		},
+		{
+			"name": "Controlled Switch",
+			"description": "Switch with controlled state management",
+			"category": "controlled",
+			"code": {
+				"react": "<Switch label='Dark mode' checked={isDarkMode} onChange={(checked) => setIsDarkMode(checked)} />"
+			},
+			"props": {
+				"label": "Dark mode",
+				"checked": true,
+				"onChange": "(checked) => setIsDarkMode(checked)"
+			}
+		},
+		{
+			"name": "Switch with Description",
+			"description": "Switch with additional descriptive text",
+			"category": "enhanced",
+			"code": {
+				"react": "<Switch label='Email notifications' description='Receive updates about your account activity' defaultChecked={true} />"
+			},
+			"props": {
+				"label": "Email notifications",
+				"description": "Receive updates about your account activity",
+				"defaultChecked": true
+			}
+		},
+		{
+			"name": "Large Success Switch",
+			"description": "Large switch with success color theme",
+			"category": "styling",
+			"code": {
+				"react": "<Switch label='Feature enabled' size='lg' color='success' defaultChecked={true} />"
+			},
+			"props": {
+				"label": "Feature enabled",
+				"size": "lg",
+				"color": "success",
+				"defaultChecked": true
+			}
+		},
+		{
+			"name": "Required Switch with Left Label",
+			"description": "Required switch for form submission with label on left",
+			"category": "form",
+			"code": {
+				"react": "<Switch label='Accept terms and conditions' labelPosition='left' required name='acceptTerms' />"
+			},
+			"props": {
+				"label": "Accept terms and conditions",
+				"labelPosition": "left",
+				"required": true,
+				"name": "acceptTerms"
+			}
+		},
+		{
+			"name": "Disabled Switch",
+			"description": "Switch in disabled state",
+			"category": "state",
+			"code": {
+				"react": "<Switch label='Premium feature' disabled defaultChecked={false} description='Upgrade to enable this feature' />"
+			},
+			"props": {
+				"label": "Premium feature",
+				"disabled": true,
+				"defaultChecked": false,
+				"description": "Upgrade to enable this feature"
+			}
+		},
+		{
+			"name": "Error State Switch",
+			"description": "Switch with error color for critical settings",
+			"category": "validation",
+			"code": {
+				"react": "<Switch label='Delete account on inactivity' color='error' description='This action cannot be undone' />"
+			},
+			"props": {
+				"label": "Delete account on inactivity",
+				"color": "error",
+				"description": "This action cannot be undone"
+			}
+		},
+		{
+			"name": "Form Integration Switch",
+			"description": "Switch integrated with form data",
+			"category": "form",
+			"code": {
+				"react": "<Switch label='Marketing emails' name='marketingConsent' value='yes' onChange={(checked) => handleConsentChange('marketing', checked)} />"
+			},
+			"props": {
+				"label": "Marketing emails",
+				"name": "marketingConsent",
+				"value": "yes",
+				"onChange": "(checked) => handleConsentChange('marketing', checked)"
+			},
+			"notes": "Switch for GDPR consent management"
+		}
+	],
+	"ai": {
+		"optimization": {
+			"hints": [
+				"Always provide accessible labels for switches",
+				"Use appropriate ARIA attributes for switch role",
+				"Consider Norwegian GDPR requirements for consent switches",
+				"Ensure minimum 44px touch target size for mobile",
+				"Use semantic colors that convey meaning clearly"
+			],
+			"patterns": [
+				{
+					"pattern": "controlled component",
+					"context": "React implementation",
+					"recommendation": "Use controlled components with checked and onChange props"
+				},
+				{
+					"pattern": "form integration",
+					"context": "Form data collection",
+					"recommendation": "Include name and value props for proper form submission"
+				},
+				{
+					"pattern": "accessibility",
+					"context": "Screen readers",
+					"recommendation": "Always provide labels and use switch role with aria-checked"
+				}
+			],
+			"antiPatterns": [
+				{
+					"pattern": "checkbox role for switch",
+					"reason": "Semantically incorrect and confusing for users",
+					"alternative": "Use proper switch role with aria-checked attribute"
+				},
+				{
+					"pattern": "missing toggle feedback",
+					"reason": "Users don't know if action was successful",
+					"alternative": "Provide visual and screen reader feedback on state changes"
+				},
+				{
+					"pattern": "insufficient color contrast",
+					"reason": "Poor visibility and accessibility",
+					"alternative": "Ensure AAA contrast ratios for all color combinations"
+				},
+				{
+					"pattern": "too small touch targets",
+					"reason": "Difficult to use on mobile devices",
+					"alternative": "Ensure minimum 44px touch target size"
+				}
+			]
+		},
+		"generation": {
+			"priority": "high",
+			"complexity": "medium",
+			"estimatedTokens": 1800
+		},
+		"documentation": {
+			"autoGenerate": true,
+			"templates": [
+				"api-reference",
+				"usage-examples",
+				"accessibility-guide",
+				"form-integration-guide"
+			]
+		}
+	},
+	"testing": {
+		"unit": {
+			"required": [
+				"renders with default props",
+				"handles controlled state changes",
+				"handles uncontrolled state changes",
+				"responds to click events",
+				"responds to keyboard events (Space, Enter)",
+				"manages focus states correctly",
+				"displays labels and descriptions",
+				"handles disabled state",
+				"applies size variants correctly",
+				"applies color variants correctly",
+				"handles label positioning",
+				"fires event callbacks with correct parameters",
+				"accessibility attributes (role, aria-checked, aria-label)",
+				"screen reader announcements",
+				"form integration (name, value attributes)"
+			],
+			"coverage": {
+				"minimum": 95
+			}
+		},
+		"integration": {
+			"scenarios": [
+				"form integration and data submission",
+				"keyboard-only interaction workflow",
+				"screen reader switch interaction",
+				"touch device interaction",
+				"state synchronization in controlled mode",
+				"GDPR consent management integration",
+				"Norwegian locale text rendering",
+				"high contrast mode appearance"
+			]
+		},
+		"visual": {
+			"regression": true,
+			"responsive": true,
+			"themes": ["light", "dark", "high-contrast"]
+		}
+	},
+	"performance": {
+		"metrics": {
+			"bundleSize": {
+				"max": "2KB",
+				"gzipped": "0.8KB"
+			},
+			"renderTime": {
+				"initial": "<3ms",
+				"update": "<1ms"
+			}
+		},
+		"optimizations": [
+			"Minimal DOM structure for fast rendering",
+			"Optimized event handlers with useCallback",
+			"CSS transitions for smooth state changes",
+			"Memoized computed styles",
+			"Efficient focus management"
+		]
+	}
 }

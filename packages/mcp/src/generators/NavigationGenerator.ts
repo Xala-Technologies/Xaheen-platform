@@ -2,13 +2,13 @@
  * Navigation Generator for Xala UI System
  */
 
-import type { ComponentConfig } from '../types/index.js';
+import type { ComponentConfig } from "../types/index.js";
 
 export class NavigationGenerator {
-  public generateNavigation(config: ComponentConfig): string {
-    const { name } = config;
-    
-    return `
+	public generateNavigation(config: ComponentConfig): string {
+		const { name } = config;
+
+		return `
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -56,21 +56,21 @@ export function ${name}({ items = [], onItemClick }: ${name}Props): JSX.Element 
     </Navigation>
   );
 }`;
-  }
+	}
 
-  /**
-   * Generate navigation using WebNavbar, Sidebar, Tabs, or Breadcrumb specifications (async version for MCP tools)
-   */
-  public async generateAdvancedNavigation(config: {
-    type: 'WebNavbar' | 'Sidebar' | 'Tabs' | 'Breadcrumb' | 'Pagination';
-    name: string;
-    items: any[];
-    variant?: string;
-    norwegianLocale: boolean;
-  }): Promise<string> {
-    const { type, name, items, variant, norwegianLocale } = config;
-    
-    const navCode = `
+	/**
+	 * Generate navigation using WebNavbar, Sidebar, Tabs, or Breadcrumb specifications (async version for MCP tools)
+	 */
+	public async generateAdvancedNavigation(config: {
+		type: "WebNavbar" | "Sidebar" | "Tabs" | "Breadcrumb" | "Pagination";
+		name: string;
+		items: any[];
+		variant?: string;
+		norwegianLocale: boolean;
+	}): Promise<string> {
+		const { type, name, items, variant, norwegianLocale } = config;
+
+		const navCode = `
 /**
  * Generated Navigation: ${name}
  * Type: ${type}
@@ -106,7 +106,7 @@ export const ${name}: React.FC<${name}Props> = ({
   return (
     <${type}
       className={className}
-      ${variant ? `variant="${variant}"` : ''}
+      ${variant ? `variant="${variant}"` : ""}
       items={items.map(item => ({
         ...item,
         label: t(\`${name.toLowerCase()}.\${item.key}\`, { defaultValue: item.label }),
@@ -120,6 +120,6 @@ export const ${name}: React.FC<${name}Props> = ({
 ${name}.displayName = '${name}';
 `;
 
-    return navCode;
-  }
+		return navCode;
+	}
 }

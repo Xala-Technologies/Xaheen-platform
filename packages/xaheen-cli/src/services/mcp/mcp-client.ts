@@ -1,437 +1,529 @@
 /**
  * MCP (Model Context Protocol) Client Integration
- * 
+ *
  * Integrates with Xala UI Component Specification System for AI-optimized template generation.
- * 
+ *
  * @author CLI Template Generator Agent
  * @since 2025-01-03
  */
 
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-import fs from 'fs-extra';
-import { consola } from 'consola';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { consola } from "consola";
+import fs from "fs-extra";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export interface ComponentSpecification {
-  metadata: {
-    name: string;
-    version: string;
-    category: 'basic' | 'composite' | 'layout' | 'navigation' | 'feedback' | 'overlay' | 'form' | 'data-display' | 'specialized';
-    description: string;
-    keywords?: string[];
-    stability: 'experimental' | 'beta' | 'stable' | 'deprecated';
-  };
-  compliance: {
-    wcag: { level: 'A' | 'AA' | 'AAA' };
-    norwegian: { nsmClassification: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET' };
-    i18n: { supportedLocales: string[] };
-  };
-  props: {
-    schema: Record<string, PropDefinition>;
-    groups: PropGroups;
-  };
-  accessibility: {
-    role: { primary: string };
-    keyboardNavigation: KeyboardNavigation;
-    screenReader: ScreenReaderSupport;
-  };
-  platforms: {
-    supported: string[];
-    implementations: Record<string, PlatformImplementation>;
-  };
-  ai?: AIOptimization;
+	metadata: {
+		name: string;
+		version: string;
+		category:
+			| "basic"
+			| "composite"
+			| "layout"
+			| "navigation"
+			| "feedback"
+			| "overlay"
+			| "form"
+			| "data-display"
+			| "specialized";
+		description: string;
+		keywords?: string[];
+		stability: "experimental" | "beta" | "stable" | "deprecated";
+	};
+	compliance: {
+		wcag: { level: "A" | "AA" | "AAA" };
+		norwegian: {
+			nsmClassification: "OPEN" | "RESTRICTED" | "CONFIDENTIAL" | "SECRET";
+		};
+		i18n: { supportedLocales: string[] };
+	};
+	props: {
+		schema: Record<string, PropDefinition>;
+		groups: PropGroups;
+	};
+	accessibility: {
+		role: { primary: string };
+		keyboardNavigation: KeyboardNavigation;
+		screenReader: ScreenReaderSupport;
+	};
+	platforms: {
+		supported: string[];
+		implementations: Record<string, PlatformImplementation>;
+	};
+	ai?: AIOptimization;
 }
 
 export interface PropDefinition {
-  type: string;
-  description?: string;
-  required?: boolean;
-  default?: any;
-  enum?: string[];
-  signature?: string;
+	type: string;
+	description?: string;
+	required?: boolean;
+	default?: any;
+	enum?: string[];
+	signature?: string;
 }
 
 export interface PropGroups {
-  required?: string[];
-  optional?: string[];
-  advanced?: string[];
+	required?: string[];
+	optional?: string[];
+	advanced?: string[];
 }
 
 export interface KeyboardNavigation {
-  supported: boolean;
-  patterns?: Array<{ key: string; action: string }>;
+	supported: boolean;
+	patterns?: Array<{ key: string; action: string }>;
 }
 
 export interface ScreenReaderSupport {
-  announcements?: string[];
-  labels?: Record<string, string>;
+	announcements?: string[];
+	labels?: Record<string, string>;
 }
 
 export interface PlatformImplementation {
-  dependencies?: string[];
-  imports?: string[];
-  ai?: {
-    hints?: string[];
-    patterns?: Array<{ pattern: string; context: string; recommendation: string }>;
-  };
+	dependencies?: string[];
+	imports?: string[];
+	ai?: {
+		hints?: string[];
+		patterns?: Array<{
+			pattern: string;
+			context: string;
+			recommendation: string;
+		}>;
+	};
 }
 
 export interface AIOptimization {
-  optimization: {
-    hints: string[];
-    patterns: Array<{
-      pattern: string;
-      context: string;
-      recommendation: string;
-    }>;
-    antiPatterns: Array<{
-      pattern: string;
-      reason: string;
-      alternative: string;
-    }>;
-  };
-  generation: {
-    priority: 'low' | 'medium' | 'high';
-    complexity: 'simple' | 'medium' | 'complex';
-    estimatedTokens: number;
-  };
-  documentation?: {
-    autoGenerate: boolean;
-    templates: string[];
-  };
+	optimization: {
+		hints: string[];
+		patterns: Array<{
+			pattern: string;
+			context: string;
+			recommendation: string;
+		}>;
+		antiPatterns: Array<{
+			pattern: string;
+			reason: string;
+			alternative: string;
+		}>;
+	};
+	generation: {
+		priority: "low" | "medium" | "high";
+		complexity: "simple" | "medium" | "complex";
+		estimatedTokens: number;
+	};
+	documentation?: {
+		autoGenerate: boolean;
+		templates: string[];
+	};
 }
 
 export interface MCPGenerationOptions {
-  platform: string;
-  includeTests?: boolean;
-  includeStories?: boolean;
-  includeDocs?: boolean;
-  aiOptimized?: boolean;
-  complexity?: 'simple' | 'medium' | 'complex';
-  nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+	platform: string;
+	includeTests?: boolean;
+	includeStories?: boolean;
+	includeDocs?: boolean;
+	aiOptimized?: boolean;
+	complexity?: "simple" | "medium" | "complex";
+	nsmClassification?: "OPEN" | "RESTRICTED" | "CONFIDENTIAL" | "SECRET";
 }
 
 export interface MCPGenerationResult {
-  success: boolean;
-  component: string;
-  files: Array<{
-    path: string;
-    content: string;
-    type: 'component' | 'test' | 'story' | 'docs';
-  }>;
-  metadata: {
-    tokensUsed: number;
-    complexity: string;
-    aiHints: string[];
-    complianceLevel: string;
-  };
-  errors?: string[];
-  warnings?: string[];
+	success: boolean;
+	component: string;
+	files: Array<{
+		path: string;
+		content: string;
+		type: "component" | "test" | "story" | "docs";
+	}>;
+	metadata: {
+		tokensUsed: number;
+		complexity: string;
+		aiHints: string[];
+		complianceLevel: string;
+	};
+	errors?: string[];
+	warnings?: string[];
 }
 
 export class MCPClient {
-  private specCache: Map<string, ComponentSpecification> = new Map();
-  private mcpPath: string;
+	private specCache: Map<string, ComponentSpecification> = new Map();
+	private mcpPath: string;
 
-  constructor() {
-    this.mcpPath = path.resolve(__dirname, '../../../mcp');
-  }
+	constructor() {
+		this.mcpPath = path.resolve(__dirname, "../../../mcp");
+	}
 
-  /**
-   * Load component specification from MCP system
-   */
-  async loadSpecification(componentName: string, category?: string): Promise<ComponentSpecification | null> {
-    const cacheKey = `${category || 'unknown'}:${componentName}`;
-    
-    // Check cache first
-    if (this.specCache.has(cacheKey)) {
-      return this.specCache.get(cacheKey)!;
-    }
+	/**
+	 * Load component specification from MCP system
+	 */
+	async loadSpecification(
+		componentName: string,
+		category?: string,
+	): Promise<ComponentSpecification | null> {
+		const cacheKey = `${category || "unknown"}:${componentName}`;
 
-    try {
-      // Try to find the specification file
-      const specPath = await this.findSpecificationPath(componentName, category);
-      if (!specPath) {
-        consola.warn(`MCP specification not found for ${componentName}`);
-        return null;
-      }
+		// Check cache first
+		if (this.specCache.has(cacheKey)) {
+			return this.specCache.get(cacheKey)!;
+		}
 
-      const specContent = await fs.readFile(specPath, 'utf-8');
-      const spec: ComponentSpecification = JSON.parse(specContent);
+		try {
+			// Try to find the specification file
+			const specPath = await this.findSpecificationPath(
+				componentName,
+				category,
+			);
+			if (!specPath) {
+				consola.warn(`MCP specification not found for ${componentName}`);
+				return null;
+			}
 
-      // Cache the specification
-      this.specCache.set(cacheKey, spec);
-      
-      consola.debug(`Loaded MCP specification for ${componentName} from ${specPath}`);
-      return spec;
-    } catch (error) {
-      consola.error(`Failed to load MCP specification for ${componentName}:`, error);
-      return null;
-    }
-  }
+			const specContent = await fs.readFile(specPath, "utf-8");
+			const spec: ComponentSpecification = JSON.parse(specContent);
 
-  /**
-   * Get AI optimization hints for component generation
-   */
-  async getAIHints(componentName: string, platform: string = 'react'): Promise<string[]> {
-    const spec = await this.loadSpecification(componentName);
-    if (!spec?.ai?.optimization) {
-      return this.getDefaultAIHints(platform);
-    }
+			// Cache the specification
+			this.specCache.set(cacheKey, spec);
 
-    const hints = [...spec.ai.optimization.hints];
-    
-    // Add platform-specific hints
-    const platformImpl = spec.platforms.implementations[platform];
-    if (platformImpl?.ai?.hints) {
-      hints.push(...platformImpl.ai.hints);
-    }
+			consola.debug(
+				`Loaded MCP specification for ${componentName} from ${specPath}`,
+			);
+			return spec;
+		} catch (error) {
+			consola.error(
+				`Failed to load MCP specification for ${componentName}:`,
+				error,
+			);
+			return null;
+		}
+	}
 
-    return hints;
-  }
+	/**
+	 * Get AI optimization hints for component generation
+	 */
+	async getAIHints(
+		componentName: string,
+		platform: string = "react",
+	): Promise<string[]> {
+		const spec = await this.loadSpecification(componentName);
+		if (!spec?.ai?.optimization) {
+			return this.getDefaultAIHints(platform);
+		}
 
-  /**
-   * Get complexity estimation for token usage planning
-   */
-  async getComplexityEstimation(componentName: string): Promise<{
-    complexity: 'simple' | 'medium' | 'complex';
-    estimatedTokens: number;
-    priority: 'low' | 'medium' | 'high';
-  }> {
-    const spec = await this.loadSpecification(componentName);
-    
-    if (spec?.ai?.generation) {
-      return {
-        complexity: spec.ai.generation.complexity,
-        estimatedTokens: spec.ai.generation.estimatedTokens,
-        priority: spec.ai.generation.priority
-      };
-    }
+		const hints = [...spec.ai.optimization.hints];
 
-    // Default estimation based on component name patterns
-    return this.estimateComplexity(componentName);
-  }
+		// Add platform-specific hints
+		const platformImpl = spec.platforms.implementations[platform];
+		if (platformImpl?.ai?.hints) {
+			hints.push(...platformImpl.ai.hints);
+		}
 
-  /**
-   * Get component patterns and anti-patterns
-   */
-  async getPatterns(componentName: string): Promise<{
-    patterns: Array<{ pattern: string; context: string; recommendation: string }>;
-    antiPatterns: Array<{ pattern: string; reason: string; alternative: string }>;
-  }> {
-    const spec = await this.loadSpecification(componentName);
-    
-    return {
-      patterns: spec?.ai?.optimization?.patterns || [],
-      antiPatterns: spec?.ai?.optimization?.antiPatterns || []
-    };
-  }
+		return hints;
+	}
 
-  /**
-   * Generate enhanced template context with MCP data
-   */
-  async enhanceTemplateContext(context: any, componentName?: string): Promise<any> {
-    if (!componentName) {
-      return context;
-    }
+	/**
+	 * Get complexity estimation for token usage planning
+	 */
+	async getComplexityEstimation(componentName: string): Promise<{
+		complexity: "simple" | "medium" | "complex";
+		estimatedTokens: number;
+		priority: "low" | "medium" | "high";
+	}> {
+		const spec = await this.loadSpecification(componentName);
 
-    const spec = await this.loadSpecification(componentName);
-    if (!spec) {
-      return context;
-    }
+		if (spec?.ai?.generation) {
+			return {
+				complexity: spec.ai.generation.complexity,
+				estimatedTokens: spec.ai.generation.estimatedTokens,
+				priority: spec.ai.generation.priority,
+			};
+		}
 
-    return {
-      ...context,
-      mcp: {
-        specification: spec,
-        aiHints: await this.getAIHints(componentName, context.platform || 'react'),
-        complexity: await this.getComplexityEstimation(componentName),
-        patterns: await this.getPatterns(componentName),
-        compliance: {
-          wcag: spec.compliance.wcag,
-          norwegian: spec.compliance.norwegian,
-          i18n: spec.compliance.i18n
-        }
-      }
-    };
-  }
+		// Default estimation based on component name patterns
+		return this.estimateComplexity(componentName);
+	}
 
-  /**
-   * Validate component against MCP specifications
-   */
-  async validateComponent(componentCode: string, componentName: string): Promise<{
-    valid: boolean;
-    score: number;
-    issues: Array<{
-      type: 'error' | 'warning' | 'info';
-      message: string;
-      line?: number;
-      suggestion?: string;
-    }>;
-  }> {
-    const spec = await this.loadSpecification(componentName);
-    if (!spec) {
-      return { valid: true, score: 0.5, issues: [{ type: 'warning', message: 'No MCP specification found' }] };
-    }
+	/**
+	 * Get component patterns and anti-patterns
+	 */
+	async getPatterns(componentName: string): Promise<{
+		patterns: Array<{
+			pattern: string;
+			context: string;
+			recommendation: string;
+		}>;
+		antiPatterns: Array<{
+			pattern: string;
+			reason: string;
+			alternative: string;
+		}>;
+	}> {
+		const spec = await this.loadSpecification(componentName);
 
-    const issues = [];
-    let score = 1.0;
+		return {
+			patterns: spec?.ai?.optimization?.patterns || [],
+			antiPatterns: spec?.ai?.optimization?.antiPatterns || [],
+		};
+	}
 
-    // Check for AI optimization patterns
-    if (spec.ai?.optimization?.antiPatterns) {
-      for (const antiPattern of spec.ai.optimization.antiPatterns) {
-        if (componentCode.includes(antiPattern.pattern)) {
-          issues.push({
-            type: 'warning' as const,
-            message: `Anti-pattern detected: ${antiPattern.reason}`,
-            suggestion: antiPattern.alternative
-          });
-          score -= 0.1;
-        }
-      }
-    }
+	/**
+	 * Generate enhanced template context with MCP data
+	 */
+	async enhanceTemplateContext(
+		context: any,
+		componentName?: string,
+	): Promise<any> {
+		if (!componentName) {
+			return context;
+		}
 
-    // Check for required accessibility attributes
-    if (spec.accessibility?.role?.primary && !componentCode.includes('role=')) {
-      issues.push({
-        type: 'error' as const,
-        message: `Missing required role attribute: ${spec.accessibility.role.primary}`,
-        suggestion: `Add role="${spec.accessibility.role.primary}" to the component`
-      });
-      score -= 0.2;
-    }
+		const spec = await this.loadSpecification(componentName);
+		if (!spec) {
+			return context;
+		}
 
-    return {
-      valid: issues.filter(i => i.type === 'error').length === 0,
-      score: Math.max(0, score),
-      issues
-    };
-  }
+		return {
+			...context,
+			mcp: {
+				specification: spec,
+				aiHints: await this.getAIHints(
+					componentName,
+					context.platform || "react",
+				),
+				complexity: await this.getComplexityEstimation(componentName),
+				patterns: await this.getPatterns(componentName),
+				compliance: {
+					wcag: spec.compliance.wcag,
+					norwegian: spec.compliance.norwegian,
+					i18n: spec.compliance.i18n,
+				},
+			},
+		};
+	}
 
-  /**
-   * Get available component specifications
-   */
-  async getAvailableSpecs(): Promise<Array<{ name: string; category: string; path: string }>> {
-    const specs = [];
-    const categoriesPath = path.join(this.mcpPath, 'docs/specifications/components');
-    
-    try {
-      if (!(await fs.pathExists(categoriesPath))) {
-        return [];
-      }
+	/**
+	 * Validate component against MCP specifications
+	 */
+	async validateComponent(
+		componentCode: string,
+		componentName: string,
+	): Promise<{
+		valid: boolean;
+		score: number;
+		issues: Array<{
+			type: "error" | "warning" | "info";
+			message: string;
+			line?: number;
+			suggestion?: string;
+		}>;
+	}> {
+		const spec = await this.loadSpecification(componentName);
+		if (!spec) {
+			return {
+				valid: true,
+				score: 0.5,
+				issues: [{ type: "warning", message: "No MCP specification found" }],
+			};
+		}
 
-      const categories = await fs.readdir(categoriesPath);
-      
-      for (const category of categories) {
-        const categoryPath = path.join(categoriesPath, category);
-        const stat = await fs.stat(categoryPath);
-        
-        if (stat.isDirectory()) {
-          const files = await fs.readdir(categoryPath);
-          
-          for (const file of files) {
-            if (file.endsWith('.json')) {
-              specs.push({
-                name: path.basename(file, '.json'),
-                category,
-                path: path.join(categoryPath, file)
-              });
-            }
-          }
-        }
-      }
-    } catch (error) {
-      consola.debug('Could not scan MCP specifications:', error);
-    }
+		const issues = [];
+		let score = 1.0;
 
-    return specs;
-  }
+		// Check for AI optimization patterns
+		if (spec.ai?.optimization?.antiPatterns) {
+			for (const antiPattern of spec.ai.optimization.antiPatterns) {
+				if (componentCode.includes(antiPattern.pattern)) {
+					issues.push({
+						type: "warning" as const,
+						message: `Anti-pattern detected: ${antiPattern.reason}`,
+						suggestion: antiPattern.alternative,
+					});
+					score -= 0.1;
+				}
+			}
+		}
 
-  private async findSpecificationPath(componentName: string, category?: string): Promise<string | null> {
-    const possiblePaths = [];
-    
-    if (category) {
-      possiblePaths.push(
-        path.join(this.mcpPath, `docs/specifications/components/${category}/${componentName}.json`),
-        path.join(this.mcpPath, `docs/specifications/components/${category}/${componentName.toLowerCase()}.json`)
-      );
-    } else {
-      // Search all categories
-      const categories = ['basic', 'composite', 'layout', 'navigation', 'feedback', 'overlay', 'form', 'data-display', 'specialized'];
-      for (const cat of categories) {
-        possiblePaths.push(
-          path.join(this.mcpPath, `docs/specifications/components/${cat}/${componentName}.json`),
-          path.join(this.mcpPath, `docs/specifications/components/${cat}/${componentName.toLowerCase()}.json`)
-        );
-      }
-    }
+		// Check for required accessibility attributes
+		if (spec.accessibility?.role?.primary && !componentCode.includes("role=")) {
+			issues.push({
+				type: "error" as const,
+				message: `Missing required role attribute: ${spec.accessibility.role.primary}`,
+				suggestion: `Add role="${spec.accessibility.role.primary}" to the component`,
+			});
+			score -= 0.2;
+		}
 
-    for (const specPath of possiblePaths) {
-      if (await fs.pathExists(specPath)) {
-        return specPath;
-      }
-    }
+		return {
+			valid: issues.filter((i) => i.type === "error").length === 0,
+			score: Math.max(0, score),
+			issues,
+		};
+	}
 
-    return null;
-  }
+	/**
+	 * Get available component specifications
+	 */
+	async getAvailableSpecs(): Promise<
+		Array<{ name: string; category: string; path: string }>
+	> {
+		const specs = [];
+		const categoriesPath = path.join(
+			this.mcpPath,
+			"docs/specifications/components",
+		);
 
-  private getDefaultAIHints(platform: string): string[] {
-    const baseHints = [
-      "Use semantic HTML elements for better accessibility",
-      "Implement proper TypeScript interfaces with readonly props",
-      "Add comprehensive error handling with try-catch blocks",
-      "Use semantic UI System components instead of hardcoded HTML",
-      "Include WCAG AAA accessibility attributes",
-      "Support Norwegian compliance with NSM classifications"
-    ];
+		try {
+			if (!(await fs.pathExists(categoriesPath))) {
+				return [];
+			}
 
-    const platformHints = {
-      react: [
-        "Use React.forwardRef for DOM reference access",
-        "Implement useCallback for event handlers to prevent re-renders",
-        "Use useMemo for expensive calculations",
-        "Add proper JSX.Element return type annotation"
-      ],
-      vue: [
-        "Use Composition API for better TypeScript support",
-        "Implement proper reactivity with ref/reactive",
-        "Use defineEmits for event handling",
-        "Add proper component props validation"
-      ],
-      angular: [
-        "Use standalone components for better tree-shaking",
-        "Implement proper OnInit and OnDestroy lifecycle hooks",
-        "Use trackBy functions for *ngFor performance",
-        "Add proper component input validation"
-      ]
-    };
+			const categories = await fs.readdir(categoriesPath);
 
-    return [...baseHints, ...(platformHints[platform] || [])];
-  }
+			for (const category of categories) {
+				const categoryPath = path.join(categoriesPath, category);
+				const stat = await fs.stat(categoryPath);
 
-  private estimateComplexity(componentName: string): {
-    complexity: 'simple' | 'medium' | 'complex';
-    estimatedTokens: number;
-    priority: 'low' | 'medium' | 'high';
-  } {
-    const name = componentName.toLowerCase();
-    
-    // Simple components
-    if (['button', 'input', 'text', 'icon', 'badge', 'divider'].some(simple => name.includes(simple))) {
-      return { complexity: 'simple', estimatedTokens: 800, priority: 'high' };
-    }
-    
-    // Complex components
-    if (['table', 'datagrid', 'calendar', 'chart', 'editor', 'carousel'].some(complex => name.includes(complex))) {
-      return { complexity: 'complex', estimatedTokens: 2400, priority: 'medium' };
-    }
-    
-    // Medium complexity by default
-    return { complexity: 'medium', estimatedTokens: 1200, priority: 'medium' };
-  }
+				if (stat.isDirectory()) {
+					const files = await fs.readdir(categoryPath);
+
+					for (const file of files) {
+						if (file.endsWith(".json")) {
+							specs.push({
+								name: path.basename(file, ".json"),
+								category,
+								path: path.join(categoryPath, file),
+							});
+						}
+					}
+				}
+			}
+		} catch (error) {
+			consola.debug("Could not scan MCP specifications:", error);
+		}
+
+		return specs;
+	}
+
+	private async findSpecificationPath(
+		componentName: string,
+		category?: string,
+	): Promise<string | null> {
+		const possiblePaths = [];
+
+		if (category) {
+			possiblePaths.push(
+				path.join(
+					this.mcpPath,
+					`docs/specifications/components/${category}/${componentName}.json`,
+				),
+				path.join(
+					this.mcpPath,
+					`docs/specifications/components/${category}/${componentName.toLowerCase()}.json`,
+				),
+			);
+		} else {
+			// Search all categories
+			const categories = [
+				"basic",
+				"composite",
+				"layout",
+				"navigation",
+				"feedback",
+				"overlay",
+				"form",
+				"data-display",
+				"specialized",
+			];
+			for (const cat of categories) {
+				possiblePaths.push(
+					path.join(
+						this.mcpPath,
+						`docs/specifications/components/${cat}/${componentName}.json`,
+					),
+					path.join(
+						this.mcpPath,
+						`docs/specifications/components/${cat}/${componentName.toLowerCase()}.json`,
+					),
+				);
+			}
+		}
+
+		for (const specPath of possiblePaths) {
+			if (await fs.pathExists(specPath)) {
+				return specPath;
+			}
+		}
+
+		return null;
+	}
+
+	private getDefaultAIHints(platform: string): string[] {
+		const baseHints = [
+			"Use semantic HTML elements for better accessibility",
+			"Implement proper TypeScript interfaces with readonly props",
+			"Add comprehensive error handling with try-catch blocks",
+			"Use semantic UI System components instead of hardcoded HTML",
+			"Include WCAG AAA accessibility attributes",
+			"Support Norwegian compliance with NSM classifications",
+		];
+
+		const platformHints = {
+			react: [
+				"Use React.forwardRef for DOM reference access",
+				"Implement useCallback for event handlers to prevent re-renders",
+				"Use useMemo for expensive calculations",
+				"Add proper JSX.Element return type annotation",
+			],
+			vue: [
+				"Use Composition API for better TypeScript support",
+				"Implement proper reactivity with ref/reactive",
+				"Use defineEmits for event handling",
+				"Add proper component props validation",
+			],
+			angular: [
+				"Use standalone components for better tree-shaking",
+				"Implement proper OnInit and OnDestroy lifecycle hooks",
+				"Use trackBy functions for *ngFor performance",
+				"Add proper component input validation",
+			],
+		};
+
+		return [...baseHints, ...(platformHints[platform] || [])];
+	}
+
+	private estimateComplexity(componentName: string): {
+		complexity: "simple" | "medium" | "complex";
+		estimatedTokens: number;
+		priority: "low" | "medium" | "high";
+	} {
+		const name = componentName.toLowerCase();
+
+		// Simple components
+		if (
+			["button", "input", "text", "icon", "badge", "divider"].some((simple) =>
+				name.includes(simple),
+			)
+		) {
+			return { complexity: "simple", estimatedTokens: 800, priority: "high" };
+		}
+
+		// Complex components
+		if (
+			["table", "datagrid", "calendar", "chart", "editor", "carousel"].some(
+				(complex) => name.includes(complex),
+			)
+		) {
+			return {
+				complexity: "complex",
+				estimatedTokens: 2400,
+				priority: "medium",
+			};
+		}
+
+		// Medium complexity by default
+		return { complexity: "medium", estimatedTokens: 1200, priority: "medium" };
+	}
 }
 
 // Singleton instance

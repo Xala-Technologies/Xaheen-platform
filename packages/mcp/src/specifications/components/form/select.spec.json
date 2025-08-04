@@ -1,418 +1,412 @@
 {
-  "metadata": {
-    "name": "Select",
-    "version": "1.0.0",
-    "category": "form",
-    "description": "A comprehensive dropdown selection component with support for single/multi-select, search, grouping, and virtualization",
-    "compliance": {
-      "norwegian": {
-        "nsmClassification": "OPEN",
-        "gdprCompliant": true,
-        "supportedLanguages": ["nb-NO", "en-US"]
-      },
-      "accessibility": {
-        "wcagLevel": "AAA",
-        "features": [
-          "keyboard-navigation",
-          "screen-reader-support",
-          "focus-management",
-          "aria-compliance"
-        ]
-      }
-    },
-    "performance": {
-      "bundleSize": "<5KB",
-      "renderTime": "<16ms",
-      "memoryUsage": "<2MB"
-    }
-  },
-  "props": {
-    "options": {
-      "type": "array",
-      "required": true,
-      "description": "Array of selectable options",
-      "items": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string | number",
-            "required": true,
-            "description": "Unique identifier for the option"
-          },
-          "label": {
-            "type": "string",
-            "required": true,
-            "description": "Display text for the option"
-          },
-          "disabled": {
-            "type": "boolean",
-            "default": false,
-            "description": "Whether the option is disabled"
-          },
-          "group": {
-            "type": "string",
-            "description": "Group identifier for organizing options"
-          },
-          "description": {
-            "type": "string",
-            "description": "Additional descriptive text"
-          },
-          "icon": {
-            "type": "string",
-            "description": "Icon identifier for the option"
-          }
-        }
-      }
-    },
-    "value": {
-      "type": "string | number | Array<string | number>",
-      "description": "Currently selected value(s). Array when multiple is true"
-    },
-    "multiple": {
-      "type": "boolean",
-      "default": false,
-      "description": "Enable multi-select functionality"
-    },
-    "placeholder": {
-      "type": "string",
-      "default": "Velg et alternativ",
-      "description": "Placeholder text when no option is selected",
-      "localization": {
-        "nb-NO": "Velg et alternativ",
-        "en-US": "Select an option"
-      }
-    },
-    "searchable": {
-      "type": "boolean",
-      "default": false,
-      "description": "Enable search/filter functionality"
-    },
-    "clearable": {
-      "type": "boolean",
-      "default": false,
-      "description": "Allow clearing the selection"
-    },
-    "disabled": {
-      "type": "boolean",
-      "default": false,
-      "description": "Disable the entire select component"
-    },
-    "loading": {
-      "type": "boolean",
-      "default": false,
-      "description": "Show loading state for async operations"
-    },
-    "error": {
-      "type": "boolean",
-      "default": false,
-      "description": "Indicate validation error state"
-    },
-    "errorMessage": {
-      "type": "string",
-      "description": "Error message to display when error is true"
-    },
-    "helperText": {
-      "type": "string",
-      "description": "Additional helper text below the select"
-    },
-    "size": {
-      "type": "enum",
-      "values": ["sm", "md", "lg"],
-      "default": "md",
-      "description": "Size variant of the select component",
-      "styles": {
-        "sm": "h-10 text-sm",
-        "md": "h-12 text-base",
-        "lg": "h-14 text-lg"
-      }
-    },
-    "variant": {
-      "type": "enum",
-      "values": ["default", "filled", "outline"],
-      "default": "default",
-      "description": "Visual variant of the select component"
-    },
-    "maxHeight": {
-      "type": "number",
-      "default": 300,
-      "description": "Maximum height of the dropdown in pixels"
-    },
-    "virtualizeThreshold": {
-      "type": "number",
-      "default": 100,
-      "description": "Number of options before virtualization is enabled"
-    },
-    "searchPlaceholder": {
-      "type": "string",
-      "default": "Søk...",
-      "description": "Placeholder text for search input",
-      "localization": {
-        "nb-NO": "Søk...",
-        "en-US": "Search..."
-      }
-    },
-    "noOptionsMessage": {
-      "type": "string",
-      "default": "Ingen alternativer funnet",
-      "description": "Message when no options are available",
-      "localization": {
-        "nb-NO": "Ingen alternativer funnet",
-        "en-US": "No options found"
-      }
-    },
-    "loadingMessage": {
-      "type": "string",
-      "default": "Laster...",
-      "description": "Message during loading state",
-      "localization": {
-        "nb-NO": "Laster...",
-        "en-US": "Loading..."
-      }
-    },
-    "onChange": {
-      "type": "function",
-      "signature": "(value: string | number | Array<string | number>) => void",
-      "description": "Callback fired when selection changes"
-    },
-    "onSearch": {
-      "type": "function",
-      "signature": "(searchTerm: string) => void | Promise<void>",
-      "description": "Callback for search functionality, supports async operations"
-    },
-    "onFocus": {
-      "type": "function",
-      "signature": "() => void",
-      "description": "Callback fired when select receives focus"
-    },
-    "onBlur": {
-      "type": "function",
-      "signature": "() => void",
-      "description": "Callback fired when select loses focus"
-    },
-    "onOpen": {
-      "type": "function",
-      "signature": "() => void",
-      "description": "Callback fired when dropdown opens"
-    },
-    "onClose": {
-      "type": "function",
-      "signature": "() => void",
-      "description": "Callback fired when dropdown closes"
-    }
-  },
-  "accessibility": {
-    "required": {
-      "role": "combobox",
-      "aria-expanded": "boolean indicating dropdown state",
-      "aria-haspopup": "listbox",
-      "aria-labelledby": "reference to label element",
-      "aria-describedby": "reference to helper text or error message"
-    },
-    "keyboardNavigation": {
-      "Enter": "Open dropdown or select focused option",
-      "Space": "Open dropdown or select focused option",
-      "Escape": "Close dropdown",
-      "ArrowDown": "Navigate to next option",
-      "ArrowUp": "Navigate to previous option",
-      "Home": "Navigate to first option",
-      "End": "Navigate to last option",
-      "Tab": "Move focus to next focusable element",
-      "Shift+Tab": "Move focus to previous focusable element",
-      "Backspace": "Clear selection (when clearable)",
-      "Delete": "Clear selection (when clearable)",
-      "alphanumeric": "Search/filter options (when searchable)"
-    },
-    "focusManagement": {
-      "initialFocus": "Select trigger receives focus",
-      "dropdownOpen": "Focus moves to search input or first option",
-      "optionSelection": "Focus returns to select trigger",
-      "dropdownClose": "Focus returns to select trigger"
-    },
-    "screenReader": {
-      "announcements": [
-        "Selection changes",
-        "Dropdown state changes",
-        "Option count and position",
-        "Group information",
-        "Loading states",
-        "Error states"
-      ]
-    }
-  },
-  "styling": {
-    "base": "relative inline-block w-full",
-    "trigger": {
-      "base": "flex items-center justify-between w-full px-4 py-2 text-left bg-white border rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-      "variants": {
-        "default": "border-gray-300 hover:border-gray-400",
-        "filled": "bg-gray-50 border-transparent hover:bg-gray-100",
-        "outline": "border-2 border-gray-300 hover:border-gray-400"
-      },
-      "states": {
-        "disabled": "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200",
-        "error": "border-red-500 focus:ring-red-500",
-        "loading": "cursor-wait"
-      }
-    },
-    "dropdown": {
-      "base": "absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg",
-      "maxHeight": "max-h-[300px] overflow-auto"
-    },
-    "search": {
-      "base": "w-full px-3 py-2 border-b border-gray-200 focus:outline-none focus:border-blue-500"
-    },
-    "option": {
-      "base": "flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100",
-      "selected": "bg-blue-50 text-blue-700",
-      "disabled": "text-gray-400 cursor-not-allowed hover:bg-transparent"
-    },
-    "group": {
-      "label": "px-4 py-2 text-sm font-medium text-gray-500 bg-gray-50",
-      "divider": "border-t border-gray-200"
-    }
-  },
-  "features": {
-    "virtualization": {
-      "enabled": "when options.length > virtualizeThreshold",
-      "implementation": "react-window for performance",
-      "itemHeight": 40,
-      "overscan": 5
-    },
-    "search": {
-      "debounce": 300,
-      "minLength": 1,
-      "highlight": "matching text highlighted in options",
-      "async": "supports onSearch callback for remote filtering"
-    },
-    "grouping": {
-      "sortOrder": "groups sorted alphabetically",
-      "dividers": "visual separation between groups",
-      "navigation": "keyboard navigation respects group boundaries"
-    },
-    "multiSelect": {
-      "display": "selected count or comma-separated labels",
-      "badges": "removable badges for each selection",
-      "selectAll": "optional select/deselect all functionality"
-    }
-  },
-  "examples": {
-    "basic": {
-      "description": "Simple single-select dropdown",
-      "code": {
-        "options": [
-          { "value": "no", "label": "Norge" },
-          { "value": "se", "label": "Sverige" },
-          { "value": "dk", "label": "Danmark" }
-        ],
-        "placeholder": "Velg land",
-        "onChange": "(value) => console.log('Selected:', value)"
-      }
-    },
-    "searchable": {
-      "description": "Select with search functionality",
-      "code": {
-        "options": "/* large array of options */",
-        "searchable": true,
-        "placeholder": "Søk og velg...",
-        "onSearch": "(term) => filterOptions(term)",
-        "onChange": "(value) => handleSelection(value)"
-      }
-    },
-    "multiSelect": {
-      "description": "Multiple selection with badges",
-      "code": {
-        "options": [
-          { "value": "js", "label": "JavaScript" },
-          { "value": "ts", "label": "TypeScript" },
-          { "value": "py", "label": "Python" }
-        ],
-        "multiple": true,
-        "clearable": true,
-        "placeholder": "Velg programmeringsspråk",
-        "onChange": "(values) => setSelectedLanguages(values)"
-      }
-    },
-    "grouped": {
-      "description": "Options organized by groups",
-      "code": {
-        "options": [
-          { "value": "no", "label": "Norge", "group": "Skandinavia" },
-          { "value": "se", "label": "Sverige", "group": "Skandinavia" },
-          { "value": "de", "label": "Tyskland", "group": "Sentral-Europa" },
-          { "value": "fr", "label": "Frankrike", "group": "Sentral-Europa" }
-        ],
-        "placeholder": "Velg land",
-        "onChange": "(value) => handleCountrySelection(value)"
-      }
-    },
-    "async": {
-      "description": "Async search with loading states",
-      "code": {
-        "searchable": true,
-        "loading": "isLoading",
-        "onSearch": "async (term) => { setLoading(true); const results = await searchAPI(term); setOptions(results); setLoading(false); }",
-        "noOptionsMessage": "Ingen resultater funnet",
-        "loadingMessage": "Søker..."
-      }
-    },
-    "withValidation": {
-      "description": "Select with error handling",
-      "code": {
-        "options": "/* options array */",
-        "value": "selectedValue",
-        "error": "hasError",
-        "errorMessage": "Vennligst velg et alternativ",
-        "helperText": "Dette feltet er påkrevd",
-        "onChange": "(value) => { setSelectedValue(value); validateSelection(value); }"
-      }
-    }
-  },
-  "testing": {
-    "unitTests": [
-      "Renders with correct options",
-      "Handles selection changes",
-      "Supports keyboard navigation",
-      "Filters options when searchable",
-      "Shows loading states",
-      "Displays error messages",
-      "Handles disabled state",
-      "Manages focus correctly"
-    ],
-    "integrationTests": [
-      "Works with form libraries",
-      "Handles async option loading",
-      "Maintains selection state",
-      "Accessibility compliance"
-    ],
-    "e2eTests": [
-      "Complete user selection flow",
-      "Search and select workflow",
-      "Multi-select functionality",
-      "Keyboard-only navigation"
-    ]
-  },
-  "implementation": {
-    "dependencies": {
-      "required": [
-        "react",
-        "react-dom"
-      ],
-      "optional": [
-        "react-window",
-        "react-window-infinite-loader"
-      ]
-    },
-    "bundleAnalysis": {
-      "core": "~3.2KB gzipped",
-      "withVirtualization": "~4.8KB gzipped",
-      "withSearch": "~4.1KB gzipped",
-      "complete": "~4.9KB gzipped"
-    },
-    "performance": {
-      "renderOptimization": "React.memo for option components",
-      "searchDebounce": "300ms default debounce",
-      "virtualization": "Automatic for >100 options",
-      "lazyLoading": "Support for async option loading"
-    }
-  }
+	"metadata": {
+		"name": "Select",
+		"version": "1.0.0",
+		"category": "form",
+		"description": "A comprehensive dropdown selection component with support for single/multi-select, search, grouping, and virtualization",
+		"compliance": {
+			"norwegian": {
+				"nsmClassification": "OPEN",
+				"gdprCompliant": true,
+				"supportedLanguages": ["nb-NO", "en-US"]
+			},
+			"accessibility": {
+				"wcagLevel": "AAA",
+				"features": [
+					"keyboard-navigation",
+					"screen-reader-support",
+					"focus-management",
+					"aria-compliance"
+				]
+			}
+		},
+		"performance": {
+			"bundleSize": "<5KB",
+			"renderTime": "<16ms",
+			"memoryUsage": "<2MB"
+		}
+	},
+	"props": {
+		"options": {
+			"type": "array",
+			"required": true,
+			"description": "Array of selectable options",
+			"items": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string | number",
+						"required": true,
+						"description": "Unique identifier for the option"
+					},
+					"label": {
+						"type": "string",
+						"required": true,
+						"description": "Display text for the option"
+					},
+					"disabled": {
+						"type": "boolean",
+						"default": false,
+						"description": "Whether the option is disabled"
+					},
+					"group": {
+						"type": "string",
+						"description": "Group identifier for organizing options"
+					},
+					"description": {
+						"type": "string",
+						"description": "Additional descriptive text"
+					},
+					"icon": {
+						"type": "string",
+						"description": "Icon identifier for the option"
+					}
+				}
+			}
+		},
+		"value": {
+			"type": "string | number | Array<string | number>",
+			"description": "Currently selected value(s). Array when multiple is true"
+		},
+		"multiple": {
+			"type": "boolean",
+			"default": false,
+			"description": "Enable multi-select functionality"
+		},
+		"placeholder": {
+			"type": "string",
+			"default": "Velg et alternativ",
+			"description": "Placeholder text when no option is selected",
+			"localization": {
+				"nb-NO": "Velg et alternativ",
+				"en-US": "Select an option"
+			}
+		},
+		"searchable": {
+			"type": "boolean",
+			"default": false,
+			"description": "Enable search/filter functionality"
+		},
+		"clearable": {
+			"type": "boolean",
+			"default": false,
+			"description": "Allow clearing the selection"
+		},
+		"disabled": {
+			"type": "boolean",
+			"default": false,
+			"description": "Disable the entire select component"
+		},
+		"loading": {
+			"type": "boolean",
+			"default": false,
+			"description": "Show loading state for async operations"
+		},
+		"error": {
+			"type": "boolean",
+			"default": false,
+			"description": "Indicate validation error state"
+		},
+		"errorMessage": {
+			"type": "string",
+			"description": "Error message to display when error is true"
+		},
+		"helperText": {
+			"type": "string",
+			"description": "Additional helper text below the select"
+		},
+		"size": {
+			"type": "enum",
+			"values": ["sm", "md", "lg"],
+			"default": "md",
+			"description": "Size variant of the select component",
+			"styles": {
+				"sm": "h-10 text-sm",
+				"md": "h-12 text-base",
+				"lg": "h-14 text-lg"
+			}
+		},
+		"variant": {
+			"type": "enum",
+			"values": ["default", "filled", "outline"],
+			"default": "default",
+			"description": "Visual variant of the select component"
+		},
+		"maxHeight": {
+			"type": "number",
+			"default": 300,
+			"description": "Maximum height of the dropdown in pixels"
+		},
+		"virtualizeThreshold": {
+			"type": "number",
+			"default": 100,
+			"description": "Number of options before virtualization is enabled"
+		},
+		"searchPlaceholder": {
+			"type": "string",
+			"default": "Søk...",
+			"description": "Placeholder text for search input",
+			"localization": {
+				"nb-NO": "Søk...",
+				"en-US": "Search..."
+			}
+		},
+		"noOptionsMessage": {
+			"type": "string",
+			"default": "Ingen alternativer funnet",
+			"description": "Message when no options are available",
+			"localization": {
+				"nb-NO": "Ingen alternativer funnet",
+				"en-US": "No options found"
+			}
+		},
+		"loadingMessage": {
+			"type": "string",
+			"default": "Laster...",
+			"description": "Message during loading state",
+			"localization": {
+				"nb-NO": "Laster...",
+				"en-US": "Loading..."
+			}
+		},
+		"onChange": {
+			"type": "function",
+			"signature": "(value: string | number | Array<string | number>) => void",
+			"description": "Callback fired when selection changes"
+		},
+		"onSearch": {
+			"type": "function",
+			"signature": "(searchTerm: string) => void | Promise<void>",
+			"description": "Callback for search functionality, supports async operations"
+		},
+		"onFocus": {
+			"type": "function",
+			"signature": "() => void",
+			"description": "Callback fired when select receives focus"
+		},
+		"onBlur": {
+			"type": "function",
+			"signature": "() => void",
+			"description": "Callback fired when select loses focus"
+		},
+		"onOpen": {
+			"type": "function",
+			"signature": "() => void",
+			"description": "Callback fired when dropdown opens"
+		},
+		"onClose": {
+			"type": "function",
+			"signature": "() => void",
+			"description": "Callback fired when dropdown closes"
+		}
+	},
+	"accessibility": {
+		"required": {
+			"role": "combobox",
+			"aria-expanded": "boolean indicating dropdown state",
+			"aria-haspopup": "listbox",
+			"aria-labelledby": "reference to label element",
+			"aria-describedby": "reference to helper text or error message"
+		},
+		"keyboardNavigation": {
+			"Enter": "Open dropdown or select focused option",
+			"Space": "Open dropdown or select focused option",
+			"Escape": "Close dropdown",
+			"ArrowDown": "Navigate to next option",
+			"ArrowUp": "Navigate to previous option",
+			"Home": "Navigate to first option",
+			"End": "Navigate to last option",
+			"Tab": "Move focus to next focusable element",
+			"Shift+Tab": "Move focus to previous focusable element",
+			"Backspace": "Clear selection (when clearable)",
+			"Delete": "Clear selection (when clearable)",
+			"alphanumeric": "Search/filter options (when searchable)"
+		},
+		"focusManagement": {
+			"initialFocus": "Select trigger receives focus",
+			"dropdownOpen": "Focus moves to search input or first option",
+			"optionSelection": "Focus returns to select trigger",
+			"dropdownClose": "Focus returns to select trigger"
+		},
+		"screenReader": {
+			"announcements": [
+				"Selection changes",
+				"Dropdown state changes",
+				"Option count and position",
+				"Group information",
+				"Loading states",
+				"Error states"
+			]
+		}
+	},
+	"styling": {
+		"base": "relative inline-block w-full",
+		"trigger": {
+			"base": "flex items-center justify-between w-full px-4 py-2 text-left bg-white border rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+			"variants": {
+				"default": "border-gray-300 hover:border-gray-400",
+				"filled": "bg-gray-50 border-transparent hover:bg-gray-100",
+				"outline": "border-2 border-gray-300 hover:border-gray-400"
+			},
+			"states": {
+				"disabled": "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200",
+				"error": "border-red-500 focus:ring-red-500",
+				"loading": "cursor-wait"
+			}
+		},
+		"dropdown": {
+			"base": "absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg",
+			"maxHeight": "max-h-[300px] overflow-auto"
+		},
+		"search": {
+			"base": "w-full px-3 py-2 border-b border-gray-200 focus:outline-none focus:border-blue-500"
+		},
+		"option": {
+			"base": "flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100",
+			"selected": "bg-blue-50 text-blue-700",
+			"disabled": "text-gray-400 cursor-not-allowed hover:bg-transparent"
+		},
+		"group": {
+			"label": "px-4 py-2 text-sm font-medium text-gray-500 bg-gray-50",
+			"divider": "border-t border-gray-200"
+		}
+	},
+	"features": {
+		"virtualization": {
+			"enabled": "when options.length > virtualizeThreshold",
+			"implementation": "react-window for performance",
+			"itemHeight": 40,
+			"overscan": 5
+		},
+		"search": {
+			"debounce": 300,
+			"minLength": 1,
+			"highlight": "matching text highlighted in options",
+			"async": "supports onSearch callback for remote filtering"
+		},
+		"grouping": {
+			"sortOrder": "groups sorted alphabetically",
+			"dividers": "visual separation between groups",
+			"navigation": "keyboard navigation respects group boundaries"
+		},
+		"multiSelect": {
+			"display": "selected count or comma-separated labels",
+			"badges": "removable badges for each selection",
+			"selectAll": "optional select/deselect all functionality"
+		}
+	},
+	"examples": {
+		"basic": {
+			"description": "Simple single-select dropdown",
+			"code": {
+				"options": [
+					{ "value": "no", "label": "Norge" },
+					{ "value": "se", "label": "Sverige" },
+					{ "value": "dk", "label": "Danmark" }
+				],
+				"placeholder": "Velg land",
+				"onChange": "(value) => console.log('Selected:', value)"
+			}
+		},
+		"searchable": {
+			"description": "Select with search functionality",
+			"code": {
+				"options": "/* large array of options */",
+				"searchable": true,
+				"placeholder": "Søk og velg...",
+				"onSearch": "(term) => filterOptions(term)",
+				"onChange": "(value) => handleSelection(value)"
+			}
+		},
+		"multiSelect": {
+			"description": "Multiple selection with badges",
+			"code": {
+				"options": [
+					{ "value": "js", "label": "JavaScript" },
+					{ "value": "ts", "label": "TypeScript" },
+					{ "value": "py", "label": "Python" }
+				],
+				"multiple": true,
+				"clearable": true,
+				"placeholder": "Velg programmeringsspråk",
+				"onChange": "(values) => setSelectedLanguages(values)"
+			}
+		},
+		"grouped": {
+			"description": "Options organized by groups",
+			"code": {
+				"options": [
+					{ "value": "no", "label": "Norge", "group": "Skandinavia" },
+					{ "value": "se", "label": "Sverige", "group": "Skandinavia" },
+					{ "value": "de", "label": "Tyskland", "group": "Sentral-Europa" },
+					{ "value": "fr", "label": "Frankrike", "group": "Sentral-Europa" }
+				],
+				"placeholder": "Velg land",
+				"onChange": "(value) => handleCountrySelection(value)"
+			}
+		},
+		"async": {
+			"description": "Async search with loading states",
+			"code": {
+				"searchable": true,
+				"loading": "isLoading",
+				"onSearch": "async (term) => { setLoading(true); const results = await searchAPI(term); setOptions(results); setLoading(false); }",
+				"noOptionsMessage": "Ingen resultater funnet",
+				"loadingMessage": "Søker..."
+			}
+		},
+		"withValidation": {
+			"description": "Select with error handling",
+			"code": {
+				"options": "/* options array */",
+				"value": "selectedValue",
+				"error": "hasError",
+				"errorMessage": "Vennligst velg et alternativ",
+				"helperText": "Dette feltet er påkrevd",
+				"onChange": "(value) => { setSelectedValue(value); validateSelection(value); }"
+			}
+		}
+	},
+	"testing": {
+		"unitTests": [
+			"Renders with correct options",
+			"Handles selection changes",
+			"Supports keyboard navigation",
+			"Filters options when searchable",
+			"Shows loading states",
+			"Displays error messages",
+			"Handles disabled state",
+			"Manages focus correctly"
+		],
+		"integrationTests": [
+			"Works with form libraries",
+			"Handles async option loading",
+			"Maintains selection state",
+			"Accessibility compliance"
+		],
+		"e2eTests": [
+			"Complete user selection flow",
+			"Search and select workflow",
+			"Multi-select functionality",
+			"Keyboard-only navigation"
+		]
+	},
+	"implementation": {
+		"dependencies": {
+			"required": ["react", "react-dom"],
+			"optional": ["react-window", "react-window-infinite-loader"]
+		},
+		"bundleAnalysis": {
+			"core": "~3.2KB gzipped",
+			"withVirtualization": "~4.8KB gzipped",
+			"withSearch": "~4.1KB gzipped",
+			"complete": "~4.9KB gzipped"
+		},
+		"performance": {
+			"renderOptimization": "React.memo for option components",
+			"searchDebounce": "300ms default debounce",
+			"virtualization": "Automatic for >100 options",
+			"lazyLoading": "Support for async option loading"
+		}
+	}
 }
