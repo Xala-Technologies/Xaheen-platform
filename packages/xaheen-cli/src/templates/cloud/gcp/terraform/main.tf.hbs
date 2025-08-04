@@ -1,0 +1,601 @@
+# Google Cloud Platform Infrastructure for {{projectName}}
+# Terraform configuration for production-ready GCP services
+
+terraform {
+  required_version = ">= 1.5"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 5.0"
+    }
+  }
+  
+  backend "gcs" {
+    bucket = "{{projectId}}-terraform-state"
+    prefix = "terraform/state"
+  }
+}
+
+# Configure providers
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+
+# Local values
+locals {
+  environment = var.environment
+  labels = merge(var.labels, {
+    environment   = var.environment
+    project       = var.project_id
+    managed-by    = "terraform"
+    created-by    = "xaheen-cli"
+  })
+}
+
+# Enable required APIs
+resource "google_project_service" "apis" {
+  for_each = toset([
+    "cloudfunctions.googleapis.com",
+    "firestore.googleapis.com",
+    "storage.googleapis.com",
+    "pubsub.googleapis.com",
+    "secretmanager.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "cloudkms.googleapis.com",
+    "iam.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "container.googleapis.com",
+    "run.googleapis.com",
+    "firebase.googleapis.com"
+  ])
+  
+  service = each.key
+  project = var.project_id
+  
+  disable_on_destroy = false
+}
+
+# Create service accounts
+resource "google_service_account" "function_sa" {
+  account_id   = "${var.project_id}-functions"
+  display_name = "Cloud Functions Service Account"
+  description  = "Service account for Cloud Functions"
+  project      = var.project_id
+}
+
+resource "google_service_account" "storage_sa" {
+  account_id   = "${var.project_id}-storage"
+  display_name = "Cloud Storage Service Account"
+  description  = "Service account for Cloud Storage operations"
+  project      = var.project_id
+}
+
+resource "google_service_account" "pubsub_sa" {
+  account_id   = "${var.project_id}-pubsub"
+  display_name = "Pub/Sub Service Account"
+  description  = "Service account for Pub/Sub operations"
+  project      = var.project_id
+}
+
+# KMS Key Ring and Keys
+resource "google_kms_key_ring" "main" {
+  name     = "${var.project_id}-keyring"
+  location = var.region
+  project  = var.project_id
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_kms_crypto_key" "storage_key" {
+  name     = "storage-encryption-key"
+  key_ring = google_kms_key_ring.main.id
+  purpose  = "ENCRYPT_DECRYPT"
+  
+  version_template {
+    algorithm = "GOOGLE_SYMMETRIC_ENCRYPTION"
+  }
+  
+  rotation_period = "7776000s" # 90 days
+  
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_kms_crypto_key" "firestore_key" {
+  name     = "firestore-encryption-key"
+  key_ring = google_kms_key_ring.main.id
+  purpose  = "ENCRYPT_DECRYPT"
+  
+  version_template {
+    algorithm = "GOOGLE_SYMMETRIC_ENCRYPTION"
+  }
+  
+  rotation_period = "7776000s" # 90 days
+  
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# Cloud Storage Buckets
+resource "google_storage_bucket" "main_storage" {
+  name          = "${var.project_id}-main-storage-${var.environment}"
+  location      = var.region
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = local.labels
+  
+  uniform_bucket_level_access = true
+  
+  versioning {
+    enabled = var.enable_versioning
+  }
+  
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.storage_key.id
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 30
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "NEARLINE"
+    }
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "COLDLINE"
+    }
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 365
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "ARCHIVE"
+    }
+  }
+  
+  cors {
+    origin          = var.cors_origins
+    method          = ["GET", "HEAD", "PUT", "POST", "DELETE"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+  
+  depends_on = [google_project_service.apis, google_kms_crypto_key.storage_key]
+}
+
+resource "google_storage_bucket" "user_uploads" {
+  name          = "${var.project_id}-user-uploads-${var.environment}"
+  location      = var.region
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = local.labels
+  
+  uniform_bucket_level_access = true
+  
+  versioning {
+    enabled = false
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 30
+      matches_prefix = ["temp/"]
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  cors {
+    origin          = var.cors_origins
+    method          = ["GET", "HEAD", "PUT", "POST"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Firestore Database
+resource "google_firestore_database" "main" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = var.firestore_location
+  type        = "FIRESTORE_NATIVE"
+  
+  concurrency_mode = "OPTIMISTIC"
+  app_engine_integration_mode = "DISABLED"
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Pub/Sub Topics
+resource "google_pubsub_topic" "user_events" {
+  name    = "user-events"
+  project = var.project_id
+  labels  = local.labels
+  
+  message_storage_policy {
+    allowed_persistence_regions = [var.region]
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_pubsub_topic" "organization_events" {
+  name    = "organization-events"
+  project = var.project_id
+  labels  = local.labels
+  
+  message_storage_policy {
+    allowed_persistence_regions = [var.region]
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_pubsub_topic" "audit_logs" {
+  name    = "audit-logs"
+  project = var.project_id
+  labels  = local.labels
+  
+  message_retention_duration = "604800s" # 7 days
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_pubsub_topic" "notifications" {
+  name    = "notifications"
+  project = var.project_id
+  labels  = local.labels
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Dead Letter Queue Topics
+resource "google_pubsub_topic" "user_events_dlq" {
+  name    = "user-events-dlq"
+  project = var.project_id
+  labels  = merge(local.labels, { purpose = "dead-letter-queue" })
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_pubsub_topic" "notifications_dlq" {
+  name    = "notifications-dlq"
+  project = var.project_id
+  labels  = merge(local.labels, { purpose = "dead-letter-queue" })
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Pub/Sub Subscriptions
+resource "google_pubsub_subscription" "user_events_processor" {
+  name    = "user-events-processor"
+  topic   = google_pubsub_topic.user_events.name
+  project = var.project_id
+  labels  = local.labels
+  
+  ack_deadline_seconds       = 60
+  message_retention_duration = "604800s" # 7 days
+  retain_acked_messages      = false
+  enable_message_ordering    = true
+  
+  dead_letter_policy {
+    dead_letter_topic     = google_pubsub_topic.user_events_dlq.id
+    max_delivery_attempts = 5
+  }
+  
+  retry_policy {
+    minimum_backoff = "10s"
+    maximum_backoff = "600s"
+  }
+  
+  expiration_policy {
+    ttl = "86400s" # 1 day
+  }
+}
+
+resource "google_pubsub_subscription" "notification_sender" {
+  name    = "notification-sender"
+  topic   = google_pubsub_topic.notifications.name
+  project = var.project_id
+  labels  = local.labels
+  
+  ack_deadline_seconds       = 300 # 5 minutes for email processing
+  message_retention_duration = "259200s" # 3 days
+  retain_acked_messages      = false
+  
+  dead_letter_policy {
+    dead_letter_topic     = google_pubsub_topic.notifications_dlq.id
+    max_delivery_attempts = 3
+  }
+  
+  retry_policy {
+    minimum_backoff = "30s"
+    maximum_backoff = "300s"
+  }
+}
+
+# Secret Manager Secrets
+resource "google_secret_manager_secret" "database_url" {
+  secret_id = "database-url"
+  project   = var.project_id
+  labels    = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.storage_key.id
+        }
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret" "firebase_config" {
+  secret_id = "firebase-config"
+  project   = var.project_id
+  labels    = local.labels
+  
+  replication {
+    automatic = true
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret" "jwt_secret" {
+  secret_id = "jwt-secret"
+  project   = var.project_id
+  labels    = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.storage_key.id
+        }
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+# IAM Bindings
+resource "google_project_iam_member" "function_sa_roles" {
+  for_each = toset([
+    "roles/cloudsql.client",
+    "roles/storage.objectAdmin",
+    "roles/pubsub.publisher",
+    "roles/pubsub.subscriber",
+    "roles/secretmanager.secretAccessor",
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+    "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  ])
+  
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.function_sa.email}"
+}
+
+resource "google_project_iam_member" "storage_sa_roles" {
+  for_each = toset([
+    "roles/storage.admin",
+    "roles/logging.logWriter",
+    "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  ])
+  
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.storage_sa.email}"
+}
+
+resource "google_project_iam_member" "pubsub_sa_roles" {
+  for_each = toset([
+    "roles/pubsub.admin",
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter"
+  ])
+  
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.pubsub_sa.email}"
+}
+
+# Cloud Build Trigger
+resource "google_cloudbuild_trigger" "main" {
+  name        = "${var.project_id}-main-trigger"
+  project     = var.project_id
+  description = "Main build trigger for ${var.project_id}"
+  
+  github {
+    owner = var.github_owner
+    name  = var.github_repo
+    push {
+      branch = "^main$"
+    }
+  }
+  
+  build {
+    step {
+      name = "gcr.io/cloud-builders/npm"
+      args = ["install"]
+    }
+    
+    step {
+      name = "gcr.io/cloud-builders/npm"
+      args = ["run", "build"]
+    }
+    
+    step {
+      name = "gcr.io/cloud-builders/npm"
+      args = ["run", "test"]
+    }
+    
+    step {
+      name = "gcr.io/cloud-builders/gcloud"
+      args = [
+        "functions", "deploy", "api",
+        "--source=.",
+        "--trigger-http",
+        "--runtime=nodejs20",
+        "--service-account=${google_service_account.function_sa.email}"
+      ]
+    }
+    
+    options {
+      logging = "CLOUD_LOGGING_ONLY"
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Monitoring Alert Policies
+resource "google_monitoring_alert_policy" "high_error_rate" {
+  display_name = "High Error Rate - Cloud Functions"
+  project      = var.project_id
+  
+  conditions {
+    display_name = "Cloud Function error rate > 5%"
+    
+    condition_threshold {
+      filter          = "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\""
+      duration        = "300s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 0.05
+      
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_RATE"
+        cross_series_reducer = "REDUCE_SUM"
+        group_by_fields      = ["resource.label.function_name", "metric.label.status"]
+      }
+    }
+  }
+  
+  combiner = "OR"
+  enabled  = true
+  
+  alert_strategy {
+    auto_close = "1800s"
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_monitoring_alert_policy" "high_latency" {
+  display_name = "High Response Latency"
+  project      = var.project_id
+  
+  conditions {
+    display_name = "P95 latency > 2000ms"
+    
+    condition_threshold {
+      filter          = "metric.type=\"cloudfunctions.googleapis.com/function/execution_times\" resource.type=\"cloud_function\""
+      duration        = "300s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 2000
+      
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_PERCENTILE_95"
+        group_by_fields      = ["resource.label.function_name"]
+      }
+    }
+  }
+  
+  combiner = "OR"
+  enabled  = true
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Log-based metrics
+resource "google_logging_metric" "auth_failures" {
+  name   = "auth_failures"
+  filter = "jsonPayload.eventType=\"authentication_failed\" OR jsonPayload.eventType=\"login_failed\""
+  project = var.project_id
+  
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+    display_name = "Authentication Failures"
+    
+    labels {
+      key         = "failure_reason"
+      value_type  = "STRING"
+      description = "Reason for authentication failure"
+    }
+  }
+  
+  label_extractors = {
+    "failure_reason" = "EXTRACT(jsonPayload.reason)"
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Cloud Storage bucket for Terraform state
+resource "google_storage_bucket" "terraform_state" {
+  name          = "${var.project_id}-terraform-state"
+  location      = var.region
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = local.labels
+  
+  uniform_bucket_level_access = true
+  
+  versioning {
+    enabled = true
+  }
+  
+  lifecycle_rule {
+    condition {
+      num_newer_versions = 5
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}

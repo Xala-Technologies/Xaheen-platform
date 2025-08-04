@@ -1,0 +1,978 @@
+# Google Cloud Monitoring Configuration for {{projectName}}
+# Comprehensive monitoring, alerting, and observability setup
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: {{projectName}}
+data:
+  # Dashboard configurations
+  dashboards.json: |
+    {
+      "dashboards": [
+        {
+          "displayName": "{{projectName}} - Application Overview",
+          "mosaicLayout": {
+            "tiles": [
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 0,
+                "yPos": 0,
+                "widget": {
+                  "title": "Request Rate (QPS)",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"cloudfunctions.googleapis.com/function/executions\" resource.type=\"cloud_function\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["resource.label.function_name"]
+                            }
+                          }
+                        },
+                        "plotType": "LINE",
+                        "targetAxis": "Y1"
+                      }
+                    ],
+                    "yAxis": {
+                      "label": "Executions per second",
+                      "scale": "LINEAR"
+                    }
+                  }
+                }
+              },
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 6,
+                "yPos": 0,
+                "widget": {
+                  "title": "Error Rate",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\" metric.label.status!=\"ok\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM"
+                            }
+                          }
+                        },
+                        "plotType": "LINE",
+                        "targetAxis": "Y1"
+                      }
+                    ],
+                    "yAxis": {
+                      "label": "Errors per second",
+                      "scale": "LINEAR"
+                    }
+                  }
+                }
+              },
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 0,
+                "yPos": 4,
+                "widget": {
+                  "title": "Response Latency (P95)",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_times\" resource.type=\"cloud_function\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_DELTA",
+                              "crossSeriesReducer": "REDUCE_PERCENTILE_95",
+                              "groupByFields": ["resource.label.function_name"]
+                            }
+                          }
+                        },
+                        "plotType": "LINE",
+                        "targetAxis": "Y1"
+                      }
+                    ],
+                    "yAxis": {
+                      "label": "Latency (ms)",
+                      "scale": "LINEAR"
+                    }
+                  }
+                }
+              },
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 6,
+                "yPos": 4,
+                "widget": {
+                  "title": "Active Users",
+                  "scorecard": {
+                    "timeSeriesQuery": {
+                      "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/{{projectName}}/active_users\" resource.type=\"global\"",
+                        "aggregation": {
+                          "alignmentPeriod": "300s",
+                          "perSeriesAligner": "ALIGN_MEAN",
+                          "crossSeriesReducer": "REDUCE_SUM"
+                        }
+                      }
+                    },
+                    "sparkChartView": {
+                      "sparkChartType": "SPARK_LINE"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "displayName": "{{projectName}} - Infrastructure Health",
+          "mosaicLayout": {
+            "tiles": [
+              {
+                "width": 4,
+                "height": 4,
+                "xPos": 0,
+                "yPos": 0,
+                "widget": {
+                  "title": "Firestore Operations/sec",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"firestore.googleapis.com/api/request_count\" resource.type=\"firestore_database\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["metric.label.op_type"]
+                            }
+                          }
+                        },
+                        "plotType": "STACKED_AREA",
+                        "targetAxis": "Y1"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "width": 4,
+                "height": 4,
+                "xPos": 4,
+                "yPos": 0,
+                "widget": {
+                  "title": "Pub/Sub Message Rate",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"pubsub.googleapis.com/topic/send_message_operation_count\" resource.type=\"pubsub_topic\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["resource.label.topic_id"]
+                            }
+                          }
+                        },
+                        "plotType": "LINE",
+                        "targetAxis": "Y1"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "width": 4,
+                "height": 4,
+                "xPos": 8,
+                "yPos": 0,
+                "widget": {
+                  "title": "Cloud Storage Requests",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"storage.googleapis.com/api/request_count\" resource.type=\"gcs_bucket\"",
+                            "aggregation": {
+                              "alignmentPeriod": "60s",
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["metric.label.method"]
+                            }
+                          }
+                        },
+                        "plotType": "STACKED_BAR",
+                        "targetAxis": "Y1"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "displayName": "{{projectName}} - Security & Compliance",
+          "mosaicLayout": {
+            "tiles": [
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 0,
+                "yPos": 0,
+                "widget": {
+                  "title": "Authentication Events",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"custom.googleapis.com/{{projectName}}/auth_events\" resource.type=\"global\"",
+                            "aggregation": {
+                              "alignmentPeriod": "300s", 
+                              "perSeriesAligner": "ALIGN_RATE",
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["metric.label.event_type"]
+                            }
+                          }
+                        },
+                        "plotType": "STACKED_AREA",
+                        "targetAxis": "Y1"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "width": 6,
+                "height": 4,
+                "xPos": 6,
+                "yPos": 0,
+                "widget": {
+                  "title": "Security Violations",
+                  "xyChart": {
+                    "dataSets": [
+                      {
+                        "timeSeriesQuery": {
+                          "timeSeriesFilter": {
+                            "filter": "metric.type=\"custom.googleapis.com/{{projectName}}/security_violations\" resource.type=\"global\"",
+                            "aggregation": {
+                              "alignmentPeriod": "300s",
+                              "perSeriesAligner": "ALIGN_RATE", 
+                              "crossSeriesReducer": "REDUCE_SUM",
+                              "groupByFields": ["metric.label.violation_type"]
+                            }
+                          }
+                        },
+                        "plotType": "LINE",
+                        "targetAxis": "Y1"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+
+  # Alert policies configuration
+  alert-policies.json: |
+    {
+      "alertPolicies": [
+        {
+          "displayName": "High Error Rate - Cloud Functions",
+          "documentation": {
+            "content": "Alert when Cloud Function error rate exceeds 5% over 5 minutes",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "Cloud Function error rate > 5%",
+              "conditionThreshold": {
+                "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "300s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["resource.label.function_name", "metric.label.status"]
+                  }
+                ],
+                "comparison": "COMPARISON_GT",
+                "thresholdValue": 0.05,
+                "duration": "300s",
+                "evaluationMissingData": "EVALUATION_MISSING_DATA_INACTIVE"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true,
+          "alertStrategy": {
+            "autoClose": "1800s"
+          }
+        },
+        {
+          "displayName": "High Response Latency",
+          "documentation": {
+            "content": "Alert when P95 response latency exceeds 2 seconds",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "P95 latency > 2000ms",
+              "conditionThreshold": {
+                "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_times\" resource.type=\"cloud_function\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "300s",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_PERCENTILE_95",
+                    "groupByFields": ["resource.label.function_name"]
+                  }
+                ],
+                "comparison": "COMPARISON_GT", 
+                "thresholdValue": 2000,
+                "duration": "300s"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        },
+        {
+          "displayName": "Firestore High Read/Write Usage",
+          "documentation": {
+            "content": "Alert when Firestore operations exceed threshold indicating potential abuse or scaling issues",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "Firestore operations > 1000/sec",
+              "conditionThreshold": {
+                "filter": "metric.type=\"firestore.googleapis.com/api/request_count\" resource.type=\"firestore_database\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                  }
+                ],
+                "comparison": "COMPARISON_GT",
+                "thresholdValue": 1000,
+                "duration": "300s"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        },
+        {
+          "displayName": "Authentication Failures Spike",
+          "documentation": {
+            "content": "Alert on suspicious authentication activity - potential brute force attack",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "Auth failures > 50 per minute",
+              "conditionThreshold": {
+                "filter": "metric.type=\"custom.googleapis.com/{{projectName}}/auth_failures\" resource.type=\"global\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                  }
+                ],
+                "comparison": "COMPARISON_GT",
+                "thresholdValue": 50,
+                "duration": "180s"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        },
+        {
+          "displayName": "GDPR Data Export Request",
+          "documentation": {
+            "content": "Alert when user requests data export for GDPR compliance",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "GDPR export request",
+              "conditionMatchedLog": {
+                "filter": "jsonPayload.eventType=\"gdpr_data_export_requested\"",
+                "labelExtractors": {
+                  "user_id": "EXTRACT(jsonPayload.userId)"
+                }
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        },
+        {
+          "displayName": "Payment Processing Errors",
+          "documentation": {
+            "content": "Alert on payment processing failures for immediate attention",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "Payment failures > 5 per hour",
+              "conditionThreshold": {
+                "filter": "metric.type=\"custom.googleapis.com/{{projectName}}/payment_failures\" resource.type=\"global\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "3600s",
+                    "perSeriesAligner": "ALIGN_SUM",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                  }
+                ],
+                "comparison": "COMPARISON_GT",
+                "thresholdValue": 5,
+                "duration": "300s"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        },
+        {
+          "displayName": "Pub/Sub Message Backlog",
+          "documentation": {
+            "content": "Alert when Pub/Sub subscriptions have significant backlogs",
+            "mimeType": "text/markdown"
+          },
+          "conditions": [
+            {
+              "displayName": "Unacked messages > 1000",
+              "conditionThreshold": {
+                "filter": "metric.type=\"pubsub.googleapis.com/subscription/num_undelivered_messages\" resource.type=\"pubsub_subscription\"",
+                "aggregations": [
+                  {
+                    "alignmentPeriod": "300s",
+                    "perSeriesAligner": "ALIGN_MEAN",
+                    "crossSeriesReducer": "REDUCE_MAX",
+                    "groupByFields": ["resource.label.subscription_id"]
+                  }
+                ],
+                "comparison": "COMPARISON_GT",
+                "thresholdValue": 1000,
+                "duration": "600s"
+              }
+            }
+          ],
+          "combiner": "OR",
+          "enabled": true
+        }
+      ]
+    }
+
+  # Notification channels configuration
+  notification-channels.json: |
+    {
+      "notificationChannels": [
+        {
+          "type": "email",
+          "displayName": "{{projectName}} Operations Team",
+          "description": "Primary email for operations alerts",
+          "labels": {
+            "email_address": "ops@{{projectName}}.com"
+          },
+          "enabled": true
+        },
+        {
+          "type": "slack",
+          "displayName": "{{projectName}} Slack Alerts",
+          "description": "Slack channel for real-time alerts",
+          "labels": {
+            "channel_name": "#alerts",
+            "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+          },
+          "enabled": true
+        },
+        {
+          "type": "pagerduty",
+          "displayName": "{{projectName}} PagerDuty",
+          "description": "PagerDuty integration for critical alerts",
+          "labels": {
+            "service_key": "YOUR_PAGERDUTY_SERVICE_KEY"
+          },
+          "enabled": true
+        },
+        {
+          "type": "sms",
+          "displayName": "Emergency SMS",
+          "description": "SMS for critical production issues",
+          "labels": {
+            "number": "+47XXXXXXXX"
+          },
+          "enabled": true
+        }
+      ]
+    }
+
+  # Custom metrics configuration
+  custom-metrics.json: |
+    {
+      "customMetrics": [
+        {
+          "type": "custom.googleapis.com/{{projectName}}/active_users",
+          "displayName": "Active Users",
+          "description": "Number of currently active users",
+          "metricKind": "GAUGE",
+          "valueType": "INT64",
+          "unit": "1",
+          "labels": [
+            {
+              "key": "user_type",
+              "valueType": "STRING",
+              "description": "Type of user (authenticated, anonymous)"
+            },
+            {
+              "key": "region",
+              "valueType": "STRING", 
+              "description": "Geographic region"
+            }
+          ]
+        },
+        {
+          "type": "custom.googleapis.com/{{projectName}}/business_metrics",
+          "displayName": "Business Metrics",
+          "description": "Key business performance indicators",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "unit": "1",
+          "labels": [
+            {
+              "key": "metric_name",
+              "valueType": "STRING",
+              "description": "Name of the business metric"
+            },
+            {
+              "key": "organization_id",
+              "valueType": "STRING",
+              "description": "Organization identifier"
+            }
+          ]
+        },
+        {
+          "type": "custom.googleapis.com/{{projectName}}/auth_events",
+          "displayName": "Authentication Events",
+          "description": "Authentication-related events for security monitoring",
+          "metricKind": "CUMULATIVE",
+          "valueType": "INT64",
+          "unit": "1",
+          "labels": [
+            {
+              "key": "event_type",
+              "valueType": "STRING",
+              "description": "Type of auth event (login, logout, failed_login, mfa_success)"
+            },
+            {
+              "key": "provider",
+              "valueType": "STRING",
+              "description": "Auth provider (email, google, bankid, vipps)"
+            },
+            {
+              "key": "risk_level",
+              "valueType": "STRING",
+              "description": "Risk assessment level (low, medium, high, critical)"
+            }
+          ]
+        },
+        {
+          "type": "custom.googleapis.com/{{projectName}}/payment_events",
+          "displayName": "Payment Events",
+          "description": "Payment processing events and metrics",
+          "metricKind": "CUMULATIVE", 
+          "valueType": "INT64",
+          "unit": "1",
+          "labels": [
+            {
+              "key": "event_type",
+              "valueType": "STRING",
+              "description": "Payment event type (initiated, completed, failed)"
+            },
+            {
+              "key": "provider",
+              "valueType": "STRING",
+              "description": "Payment provider (vipps, stripe, klarna)"
+            },
+            {
+              "key": "currency",
+              "valueType": "STRING",
+              "description": "Payment currency"
+            }
+          ]
+        },
+        {
+          "type": "custom.googleapis.com/{{projectName}}/gdpr_events",
+          "displayName": "GDPR Compliance Events",
+          "description": "GDPR-related events for compliance monitoring",
+          "metricKind": "CUMULATIVE",
+          "valueType": "INT64",
+          "unit": "1",
+          "labels": [
+            {
+              "key": "event_type",
+              "valueType": "STRING",
+              "description": "GDPR event type (consent_granted, data_export, data_deletion)"
+            },
+            {
+              "key": "data_category",
+              "valueType": "STRING",
+              "description": "Category of personal data involved"
+            }
+          ]
+        },
+        {
+          "type": "custom.googleapis.com/{{projectName}}/security_violations",
+          "displayName": "Security Violations",
+          "description": "Security violations and suspicious activities",
+          "metricKind": "CUMULATIVE",
+          "valueType": "INT64", 
+          "unit": "1",
+          "labels": [
+            {
+              "key": "violation_type",
+              "valueType": "STRING",
+              "description": "Type of security violation"
+            },
+            {
+              "key": "severity",
+              "valueType": "STRING",
+              "description": "Severity level (low, medium, high, critical)"
+            },
+            {
+              "key": "source_ip",
+              "valueType": "STRING",
+              "description": "Source IP address (anonymized)"
+            }
+          ]
+        }
+      ]
+    }
+
+  # SLI/SLO configuration  
+  slo-config.json: |
+    {
+      "serviceLevelObjectives": [
+        {
+          "displayName": "API Availability SLO",
+          "description": "99.9% availability for API endpoints",
+          "serviceLevelIndicator": {
+            "requestBased": {
+              "goodTotalRatio": {
+                "totalServiceFilter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\"",
+                "goodServiceFilter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\" metric.label.status=\"ok\""
+              }
+            }
+          },
+          "goal": {
+            "target": 0.999,
+            "rollingPeriod": "30d"
+          }
+        },
+        {
+          "displayName": "API Latency SLO", 
+          "description": "95% of requests complete within 500ms",
+          "serviceLevelIndicator": {
+            "requestBased": {
+              "distributionCut": {
+                "distributionFilter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_times\" resource.type=\"cloud_function\"",
+                "range": {
+                  "max": 500
+                }
+              }
+            }
+          },
+          "goal": {
+            "target": 0.95,
+            "rollingPeriod": "30d"
+          }
+        },
+        {
+          "displayName": "Authentication Success Rate SLO",
+          "description": "99.5% of authentication attempts should succeed",
+          "serviceLevelIndicator": {
+            "requestBased": {
+              "goodTotalRatio": {
+                "totalServiceFilter": "metric.type=\"custom.googleapis.com/{{projectName}}/auth_events\" resource.type=\"global\"",
+                "goodServiceFilter": "metric.type=\"custom.googleapis.com/{{projectName}}/auth_events\" resource.type=\"global\" metric.label.event_type!=\"failed_login\""
+              }
+            }
+          },
+          "goal": {
+            "target": 0.995,
+            "rollingPeriod": "7d"
+          }
+        }
+      ]
+    }
+
+  # Log-based metrics
+  log-metrics.json: |
+    {
+      "logMetrics": [
+        {
+          "name": "auth_failures",
+          "description": "Authentication failure events from logs",
+          "filter": "jsonPayload.eventType=\"authentication_failed\" OR jsonPayload.eventType=\"login_failed\"",
+          "metricDescriptor": {
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "displayName": "Authentication Failures",
+            "labels": [
+              {
+                "key": "failure_reason",
+                "valueType": "STRING",
+                "description": "Reason for authentication failure"
+              },
+              {
+                "key": "source_ip",
+                "valueType": "STRING", 
+                "description": "Source IP (anonymized)"
+              }
+            ]
+          },
+          "labelExtractors": {
+            "failure_reason": "EXTRACT(jsonPayload.reason)",
+            "source_ip": "EXTRACT(jsonPayload.ip)"
+          }
+        },
+        {
+          "name": "payment_failures",
+          "description": "Payment processing failure events",
+          "filter": "jsonPayload.eventType=\"payment_failed\" OR jsonPayload.type=\"PAYMENT_FAILED\"",
+          "metricDescriptor": {
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "displayName": "Payment Failures",
+            "labels": [
+              {
+                "key": "provider",
+                "valueType": "STRING",
+                "description": "Payment provider"
+              },
+              {
+                "key": "failure_code",
+                "valueType": "STRING",
+                "description": "Provider-specific failure code"
+              }
+            ]
+          },
+          "labelExtractors": {
+            "provider": "EXTRACT(jsonPayload.provider)",
+            "failure_code": "EXTRACT(jsonPayload.failureCode)"
+          }
+        },
+        {
+          "name": "gdpr_requests",
+          "description": "GDPR-related requests for compliance tracking",
+          "filter": "jsonPayload.eventType:\"gdpr_\" OR jsonPayload.gdprRelevant=true",
+          "metricDescriptor": {
+            "metricKind": "DELTA",
+            "valueType": "INT64", 
+            "displayName": "GDPR Requests",
+            "labels": [
+              {
+                "key": "request_type",
+                "valueType": "STRING",
+                "description": "Type of GDPR request (export, deletion, rectification)"
+              },
+              {
+                "key": "data_category",
+                "valueType": "STRING",
+                "description": "Category of personal data"
+              }
+            ]
+          },
+          "labelExtractors": {
+            "request_type": "EXTRACT(jsonPayload.gdprRequestType)",
+            "data_category": "EXTRACT(jsonPayload.dataCategory)"
+          }
+        },
+        {
+          "name": "security_events",
+          "description": "Security-related events and violations",
+          "filter": "jsonPayload.securityEvent=true OR severity>=WARNING AND (jsonPayload.unauthorized=true OR jsonPayload.suspicious=true)",
+          "metricDescriptor": {
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "displayName": "Security Events",
+            "labels": [
+              {
+                "key": "event_type",
+                "valueType": "STRING",
+                "description": "Type of security event"
+              },
+              {
+                "key": "risk_level",
+                "valueType": "STRING",
+                "description": "Risk assessment level"
+              }
+            ]
+          },
+          "labelExtractors": {
+            "event_type": "EXTRACT(jsonPayload.securityEventType)",
+            "risk_level": "EXTRACT(jsonPayload.riskLevel)"
+          }
+        }
+      ]
+    }
+
+---
+# Uptime check configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uptime-checks
+  namespace: {{projectName}}
+data:
+  uptime-checks.json: |
+    {
+      "uptimeChecks": [
+        {
+          "displayName": "{{projectName}} API Health Check",
+          "httpCheck": {
+            "requestMethod": "GET",
+            "path": "/health",
+            "port": 443,
+            "useSsl": true,
+            "validateSsl": true
+          },
+          "monitoredResource": {
+            "type": "uptime_url",
+            "labels": {
+              "project_id": "{{projectId}}",
+              "host": "api.{{projectName}}.com"
+            }
+          },
+          "timeout": "10s",
+          "period": "300s",
+          "checkerType": "STATIC_IP_CHECKERS",
+          "selectedRegions": [
+            "EUROPE",
+            "USA",
+            "ASIA_PACIFIC"
+          ]
+        },
+        {
+          "displayName": "{{projectName}} Web App Health",
+          "httpCheck": {
+            "requestMethod": "GET", 
+            "path": "/",
+            "port": 443,
+            "useSsl": true,
+            "validateSsl": true
+          },
+          "monitoredResource": {
+            "type": "uptime_url",
+            "labels": {
+              "project_id": "{{projectId}}",
+              "host": "app.{{projectName}}.com"
+            }
+          },
+          "timeout": "10s",
+          "period": "60s",
+          "checkerType": "STATIC_IP_CHECKERS",
+          "selectedRegions": [
+            "EUROPE"
+          ]
+        },
+        {
+          "displayName": "Authentication Service Check",
+          "httpCheck": {
+            "requestMethod": "GET",
+            "path": "/auth/health",
+            "port": 443,
+            "useSsl": true,
+            "validateSsl": true,
+            "headers": {
+              "User-Agent": "GoogleStackdriverMonitoring-UptimeChecks(https://cloud.google.com/monitoring)"
+            }
+          },
+          "monitoredResource": {
+            "type": "uptime_url",
+            "labels": {
+              "project_id": "{{projectId}}",
+              "host": "auth.{{projectName}}.com"
+            }
+          },
+          "timeout": "10s",
+          "period": "300s"
+        }
+      ]
+    }
+
+---
+# Error reporting configuration
+apiVersion: v1
+kind: ConfigMap  
+metadata:
+  name: error-reporting-config
+  namespace: {{projectName}}
+data:
+  error-reporting.json: |
+    {
+      "errorReporting": {
+        "enabled": true,
+        "serviceContext": {
+          "service": "{{projectName}}",
+          "version": "1.0.0"
+        },
+        "ignoreUserAgents": [
+          "GoogleStackdriverMonitoring",
+          "Mozilla/5.0 (compatible; UptimeRobot/2.0; http://www.uptimerobot.com/)"
+        ],
+        "ignoreUrls": [
+          "/health",
+          "/favicon.ico",
+          "/_ah/health"
+        ],
+        "sampling": {
+          "enabled": true,
+          "rate": 0.1
+        },
+        "grouping": {
+          "enabled": true,
+          "rules": [
+            {
+              "pattern": "Timeout.*",
+              "group": "timeout_errors"
+            },
+            {
+              "pattern": ".*rate limit.*",
+              "group": "rate_limit_errors"
+            },
+            {
+              "pattern": ".*authentication.*",
+              "group": "auth_errors"
+            }
+          ]
+        }
+      }
+    }
