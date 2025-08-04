@@ -88,9 +88,15 @@ export async function registerCommands(program: Command): Promise<void> {
 		// Configuration
 		await loadCommand("./config.js", "configCommand");
 
+		// Template validation commands
+		await loadCommand("./validate.js", "validateCommand");
+
 		// Interactive builder commands
 		console.log('Loading builder command...');
 		await loadCommand("./builder.js", "register");
+
+		// Hybrid scaffolding commands
+		await loadCommand("./scaffold.js", "scaffoldCommand");
 
 		// External tool integrations
 		await loadCommand(

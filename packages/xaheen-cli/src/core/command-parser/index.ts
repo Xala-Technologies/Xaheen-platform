@@ -477,6 +477,15 @@ export class CommandParser {
 					xaheen: ["compliance"],
 				},
 			},
+			{
+				pattern: "security-scan [project-path]",
+				domain: "security",
+				action: "scan",
+				handler: this.handleSecurityScan.bind(this),
+				legacy: {
+					xaheen: ["scan"],
+				},
+			},
 		];
 
 		// Register routes
@@ -699,6 +708,19 @@ export class CommandParser {
 						.option("--action-plan", "Generate detailed action plan")
 						.option("--timeframe <timeframe>", "Report timeframe (current|historical|projected)", "current")
 						.option("--interactive", "Interactive mode with guided prompts");
+				} else if (route.action === "scan") {
+					command
+						.option("-t, --types <types>", "Scan types: code,dependencies,secrets,configuration,compliance", "code,dependencies,secrets")
+						.option("-s, --severity <levels>", "Severity levels to include: critical,high,medium,low,info", "critical,high,medium")
+						.option("-c, --compliance <standards>", "Compliance standards to check: owasp,nsm,gdpr,wcag", "owasp")
+						.option("--ai-enhanced", "Enable AI-powered security analysis", true)
+						.option("--no-ai-enhanced", "Disable AI-powered analysis")
+						.option("-f, --format <format>", "Report format: json,html,markdown,sarif", "json")
+						.option("-o, --output <path>", "Output file path for the report")
+						.option("--exclude <patterns>", "Comma-separated patterns to exclude")
+						.option("--max-file-size <size>", "Maximum file size to scan (KB)", "1024")
+						.option("--timeout <ms>", "Scan timeout in milliseconds", "300000")
+						.option("--verbose", "Enable verbose logging");
 				}
 			}
 
@@ -1091,6 +1113,31 @@ export class CommandParser {
 
 		// Parse and execute the compliance report command
 		await complianceReportCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleSecurityScan(command: CLICommand): Promise<void> {
+		const { securityScanCommand } = await import("../../commands/security-scan.command.js");
+		// Create a mock argv array for the security scan command
+		const argv = ['node', 'xaheen', 'security-scan'];
+		
+		// Add project path argument if provided
+		if (command.args && command.args.length > 0) {
+			argv.push(command.args[0]);
+		}
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+		
+		// Parse and execute the security scan command
+		await securityScanCommand.parseAsync(argv.slice(2));
 	}
 
 	// Documentation domain handlers

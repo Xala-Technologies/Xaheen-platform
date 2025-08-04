@@ -7,10 +7,10 @@
  * @since 2025-08-04
  */
 
-import { BaseGenerator } from './base.generator.js';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { BaseGenerator, BaseGeneratorOptions, GeneratorResult } from './base.generator.js';
 import Handlebars from 'handlebars';
+import chalk from 'chalk';
+import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
 
 // Register Handlebars helpers
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -18,10 +18,8 @@ Handlebars.registerHelper('camelCase', (str: string) => {
 	return str.charAt(0).toLowerCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
 });
 Handlebars.registerHelper('generatedAt', () => new Date().toISOString());
-import chalk from 'chalk';
-import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
 
-export interface ModelGeneratorOptions {
+export interface ModelGeneratorOptions extends BaseGeneratorOptions {
 	readonly name: string;
 	readonly fields?: string[];
 	readonly tableName?: string;
@@ -56,7 +54,11 @@ export class ModelGenerator extends BaseGenerator<ModelGeneratorOptions> {
 		'enum',
 	];
 
-	async generate(options: ModelGeneratorOptions): Promise<void> {
+	getGeneratorType(): string {
+		return 'model';
+	}
+
+	async generate(options: ModelGeneratorOptions): Promise<GeneratorResult> {
 		await this.validateOptions(options);
 
 		this.logger.info(`Generating model: ${chalk.cyan(options.name)}`);
@@ -64,34 +66,54 @@ export class ModelGenerator extends BaseGenerator<ModelGeneratorOptions> {
 		// Parse fields from string format or interactive input
 		const fields = await this.parseFields(options.fields || []);
 		
-		// Generate model files
+		// Generate model files using Rails-inspired naming conventions
+		const naming = this.getNamingConvention(options.name);
 		const modelData = {
 			name: options.name,
-			className: this.toPascalCase(options.name),
-			tableName: options.tableName || this.toSnakeCase(options.name),
+			className: naming.className,
+			tableName: options.tableName || naming.snakeCase,
 			fields,
 			timestamps: options.timestamps !== false,
 			softDeletes: options.softDeletes || false,
 			validation: options.validation !== false,
 			typescript: options.typescript !== false,
+			...naming,
 		};
 
+		const generatedFiles: string[] = [];
+
 		// Generate TypeScript interface
-		await this.generateTypeScriptInterface(modelData, options);
+		const typeFile = await this.generateTypeScriptInterface(modelData, options);
+		if (typeFile) generatedFiles.push(typeFile);
 
 		// Generate Prisma schema (if Prisma is detected)
-		await this.generatePrismaModel(modelData, options);
+		const prismaFile = await this.generatePrismaModel(modelData, options);
+		if (prismaFile) generatedFiles.push(prismaFile);
 
 		// Generate Drizzle schema (if Drizzle is detected)
-		await this.generateDrizzleModel(modelData, options);
+		const drizzleFile = await this.generateDrizzleModel(modelData, options);
+		if (drizzleFile) generatedFiles.push(drizzleFile);
 
 		// Generate validation schemas (Zod/Yup)
-		await this.generateValidationSchema(modelData, options);
+		const validationFile = await this.generateValidationSchema(modelData, options);
+		if (validationFile) generatedFiles.push(validationFile);
 
 		// Generate repository pattern (if enabled)
-		await this.generateRepository(modelData, options);
+		const repositoryFile = await this.generateRepository(modelData, options);
+		if (repositoryFile) generatedFiles.push(repositoryFile);
 
 		this.logger.success(`Model ${chalk.green(options.name)} generated successfully!`);
+
+		return {
+			success: true,
+			message: `Model ${options.name} generated successfully`,
+			files: generatedFiles,
+			nextSteps: [
+				'Run database migration if using a database',
+				'Add model to service layer',
+				'Import types in components that need them',
+			],
+		};
 	}
 
 	private async parseFields(fieldsInput: string[]): Promise<ModelField[]> {
@@ -173,128 +195,103 @@ export class ModelGenerator extends BaseGenerator<ModelGeneratorOptions> {
 		return fields;
 	}
 
-	private async generateTypeScriptInterface(modelData: any, options: ModelGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('model/typescript-interface.hbs');
-		const content = template(modelData);
-
-		const filePath = path.join(process.cwd(), 'src', 'types', `${modelData.name}.types.ts`);
+	private async generateTypeScriptInterface(modelData: any, options: ModelGeneratorOptions): Promise<string | null> {
+		const placement = this.getFilePlacement('model', modelData.name);
 		
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated: ${chalk.green(filePath)}`);
-		} else {
-			this.logger.info(`Would generate: ${chalk.yellow(filePath)}`);
+		try {
+			return await this.generateFile(
+				'model/typescript-interface.hbs',
+				placement.filePath,
+				modelData,
+				{ dryRun: options.dryRun, force: options.force }
+			);
+		} catch (error) {
+			this.logger.warn(`Failed to generate TypeScript interface: ${error}`);
+			return null;
 		}
 	}
 
-	private async generatePrismaModel(modelData: any, options: ModelGeneratorOptions): Promise<void> {
+	private async generatePrismaModel(modelData: any, options: ModelGeneratorOptions): Promise<string | null> {
 		// Check if Prisma is configured
 		const prismaSchemaPath = path.join(process.cwd(), 'prisma', 'schema.prisma');
 		
 		try {
-			await fs.access(prismaSchemaPath);
+			await this.ensureDirectoryExists(path.dirname(prismaSchemaPath));
 			
 			const template = await this.loadTemplate('model/prisma-model.hbs');
 			const content = template(modelData);
 
 			if (!options.dryRun) {
 				// Append to existing schema file
+				const fs = await import('fs/promises');
 				await fs.appendFile(prismaSchemaPath, `\n${content}`);
 				this.logger.info(`Updated Prisma schema: ${chalk.green(prismaSchemaPath)}`);
+				return prismaSchemaPath;
 			} else {
 				this.logger.info(`Would update Prisma schema: ${chalk.yellow(prismaSchemaPath)}`);
+				return prismaSchemaPath;
 			}
 		} catch {
 			// Prisma not configured, skip
+			return null;
 		}
 	}
 
-	private async generateDrizzleModel(modelData: any, options: ModelGeneratorOptions): Promise<void> {
+	private async generateDrizzleModel(modelData: any, options: ModelGeneratorOptions): Promise<string | null> {
 		// Check if Drizzle is configured
 		const drizzleSchemaPath = path.join(process.cwd(), 'src', 'db', 'schema.ts');
 		
 		try {
+			const fs = await import('fs/promises');
 			await fs.access(drizzleSchemaPath);
 			
-			const template = await this.loadTemplate('model/drizzle-model.hbs');
-			const content = template(modelData);
-
 			const filePath = path.join(process.cwd(), 'src', 'db', 'models', `${modelData.name}.ts`);
 			
-			if (!options.dryRun) {
-				await this.ensureDirectoryExists(path.dirname(filePath));
-				await fs.writeFile(filePath, content);
-				this.logger.info(`Generated Drizzle model: ${chalk.green(filePath)}`);
-			} else {
-				this.logger.info(`Would generate Drizzle model: ${chalk.yellow(filePath)}`);
-			}
+			return await this.generateFile(
+				'model/drizzle-model.hbs',
+				filePath,
+				modelData,
+				{ dryRun: options.dryRun, force: options.force }
+			);
 		} catch {
 			// Drizzle not configured, skip
+			return null;
 		}
 	}
 
-	private async generateValidationSchema(modelData: any, options: ModelGeneratorOptions): Promise<void> {
-		if (!modelData.validation) return;
+	private async generateValidationSchema(modelData: any, options: ModelGeneratorOptions): Promise<string | null> {
+		if (!modelData.validation) return null;
 
-		const template = await this.loadTemplate('model/validation-schema.hbs');
-		const content = template(modelData);
-
-		const filePath = path.join(process.cwd(), 'src', 'validation', `${modelData.name}.validation.ts`);
+		const filePath = path.join(process.cwd(), 'src', 'validation', `${modelData.kebabCase}.validation.ts`);
 		
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated validation schema: ${chalk.green(filePath)}`);
-		} else {
-			this.logger.info(`Would generate validation schema: ${chalk.yellow(filePath)}`);
-		}
-	}
-
-	private async generateRepository(modelData: any, options: ModelGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('model/repository.hbs');
-		const content = template(modelData);
-
-		const filePath = path.join(process.cwd(), 'src', 'repositories', `${modelData.name}.repository.ts`);
-		
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated repository: ${chalk.green(filePath)}`);
-		} else {
-			this.logger.info(`Would generate repository: ${chalk.yellow(filePath)}`);
-		}
-	}
-
-	private async loadTemplate(templatePath: string): Promise<HandlebarsTemplateDelegate> {
-		const templateFile = path.join(__dirname, '../templates', templatePath);
-		const templateContent = await fs.readFile(templateFile, 'utf-8');
-		return Handlebars.compile(templateContent);
-	}
-
-	private async ensureDirectoryExists(dirPath: string): Promise<void> {
 		try {
-			await fs.access(dirPath);
-		} catch {
-			await fs.mkdir(dirPath, { recursive: true });
+			return await this.generateFile(
+				'model/validation-schema.hbs',
+				filePath,
+				modelData,
+				{ dryRun: options.dryRun, force: options.force }
+			);
+		} catch (error) {
+			this.logger.warn(`Failed to generate validation schema: ${error}`);
+			return null;
 		}
 	}
 
-	private toPascalCase(str: string): string {
-		return str.charAt(0).toUpperCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
-	}
-
-	private toSnakeCase(str: string): string {
-		return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`).replace(/^_/, '');
-	}
-
-	protected async validateOptions(options: ModelGeneratorOptions): Promise<void> {
-		if (!options.name) {
-			throw new Error('Model name is required');
-		}
-
-		if (!/^[A-Za-z][A-Za-z0-9]*$/.test(options.name)) {
-			throw new Error('Model name must be alphanumeric and start with a letter');
+	private async generateRepository(modelData: any, options: ModelGeneratorOptions): Promise<string | null> {
+		const filePath = path.join(process.cwd(), 'src', 'repositories', `${modelData.kebabCase}.repository.ts`);
+		
+		try {
+			return await this.generateFile(
+				'model/repository.hbs',
+				filePath,
+				modelData,
+				{ dryRun: options.dryRun, force: options.force }
+			);
+		} catch (error) {
+			this.logger.warn(`Failed to generate repository: ${error}`);
+			return null;
 		}
 	}
+
+}
 }

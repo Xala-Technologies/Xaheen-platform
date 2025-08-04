@@ -7,9 +7,7 @@
  * @since 2025-08-04
  */
 
-import { BaseGenerator } from './base.generator.js';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { BaseGenerator, BaseGeneratorOptions, GeneratorResult } from './base.generator.js';
 import Handlebars from 'handlebars';
 
 // Register Handlebars helpers
@@ -21,7 +19,7 @@ Handlebars.registerHelper('generatedAt', () => new Date().toISOString());
 import chalk from 'chalk';
 import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
 
-export interface ComponentGeneratorOptions {
+export interface ComponentGeneratorOptions extends BaseGeneratorOptions {
 	readonly name: string;
 	readonly type?: 'functional' | 'class';
 	readonly framework?: 'react' | 'vue' | 'angular' | 'svelte';

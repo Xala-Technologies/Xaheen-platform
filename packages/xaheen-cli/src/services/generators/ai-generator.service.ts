@@ -29,6 +29,7 @@ import {
 } from "../ai/ai-service.js";
 import { mcpClient, type ComponentSpecification } from "../mcp/mcp-client.js";
 import { ProjectAnalyzer } from "../analysis/project-analyzer.js";
+import { aiSecurityScanner, type SecurityScanOptions } from "../ai/ai-security-scanner.js";
 
 interface AIGenerationOptions {
 	description?: string;
@@ -48,6 +49,9 @@ interface AIGenerationOptions {
 	aiSuggestions?: boolean;
 	validationLoops?: boolean;
 	complexity?: "simple" | "medium" | "complex";
+	// Security Features
+	securityScan?: boolean;
+	securityCompliance?: ("owasp" | "nsm" | "gdpr" | "wcag")[];
 	optimizeForPerformance?: boolean;
 }
 
@@ -160,7 +164,7 @@ export class AIGeneratorService {
 			}
 
 			// Write files to disk
-			await this.writeFiles(allFiles);
+			await this.writeFiles(allFiles, options);
 
 			logger.success(
 				`✅ Generated ${allFiles.length} AI-native files with ${complexity.complexity} complexity`,
@@ -219,7 +223,7 @@ export class AIGeneratorService {
 			}
 
 			// Write files to disk
-			await this.writeFiles(enhancedFiles);
+			await this.writeFiles(enhancedFiles, options);
 
 			logger.success(
 				`✅ Generated ${enhancedFiles.length} files with AI assistance`,
@@ -299,7 +303,7 @@ export class AIGeneratorService {
 			allFiles.push(...validationFiles);
 
 			// Write all files
-			await this.writeFiles(allFiles);
+			await this.writeFiles(allFiles, options);
 
 			logger.success(
 				`✅ Generated complete CRUD system with ${allFiles.length} files`,
@@ -1157,12 +1161,169 @@ export const validateQuery = (data: unknown) => {
 		];
 	}
 
-	private async writeFiles(files: GeneratedFile[]): Promise<void> {
+	private async writeFiles(files: GeneratedFile[], options: AIGenerationOptions = {}): Promise<void> {
+		// Perform security scanning if enabled
+		if (options.securityScan) {
+			logger.info(chalk.cyan("🔒 Performing security scan on generated code..."));
+			await this.performSecurityValidation(files, options);
+		}
+
+		// Write files to disk
 		for (const file of files) {
 			const dir = path.dirname(file.path);
 			await fs.mkdir(dir, { recursive: true });
 			await fs.writeFile(file.path, file.content);
 		}
+	}
+
+	/**
+	 * Perform comprehensive security validation on generated code
+	 */
+	private async performSecurityValidation(
+		files: GeneratedFile[],
+		options: AIGenerationOptions,
+	): Promise<void> {
+		const securityIssues: Array<{
+			file: string;
+			issues: any[];
+		}> = [];
+
+		for (const file of files) {
+			try {
+				// Validate individual file for security issues
+				const vulnerabilities = await aiSecurityScanner.validateGeneratedCode(
+					file.content,
+					file.path,
+					{
+						aiEnhanced: true,
+						scanTypes: ["code", "secrets", "configuration"],
+						severity: ["critical", "high", "medium"],
+						includeCompliance: options.securityCompliance || ["owasp"],
+					},
+				);
+
+				if (vulnerabilities.length > 0) {
+					securityIssues.push({
+						file: file.path,
+						issues: vulnerabilities,
+					});
+
+					// Log security issues
+					logger.warn(chalk.yellow(`⚠️ Security issues found in ${file.path}:`));
+					for (const vuln of vulnerabilities) {
+						const severityColor = this.getSeverityColor(vuln.severity);
+						logger.warn(
+							chalk.gray(
+								`  ${severityColor(vuln.severity.toUpperCase())}: ${vuln.title}`,
+							),
+						);
+						logger.warn(chalk.gray(`    ${vuln.description}`));
+						logger.warn(chalk.gray(`    Recommendation: ${vuln.recommendation}`));
+					}
+				}
+			} catch (error) {
+				logger.debug(`Failed to scan ${file.path} for security issues:`, error);
+			}
+		}
+
+		// Report overall security status
+		if (securityIssues.length === 0) {
+			logger.success(chalk.green("✅ No security vulnerabilities detected"));
+		} else {
+			const totalIssues = securityIssues.reduce(
+				(sum, item) => sum + item.issues.length,
+				0,
+			);
+			const criticalIssues = securityIssues
+				.flatMap(item => item.issues)
+				.filter(issue => issue.severity === "critical").length;
+
+			if (criticalIssues > 0) {
+				logger.error(
+					chalk.red(
+						`❌ Found ${criticalIssues} critical security vulnerabilities!`,
+					),
+				);
+				logger.error(
+					chalk.red("   Please address these issues before deployment."),
+				);
+			} else {
+				logger.warn(
+					chalk.yellow(
+						`⚠️ Found ${totalIssues} security issues across ${securityIssues.length} files`,
+					),
+				);
+			}
+
+			// Provide security improvement suggestions
+			await this.suggestSecurityImprovements(securityIssues, options);
+		}
+	}
+
+	/**
+	 * Suggest security improvements based on detected issues
+	 */
+	private async suggestSecurityImprovements(
+		securityIssues: Array<{ file: string; issues: any[] }>,
+		options: AIGenerationOptions,
+	): Promise<void> {
+		logger.info(chalk.cyan("💡 Security improvement suggestions:"));
+
+		const allIssues = securityIssues.flatMap(item => item.issues);
+		const categories = [...new Set(allIssues.map(issue => issue.category))];
+
+		for (const category of categories) {
+			const categoryIssues = allIssues.filter(issue => issue.category === category);
+			const suggestion = this.getSecuritySuggestionForCategory(category, categoryIssues.length);
+			
+			logger.info(chalk.gray(`  • ${suggestion}`));
+		}
+
+		// Suggest compliance improvements
+		if (options.securityCompliance?.includes("owasp")) {
+			logger.info(chalk.gray("  • Review OWASP Top 10 compliance guidelines"));
+		}
+
+		if (options.securityCompliance?.includes("gdpr")) {
+			logger.info(chalk.gray("  • Implement data privacy controls for GDPR compliance"));
+		}
+
+		if (options.securityCompliance?.includes("wcag")) {
+			logger.info(chalk.gray("  • Add accessibility attributes for WCAG compliance"));
+		}
+
+		logger.info(chalk.gray("\n🔗 Run full security scan: xaheen security-scan --ai-enhanced"));
+	}
+
+	/**
+	 * Get security suggestion for specific vulnerability category
+	 */
+	private getSecuritySuggestionForCategory(category: string, count: number): string {
+		const suggestions: Record<string, string> = {
+			injection: `Address ${count} injection vulnerabilities by implementing input validation and sanitization`,
+			"sensitive-data": `Secure ${count} exposed secrets by moving them to environment variables`,
+			authentication: `Strengthen ${count} authentication issues with proper session management`,
+			authorization: `Fix ${count} authorization issues by implementing proper access controls`,
+			configuration: `Review ${count} configuration issues and apply security hardening`,
+			cryptography: `Update ${count} cryptographic implementations to use secure algorithms`,
+			logging: `Improve ${count} logging issues by implementing secure audit logging`,
+		};
+
+		return suggestions[category] || `Review and fix ${count} ${category} security issues`;
+	}
+
+	/**
+	 * Get color for security severity levels
+	 */
+	private getSeverityColor(severity: string): typeof chalk.red {
+		const colors: Record<string, typeof chalk.red> = {
+			critical: chalk.red.bold,
+			high: chalk.red,
+			medium: chalk.yellow,
+			low: chalk.blue,
+			info: chalk.gray,
+		};
+		return colors[severity] || chalk.gray;
 	}
 
 	private logGeneratedFiles(files: GeneratedFile[]): void {
