@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Xala UI System MCP Server v6.1
+ * Xala UI System MCP Server v6.1.1
  * Multi-platform component generation server supporting React, Next.js, Vue, Angular, Svelte, Electron, React Native
  * v5.0 Semantic Architecture with comprehensive component library
- * Enhanced with shadcn-ui inspired developer experience improvements
+ * Enhanced with shadcn-ui inspired developer experience improvements + comprehensive AI agent integration
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -198,7 +198,7 @@ class XalaUISystemMCPServer {
 		this.server = new Server(
 			{
 				name: "xala-ui-system-mcp",
-				version: "6.1.0",
+				version: "6.1.1",
 			},
 			{
 				capabilities: {
@@ -1594,7 +1594,7 @@ ${this.getPlatformBestPractices(platform)}
 	async run(): Promise<void> {
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);
-		console.error("Xala UI System MCP Server v6.1 running on stdio");
+		console.error("Xala UI System MCP Server v6.1.1 running on stdio");
 	}
 }
 

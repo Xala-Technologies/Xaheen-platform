@@ -5,6 +5,28 @@ All notable changes to the Xala UI System MCP Server will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.1] - 2024-01-04
+
+### Added - Documentation & AI Agent Integration
+- 📚 **Comprehensive AI Agent Integration** - Step-by-step setup for 5+ AI agents
+  - Claude Desktop (native MCP support)
+  - Cursor IDE (MCP extension)
+  - Windsurf IDE (built-in MCP)
+  - Continue (VS Code extension)
+  - Cline (VS Code extension)
+
+- 🔧 **Detailed Configuration Examples** - Copy-paste JSON configurations for each agent
+- 🔑 **GitHub Token Setup Guide** - Complete authentication instructions
+- 🛠️ **Troubleshooting Section** - Common issues and solutions
+- ⚡ **Quick Start Commands** - Natural language examples for immediate use
+- 🎯 **Key Advantages Section** - Why choose this MCP over alternatives
+
+### Improved
+- Enhanced README with professional-grade documentation
+- Better value proposition explanation vs shadcn/ui MCP
+- Installation instructions for GitHub Packages
+- User onboarding experience significantly improved
+
 ## [6.1.0] - 2024-01-04
 
 ### Added - Developer Experience Enhancements (Inspired by shadcn/ui MCP)

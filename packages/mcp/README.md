@@ -1,4 +1,4 @@
-# Xala UI System MCP Server v6.1
+# Xala UI System MCP Server v6.1.1
 
 Multi-platform MCP server for generating enterprise-grade UI components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using the Xala UI System v5.0 semantic architecture.
 
@@ -49,9 +49,9 @@ echo "@xala-technologies:registry=https://npm.pkg.github.com/" > .npmrc
 echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
 
 # Install the package
-npm install @xala-technologies/xala-mcp@6.1.0
+npm install @xala-technologies/xala-mcp@6.1.1
 # or with bun
-bun add @xala-technologies/xala-mcp@6.1.0
+bun add @xala-technologies/xala-mcp@6.1.1
 ```
 
 **Note**: You'll need a GitHub Personal Access Token with `read:packages` scope. [Create one here](https://github.com/settings/tokens/new?scopes=read:packages).
@@ -278,7 +278,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
     "xala-ui-system": {
       "command": "npx",
       "args": [
-        "@xala-technologies/xala-mcp@6.1.0"
+        "@xala-technologies/xala-mcp@6.1.1"
       ],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
@@ -311,7 +311,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
   "mcpServers": {
     "xala-ui-system": {
       "command": "npx",
-      "args": ["@xala-technologies/xala-mcp@6.1.0"],
+      "args": ["@xala-technologies/xala-mcp@6.1.1"],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -333,7 +333,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
 {
   "name": "Xala UI System",
   "command": "npx",
-  "args": ["@xala-technologies/xala-mcp@6.1.0"],
+  "args": ["@xala-technologies/xala-mcp@6.1.1"],
   "env": {
     "GITHUB_TOKEN": "your_github_token_here"
   }
@@ -355,7 +355,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
     {
       "name": "xala-ui-system",
       "command": "npx",
-      "args": ["@xala-technologies/xala-mcp@6.1.0"],
+      "args": ["@xala-technologies/xala-mcp@6.1.1"],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -374,7 +374,7 @@ Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`
 3. **Add MCP Server**:
    - **Name**: Xala UI System
    - **Command**: `npx`
-   - **Args**: `@xala-technologies/xala-mcp@6.1.0`
+   - **Args**: `@xala-technologies/xala-mcp@6.1.1`
    - **Environment**: `GITHUB_TOKEN=your_github_token_here`
 
 4. **Restart Cline** to load the server
