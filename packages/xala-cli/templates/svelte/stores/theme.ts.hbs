@@ -1,0 +1,49 @@
+// v5.0 Architecture: CSS-only theme management 
+// No Svelte stores - use CSS custom properties and data attributes
+
+export type Theme = 'light' | 'dark' | 'system';
+
+export function initializeTheme(defaultTheme: Theme = '{{theme}}' as Theme): void {
+  if (typeof window === 'undefined') return;
+  
+  // Get saved theme or use default
+  const savedTheme = (localStorage.getItem('theme') as Theme) || defaultTheme;
+  
+  // Apply theme via CSS data attributes
+  if (savedTheme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+  
+  // Store the theme preference
+  localStorage.setItem('theme', savedTheme);
+  
+  // Listen for system theme changes
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', (e) => {
+    if (localStorage.getItem('theme') === 'system') {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
+export function setTheme(newTheme: Theme): void {
+  if (typeof window === 'undefined') return;
+  
+  // v5.0 Architecture: Direct DOM manipulation, no reactive stores
+  localStorage.setItem('theme', newTheme);
+  
+  if (newTheme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', newTheme);
+  }
+}
+
+export function getCurrentTheme(): Theme {
+  if (typeof window === 'undefined') return 'system';
+  return (localStorage.getItem('theme') as Theme) || 'system';
+}

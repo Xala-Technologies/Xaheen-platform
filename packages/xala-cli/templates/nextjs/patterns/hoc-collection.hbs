@@ -1,0 +1,389 @@
+/**
+ * @fileoverview {{componentName}} - Higher-Order Component Collection
+ * @description Collection of HOCs for common patterns in enterprise applications
+ * @version 5.0.0
+ * @compliance Enterprise Standards, Type-safe, Reusable patterns
+ */
+
+import React, { ComponentType, useEffect, useState, useRef, useMemo } from 'react';
+import { cn } from '@/lib/utils/cn';
+
+/**
+ * HOC for adding loading states to any component
+ * Pure presentational wrapper - no business logic
+ */
+export function withLoading<P extends object>(
+  Component: ComponentType<P>,
+  LoadingComponent?: ComponentType
+): ComponentType<P & { isLoading?: boolean; loadingText?: string }> {
+  return ({ isLoading = false, loadingText = 'Loading...', ...props }: P & { isLoading?: boolean; loadingText?: string }) => {
+    if (isLoading) {
+      if (LoadingComponent) {
+        return <LoadingComponent />;
+      }
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <span className="text-sm text-muted-foreground">{loadingText}</span>
+          </div>
+        </div>
+      );
+    }
+    return <Component {...(props as P)} />;
+  };
+}
+
+/**
+ * HOC for adding error states to any component
+ */
+export function withError<P extends object>(
+  Component: ComponentType<P>,
+  ErrorComponent?: ComponentType<{ error: Error; retry?: () => void }>
+): ComponentType<P & { error?: Error | null; retry?: () => void }> {
+  return ({ error = null, retry, ...props }: P & { error?: Error | null; retry?: () => void }) => {
+    if (error) {
+      if (ErrorComponent) {
+        return <ErrorComponent error={error} retry={retry} />;
+      }
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="max-w-md w-full bg-destructive/10 border border-destructive/20 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-destructive mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="font-medium text-destructive">Error</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+                {retry && (
+                  <button
+                    onClick={retry}
+                    className="mt-3 text-sm font-medium text-primary hover:text-primary/80"
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return <Component {...(props as P)} />;
+  };
+}
+
+/**
+ * HOC for adding empty states to any component
+ */
+export function withEmptyState<P extends object>(
+  Component: ComponentType<P>,
+  EmptyComponent?: ComponentType<{ onAction?: () => void }>
+): ComponentType<P & { isEmpty?: boolean; emptyMessage?: string; onEmptyAction?: () => void }> {
+  return ({ 
+    isEmpty = false, 
+    emptyMessage = 'No data available', 
+    onEmptyAction,
+    ...props 
+  }: P & { isEmpty?: boolean; emptyMessage?: string; onEmptyAction?: () => void }) => {
+    if (isEmpty) {
+      if (EmptyComponent) {
+        return <EmptyComponent onAction={onEmptyAction} />;
+      }
+      return (
+        <div className="flex items-center justify-center p-12">
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-muted-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <p className="mt-4 text-sm text-muted-foreground">{emptyMessage}</p>
+            {onEmptyAction && (
+              <button
+                onClick={onEmptyAction}
+                className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Get Started
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return <Component {...(props as P)} />;
+  };
+}
+
+/**
+ * HOC for adding skeleton loading to any component
+ */
+export function withSkeleton<P extends object>(
+  Component: ComponentType<P>,
+  SkeletonComponent: ComponentType
+): ComponentType<P & { isLoading?: boolean }> {
+  return ({ isLoading = false, ...props }: P & { isLoading?: boolean }) => {
+    if (isLoading) {
+      return <SkeletonComponent />;
+    }
+    return <Component {...(props as P)} />;
+  };
+}
+
+/**
+ * HOC for adding fade-in animation
+ */
+export function withFadeIn<P extends object>(
+  Component: ComponentType<P>,
+  options?: { duration?: number; delay?: number }
+): ComponentType<P> {
+  return (props: P) => {
+    const duration = options?.duration || 300;
+    const delay = options?.delay || 0;
+    
+    return (
+      <div 
+        className="animate-in fade-in"
+        style={{
+          animationDuration: `${duration}ms`,
+          animationDelay: `${delay}ms`,
+        }}
+      >
+        <Component {...props} />
+      </div>
+    );
+  };
+}
+
+/**
+ * HOC for adding intersection observer (lazy loading, animations)
+ */
+export function withIntersectionObserver<P extends object>(
+  Component: ComponentType<P>,
+  options?: IntersectionObserverInit & { 
+    once?: boolean;
+    onIntersect?: (isIntersecting: boolean) => void;
+  }
+): ComponentType<P & { className?: string }> {
+  return ({ className, ...props }: P & { className?: string }) => {
+    const [isIntersecting, setIsIntersecting] = useState(false);
+    const [hasIntersected, setHasIntersected] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (!ref.current) return;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          const intersecting = entry.isIntersecting;
+          setIsIntersecting(intersecting);
+          
+          if (intersecting && !hasIntersected) {
+            setHasIntersected(true);
+          }
+          
+          if (options?.once && intersecting) {
+            observer.disconnect();
+          }
+          
+          options?.onIntersect?.(intersecting);
+        },
+        {
+          threshold: options?.threshold || 0.1,
+          rootMargin: options?.rootMargin || '0px',
+          root: options?.root || null,
+        }
+      );
+
+      observer.observe(ref.current);
+      
+      return () => observer.disconnect();
+    }, [hasIntersected, options?.once]);
+
+    const shouldRender = options?.once ? hasIntersected : isIntersecting;
+
+    return (
+      <div ref={ref} className={className}>
+        {shouldRender && <Component {...(props as P)} />}
+      </div>
+    );
+  };
+}
+
+/**
+ * HOC for adding responsive behavior
+ */
+export function withResponsive<P extends object>(
+  Component: ComponentType<P>,
+  breakpoints?: {
+    mobile?: ComponentType<P>;
+    tablet?: ComponentType<P>;
+    desktop?: ComponentType<P>;
+  }
+): ComponentType<P> {
+  return (props: P) => {
+    const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+
+    useEffect(() => {
+      const checkScreenSize = () => {
+        const width = window.innerWidth;
+        if (width < 640) {
+          setScreenSize('mobile');
+        } else if (width < 1024) {
+          setScreenSize('tablet');
+        } else {
+          setScreenSize('desktop');
+        }
+      };
+
+      checkScreenSize();
+      window.addEventListener('resize', checkScreenSize);
+      return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
+
+    if (breakpoints?.mobile && screenSize === 'mobile') {
+      const MobileComponent = breakpoints.mobile;
+      return <MobileComponent {...props} />;
+    }
+    
+    if (breakpoints?.tablet && screenSize === 'tablet') {
+      const TabletComponent = breakpoints.tablet;
+      return <TabletComponent {...props} />;
+    }
+    
+    if (breakpoints?.desktop && screenSize === 'desktop') {
+      const DesktopComponent = breakpoints.desktop;
+      return <DesktopComponent {...props} />;
+    }
+
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * HOC for adding keyboard shortcuts
+ */
+export function withKeyboardShortcuts<P extends object>(
+  Component: ComponentType<P>,
+  shortcuts: Record<string, (props: P) => void>
+): ComponentType<P> {
+  return (props: P) => {
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        const key = `${e.ctrlKey || e.metaKey ? 'cmd+' : ''}${e.shiftKey ? 'shift+' : ''}${e.key.toLowerCase()}`;
+        
+        if (shortcuts[key]) {
+          e.preventDefault();
+          shortcuts[key](props);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [props]);
+
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * HOC for adding analytics tracking
+ */
+export function withAnalytics<P extends object>(
+  Component: ComponentType<P>,
+  eventName: string,
+  getProperties?: (props: P) => Record<string, any>
+): ComponentType<P> {
+  return (props: P) => {
+    useEffect(() => {
+      // Track component mount
+      const properties = getProperties ? getProperties(props) : {};
+      console.log(`[Analytics] ${eventName}:mount`, properties);
+      
+      // Track with your analytics service
+      // analytics.track(`${eventName}:mount`, properties);
+      
+      return () => {
+        console.log(`[Analytics] ${eventName}:unmount`, properties);
+        // analytics.track(`${eventName}:unmount`, properties);
+      };
+    }, []);
+
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * HOC for adding performance monitoring
+ */
+export function withPerformance<P extends object>(
+  Component: ComponentType<P>,
+  componentName: string
+): ComponentType<P> {
+  return (props: P) => {
+    useEffect(() => {
+      const startTime = performance.now();
+      
+      return () => {
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        
+        console.log(`[Performance] ${componentName} rendered in ${duration.toFixed(2)}ms`);
+        
+        // Send to monitoring service
+        if (duration > 1000) {
+          console.warn(`[Performance] ${componentName} took ${duration.toFixed(2)}ms to render`);
+        }
+      };
+    }, []);
+
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * HOC for adding memoization with custom comparison
+ */
+export function withMemo<P extends object>(
+  Component: ComponentType<P>,
+  areEqual?: (prevProps: P, nextProps: P) => boolean
+): ComponentType<P> {
+  const MemoizedComponent = React.memo(Component, areEqual);
+  return MemoizedComponent;
+}
+
+/**
+ * HOC composition utility
+ * Allows combining multiple HOCs cleanly
+ */
+export function compose<P extends object>(
+  ...hocs: Array<(component: ComponentType<any>) => ComponentType<any>>
+): (component: ComponentType<P>) => ComponentType<P> {
+  return (Component: ComponentType<P>) => {
+    return hocs.reduceRight((acc, hoc) => hoc(acc), Component);
+  };
+}
+
+// Usage example:
+// const EnhancedComponent = compose(
+//   withLoading,
+//   withError,
+//   withEmptyState,
+//   withAnalytics('MyComponent')
+// )(MyComponent);
+
+export default {
+  withLoading,
+  withError,
+  withEmptyState,
+  withSkeleton,
+  withFadeIn,
+  withIntersectionObserver,
+  withResponsive,
+  withKeyboardShortcuts,
+  withAnalytics,
+  withPerformance,
+  withMemo,
+  compose,
+};

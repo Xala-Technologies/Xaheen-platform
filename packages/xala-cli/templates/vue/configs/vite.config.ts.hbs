@@ -1,0 +1,46 @@
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
+  },
+  define: {
+    __XALA_THEME__: JSON.stringify('{{theme}}'),
+    __XALA_INDUSTRY__: JSON.stringify('{{industry}}'),
+    {{#if_contains compliance 'nsm'}}
+    __NSM_CLASSIFICATION__: JSON.stringify('{{nsmClassification}}'),
+    {{/if_contains}}
+    {{#if_contains compliance 'gdpr'}}
+    __GDPR_ENABLED__: true,
+    {{/if_contains}}
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: process.env.NODE_ENV === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue'],
+          ui: ['class-variance-authority'],
+        },
+      },
+    },
+  },
+});

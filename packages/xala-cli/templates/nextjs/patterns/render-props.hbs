@@ -1,0 +1,419 @@
+/**
+ * @fileoverview {{componentName}} - Render Props Pattern Collection
+ * @description Collection of render prop components for flexible composition
+ * @version 5.0.0
+ * @compliance Enterprise Standards, Type-safe, Flexible patterns
+ */
+
+import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
+
+/**
+ * Mouse position tracker using render props
+ */
+interface MouseTrackerProps {
+  render: (mouse: { x: number; y: number }) => ReactNode;
+  disabled?: boolean;
+}
+
+export const MouseTracker: React.FC<MouseTrackerProps> = ({ render, disabled = false }) => {
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (disabled) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMouse({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [disabled]);
+
+  return <>{render(mouse)}</>;
+};
+
+/**
+ * Window size tracker using render props
+ */
+interface WindowSizeProps {
+  render: (size: { width: number; height: number; isMobile: boolean; isTablet: boolean; isDesktop: boolean }) => ReactNode;
+  debounce?: number;
+}
+
+export const WindowSize: React.FC<WindowSizeProps> = ({ render, debounce = 100 }) => {
+  const [size, setSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768,
+  });
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      }, debounce);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [debounce]);
+
+  const isMobile = size.width < 640;
+  const isTablet = size.width >= 640 && size.width < 1024;
+  const isDesktop = size.width >= 1024;
+
+  return <>{render({ ...size, isMobile, isTablet, isDesktop })}</>;
+};
+
+/**
+ * Scroll position tracker using render props
+ */
+interface ScrollTrackerProps {
+  render: (scroll: { 
+    x: number; 
+    y: number; 
+    direction: 'up' | 'down' | 'none';
+    isAtTop: boolean;
+    isAtBottom: boolean;
+  }) => ReactNode;
+  threshold?: number;
+}
+
+export const ScrollTracker: React.FC<ScrollTrackerProps> = ({ render, threshold = 10 }) => {
+  const [scroll, setScroll] = useState({ x: 0, y: 0 });
+  const [direction, setDirection] = useState<'up' | 'down' | 'none'>('none');
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const currentScrollX = window.scrollX;
+
+      if (Math.abs(currentScrollY - lastScrollY.current) > threshold) {
+        setDirection(currentScrollY > lastScrollY.current ? 'down' : 'up');
+      }
+
+      lastScrollY.current = currentScrollY;
+      setScroll({ x: currentScrollX, y: currentScrollY });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [threshold]);
+
+  const isAtTop = scroll.y === 0;
+  const isAtBottom = typeof window !== 'undefined' && 
+    (window.innerHeight + scroll.y) >= document.documentElement.scrollHeight - 10;
+
+  return <>{render({ ...scroll, direction, isAtTop, isAtBottom })}</>;
+};
+
+/**
+ * Toggle state manager using render props
+ */
+interface ToggleProps {
+  initial?: boolean;
+  children: (props: {
+    on: boolean;
+    toggle: () => void;
+    setOn: () => void;
+    setOff: () => void;
+    reset: () => void;
+  }) => ReactNode;
+}
+
+export const Toggle: React.FC<ToggleProps> = ({ initial = false, children }) => {
+  const [on, setOn] = useState(initial);
+
+  const toggle = useCallback(() => setOn(prev => !prev), []);
+  const setOnHandler = useCallback(() => setOn(true), []);
+  const setOffHandler = useCallback(() => setOn(false), []);
+  const reset = useCallback(() => setOn(initial), [initial]);
+
+  return <>{children({ on, toggle, setOn: setOnHandler, setOff: setOffHandler, reset })}</>;
+};
+
+/**
+ * Counter state manager using render props
+ */
+interface CounterProps {
+  initial?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  children: (props: {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+    reset: () => void;
+    setCount: (value: number) => void;
+  }) => ReactNode;
+}
+
+export const Counter: React.FC<CounterProps> = ({ 
+  initial = 0, 
+  min = -Infinity, 
+  max = Infinity, 
+  step = 1,
+  children 
+}) => {
+  const [count, setCount] = useState(initial);
+
+  const increment = useCallback(() => {
+    setCount(prev => Math.min(prev + step, max));
+  }, [step, max]);
+
+  const decrement = useCallback(() => {
+    setCount(prev => Math.max(prev - step, min));
+  }, [step, min]);
+
+  const reset = useCallback(() => setCount(initial), [initial]);
+
+  const setCountSafe = useCallback((value: number) => {
+    setCount(Math.max(min, Math.min(value, max)));
+  }, [min, max]);
+
+  return <>{children({ count, increment, decrement, reset, setCount: setCountSafe })}</>;
+};
+
+/**
+ * Focus manager using render props
+ */
+interface FocusManagerProps {
+  children: (props: {
+    focused: boolean;
+    bind: {
+      onFocus: () => void;
+      onBlur: () => void;
+      tabIndex: number;
+    };
+  }) => ReactNode;
+}
+
+export const FocusManager: React.FC<FocusManagerProps> = ({ children }) => {
+  const [focused, setFocused] = useState(false);
+
+  const bind = {
+    onFocus: () => setFocused(true),
+    onBlur: () => setFocused(false),
+    tabIndex: 0,
+  };
+
+  return <>{children({ focused, bind })}</>;
+};
+
+/**
+ * Hover state manager using render props
+ */
+interface HoverManagerProps {
+  delay?: { enter?: number; leave?: number };
+  children: (props: {
+    hovered: boolean;
+    bind: {
+      onMouseEnter: () => void;
+      onMouseLeave: () => void;
+    };
+  }) => ReactNode;
+}
+
+export const HoverManager: React.FC<HoverManagerProps> = ({ delay, children }) => {
+  const [hovered, setHovered] = useState(false);
+  const enterTimeout = useRef<NodeJS.Timeout>();
+  const leaveTimeout = useRef<NodeJS.Timeout>();
+
+  const handleMouseEnter = useCallback(() => {
+    clearTimeout(leaveTimeout.current);
+    if (delay?.enter) {
+      enterTimeout.current = setTimeout(() => setHovered(true), delay.enter);
+    } else {
+      setHovered(true);
+    }
+  }, [delay?.enter]);
+
+  const handleMouseLeave = useCallback(() => {
+    clearTimeout(enterTimeout.current);
+    if (delay?.leave) {
+      leaveTimeout.current = setTimeout(() => setHovered(false), delay.leave);
+    } else {
+      setHovered(false);
+    }
+  }, [delay?.leave]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(enterTimeout.current);
+      clearTimeout(leaveTimeout.current);
+    };
+  }, []);
+
+  const bind = {
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+  };
+
+  return <>{children({ hovered, bind })}</>;
+};
+
+/**
+ * Async data fetcher using render props
+ */
+interface AsyncDataProps<T> {
+  fetch: () => Promise<T>;
+  dependencies?: any[];
+  children: (props: {
+    data: T | null;
+    loading: boolean;
+    error: Error | null;
+    refetch: () => void;
+  }) => ReactNode;
+}
+
+export function AsyncData<T>({ fetch, dependencies = [], children }: AsyncDataProps<T>) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetch();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  }, [fetch]);
+
+  useEffect(() => {
+    fetchData();
+  }, dependencies);
+
+  return <>{children({ data, loading, error, refetch: fetchData })}</>;
+}
+
+/**
+ * Form field manager using render props
+ */
+interface FieldProps<T> {
+  name: string;
+  initial?: T;
+  validate?: (value: T) => string | undefined;
+  children: (props: {
+    value: T;
+    error: string | undefined;
+    touched: boolean;
+    bind: {
+      value: T;
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+      onBlur: () => void;
+      name: string;
+    };
+    setValue: (value: T) => void;
+    setTouched: (touched: boolean) => void;
+    reset: () => void;
+  }) => ReactNode;
+}
+
+export function Field<T = string>({ name, initial, validate, children }: FieldProps<T>) {
+  const [value, setValue] = useState<T>(initial as T);
+  const [touched, setTouched] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (validate && touched) {
+      setError(validate(value));
+    }
+  }, [value, touched, validate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value as unknown as T);
+  };
+
+  const handleBlur = () => {
+    setTouched(true);
+  };
+
+  const reset = () => {
+    setValue(initial as T);
+    setTouched(false);
+    setError(undefined);
+  };
+
+  const bind = {
+    value,
+    onChange: handleChange,
+    onBlur: handleBlur,
+    name,
+  };
+
+  return <>{children({ value, error, touched, bind, setValue, setTouched, reset })}</>;
+}
+
+/**
+ * List manager using render props
+ */
+interface ListManagerProps<T> {
+  initial?: T[];
+  children: (props: {
+    items: T[];
+    add: (item: T) => void;
+    remove: (index: number) => void;
+    update: (index: number, item: T) => void;
+    move: (from: number, to: number) => void;
+    clear: () => void;
+    reset: () => void;
+  }) => ReactNode;
+}
+
+export function ListManager<T>({ initial = [], children }: ListManagerProps<T>) {
+  const [items, setItems] = useState<T[]>(initial);
+
+  const add = useCallback((item: T) => {
+    setItems(prev => [...prev, item]);
+  }, []);
+
+  const remove = useCallback((index: number) => {
+    setItems(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const update = useCallback((index: number, item: T) => {
+    setItems(prev => prev.map((v, i) => i === index ? item : v));
+  }, []);
+
+  const move = useCallback((from: number, to: number) => {
+    setItems(prev => {
+      const newItems = [...prev];
+      const [item] = newItems.splice(from, 1);
+      newItems.splice(to, 0, item);
+      return newItems;
+    });
+  }, []);
+
+  const clear = useCallback(() => setItems([]), []);
+  const reset = useCallback(() => setItems(initial), [initial]);
+
+  return <>{children({ items, add, remove, update, move, clear, reset })}</>;
+}
+
+export default {
+  MouseTracker,
+  WindowSize,
+  ScrollTracker,
+  Toggle,
+  Counter,
+  FocusManager,
+  HoverManager,
+  AsyncData,
+  Field,
+  ListManager,
+};

@@ -1,0 +1,108 @@
+<template>
+  <div 
+    :data-theme="currentTheme"
+    :data-ui-industry="industry"
+  >
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+/**
+ * @fileoverview {{componentName}} Provider - Enterprise Standards Compliant Vue 3
+ * @description Theme provider using CSS custom properties (v5.0 architecture)
+ * @version 5.0.0
+ * @compliance SSR-Safe, WCAG AAA, No reactive state management
+ */
+import { computed, provide, inject } from 'vue';
+import type { InjectionKey } from 'vue';
+
+// Theme types
+export type Theme = 'light' | 'dark' | 'system';
+export type Industry = 'general' | 'healthcare' | 'finance' | 'government';
+
+// Provider props
+interface {{componentName}}Props {
+  readonly theme?: Theme;
+  readonly industry?: Industry;
+  readonly enableSystem?: boolean;
+}
+
+// Props with defaults
+const props = withDefaults(defineProps<{{componentName}}Props>(), {
+  theme: 'system',
+  industry: 'general',
+  enableSystem: true,
+});
+
+// v5.0 Architecture: Static theme resolution, no reactive state
+const currentTheme = computed(() => {
+  if (props.theme === 'system') {
+    // Use CSS media query for system theme detection
+    return 'system'; // CSS will handle the actual theme via media queries
+  }
+  return props.theme;
+});
+
+// Provide theme context (static values only)
+const themeContext = {
+  theme: currentTheme.value,
+  industry: props.industry,
+  setTheme: (newTheme: Theme) => {
+    // v5.0 Architecture: Direct DOM manipulation, no reactive state
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  },
+  setIndustry: (newIndustry: Industry) => {
+    document.documentElement.setAttribute('data-ui-industry', newIndustry);
+    localStorage.setItem('industry', newIndustry);
+  },
+} as const;
+
+// Injection key
+export const themeKey: InjectionKey<typeof themeContext> = Symbol('theme');
+provide(themeKey, themeContext);
+
+// Composable for consuming theme
+export function useTheme() {
+  const context = inject(themeKey);
+  if (!context) {
+    throw new Error('useTheme must be used within a {{componentName}}');
+  }
+  return context;
+}
+</script>
+
+<style>
+/* v5.0 Architecture: CSS-only theme management */
+[data-theme="system"] {
+  /* System theme uses CSS media queries */
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    color-scheme: light;
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Industry-specific token loading */
+[data-ui-industry="healthcare"] {
+  @import url('../tokens/healthcare-tokens.css');
+}
+
+[data-ui-industry="finance"] {
+  @import url('../tokens/finance-tokens.css');
+}
+
+[data-ui-industry="government"] {
+  @import url('../tokens/government-tokens.css');
+}
+</style>

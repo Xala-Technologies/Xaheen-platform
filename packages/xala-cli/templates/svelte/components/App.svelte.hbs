@@ -1,0 +1,107 @@
+<script lang="ts">
+  // v5.0 Architecture: No reactive stores or onMount hooks
+  import { 
+    Button, 
+    Card, 
+    CardContent, 
+    CardDescription, 
+    CardHeader, 
+    CardTitle,
+    AppShell,
+    MainContent,
+    Section,
+    Heading,
+    Text,
+    Grid
+  } from '@xala-technologies/ui-system';
+  import { t } from '@xala-technologies/ui-system/i18n';
+  {{#if_contains features 'navbar'}}
+  import { Navbar } from '@xala-technologies/ui-system';
+  {{/if_contains}}
+  {{#if_contains features 'dashboard'}}
+  import { Dashboard } from '@xala-technologies/ui-system';
+  {{/if_contains}}
+
+  // v5.0 Architecture: Static translation function, no reactive stores
+  const title = '{{title}}';
+  const description = '{{description}}';
+  const industry = '{{industry}}';
+  const currentTheme = '{{theme}}';
+  const showNavbar = {{#if_contains features 'navbar'}}true{{else}}false{{/if_contains}};
+  const showDashboard = {{#if_contains features 'dashboard'}}true{{else}}false{{/if_contains}};
+</script>
+
+<AppShell 
+  theme={currentTheme}
+  industry={industry}
+  fullHeight
+>
+  {#if showNavbar}
+    <Navbar variant="flat" spacing="md" />
+  {/if}
+  
+  <MainContent spacing="xl">
+    <Section align="center" spacing="md">
+      <Heading level={1} variant="hero" align="center">
+        {t('welcome.title', { name: title })}
+      </Heading>
+      <Text variant="lead" align="center" maxWidth="2xl">
+        {t('welcome.description', { description })}
+      </Text>
+    </Section>
+
+    {#if showDashboard}
+      <Dashboard variant="modern" spacing="xl" />
+    {:else}
+      <Section spacing="lg">
+        <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('actions.getStarted.title')}</CardTitle>
+              <CardDescription>
+                {t('actions.getStarted.description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent spacing="md">
+              <Button variant="primary" size="lg" fullWidth>
+                {t('actions.getStarted.button')}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('actions.documentation.title')}</CardTitle>
+              <CardDescription>
+                {t('actions.documentation.description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent spacing="md">
+              <Button variant="outline" size="lg" fullWidth>
+                {t('actions.documentation.button')}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('actions.examples.title')}</CardTitle>
+              <CardDescription>
+                {t('actions.examples.description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent spacing="md">
+              <Button variant="ghost" size="lg" fullWidth>
+                {t('actions.examples.button')}
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Section>
+    {/if}
+  </MainContent>
+</AppShell>
+
+<style>
+  @import '../app.css';
+</style>

@@ -1,0 +1,111 @@
+/**
+ * @fileoverview {{pascalCase name}} Component - CVA Design System Compliant
+ * @description {{#if description}}{{description}}{{else}}A {{name}} component built with Xala UI System using CVA pattern{{/if}}
+ * @version 5.0.0
+ * @compliance CVA-based, SSR-safe, Token-based styling
+ */
+
+import React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@xala-technologies/ui-system/utils';
+
+// =============================================================================
+// {{pascalCase name}} VARIANTS USING CVA
+// =============================================================================
+
+const {{camelCase name}}Variants = cva(
+  // Base classes using semantic tokens
+  'relative inline-flex items-center justify-center gap-2 rounded-lg border bg-card text-card-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
+        primary: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        outline: 'border-border bg-transparent hover:bg-accent hover:text-accent-foreground',
+        ghost: 'border-transparent bg-transparent hover:bg-accent hover:text-accent-foreground',
+      },
+      size: {
+        sm: 'h-9 px-3 text-sm',
+        md: 'h-10 px-4 py-2',
+        lg: 'h-11 px-8',
+        xl: 'h-12 px-12 text-base',
+      },
+      fullWidth: {
+        true: 'w-full',
+        false: 'w-auto',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+      fullWidth: false,
+    },
+  }
+);
+
+// =============================================================================
+// {{pascalCase name}} COMPONENT INTERFACE
+// =============================================================================
+
+export interface {{pascalCase name}}Props
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof {{camelCase name}}Variants> {
+  {{#each props}}
+  readonly {{name}}{{#if optional}}?{{/if}}: {{type}};
+  {{/each}}
+  readonly loading?: boolean;
+  readonly disabled?: boolean;
+  readonly 'data-testid'?: string;
+}
+
+// =============================================================================
+// {{pascalCase name}} COMPONENT
+// =============================================================================
+
+export const {{pascalCase name}} = React.forwardRef<HTMLDivElement, {{pascalCase name}}Props>(
+  ({
+    className,
+    variant = 'default',
+    size = 'md',
+    fullWidth = false,
+    loading = false,
+    disabled = false,
+    {{#each props}}
+    {{name}},
+    {{/each}}
+    children,
+    'data-testid': testId,
+    ...props
+  }, ref) => {
+    const isDisabled = disabled || loading;
+
+    return (
+      <div
+        className={cn({{camelCase name}}Variants({ variant, size, fullWidth }), className)}
+        ref={ref}
+        data-testid={testId}
+        aria-disabled={isDisabled}
+        {...props}
+      >
+        {{#if_contains features 'loading'}}
+        {loading && (
+          <div className="animate-spin rounded-full border-2 border-transparent border-t-current h-4 w-4" />
+        )}
+        {{/if_contains}}
+        
+        {{#each props}}
+        {{#if (eq name 'children')}}
+        <div className="flex-1">
+          {{{name}}}
+        </div>
+        {{/if}}
+        {{/each}}
+        
+        {!loading && children}
+      </div>
+    );
+  }
+);
+
+{{pascalCase name}}.displayName = '{{pascalCase name}}';

@@ -1,0 +1,411 @@
+/**
+ * @fileoverview {{componentName}} - Enterprise Feature Flag System
+ * @description Feature flag management with remote config and A/B testing
+ * @version 5.0.0
+ * @compliance Enterprise Standards, Analytics, A/B Testing
+ */
+
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+
+export interface FeatureFlag {
+  readonly key: string;
+  readonly enabled: boolean;
+  readonly variant?: string;
+  readonly metadata?: Record<string, any>;
+  readonly rolloutPercentage?: number;
+  readonly targetGroups?: ReadonlyArray<string>;
+  readonly startDate?: string;
+  readonly endDate?: string;
+  readonly description?: string;
+}
+
+export interface FeatureFlagConfig {
+  readonly flags: Record<string, FeatureFlag>;
+  readonly user?: {
+    readonly id: string;
+    readonly groups?: ReadonlyArray<string>;
+    readonly attributes?: Record<string, any>;
+  };
+  readonly environment?: 'development' | 'staging' | 'production';
+  readonly version?: string;
+}
+
+export interface FeatureFlagContextValue {
+  readonly flags: Record<string, FeatureFlag>;
+  readonly isEnabled: (key: string) => boolean;
+  readonly getVariant: (key: string) => string | undefined;
+  readonly getFlag: (key: string) => FeatureFlag | undefined;
+  readonly hasFlag: (key: string) => boolean;
+  readonly getAllFlags: () => Record<string, FeatureFlag>;
+  readonly refresh: () => Promise<void>;
+  readonly override: (key: string, value: boolean | FeatureFlag) => void;
+  readonly clearOverrides: () => void;
+  readonly track: (event: string, properties?: Record<string, any>) => void;
+}
+
+const FeatureFlagContext = createContext<FeatureFlagContextValue | undefined>(undefined);
+
+interface {{componentName}}Props {
+  readonly children: React.ReactNode;
+  readonly config?: FeatureFlagConfig;
+  readonly apiEndpoint?: string;
+  readonly apiKey?: string;
+  readonly refreshInterval?: number;
+  readonly enableCache?: boolean;
+  readonly cacheKey?: string;
+  readonly cacheDuration?: number;
+  readonly enableAnalytics?: boolean;
+  readonly analyticsEndpoint?: string;
+  readonly defaultFlags?: Record<string, boolean | FeatureFlag>;
+  readonly onFlagChange?: (key: string, flag: FeatureFlag) => void;
+  readonly enableDebug?: boolean;
+}
+
+/**
+ * Feature Flag Provider for managing feature toggles and A/B tests
+ * Supports remote configuration, caching, and analytics
+ */
+export const {{componentName}}: React.FC<{{componentName}}Props> = ({
+  children,
+  config,
+  apiEndpoint,
+  apiKey,
+  refreshInterval = 5 * 60 * 1000, // 5 minutes
+  enableCache = true,
+  cacheKey = 'feature-flags',
+  cacheDuration = 60 * 60 * 1000, // 1 hour
+  enableAnalytics = false,
+  analyticsEndpoint,
+  defaultFlags = {},
+  onFlagChange,
+  enableDebug = false,
+}) => {
+  const [flags, setFlags] = useState<Record<string, FeatureFlag>>({});
+  const [overrides, setOverrides] = useState<Record<string, FeatureFlag>>({});
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const analyticsQueueRef = useRef<Array<{ event: string; properties: any; timestamp: number }>>([]);
+
+  // Initialize flags from config or defaults
+  useEffect(() => {
+    const initialFlags: Record<string, FeatureFlag> = {};
+    
+    // Add default flags
+    Object.entries(defaultFlags).forEach(([key, value]) => {
+      if (typeof value === 'boolean') {
+        initialFlags[key] = { key, enabled: value };
+      } else {
+        initialFlags[key] = value;
+      }
+    });
+    
+    // Override with config flags
+    if (config?.flags) {
+      Object.assign(initialFlags, config.flags);
+    }
+    
+    // Load from cache
+    if (enableCache && typeof window !== 'undefined') {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.timestamp && Date.now() - parsed.timestamp < cacheDuration) {
+            Object.assign(initialFlags, parsed.flags);
+          }
+        } catch (error) {
+          console.error('Failed to parse cached feature flags:', error);
+        }
+      }
+    }
+    
+    setFlags(initialFlags);
+    
+    // Fetch remote flags
+    if (apiEndpoint) {
+      fetchRemoteFlags();
+    }
+  }, [config, defaultFlags, enableCache, cacheKey, cacheDuration, apiEndpoint]);
+
+  // Set up refresh interval
+  useEffect(() => {
+    if (apiEndpoint && refreshInterval > 0) {
+      refreshTimerRef.current = setInterval(() => {
+        fetchRemoteFlags();
+      }, refreshInterval);
+      
+      return () => {
+        if (refreshTimerRef.current) {
+          clearInterval(refreshTimerRef.current);
+        }
+      };
+    }
+  }, [apiEndpoint, refreshInterval]);
+
+  // Flush analytics queue periodically
+  useEffect(() => {
+    if (enableAnalytics && analyticsEndpoint) {
+      const flushInterval = setInterval(() => {
+        flushAnalytics();
+      }, 30000); // 30 seconds
+      
+      return () => clearInterval(flushInterval);
+    }
+  }, [enableAnalytics, analyticsEndpoint]);
+
+  const fetchRemoteFlags = async () => {
+    if (!apiEndpoint) return;
+    
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (apiKey) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+      
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          user: config?.user,
+          environment: config?.environment || process.env.NODE_ENV,
+          version: config?.version,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch feature flags: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const remoteFlags: Record<string, FeatureFlag> = {};
+      
+      // Process remote flags
+      Object.entries(data.flags || data).forEach(([key, value]: [string, any]) => {
+        remoteFlags[key] = {
+          key,
+          enabled: evaluateFlag(value, config?.user),
+          ...value,
+        };
+      });
+      
+      setFlags(prev => {
+        const updated = { ...prev, ...remoteFlags };
+        
+        // Cache flags
+        if (enableCache && typeof window !== 'undefined') {
+          localStorage.setItem(cacheKey, JSON.stringify({
+            flags: updated,
+            timestamp: Date.now(),
+          }));
+        }
+        
+        // Notify changes
+        Object.keys(remoteFlags).forEach(key => {
+          if (prev[key]?.enabled !== remoteFlags[key].enabled) {
+            onFlagChange?.(key, remoteFlags[key]);
+          }
+        });
+        
+        return updated;
+      });
+      
+      if (enableDebug) {
+        console.log('Feature flags updated:', remoteFlags);
+      }
+    } catch (error) {
+      console.error('Failed to fetch feature flags:', error);
+    }
+  };
+
+  const evaluateFlag = (flag: any, user?: FeatureFlagConfig['user']): boolean => {
+    if (typeof flag === 'boolean') return flag;
+    if (!flag) return false;
+    
+    // Check date range
+    if (flag.startDate && new Date(flag.startDate) > new Date()) return false;
+    if (flag.endDate && new Date(flag.endDate) < new Date()) return false;
+    
+    // Check target groups
+    if (flag.targetGroups && flag.targetGroups.length > 0) {
+      if (!user?.groups) return false;
+      const hasGroup = flag.targetGroups.some((group: string) => 
+        user.groups?.includes(group)
+      );
+      if (!hasGroup) return false;
+    }
+    
+    // Check rollout percentage
+    if (flag.rolloutPercentage !== undefined && flag.rolloutPercentage < 100) {
+      if (!user?.id) return false;
+      const hash = hashString(user.id + flag.key);
+      const bucket = hash % 100;
+      return bucket < flag.rolloutPercentage;
+    }
+    
+    return flag.enabled !== false;
+  };
+
+  const hashString = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  };
+
+  const flushAnalytics = async () => {
+    if (analyticsQueueRef.current.length === 0) return;
+    
+    const events = [...analyticsQueueRef.current];
+    analyticsQueueRef.current = [];
+    
+    try {
+      await fetch(analyticsEndpoint!, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          events,
+          user: config?.user,
+          environment: config?.environment || process.env.NODE_ENV,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to send analytics:', error);
+      // Re-queue events on failure
+      analyticsQueueRef.current.unshift(...events);
+    }
+  };
+
+  const isEnabled = useCallback((key: string): boolean => {
+    const override = overrides[key];
+    if (override !== undefined) return override.enabled;
+    return flags[key]?.enabled || false;
+  }, [flags, overrides]);
+
+  const getVariant = useCallback((key: string): string | undefined => {
+    const override = overrides[key];
+    if (override !== undefined) return override.variant;
+    return flags[key]?.variant;
+  }, [flags, overrides]);
+
+  const getFlag = useCallback((key: string): FeatureFlag | undefined => {
+    return overrides[key] || flags[key];
+  }, [flags, overrides]);
+
+  const hasFlag = useCallback((key: string): boolean => {
+    return key in overrides || key in flags;
+  }, [flags, overrides]);
+
+  const getAllFlags = useCallback((): Record<string, FeatureFlag> => {
+    return { ...flags, ...overrides };
+  }, [flags, overrides]);
+
+  const refresh = useCallback(async () => {
+    await fetchRemoteFlags();
+  }, []);
+
+  const override = useCallback((key: string, value: boolean | FeatureFlag) => {
+    const flag: FeatureFlag = typeof value === 'boolean' 
+      ? { key, enabled: value }
+      : value;
+    
+    setOverrides(prev => ({
+      ...prev,
+      [key]: flag,
+    }));
+    
+    if (enableDebug) {
+      console.log(`Feature flag override: ${key} = ${flag.enabled}`);
+    }
+  }, [enableDebug]);
+
+  const clearOverrides = useCallback(() => {
+    setOverrides({});
+    if (enableDebug) {
+      console.log('Feature flag overrides cleared');
+    }
+  }, [enableDebug]);
+
+  const track = useCallback((event: string, properties?: Record<string, any>) => {
+    if (!enableAnalytics) return;
+    
+    analyticsQueueRef.current.push({
+      event,
+      properties: {
+        ...properties,
+        flags: Object.keys(flags).reduce((acc, key) => {
+          if (isEnabled(key)) {
+            acc[key] = getVariant(key) || true;
+          }
+          return acc;
+        }, {} as Record<string, any>),
+      },
+      timestamp: Date.now(),
+    });
+    
+    // Flush if queue is large
+    if (analyticsQueueRef.current.length >= 10) {
+      flushAnalytics();
+    }
+  }, [enableAnalytics, flags, isEnabled, getVariant]);
+
+  const value: FeatureFlagContextValue = {
+    flags: { ...flags, ...overrides },
+    isEnabled,
+    getVariant,
+    getFlag,
+    hasFlag,
+    getAllFlags,
+    refresh,
+    override,
+    clearOverrides,
+    track,
+  };
+
+  return (
+    <FeatureFlagContext.Provider value={value}>
+      {children}
+    </FeatureFlagContext.Provider>
+  );
+};
+
+/**
+ * Hook to access feature flags
+ */
+export const useFeatureFlags = () => {
+  const context = useContext(FeatureFlagContext);
+  if (!context) {
+    throw new Error('useFeatureFlags must be used within a FeatureFlagProvider');
+  }
+  return context;
+};
+
+/**
+ * Hook to check a specific feature flag
+ */
+export const useFeatureFlag = (key: string): boolean => {
+  const { isEnabled } = useFeatureFlags();
+  return isEnabled(key);
+};
+
+/**
+ * Component to conditionally render based on feature flag
+ */
+export const FeatureFlag: React.FC<{
+  flag: string;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}> = ({ flag, children, fallback = null }) => {
+  const isEnabled = useFeatureFlag(flag);
+  return <>{isEnabled ? children : fallback}</>;
+};
+
+{{componentName}}.displayName = '{{componentName}}';

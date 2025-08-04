@@ -4,6 +4,7 @@
  * Norwegian compliance and multi-platform support
  */
 
+import type * as React from 'react';
 import type {
   ComponentSpecification,
   PropDefinition,
@@ -202,7 +203,7 @@ export type InferPrimitiveType<T extends PrimitiveTypeDefinition> =
 export type InferComplexType<T extends ComplexTypeDefinition> = 
   T['complex'] extends 'function' ? Function :
   T['complex'] extends 'node' ? React.ReactNode :
-  T['complex'] extends 'element' ? JSX.Element :
+  T['complex'] extends 'element' ? React.ReactElement :
   T['complex'] extends 'component' ? React.ComponentType<any> :
   T['complex'] extends 'ref' ? React.RefObject<HTMLElement> :
   T['complex'] extends 'date' ? Date :

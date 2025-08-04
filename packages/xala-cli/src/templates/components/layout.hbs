@@ -1,0 +1,204 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant
+ * @description Page layout component using design tokens
+ * @version 5.0.0
+ * @compliance Pure component, SSR-safe, uses design tokens
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import { Container } from '@/components/layout/Container';
+import { Stack } from '@/components/layout/Stack';
+
+/**
+ * Layout variants using design tokens
+ */
+const layoutVariants = cva(
+  'min-h-screen flex flex-col',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background',
+        centered: 'bg-background items-center justify-center',
+        sidebar: 'bg-background',
+        split: 'bg-background',
+      },
+      norwegianStandard: {
+        true: 'font-sans antialiased',
+        false: '',
+      },
+      maxWidth: {
+        sm: 'max-w-sm mx-auto',
+        md: 'max-w-md mx-auto',
+        lg: 'max-w-lg mx-auto',
+        xl: 'max-w-xl mx-auto',
+        '2xl': 'max-w-2xl mx-auto',
+        '4xl': 'max-w-4xl mx-auto',
+        '6xl': 'max-w-6xl mx-auto',
+        full: 'max-w-full',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      norwegianStandard: true,
+      maxWidth: 'full',
+    },
+  }
+);
+
+export interface {{componentName}}Props
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof layoutVariants> {
+  readonly navbar?: React.ReactNode;
+  readonly header?: React.ReactNode;
+  readonly sidebar?: React.ReactNode;
+  readonly footer?: React.ReactNode;
+  readonly rightPanel?: React.ReactNode;
+  readonly breadcrumbs?: React.ReactNode;
+  readonly sidebarPosition?: 'left' | 'right';
+  readonly sidebarWidth?: 'narrow' | 'normal' | 'wide';
+  readonly 'data-testid'?: string;
+}
+
+/**
+ * Layout component using design tokens and semantic props
+ * Pure presentational component with no hooks
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props>(
+  (
+    {
+      children,
+      navbar,
+      header,
+      sidebar,
+      footer,
+      rightPanel,
+      breadcrumbs,
+      variant,
+      norwegianStandard,
+      maxWidth,
+      sidebarPosition = 'left',
+      sidebarWidth = 'normal',
+      className,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): React.ReactElement => {
+    const getSidebarWidth = () => {
+      switch (sidebarWidth) {
+        case 'narrow': return 'w-48';
+        case 'wide': return 'w-80';
+        default: return 'w-64';
+      }
+    };
+
+    const mainContent = (
+      <main className="flex-1 w-full">
+        <Container 
+          size={maxWidth === 'full' ? 'full' : 'xl'} 
+          padding="md"
+          className="min-h-[calc(100vh-theme(spacing.16)-theme(spacing.16))]"
+        >
+          <Stack direction="vertical" gap={6}>
+            {breadcrumbs && (
+              <nav aria-label="Breadcrumb" className="text-sm text-gray-600">
+                {breadcrumbs}
+              </nav>
+            )}
+            {children}
+          </Stack>
+        </Container>
+      </main>
+    );
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          layoutVariants({
+            variant,
+            norwegianStandard,
+            maxWidth,
+          }),
+          className
+        )}
+        data-testid={testId}
+        {...props}
+      >
+        {/* Navbar */}
+        {navbar && (
+          <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {navbar}
+          </div>
+        )}
+
+        {/* Header */}
+        {header && (
+          <header className="w-full border-b bg-background">
+            <Container size={maxWidth === 'full' ? 'full' : 'xl'} padding="md">
+              {header}
+            </Container>
+          </header>
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex">
+          {variant === 'sidebar' || variant === 'split' ? (
+            <>
+              {/* Left Sidebar */}
+              {sidebar && sidebarPosition === 'left' && (
+                <aside className={cn(
+                  getSidebarWidth(),
+                  'border-r bg-background flex-shrink-0'
+                )}>
+                  <div className="sticky top-16 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+                    {sidebar}
+                  </div>
+                </aside>
+              )}
+
+              {/* Main Content */}
+              {mainContent}
+
+              {/* Right Sidebar/Panel */}
+              {sidebar && sidebarPosition === 'right' && (
+                <aside className={cn(
+                  getSidebarWidth(),
+                  'border-l bg-background flex-shrink-0'
+                )}>
+                  <div className="sticky top-16 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+                    {sidebar}
+                  </div>
+                </aside>
+              )}
+
+              {/* Right Panel (for split layout) */}
+              {variant === 'split' && rightPanel && (
+                <aside className="w-80 border-l bg-background flex-shrink-0">
+                  <div className="sticky top-16 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+                    {rightPanel}
+                  </div>
+                </aside>
+              )}
+            </>
+          ) : (
+            mainContent
+          )}
+        </div>
+
+        {/* Footer */}
+        {footer && (
+          <footer className="w-full border-t bg-background mt-auto">
+            <Container size={maxWidth === 'full' ? 'full' : 'xl'} padding="md">
+              {footer}
+            </Container>
+          </footer>
+        )}
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

@@ -1,0 +1,39 @@
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  define: {
+    __XALA_THEME__: JSON.stringify('{{theme}}'),
+    __XALA_INDUSTRY__: JSON.stringify('{{industry}}'),
+    {{#if_contains compliance 'nsm'}}
+    __NSM_CLASSIFICATION__: JSON.stringify('{{nsmClassification}}'),
+    {{/if_contains}}
+    {{#if_contains compliance 'gdpr'}}
+    __GDPR_ENABLED__: true,
+    {{/if_contains}}
+  },
+  css: {
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
+  },
+  server: {
+    port: 5173,
+    open: true,
+  },
+  build: {
+    sourcemap: process.env.NODE_ENV === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['svelte'],
+          ui: ['class-variance-authority', 'tailwind-merge'],
+        },
+      },
+    },
+  },
+});

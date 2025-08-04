@@ -1,5 +1,5 @@
 {
-  "name": "@xala-technologies/ui-system-mcp",
+  "name": "@xala-technologies/xala-mcp",
   "version": "6.0.0",
   "description": "Multi-platform MCP server for generating components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using Xala UI System v5.0 semantic architecture",
   "main": "dist/index.js",
@@ -27,11 +27,11 @@
     "profile": "node --prof dist/index.js",
     "benchmark": "node dist/benchmark.js",
     "doctor": "node dist/doctor.js",
-    "prepublishOnly": "npm run validate && npm run build",
+    "prepublishOnly": "bun run validate && bun run build",
     "postpublish": "git push --tags",
-    "release:patch": "npm version patch && npm publish",
-    "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish"
+    "release:patch": "bun version patch && bun publish",
+    "release:minor": "bun version minor && bun publish",
+    "release:major": "bun version major && bun publish"
   },
   "keywords": [
     "mcp",
@@ -73,6 +73,7 @@
     "@types/handlebars": "^4.1.0",
     "@types/jest": "^29.0.0",
     "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
@@ -91,7 +92,7 @@
   ],
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "bun": ">=1.0.0"
   },
   "publishConfig": {
     "access": "public",

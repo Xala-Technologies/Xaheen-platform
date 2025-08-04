@@ -35,7 +35,7 @@ Multi-platform MCP server for generating enterprise-grade UI components across R
 ## Installation
 
 ```bash
-npm install @xala-technologies/ui-system-mcp
+bun add @xala-technologies/ui-system-mcp
 ```
 
 ## MCP Tools Available
@@ -302,19 +302,19 @@ interface ComponentConfig {
 ### Building
 
 ```bash
-npm run build
+bun run build
 ```
 
 ### Testing
 
 ```bash
-npm test
+bun test
 ```
 
 ### Linting
 
 ```bash
-npm run lint
+bun run lint
 ```
 
 ## Architecture

@@ -1,0 +1,61 @@
+import { Injectable, signal } from '@angular/core';
+
+export type Theme = 'light' | 'dark' | 'system';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ThemeService {
+  private readonly themeSignal = signal<Theme>('{{theme}}' as Theme);
+  private readonly systemThemeSignal = signal<'light' | 'dark'>('light');
+
+  readonly theme = this.themeSignal.asReadonly();
+  readonly systemTheme = this.systemThemeSignal.asReadonly();
+
+  constructor() {
+    this.initializeTheme();
+  }
+
+  setTheme(newTheme: Theme): void {
+    this.themeSignal.set(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    if (newTheme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.systemThemeSignal.set(prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', this.systemThemeSignal());
+    } else {
+      document.documentElement.setAttribute('data-theme', newTheme);
+    }
+  }
+
+  getCurrentTheme(): 'light' | 'dark' {
+    const theme = this.themeSignal();
+    if (theme === 'system') {
+      return this.systemThemeSignal();
+    }
+    return theme;
+  }
+
+  private initializeTheme(): void {
+    const savedTheme = (localStorage.getItem('theme') as Theme) || 'system';
+    this.themeSignal.set(savedTheme);
+    
+    if (savedTheme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.systemThemeSignal.set(prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', this.systemThemeSignal());
+    } else {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', (e) => {
+      if (this.themeSignal() === 'system') {
+        this.systemThemeSignal.set(e.matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', this.systemThemeSignal());
+      }
+    });
+  }
+}

@@ -1,0 +1,29 @@
+# Bun configuration for Xala MCP package
+[install]
+# Cache directory
+cache = "node_modules/.cache/bun"
+
+# Faster installs
+exact = true
+auto = "bun"
+
+# Production optimizations
+production = false
+
+[install.scopes]
+# Optimize for TypeScript and React packages
+"@types" = { registry = "https://registry.npmjs.org/" }
+"@xala-technologies" = { registry = "https://registry.npmjs.org/" }
+
+[run]
+# Use bun for script execution when possible
+bun = true
+
+[test]
+# Use bun test runner
+preload = ["./src/test-setup.ts"]
+
+[build]
+# TypeScript compilation settings
+target = "node"
+format = "esm"

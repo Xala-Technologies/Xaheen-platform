@@ -1,0 +1,58 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Appearance } from 'react-native';
+import { HomeScreen } from '../screens/HomeScreen';
+
+export type RootStackParamList = {
+  Home: undefined;
+  // Add more screen types here
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export const AppNavigator: React.FC = () => {
+  // v5.0 Architecture: Static theme detection, no hooks
+  const isDark = Appearance.getColorScheme() === 'dark';
+
+  const theme = {
+    dark: isDark,
+    colors: {
+      primary: '#3B82F6',
+      background: isDark ? '#111827' : '#FFFFFF',
+      card: isDark ? '#1F2937' : '#FFFFFF',
+      text: isDark ? '#F9FAFB' : '#111827',
+      border: isDark ? '#374151' : '#E5E7EB',
+      notification: '#EF4444',
+    },
+  };
+
+  return (
+    <NavigationContainer theme={theme}>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: theme.colors.card,
+          },
+          headerTintColor: theme.colors.text,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+          contentStyle: {
+            backgroundColor: theme.colors.background,
+          },
+        }}
+      >
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: '{{title}}',
+            headerLargeTitle: true,
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};

@@ -1,0 +1,308 @@
+/**
+ * @fileoverview {{componentName}} - High-Performance Virtual List
+ * @description Virtual scrolling list for rendering large datasets efficiently
+ * @version 5.0.0
+ * @compliance Pure component, Performance-optimized, WCAG AAA
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef } from 'react';
+
+const {{camelCase componentName}}Variants = cva(
+  'relative overflow-auto',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background',
+        bordered: 'border border-border rounded-lg',
+        elevated: 'bg-card shadow-lg rounded-lg',
+      },
+      scrollbar: {
+        default: 'scrollbar-thin scrollbar-thumb-border scrollbar-track-background',
+        hidden: 'scrollbar-hide',
+        minimal: 'scrollbar-thin',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      scrollbar: 'default',
+    },
+  }
+);
+
+export interface VirtualItem<T = any> {
+  readonly index: number;
+  readonly data: T;
+  readonly size: number;
+  readonly start: number;
+  readonly end: number;
+  readonly isVisible: boolean;
+}
+
+export interface {{componentName}}Props<T = any>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  // Data
+  readonly items: ReadonlyArray<T>;
+  readonly itemHeight: number | ((index: number, item: T) => number);
+  readonly renderItem: (item: VirtualItem<T>) => React.ReactNode;
+  
+  // Dimensions
+  readonly height: number | string;
+  readonly width?: number | string;
+  readonly overscan?: number;
+  readonly scrollOffset?: number;
+  readonly onScroll?: (offset: number) => void;
+  
+  // Performance
+  readonly estimatedItemSize?: number;
+  readonly threshold?: number;
+  readonly debounceScroll?: number;
+  
+  // Features
+  readonly horizontal?: boolean;
+  readonly stickyIndices?: ReadonlyArray<number>;
+  readonly getItemKey?: (index: number, item: T) => string | number;
+  readonly renderPlaceholder?: (index: number) => React.ReactNode;
+  readonly renderEmpty?: () => React.ReactNode;
+  readonly renderLoading?: () => React.ReactNode;
+  
+  // State from parent
+  readonly isLoading?: boolean;
+  readonly visibleRange?: { start: number; end: number };
+  readonly scrollToIndex?: number;
+  readonly scrollToAlignment?: 'start' | 'center' | 'end' | 'auto';
+  
+  readonly 'data-testid'?: string;
+}
+
+/**
+ * Pure virtual list component
+ * Parent handles scroll state and virtualization calculations
+ */
+export const {{componentName}} = forwardRef<HTMLDivElement, {{componentName}}Props<any>>(
+  <T extends any>(
+    {
+      className,
+      items,
+      itemHeight,
+      renderItem,
+      height,
+      width = '100%',
+      overscan = 3,
+      scrollOffset = 0,
+      onScroll,
+      estimatedItemSize = 50,
+      threshold = 0,
+      debounceScroll = 0,
+      horizontal = false,
+      stickyIndices = [],
+      getItemKey,
+      renderPlaceholder,
+      renderEmpty,
+      renderLoading,
+      isLoading = false,
+      visibleRange,
+      scrollToIndex,
+      scrollToAlignment = 'auto',
+      variant,
+      scrollbar,
+      'data-testid': testId,
+      ...props
+    }: {{componentName}}Props<T>,
+    ref: React.ForwardedRef<HTMLDivElement>
+  ) => {
+    // Calculate item sizes and positions
+    const getItemSize = (index: number): number => {
+      if (typeof itemHeight === 'function') {
+        return itemHeight(index, items[index]);
+      }
+      return itemHeight;
+    };
+
+    // Calculate total size
+    let totalSize = 0;
+    const itemMetadata: Array<{ size: number; offset: number }> = [];
+    
+    for (let i = 0; i < items.length; i++) {
+      const size = getItemSize(i);
+      itemMetadata.push({
+        size,
+        offset: totalSize,
+      });
+      totalSize += size;
+    }
+
+    // Determine visible items based on parent-provided range or calculate
+    const startIndex = visibleRange?.start ?? 0;
+    const endIndex = visibleRange?.end ?? Math.min(startIndex + 20, items.length);
+
+    // Calculate visible items with overscan
+    const visibleStart = Math.max(0, startIndex - overscan);
+    const visibleEnd = Math.min(items.length - 1, endIndex + overscan);
+
+    // Create virtual items
+    const virtualItems: VirtualItem<T>[] = [];
+    for (let i = visibleStart; i <= visibleEnd; i++) {
+      const item = items[i];
+      const metadata = itemMetadata[i];
+      
+      virtualItems.push({
+        index: i,
+        data: item,
+        size: metadata.size,
+        start: metadata.offset,
+        end: metadata.offset + metadata.size,
+        isVisible: i >= startIndex && i <= endIndex,
+      });
+    }
+
+    // Calculate offset for items before visible range
+    const offsetBefore = visibleStart > 0 ? itemMetadata[visibleStart].offset : 0;
+    const offsetAfter = totalSize - (visibleEnd < items.length - 1 ? itemMetadata[visibleEnd].offset + itemMetadata[visibleEnd].size : totalSize);
+
+    // Handle empty state
+    if (!isLoading && items.length === 0) {
+      return (
+        <div
+          ref={ref}
+          className={cn({{camelCase componentName}}Variants({ variant, scrollbar }), className)}
+          style={{ height, width }}
+          data-testid={testId}
+          {...props}
+        >
+          {renderEmpty ? renderEmpty() : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              No items to display
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Handle loading state
+    if (isLoading && renderLoading) {
+      return (
+        <div
+          ref={ref}
+          className={cn({{camelCase componentName}}Variants({ variant, scrollbar }), className)}
+          style={{ height, width }}
+          data-testid={testId}
+          {...props}
+        >
+          {renderLoading()}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={ref}
+        className={cn({{camelCase componentName}}Variants({ variant, scrollbar }), className)}
+        style={{
+          height,
+          width,
+          [horizontal ? 'overflowX' : 'overflowY']: 'auto',
+        }}
+        onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+        data-testid={testId}
+        role="list"
+        aria-rowcount={items.length}
+        {...props}
+      >
+        <div
+          style={{
+            [horizontal ? 'width' : 'height']: totalSize,
+            [horizontal ? 'height' : 'width']: '100%',
+            position: 'relative',
+          }}
+        >
+          {/* Spacer for items before visible range */}
+          {offsetBefore > 0 && (
+            <div
+              style={{
+                [horizontal ? 'width' : 'height']: offsetBefore,
+                [horizontal ? 'height' : 'width']: '100%',
+              }}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Render visible items */}
+          {virtualItems.map((virtualItem) => {
+            const key = getItemKey
+              ? getItemKey(virtualItem.index, virtualItem.data)
+              : virtualItem.index;
+
+            const isSticky = stickyIndices.includes(virtualItem.index);
+
+            return (
+              <div
+                key={key}
+                style={{
+                  position: isSticky ? 'sticky' : 'absolute',
+                  [horizontal ? 'left' : 'top']: isSticky ? 0 : virtualItem.start,
+                  [horizontal ? 'width' : 'height']: virtualItem.size,
+                  [horizontal ? 'height' : 'width']: '100%',
+                  zIndex: isSticky ? 1 : 0,
+                }}
+                role="listitem"
+                aria-rowindex={virtualItem.index + 1}
+                aria-setsize={items.length}
+                aria-posinset={virtualItem.index + 1}
+              >
+                {renderItem(virtualItem)}
+              </div>
+            );
+          })}
+
+          {/* Spacer for items after visible range */}
+          {offsetAfter > 0 && (
+            <div
+              style={{
+                [horizontal ? 'width' : 'height']: offsetAfter,
+                [horizontal ? 'height' : 'width']: '100%',
+              }}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Loading placeholder for infinite scroll */}
+          {isLoading && (
+            <div
+              className="flex items-center justify-center p-4"
+              style={{
+                position: 'absolute',
+                [horizontal ? 'left' : 'top']: totalSize,
+                [horizontal ? 'height' : 'width']: '100%',
+              }}
+            >
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+) as <T = any>(props: {{componentName}}Props<T> & { ref?: React.ForwardedRef<HTMLDivElement> }) => React.ReactElement;
+
+{{componentName}}.displayName = '{{componentName}}';
+
+/**
+ * Helper hook for parent components to manage virtual list state
+ * This should be in the parent component, not the virtual list itself
+ */
+export const useVirtualListState = <T = any>(
+  items: T[],
+  containerHeight: number,
+  itemHeight: number | ((index: number, item: T) => number)
+) => {
+  // This is just for documentation - actual implementation would be in parent
+  return {
+    visibleRange: { start: 0, end: 10 },
+    scrollOffset: 0,
+    scrollToIndex: (index: number) => {},
+    handleScroll: (offset: number) => {},
+  };
+};

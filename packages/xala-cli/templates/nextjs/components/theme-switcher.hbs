@@ -1,0 +1,145 @@
+/**
+ * @fileoverview {{componentName}} Component - Compact Theme Switcher
+ * @description Minimal theme switcher using data attributes
+ * @version 5.0.0
+ * @compliance Pure component, SSR-safe, No hooks, WCAG AAA
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef } from 'react';
+
+const {{camelCase componentName}}Variants = cva(
+  'relative inline-flex items-center justify-center rounded-full transition-all',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background border border-border hover:bg-accent',
+        filled: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        outline: 'border-2 border-primary bg-transparent hover:bg-primary/10',
+      },
+      size: {
+        sm: 'h-8 w-8',
+        md: 'h-10 w-10',
+        lg: 'h-12 w-12',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+);
+
+export interface {{componentName}}Props
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  readonly currentTheme?: 'light' | 'dark' | 'high-contrast' | 'system';
+  readonly onThemeToggle?: () => void;
+  readonly showTooltip?: boolean;
+  readonly ariaLabel?: string;
+  readonly 'data-testid'?: string;
+}
+
+/**
+ * Pure presentational theme switcher button
+ * Cycles through themes on click
+ * Parent handles theme state and logic
+ */
+export const {{componentName}} = forwardRef<HTMLButtonElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      currentTheme = 'system',
+      onThemeToggle,
+      showTooltip = true,
+      variant,
+      size,
+      ariaLabel,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ) => {
+    const getIcon = () => {
+      switch (currentTheme) {
+        case 'light':
+          return (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          );
+        case 'dark':
+          return (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          );
+        case 'high-contrast':
+          return (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18V4c4.41 0 8 3.59 8 8s-3.59 8-8 8z" />
+            </svg>
+          );
+        case 'system':
+        default:
+          return (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          );
+      }
+    };
+
+    const getTooltipText = () => {
+      switch (currentTheme) {
+        case 'light':
+          return 'Switch to dark theme';
+        case 'dark':
+          return 'Switch to high contrast theme';
+        case 'high-contrast':
+          return 'Switch to system theme';
+        case 'system':
+        default:
+          return 'Switch to light theme';
+      }
+    };
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          {{camelCase componentName}}Variants({ variant, size }),
+          className
+        )}
+        onClick={onThemeToggle}
+        aria-label={ariaLabel || getTooltipText()}
+        title={showTooltip ? getTooltipText() : undefined}
+        data-testid={testId}
+        {...props}
+      >
+        <span className="sr-only">{getTooltipText()}</span>
+        {getIcon()}
+        
+        {/* Indicator dot for current theme */}
+        <span 
+          className={cn(
+            'absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-background',
+            currentTheme === 'light' && 'bg-yellow-500',
+            currentTheme === 'dark' && 'bg-blue-500',
+            currentTheme === 'high-contrast' && 'bg-purple-500',
+            currentTheme === 'system' && 'bg-green-500'
+          )}
+          aria-hidden="true"
+        />
+      </button>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

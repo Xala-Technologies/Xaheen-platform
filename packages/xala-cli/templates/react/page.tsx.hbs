@@ -1,0 +1,106 @@
+import React from 'react';
+import { 
+  Button,
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  Container,
+  MainContent,
+  Section,
+  Heading,
+  Text,
+  Grid
+} from '@xala-technologies/ui-system';
+import { t } from '@xala-technologies/ui-system/i18n';
+{{#if_contains features 'dashboard'}}
+import { Dashboard } from '@xala-technologies/ui-system';
+{{/if_contains}}
+{{#if_contains features 'navbar'}}
+import { Navbar } from '@xala-technologies/ui-system';
+{{/if_contains}}
+
+export interface {{pascalCase name}}PageProps {
+  readonly params?: Record<string, string>;
+  readonly searchParams?: Record<string, string>;
+}
+
+export default function {{pascalCase name}}Page({ 
+  params, 
+  searchParams 
+}: {{pascalCase name}}PageProps): JSX.Element {
+  // v5.0 Architecture: Static translation function, no hooks
+  
+  return (
+    <Container spacing="lg">
+      {{#if_contains features 'navbar'}}
+      <Navbar variant="flat" spacing="md" />
+      {{/if_contains}}
+      
+      <MainContent spacing="xl">
+        <Section align="center" spacing="md">
+          <Heading level={1} variant="hero" align="center">
+            {t('page.title', { name: '{{#if title}}{{title}}{{else}}{{pascalCase name}}{{/if}}' })}
+          </Heading>
+          <Text variant="lead" align="center" maxWidth="2xl">
+            {t('page.description', { description: '{{#if description}}{{description}}{{else}}Welcome to {{pascalCase name}} page{{/if}}' })}
+          </Text>
+        </Section>
+
+        {{#if_contains features 'dashboard'}}
+        <Dashboard 
+          variant="modern"
+          spacing="xl"
+        />
+        {{else}}
+        <Section spacing="lg">
+          <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.explore.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.explore.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button variant="primary" size="lg" fullWidth>
+                  {t('actions.explore.button')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.learn.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.learn.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button variant="outline" size="lg" fullWidth>
+                  {t('actions.learn.button')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('actions.action.title')}</CardTitle>
+                <CardDescription>
+                  {t('actions.action.description', { name: '{{pascalCase name}}' })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent spacing="md">
+                <Button variant="ghost" size="lg" fullWidth>
+                  {t('actions.action.button')}
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Section>
+        {{/if_contains}}
+      </MainContent>
+    </Container>
+  );
+}

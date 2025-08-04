@@ -1,0 +1,144 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Search
+ * @description SSR-safe global search with CVA variants and design tokens
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM, Enterprise Standards, SSR-Safe, No hooks
+ */
+
+import React, { forwardRef, type InputHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+const {{camelCase componentName}}Variants = cva(
+  'flex items-center space-x-2 bg-background border border-border rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background text-foreground',
+        elevated: 'bg-card text-card-foreground shadow-md',
+        outline: 'bg-transparent border-2',
+        ghost: 'bg-transparent border-0',
+      },
+      size: {
+        sm: 'h-9 text-sm px-3',
+        md: 'h-11 text-base px-4',
+        lg: 'h-13 text-lg px-6',
+      },
+      state: {
+        default: '',
+        error: 'border-destructive focus-within:ring-destructive',
+        success: 'border-green-500 focus-within:ring-green-500',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+      state: 'default',
+    },
+  }
+);
+
+const searchInputVariants = cva(
+  'flex-1 bg-transparent border-0 outline-none placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed',
+  {
+    variants: {
+      size: {
+        sm: 'text-sm',
+        md: 'text-base',
+        lg: 'text-lg',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+    },
+  }
+);
+
+export interface {{componentName}}Props
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  readonly showSearchIcon?: boolean;
+  readonly showClearButton?: boolean;
+  readonly clearButtonAriaLabel?: string;
+  readonly searchIconAriaLabel?: string;
+}
+
+/**
+ * Pure presentational search component with no hooks or state
+ * Uses CSS custom properties for theming
+ * Parent component should handle state management
+ */
+export const {{componentName}} = forwardRef<HTMLInputElement, {{componentName}}Props>(
+  (
+    {
+      className,
+      variant,
+      size,
+      state,
+      showSearchIcon = true,
+      showClearButton = false,
+      clearButtonAriaLabel = 'Clear search',
+      searchIconAriaLabel = 'Search',
+      placeholder = 'Search...',
+      disabled,
+      value,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <div className="relative w-full">
+        <div
+          className={cn(
+            {{camelCase componentName}}Variants({ variant, size, state }),
+            className
+          )}
+        >
+          {showSearchIcon && (
+            <svg
+              className="w-4 h-4 text-muted-foreground flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-label={searchIconAriaLabel}
+              role="img"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          )}
+
+          <input
+            ref={ref}
+            type="search"
+            value={value}
+            className={cn(searchInputVariants({ size }))}
+            placeholder={placeholder}
+            disabled={disabled}
+            aria-label="Search"
+            {...props}
+          />
+
+          {showClearButton && value && (
+            <button
+              type="button"
+              className="p-1 hover:bg-muted rounded transition-colors flex-shrink-0"
+              aria-label={clearButtonAriaLabel}
+              disabled={disabled}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';

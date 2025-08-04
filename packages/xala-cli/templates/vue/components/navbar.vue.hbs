@@ -1,0 +1,178 @@
+<template>
+  <nav
+    :class="navbarClasses"
+    role="navigation"
+    :aria-label="ariaLabel"
+    v-bind="$attrs"
+  >
+    <div
+      :class="containerClasses"
+    >
+      <div v-if="logo" class="flex-shrink-0" role="banner">
+        <slot name="logo">{{ logo }}</slot>
+      </div>
+
+      <div
+        v-if="navigation || $slots.navigation"
+        :class="navigationClasses"
+        role="menubar"
+        aria-orientation="horizontal"
+      >
+        <slot name="navigation">{{ navigation }}</slot>
+      </div>
+
+      <div
+        v-if="searchComponent || $slots.search"
+        :class="searchClasses"
+        role="search"
+      >
+        <slot name="search">{{ searchComponent }}</slot>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div
+          v-if="actions || $slots.actions"
+          :class="actionsClasses"
+        >
+          <slot name="actions">{{ actions }}</slot>
+        </div>
+
+        <div
+          v-if="responsive && (mobileMenuTrigger || $slots.mobileMenu)"
+          class="flex md:hidden"
+        >
+          <slot name="mobileMenu">{{ mobileMenuTrigger }}</slot>
+        </div>
+      </div>
+    </div>
+  </nav>
+</template>
+
+<script setup lang="ts">
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant Vue 3
+ * @description Enterprise-grade navbar component using design tokens
+ * @version 5.0.0
+ * @compliance WCAG 2.2 AAA, Token-first, SSR-safe, No reactive state
+ */
+import { computed } from 'vue';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { t } from '@xala-technologies/ui-system/i18n';
+
+// CVA Variants
+const navbarVariants = cva(
+  [
+    'w-full',
+    'flex',
+    'items-center',
+    'justify-between',
+    'transition-all',
+    'duration-200',
+    'motion-reduce:transition-none',
+    'border-b',
+  ],
+  {
+    variants: {
+      variant: {
+        flat: ['bg-background', 'border-border', 'shadow-none'],
+        elevated: ['bg-background', 'border-border', 'shadow-md'],
+        outlined: ['bg-transparent', 'border-border', 'shadow-none'],
+        floating: ['bg-background/95', 'backdrop-blur-md', 'border-border/50', 'shadow-lg'],
+      },
+      size: {
+        sm: 'px-4 py-2 min-h-[48px]',
+        md: 'px-6 py-3 min-h-[64px]',
+        lg: 'px-8 py-4 min-h-[80px]',
+      },
+      sticky: {
+        true: 'sticky top-0 z-50',
+        false: 'relative',
+      },
+      fullWidth: {
+        true: 'w-full',
+        false: 'max-w-none',
+      },
+    },
+    defaultVariants: {
+      variant: 'flat',
+      size: 'md',
+      sticky: false,
+      fullWidth: true,
+    },
+  }
+);
+
+// Props interface
+interface {{componentName}}Props {
+  readonly variant?: 'flat' | 'elevated' | 'outlined' | 'floating';
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly sticky?: boolean;
+  readonly fullWidth?: boolean;
+  readonly logo?: string;
+  readonly navigation?: string;
+  readonly searchComponent?: string;
+  readonly actions?: string;
+  readonly mobileMenuTrigger?: string;
+  readonly responsive?: boolean;
+  readonly containerMaxWidth?: string;
+  readonly ariaLabel?: string;
+}
+
+// Props with defaults
+const props = withDefaults(defineProps<{{componentName}}Props>(), {
+  variant: 'flat',
+  size: 'md',
+  sticky: false,
+  fullWidth: true,
+  responsive: true,
+  ariaLabel: () => t('navigation.main'),
+});
+
+// Computed classes
+const navbarClasses = computed(() =>
+  navbarVariants({
+    variant: props.variant,
+    size: props.size,
+    sticky: props.sticky,
+    fullWidth: props.fullWidth,
+  })
+);
+
+const containerClasses = computed(() => [
+  'w-full',
+  'flex',
+  'items-center',
+  'justify-between',
+  'gap-4',
+  'mx-auto',
+  props.containerMaxWidth && `max-w-[${props.containerMaxWidth}]`,
+].filter(Boolean).join(' '));
+
+const navigationClasses = computed(() => [
+  'flex-1',
+  'flex',
+  'items-center',
+  props.responsive && 'hidden md:flex',
+].filter(Boolean).join(' '));
+
+const searchClasses = computed(() => [
+  'flex-shrink-0',
+  props.responsive && 'hidden lg:block',
+].filter(Boolean).join(' '));
+
+const actionsClasses = computed(() => [
+  'flex',
+  'items-center',
+  'gap-2',
+  props.responsive && 'hidden sm:flex',
+].filter(Boolean).join(' '));
+</script>
+
+<style scoped>
+/* v5.0 Architecture: CSS custom properties for theming */
+nav {
+  --navbar-bg: var(--background);
+  --navbar-border: var(--border);
+  --navbar-text: var(--foreground);
+}
+</style>

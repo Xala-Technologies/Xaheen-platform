@@ -1,0 +1,153 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant
+ * @description Form component using design tokens with Norwegian compliance
+ * @version 5.0.0
+ * @compliance Pure component, SSR-safe, uses design tokens, WCAG AAA, No hooks
+ */
+
+import { cn } from '@/lib/utils/cn';
+import { cva, type VariantProps } from 'class-variance-authority';
+import React, { forwardRef, type FormHTMLAttributes } from 'react';
+
+const {{camelCase componentName}}Variants = cva(
+  'w-full',
+  {
+    variants: {
+      variant: {
+        default: 'space-y-6',
+        inline: 'flex flex-wrap gap-4 items-end',
+        grid: 'grid gap-6',
+      },
+      norwegianForm: {
+        standard: 'max-w-2xl',
+        wide: 'max-w-4xl',
+        narrow: 'max-w-xl',
+        full: 'w-full',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      norwegianForm: 'standard',
+    },
+  }
+);
+
+const inputVariants = cva(
+  'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+  {
+    variants: {
+      size: {
+        sm: 'h-9 text-xs',
+        md: 'h-10',
+        lg: 'h-11',
+      },
+      state: {
+        default: '',
+        error: 'border-destructive focus-visible:ring-destructive',
+        success: 'border-success focus-visible:ring-success',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      state: 'default',
+    },
+  }
+);
+
+export interface {{componentName}}Props
+  extends FormHTMLAttributes<HTMLFormElement>,
+    VariantProps<typeof {{camelCase componentName}}Variants> {
+  readonly 'data-testid'?: string;
+}
+
+/**
+ * Pure presentational form component with no hooks or state
+ * Uses CSS custom properties for theming
+ * Parent component should handle all state management and validation
+ */
+export const {{componentName}} = forwardRef<HTMLFormElement, {{componentName}}Props>(
+  (
+    {
+      children,
+      variant,
+      norwegianForm,
+      className,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): React.ReactElement => {
+    return (
+      <form
+        ref={ref}
+        className={cn(
+          {{camelCase componentName}}Variants({ variant, norwegianForm }),
+          className
+        )}
+        data-testid={testId}
+        noValidate
+        {...props}
+      >
+        {children}
+      </form>
+    );
+  }
+);
+
+{{componentName}}.displayName = '{{componentName}}';
+
+// Export helper components for form fields
+export const FormField = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('space-y-2', className)} {...props} />
+  )
+);
+FormField.displayName = 'FormField';
+
+export const FormLabel = forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
+  ({ className, children, required, ...props }, ref) => (
+    <label
+      ref={ref}
+      className={cn('block text-sm font-medium', className)}
+      {...props}
+    >
+      {children}
+      {required && <span className="text-destructive ml-1">*</span>}
+    </label>
+  )
+);
+FormLabel.displayName = 'FormLabel';
+
+export const FormInput = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & VariantProps<typeof inputVariants>>(
+  ({ className, size, state, ...props }, ref) => (
+    <input
+      ref={ref}
+      className={cn(inputVariants({ size, state }), className)}
+      {...props}
+    />
+  )
+);
+FormInput.displayName = 'FormInput';
+
+export const FormError = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn('text-sm text-destructive', className)}
+      role="alert"
+      {...props}
+    />
+  )
+);
+FormError.displayName = 'FormError';
+
+export const FormHelperText = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+);
+FormHelperText.displayName = 'FormHelperText';

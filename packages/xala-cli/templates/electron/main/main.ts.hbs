@@ -1,0 +1,144 @@
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import * as path from 'path';
+
+class ElectronApp {
+  private mainWindow: BrowserWindow | null = null;
+
+  constructor() {
+    this.initializeApp();
+  }
+
+  private initializeApp(): void {
+    // Handle app ready
+    app.whenReady().then(() => {
+      this.createMainWindow();
+
+      // macOS specific: Re-create window when dock icon is clicked
+      app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+          this.createMainWindow();
+        }
+      });
+    });
+
+    // Handle all windows closed
+    app.on('window-all-closed', () => {
+      if (process.platform !== 'darwin') {
+        app.quit();
+      }
+    });
+
+    // Security: Prevent new window creation
+    app.on('web-contents-created', (_, contents) => {
+      contents.on('new-window', (navigationEvent, navigationURL) => {
+        navigationEvent.preventDefault();
+        shell.openExternal(navigationURL);
+      });
+    });
+
+    this.setupIpcHandlers();
+  }
+
+  private createMainWindow(): void {
+    this.mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      minWidth: 800,
+      minHeight: 600,
+      show: false,
+      titleBarStyle: 'hiddenInset', // Custom title bar for macOS
+      frame: process.platform === 'darwin' ? false : true,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        enableRemoteModule: false,
+        preload: path.join(__dirname, '../preload/preload.js'),
+        webSecurity: true,
+        allowRunningInsecureContent: false,
+        experimentalFeatures: false,
+      },
+    });
+
+    // Load the app
+    if (process.env.NODE_ENV === 'development') {
+      this.mainWindow.loadURL('http://localhost:3000');
+      this.mainWindow.webContents.openDevTools();
+    } else {
+      this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    }
+
+    // Show window when ready
+    this.mainWindow.once('ready-to-show', () => {
+      this.mainWindow?.show();
+      
+      // Focus on the window
+      if (process.env.NODE_ENV === 'development') {
+        this.mainWindow?.webContents.openDevTools();
+      }
+    });
+
+    // Handle window closed
+    this.mainWindow.on('closed', () => {
+      this.mainWindow = null;
+    });
+
+    // Security: Prevent navigation to external URLs
+    this.mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+      const parsedUrl = new URL(navigationUrl);
+      const allowedOrigins = ['http://localhost:3000'];
+      
+      if (process.env.NODE_ENV === 'production' || !allowedOrigins.includes(parsedUrl.origin)) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  private setupIpcHandlers(): void {
+    // Get Electron version
+    ipcMain.handle('get-version', () => {
+      return process.versions.electron;
+    });
+
+    // Open external URL
+    ipcMain.handle('open-external', async (_, url: string) => {
+      await shell.openExternal(url);
+    });
+
+    // Window controls
+    ipcMain.handle('window-minimize', () => {
+      this.mainWindow?.minimize();
+    });
+
+    ipcMain.handle('window-maximize', () => {
+      if (this.mainWindow?.isMaximized()) {
+        this.mainWindow.unmaximize();
+      } else {
+        this.mainWindow?.maximize();
+      }
+    });
+
+    ipcMain.handle('window-close', () => {
+      this.mainWindow?.close();
+    });
+
+    // Window state events
+    this.mainWindow?.on('maximize', () => {
+      this.mainWindow?.webContents.send('window-event', 'maximized');
+    });
+
+    this.mainWindow?.on('unmaximize', () => {
+      this.mainWindow?.webContents.send('window-event', 'unmaximized');
+    });
+
+    this.mainWindow?.on('minimize', () => {
+      this.mainWindow?.webContents.send('window-event', 'minimized');
+    });
+
+    this.mainWindow?.on('restore', () => {
+      this.mainWindow?.webContents.send('window-event', 'restored');
+    });
+  }
+}
+
+// Initialize the app
+new ElectronApp();

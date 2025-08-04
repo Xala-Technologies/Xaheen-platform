@@ -1,0 +1,130 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+  ],
+  template: `
+    <!-- v5.0 Architecture: Use CSS classes and data attributes for styling -->
+    <div 
+      class="app-shell" 
+      [attr.data-theme]="currentTheme"
+      [attr.data-ui-industry]="industry"
+    >
+      <!-- Main Content using CSS Grid System -->
+      <div class="main-content spacing-xl">
+        <div class="section section-center spacing-md">
+          <h1 class="heading heading-hero text-center">
+            {{ 'welcome.title' | translate: { name: '{{title}}' } }}
+          </h1>
+          <p class="text text-lead text-center max-width-2xl">
+            {{ 'welcome.description' | translate: { description: '{{description}}' } }}
+          </p>
+        </div>
+
+        <div class="section spacing-lg">
+          <div class="grid grid-cols-responsive gap-lg">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{{ 'actions.getStarted.title' | translate }}</h3>
+                <p class="card-description">
+                  {{ 'actions.getStarted.description' | translate }}
+                </p>
+              </div>
+              <div class="card-content spacing-md">
+                <button class="button button-primary button-lg button-full-width">
+                  {{ 'actions.getStarted.button' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{{ 'actions.documentation.title' | translate }}</h3>
+                <p class="card-description">
+                  {{ 'actions.documentation.description' | translate }}
+                </p>
+              </div>
+              <div class="card-content spacing-md">
+                <button class="button button-outline button-lg button-full-width">
+                  {{ 'actions.documentation.button' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{{ 'actions.examples.title' | translate }}</h3>
+                <p class="card-description">
+                  {{ 'actions.examples.description' | translate }}
+                </p>
+              </div>
+              <div class="card-content spacing-md">
+                <button class="button button-ghost button-lg button-full-width">
+                  {{ 'actions.examples.button' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class AppComponent implements OnInit {
+  title = '{{title}}';
+  currentTheme = '{{theme}}';
+  industry = '{{industry}}';
+  showNavbar = {{#if_contains features 'navbar'}}true{{else}}false{{/if_contains}};
+  showDashboard = {{#if_contains features 'dashboard'}}true{{else}}false{{/if_contains}};
+
+  constructor(private translate: TranslateService) {
+    // v5.0 Architecture: Initialize translation service
+    this.translate.setDefaultLang('en');
+    this.translate.use('en'); // Default to English, can be changed based on user preference
+  }
+
+  ngOnInit(): void {
+    this.initializeTheme();
+    this.initializeTranslations();
+  }
+
+  private initializeTranslations(): void {
+    // v5.0 Architecture: Static translation initialization
+    const supportedLanguages = ['en', 'nb-NO', 'fr', 'ar'];
+    const browserLang = this.translate.getBrowserLang();
+    const defaultLang = supportedLanguages.includes(browserLang || '') ? browserLang : 'en';
+    this.translate.use(defaultLang || 'en');
+  }
+
+  private initializeTheme(): void {
+    // Apply theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    if (savedTheme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.currentTheme = prefersDark ? 'dark' : 'light';
+    } else {
+      this.currentTheme = savedTheme;
+    }
+    
+    // Set CSS custom properties
+    document.documentElement.setAttribute('data-theme', this.currentTheme);
+    document.documentElement.setAttribute('data-ui-industry', this.industry);
+    
+    // Add industry-specific CSS class
+    const industryClasses: Record<string, string> = {
+      healthcare: 'healthcare-tokens',
+      finance: 'finance-tokens',
+      government: 'government-tokens',
+      general: 'general-tokens'
+    };
+    
+    const industryClass = industryClasses[this.industry] || 'general-tokens';
+    document.documentElement.classList.add(industryClass);
+  }
+}

@@ -1,0 +1,62 @@
+<script lang="ts">
+  import { Button, Card } from '@xala-technologies/ui-system';
+
+  export interface {{pascalCase name}}Props {
+    {{#each props}}
+    {{name}}{{#if optional}}?{{/if}}: {{type}};
+    {{/each}}
+  }
+
+  {{#each props}}
+  export let {{name}}{{#if optional}}: {{type}} | undefined = undefined{{else}}: {{type}}{{/if}};
+  {{/each}}
+
+  const isInteractive = {{#if_contains features 'interactive'}}true{{else}}false{{/if_contains}};
+
+  {{#each props}}
+  {{#if (eq type '() => void')}}
+  function handle{{pascalCase name}}() {
+    if ({{name}}) {
+      {{name}}();
+    }
+  }
+  {{/if}}
+  {{/each}}
+</script>
+
+<Card class="w-full max-w-md">
+  <div class="p-6 space-y-4">
+    <div class="space-y-2">
+      <h3 class="text-xl font-semibold">{{pascalCase name}}</h3>
+      <p class="text-muted-foreground">
+        {{#if description}}{{description}}{{else}}A {{name}} component built with Xala UI System{{/if}}
+      </p>
+    </div>
+    
+    {#if isInteractive}
+      <Button 
+        variant="primary" 
+        size="md"
+        {{#each props}}
+        {{#if (eq type '() => void')}}
+        on:click={handle{{pascalCase name}}}
+        {{/if}}
+        {{/each}}
+      >
+        {{#each props}}
+        {{#if (eq name 'title')}}
+        {{{name}} || 'Click me'}
+        {{/if}}
+        {{/each}}
+      </Button>
+    {/if}
+    
+    {{#each props}}
+    {{#if (eq name 'children')}}
+    <div class="prose prose-sm">
+      <slot />
+    </div>
+    {{/if}}
+    {{/each}}
+  </div>
+</Card>

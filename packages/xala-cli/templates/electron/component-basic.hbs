@@ -1,0 +1,56 @@
+import React from 'react';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@xala-technologies/ui-system';
+
+export interface {{pascalCase name}}Props {
+  {{#each props}}
+  readonly {{name}}{{#if optional}}?{{/if}}: {{type}};
+  {{/each}}
+}
+
+export const {{pascalCase name}} = React.forwardRef<
+  HTMLDivElement,
+  {{pascalCase name}}Props
+>(({ {{#each props}}{{name}}, {{/each}}...props }, ref) => {
+  const isInteractive = {{#if_contains features 'interactive'}}true{{else}}false{{/if_contains}};
+
+  return (
+    <Card ref={ref} className="w-full max-w-md select-none">
+      <CardHeader>
+        <CardTitle>{{pascalCase name}}</CardTitle>
+        <CardDescription>
+          {{#if description}}{{description}}{{else}}A {{name}} component built with Xala UI System for Electron{{/if}}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isInteractive && (
+          <Button 
+            variant="primary" 
+            size="md"
+            className="no-drag"
+            {{#each props}}
+            {{#if (eq type '() => void')}}
+            onClick={ {{name}} }
+            {{/if}}
+            {{/each}}
+          >
+            {{#each props}}
+            {{#if (eq name 'title')}}
+            { {{name}} || 'Click me' }
+            {{/if}}
+            {{/each}}
+          </Button>
+        )}
+        
+        {{#each props}}
+        {{#if (eq name 'children')}}
+        <div className="prose prose-sm no-drag">
+          { {{name}} }
+        </div>
+        {{/if}}
+        {{/each}}
+      </CardContent>
+    </Card>
+  );
+});
+
+{{pascalCase name}}.displayName = '{{pascalCase name}}';

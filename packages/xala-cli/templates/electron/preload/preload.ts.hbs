@@ -1,0 +1,31 @@
+import { contextBridge, ipcRenderer } from 'electron';
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld('electronAPI', {
+  // App information
+  getVersion: (): Promise<string> => ipcRenderer.invoke('get-version'),
+
+  // External links
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url),
+
+  // Window controls
+  minimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
+  maximize: (): Promise<void> => ipcRenderer.invoke('window-maximize'),
+  close: (): Promise<void> => ipcRenderer.invoke('window-close'),
+
+  // Window events
+  onWindowEvent: (callback: (event: string) => void) => {
+    ipcRenderer.on('window-event', (_, event) => callback(event));
+  },
+
+  // Remove all listeners (cleanup)
+  removeAllListeners: (channel: string) => {
+    ipcRenderer.removeAllListeners(channel);
+  },
+});
+
+// Security: Remove Node.js globals from the renderer process
+delete (window as any).global;
+delete (window as any).Buffer;
+delete (window as any).process;

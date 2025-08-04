@@ -1,0 +1,228 @@
+// Xala Design System Configuration
+// Generated for: {{name}}
+// Industry: {{industry}}
+// Generated on: {{currentDate}}
+
+module.exports = {
+  // Project information
+  name: '{{name}}',
+  {{#if brand}}brand: '{{brand}}',{{/if}}
+  industry: '{{industry}}',
+  version: '1.0.0',
+
+  // Platform configuration
+  platform: '{{platform}}',
+  target: '{{template}}',
+
+  // Theme configuration
+  theme: {
+    default: '{{theme}}',
+    {{#if_contains features 'darkMode'}}
+    darkMode: true,
+    {{/if_contains}}
+    {{#if_contains features 'highContrast'}}
+    highContrast: true,
+    {{/if_contains}}
+    customThemes: []
+  },
+
+  // Localization
+  i18n: {
+    defaultLocale: '{{locale}}',
+    locales: {{json locales}},
+    {{#if_contains features 'rtl'}}
+    rtl: {
+      enabled: true,
+      locales: ['ar-SA', 'he-IL', 'fa-IR']
+    },
+    {{/if_contains}}
+    fallbackLocale: 'en-US'
+  },
+
+  // Design tokens
+  tokens: {
+    // Enhanced 8pt Grid System
+    spacing: {
+      baseUnit: 8,
+      scale: 'linear' // linear | fibonacci | powers
+    },
+    
+    // Typography configuration
+    typography: {
+      {{#if_eq industry 'healthcare'}}
+      fontFamily: 'Source Sans Pro',
+      {{else if_eq industry 'finance'}}
+      fontFamily: 'IBM Plex Sans',
+      {{else if_eq industry 'education'}}
+      fontFamily: 'Open Sans',
+      {{else}}
+      fontFamily: 'Inter',
+      {{/if_eq}}
+      scale: 'majorSecond' // minorSecond | majorSecond | minorThird | majorThird | perfectFourth
+    },
+
+    // Color system
+    colors: {
+      primary: '{{colors.primary}}',
+      secondary: '{{colors.secondary}}',
+      {{#each colors}}
+      {{@key}}: '{{this}}',
+      {{/each}}
+    }
+  },
+
+  // Accessibility configuration
+  accessibility: {
+    level: '{{accessibility}}', // AA | AAA
+    {{#if_contains features 'colorBlind'}}
+    colorBlindFriendly: true,
+    {{/if_contains}}
+    {{#if_contains features 'reducedMotion'}}
+    respectReducedMotion: true,
+    {{/if_contains}}
+    {{#if_contains features 'customFocus'}}
+    customFocusIndicators: true,
+    {{/if_contains}}
+    enforceContrastRatios: true
+  },
+
+  // Build configuration
+  build: {
+    {{#if_eq platform 'react'}}
+    framework: 'nextjs',
+    bundler: 'webpack',
+    {{else if_eq platform 'vue'}}
+    framework: 'nuxt',
+    bundler: 'vite',
+    {{else if_eq platform 'angular'}}
+    framework: 'angular',
+    bundler: 'webpack',
+    {{/if_eq}}
+    
+    optimization: {
+      treeShaking: true,
+      minification: true,
+      codesplitting: true,
+      lazyLoading: true
+    },
+
+    // Asset optimization
+    assets: {
+      images: {
+        formats: ['webp', 'avif', 'jpg'],
+        sizes: [640, 768, 1024, 1280, 1920],
+        quality: 85
+      },
+      {{#if_contains features 'print'}}
+      printStyles: true,
+      {{/if_contains}}
+    }
+  },
+
+  // Development configuration
+  dev: {
+    port: 3001,
+    hotReload: true,
+    liveReload: true,
+    
+    // Preview configuration
+    preview: {
+      enabled: true,
+      port: 3002,
+      components: true,
+      themes: true,
+      tokens: true
+    }
+  },
+
+  // Component library
+  components: {
+    prefix: 'Xala',
+    strictMode: true,
+    
+    // Import strategy
+    imports: {
+      strategy: 'named', // named | default | namespace
+      source: '@xala-technologies/ui-system'
+    }
+  },
+
+  // Enterprise features
+  enterprise: {
+    {{#if_eq compliance 'nsm'}}
+    nsmCompliance: true,
+    {{/if_eq}}
+    {{#if_eq compliance 'enterprise'}}
+    governance: true,
+    auditTrail: true,
+    {{/if_eq}}
+    
+    // White-label configuration
+    whiteLabel: {
+      enabled: {{#if brand}}true{{else}}false{{/if}},
+      {{#if brand}}
+      brandName: '{{brand}}',
+      {{/if}}
+      customization: {
+        logo: true,
+        colors: true,
+        typography: true,
+        spacing: false
+      }
+    }
+  },
+
+  // Plugin configuration
+  plugins: [
+    '@xala-technologies/eslint-config',
+    '@xala-technologies/prettier-config',
+    {{#if_contains features 'analytics'}}
+    '@xala-technologies/analytics-plugin',
+    {{/if_contains}}
+    {{#if_contains features 'seo'}}
+    '@xala-technologies/seo-plugin',
+    {{/if_contains}}
+  ],
+
+  // Quality assurance
+  qa: {
+    // Automated testing
+    testing: {
+      unit: true,
+      integration: true,
+      e2e: true,
+      a11y: true,
+      visual: true
+    },
+
+    // Code quality
+    codeQuality: {
+      eslint: true,
+      prettier: true,
+      typescript: true,
+      coverage: {
+        threshold: 85,
+        functions: 85,
+        branches: 85,
+        lines: 85,
+        statements: 85
+      }
+    },
+
+    // Performance budgets
+    performance: {
+      budgets: [
+        {
+          type: 'bundle',
+          maximumWarning: '2mb',
+          maximumError: '5mb'
+        },
+        {
+          type: 'initial',
+          maximumWarning: '500kb',
+          maximumError: '1mb'
+        }
+      ]
+    }
+  }
+};

@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "{{name}}",
+    "slug": "{{kebabCase name}}",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.{{kebabCase organization}}.{{kebabCase name}}"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.{{kebabCase organization}}.{{kebabCase name}}"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "xalaTheme": "{{theme}}",
+      "xalaIndustry": "{{industry}}"{{#if_contains compliance 'nsm'}},
+      "nsmClassification": "{{nsmClassification}}"{{/if_contains}}{{#if_contains compliance 'gdpr'}},
+      "gdprEnabled": true{{/if_contains}},
+      "eas": {
+        "projectId": "{{uuid}}"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "{{kebabCase name}}",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,157 @@
+<template>
+  <Teleport to="body" v-if="isOpen">
+    <div
+      :class="modalClasses"
+      @click="onOverlayClick"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="title ? 'modal-title' : undefined"
+      :data-testid="testId"
+    >
+      <!-- Overlay -->
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+      
+      <!-- Modal Content -->
+      <div
+        :class="contentClasses"
+        @click.stop
+      >
+        <!-- Header -->
+        <div v-if="title || showCloseButton || $slots.header" class="flex items-center justify-between p-6 border-b border-border">
+          <slot name="header">
+            <h2 v-if="title" id="modal-title" class="text-lg font-semibold">
+              {{ title }}
+            </h2>
+          </slot>
+          <button
+            v-if="showCloseButton"
+            @click="onClose"
+            class="ml-auto p-2 hover:bg-muted rounded-lg transition-colors"
+            :aria-label="t('common.close')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Body -->
+        <div class="p-6">
+          <slot />
+        </div>
+        
+        <!-- Footer -->
+        <div v-if="footer || $slots.footer" class="p-6 border-t border-border">
+          <slot name="footer">{{ footer }}</slot>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<script setup lang="ts">
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant Vue 3
+ * @description Modal/Dialog component - pure presentational with no internal state
+ * @version 5.0.0
+ * @compliance SSR-Safe, WCAG AAA, Token-based, No reactive state
+ */
+import { computed, Teleport } from 'vue';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { t } from '@xala-technologies/ui-system/i18n';
+
+// CVA Variants
+const modalVariants = cva(
+  'fixed inset-0 z-50 flex items-center justify-center p-4',
+  {
+    variants: {
+      alignment: {
+        center: 'items-center',
+        top: 'items-start pt-20',
+        bottom: 'items-end pb-20',
+      },
+    },
+    defaultVariants: {
+      alignment: 'center',
+    },
+  }
+);
+
+const modalContentVariants = cva(
+  'relative bg-background rounded-lg shadow-xl max-h-[90vh] overflow-auto',
+  {
+    variants: {
+      size: {
+        sm: 'max-w-sm w-full',
+        md: 'max-w-md w-full',
+        lg: 'max-w-lg w-full',
+        xl: 'max-w-xl w-full',
+        '2xl': 'max-w-2xl w-full',
+        full: 'max-w-[90vw] w-full',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+    },
+  }
+);
+
+// Props interface
+interface {{componentName}}Props {
+  readonly isOpen: boolean;
+  readonly onClose?: () => void;
+  readonly onOverlayClick?: () => void;
+  readonly title?: string;
+  readonly footer?: string;
+  readonly showCloseButton?: boolean;
+  readonly alignment?: 'center' | 'top' | 'bottom';
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  readonly testId?: string;
+}
+
+// Props with defaults
+const props = withDefaults(defineProps<{{componentName}}Props>(), {
+  showCloseButton: true,
+  alignment: 'center',
+  size: 'md',
+});
+
+// Emits
+const emit = defineEmits<{
+  close: [];
+  overlayClick: [];
+}>();
+
+// Event handlers
+const onClose = () => {
+  props.onClose?.();
+  emit('close');
+};
+
+const onOverlayClick = () => {
+  props.onOverlayClick?.();
+  emit('overlayClick');
+};
+
+// Computed classes
+const modalClasses = computed(() =>
+  modalVariants({
+    alignment: props.alignment,
+  })
+);
+
+const contentClasses = computed(() =>
+  modalContentVariants({
+    size: props.size,
+  })
+);
+</script>
+
+<style scoped>
+/* v5.0 Architecture: CSS custom properties for theming */
+.modal-overlay {
+  --modal-bg: var(--background);
+  --modal-border: var(--border);
+  --modal-shadow: var(--shadow-xl);
+}
+</style>

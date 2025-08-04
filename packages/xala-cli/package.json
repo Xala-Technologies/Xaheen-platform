@@ -1,0 +1,85 @@
+{
+  "name": "@xala-technologies/xala-cli",
+  "version": "2.0.0",
+  "description": "Universal Design System CLI - The primary interface for working with Xala design system across all platforms",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "xala": "bin/xala.js"
+  },
+  "scripts": {
+    "build": "tsup 'src/**/*.ts' --format esm --target node18 --clean --sourcemap --splitting",
+    "dev": "tsup src/index.ts --format esm --target node18 --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "publish:dry": "bun publish --dry-run",
+    "publish:beta": "bun publish --tag beta"
+  },
+  "keywords": [
+    "design-system",
+    "cli",
+    "universal",
+    "multi-platform",
+    "ai-powered",
+    "enterprise",
+    "accessibility",
+    "norwegian-compliance"
+  ],
+  "author": "Xala Technologies",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "chokidar": "^3.5.3",
+    "commander": "^11.1.0",
+    "express": "^4.18.2",
+    "fast-xml-parser": "^4.3.2",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10",
+    "handlebars": "^4.7.8",
+    "inquirer": "^9.2.12",
+    "langchain": "^0.0.207",
+    "open": "^9.1.0",
+    "openai": "^4.20.1",
+    "ora": "^7.0.1",
+    "semver": "^7.5.4",
+    "ws": "^8.14.2",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/boxen": "^2.1.0",
+    "@types/express": "^4.17.21",
+    "@types/fs-extra": "^11.0.4",
+    "@types/handlebars": "^4.1.0",
+    "@types/inquirer": "^9.0.8",
+    "@types/jest": "^29.5.6",
+    "@types/node": "^20.8.9",
+    "@types/semver": "^7.5.4",
+    "@types/ws": "^8.5.9",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
+    "@typescript-eslint/parser": "^6.9.1",
+    "eslint": "^8.52.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "templates",
+    "schemas",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

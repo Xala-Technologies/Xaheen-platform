@@ -1,0 +1,40 @@
+/**
+ * @fileoverview {{componentName}} Component - Enterprise Standards Compliant Angular
+ * @description card component using Angular standalone components
+ * @version 5.0.0
+ * @compliance WCAG 2.2 AAA, Token-first, SSR-safe, Standalone
+ */
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+
+@Component({
+  selector: 'xala-card',
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+  ],
+  template: `
+    <!-- v5.0 Architecture: Use CSS classes and data attributes for styling -->
+    <div 
+      class="card-component" 
+      [attr.data-variant]="variant"
+      [attr.data-size]="size"
+    >
+      <ng-content></ng-content>
+    </div>
+  `,
+  styleUrls: ['./card.component.scss']
+})
+export class {{componentName}}Component {
+  @Input() variant: string = 'default';
+  @Input() size: string = 'md';
+  @Output() click = new EventEmitter<void>();
+
+  constructor() {}
+
+  onClick(): void {
+    this.click.emit();
+  }
+}
