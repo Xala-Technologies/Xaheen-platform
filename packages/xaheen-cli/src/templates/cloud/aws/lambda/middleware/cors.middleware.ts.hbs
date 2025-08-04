@@ -1,0 +1,178 @@
+import { APIGatewayProxyResult } from 'aws-lambda';
+
+/**
+ * CORS headers configuration
+ * Configure these based on your security requirements
+ */
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*', // Configure for your domain
+  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Correlation-ID',
+  'Access-Control-Allow-Methods': 'OPTIONS,GET,PUT,POST,DELETE,PATCH',
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Max-Age': '86400', // 24 hours
+  'Content-Type': 'application/json'
+};
+
+/**
+ * Production CORS headers with stricter security
+ */
+export const productionCorsHeaders = {
+  'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGINS || 'https://yourdomain.com',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Correlation-ID',
+  'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE',
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Max-Age': '3600', // 1 hour
+  'Content-Type': 'application/json',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block'
+};
+
+/**
+ * Get appropriate CORS headers based on environment
+ */
+export function getCorsHeaders(): Record<string, string> {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return isProduction ? productionCorsHeaders : corsHeaders;
+}
+
+/**
+ * Handle CORS preflight requests
+ */
+export function handleCorsPreflightRequest(): APIGatewayProxyResult {
+  return {
+    statusCode: 200,
+    headers: getCorsHeaders(),
+    body: ''
+  };
+}
+
+/**
+ * Add CORS headers to response
+ */
+export function addCorsHeaders(response: APIGatewayProxyResult): APIGatewayProxyResult {
+  return {
+    ...response,
+    headers: {
+      ...getCorsHeaders(),
+      ...response.headers
+    }
+  };
+}
+
+/**
+ * CORS middleware wrapper for Lambda functions
+ */
+export function withCors<T extends any[], R>(
+  handler: (...args: T) => Promise<APIGatewayProxyResult>
+) {
+  return async (...args: T): Promise<APIGatewayProxyResult> => {
+    try {
+      const result = await handler(...args);
+      return addCorsHeaders(result);
+    } catch (error) {
+      // Ensure CORS headers are added even on error
+      return addCorsHeaders({
+        statusCode: 500,
+        headers: {},
+        body: JSON.stringify({
+          success: false,
+          message: 'Internal server error',
+          error: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        })
+      });
+    }
+  };
+}
+
+/**
+ * Validate origin against allowed origins
+ */
+export function isOriginAllowed(origin: string): boolean {
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['*'];
+  
+  if (allowedOrigins.includes('*')) {
+    return true;
+  }
+  
+  return allowedOrigins.some(allowedOrigin => {
+    // Exact match
+    if (allowedOrigin === origin) {
+      return true;
+    }
+    
+    // Wildcard subdomain match (e.g., *.example.com)
+    if (allowedOrigin.startsWith('*.')) {
+      const domain = allowedOrigin.substring(2);
+      return origin.endsWith(domain);
+    }
+    
+    return false;
+  });
+}
+
+/**
+ * Get origin-specific CORS headers
+ */
+export function getOriginSpecificCorsHeaders(origin?: string): Record<string, string> {
+  const headers = { ...getCorsHeaders() };
+  
+  if (origin && isOriginAllowed(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  } else if (process.env.NODE_ENV === 'production') {
+    // In production, if origin is not allowed, don't set CORS headers
+    delete headers['Access-Control-Allow-Origin'];
+    delete headers['Access-Control-Allow-Credentials'];
+  }
+  
+  return headers;
+}
+
+/**
+ * Advanced CORS middleware with origin validation
+ */
+export function withAdvancedCors<T extends any[], R>(
+  handler: (...args: T) => Promise<APIGatewayProxyResult>
+) {
+  return async (...args: T): Promise<APIGatewayProxyResult> => {
+    const [event] = args as any[];
+    const origin = event?.headers?.origin || event?.headers?.Origin;
+    
+    try {
+      // Check if origin is allowed in production
+      if (process.env.NODE_ENV === 'production' && origin && !isOriginAllowed(origin)) {
+        return {
+          statusCode: 403,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            success: false,
+            message: 'Origin not allowed'
+          })
+        };
+      }
+      
+      const result = await handler(...args);
+      
+      return {
+        ...result,
+        headers: {
+          ...getOriginSpecificCorsHeaders(origin),
+          ...result.headers
+        }
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        headers: getOriginSpecificCorsHeaders(origin),
+        body: JSON.stringify({
+          success: false,
+          message: 'Internal server error',
+          error: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        })
+      };
+    }
+  };
+}

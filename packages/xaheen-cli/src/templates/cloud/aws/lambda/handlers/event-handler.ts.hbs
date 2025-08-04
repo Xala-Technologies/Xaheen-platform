@@ -1,0 +1,302 @@
+import { EventBridgeEvent, Context } from 'aws-lambda';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+
+// Define your custom event types
+interface UserCreatedEvent {
+  readonly userId: string;
+  readonly email: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly createdAt: string;
+}
+
+interface OrderProcessedEvent {
+  readonly orderId: string;
+  readonly customerId: string;
+  readonly items: readonly OrderItem[];
+  readonly totalAmount: number;
+  readonly currency: string;
+  readonly processedAt: string;
+}
+
+interface OrderItem {
+  readonly productId: string;
+  readonly quantity: number;
+  readonly price: number;
+}
+
+interface PaymentCompletedEvent {
+  readonly paymentId: string;
+  readonly orderId: string;
+  readonly amount: number;
+  readonly currency: string;
+  readonly status: 'completed' | 'failed';
+  readonly completedAt: string;
+}
+
+type CustomEventDetail = UserCreatedEvent | OrderProcessedEvent | PaymentCompletedEvent;
+
+/**
+ * Event-driven Lambda handler for processing EventBridge events
+ * Supports multiple event types with type-safe processing
+ */
+export const handler = async (
+  event: EventBridgeEvent<string, CustomEventDetail>,
+  context: Context
+): Promise<void> => {
+  const correlationId = context.awsRequestId;
+  logger.setCorrelationId(correlationId);
+
+  try {
+    logger.info('Event received', {
+      source: event.source,
+      detailType: event['detail-type'],
+      correlationId,
+      eventId: event.id
+    });
+
+    // Route event to appropriate handler based on detail-type
+    switch (event['detail-type']) {
+      case 'User Created':
+        await handleUserCreated(event.detail as UserCreatedEvent, correlationId);
+        break;
+        
+      case 'Order Processed':
+        await handleOrderProcessed(event.detail as OrderProcessedEvent, correlationId);
+        break;
+        
+      case 'Payment Completed':
+        await handlePaymentCompleted(event.detail as PaymentCompletedEvent, correlationId);
+        break;
+        
+      default:
+        logger.warn('Unknown event type received', {
+          detailType: event['detail-type'],
+          correlationId
+        });
+        break;
+    }
+
+    logger.info('Event processed successfully', {
+      detailType: event['detail-type'],
+      correlationId
+    });
+
+  } catch (error) {
+    logger.error('Error processing event', {
+      error,
+      correlationId,
+      eventSource: event.source,
+      eventDetailType: event['detail-type']
+    });
+    
+    // Re-throw to ensure the event goes to dead letter queue if configured
+    throw error;
+  }
+};
+
+/**
+ * Handle User Created events
+ */
+async function handleUserCreated(
+  eventDetail: UserCreatedEvent,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing User Created event', {
+    userId: eventDetail.userId,
+    email: eventDetail.email,
+    correlationId
+  });
+
+  try {
+    // Example: Send welcome email
+    await sendWelcomeEmail(eventDetail);
+    
+    // Example: Create user profile
+    await createUserProfile(eventDetail);
+    
+    // Example: Initialize user preferences
+    await initializeUserPreferences(eventDetail.userId);
+    
+    // Example: Publish follow-up event
+    await publishUserOnboardingEvent(eventDetail.userId);
+
+    logger.info('User Created event processed successfully', {
+      userId: eventDetail.userId,
+      correlationId
+    });
+
+  } catch (error) {
+    logger.error('Error processing User Created event', {
+      error,
+      userId: eventDetail.userId,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle Order Processed events
+ */
+async function handleOrderProcessed(
+  eventDetail: OrderProcessedEvent,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing Order Processed event', {
+    orderId: eventDetail.orderId,
+    customerId: eventDetail.customerId,
+    totalAmount: eventDetail.totalAmount,
+    correlationId
+  });
+
+  try {
+    // Example: Update inventory
+    await updateInventory(eventDetail.items);
+    
+    // Example: Calculate loyalty points
+    await calculateLoyaltyPoints(eventDetail.customerId, eventDetail.totalAmount);
+    
+    // Example: Send order confirmation
+    await sendOrderConfirmation(eventDetail);
+    
+    // Example: Create shipment request
+    await createShipmentRequest(eventDetail);
+
+    logger.info('Order Processed event processed successfully', {
+      orderId: eventDetail.orderId,
+      correlationId
+    });
+
+  } catch (error) {
+    logger.error('Error processing Order Processed event', {
+      error,
+      orderId: eventDetail.orderId,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle Payment Completed events
+ */
+async function handlePaymentCompleted(
+  eventDetail: PaymentCompletedEvent,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing Payment Completed event', {
+    paymentId: eventDetail.paymentId,
+    orderId: eventDetail.orderId,
+    status: eventDetail.status,
+    correlationId
+  });
+
+  try {
+    if (eventDetail.status === 'completed') {
+      // Example: Update order status
+      await updateOrderStatus(eventDetail.orderId, 'paid');
+      
+      // Example: Send payment confirmation
+      await sendPaymentConfirmation(eventDetail);
+      
+      // Example: Trigger fulfillment process
+      await triggerFulfillment(eventDetail.orderId);
+      
+    } else if (eventDetail.status === 'failed') {
+      // Example: Handle payment failure
+      await handlePaymentFailure(eventDetail);
+      
+      // Example: Send payment failure notification
+      await sendPaymentFailureNotification(eventDetail);
+    }
+
+    logger.info('Payment Completed event processed successfully', {
+      paymentId: eventDetail.paymentId,
+      status: eventDetail.status,
+      correlationId
+    });
+
+  } catch (error) {
+    logger.error('Error processing Payment Completed event', {
+      error,
+      paymentId: eventDetail.paymentId,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Business logic functions - replace with your actual implementation
+ */
+async function sendWelcomeEmail(userDetail: UserCreatedEvent): Promise<void> {
+  // TODO: Implement email sending logic
+  logger.info('Sending welcome email', { userId: userDetail.userId });
+}
+
+async function createUserProfile(userDetail: UserCreatedEvent): Promise<void> {
+  // TODO: Implement user profile creation
+  logger.info('Creating user profile', { userId: userDetail.userId });
+}
+
+async function initializeUserPreferences(userId: string): Promise<void> {
+  // TODO: Implement user preferences initialization
+  logger.info('Initializing user preferences', { userId });
+}
+
+async function publishUserOnboardingEvent(userId: string): Promise<void> {
+  // TODO: Implement EventBridge event publishing
+  logger.info('Publishing user onboarding event', { userId });
+}
+
+async function updateInventory(items: readonly OrderItem[]): Promise<void> {
+  // TODO: Implement inventory update logic
+  logger.info('Updating inventory', { itemCount: items.length });
+}
+
+async function calculateLoyaltyPoints(customerId: string, amount: number): Promise<void> {
+  // TODO: Implement loyalty points calculation
+  logger.info('Calculating loyalty points', { customerId, amount });
+}
+
+async function sendOrderConfirmation(orderDetail: OrderProcessedEvent): Promise<void> {
+  // TODO: Implement order confirmation email
+  logger.info('Sending order confirmation', { orderId: orderDetail.orderId });
+}
+
+async function createShipmentRequest(orderDetail: OrderProcessedEvent): Promise<void> {
+  // TODO: Implement shipment request creation
+  logger.info('Creating shipment request', { orderId: orderDetail.orderId });
+}
+
+async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+  // TODO: Implement order status update
+  logger.info('Updating order status', { orderId, status });
+}
+
+async function sendPaymentConfirmation(paymentDetail: PaymentCompletedEvent): Promise<void> {
+  // TODO: Implement payment confirmation email
+  logger.info('Sending payment confirmation', { paymentId: paymentDetail.paymentId });
+}
+
+async function triggerFulfillment(orderId: string): Promise<void> {
+  // TODO: Implement fulfillment trigger
+  logger.info('Triggering fulfillment', { orderId });
+}
+
+async function handlePaymentFailure(paymentDetail: PaymentCompletedEvent): Promise<void> {
+  // TODO: Implement payment failure handling
+  logger.info('Handling payment failure', { paymentId: paymentDetail.paymentId });
+}
+
+async function sendPaymentFailureNotification(paymentDetail: PaymentCompletedEvent): Promise<void> {
+  // TODO: Implement payment failure notification
+  logger.info('Sending payment failure notification', { paymentId: paymentDetail.paymentId });
+}

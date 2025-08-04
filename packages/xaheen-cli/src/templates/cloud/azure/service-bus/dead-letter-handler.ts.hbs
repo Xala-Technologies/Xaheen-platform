@@ -1,0 +1,722 @@
+/**
+ * Azure Service Bus Dead Letter Queue Handler
+ * 
+ * Production-ready dead letter queue handler with comprehensive error analysis,
+ * retry logic, alerting, and Norwegian compliance support.
+ */
+
+import { 
+  ServiceBusClient, 
+  ServiceBusReceiver,
+  ServiceBusReceivedMessage,
+  ServiceBusAdministrationClient
+} from '@azure/service-bus';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { 
+  ServiceBusDeadLetterInfo,
+  AzureServiceError,
+  AzureServiceResponse,
+  NorwegianSecurityLevel
+} from '../types/azure.types';
+
+export interface DeadLetterHandlerOptions {
+  readonly connectionString?: string;
+  readonly fullyQualifiedNamespace?: string;
+  readonly maxConcurrentMessages?: number;
+  readonly processingTimeoutMs?: number;
+  readonly enableAutoComplete?: boolean;
+  readonly retryAttempts?: number;
+  readonly retryDelayMs?: number;
+  readonly securityLevel?: NorwegianSecurityLevel;
+  readonly enableAlerting?: boolean;
+  readonly alertThreshold?: number;
+}
+
+export interface DeadLetterMessage {
+  readonly originalMessage: ServiceBusReceivedMessage;
+  readonly deadLetterReason: string;
+  readonly deadLetterErrorDescription: string;
+  readonly deadLetterSource: string;
+  readonly enqueuedTime: Date;
+  readonly deliveryCount: number;
+  readonly messageId: string;
+  readonly correlationId?: string;
+  readonly sessionId?: string;
+  readonly body: unknown;
+  readonly userProperties: Record<string, unknown>;
+}
+
+export interface DeadLetterAnalysis {
+  readonly messageId: string;
+  readonly errorCategory: 'POISON_MESSAGE' | 'TIMEOUT' | 'PROCESSING_ERROR' | 'SERIALIZATION_ERROR' | 'BUSINESS_LOGIC_ERROR' | 'TRANSIENT_ERROR' | 'UNKNOWN';
+  readonly isRetryable: boolean;
+  readonly recommendedAction: 'RETRY' | 'FIX_AND_RETRY' | 'MANUAL_INTERVENTION' | 'DISCARD' | 'ESCALATE';
+  readonly errorDetails: {
+    readonly reason: string;
+    readonly description: string;
+    readonly source: string;
+    readonly deliveryCount: number;
+    readonly lastAttempt: Date;
+  };
+  readonly metadata: {
+    readonly analysisTimestamp: Date;
+    readonly analysisVersion: string;
+    readonly securityLevel?: NorwegianSecurityLevel;
+  };
+}
+
+export interface DeadLetterProcessingResult {
+  readonly processed: number;
+  readonly requeued: number;
+  readonly discarded: number;
+  readonly escalated: number;
+  readonly failed: number;
+  readonly processingTime: number;
+  readonly errors: readonly {
+    readonly messageId: string;
+    readonly error: string;
+  }[];
+}
+
+export class AzureServiceBusDeadLetterHandler {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly serviceBusClient: ServiceBusClient;
+  private readonly adminClient: ServiceBusAdministrationClient;
+  private readonly options: DeadLetterHandlerOptions;
+  private readonly receivers: Map<string, ServiceBusReceiver> = new Map();
+
+  constructor(options: DeadLetterHandlerOptions) {
+    this.options = {
+      maxConcurrentMessages: 10,
+      processingTimeoutMs: 300000, // 5 minutes
+      enableAutoComplete: true,
+      retryAttempts: 3,
+      retryDelayMs: 5000,
+      enableAlerting: true,
+      alertThreshold: 10,
+      ...options
+    };
+
+    this.logger = new Logger('AzureServiceBusDeadLetterHandler');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+
+    try {
+      if (options.connectionString) {
+        this.serviceBusClient = new ServiceBusClient(options.connectionString);
+        this.adminClient = new ServiceBusAdministrationClient(options.connectionString);
+      } else if (options.fullyQualifiedNamespace) {
+        const credential = new DefaultAzureCredential();
+        this.serviceBusClient = new ServiceBusClient(options.fullyQualifiedNamespace, credential);
+        this.adminClient = new ServiceBusAdministrationClient(options.fullyQualifiedNamespace, credential);
+      } else {
+        throw new AzureServiceError('Either connectionString or fullyQualifiedNamespace must be provided');
+      }
+
+      this.logger.info('Dead Letter Handler initialized successfully', {
+        maxConcurrentMessages: this.options.maxConcurrentMessages,
+        processingTimeoutMs: this.options.processingTimeoutMs,
+        securityLevel: this.options.securityLevel
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to initialize Dead Letter Handler', { error: errorMessage });
+      throw new AzureServiceError(`Dead Letter Handler initialization failed: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Process dead letter messages from a queue
+   */
+  async processDeadLetterQueue(queueName: string): Promise<AzureServiceResponse<DeadLetterProcessingResult>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Starting dead letter queue processing', { 
+        queueName, 
+        requestId,
+        securityLevel: this.options.securityLevel
+      });
+
+      const deadLetterQueueName = `${queueName}/$deadletterqueue`;
+      const receiver = await this.getDeadLetterReceiver(deadLetterQueueName);
+
+      let processed = 0;
+      let requeued = 0;
+      let discarded = 0;
+      let escalated = 0;
+      let failed = 0;
+      const errors: Array<{ messageId: string; error: string }> = [];
+
+      // Process messages in batches
+      let hasMoreMessages = true;
+      while (hasMoreMessages) {
+        const messages = await receiver.receiveMessages(this.options.maxConcurrentMessages!, {
+          maxWaitTimeInMs: 10000 // 10 seconds timeout
+        });
+
+        if (messages.length === 0) {
+          hasMoreMessages = false;
+          break;
+        }
+
+        this.logger.debug('Processing dead letter batch', { 
+          messageCount: messages.length,
+          queueName 
+        });
+
+        // Process each message
+        for (const message of messages) {
+          try {
+            const deadLetterMessage = this.parseDeadLetterMessage(message);
+            const analysis = await this.analyzeDeadLetterMessage(deadLetterMessage);
+
+            const result = await this.processDeadLetterMessage(
+              queueName,
+              deadLetterMessage,
+              analysis,
+              message
+            );
+
+            switch (result.action) {
+              case 'REQUEUED':
+                requeued++;
+                break;
+              case 'DISCARDED':
+                discarded++;
+                break;
+              case 'ESCALATED':
+                escalated++;
+                break;
+              default:
+                processed++;
+            }
+
+            if (this.options.enableAutoComplete) {
+              await message.complete();
+            }
+
+            processed++;
+
+            {{#if enableDiagnostics}}
+            await this.metricsCollector.recordServiceBusMessage({
+              messageId: message.messageId || 'unknown',
+              correlationId: message.correlationId || 'unknown',
+              queueName: deadLetterQueueName,
+              success: true,
+              processingTime: Date.now() - startTime,
+              deliveryCount: message.deliveryCount || 1,
+              operation: 'processDeadLetter'
+            });
+            {{/if}}
+
+          } catch (error) {
+            failed++;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push({
+              messageId: message.messageId || 'unknown',
+              error: errorMessage
+            });
+
+            this.logger.error('Failed to process dead letter message', {
+              messageId: message.messageId,
+              error: errorMessage
+            });
+
+            // Abandon the message so it can be retried later
+            try {
+              await message.abandon({ reason: 'Processing failed' });
+            } catch (abandonError) {
+              this.logger.warn('Failed to abandon message', {
+                messageId: message.messageId,
+                abandonError: abandonError instanceof Error ? abandonError.message : 'Unknown error'
+              });
+            }
+          }
+        }
+      }
+
+      const processingTime = Date.now() - startTime;
+      const result: DeadLetterProcessingResult = {
+        processed,
+        requeued,
+        discarded,
+        escalated,
+        failed,
+        processingTime,
+        errors
+      };
+
+      this.logger.info('Dead letter queue processing completed', {
+        queueName,
+        requestId,
+        result,
+        duration: processingTime
+      });
+
+      // Check alert threshold
+      if (this.options.enableAlerting && processed >= (this.options.alertThreshold || 10)) {
+        await this.sendAlert(queueName, result);
+      }
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDeadLetterProcessing({
+        queueName,
+        requestId,
+        result,
+        success: true,
+        processingTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: processingTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Dead letter queue processing failed', {
+        queueName,
+        requestId,
+        error: errorMessage,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordDeadLetterProcessing({
+        queueName,
+        requestId,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'DEAD_LETTER_PROCESSING_FAILED',
+          message: `Failed to process dead letter queue ${queueName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Analyze a dead letter message to determine the best course of action
+   */
+  private async analyzeDeadLetterMessage(message: DeadLetterMessage): Promise<DeadLetterAnalysis> {
+    const analysis: DeadLetterAnalysis = {
+      messageId: message.messageId,
+      errorCategory: this.categorizeError(message),
+      isRetryable: false,
+      recommendedAction: 'MANUAL_INTERVENTION',
+      errorDetails: {
+        reason: message.deadLetterReason,
+        description: message.deadLetterErrorDescription,
+        source: message.deadLetterSource,
+        deliveryCount: message.deliveryCount,
+        lastAttempt: message.enqueuedTime
+      },
+      metadata: {
+        analysisTimestamp: new Date(),
+        analysisVersion: '1.0.0',
+        securityLevel: this.options.securityLevel
+      }
+    };
+
+    // Determine if message is retryable based on error category
+    switch (analysis.errorCategory) {
+      case 'TRANSIENT_ERROR':
+      case 'TIMEOUT':
+        analysis.isRetryable = true;
+        analysis.recommendedAction = 'RETRY';
+        break;
+
+      case 'SERIALIZATION_ERROR':
+      case 'BUSINESS_LOGIC_ERROR':
+        analysis.isRetryable = false;
+        analysis.recommendedAction = 'FIX_AND_RETRY';
+        break;
+
+      case 'POISON_MESSAGE':
+        analysis.isRetryable = false;
+        analysis.recommendedAction = 'DISCARD';
+        break;
+
+      case 'PROCESSING_ERROR':
+        analysis.isRetryable = message.deliveryCount < 5;
+        analysis.recommendedAction = analysis.isRetryable ? 'RETRY' : 'ESCALATE';
+        break;
+
+      default:
+        analysis.isRetryable = false;
+        analysis.recommendedAction = 'MANUAL_INTERVENTION';
+    }
+
+    // Consider Norwegian security level for sensitive data
+    if (this.options.securityLevel && ['confidential', 'secret', 'topsecret'].includes(this.options.securityLevel)) {
+      if (analysis.recommendedAction === 'DISCARD') {
+        analysis.recommendedAction = 'ESCALATE'; // Don't auto-discard sensitive data
+      }
+    }
+
+    this.logger.debug('Dead letter message analyzed', {
+      messageId: message.messageId,
+      errorCategory: analysis.errorCategory,
+      isRetryable: analysis.isRetryable,
+      recommendedAction: analysis.recommendedAction
+    });
+
+    return analysis;
+  }
+
+  /**
+   * Process a single dead letter message based on analysis
+   */
+  private async processDeadLetterMessage(
+    originalQueueName: string,
+    deadLetterMessage: DeadLetterMessage,
+    analysis: DeadLetterAnalysis,
+    receivedMessage: ServiceBusReceivedMessage
+  ): Promise<{ action: 'REQUEUED' | 'DISCARDED' | 'ESCALATED' | 'COMPLETED' }> {
+    try {
+      switch (analysis.recommendedAction) {
+        case 'RETRY':
+          await this.requeueMessage(originalQueueName, deadLetterMessage);
+          this.logger.info('Message requeued for retry', {
+            messageId: deadLetterMessage.messageId,
+            originalQueue: originalQueueName
+          });
+          return { action: 'REQUEUED' };
+
+        case 'FIX_AND_RETRY':
+          // In a real implementation, you might have logic to fix the message
+          // For now, we'll escalate these for manual intervention
+          await this.escalateMessage(deadLetterMessage, analysis);
+          this.logger.warn('Message escalated for manual fixing', {
+            messageId: deadLetterMessage.messageId,
+            errorCategory: analysis.errorCategory
+          });
+          return { action: 'ESCALATED' };
+
+        case 'DISCARD':
+          await this.discardMessage(deadLetterMessage, analysis);
+          this.logger.info('Message discarded as poison message', {
+            messageId: deadLetterMessage.messageId,
+            reason: deadLetterMessage.deadLetterReason
+          });
+          return { action: 'DISCARDED' };
+
+        case 'ESCALATE':
+          await this.escalateMessage(deadLetterMessage, analysis);
+          this.logger.warn('Message escalated for investigation', {
+            messageId: deadLetterMessage.messageId,
+            deliveryCount: deadLetterMessage.deliveryCount
+          });
+          return { action: 'ESCALATED' };
+
+        case 'MANUAL_INTERVENTION':
+        default:
+          await this.escalateMessage(deadLetterMessage, analysis);
+          this.logger.warn('Message requires manual intervention', {
+            messageId: deadLetterMessage.messageId,
+            errorCategory: analysis.errorCategory
+          });
+          return { action: 'ESCALATED' };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to process dead letter message', {
+        messageId: deadLetterMessage.messageId,
+        action: analysis.recommendedAction,
+        error: errorMessage
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Requeue a message back to the original queue
+   */
+  private async requeueMessage(originalQueueName: string, deadLetterMessage: DeadLetterMessage): Promise<void> {
+    try {
+      const sender = this.serviceBusClient.createSender(originalQueueName);
+      
+      await sender.sendMessages({
+        body: deadLetterMessage.body,
+        correlationId: deadLetterMessage.correlationId,
+        sessionId: deadLetterMessage.sessionId,
+        contentType: 'application/json',
+        applicationProperties: {
+          ...deadLetterMessage.userProperties,
+          reprocessedAt: new Date().toISOString(),
+          originalDeadLetterReason: deadLetterMessage.deadLetterReason,
+          reprocessAttempt: (deadLetterMessage.userProperties.reprocessAttempt as number || 0) + 1
+        }
+      });
+
+      await sender.close();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new AzureServiceError(`Failed to requeue message: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Escalate a message for manual intervention
+   */
+  private async escalateMessage(deadLetterMessage: DeadLetterMessage, analysis: DeadLetterAnalysis): Promise<void> {
+    // In a production environment, this might:
+    // - Send to an escalation queue
+    // - Create a ticket in a ticketing system
+    // - Send an alert to operations team
+    // - Log to a special escalation log
+
+    this.logger.warn('Message escalated', {
+      messageId: deadLetterMessage.messageId,
+      analysis,
+      escalationReason: 'Requires manual intervention'
+    });
+
+    // For Norwegian compliance, ensure escalation is properly logged
+    if (this.options.securityLevel) {
+      await this.logSecurityEvent('MESSAGE_ESCALATED', {
+        messageId: deadLetterMessage.messageId,
+        securityLevel: this.options.securityLevel,
+        reason: deadLetterMessage.deadLetterReason,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Could implement actual escalation logic here
+    // Example: await this.sendToEscalationQueue(deadLetterMessage, analysis);
+  }
+
+  /**
+   * Discard a poison message
+   */
+  private async discardMessage(deadLetterMessage: DeadLetterMessage, analysis: DeadLetterAnalysis): Promise<void> {
+    // Log the discard action for audit purposes
+    this.logger.warn('Message discarded', {
+      messageId: deadLetterMessage.messageId,
+      reason: deadLetterMessage.deadLetterReason,
+      analysis
+    });
+
+    // For Norwegian compliance, ensure proper audit logging
+    if (this.options.securityLevel) {
+      await this.logSecurityEvent('MESSAGE_DISCARDED', {
+        messageId: deadLetterMessage.messageId,
+        securityLevel: this.options.securityLevel,
+        discardReason: deadLetterMessage.deadLetterReason,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * Parse a Service Bus received message into our dead letter message format
+   */
+  private parseDeadLetterMessage(message: ServiceBusReceivedMessage): DeadLetterMessage {
+    return {
+      originalMessage: message,
+      deadLetterReason: message.deadLetterReason || 'Unknown',
+      deadLetterErrorDescription: message.deadLetterErrorDescription || 'No description provided',
+      deadLetterSource: message.deadLetterSource || 'Unknown',
+      enqueuedTime: message.enqueuedTimeUtc || new Date(),
+      deliveryCount: message.deliveryCount || 1,
+      messageId: message.messageId || 'unknown',
+      correlationId: message.correlationId,
+      sessionId: message.sessionId,
+      body: message.body,
+      userProperties: message.applicationProperties || {}
+    };
+  }
+
+  /**
+   * Categorize the error based on dead letter reason and description
+   */
+  private categorizeError(message: DeadLetterMessage): DeadLetterAnalysis['errorCategory'] {
+    const reason = message.deadLetterReason.toLowerCase();
+    const description = message.deadLetterErrorDescription.toLowerCase();
+
+    if (reason.includes('maxdeliverycount') || description.includes('delivery count')) {
+      return 'POISON_MESSAGE';
+    }
+
+    if (reason.includes('timeout') || description.includes('timeout')) {
+      return 'TIMEOUT';
+    }
+
+    if (reason.includes('serialization') || description.includes('deserialize')) {
+      return 'SERIALIZATION_ERROR';
+    }
+
+    if (reason.includes('processing') || description.includes('process')) {
+      return 'PROCESSING_ERROR';
+    }
+
+    if (reason.includes('business') || description.includes('validation')) {
+      return 'BUSINESS_LOGIC_ERROR';
+    }
+
+    if (reason.includes('transient') || description.includes('temporary')) {
+      return 'TRANSIENT_ERROR';
+    }
+
+    return 'UNKNOWN';
+  }
+
+  /**
+   * Get or create a dead letter receiver
+   */
+  private async getDeadLetterReceiver(deadLetterQueueName: string): Promise<ServiceBusReceiver> {
+    if (!this.receivers.has(deadLetterQueueName)) {
+      const receiver = this.serviceBusClient.createReceiver(deadLetterQueueName, {
+        receiveMode: 'peekLock'
+      });
+      this.receivers.set(deadLetterQueueName, receiver);
+      this.logger.debug('Created dead letter receiver', { deadLetterQueueName });
+    }
+    
+    return this.receivers.get(deadLetterQueueName)!;
+  }
+
+  /**
+   * Send alert for high volume of dead letter messages
+   */
+  private async sendAlert(queueName: string, result: DeadLetterProcessingResult): Promise<void> {
+    try {
+      const alertMessage = {
+        severity: 'WARNING',
+        title: 'High Dead Letter Queue Activity',
+        description: `Dead letter queue ${queueName} processed ${result.processed} messages`,
+        details: result,
+        timestamp: new Date().toISOString(),
+        source: 'AzureServiceBusDeadLetterHandler'
+      };
+
+      this.logger.warn('Dead letter alert triggered', alertMessage);
+
+      // In production, send to alerting system
+      // await this.alertingService.sendAlert(alertMessage);
+    } catch (error) {
+      this.logger.error('Failed to send dead letter alert', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Log security events for Norwegian compliance
+   */
+  private async logSecurityEvent(eventType: string, details: Record<string, unknown>): Promise<void> {
+    try {
+      const securityEvent = {
+        eventType,
+        timestamp: new Date().toISOString(),
+        source: 'AzureServiceBusDeadLetterHandler',
+        securityLevel: this.options.securityLevel,
+        details
+      };
+
+      this.logger.info('Security event logged', securityEvent);
+
+      // In production, send to security logging system
+      // await this.securityLogger.logEvent(securityEvent);
+    } catch (error) {
+      this.logger.error('Failed to log security event', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Generate a unique request ID
+   */
+  private generateRequestId(): string {
+    return `dlh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Close the dead letter handler
+   */
+  async close(): Promise<void> {
+    try {
+      this.logger.info('Closing Dead Letter Handler');
+
+      // Close all receivers
+      for (const [name, receiver] of this.receivers.entries()) {
+        try {
+          await receiver.close();
+          this.logger.debug('Dead letter receiver closed', { name });
+        } catch (error) {
+          this.logger.warn('Failed to close dead letter receiver', { 
+            name, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      // Close main client
+      await this.serviceBusClient.close();
+
+      this.receivers.clear();
+
+      this.logger.info('Dead Letter Handler closed successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to close Dead Letter Handler', { error: errorMessage });
+      throw new AzureServiceError(`Dead Letter Handler close failed: ${errorMessage}`);
+    }
+  }
+}
+
+/**
+ * Factory function for creating Dead Letter Handler
+ */
+export async function createDeadLetterHandler(options?: DeadLetterHandlerOptions): Promise<AzureServiceBusDeadLetterHandler> {
+  const handlerOptions: DeadLetterHandlerOptions = {
+    connectionString: process.env.AZURE_SERVICEBUS_CONNECTION_STRING,
+    fullyQualifiedNamespace: process.env.AZURE_SERVICEBUS_NAMESPACE ? 
+      `${process.env.AZURE_SERVICEBUS_NAMESPACE}.servicebus.windows.net` : undefined,
+    maxConcurrentMessages: parseInt(process.env.DEAD_LETTER_MAX_CONCURRENT || '10'),
+    processingTimeoutMs: parseInt(process.env.DEAD_LETTER_TIMEOUT_MS || '300000'),
+    enableAutoComplete: process.env.DEAD_LETTER_AUTO_COMPLETE !== 'false',
+    retryAttempts: parseInt(process.env.DEAD_LETTER_RETRY_ATTEMPTS || '3'),
+    retryDelayMs: parseInt(process.env.DEAD_LETTER_RETRY_DELAY_MS || '5000'),
+    securityLevel: (process.env.NORWEGIAN_SECURITY_LEVEL as NorwegianSecurityLevel) || undefined,
+    enableAlerting: process.env.DEAD_LETTER_ENABLE_ALERTING !== 'false',
+    alertThreshold: parseInt(process.env.DEAD_LETTER_ALERT_THRESHOLD || '10'),
+    ...options
+  };
+
+  return new AzureServiceBusDeadLetterHandler(handlerOptions);
+}

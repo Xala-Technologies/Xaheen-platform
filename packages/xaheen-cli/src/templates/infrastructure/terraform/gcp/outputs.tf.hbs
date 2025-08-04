@@ -1,0 +1,579 @@
+# Google Cloud Platform Outputs
+# Outputs for connecting to and managing GCP resources
+
+# Project Information
+output "project_id" {
+  description = "The GCP project ID"
+  value       = var.project_id
+}
+
+output "project_number" {
+  description = "The GCP project number"
+  value       = data.google_project.current.number
+}
+
+output "region" {
+  description = "The GCP region"
+  value       = var.region
+}
+
+output "zone" {
+  description = "The GCP zone"
+  value       = var.zone
+}
+
+# Networking Outputs
+{{#if networking.vpc}}
+output "vpc_network_name" {
+  description = "Name of the VPC network"
+  value       = google_compute_network.main.name
+}
+
+output "vpc_network_id" {
+  description = "ID of the VPC network"
+  value       = google_compute_network.main.id
+}
+
+output "subnet_name" {
+  description = "Name of the main subnet"
+  value       = google_compute_subnetwork.main.name
+}
+
+output "subnet_id" {
+  description = "ID of the main subnet"
+  value       = google_compute_subnetwork.main.id
+}
+
+output "subnet_cidr" {
+  description = "CIDR block of the main subnet"
+  value       = google_compute_subnetwork.main.ip_cidr_range
+}
+
+{{#if networking.enableNatGateway}}
+output "nat_gateway_name" {
+  description = "Name of the NAT gateway"
+  value       = google_compute_router_nat.main.name
+}
+
+output "cloud_router_name" {
+  description = "Name of the Cloud Router"
+  value       = google_compute_router.main.name
+}
+{{/if}}
+
+{{#if compute.cloudRun}}
+output "vpc_connector_name" {
+  description = "Name of the VPC connector"
+  value       = google_vpc_access_connector.main.name
+}
+
+output "vpc_connector_uri" {
+  description = "URI of the VPC connector"
+  value       = google_vpc_access_connector.main.id
+}
+{{/if}}
+{{/if}}
+
+# Service Account Outputs
+output "compute_service_account_email" {
+  description = "Email of the Compute Engine service account"
+  value       = google_service_account.compute_engine.email
+}
+
+output "cloud_functions_service_account_email" {
+  description = "Email of the Cloud Functions service account"
+  value       = google_service_account.cloud_functions.email
+}
+
+output "cloud_run_service_account_email" {
+  description = "Email of the Cloud Run service account"
+  value       = google_service_account.cloud_run.email
+}
+
+{{#if compute.kubernetes}}
+output "gke_service_account_email" {
+  description = "Email of the GKE nodes service account"
+  value       = google_service_account.gke_nodes.email
+}
+{{/if}}
+
+# KMS Outputs
+{{#if security.keyManagement}}
+output "kms_key_ring_name" {
+  description = "Name of the KMS key ring"
+  value       = google_kms_key_ring.main.name
+}
+
+output "kms_key_ring_id" {
+  description = "ID of the KMS key ring"
+  value       = google_kms_key_ring.main.id
+}
+
+output "main_encryption_key_name" {
+  description = "Name of the main encryption key"
+  value       = google_kms_crypto_key.main.name
+}
+
+output "main_encryption_key_id" {
+  description = "ID of the main encryption key"
+  value       = google_kms_crypto_key.main.id
+}
+
+output "database_encryption_key_name" {
+  description = "Name of the database encryption key"
+  value       = google_kms_crypto_key.database.name
+}
+
+output "database_encryption_key_id" {
+  description = "ID of the database encryption key"
+  value       = google_kms_crypto_key.database.id
+}
+{{/if}}
+
+# Storage Outputs
+{{#if storage.objectStorage}}
+output "main_storage_bucket_name" {
+  description = "Name of the main storage bucket"
+  value       = google_storage_bucket.main.name
+}
+
+output "main_storage_bucket_url" {
+  description = "URL of the main storage bucket"
+  value       = google_storage_bucket.main.url
+}
+
+output "user_uploads_bucket_name" {
+  description = "Name of the user uploads bucket"
+  value       = google_storage_bucket.user_uploads.name
+}
+
+output "user_uploads_bucket_url" {
+  description = "URL of the user uploads bucket"
+  value       = google_storage_bucket.user_uploads.url
+}
+
+output "static_assets_bucket_name" {
+  description = "Name of the static assets bucket"
+  value       = google_storage_bucket.static_assets.name
+}
+
+output "static_assets_bucket_url" {
+  description = "URL of the static assets bucket"
+  value       = google_storage_bucket.static_assets.url
+}
+
+{{#if compliance.backup}}
+output "backups_bucket_name" {
+  description = "Name of the backups bucket"
+  value       = google_storage_bucket.backups.name
+}
+
+output "backups_bucket_url" {
+  description = "URL of the backups bucket"
+  value       = google_storage_bucket.backups.url
+}
+{{/if}}
+
+output "file_transfer_bucket_name" {
+  description = "Name of the file transfer bucket"
+  value       = google_storage_bucket.file_transfer.name
+}
+
+output "file_transfer_bucket_url" {
+  description = "URL of the file transfer bucket"
+  value       = google_storage_bucket.file_transfer.url
+}
+
+{{#if networking.cdn}}
+output "static_assets_global_ip" {
+  description = "Global IP address for static assets CDN"
+  value       = google_compute_global_address.static_assets.address
+}
+
+output "static_assets_cdn_url" {
+  description = "CDN URL for static assets"
+  value       = "https://${google_compute_global_address.static_assets.address}"
+}
+{{/if}}
+{{/if}}
+
+# Database Outputs
+{{#if storage.databases}}
+{{#each storage.databases}}
+{{#if (eq engine "postgresql")}}
+output "{{name}}_database_instance_name" {
+  description = "Name of the {{name}} PostgreSQL instance"
+  value       = google_sql_database_instance.{{name}}.name
+}
+
+output "{{name}}_database_connection_name" {
+  description = "Connection name of the {{name}} PostgreSQL instance"
+  value       = google_sql_database_instance.{{name}}.connection_name
+}
+
+{{#if ../networking.vpc}}
+output "{{name}}_database_private_ip" {
+  description = "Private IP address of the {{name}} PostgreSQL instance"
+  value       = google_sql_database_instance.{{name}}.private_ip_address
+}
+{{else}}
+output "{{name}}_database_public_ip" {
+  description = "Public IP address of the {{name}} PostgreSQL instance"
+  value       = google_sql_database_instance.{{name}}.public_ip_address
+}
+{{/if}}
+
+output "{{name}}_database_name" {
+  description = "Name of the {{name}} database"
+  value       = google_sql_database.{{name}}_db.name
+}
+
+output "{{name}}_database_user" {
+  description = "Username for the {{name}} database"
+  value       = google_sql_user.{{name}}_user.name
+  sensitive   = true
+}
+
+output "{{name}}_database_password_secret" {
+  description = "Secret Manager secret name for {{name}} database password"
+  value       = google_secret_manager_secret.{{name}}_password.secret_id
+}
+
+output "{{name}}_database_url_secret" {
+  description = "Secret Manager secret name for {{name}} database URL"
+  value       = google_secret_manager_secret.{{name}}_url.secret_id
+}
+{{/if}}
+
+{{#if (eq engine "mysql")}}
+output "{{name}}_database_instance_name" {
+  description = "Name of the {{name}} MySQL instance"
+  value       = google_sql_database_instance.{{name}}.name
+}
+
+output "{{name}}_database_connection_name" {
+  description = "Connection name of the {{name}} MySQL instance"
+  value       = google_sql_database_instance.{{name}}.connection_name
+}
+
+{{#if ../networking.vpc}}
+output "{{name}}_database_private_ip" {
+  description = "Private IP address of the {{name}} MySQL instance"
+  value       = google_sql_database_instance.{{name}}.private_ip_address
+}
+{{else}}
+output "{{name}}_database_public_ip" {
+  description = "Public IP address of the {{name}} MySQL instance"
+  value       = google_sql_database_instance.{{name}}.public_ip_address
+}
+{{/if}}
+
+output "{{name}}_database_name" {
+  description = "Name of the {{name}} database"
+  value       = google_sql_database.{{name}}_db.name
+}
+
+output "{{name}}_database_user" {
+  description = "Username for the {{name}} database"
+  value       = google_sql_user.{{name}}_user.name
+  sensitive   = true
+}
+
+output "{{name}}_database_password_secret" {
+  description = "Secret Manager secret name for {{name}} database password"
+  value       = google_secret_manager_secret.{{name}}_password.secret_id
+}
+
+output "{{name}}_database_url_secret" {
+  description = "Secret Manager secret name for {{name}} database URL"
+  value       = google_secret_manager_secret.{{name}}_url.secret_id
+}
+{{/if}}
+
+{{#if (eq engine "redis")}}
+output "{{name}}_redis_instance_name" {
+  description = "Name of the {{name}} Redis instance"
+  value       = google_redis_instance.{{name}}.name
+}
+
+output "{{name}}_redis_host" {
+  description = "Host of the {{name}} Redis instance"
+  value       = google_redis_instance.{{name}}.host
+}
+
+output "{{name}}_redis_port" {
+  description = "Port of the {{name}} Redis instance"
+  value       = google_redis_instance.{{name}}.port
+}
+
+output "{{name}}_redis_auth_string" {
+  description = "Auth string for the {{name}} Redis instance"
+  value       = google_redis_instance.{{name}}.auth_string
+  sensitive   = true
+}
+
+output "{{name}}_redis_url_secret" {
+  description = "Secret Manager secret name for {{name}} Redis URL"
+  value       = google_secret_manager_secret.{{name}}_redis_url.secret_id
+}
+{{/if}}
+{{/each}}
+{{/if}}
+
+# Firestore Outputs
+{{#if firestore.enabled}}
+output "firestore_database_name" {
+  description = "Name of the Firestore database"
+  value       = google_firestore_database.main.name
+}
+
+output "firestore_database_id" {
+  description = "ID of the Firestore database"
+  value       = google_firestore_database.main.id
+}
+
+output "firestore_location" {
+  description = "Location of the Firestore database"
+  value       = google_firestore_database.main.location_id
+}
+{{/if}}
+
+# GKE Outputs
+{{#if compute.kubernetes}}
+output "gke_cluster_name" {
+  description = "Name of the GKE cluster"
+  value       = google_container_cluster.main.name
+}
+
+output "gke_cluster_endpoint" {
+  description = "Endpoint of the GKE cluster"
+  value       = google_container_cluster.main.endpoint
+  sensitive   = true
+}
+
+output "gke_cluster_location" {
+  description = "Location of the GKE cluster"
+  value       = google_container_cluster.main.location
+}
+
+output "gke_cluster_ca_certificate" {
+  description = "CA certificate of the GKE cluster"
+  value       = google_container_cluster.main.master_auth[0].cluster_ca_certificate
+  sensitive   = true
+}
+
+output "gke_primary_node_pool_name" {
+  description = "Name of the primary GKE node pool"
+  value       = google_container_node_pool.primary.name
+}
+
+{{#if compute.spotInstances}}
+output "gke_spot_node_pool_name" {
+  description = "Name of the spot GKE node pool"
+  value       = google_container_node_pool.spot.name
+}
+{{/if}}
+
+# Kubectl connection command
+output "kubectl_connection_command" {
+  description = "Command to connect kubectl to the GKE cluster"
+  value       = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${google_container_cluster.main.location} --project ${var.project_id}"
+}
+{{/if}}
+
+# Cloud Run Outputs
+{{#if compute.cloudRun}}
+{{#each compute.services}}
+output "{{name}}_cloud_run_url" {
+  description = "URL of the {{name}} Cloud Run service"
+  value       = google_cloud_run_service.{{name}}.status[0].url
+}
+
+output "{{name}}_cloud_run_service_name" {
+  description = "Name of the {{name}} Cloud Run service"
+  value       = google_cloud_run_service.{{name}}.name
+}
+
+{{#if customDomain}}
+output "{{name}}_custom_domain" {
+  description = "Custom domain for {{name}} service"
+  value       = google_cloud_run_domain_mapping.{{name}}.name
+}
+{{/if}}
+{{/each}}
+{{/if}}
+
+# Compute Engine Outputs
+{{#if compute.instances}}
+{{#each compute.instances}}
+output "{{name}}_instance_name" {
+  description = "Name of the {{name}} Compute Engine instance"
+  value       = google_compute_instance.{{name}}.name
+}
+
+output "{{name}}_instance_internal_ip" {
+  description = "Internal IP address of the {{name}} instance"
+  value       = google_compute_instance.{{name}}.network_interface[0].network_ip
+}
+
+{{#if staticIP}}
+output "{{name}}_instance_external_ip" {
+  description = "External IP address of the {{name}} instance"
+  value       = google_compute_address.{{name}}.address
+}
+{{/if}}
+
+output "{{name}}_instance_zone" {
+  description = "Zone of the {{name}} instance"
+  value       = google_compute_instance.{{name}}.zone
+}
+
+# SSH connection command
+output "{{name}}_ssh_command" {
+  description = "SSH command to connect to {{name}} instance"
+  value       = "gcloud compute ssh ${google_compute_instance.{{name}}.name} --zone ${google_compute_instance.{{name}}.zone} --project ${var.project_id}"
+}
+{{/each}}
+
+{{#if compute.loadBalancer}}
+output "load_balancer_global_ip" {
+  description = "Global IP address of the load balancer"
+  value       = google_compute_global_address.main.address
+}
+
+output "load_balancer_url" {
+  description = "URL of the load balancer"
+  value       = "http://${google_compute_global_address.main.address}"
+}
+{{/if}}
+{{/if}}
+
+# Monitoring and Logging
+{{#if monitoring.logging}}
+output "logging_project_sink" {
+  description = "Project-level logging sink"
+  value       = "projects/${var.project_id}/logs"
+}
+
+output "monitoring_workspace" {
+  description = "Monitoring workspace"
+  value       = "projects/${var.project_id}"
+}
+{{/if}}
+
+# Security and Compliance
+output "enabled_apis" {
+  description = "List of enabled APIs"
+  value       = [for api in google_project_service.apis : api.service]
+}
+
+{{#if security.secretsManager}}
+output "secret_manager_secrets" {
+  description = "List of created Secret Manager secrets"
+  value = [
+    {{#if storage.databases}}
+    {{#each storage.databases}}
+    google_secret_manager_secret.{{name}}_password.secret_id,
+    google_secret_manager_secret.{{name}}_url.secret_id,
+    {{/each}}
+    {{/if}}
+  ]
+}
+{{/if}}
+
+# Cost and Resource Management
+output "resource_labels" {
+  description = "Common labels applied to resources"
+  value       = local.labels
+}
+
+output "environment" {
+  description = "Environment name"
+  value       = var.environment
+}
+
+# Norwegian Compliance Information
+{{#if norwegianCompliance}}
+output "data_residency_region" {
+  description = "Region used for data residency compliance"
+  value       = var.data_residency_region
+}
+
+output "nsm_security_level" {
+  description = "NSM security classification level"
+  value       = var.nsm_security_level
+}
+
+{{#if bankidIntegration}}
+output "bankid_integration_enabled" {
+  description = "Whether BankID integration is enabled"
+  value       = var.enable_bankid_integration
+}
+{{/if}}
+
+{{#if vippsIntegration}}
+output "vipps_integration_enabled" {
+  description = "Whether Vipps integration is enabled"
+  value       = var.enable_vipps_integration
+}
+{{/if}}
+{{/if}}
+
+# GDPR Compliance Information
+output "gdpr_compliance_enabled" {
+  description = "Whether GDPR compliance features are enabled"
+  value       = var.enable_gdpr_compliance
+}
+
+output "data_retention_period_days" {
+  description = "Data retention period for GDPR compliance"
+  value       = var.data_retention_period_days
+}
+
+# Backup and Disaster Recovery
+{{#if compliance.backup}}
+output "backup_configuration" {
+  description = "Backup configuration summary"
+  value = {
+    backup_location        = var.backup_location
+    retention_seconds      = var.backup_retention_seconds
+    disaster_recovery_rto  = var.disaster_recovery_rto
+    disaster_recovery_rpo  = var.disaster_recovery_rpo
+  }
+}
+{{/if}}
+
+# Usage Information
+output "deployment_summary" {
+  description = "Summary of deployed resources"
+  value = {
+    project_id           = var.project_id
+    environment          = var.environment
+    region               = var.region
+    vpc_enabled          = var.enable_vpc
+    kubernetes_enabled   = var.enable_kubernetes
+    cloud_run_enabled    = var.enable_cloud_run
+    storage_enabled      = var.enable_storage
+    database_enabled     = length(var.databases) > 0
+    monitoring_enabled   = var.enable_monitoring
+    encryption_enabled   = var.enable_encryption
+    backup_enabled       = var.enable_backup
+  }
+}
+
+# Next Steps
+output "next_steps" {
+  description = "Next steps for configuration and deployment"
+  value = [
+    "1. Configure DNS records for custom domains",
+    "2. Set up monitoring alerts and notifications",
+    "3. Configure application secrets in Secret Manager",
+    "4. Set up CI/CD pipelines",
+    "5. Configure SSL certificates for custom domains",
+    "6. Review and adjust security policies",
+    "7. Set up backup verification procedures",
+    "8. Configure log aggregation and analysis",
+    "9. Implement cost monitoring and alerts",
+    "10. Test disaster recovery procedures"
+  ]
+}

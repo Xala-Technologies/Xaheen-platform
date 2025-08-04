@@ -1,0 +1,278 @@
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context
+} from 'aws-lambda';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+{{#if enableParameterStore}}
+import { getParameter } from '../utils/parameter-store';
+{{/if}}
+import { corsHeaders } from '../middleware/cors.middleware';
+import { validateAuth } from '../middleware/auth.middleware';
+import { handleError } from '../middleware/error-handler.middleware';
+import { logger } from '../utils/lambda-utils';
+
+interface RequestBody {
+  readonly [key: string]: any;
+}
+
+interface ResponseBody {
+  readonly success: boolean;
+  readonly message: string;
+  readonly data?: any;
+  readonly error?: string;
+}
+
+/**
+ * HTTP API Lambda handler with comprehensive error handling and middleware
+ * Supports CORS, authentication, validation, and monitoring
+ */
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> => {
+  // Set correlation ID for request tracing
+  const correlationId = context.awsRequestId;
+  logger.setCorrelationId(correlationId);
+
+  try {
+    logger.info('HTTP request received', {
+      method: event.httpMethod,
+      path: event.path,
+      correlationId
+    });
+
+    // Validate authentication if required
+    const authResult = await validateAuth(event);
+    if (!authResult.isValid) {
+      return {
+        statusCode: 401,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          message: 'Authentication failed',
+          error: authResult.error
+        } as ResponseBody)
+      };
+    }
+
+    // Parse request body
+    let requestBody: RequestBody = {};
+    if (event.body) {
+      try {
+        requestBody = JSON.parse(event.body);
+      } catch (error) {
+        logger.error('Invalid JSON in request body', { error });
+        return {
+          statusCode: 400,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            success: false,
+            message: 'Invalid JSON in request body'
+          } as ResponseBody)
+        };
+      }
+    }
+
+    // Handle different HTTP methods
+    let result: any;
+    switch (event.httpMethod) {
+      case 'GET':
+        result = await handleGet(event, authResult.user);
+        break;
+      case 'POST':
+        result = await handlePost(requestBody, authResult.user);
+        break;
+      case 'PUT':
+        result = await handlePut(event.pathParameters?.id, requestBody, authResult.user);
+        break;
+      case 'DELETE':
+        result = await handleDelete(event.pathParameters?.id, authResult.user);
+        break;
+      default:
+        return {
+          statusCode: 405,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            success: false,
+            message: 'Method not allowed'
+          } as ResponseBody)
+        };
+    }
+
+    logger.info('Request processed successfully', {
+      method: event.httpMethod,
+      correlationId,
+      resultType: typeof result
+    });
+
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        success: true,
+        message: 'Request processed successfully',
+        data: result
+      } as ResponseBody)
+    };
+
+  } catch (error) {
+    logger.error('Unhandled error in HTTP handler', { error, correlationId });
+    return handleError(error as Error, correlationId);
+  }
+};
+
+/**
+ * Handle GET requests
+ */
+async function handleGet(
+  event: APIGatewayProxyEvent,
+  user?: any
+): Promise<any> {
+  const { pathParameters, queryStringParameters } = event;
+
+  logger.info('Processing GET request', {
+    pathParameters,
+    queryStringParameters,
+    userId: user?.sub
+  });
+
+  // Example: Get resource by ID
+  if (pathParameters?.id) {
+    return await getResourceById(pathParameters.id);
+  }
+
+  // Example: List resources with pagination
+  const limit = parseInt(queryStringParameters?.limit || '10', 10);
+  const offset = parseInt(queryStringParameters?.offset || '0', 10);
+  
+  return await listResources({ limit, offset });
+}
+
+/**
+ * Handle POST requests
+ */
+async function handlePost(
+  requestBody: RequestBody,
+  user?: any
+): Promise<any> {
+  logger.info('Processing POST request', {
+    hasBody: !!requestBody,
+    userId: user?.sub
+  });
+
+  // Validate required fields
+  if (!requestBody.name) {
+    throw new Error('Name is required');
+  }
+
+  // Create new resource
+  const newResource = {
+    id: generateId(),
+    name: requestBody.name,
+    description: requestBody.description,
+    createdBy: user?.sub,
+    createdAt: new Date().toISOString()
+  };
+
+  return await createResource(newResource);
+}
+
+/**
+ * Handle PUT requests
+ */
+async function handlePut(
+  id: string | undefined,
+  requestBody: RequestBody,
+  user?: any
+): Promise<any> {
+  if (!id) {
+    throw new Error('Resource ID is required');
+  }
+
+  logger.info('Processing PUT request', {
+    resourceId: id,
+    hasBody: !!requestBody,
+    userId: user?.sub
+  });
+
+  const updatedResource = {
+    ...requestBody,
+    updatedBy: user?.sub,
+    updatedAt: new Date().toISOString()
+  };
+
+  return await updateResource(id, updatedResource);
+}
+
+/**
+ * Handle DELETE requests
+ */
+async function handleDelete(
+  id: string | undefined,
+  user?: any
+): Promise<any> {
+  if (!id) {
+    throw new Error('Resource ID is required');
+  }
+
+  logger.info('Processing DELETE request', {
+    resourceId: id,
+    userId: user?.sub
+  });
+
+  return await deleteResource(id);
+}
+
+/**
+ * Example business logic functions
+ * Replace with your actual implementation
+ */
+async function getResourceById(id: string): Promise<any> {
+  // TODO: Implement database query
+  logger.info('Getting resource by ID', { id });
+  return { id, name: 'Example Resource', status: 'active' };
+}
+
+async function listResources(pagination: { limit: number; offset: number }): Promise<any> {
+  // TODO: Implement database query with pagination
+  logger.info('Listing resources', pagination);
+  return {
+    items: [
+      { id: '1', name: 'Resource 1' },
+      { id: '2', name: 'Resource 2' }
+    ],
+    total: 2,
+    ...pagination
+  };
+}
+
+async function createResource(resource: any): Promise<any> {
+  // TODO: Implement database insert
+  logger.info('Creating resource', { resourceId: resource.id });
+  return resource;
+}
+
+async function updateResource(id: string, updates: any): Promise<any> {
+  // TODO: Implement database update
+  logger.info('Updating resource', { id, updates });
+  return { id, ...updates };
+}
+
+async function deleteResource(id: string): Promise<any> {
+  // TODO: Implement database delete
+  logger.info('Deleting resource', { id });
+  return { id, deleted: true };
+}
+
+/**
+ * Generate unique ID
+ */
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}

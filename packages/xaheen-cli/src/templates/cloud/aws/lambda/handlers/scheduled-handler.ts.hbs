@@ -1,0 +1,433 @@
+import { ScheduledEvent, Context } from 'aws-lambda';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+
+/**
+ * Scheduled Lambda handler for cron jobs and periodic tasks
+ * Supports multiple scheduled tasks with robust error handling and monitoring
+ */
+export const handler = async (
+  event: ScheduledEvent,
+  context: Context
+): Promise<void> => {
+  const correlationId = context.awsRequestId;
+  logger.setCorrelationId(correlationId);
+
+  try {
+    logger.info('Scheduled event received', {
+      source: event.source,
+      account: event.account,
+      region: event.region,
+      time: event.time,
+      ruleName: event.resources?.[0]?.split('/')?.pop(),
+      correlationId
+    });
+
+    // Determine which scheduled task to run based on the rule name
+    const ruleName = event.resources?.[0]?.split('/').pop();
+    
+    switch (ruleName) {
+      case 'daily-cleanup-task':
+        await runDailyCleanup(correlationId);
+        break;
+        
+      case 'hourly-health-check':
+        await runHourlyHealthCheck(correlationId);
+        break;
+        
+      case 'weekly-report-generation':
+        await runWeeklyReportGeneration(correlationId);
+        break;
+        
+      case 'monthly-data-archival':
+        await runMonthlyDataArchival(correlationId);
+        break;
+        
+      case 'backup-task':
+        await runBackupTask(correlationId);
+        break;
+        
+      case 'cache-warming':
+        await runCacheWarming(correlationId);
+        break;
+        
+      default:
+        logger.warn('Unknown scheduled task', { ruleName, correlationId });
+        break;
+    }
+
+    logger.info('Scheduled task completed successfully', {
+      ruleName,
+      correlationId,
+      duration: context.getRemainingTimeInMillis()
+    });
+
+  } catch (error) {
+    logger.error('Error executing scheduled task', {
+      error,
+      correlationId,
+      eventSource: event.source,
+      eventTime: event.time
+    });
+    
+    // Send alert for failed scheduled tasks
+    await sendScheduledTaskAlert(error as Error, event, correlationId);
+    
+    throw error;
+  }
+};
+
+/**
+ * Daily cleanup task - runs every day at 2 AM UTC
+ */
+async function runDailyCleanup(correlationId: string): Promise<void> {
+  logger.info('Starting daily cleanup task', { correlationId });
+
+  try {
+    // Example: Clean up expired sessions
+    const expiredSessions = await cleanupExpiredSessions();
+    logger.info('Cleaned up expired sessions', { 
+      count: expiredSessions, 
+      correlationId 
+    });
+
+    // Example: Remove temporary files older than 7 days
+    const deletedFiles = await cleanupTemporaryFiles(7);
+    logger.info('Cleaned up temporary files', { 
+      count: deletedFiles, 
+      correlationId 
+    });
+
+    // Example: Purge old logs
+    const purgedLogs = await purgeOldLogs(30);
+    logger.info('Purged old logs', { 
+      count: purgedLogs, 
+      correlationId 
+    });
+
+    // Example: Clean up abandoned carts
+    const cleanedCarts = await cleanupAbandonedCarts(24); // 24 hours
+    logger.info('Cleaned up abandoned carts', { 
+      count: cleanedCarts, 
+      correlationId 
+    });
+
+  } catch (error) {
+    logger.error('Error in daily cleanup task', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Hourly health check - runs every hour
+ */
+async function runHourlyHealthCheck(correlationId: string): Promise<void> {
+  logger.info('Starting hourly health check', { correlationId });
+
+  try {
+    // Example: Check database connectivity
+    const dbHealth = await checkDatabaseHealth();
+    logger.info('Database health check', { status: dbHealth, correlationId });
+
+    // Example: Check external API endpoints
+    const apiHealth = await checkExternalApis();
+    logger.info('External API health check', { results: apiHealth, correlationId });
+
+    // Example: Check S3 bucket accessibility
+    const s3Health = await checkS3Health();
+    logger.info('S3 health check', { status: s3Health, correlationId });
+
+    // Example: Check queue depths
+    const queueHealth = await checkQueueHealth();
+    logger.info('Queue health check', { results: queueHealth, correlationId });
+
+    // Send alerts if any health checks fail
+    const failedChecks = [
+      ...(!dbHealth ? ['database'] : []),
+      ...(!s3Health ? ['s3'] : []),
+      ...(apiHealth.some(api => !api.healthy) ? ['external-apis'] : []),
+      ...(queueHealth.some(queue => queue.depth > queue.threshold) ? ['queues'] : [])
+    ];
+
+    if (failedChecks.length > 0) {
+      await sendHealthCheckAlert(failedChecks, correlationId);
+    }
+
+  } catch (error) {
+    logger.error('Error in hourly health check', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Weekly report generation - runs every Sunday at 6 AM UTC
+ */
+async function runWeeklyReportGeneration(correlationId: string): Promise<void> {
+  logger.info('Starting weekly report generation', { correlationId });
+
+  try {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Example: Generate user activity report
+    const userActivityReport = await generateUserActivityReport(startDate, endDate);
+    logger.info('Generated user activity report', { 
+      userCount: userActivityReport.totalUsers, 
+      correlationId 
+    });
+
+    // Example: Generate sales report
+    const salesReport = await generateSalesReport(startDate, endDate);
+    logger.info('Generated sales report', { 
+      totalSales: salesReport.totalAmount, 
+      orderCount: salesReport.orderCount,
+      correlationId 
+    });
+
+    // Example: Generate performance metrics report
+    const performanceReport = await generatePerformanceReport(startDate, endDate);
+    logger.info('Generated performance report', { 
+      avgResponseTime: performanceReport.avgResponseTime,
+      errorRate: performanceReport.errorRate,
+      correlationId 
+    });
+
+    // Example: Send reports to stakeholders
+    await sendWeeklyReports({
+      userActivity: userActivityReport,
+      sales: salesReport,
+      performance: performanceReport
+    }, correlationId);
+
+  } catch (error) {
+    logger.error('Error in weekly report generation', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Monthly data archival - runs on the 1st of every month at 3 AM UTC
+ */
+async function runMonthlyDataArchival(correlationId: string): Promise<void> {
+  logger.info('Starting monthly data archival', { correlationId });
+
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setMonth(cutoffDate.getMonth() - 12); // Archive data older than 12 months
+
+    // Example: Archive old orders
+    const archivedOrders = await archiveOldOrders(cutoffDate);
+    logger.info('Archived old orders', { count: archivedOrders, correlationId });
+
+    // Example: Archive old user sessions
+    const archivedSessions = await archiveOldSessions(cutoffDate);
+    logger.info('Archived old sessions', { count: archivedSessions, correlationId });
+
+    // Example: Archive old analytics data
+    const archivedAnalytics = await archiveOldAnalytics(cutoffDate);
+    logger.info('Archived old analytics', { count: archivedAnalytics, correlationId });
+
+  } catch (error) {
+    logger.error('Error in monthly data archival', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Backup task - runs daily at 1 AM UTC
+ */
+async function runBackupTask(correlationId: string): Promise<void> {
+  logger.info('Starting backup task', { correlationId });
+
+  try {
+    // Example: Backup database
+    const dbBackupResult = await createDatabaseBackup();
+    logger.info('Database backup completed', { 
+      backupId: dbBackupResult.backupId, 
+      size: dbBackupResult.size,
+      correlationId 
+    });
+
+    // Example: Backup configuration files
+    const configBackupResult = await backupConfigurationFiles();
+    logger.info('Configuration backup completed', { 
+      fileCount: configBackupResult.fileCount,
+      correlationId 
+    });
+
+    // Example: Verify backup integrity
+    const verificationResult = await verifyBackupIntegrity(dbBackupResult.backupId);
+    logger.info('Backup verification completed', { 
+      isValid: verificationResult.isValid,
+      correlationId 
+    });
+
+  } catch (error) {
+    logger.error('Error in backup task', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Cache warming - runs every 4 hours
+ */
+async function runCacheWarming(correlationId: string): Promise<void> {
+  logger.info('Starting cache warming', { correlationId });
+
+  try {
+    // Example: Warm up frequently accessed data
+    const warmedItems = await warmFrequentlyAccessedData();
+    logger.info('Warmed frequently accessed data', { 
+      itemCount: warmedItems, 
+      correlationId 
+    });
+
+    // Example: Pre-generate expensive computations
+    const preGeneratedResults = await preGenerateExpensiveComputations();
+    logger.info('Pre-generated expensive computations', { 
+      resultCount: preGeneratedResults, 
+      correlationId 
+    });
+
+  } catch (error) {
+    logger.error('Error in cache warming', { error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Business logic functions - replace with actual implementations
+ */
+async function cleanupExpiredSessions(): Promise<number> {
+  // TODO: Implement expired session cleanup
+  logger.info('Cleaning up expired sessions');
+  return 0;
+}
+
+async function cleanupTemporaryFiles(daysOld: number): Promise<number> {
+  // TODO: Implement temporary file cleanup
+  logger.info('Cleaning up temporary files', { daysOld });
+  return 0;
+}
+
+async function purgeOldLogs(daysOld: number): Promise<number> {
+  // TODO: Implement log purging
+  logger.info('Purging old logs', { daysOld });
+  return 0;
+}
+
+async function cleanupAbandonedCarts(hoursOld: number): Promise<number> {
+  // TODO: Implement abandoned cart cleanup
+  logger.info('Cleaning up abandoned carts', { hoursOld });
+  return 0;
+}
+
+async function checkDatabaseHealth(): Promise<boolean> {
+  // TODO: Implement database health check
+  logger.info('Checking database health');
+  return true;
+}
+
+async function checkExternalApis(): Promise<Array<{ name: string; healthy: boolean }>> {
+  // TODO: Implement external API health checks
+  logger.info('Checking external APIs');
+  return [];
+}
+
+async function checkS3Health(): Promise<boolean> {
+  // TODO: Implement S3 health check
+  logger.info('Checking S3 health');
+  return true;
+}
+
+async function checkQueueHealth(): Promise<Array<{ name: string; depth: number; threshold: number }>> {
+  // TODO: Implement queue health check
+  logger.info('Checking queue health');
+  return [];
+}
+
+async function generateUserActivityReport(startDate: Date, endDate: Date): Promise<any> {
+  // TODO: Implement user activity report generation
+  logger.info('Generating user activity report', { startDate, endDate });
+  return { totalUsers: 0 };
+}
+
+async function generateSalesReport(startDate: Date, endDate: Date): Promise<any> {
+  // TODO: Implement sales report generation
+  logger.info('Generating sales report', { startDate, endDate });
+  return { totalAmount: 0, orderCount: 0 };
+}
+
+async function generatePerformanceReport(startDate: Date, endDate: Date): Promise<any> {
+  // TODO: Implement performance report generation
+  logger.info('Generating performance report', { startDate, endDate });
+  return { avgResponseTime: 0, errorRate: 0 };
+}
+
+async function sendWeeklyReports(reports: any, correlationId: string): Promise<void> {
+  // TODO: Implement report sending
+  logger.info('Sending weekly reports', { correlationId });
+}
+
+async function archiveOldOrders(cutoffDate: Date): Promise<number> {
+  // TODO: Implement order archival
+  logger.info('Archiving old orders', { cutoffDate });
+  return 0;
+}
+
+async function archiveOldSessions(cutoffDate: Date): Promise<number> {
+  // TODO: Implement session archival
+  logger.info('Archiving old sessions', { cutoffDate });
+  return 0;
+}
+
+async function archiveOldAnalytics(cutoffDate: Date): Promise<number> {
+  // TODO: Implement analytics archival
+  logger.info('Archiving old analytics', { cutoffDate });
+  return 0;
+}
+
+async function createDatabaseBackup(): Promise<{ backupId: string; size: number }> {
+  // TODO: Implement database backup
+  logger.info('Creating database backup');
+  return { backupId: 'backup-123', size: 1024 };
+}
+
+async function backupConfigurationFiles(): Promise<{ fileCount: number }> {
+  // TODO: Implement configuration backup
+  logger.info('Backing up configuration files');
+  return { fileCount: 0 };
+}
+
+async function verifyBackupIntegrity(backupId: string): Promise<{ isValid: boolean }> {
+  // TODO: Implement backup verification
+  logger.info('Verifying backup integrity', { backupId });
+  return { isValid: true };
+}
+
+async function warmFrequentlyAccessedData(): Promise<number> {
+  // TODO: Implement cache warming
+  logger.info('Warming frequently accessed data');
+  return 0;
+}
+
+async function preGenerateExpensiveComputations(): Promise<number> {
+  // TODO: Implement pre-generation
+  logger.info('Pre-generating expensive computations');
+  return 0;
+}
+
+async function sendScheduledTaskAlert(error: Error, event: ScheduledEvent, correlationId: string): Promise<void> {
+  // TODO: Implement alert sending
+  logger.info('Sending scheduled task alert', { correlationId });
+}
+
+async function sendHealthCheckAlert(failedChecks: string[], correlationId: string): Promise<void> {
+  // TODO: Implement health check alert
+  logger.info('Sending health check alert', { failedChecks, correlationId });
+}

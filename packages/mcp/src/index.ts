@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Xala UI System MCP Server v6.1.1
+ * Xala UI System MCP Server v6.1.2
  * Multi-platform component generation server supporting React, Next.js, Vue, Angular, Svelte, Electron, React Native
  * v5.0 Semantic Architecture with comprehensive component library
  * Enhanced with shadcn-ui inspired developer experience improvements + comprehensive AI agent integration
@@ -29,6 +29,10 @@ import {
 	quickGenerateTools,
 	quickGenerateToolHandlers,
 } from "./tools/quick-generate-tools.js";
+import {
+	cliStyleTools,
+	cliStyleToolHandlers,
+} from "./tools/cli-style-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 
 // Zod schemas for validation
@@ -198,7 +202,7 @@ class XalaUISystemMCPServer {
 		this.server = new Server(
 			{
 				name: "xala-ui-system-mcp",
-				version: "6.1.1",
+				version: "6.1.2",
 			},
 			{
 				capabilities: {
@@ -220,6 +224,8 @@ class XalaUISystemMCPServer {
 					...quickGenerateTools,
 					// Component retrieval tools (inspired by shadcn-ui MCP)
 					...componentRetrievalTools,
+					// CLI-style tools (familiar commands)
+					...cliStyleTools,
 					// Specification-based tools
 					...specificationTools.tools,
 					{
@@ -635,6 +641,29 @@ class XalaUISystemMCPServer {
 					const result =
 						await quickGenerateToolHandlers[
 							name as keyof typeof quickGenerateToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+
+				// Handle CLI-style tools
+				if (
+					cliStyleToolHandlers[
+						name as keyof typeof cliStyleToolHandlers
+					]
+				) {
+					const result =
+						await cliStyleToolHandlers[
+							name as keyof typeof cliStyleToolHandlers
 						](args);
 					return {
 						content: [
@@ -1594,9 +1623,10 @@ ${this.getPlatformBestPractices(platform)}
 	async run(): Promise<void> {
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);
-		console.error("Xala UI System MCP Server v6.1.1 running on stdio");
+		console.error("Xala UI System MCP Server v6.1.2 running on stdio");
 	}
 }
 
+// Start MCP server
 const server = new XalaUISystemMCPServer();
 server.run().catch(console.error);

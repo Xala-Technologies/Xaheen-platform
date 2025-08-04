@@ -1,0 +1,482 @@
+# Google Cloud Database Configuration
+# Comprehensive database setup with Cloud SQL, Firestore, and Redis
+
+{{#if storage.databases}}
+{{#each storage.databases}}
+{{#if (eq engine "postgresql")}}
+# Cloud SQL PostgreSQL instance for {{name}}
+resource "google_sql_database_instance" "{{name}}" {
+  name             = "${local.name_prefix}-{{name}}-${random_string.db_suffix.result}"
+  database_version = "POSTGRES_{{version}}"
+  project          = var.project_id
+  region           = var.region
+  
+  deletion_protection = var.environment == "production" ? true : false
+  
+  settings {
+    tier                        = "{{instanceClass}}"
+    activation_policy           = "ALWAYS"
+    availability_type           = {{#if multiAz}}"REGIONAL"{{else}}"ZONAL"{{/if}}
+    disk_type                   = "PD_SSD"
+    disk_size                   = {{allocatedStorage}}
+    disk_autoresize             = true
+    disk_autoresize_limit       = {{multiply allocatedStorage 4}}
+    
+    {{#if ../security.encryption}}
+    disk_encryption_configuration {
+      kms_key_name = google_kms_crypto_key.database.id
+    }
+    {{/if}}
+    
+    backup_configuration {
+      enabled                        = true
+      start_time                     = "{{backupWindow}}"
+      location                       = var.backup_location
+      point_in_time_recovery_enabled = true
+      backup_retention_settings {
+        retained_backups = {{backupRetention}}
+        retention_unit   = "COUNT"
+      }
+      transaction_log_retention_days = 7
+    }
+    
+    maintenance_window {
+      day  = 7  # Sunday
+      hour = 3  # 3 AM
+      update_track = "stable"
+    }
+    
+    {{#if ../networking.vpc}}
+    ip_configuration {
+      ipv4_enabled                                  = false
+      private_network                               = google_compute_network.main.id
+      enable_private_path_for_google_cloud_services = true
+      require_ssl                                   = true
+      
+      authorized_networks {
+        name  = "allow-internal"
+        value = var.subnet_cidr
+      }
+    }
+    {{else}}
+    ip_configuration {
+      ipv4_enabled    = true
+      require_ssl     = true
+      
+      {{#each ../security.allowedCidrs}}
+      authorized_networks {
+        name  = "allowed-{{@index}}"
+        value = "{{this}}"
+      }
+      {{/each}}
+    }
+    {{/if}}
+    
+    database_flags {
+      name  = "log_statement"
+      value = "all"
+    }
+    
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = "1000"  # Log queries taking more than 1 second
+    }
+    
+    database_flags {
+      name  = "shared_preload_libraries"
+      value = "pg_stat_statements"
+    }
+    
+    insights_config {
+      query_insights_enabled  = true
+      query_string_length     = 1024
+      record_application_tags = true
+      record_client_address   = true
+    }
+    
+    user_labels = local.labels
+  }
+  
+  depends_on = [
+    google_project_service.apis,
+    {{#if ../networking.vpc}}
+    google_service_networking_connection.private_vpc_connection,
+    {{/if}}
+    {{#if ../security.keyManagement}}
+    google_kms_crypto_key.database
+    {{/if}}
+  ]
+}
+
+# Database for application
+resource "google_sql_database" "{{name}}_db" {
+  name      = "{{name}}_{{environment}}"
+  instance  = google_sql_database_instance.{{name}}.name
+  project   = var.project_id
+  charset   = "UTF8"
+  collation = "en_US.UTF8"
+}
+
+# Application user
+resource "google_sql_user" "{{name}}_user" {
+  name     = "{{name}}_app_user"
+  instance = google_sql_database_instance.{{name}}.name
+  project  = var.project_id
+  password = random_password.{{name}}_password.result
+}
+
+resource "random_password" "{{name}}_password" {
+  length  = 32
+  special = true
+}
+
+# Store password in Secret Manager
+resource "google_secret_manager_secret" "{{name}}_password" {
+  secret_id = "${local.name_prefix}-{{name}}-password"
+  project   = var.project_id
+  
+  labels = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        {{#if ../security.keyManagement}}
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.main.id
+        }
+        {{/if}}
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "{{name}}_password" {
+  secret      = google_secret_manager_secret.{{name}}_password.id
+  secret_data = random_password.{{name}}_password.result
+}
+
+# Database connection URL secret
+resource "google_secret_manager_secret" "{{name}}_url" {
+  secret_id = "${local.name_prefix}-{{name}}-url"
+  project   = var.project_id
+  
+  labels = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        {{#if ../security.keyManagement}}
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.main.id
+        }
+        {{/if}}
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "{{name}}_url" {
+  secret = google_secret_manager_secret.{{name}}_url.id
+  secret_data = "postgresql://${google_sql_user.{{name}}_user.name}:${random_password.{{name}}_password.result}@${google_sql_database_instance.{{name}}.private_ip_address}:5432/${google_sql_database.{{name}}_db.name}?sslmode=require"
+}
+
+{{/if}}
+
+{{#if (eq engine "mysql")}}
+# Cloud SQL MySQL instance for {{name}}
+resource "google_sql_database_instance" "{{name}}" {
+  name             = "${local.name_prefix}-{{name}}-${random_string.db_suffix.result}"
+  database_version = "MYSQL_{{version}}"
+  project          = var.project_id
+  region           = var.region
+  
+  deletion_protection = var.environment == "production" ? true : false
+  
+  settings {
+    tier                        = "{{instanceClass}}"
+    activation_policy           = "ALWAYS"
+    availability_type           = {{#if multiAz}}"REGIONAL"{{else}}"ZONAL"{{/if}}
+    disk_type                   = "PD_SSD"
+    disk_size                   = {{allocatedStorage}}
+    disk_autoresize             = true
+    disk_autoresize_limit       = {{multiply allocatedStorage 4}}
+    
+    {{#if ../security.encryption}}
+    disk_encryption_configuration {
+      kms_key_name = google_kms_crypto_key.database.id
+    }
+    {{/if}}
+    
+    backup_configuration {
+      enabled                        = true
+      start_time                     = "{{backupWindow}}"
+      location                       = var.backup_location
+      point_in_time_recovery_enabled = true
+      backup_retention_settings {
+        retained_backups = {{backupRetention}}
+        retention_unit   = "COUNT"
+      }
+      binary_log_enabled             = true
+      transaction_log_retention_days = 7
+    }
+    
+    maintenance_window {
+      day  = 7  # Sunday
+      hour = 3  # 3 AM
+      update_track = "stable"
+    }
+    
+    {{#if ../networking.vpc}}
+    ip_configuration {
+      ipv4_enabled                                  = false
+      private_network                               = google_compute_network.main.id
+      enable_private_path_for_google_cloud_services = true
+      require_ssl                                   = true
+    }
+    {{else}}
+    ip_configuration {
+      ipv4_enabled = true
+      require_ssl  = true
+      
+      {{#each ../security.allowedCidrs}}
+      authorized_networks {
+        name  = "allowed-{{@index}}"
+        value = "{{this}}"
+      }
+      {{/each}}
+    }
+    {{/if}}
+    
+    insights_config {
+      query_insights_enabled  = true
+      query_string_length     = 1024
+      record_application_tags = true
+      record_client_address   = true
+    }
+    
+    user_labels = local.labels
+  }
+  
+  depends_on = [
+    google_project_service.apis,
+    {{#if ../networking.vpc}}
+    google_service_networking_connection.private_vpc_connection,
+    {{/if}}
+    {{#if ../security.keyManagement}}
+    google_kms_crypto_key.database
+    {{/if}}
+  ]
+}
+
+# Database for application
+resource "google_sql_database" "{{name}}_db" {
+  name      = "{{name}}_{{environment}}"
+  instance  = google_sql_database_instance.{{name}}.name
+  project   = var.project_id
+  charset   = "utf8mb4"
+  collation = "utf8mb4_unicode_ci"
+}
+
+# Application user
+resource "google_sql_user" "{{name}}_user" {
+  name     = "{{name}}_app_user"
+  instance = google_sql_database_instance.{{name}}.name
+  project  = var.project_id
+  password = random_password.{{name}}_password.result
+}
+
+resource "random_password" "{{name}}_password" {
+  length  = 32
+  special = true
+}
+
+# Store password in Secret Manager
+resource "google_secret_manager_secret" "{{name}}_password" {
+  secret_id = "${local.name_prefix}-{{name}}-password"
+  project   = var.project_id
+  
+  labels = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        {{#if ../security.keyManagement}}
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.main.id
+        }
+        {{/if}}
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "{{name}}_password" {
+  secret      = google_secret_manager_secret.{{name}}_password.id
+  secret_data = random_password.{{name}}_password.result
+}
+
+# Database connection URL secret
+resource "google_secret_manager_secret" "{{name}}_url" {
+  secret_id = "${local.name_prefix}-{{name}}-url"
+  project   = var.project_id
+  
+  labels = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        {{#if ../security.keyManagement}}
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.main.id
+        }
+        {{/if}}
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "{{name}}_url" {
+  secret = google_secret_manager_secret.{{name}}_url.id
+  secret_data = "mysql://${google_sql_user.{{name}}_user.name}:${random_password.{{name}}_password.result}@${google_sql_database_instance.{{name}}.private_ip_address}:3306/${google_sql_database.{{name}}_db.name}?sslmode=required"
+}
+
+{{/if}}
+
+{{#if (eq engine "redis")}}
+# Redis Memorystore instance for {{name}}
+resource "google_redis_instance" "{{name}}" {
+  name           = "${local.name_prefix}-{{name}}"
+  memory_size_gb = {{allocatedStorage}}
+  region         = var.region
+  project        = var.project_id
+  
+  location_id             = var.zone
+  alternative_location_id = var.alternative_zone
+  
+  redis_version      = "REDIS_{{version}}"
+  display_name       = "{{name}} Redis Cache"
+  reserved_ip_range  = var.redis_reserved_ip_range
+  
+  {{#if ../networking.vpc}}
+  authorized_network = google_compute_network.main.id
+  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+  {{/if}}
+  
+  auth_enabled = true
+  
+  redis_configs = {
+    maxmemory-policy = "allkeys-lru"
+    notify-keyspace-events = "Ex"
+  }
+  
+  labels = local.labels
+  
+  depends_on = [
+    google_project_service.apis,
+    {{#if ../networking.vpc}}
+    google_service_networking_connection.private_vpc_connection
+    {{/if}}
+  ]
+}
+
+# Store Redis connection info in Secret Manager
+resource "google_secret_manager_secret" "{{name}}_redis_url" {
+  secret_id = "${local.name_prefix}-{{name}}-redis-url"
+  project   = var.project_id
+  
+  labels = local.labels
+  
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+        {{#if ../security.keyManagement}}
+        customer_managed_encryption {
+          kms_key_name = google_kms_crypto_key.main.id
+        }
+        {{/if}}
+      }
+    }
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "{{name}}_redis_url" {
+  secret = google_secret_manager_secret.{{name}}_redis_url.id
+  secret_data = "redis://:${google_redis_instance.{{name}}.auth_string}@${google_redis_instance.{{name}}.host}:${google_redis_instance.{{name}}.port}"
+}
+
+{{/if}}
+{{/each}}
+
+# Random suffix for database instances to ensure uniqueness
+resource "random_string" "db_suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+{{/if}}
+
+# Firestore database
+{{#if firestore.enabled}}
+resource "google_firestore_database" "main" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = var.firestore_location
+  type        = "FIRESTORE_NATIVE"
+  
+  concurrency_mode                = "OPTIMISTIC"
+  app_engine_integration_mode     = "DISABLED"
+  point_in_time_recovery_enablement = "POINT_IN_TIME_RECOVERY_ENABLED"
+  delete_protection_state           = var.environment == "production" ? "DELETE_PROTECTION_ENABLED" : "DELETE_PROTECTION_DISABLED"
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Firestore backup schedule
+{{#if compliance.backup}}
+resource "google_firestore_backup_schedule" "main" {
+  project  = var.project_id
+  database = google_firestore_database.main.name
+  
+  retention = "${var.firestore_backup_retention_days * 24 * 60 * 60}s"
+  
+  daily_recurrence {}
+}
+{{/if}}
+{{/if}}
+
+# Private service networking for VPC
+{{#if networking.vpc}}
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "${local.name_prefix}-private-ip"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.main.id
+  project       = var.project_id
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.main.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+  
+  depends_on = [google_project_service.apis]
+}
+{{/if}}

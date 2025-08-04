@@ -1,0 +1,393 @@
+# Google Cloud Storage Configuration
+# Comprehensive storage solution with lifecycle, encryption, and compliance
+
+{{#if storage.objectStorage}}
+# Main application storage bucket
+resource "google_storage_bucket" "main" {
+  name          = "${local.name_prefix}-main-storage"
+  location      = var.storage_location
+  project       = var.project_id
+  storage_class = var.default_storage_class
+  
+  labels = local.labels
+  
+  uniform_bucket_level_access = true
+  
+  {{#if storage.versioning}}
+  versioning {
+    enabled = true
+  }
+  {{/if}}
+  
+  {{#if security.encryption}}
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.main.id
+  }
+  {{/if}}
+  
+  # Lifecycle management
+  {{#if storage.lifecycle}}
+  lifecycle_rule {
+    condition {
+      age = 30
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "NEARLINE"
+    }
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "COLDLINE"
+    }
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 365
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "ARCHIVE"
+    }
+  }
+  {{/if}}
+  
+  {{#if storage.retention}}
+  retention_policy {
+    retention_period = var.retention_period_seconds
+    is_locked        = var.retention_policy_locked
+  }
+  {{/if}}
+  
+  # CORS configuration for web applications
+  {{#if storage.cors}}
+  cors {
+    origin          = var.cors_origins
+    method          = ["GET", "HEAD", "PUT", "POST", "DELETE"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+  {{/if}}
+  
+  depends_on = [
+    google_project_service.apis,
+    {{#if security.keyManagement}}
+    google_kms_crypto_key.main
+    {{/if}}
+  ]
+}
+
+# User uploads bucket (separate for security)
+resource "google_storage_bucket" "user_uploads" {
+  name          = "${local.name_prefix}-user-uploads"
+  location      = var.storage_location
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = merge(local.labels, {
+    purpose = "user-uploads"
+  })
+  
+  uniform_bucket_level_access = true
+  
+  # Temporary files cleanup
+  lifecycle_rule {
+    condition {
+      age = 7
+      matches_prefix = ["temp/"]
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  # User uploads lifecycle
+  lifecycle_rule {
+    condition {
+      age = 30
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "NEARLINE"
+    }
+  }
+  
+  # Malware scanning cleanup
+  lifecycle_rule {
+    condition {
+      age = 1
+      matches_prefix = ["quarantine/"]
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  {{#if storage.cors}}
+  cors {
+    origin          = var.cors_origins
+    method          = ["GET", "HEAD", "PUT", "POST"]
+    response_header = ["Content-Type", "Content-Length", "ETag"]
+    max_age_seconds = 3600
+  }
+  {{/if}}
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Static assets bucket for CDN
+resource "google_storage_bucket" "static_assets" {
+  name          = "${local.name_prefix}-static-assets"
+  location      = var.storage_location
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = merge(local.labels, {
+    purpose = "static-assets"
+  })
+  
+  uniform_bucket_level_access = false
+  
+  # Make static assets publicly readable
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "NEARLINE"
+    }
+  }
+  
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+  
+  {{#if storage.cors}}
+  cors {
+    origin          = ["*"]
+    method          = ["GET", "HEAD"]
+    response_header = ["Content-Type", "Cache-Control"]
+    max_age_seconds = 86400
+  }
+  {{/if}}
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Public access for static assets
+resource "google_storage_bucket_iam_member" "static_assets_public" {
+  bucket = google_storage_bucket.static_assets.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
+# Backup bucket for critical data
+{{#if compliance.backup}}
+resource "google_storage_bucket" "backups" {
+  name          = "${local.name_prefix}-backups"
+  location      = var.backup_location
+  project       = var.project_id
+  storage_class = "COLDLINE"
+  
+  labels = merge(local.labels, {
+    purpose = "backups"
+  })
+  
+  uniform_bucket_level_access = true
+  
+  versioning {
+    enabled = true
+  }
+  
+  {{#if security.encryption}}
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.main.id
+  }
+  {{/if}}
+  
+  # Long-term retention for backups
+  lifecycle_rule {
+    condition {
+      age = 2555 # 7 years for compliance
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  # Archive old backups
+  lifecycle_rule {
+    condition {
+      age = 365
+    }
+    action {
+      type          = "SetStorageClass"
+      storage_class = "ARCHIVE"
+    }
+  }
+  
+  retention_policy {
+    retention_period = var.backup_retention_seconds
+    is_locked        = true
+  }
+  
+  depends_on = [
+    google_project_service.apis,
+    {{#if security.keyManagement}}
+    google_kms_crypto_key.main
+    {{/if}}
+  ]
+}
+{{/if}}
+
+# Cloud CDN for static content
+{{#if networking.cdn}}
+resource "google_compute_backend_bucket" "static_assets" {
+  name        = "${local.name_prefix}-static-backend"
+  bucket_name = google_storage_bucket.static_assets.name
+  project     = var.project_id
+  
+  enable_cdn = true
+  
+  cdn_policy {
+    cache_mode                   = "CACHE_ALL_STATIC"
+    default_ttl                  = 86400
+    max_ttl                      = 604800
+    client_ttl                   = 3600
+    negative_caching             = true
+    negative_caching_policy {
+      code = 404
+      ttl  = 120
+    }
+    serve_while_stale = 86400
+  }
+  
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_compute_url_map" "static_assets" {
+  name            = "${local.name_prefix}-static-cdn"
+  project         = var.project_id
+  default_service = google_compute_backend_bucket.static_assets.id
+}
+
+resource "google_compute_target_https_proxy" "static_assets" {
+  name             = "${local.name_prefix}-static-proxy"
+  project          = var.project_id
+  url_map          = google_compute_url_map.static_assets.id
+  ssl_certificates = [google_compute_managed_ssl_certificate.static_assets.id]
+}
+
+resource "google_compute_managed_ssl_certificate" "static_assets" {
+  name    = "${local.name_prefix}-static-cert"
+  project = var.project_id
+
+  managed {
+    domains = var.static_domains
+  }
+}
+
+resource "google_compute_global_forwarding_rule" "static_assets" {
+  name       = "${local.name_prefix}-static-forwarding"
+  project    = var.project_id
+  target     = google_compute_target_https_proxy.static_assets.id
+  port_range = "443"
+  ip_address = google_compute_global_address.static_assets.address
+}
+
+resource "google_compute_global_address" "static_assets" {
+  name    = "${local.name_prefix}-static-ip"
+  project = var.project_id
+}
+{{/if}}
+{{/if}}
+
+# File transfer service bucket for large files
+resource "google_storage_bucket" "file_transfer" {
+  name          = "${local.name_prefix}-file-transfer"
+  location      = var.storage_location
+  project       = var.project_id
+  storage_class = "STANDARD"
+  
+  labels = merge(local.labels, {
+    purpose = "file-transfer"
+  })
+  
+  uniform_bucket_level_access = true
+  
+  # Cleanup temporary files
+  lifecycle_rule {
+    condition {
+      age = 1
+    }
+    action {
+      type = "Delete"
+    }
+  }
+  
+  {{#if storage.cors}}
+  cors {
+    origin          = var.cors_origins
+    method          = ["GET", "HEAD", "PUT", "POST"]
+    response_header = ["Content-Type", "Content-Length"]
+    max_age_seconds = 300
+  }
+  {{/if}}
+  
+  depends_on = [google_project_service.apis]
+}
+
+# Bucket notifications for processing
+{{#if storage.notifications}}
+resource "google_storage_notification" "main_bucket" {
+  bucket         = google_storage_bucket.main.name
+  payload_format = "JSON_API_V1"
+  topic          = google_pubsub_topic.storage_events.id
+  event_types = [
+    "OBJECT_FINALIZE",
+    "OBJECT_DELETE",
+    "OBJECT_METADATA_UPDATE"
+  ]
+  
+  depends_on = [google_pubsub_topic_iam_member.storage_publisher]
+}
+
+resource "google_storage_notification" "user_uploads" {
+  bucket         = google_storage_bucket.user_uploads.name
+  payload_format = "JSON_API_V1"
+  topic          = google_pubsub_topic.storage_events.id
+  event_types = [
+    "OBJECT_FINALIZE"
+  ]
+  
+  depends_on = [google_pubsub_topic_iam_member.storage_publisher]
+}
+
+# Pub/Sub topic for storage events
+resource "google_pubsub_topic" "storage_events" {
+  name    = "${local.name_prefix}-storage-events"
+  project = var.project_id
+  labels  = local.labels
+  
+  depends_on = [google_project_service.apis]
+}
+
+# IAM for storage service account to publish
+resource "google_pubsub_topic_iam_member" "storage_publisher" {
+  topic  = google_pubsub_topic.storage_events.name
+  role   = "roles/pubsub.publisher"
+  member = "serviceAccount:service-${data.google_project.current.number}@gs-project-accounts.iam.gserviceaccount.com"
+}
+
+data "google_project" "current" {
+  project_id = var.project_id
+}
+{{/if}}

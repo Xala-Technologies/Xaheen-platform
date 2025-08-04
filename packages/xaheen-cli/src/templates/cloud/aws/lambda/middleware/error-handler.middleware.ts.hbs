@@ -1,0 +1,432 @@
+import { APIGatewayProxyResult } from 'aws-lambda';
+{{#if enableCloudWatch}}
+import * as AWS from 'aws-sdk';
+const cloudWatchLogs = new AWS.CloudWatchLogs();
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+import { corsHeaders } from './cors.middleware';
+
+export interface ErrorResponse {
+  readonly success: false;
+  readonly message: string;
+  readonly error?: string;
+  readonly code?: string;
+  readonly details?: any;
+  readonly timestamp: string;
+  readonly correlationId?: string;
+}
+
+export interface CustomError extends Error {
+  readonly statusCode?: number;
+  readonly code?: string;
+  readonly details?: any;
+  readonly isOperational?: boolean;
+}
+
+/**
+ * Custom error classes for different types of application errors
+ */
+export class ValidationError extends Error implements CustomError {
+  readonly statusCode = 400;
+  readonly code = 'VALIDATION_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string, public readonly details?: any) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+export class AuthenticationError extends Error implements CustomError {
+  readonly statusCode = 401;
+  readonly code = 'AUTHENTICATION_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string = 'Authentication required') {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
+export class AuthorizationError extends Error implements CustomError {
+  readonly statusCode = 403;
+  readonly code = 'AUTHORIZATION_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string = 'Insufficient permissions') {
+    super(message);
+    this.name = 'AuthorizationError';
+  }
+}
+
+export class NotFoundError extends Error implements CustomError {
+  readonly statusCode = 404;
+  readonly code = 'NOT_FOUND_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string = 'Resource not found') {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class ConflictError extends Error implements CustomError {
+  readonly statusCode = 409;
+  readonly code = 'CONFLICT_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string, public readonly details?: any) {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
+export class RateLimitError extends Error implements CustomError {
+  readonly statusCode = 429;
+  readonly code = 'RATE_LIMIT_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string = 'Rate limit exceeded') {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
+export class ExternalServiceError extends Error implements CustomError {
+  readonly statusCode = 502;
+  readonly code = 'EXTERNAL_SERVICE_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string, public readonly serviceName?: string, public readonly details?: any) {
+    super(message);
+    this.name = 'ExternalServiceError';
+  }
+}
+
+export class TimeoutError extends Error implements CustomError {
+  readonly statusCode = 504;
+  readonly code = 'TIMEOUT_ERROR';
+  readonly isOperational = true;
+  
+  constructor(message: string = 'Request timeout') {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+/**
+ * Main error handler function
+ */
+export function handleError(error: Error, correlationId?: string): APIGatewayProxyResult {
+  const customError = error as CustomError;
+  const timestamp = new Date().toISOString();
+  
+  // Log error details
+  logger.error('Error occurred in Lambda function', {
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: customError.code,
+      statusCode: customError.statusCode,
+      details: customError.details,
+      isOperational: customError.isOperational
+    },
+    correlationId,
+    timestamp
+  });
+
+  // Send error metrics to CloudWatch
+  {{#if enableCloudWatch}}
+  sendErrorMetrics(error, correlationId).catch(metricsError => {
+    logger.error('Failed to send error metrics', { metricsError });
+  });
+  {{/if}}
+
+  // Determine status code
+  const statusCode = customError.statusCode || 500;
+  
+  // Create error response
+  const errorResponse: ErrorResponse = {
+    success: false,
+    message: getErrorMessage(error, statusCode),
+    timestamp,
+    correlationId
+  };
+
+  // Add error code for operational errors
+  if (customError.isOperational && customError.code) {
+    errorResponse.code = customError.code;
+  }
+
+  // Add error details in development mode
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.error = error.message;
+    if (customError.details) {
+      errorResponse.details = customError.details;
+    }
+  }
+
+  // For non-operational errors in production, don't expose internal details
+  if (!customError.isOperational && process.env.NODE_ENV === 'production') {
+    errorResponse.message = 'Internal server error';
+  }
+
+  return {
+    statusCode,
+    headers: corsHeaders,
+    body: JSON.stringify(errorResponse)
+  };
+}
+
+/**
+ * Get user-friendly error message based on error type and status code
+ */
+function getErrorMessage(error: Error, statusCode: number): string {
+  const customError = error as CustomError;
+  
+  // Use custom message if it's an operational error
+  if (customError.isOperational) {
+    return error.message;
+  }
+  
+  // Default messages for different status codes
+  switch (statusCode) {
+    case 400:
+      return 'Bad request - please check your input';
+    case 401:
+      return 'Authentication required';
+    case 403:
+      return 'Access denied - insufficient permissions';
+    case 404:
+      return 'Resource not found';
+    case 409:
+      return 'Conflict - resource already exists or is in use';
+    case 422:
+      return 'Validation failed - please check your input';
+    case 429:
+      return 'Rate limit exceeded - please try again later';
+    case 500:
+      return 'Internal server error';
+    case 502:
+      return 'External service unavailable';
+    case 503:
+      return 'Service temporarily unavailable';
+    case 504:
+      return 'Request timeout';
+    default:
+      return 'An error occurred while processing your request';
+  }
+}
+
+{{#if enableCloudWatch}}
+/**
+ * Send error metrics to CloudWatch
+ */
+async function sendErrorMetrics(error: Error, correlationId?: string): Promise<void> {
+  try {
+    const customError = error as CustomError;
+    const metricData = {
+      Namespace: 'AWS/Lambda/Errors',
+      MetricData: [
+        {
+          MetricName: 'ErrorCount',
+          Value: 1,
+          Unit: 'Count',
+          Dimensions: [
+            {
+              Name: 'ErrorType',
+              Value: error.name
+            },
+            {
+              Name: 'StatusCode',
+              Value: String(customError.statusCode || 500)
+            },
+            {
+              Name: 'FunctionName',
+              Value: process.env.AWS_LAMBDA_FUNCTION_NAME || 'unknown'
+            }
+          ],
+          Timestamp: new Date()
+        }
+      ]
+    };
+
+    const cloudWatch = new AWS.CloudWatch();
+    await cloudWatch.putMetricData(metricData).promise();
+
+    logger.info('Error metrics sent to CloudWatch', { 
+      errorType: error.name,
+      correlationId 
+    });
+
+  } catch (metricsError) {
+    logger.error('Failed to send error metrics to CloudWatch', { 
+      metricsError,
+      correlationId 
+    });
+  }
+}
+{{/if}}
+
+/**
+ * Async error handler wrapper for Lambda functions
+ */
+export function withErrorHandler<T extends any[], R>(
+  handler: (...args: T) => Promise<APIGatewayProxyResult>
+) {
+  return async (...args: T): Promise<APIGatewayProxyResult> => {
+    try {
+      return await handler(...args);
+    } catch (error) {
+      const [event] = args as any[];
+      const correlationId = event?.requestContext?.requestId || 'unknown';
+      return handleError(error as Error, correlationId);
+    }
+  };
+}
+
+/**
+ * Validation helper function
+ */
+export function validateRequired(fields: Record<string, any>, requiredFields: string[]): void {
+  const missingFields = requiredFields.filter(field => {
+    const value = fields[field];
+    return value === undefined || value === null || value === '';
+  });
+
+  if (missingFields.length > 0) {
+    throw new ValidationError(
+      `Missing required fields: ${missingFields.join(', ')}`,
+      { missingFields }
+    );
+  }
+}
+
+/**
+ * Validation helper for email format
+ */
+export function validateEmail(email: string): void {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new ValidationError('Invalid email format');
+  }
+}
+
+/**
+ * Validation helper for phone number format
+ */
+export function validatePhoneNumber(phone: string): void {
+  const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+  if (!phoneRegex.test(phone) || phone.length < 10) {
+    throw new ValidationError('Invalid phone number format');
+  }
+}
+
+/**
+ * Validation helper for UUID format
+ */
+export function validateUUID(uuid: string): void {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(uuid)) {
+    throw new ValidationError('Invalid UUID format');
+  }
+}
+
+/**
+ * Rate limiting helper
+ */
+export async function checkRateLimit(
+  identifier: string,
+  limit: number,
+  windowMs: number
+): Promise<void> {
+  // TODO: Implement rate limiting logic using DynamoDB or Redis
+  // This is a placeholder implementation
+  
+  logger.info('Checking rate limit', { identifier, limit, windowMs });
+  
+  // For now, this is a no-op
+  // In a real implementation, you would:
+  // 1. Get current request count for the identifier within the time window
+  // 2. If count >= limit, throw RateLimitError
+  // 3. Otherwise, increment the count
+}
+
+/**
+ * Circuit breaker helper for external service calls
+ */
+export class CircuitBreaker {
+  private failures = 0;
+  private nextAttempt = Date.now();
+  private readonly failureThreshold: number;
+  private readonly recoveryTimeMs: number;
+
+  constructor(failureThreshold = 5, recoveryTimeMs = 60000) {
+    this.failureThreshold = failureThreshold;
+    this.recoveryTimeMs = recoveryTimeMs;
+  }
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.failures >= this.failureThreshold) {
+      if (Date.now() < this.nextAttempt) {
+        throw new ExternalServiceError('Circuit breaker is open - service temporarily unavailable');
+      }
+      // Reset circuit breaker for retry
+      this.failures = 0;
+    }
+
+    try {
+      const result = await operation();
+      this.failures = 0; // Reset on success
+      return result;
+    } catch (error) {
+      this.failures++;
+      if (this.failures >= this.failureThreshold) {
+        this.nextAttempt = Date.now() + this.recoveryTimeMs;
+      }
+      throw error;
+    }
+  }
+}
+
+/**
+ * Retry helper with exponential backoff
+ */
+export async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  baseDelayMs = 1000
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      // Don't retry on certain types of errors
+      const customError = error as CustomError;
+      if (customError.statusCode && customError.statusCode < 500) {
+        break;
+      }
+
+      // Exponential backoff
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      logger.warn(`Operation failed, retrying in ${delay}ms`, {
+        attempt: attempt + 1,
+        maxRetries,
+        error: (error as Error).message
+      });
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError!;
+}

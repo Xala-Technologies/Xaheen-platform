@@ -1,0 +1,725 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../lambda/utils/lambda-utils';
+
+/**
+ * DynamoDB client configuration with optimizations for Lambda
+ */
+const dynamoDBConfig: AWS.DynamoDB.ClientConfiguration = {
+  region: '{{region}}',
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      // Exponential backoff with jitter
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  },
+  httpOptions: {
+    timeout: 5000,
+    connectTimeout: 3000
+  }
+};
+
+// DynamoDB Document Client for easier JSON operations
+export const dynamoDb = new AWS.DynamoDB.DocumentClient(dynamoDBConfig);
+
+// Raw DynamoDB client for advanced operations
+export const dynamoDbRaw = new AWS.DynamoDB(dynamoDBConfig);
+
+/**
+ * DynamoDB Table configuration
+ */
+export interface TableConfig {
+  readonly tableName: string;
+  readonly primaryKey: {
+    readonly partitionKey: string;
+    readonly sortKey?: string;
+  };
+  readonly globalSecondaryIndexes?: readonly GSIConfig[];
+  readonly localSecondaryIndexes?: readonly LSIConfig[];
+}
+
+export interface GSIConfig {
+  readonly indexName: string;
+  readonly partitionKey: string;
+  readonly sortKey?: string;
+}
+
+export interface LSIConfig {
+  readonly indexName: string;
+  readonly sortKey: string;
+}
+
+/**
+ * Single-table design configuration
+ */
+export const MAIN_TABLE_CONFIG: TableConfig = {
+  tableName: process.env.DYNAMODB_TABLE_NAME || 'MainTable',
+  primaryKey: {
+    partitionKey: 'PK',
+    sortKey: 'SK'
+  },
+  globalSecondaryIndexes: [
+    {
+      indexName: 'GSI1',
+      partitionKey: 'GSI1PK',
+      sortKey: 'GSI1SK'
+    },
+    {
+      indexName: 'GSI2',
+      partitionKey: 'GSI2PK',
+      sortKey: 'GSI2SK'
+    },
+    {
+      indexName: 'GSI3',
+      partitionKey: 'GSI3PK',
+      sortKey: 'GSI3SK'
+    }
+  ]
+};
+
+/**
+ * Common DynamoDB operations with error handling and logging
+ */
+export class DynamoDBClient {
+  private readonly tableName: string;
+
+  constructor(tableName?: string) {
+    this.tableName = tableName || MAIN_TABLE_CONFIG.tableName;
+  }
+
+  /**
+   * Get item by primary key
+   */
+  async getItem(
+    key: Record<string, any>,
+    options?: {
+      consistentRead?: boolean;
+      projectionExpression?: string;
+      attributesToGet?: string[];
+    }
+  ): Promise<any> {
+    try {
+      logger.debug('DynamoDB getItem', { tableName: this.tableName, key });
+
+      const params: AWS.DynamoDB.DocumentClient.GetItemInput = {
+        TableName: this.tableName,
+        Key: key,
+        ConsistentRead: options?.consistentRead || false
+      };
+
+      if (options?.projectionExpression) {
+        params.ProjectionExpression = options.projectionExpression;
+      }
+
+      if (options?.attributesToGet) {
+        params.AttributesToGet = options.attributesToGet;
+      }
+
+      const result = await dynamoDb.get(params).promise();
+      
+      logger.debug('DynamoDB getItem result', { 
+        tableName: this.tableName, 
+        found: !!result.Item 
+      });
+
+      return result.Item;
+
+    } catch (error) {
+      logger.error('DynamoDB getItem failed', { 
+        tableName: this.tableName, 
+        key, 
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Put item with condition checking
+   */
+  async putItem(
+    item: Record<string, any>,
+    options?: {
+      conditionExpression?: string;
+      expressionAttributeNames?: Record<string, string>;
+      expressionAttributeValues?: Record<string, any>;
+      returnValues?: 'NONE' | 'ALL_OLD' | 'UPDATED_OLD' | 'ALL_NEW' | 'UPDATED_NEW';
+    }
+  ): Promise<any> {
+    try {
+      // Add timestamps
+      const now = new Date().toISOString();
+      const itemWithTimestamps = {
+        ...item,
+        createdAt: item.createdAt || now,
+        updatedAt: now
+      };
+
+      logger.debug('DynamoDB putItem', { 
+        tableName: this.tableName, 
+        itemPK: item.PK,
+        itemSK: item.SK 
+      });
+
+      const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
+        TableName: this.tableName,
+        Item: itemWithTimestamps,
+        ReturnValues: options?.returnValues || 'NONE'
+      };
+
+      if (options?.conditionExpression) {
+        params.ConditionExpression = options.conditionExpression;
+      }
+
+      if (options?.expressionAttributeNames) {
+        params.ExpressionAttributeNames = options.expressionAttributeNames;
+      }
+
+      if (options?.expressionAttributeValues) {
+        params.ExpressionAttributeValues = options.expressionAttributeValues;
+      }
+
+      const result = await dynamoDb.put(params).promise();
+      
+      logger.debug('DynamoDB putItem successful', { 
+        tableName: this.tableName,
+        itemPK: item.PK,
+        itemSK: item.SK
+      });
+
+      return result.Attributes;
+
+    } catch (error) {
+      logger.error('DynamoDB putItem failed', { 
+        tableName: this.tableName, 
+        itemPK: item.PK,
+        itemSK: item.SK,
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Update item with atomic updates
+   */
+  async updateItem(
+    key: Record<string, any>,
+    updateExpression: string,
+    options?: {
+      conditionExpression?: string;
+      expressionAttributeNames?: Record<string, string>;
+      expressionAttributeValues?: Record<string, any>;
+      returnValues?: 'NONE' | 'ALL_OLD' | 'UPDATED_OLD' | 'ALL_NEW' | 'UPDATED_NEW';
+    }
+  ): Promise<any> {
+    try {
+      logger.debug('DynamoDB updateItem', { tableName: this.tableName, key });
+
+      // Add updatedAt timestamp to the update expression
+      const now = new Date().toISOString();
+      const updatedExpression = `${updateExpression}, updatedAt = :updatedAt`;
+      
+      const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
+        TableName: this.tableName,
+        Key: key,
+        UpdateExpression: updatedExpression,
+        ExpressionAttributeValues: {
+          ...(options?.expressionAttributeValues || {}),
+          ':updatedAt': now
+        },
+        ReturnValues: options?.returnValues || 'ALL_NEW'
+      };
+
+      if (options?.conditionExpression) {
+        params.ConditionExpression = options.conditionExpression;
+      }
+
+      if (options?.expressionAttributeNames) {
+        params.ExpressionAttributeNames = options.expressionAttributeNames;
+      }
+
+      const result = await dynamoDb.update(params).promise();
+      
+      logger.debug('DynamoDB updateItem successful', { 
+        tableName: this.tableName, 
+        key 
+      });
+
+      return result.Attributes;
+
+    } catch (error) {
+      logger.error('DynamoDB updateItem failed', { 
+        tableName: this.tableName, 
+        key, 
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete item with condition checking
+   */
+  async deleteItem(
+    key: Record<string, any>,
+    options?: {
+      conditionExpression?: string;
+      expressionAttributeNames?: Record<string, string>;
+      expressionAttributeValues?: Record<string, any>;
+      returnValues?: 'NONE' | 'ALL_OLD';
+    }
+  ): Promise<any> {
+    try {
+      logger.debug('DynamoDB deleteItem', { tableName: this.tableName, key });
+
+      const params: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
+        TableName: this.tableName,
+        Key: key,
+        ReturnValues: options?.returnValues || 'ALL_OLD'
+      };
+
+      if (options?.conditionExpression) {
+        params.ConditionExpression = options.conditionExpression;
+      }
+
+      if (options?.expressionAttributeNames) {
+        params.ExpressionAttributeNames = options.expressionAttributeNames;
+      }
+
+      if (options?.expressionAttributeValues) {
+        params.ExpressionAttributeValues = options.expressionAttributeValues;
+      }
+
+      const result = await dynamoDb.delete(params).promise();
+      
+      logger.debug('DynamoDB deleteItem successful', { 
+        tableName: this.tableName, 
+        key 
+      });
+
+      return result.Attributes;
+
+    } catch (error) {
+      logger.error('DynamoDB deleteItem failed', { 
+        tableName: this.tableName, 
+        key, 
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Query items with pagination support
+   */
+  async query(
+    partitionKey: Record<string, any>,
+    options?: {
+      sortKeyCondition?: string;
+      indexName?: string;
+      filterExpression?: string;
+      projectionExpression?: string;
+      expressionAttributeNames?: Record<string, string>;
+      expressionAttributeValues?: Record<string, any>;
+      limit?: number;
+      exclusiveStartKey?: Record<string, any>;
+      scanIndexForward?: boolean;
+      consistentRead?: boolean;
+    }
+  ): Promise<{
+    items: any[];
+    lastEvaluatedKey?: Record<string, any>;
+    count: number;
+    scannedCount: number;
+  }> {
+    try {
+      logger.debug('DynamoDB query', { 
+        tableName: this.tableName, 
+        partitionKey,
+        indexName: options?.indexName 
+      });
+
+      // Build key condition expression
+      const pkAttribute = options?.indexName ? 
+        this.getIndexPartitionKey(options.indexName) : 
+        MAIN_TABLE_CONFIG.primaryKey.partitionKey;
+      
+      let keyConditionExpression = `${pkAttribute} = :pk`;
+      const expressionAttributeValues: Record<string, any> = {
+        ':pk': Object.values(partitionKey)[0]
+      };
+
+      if (options?.sortKeyCondition) {
+        keyConditionExpression += ` AND ${options.sortKeyCondition}`;
+      }
+
+      const params: AWS.DynamoDB.DocumentClient.QueryInput = {
+        TableName: this.tableName,
+        KeyConditionExpression: keyConditionExpression,
+        ExpressionAttributeValues: {
+          ...expressionAttributeValues,
+          ...(options?.expressionAttributeValues || {})
+        }
+      };
+
+      if (options?.indexName) {
+        params.IndexName = options.indexName;
+      }
+
+      if (options?.filterExpression) {
+        params.FilterExpression = options.filterExpression;
+      }
+
+      if (options?.projectionExpression) {
+        params.ProjectionExpression = options.projectionExpression;
+      }
+
+      if (options?.expressionAttributeNames) {
+        params.ExpressionAttributeNames = options.expressionAttributeNames;
+      }
+
+      if (options?.limit) {
+        params.Limit = options.limit;
+      }
+
+      if (options?.exclusiveStartKey) {
+        params.ExclusiveStartKey = options.exclusiveStartKey;
+      }
+
+      if (options?.scanIndexForward !== undefined) {
+        params.ScanIndexForward = options.scanIndexForward;
+      }
+
+      if (options?.consistentRead) {
+        params.ConsistentRead = options.consistentRead;
+      }
+
+      const result = await dynamoDb.query(params).promise();
+      
+      logger.debug('DynamoDB query result', { 
+        tableName: this.tableName, 
+        itemCount: result.Items?.length || 0,
+        hasMore: !!result.LastEvaluatedKey
+      });
+
+      return {
+        items: result.Items || [],
+        lastEvaluatedKey: result.LastEvaluatedKey,
+        count: result.Count || 0,
+        scannedCount: result.ScannedCount || 0
+      };
+
+    } catch (error) {
+      logger.error('DynamoDB query failed', { 
+        tableName: this.tableName, 
+        partitionKey,
+        indexName: options?.indexName,
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Batch get items (up to 100 items)
+   */
+  async batchGetItems(
+    keys: Record<string, any>[],
+    options?: {
+      projectionExpression?: string;
+      attributesToGet?: string[];
+      consistentRead?: boolean;
+    }
+  ): Promise<any[]> {
+    try {
+      if (keys.length === 0) {
+        return [];
+      }
+
+      if (keys.length > 100) {
+        throw new Error('Batch get can handle maximum 100 items at once');
+      }
+
+      logger.debug('DynamoDB batchGetItems', { 
+        tableName: this.tableName, 
+        keyCount: keys.length 
+      });
+
+      const requestItems: AWS.DynamoDB.DocumentClient.BatchGetItemInput['RequestItems'] = {
+        [this.tableName]: {
+          Keys: keys,
+          ConsistentRead: options?.consistentRead || false
+        }
+      };
+
+      if (options?.projectionExpression) {
+        requestItems[this.tableName].ProjectionExpression = options.projectionExpression;
+      }
+
+      if (options?.attributesToGet) {
+        requestItems[this.tableName].AttributesToGet = options.attributesToGet;
+      }
+
+      const result = await dynamoDb.batchGet({
+        RequestItems: requestItems
+      }).promise();
+
+      const items = result.Responses?.[this.tableName] || [];
+      
+      logger.debug('DynamoDB batchGetItems result', { 
+        tableName: this.tableName, 
+        retrievedCount: items.length,
+        requestedCount: keys.length
+      });
+
+      return items;
+
+    } catch (error) {
+      logger.error('DynamoDB batchGetItems failed', { 
+        tableName: this.tableName, 
+        keyCount: keys.length,
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Batch write items (put/delete up to 25 items)
+   */
+  async batchWriteItems(
+    operations: Array<{
+      operation: 'put' | 'delete';
+      item?: Record<string, any>;
+      key?: Record<string, any>;
+    }>
+  ): Promise<void> {
+    try {
+      if (operations.length === 0) {
+        return;
+      }
+
+      if (operations.length > 25) {
+        throw new Error('Batch write can handle maximum 25 items at once');
+      }
+
+      logger.debug('DynamoDB batchWriteItems', { 
+        tableName: this.tableName, 
+        operationCount: operations.length 
+      });
+
+      const now = new Date().toISOString();
+      const requestItems: AWS.DynamoDB.DocumentClient.WriteRequest[] = [];
+
+      for (const op of operations) {
+        if (op.operation === 'put') {
+          if (!op.item) {
+            throw new Error('Put operation requires item');
+          }
+          
+          requestItems.push({
+            PutRequest: {
+              Item: {
+                ...op.item,
+                createdAt: op.item.createdAt || now,
+                updatedAt: now
+              }
+            }
+          });
+        } else if (op.operation === 'delete') {
+          if (!op.key) {
+            throw new Error('Delete operation requires key');
+          }
+          
+          requestItems.push({
+            DeleteRequest: {
+              Key: op.key
+            }
+          });
+        }
+      }
+
+      await dynamoDb.batchWrite({
+        RequestItems: {
+          [this.tableName]: requestItems
+        }
+      }).promise();
+
+      logger.debug('DynamoDB batchWriteItems successful', { 
+        tableName: this.tableName, 
+        operationCount: operations.length 
+      });
+
+    } catch (error) {
+      logger.error('DynamoDB batchWriteItems failed', { 
+        tableName: this.tableName, 
+        operationCount: operations.length,
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Transaction write (up to 25 items)
+   */
+  async transactWrite(
+    operations: Array<{
+      operation: 'put' | 'update' | 'delete' | 'conditionCheck';
+      tableName?: string;
+      item?: Record<string, any>;
+      key?: Record<string, any>;
+      updateExpression?: string;
+      conditionExpression?: string;
+      expressionAttributeNames?: Record<string, string>;
+      expressionAttributeValues?: Record<string, any>;
+    }>
+  ): Promise<void> {
+    try {
+      if (operations.length === 0) {
+        return;
+      }
+
+      if (operations.length > 25) {
+        throw new Error('Transaction write can handle maximum 25 operations');
+      }
+
+      logger.debug('DynamoDB transactWrite', { 
+        operationCount: operations.length 
+      });
+
+      const now = new Date().toISOString();
+      const transactItems: AWS.DynamoDB.DocumentClient.TransactWriteItem[] = [];
+
+      for (const op of operations) {
+        const tableName = op.tableName || this.tableName;
+        
+        if (op.operation === 'put') {
+          if (!op.item) {
+            throw new Error('Put operation requires item');
+          }
+          
+          transactItems.push({
+            Put: {
+              TableName: tableName,
+              Item: {
+                ...op.item,
+                createdAt: op.item.createdAt || now,
+                updatedAt: now
+              },
+              ...(op.conditionExpression && { ConditionExpression: op.conditionExpression }),
+              ...(op.expressionAttributeNames && { ExpressionAttributeNames: op.expressionAttributeNames }),
+              ...(op.expressionAttributeValues && { ExpressionAttributeValues: op.expressionAttributeValues })
+            }
+          });
+        } else if (op.operation === 'update') {
+          if (!op.key || !op.updateExpression) {
+            throw new Error('Update operation requires key and updateExpression');
+          }
+          
+          const updateExpression = `${op.updateExpression}, updatedAt = :updatedAt`;
+          
+          transactItems.push({
+            Update: {
+              TableName: tableName,
+              Key: op.key,
+              UpdateExpression: updateExpression,
+              ExpressionAttributeValues: {
+                ...(op.expressionAttributeValues || {}),
+                ':updatedAt': now
+              },
+              ...(op.conditionExpression && { ConditionExpression: op.conditionExpression }),
+              ...(op.expressionAttributeNames && { ExpressionAttributeNames: op.expressionAttributeNames })
+            }
+          });
+        } else if (op.operation === 'delete') {
+          if (!op.key) {
+            throw new Error('Delete operation requires key');
+          }
+          
+          transactItems.push({
+            Delete: {
+              TableName: tableName,
+              Key: op.key,
+              ...(op.conditionExpression && { ConditionExpression: op.conditionExpression }),
+              ...(op.expressionAttributeNames && { ExpressionAttributeNames: op.expressionAttributeNames }),
+              ...(op.expressionAttributeValues && { ExpressionAttributeValues: op.expressionAttributeValues })
+            }
+          });
+        } else if (op.operation === 'conditionCheck') {
+          if (!op.key || !op.conditionExpression) {
+            throw new Error('Condition check requires key and conditionExpression');
+          }
+          
+          transactItems.push({
+            ConditionCheck: {
+              TableName: tableName,
+              Key: op.key,
+              ConditionExpression: op.conditionExpression,
+              ...(op.expressionAttributeNames && { ExpressionAttributeNames: op.expressionAttributeNames }),
+              ...(op.expressionAttributeValues && { ExpressionAttributeValues: op.expressionAttributeValues })
+            }
+          });
+        }
+      }
+
+      await dynamoDb.transactWrite({
+        TransactItems: transactItems
+      }).promise();
+
+      logger.debug('DynamoDB transactWrite successful', { 
+        operationCount: operations.length 
+      });
+
+    } catch (error) {
+      logger.error('DynamoDB transactWrite failed', { 
+        operationCount: operations.length,
+        error 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get index partition key based on index name
+   */
+  private getIndexPartitionKey(indexName: string): string {
+    const gsi = MAIN_TABLE_CONFIG.globalSecondaryIndexes?.find(
+      index => index.indexName === indexName
+    );
+    return gsi?.partitionKey || MAIN_TABLE_CONFIG.primaryKey.partitionKey;
+  }
+
+  /**
+   * Health check - verify table accessibility
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      await dynamoDbRaw.describeTable({
+        TableName: this.tableName
+      }).promise();
+      
+      logger.debug('DynamoDB health check passed', { tableName: this.tableName });
+      return true;
+    } catch (error) {
+      logger.error('DynamoDB health check failed', { 
+        tableName: this.tableName, 
+        error 
+      });
+      return false;
+    }
+  }
+}
+
+// Export singleton instance
+export const mainTableClient = new DynamoDBClient();

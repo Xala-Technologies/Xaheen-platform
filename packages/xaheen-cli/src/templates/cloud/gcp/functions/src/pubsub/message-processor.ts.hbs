@@ -1,0 +1,150 @@
+import * as functions from 'firebase-functions';
+import { logger } from '../utils/logger';
+import { PubSub } from '@google-cloud/pubsub';
+
+// Initialize Pub/Sub client
+const pubsub = new PubSub();
+
+{{#each topics}}
+interface {{pascalCase name}}MessageData {
+	id: string;
+	type: string;
+	{{#each fields}}
+	{{name}}: {{type}};
+	{{/each}}
+	timestamp: string;
+	version: string;
+}
+
+export const {{camelCase name}}Processor = functions
+	.region('{{../region}}')
+	.runWith({
+		memory: '{{../memory}}',
+		timeoutSeconds: {{../timeout}},
+		failurePolicy: {
+			retry: {
+				{{#if deadLetterQueue}}
+				deadLetterTopic: 'projects/{{../projectId}}/topics/{{name}}-dlq'
+				{{/if}}
+			}
+		}
+	})
+	.pubsub.topic('{{name}}')
+	.onPublish(async (message: functions.pubsub.Message, context: functions.EventContext) => {
+		try {
+			logger.info('Processing {{name}} message', {
+				messageId: context.eventId,
+				timestamp: context.timestamp,
+				topic: '{{name}}',
+				attributes: message.attributes
+			});
+
+			// Parse and validate message data
+			const messageData = parseMessage<{{pascalCase name}}MessageData>(message);
+			
+			// Validate message schema
+			await validateMessageSchema(messageData, '{{schema}}');
+
+			// Process the message
+			await process{{pascalCase name}}Message(messageData, message.attributes, context);
+
+			logger.info('{{name}} message processed successfully', { 
+				messageId: context.eventId,
+				messageType: messageData.type
+			});
+		} catch (error) {
+			logger.error('Error processing {{name}} message:', error, {
+				messageId: context.eventId,
+				timestamp: context.timestamp,
+				attributes: message.attributes
+			});
+			
+			// Re-throw to trigger retry mechanism
+			throw error;
+		}
+	});
+
+async function process{{pascalCase name}}Message(
+	data: {{pascalCase name}}MessageData,
+	attributes: { [key: string]: string },
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Processing {{name}} message data:', { data, attributes });
+	
+	try {
+		switch (data.type) {
+			{{#each messageTypes}}
+			case '{{type}}':
+				await handle{{pascalCase type}}(data, attributes, context);
+				break;
+			{{/each}}
+			default:
+				logger.warn('Unknown message type for {{name}}:', data.type);
+				break;
+		}
+	} catch (error) {
+		logger.error('Error in {{name}} message processing:', error);
+		throw error;
+	}
+}
+
+{{#each messageTypes}}
+async function handle{{pascalCase type}}(
+	data: {{pascalCase ../name}}MessageData,
+	attributes: { [key: string]: string },
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Handling {{type}} message:', { data, attributes });
+	
+	// TODO: Implement {{type}} message handling logic
+	{{#if action}}
+	// {{action}}
+	{{/if}}
+}
+
+{{/each}}
+{{/each}}
+
+// Utility functions
+function parseMessage<T>(message: functions.pubsub.Message): T {
+	try {
+		const dataString = Buffer.from(message.data, 'base64').toString();
+		return JSON.parse(dataString) as T;
+	} catch (error) {
+		logger.error('Failed to parse message data:', error);
+		throw new Error('Invalid message format');
+	}
+}
+
+async function validateMessageSchema(data: any, schemaName: string): Promise<void> {
+	// TODO: Implement schema validation
+	// You can use Joi, Zod, or JSON Schema validation here
+	logger.debug('Validating message against schema:', schemaName);
+}
+
+// Publisher utility (if needed for publishing messages from functions)
+export class MessagePublisher {
+	private topic: functions.pubsub.Topic;
+
+	constructor(topicName: string) {
+		this.topic = pubsub.topic(topicName);
+	}
+
+	async publish<T>(data: T, attributes?: { [key: string]: string }): Promise<string> {
+		try {
+			const messageBuffer = Buffer.from(JSON.stringify(data));
+			const messageId = await this.topic.publish(messageBuffer, attributes);
+			
+			logger.info('Message published successfully', {
+				messageId,
+				topic: this.topic.name,
+				attributes
+			});
+			
+			return messageId;
+		} catch (error) {
+			logger.error('Failed to publish message:', error);
+			throw error;
+		}
+	}
+}

@@ -1,0 +1,605 @@
+import { S3Event, S3EventRecord, Context } from 'aws-lambda';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+
+const s3 = new AWS.S3();
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+interface ProcessingResult {
+  readonly success: boolean;
+  readonly key: string;
+  readonly bucket: string;
+  readonly eventName: string;
+  readonly error?: string;
+}
+
+/**
+ * S3 event handler for file processing, transformations, and automated workflows
+ * Supports multiple S3 event types with comprehensive error handling
+ */
+export const handler = async (
+  event: S3Event,
+  context: Context
+): Promise<void> => {
+  const correlationId = context.awsRequestId;
+  logger.setCorrelationId(correlationId);
+
+  logger.info('S3 event received', {
+    recordCount: event.Records.length,
+    correlationId
+  });
+
+  const results: ProcessingResult[] = [];
+
+  // Process each S3 event record
+  for (const record of event.Records) {
+    try {
+      const result = await processS3Record(record, correlationId);
+      results.push(result);
+
+    } catch (error) {
+      logger.error('Failed to process S3 record', {
+        bucket: record.s3.bucket.name,
+        key: record.s3.object.key,
+        eventName: record.eventName,
+        error,
+        correlationId
+      });
+
+      results.push({
+        success: false,
+        key: record.s3.object.key,
+        bucket: record.s3.bucket.name,
+        eventName: record.eventName,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Log processing summary
+  const successCount = results.filter(r => r.success).length;
+  const failureCount = results.filter(r => !r.success).length;
+
+  logger.info('S3 event processing completed', {
+    total: event.Records.length,
+    successful: successCount,
+    failed: failureCount,
+    correlationId
+  });
+
+  // Throw error if any processing failed
+  if (failureCount > 0) {
+    throw new Error(`${failureCount} S3 records failed to process`);
+  }
+};
+
+/**
+ * Process individual S3 event record
+ */
+async function processS3Record(
+  record: S3EventRecord,
+  correlationId: string
+): Promise<ProcessingResult> {
+  const bucket = record.s3.bucket.name;
+  const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
+  const eventName = record.eventName;
+  const size = record.s3.object.size;
+
+  logger.info('Processing S3 record', {
+    bucket,
+    key,
+    eventName,
+    size,
+    correlationId
+  });
+
+  // Route to appropriate handler based on event type
+  switch (eventName) {
+    case 's3:ObjectCreated:Put':
+    case 's3:ObjectCreated:Post':
+    case 's3:ObjectCreated:Copy':
+    case 's3:ObjectCreated:CompleteMultipartUpload':
+      await handleObjectCreated(bucket, key, size, correlationId);
+      break;
+      
+    case 's3:ObjectRemoved:Delete':
+    case 's3:ObjectRemoved:DeleteMarkerCreated':
+      await handleObjectDeleted(bucket, key, correlationId);
+      break;
+      
+    default:
+      logger.warn('Unhandled S3 event type', { eventName, bucket, key, correlationId });
+      break;
+  }
+
+  return {
+    success: true,
+    key,
+    bucket,
+    eventName
+  };
+}
+
+/**
+ * Handle S3 object created events
+ */
+async function handleObjectCreated(
+  bucket: string,
+  key: string,
+  size: number,
+  correlationId: string
+): Promise<void> {
+  logger.info('Handling object created', { bucket, key, size, correlationId });
+
+  // Determine file type and route to appropriate processor
+  const fileExtension = key.split('.').pop()?.toLowerCase();
+  const fileName = key.split('/').pop() || key;
+
+  // Route based on file path patterns
+  if (key.startsWith('uploads/images/')) {
+    await processImageUpload(bucket, key, correlationId);
+  } else if (key.startsWith('uploads/documents/')) {
+    await processDocumentUpload(bucket, key, correlationId);
+  } else if (key.startsWith('data/exports/')) {
+    await processDataExport(bucket, key, correlationId);
+  } else if (key.startsWith('backups/')) {
+    await processBackupFile(bucket, key, correlationId);
+  } else if (key.startsWith('logs/')) {
+    await processLogFile(bucket, key, correlationId);
+  } else {
+    // Route based on file extension
+    switch (fileExtension) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        await processImageFile(bucket, key, correlationId);
+        break;
+        
+      case 'pdf':
+        await processPdfFile(bucket, key, correlationId);
+        break;
+        
+      case 'csv':
+      case 'xlsx':
+      case 'xls':
+        await processSpreadsheetFile(bucket, key, correlationId);
+        break;
+        
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'wmv':
+        await processVideoFile(bucket, key, correlationId);
+        break;
+        
+      case 'json':
+        await processJsonFile(bucket, key, correlationId);
+        break;
+        
+      case 'zip':
+      case 'tar':
+      case 'gz':
+        await processArchiveFile(bucket, key, correlationId);
+        break;
+        
+      default:
+        await processGenericFile(bucket, key, correlationId);
+        break;
+    }
+  }
+
+  // Update file metadata in database
+  await updateFileMetadata(bucket, key, size, 'created', correlationId);
+}
+
+/**
+ * Handle S3 object deleted events
+ */
+async function handleObjectDeleted(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Handling object deleted', { bucket, key, correlationId });
+
+  // Clean up related resources
+  await cleanupRelatedResources(bucket, key, correlationId);
+  
+  // Update file metadata in database
+  await updateFileMetadata(bucket, key, 0, 'deleted', correlationId);
+  
+  // Send notification if needed
+  await sendDeletionNotification(bucket, key, correlationId);
+}
+
+/**
+ * Process image uploads
+ */
+async function processImageUpload(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing image upload', { bucket, key, correlationId });
+
+  try {
+    // Generate thumbnails
+    await generateImageThumbnails(bucket, key, correlationId);
+    
+    // Extract metadata
+    const metadata = await extractImageMetadata(bucket, key);
+    logger.info('Extracted image metadata', { metadata, correlationId });
+    
+    // Validate image
+    await validateImage(bucket, key);
+    
+    // Update image index
+    await updateImageIndex(bucket, key, metadata, correlationId);
+    
+    // Send processing complete notification
+    await sendImageProcessingNotification(bucket, key, 'completed', correlationId);
+
+  } catch (error) {
+    logger.error('Error processing image upload', { bucket, key, error, correlationId });
+    await sendImageProcessingNotification(bucket, key, 'failed', correlationId);
+    throw error;
+  }
+}
+
+/**
+ * Process document uploads
+ */
+async function processDocumentUpload(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing document upload', { bucket, key, correlationId });
+
+  try {
+    // Extract text content
+    const textContent = await extractDocumentText(bucket, key);
+    
+    // Generate document preview
+    await generateDocumentPreview(bucket, key, correlationId);
+    
+    // Index document for search
+    await indexDocumentForSearch(bucket, key, textContent, correlationId);
+    
+    // Scan for sensitive content
+    await scanForSensitiveContent(bucket, key, textContent, correlationId);
+    
+    // Update document registry
+    await updateDocumentRegistry(bucket, key, correlationId);
+
+  } catch (error) {
+    logger.error('Error processing document upload', { bucket, key, error, correlationId });
+    throw error;
+  }
+}
+
+/**
+ * Process image files
+ */
+async function processImageFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing image file', { bucket, key, correlationId });
+
+  // Create different sizes
+  const sizes = [
+    { name: 'thumbnail', width: 150, height: 150 },
+    { name: 'small', width: 300, height: 300 },
+    { name: 'medium', width: 800, height: 600 },
+    { name: 'large', width: 1200, height: 900 }
+  ];
+
+  for (const size of sizes) {
+    await createImageResize(bucket, key, size, correlationId);
+  }
+
+  // Optimize original image
+  await optimizeImage(bucket, key, correlationId);
+}
+
+/**
+ * Process PDF files
+ */
+async function processPdfFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing PDF file', { bucket, key, correlationId });
+
+  // Extract text content
+  const textContent = await extractPdfText(bucket, key);
+  
+  // Generate preview images
+  await generatePdfPreview(bucket, key, correlationId);
+  
+  // Index content for search
+  await indexPdfContent(bucket, key, textContent, correlationId);
+}
+
+/**
+ * Process spreadsheet files
+ */
+async function processSpreadsheetFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing spreadsheet file', { bucket, key, correlationId });
+
+  // Parse spreadsheet data
+  const data = await parseSpreadsheetData(bucket, key);
+  
+  // Validate data format
+  await validateSpreadsheetData(data, correlationId);
+  
+  // Import data to database
+  await importSpreadsheetData(data, correlationId);
+}
+
+/**
+ * Process video files
+ */
+async function processVideoFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing video file', { bucket, key, correlationId });
+
+  // Generate video thumbnail
+  await generateVideoThumbnail(bucket, key, correlationId);
+  
+  // Extract video metadata
+  const metadata = await extractVideoMetadata(bucket, key);
+  
+  // Transcode video for different qualities
+  await transcodeVideo(bucket, key, correlationId);
+  
+  // Update video catalog
+  await updateVideoCatalog(bucket, key, metadata, correlationId);
+}
+
+/**
+ * Process JSON files
+ */
+async function processJsonFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing JSON file', { bucket, key, correlationId });
+
+  // Read and parse JSON
+  const jsonData = await readJsonFile(bucket, key);
+  
+  // Validate JSON schema
+  await validateJsonSchema(jsonData, correlationId);
+  
+  // Process JSON data
+  await processJsonData(jsonData, correlationId);
+}
+
+/**
+ * Process archive files
+ */
+async function processArchiveFile(
+  bucket: string,
+  key: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing archive file', { bucket, key, correlationId });
+
+  // Extract archive contents
+  const contents = await extractArchiveContents(bucket, key);
+  
+  // Process each file in the archive
+  for (const file of contents) {
+    await processExtractedFile(bucket, file, correlationId);
+  }
+}
+
+/**
+ * Update file metadata in database
+ */
+async function updateFileMetadata(
+  bucket: string,
+  key: string,
+  size: number,
+  status: string,
+  correlationId: string
+): Promise<void> {
+  logger.info('Updating file metadata', { bucket, key, size, status, correlationId });
+
+  const params = {
+    TableName: 'FileMetadata',
+    Key: {
+      bucket,
+      key
+    },
+    UpdateExpression: 'SET #status = :status, #size = :size, #updatedAt = :updatedAt',
+    ExpressionAttributeNames: {
+      '#status': 'status',
+      '#size': 'size',
+      '#updatedAt': 'updatedAt'
+    },
+    ExpressionAttributeValues: {
+      ':status': status,
+      ':size': size,
+      ':updatedAt': new Date().toISOString()
+    }
+  };
+
+  await dynamodb.update(params).promise();
+}
+
+/**
+ * Placeholder implementations - replace with actual business logic
+ */
+async function generateImageThumbnails(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Generating image thumbnails', { bucket, key, correlationId });
+  // TODO: Implement image thumbnail generation
+}
+
+async function extractImageMetadata(bucket: string, key: string): Promise<any> {
+  logger.info('Extracting image metadata', { bucket, key });
+  // TODO: Implement image metadata extraction
+  return {};
+}
+
+async function validateImage(bucket: string, key: string): Promise<void> {
+  logger.info('Validating image', { bucket, key });
+  // TODO: Implement image validation
+}
+
+async function updateImageIndex(bucket: string, key: string, metadata: any, correlationId: string): Promise<void> {
+  logger.info('Updating image index', { bucket, key, correlationId });
+  // TODO: Implement image index update
+}
+
+async function sendImageProcessingNotification(bucket: string, key: string, status: string, correlationId: string): Promise<void> {
+  logger.info('Sending image processing notification', { bucket, key, status, correlationId });
+  // TODO: Implement notification sending
+}
+
+async function extractDocumentText(bucket: string, key: string): Promise<string> {
+  logger.info('Extracting document text', { bucket, key });
+  // TODO: Implement document text extraction
+  return '';
+}
+
+async function generateDocumentPreview(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Generating document preview', { bucket, key, correlationId });
+  // TODO: Implement document preview generation
+}
+
+async function indexDocumentForSearch(bucket: string, key: string, textContent: string, correlationId: string): Promise<void> {
+  logger.info('Indexing document for search', { bucket, key, correlationId });
+  // TODO: Implement document search indexing
+}
+
+async function scanForSensitiveContent(bucket: string, key: string, textContent: string, correlationId: string): Promise<void> {
+  logger.info('Scanning for sensitive content', { bucket, key, correlationId });
+  // TODO: Implement sensitive content scanning
+}
+
+async function updateDocumentRegistry(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Updating document registry', { bucket, key, correlationId });
+  // TODO: Implement document registry update
+}
+
+async function cleanupRelatedResources(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Cleaning up related resources', { bucket, key, correlationId });
+  // TODO: Implement resource cleanup
+}
+
+async function sendDeletionNotification(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Sending deletion notification', { bucket, key, correlationId });
+  // TODO: Implement deletion notification
+}
+
+async function processGenericFile(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Processing generic file', { bucket, key, correlationId });
+  // TODO: Implement generic file processing
+}
+
+// Additional placeholder implementations...
+async function processDataExport(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Processing data export', { bucket, key, correlationId });
+}
+
+async function processBackupFile(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Processing backup file', { bucket, key, correlationId });
+}
+
+async function processLogFile(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Processing log file', { bucket, key, correlationId });
+}
+
+async function createImageResize(bucket: string, key: string, size: any, correlationId: string): Promise<void> {
+  logger.info('Creating image resize', { bucket, key, size, correlationId });
+}
+
+async function optimizeImage(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Optimizing image', { bucket, key, correlationId });
+}
+
+async function extractPdfText(bucket: string, key: string): Promise<string> {
+  logger.info('Extracting PDF text', { bucket, key });
+  return '';
+}
+
+async function generatePdfPreview(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Generating PDF preview', { bucket, key, correlationId });
+}
+
+async function indexPdfContent(bucket: string, key: string, textContent: string, correlationId: string): Promise<void> {
+  logger.info('Indexing PDF content', { bucket, key, correlationId });
+}
+
+async function parseSpreadsheetData(bucket: string, key: string): Promise<any> {
+  logger.info('Parsing spreadsheet data', { bucket, key });
+  return {};
+}
+
+async function validateSpreadsheetData(data: any, correlationId: string): Promise<void> {
+  logger.info('Validating spreadsheet data', { correlationId });
+}
+
+async function importSpreadsheetData(data: any, correlationId: string): Promise<void> {
+  logger.info('Importing spreadsheet data', { correlationId });
+}
+
+async function generateVideoThumbnail(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Generating video thumbnail', { bucket, key, correlationId });
+}
+
+async function extractVideoMetadata(bucket: string, key: string): Promise<any> {
+  logger.info('Extracting video metadata', { bucket, key });
+  return {};
+}
+
+async function transcodeVideo(bucket: string, key: string, correlationId: string): Promise<void> {
+  logger.info('Transcoding video', { bucket, key, correlationId });
+}
+
+async function updateVideoCatalog(bucket: string, key: string, metadata: any, correlationId: string): Promise<void> {
+  logger.info('Updating video catalog', { bucket, key, correlationId });
+}
+
+async function readJsonFile(bucket: string, key: string): Promise<any> {
+  logger.info('Reading JSON file', { bucket, key });
+  const object = await s3.getObject({ Bucket: bucket, Key: key }).promise();
+  return JSON.parse(object.Body?.toString() || '{}');
+}
+
+async function validateJsonSchema(jsonData: any, correlationId: string): Promise<void> {
+  logger.info('Validating JSON schema', { correlationId });
+}
+
+async function processJsonData(jsonData: any, correlationId: string): Promise<void> {
+  logger.info('Processing JSON data', { correlationId });
+}
+
+async function extractArchiveContents(bucket: string, key: string): Promise<any[]> {
+  logger.info('Extracting archive contents', { bucket, key });
+  return [];
+}
+
+async function processExtractedFile(bucket: string, file: any, correlationId: string): Promise<void> {
+  logger.info('Processing extracted file', { bucket, file, correlationId });
+}

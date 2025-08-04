@@ -1,0 +1,473 @@
+# Google Cloud Platform Variables
+# Comprehensive variable definitions for GCP infrastructure
+
+# Project Configuration
+variable "project_id" {
+  description = "The GCP project ID"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.project_id))
+    error_message = "Project ID must be 6-30 characters, start with a letter, and contain only lowercase letters, numbers, and hyphens."
+  }
+}
+
+variable "project_name" {
+  description = "Name of the project (used for resource naming)"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "organization_name" {
+  description = "Name of the organization"
+  type        = string
+  default     = "{{organizationName}}"
+}
+
+variable "environment" {
+  description = "Environment name (development, staging, production)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["development", "staging", "production"], var.environment)
+    error_message = "Environment must be development, staging, or production."
+  }
+}
+
+# Regional Configuration
+variable "region" {
+  description = "The GCP region for resources"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "zone" {
+  description = "The GCP zone for zonal resources"
+  type        = string
+  default     = "{{zone}}"
+}
+
+variable "alternative_zone" {
+  description = "Alternative zone for multi-zone deployments"
+  type        = string
+  default     = "{{alternativeZone}}"
+}
+
+variable "multi_region" {
+  description = "Multi-region configuration for global resources"
+  type        = string
+  default     = "{{multiRegion}}"
+}
+
+# Networking Configuration
+variable "subnet_cidr" {
+  description = "CIDR block for the main subnet"
+  type        = string
+  default     = "10.0.0.0/24"
+}
+
+variable "pods_cidr" {
+  description = "CIDR block for GKE pods"
+  type        = string
+  default     = "10.1.0.0/16"
+}
+
+variable "services_cidr" {
+  description = "CIDR block for GKE services"
+  type        = string
+  default     = "10.2.0.0/16"
+}
+
+variable "vpc_connector_cidr" {
+  description = "CIDR block for VPC connector"
+  type        = string
+  default     = "10.3.0.0/28"
+}
+
+variable "master_ipv4_cidr_block" {
+  description = "CIDR block for GKE master nodes"
+  type        = string
+  default     = "10.4.0.0/28"
+}
+
+variable "redis_reserved_ip_range" {
+  description = "Reserved IP range for Redis instances"
+  type        = string
+  default     = "10.5.0.0/29"
+}
+
+# VPC Connector Configuration
+variable "vpc_connector_min_instances" {
+  description = "Minimum number of VPC connector instances"
+  type        = number
+  default     = 2
+}
+
+variable "vpc_connector_max_instances" {
+  description = "Maximum number of VPC connector instances"
+  type        = number
+  default     = 10
+}
+
+# Security Configuration
+variable "ssh_source_ranges" {
+  description = "Source IP ranges allowed for SSH access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "cors_origins" {
+  description = "Allowed CORS origins for storage buckets"
+  type        = list(string)
+  default     = ["https://{{projectName}}.com", "https://app.{{projectName}}.com"]
+}
+
+variable "static_domains" {
+  description = "Domains for static asset CDN"
+  type        = list(string)
+  default     = ["static.{{projectName}}.com"]
+}
+
+# Storage Configuration
+variable "storage_location" {
+  description = "Location for Cloud Storage buckets"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "backup_location" {
+  description = "Location for backup storage"
+  type        = string
+  default     = "{{multiRegion}}"
+}
+
+variable "default_storage_class" {
+  description = "Default storage class for buckets"
+  type        = string
+  default     = "STANDARD"
+  validation {
+    condition     = contains(["STANDARD", "NEARLINE", "COLDLINE", "ARCHIVE"], var.default_storage_class)
+    error_message = "Storage class must be STANDARD, NEARLINE, COLDLINE, or ARCHIVE."
+  }
+}
+
+variable "retention_period_seconds" {
+  description = "Retention period for storage buckets in seconds"
+  type        = number
+  default     = 2592000 # 30 days
+}
+
+variable "retention_policy_locked" {
+  description = "Whether the retention policy is locked"
+  type        = bool
+  default     = false
+}
+
+variable "backup_retention_seconds" {
+  description = "Backup retention period in seconds"
+  type        = number
+  default     = 220752000 # 7 years
+}
+
+# Database Configuration
+variable "firestore_location" {
+  description = "Location for Firestore database"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "firestore_backup_retention_days" {
+  description = "Firestore backup retention in days"
+  type        = number
+  default     = 30
+}
+
+# KMS Configuration
+variable "kms_location" {
+  description = "Location for KMS key ring"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "key_rotation_period" {
+  description = "KMS key rotation period"
+  type        = string
+  default     = "7776000s" # 90 days
+}
+
+# GKE Configuration
+variable "gke_location" {
+  description = "Location for GKE cluster (regional or zonal)"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "gke_initial_node_count" {
+  description = "Initial number of nodes in the GKE cluster"
+  type        = number
+  default     = 1
+}
+
+variable "gke_min_node_count" {
+  description = "Minimum number of nodes in the GKE cluster"
+  type        = number
+  default     = 1
+}
+
+variable "gke_max_node_count" {
+  description = "Maximum number of nodes in the GKE cluster"
+  type        = number
+  default     = 10
+}
+
+variable "gke_machine_type" {
+  description = "Machine type for GKE nodes"
+  type        = string
+  default     = "e2-standard-4"
+}
+
+variable "gke_disk_size" {
+  description = "Disk size for GKE nodes in GB"
+  type        = number
+  default     = 100
+}
+
+variable "gke_spot_max_nodes" {
+  description = "Maximum number of spot nodes"
+  type        = number
+  default     = 5
+}
+
+variable "gke_spot_machine_type" {
+  description = "Machine type for spot nodes"
+  type        = string
+  default     = "e2-standard-2"
+}
+
+# Compute Engine Configuration
+variable "instance_image" {
+  description = "Image for Compute Engine instances"
+  type        = string
+  default     = "debian-cloud/debian-11"
+}
+
+variable "instance_disk_size" {
+  description = "Disk size for Compute Engine instances in GB"
+  type        = number
+  default     = 20
+}
+
+# Labels
+variable "labels" {
+  description = "Labels to apply to all resources"
+  type        = map(string)
+  default = {
+    project     = "{{projectName}}"
+    environment = "{{environment}}"
+    team        = "engineering"
+    managed-by  = "terraform"
+    created-by  = "xaheen-cli"
+  }
+}
+
+# Feature Flags
+variable "enable_apis" {
+  description = "Whether to enable required APIs"
+  type        = bool
+  default     = true
+}
+
+variable "enable_monitoring" {
+  description = "Whether to enable monitoring and logging"
+  type        = bool
+  default     = true
+}
+
+variable "enable_backup" {
+  description = "Whether to enable backup services"
+  type        = bool
+  default     = true
+}
+
+variable "enable_encryption" {
+  description = "Whether to enable encryption with KMS"
+  type        = bool
+  default     = true
+}
+
+variable "enable_vpc" {
+  description = "Whether to create custom VPC"
+  type        = bool
+  default     = true
+}
+
+variable "enable_nat_gateway" {
+  description = "Whether to create NAT gateway"
+  type        = bool
+  default     = true
+}
+
+variable "enable_private_google_access" {
+  description = "Whether to enable private Google access"
+  type        = bool
+  default     = true
+}
+
+variable "enable_binary_authorization" {
+  description = "Whether to enable binary authorization for GKE"
+  type        = bool
+  default     = false
+}
+
+# Monitoring and Alerting
+variable "notification_channels" {
+  description = "Notification channels for alerting"
+  type        = list(string)
+  default     = []
+}
+
+variable "alert_thresholds" {
+  description = "Thresholds for various alerts"
+  type = object({
+    cpu_utilization    = number
+    memory_utilization = number
+    disk_utilization   = number
+    error_rate         = number
+    latency_p95        = number
+  })
+  default = {
+    cpu_utilization    = 80
+    memory_utilization = 80
+    disk_utilization   = 80
+    error_rate         = 0.05
+    latency_p95        = 2000
+  }
+}
+
+# Cost Management
+variable "budget_amount" {
+  description = "Budget amount for cost alerts"
+  type        = number
+  default     = 1000
+}
+
+variable "budget_threshold_percentages" {
+  description = "Budget threshold percentages for alerts"
+  type        = list(number)
+  default     = [50, 75, 90, 100]
+}
+
+# Compliance and Governance
+variable "enable_audit_logs" {
+  description = "Whether to enable audit logs"
+  type        = bool
+  default     = true
+}
+
+variable "log_retention_days" {
+  description = "Log retention period in days"
+  type        = number
+  default     = 30
+}
+
+variable "enable_data_loss_prevention" {
+  description = "Whether to enable DLP scanning"
+  type        = bool
+  default     = false
+}
+
+variable "enable_security_scanner" {
+  description = "Whether to enable security scanner"
+  type        = bool
+  default     = true
+}
+
+# Norwegian Compliance
+variable "enable_norwegian_compliance" {
+  description = "Whether to enable Norwegian compliance features"
+  type        = bool
+  default     = {{norwegianCompliance}}
+}
+
+variable "nsm_security_level" {
+  description = "NSM security classification level"
+  type        = string
+  default     = "{{nsmSecurityLevel}}"
+  validation {
+    condition     = contains(["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"], var.nsm_security_level)
+    error_message = "NSM security level must be OPEN, RESTRICTED, CONFIDENTIAL, or SECRET."
+  }
+}
+
+variable "enable_bankid_integration" {
+  description = "Whether to enable BankID integration"
+  type        = bool
+  default     = {{bankidIntegration}}
+}
+
+variable "enable_vipps_integration" {
+  description = "Whether to enable Vipps integration"
+  type        = bool
+  default     = {{vippsIntegration}}
+}
+
+variable "data_residency_region" {
+  description = "Region for data residency requirements"
+  type        = string
+  default     = "europe-north1" # Norway/Finland region
+}
+
+# GDPR Compliance
+variable "enable_gdpr_compliance" {
+  description = "Whether to enable GDPR compliance features"
+  type        = bool
+  default     = true
+}
+
+variable "data_retention_period_days" {
+  description = "Data retention period for GDPR compliance"
+  type        = number
+  default     = 2555 # 7 years
+}
+
+variable "enable_right_to_be_forgotten" {
+  description = "Whether to enable right to be forgotten features"
+  type        = bool
+  default     = true
+}
+
+variable "privacy_policy_url" {
+  description = "URL to the privacy policy"
+  type        = string
+  default     = "https://{{projectName}}.com/privacy"
+}
+
+variable "terms_of_service_url" {
+  description = "URL to the terms of service"
+  type        = string
+  default     = "https://{{projectName}}.com/terms"
+}
+
+# High Availability Configuration
+variable "enable_multi_region" {
+  description = "Whether to enable multi-region deployment"
+  type        = bool
+  default     = false
+}
+
+variable "secondary_regions" {
+  description = "Secondary regions for multi-region deployment"
+  type        = list(string)
+  default     = ["europe-west1", "europe-west4"]
+}
+
+variable "disaster_recovery_rto" {
+  description = "Recovery Time Objective in minutes"
+  type        = number
+  default     = 240 # 4 hours
+}
+
+variable "disaster_recovery_rpo" {
+  description = "Recovery Point Objective in minutes"
+  type        = number
+  default     = 60 # 1 hour
+}

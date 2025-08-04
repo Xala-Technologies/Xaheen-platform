@@ -1,0 +1,529 @@
+import { SQSEvent, SQSRecord, Context } from 'aws-lambda';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+
+const sqs = new AWS.SQS();
+
+interface MessageBody {
+  readonly messageType: string;
+  readonly data: any;
+  readonly timestamp: string;
+  readonly correlationId?: string;
+}
+
+interface ProcessingResult {
+  readonly success: boolean;
+  readonly messageId: string;
+  readonly error?: string;
+}
+
+/**
+ * SQS message handler with batch processing, error handling, and retry logic
+ * Supports multiple message types with type-safe processing
+ */
+export const handler = async (
+  event: SQSEvent,
+  context: Context
+): Promise<void> => {
+  const correlationId = context.awsRequestId;
+  logger.setCorrelationId(correlationId);
+
+  logger.info('SQS batch received', {
+    recordCount: event.Records.length,
+    correlationId
+  });
+
+  const results: ProcessingResult[] = [];
+  const failedMessages: SQSRecord[] = [];
+
+  // Process each message in the batch
+  for (const record of event.Records) {
+    try {
+      const result = await processMessage(record, correlationId);
+      results.push(result);
+
+      if (!result.success) {
+        failedMessages.push(record);
+      }
+
+    } catch (error) {
+      logger.error('Failed to process SQS message', {
+        messageId: record.messageId,
+        error,
+        correlationId
+      });
+
+      results.push({
+        success: false,
+        messageId: record.messageId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      failedMessages.push(record);
+    }
+  }
+
+  // Log batch processing summary
+  const successCount = results.filter(r => r.success).length;
+  const failureCount = results.filter(r => !r.success).length;
+
+  logger.info('SQS batch processing completed', {
+    total: event.Records.length,
+    successful: successCount,
+    failed: failureCount,
+    correlationId
+  });
+
+  // Handle failed messages
+  if (failedMessages.length > 0) {
+    await handleFailedMessages(failedMessages, correlationId);
+    
+    // Throw error to ensure failed messages are returned to the queue or sent to DLQ
+    throw new Error(`${failureCount} messages failed to process`);
+  }
+};
+
+/**
+ * Process individual SQS message
+ */
+async function processMessage(
+  record: SQSRecord,
+  correlationId: string
+): Promise<ProcessingResult> {
+  const messageId = record.messageId;
+  
+  logger.info('Processing SQS message', {
+    messageId,
+    receiptHandle: record.receiptHandle,
+    correlationId
+  });
+
+  try {
+    // Parse message body
+    let messageBody: MessageBody;
+    try {
+      messageBody = JSON.parse(record.body);
+    } catch (error) {
+      logger.error('Invalid JSON in SQS message body', {
+        messageId,
+        body: record.body,
+        error,
+        correlationId
+      });
+      return {
+        success: false,
+        messageId,
+        error: 'Invalid JSON in message body'
+      };
+    }
+
+    // Use message correlation ID if provided, otherwise use Lambda correlation ID
+    const msgCorrelationId = messageBody.correlationId || correlationId;
+    logger.setCorrelationId(msgCorrelationId);
+
+    // Route message to appropriate handler based on message type
+    switch (messageBody.messageType) {
+      case 'USER_REGISTRATION':
+        await handleUserRegistration(messageBody.data, msgCorrelationId);
+        break;
+        
+      case 'ORDER_PLACED':
+        await handleOrderPlaced(messageBody.data, msgCorrelationId);
+        break;
+        
+      case 'PAYMENT_PROCESSED':
+        await handlePaymentProcessed(messageBody.data, msgCorrelationId);
+        break;
+        
+      case 'EMAIL_NOTIFICATION':
+        await handleEmailNotification(messageBody.data, msgCorrelationId);
+        break;
+        
+      case 'DATA_EXPORT':
+        await handleDataExport(messageBody.data, msgCorrelationId);
+        break;
+        
+      case 'BATCH_PROCESSING':
+        await handleBatchProcessing(messageBody.data, msgCorrelationId);
+        break;
+        
+      default:
+        logger.warn('Unknown message type', {
+          messageType: messageBody.messageType,
+          messageId,
+          correlationId: msgCorrelationId
+        });
+        return {
+          success: false,
+          messageId,
+          error: `Unknown message type: ${messageBody.messageType}`
+        };
+    }
+
+    logger.info('SQS message processed successfully', {
+      messageId,
+      messageType: messageBody.messageType,
+      correlationId: msgCorrelationId
+    });
+
+    return {
+      success: true,
+      messageId
+    };
+
+  } catch (error) {
+    logger.error('Error processing SQS message', {
+      messageId,
+      error,
+      correlationId
+    });
+
+    return {
+      success: false,
+      messageId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+/**
+ * Handle user registration messages
+ */
+async function handleUserRegistration(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing user registration', {
+    userId: data.userId,
+    email: data.email,
+    correlationId
+  });
+
+  try {
+    // Example: Send welcome email
+    await sendWelcomeEmail(data.email, data.firstName);
+    
+    // Example: Create user profile
+    await createUserProfile(data);
+    
+    // Example: Initialize user settings
+    await initializeUserSettings(data.userId);
+    
+    // Example: Add to mailing list
+    await addToMailingList(data.email, data.preferences);
+
+  } catch (error) {
+    logger.error('Error handling user registration', {
+      userId: data.userId,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle order placed messages
+ */
+async function handleOrderPlaced(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing order placed', {
+    orderId: data.orderId,
+    customerId: data.customerId,
+    correlationId
+  });
+
+  try {
+    // Example: Update inventory
+    await updateInventory(data.items);
+    
+    // Example: Process payment
+    await processPayment(data.orderId, data.paymentInfo);
+    
+    // Example: Send order confirmation
+    await sendOrderConfirmation(data.orderId, data.customerEmail);
+    
+    // Example: Create shipment
+    await createShipment(data.orderId, data.shippingAddress);
+
+  } catch (error) {
+    logger.error('Error handling order placed', {
+      orderId: data.orderId,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle payment processed messages
+ */
+async function handlePaymentProcessed(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing payment processed', {
+    paymentId: data.paymentId,
+    orderId: data.orderId,
+    status: data.status,
+    correlationId
+  });
+
+  try {
+    if (data.status === 'completed') {
+      // Example: Update order status
+      await updateOrderStatus(data.orderId, 'paid');
+      
+      // Example: Send payment confirmation
+      await sendPaymentConfirmation(data.paymentId, data.customerEmail);
+      
+      // Example: Trigger fulfillment
+      await triggerFulfillment(data.orderId);
+      
+    } else if (data.status === 'failed') {
+      // Example: Handle payment failure
+      await handlePaymentFailure(data.orderId, data.failureReason);
+      
+      // Example: Send failure notification
+      await sendPaymentFailureNotification(data.paymentId, data.customerEmail);
+    }
+
+  } catch (error) {
+    logger.error('Error handling payment processed', {
+      paymentId: data.paymentId,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle email notification messages
+ */
+async function handleEmailNotification(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing email notification', {
+    emailType: data.emailType,
+    recipient: data.recipient,
+    correlationId
+  });
+
+  try {
+    // Example: Send different types of emails
+    switch (data.emailType) {
+      case 'welcome':
+        await sendWelcomeEmail(data.recipient, data.firstName);
+        break;
+      case 'password_reset':
+        await sendPasswordResetEmail(data.recipient, data.resetToken);
+        break;
+      case 'promotional':
+        await sendPromotionalEmail(data.recipient, data.promoContent);
+        break;
+      default:
+        throw new Error(`Unknown email type: ${data.emailType}`);
+    }
+
+  } catch (error) {
+    logger.error('Error handling email notification', {
+      emailType: data.emailType,
+      recipient: data.recipient,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle data export messages
+ */
+async function handleDataExport(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing data export', {
+    exportType: data.exportType,
+    userId: data.userId,
+    correlationId
+  });
+
+  try {
+    // Example: Export user data
+    const exportData = await generateExportData(data.exportType, data.filters);
+    
+    // Example: Upload to S3
+    const s3Key = await uploadExportToS3(exportData, data.userId, data.exportType);
+    
+    // Example: Generate presigned URL
+    const downloadUrl = await generatePresignedUrl(s3Key);
+    
+    // Example: Send download link
+    await sendExportDownloadLink(data.userEmail, downloadUrl);
+
+  } catch (error) {
+    logger.error('Error handling data export', {
+      exportType: data.exportType,
+      userId: data.userId,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle batch processing messages
+ */
+async function handleBatchProcessing(
+  data: any,
+  correlationId: string
+): Promise<void> {
+  logger.info('Processing batch processing', {
+    batchType: data.batchType,
+    itemCount: data.items?.length || 0,
+    correlationId
+  });
+
+  try {
+    // Example: Process items in batches
+    const batchSize = 10;
+    const items = data.items || [];
+    
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      await processBatch(batch, data.batchType, correlationId);
+    }
+
+  } catch (error) {
+    logger.error('Error handling batch processing', {
+      batchType: data.batchType,
+      error,
+      correlationId
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle failed messages
+ */
+async function handleFailedMessages(
+  failedMessages: SQSRecord[],
+  correlationId: string
+): Promise<void> {
+  logger.error('Handling failed messages', {
+    failedCount: failedMessages.length,
+    correlationId
+  });
+
+  // Example: Send to dead letter queue manually if needed
+  // Example: Log failed messages for analysis
+  // Example: Send alerts for failed processing
+  
+  for (const message of failedMessages) {
+    logger.error('Failed message details', {
+      messageId: message.messageId,
+      body: message.body,
+      receiptHandle: message.receiptHandle,
+      correlationId
+    });
+  }
+}
+
+/**
+ * Business logic functions - replace with actual implementations  
+ */
+async function sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+  logger.info('Sending welcome email', { email, firstName });
+}
+
+async function createUserProfile(userData: any): Promise<void> {
+  logger.info('Creating user profile', { userId: userData.userId });
+}
+
+async function initializeUserSettings(userId: string): Promise<void> {
+  logger.info('Initializing user settings', { userId });
+}
+
+async function addToMailingList(email: string, preferences: any): Promise<void> {
+  logger.info('Adding to mailing list', { email });
+}
+
+async function updateInventory(items: any[]): Promise<void> {
+  logger.info('Updating inventory', { itemCount: items.length });
+}
+
+async function processPayment(orderId: string, paymentInfo: any): Promise<void> {
+  logger.info('Processing payment', { orderId });
+}
+
+async function sendOrderConfirmation(orderId: string, email: string): Promise<void> {
+  logger.info('Sending order confirmation', { orderId, email });
+}
+
+async function createShipment(orderId: string, address: any): Promise<void> {
+  logger.info('Creating shipment', { orderId });
+}
+
+async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+  logger.info('Updating order status', { orderId, status });
+}
+
+async function sendPaymentConfirmation(paymentId: string, email: string): Promise<void> {
+  logger.info('Sending payment confirmation', { paymentId, email });
+}
+
+async function triggerFulfillment(orderId: string): Promise<void> {
+  logger.info('Triggering fulfillment', { orderId });
+}
+
+async function handlePaymentFailure(orderId: string, reason: string): Promise<void> {
+  logger.info('Handling payment failure', { orderId, reason });
+}
+
+async function sendPaymentFailureNotification(paymentId: string, email: string): Promise<void> {
+  logger.info('Sending payment failure notification', { paymentId, email });
+}
+
+async function sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+  logger.info('Sending password reset email', { email });
+}
+
+async function sendPromotionalEmail(email: string, content: any): Promise<void> {
+  logger.info('Sending promotional email', { email });
+}
+
+async function generateExportData(exportType: string, filters: any): Promise<any> {
+  logger.info('Generating export data', { exportType });
+  return {};
+}
+
+async function uploadExportToS3(data: any, userId: string, exportType: string): Promise<string> {
+  logger.info('Uploading export to S3', { userId, exportType });
+  return 'export-key';
+}
+
+async function generatePresignedUrl(s3Key: string): Promise<string> {
+  logger.info('Generating presigned URL', { s3Key });
+  return 'https://example.com/download';
+}
+
+async function sendExportDownloadLink(email: string, downloadUrl: string): Promise<void> {
+  logger.info('Sending export download link', { email });
+}
+
+async function processBatch(batch: any[], batchType: string, correlationId: string): Promise<void> {
+  logger.info('Processing batch', { batchSize: batch.length, batchType, correlationId });
+}

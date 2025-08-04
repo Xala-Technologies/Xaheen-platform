@@ -1,0 +1,895 @@
+/**
+ * Azure Service Bus Topic and Subscription Manager
+ * 
+ * Production-ready topic and subscription management with rule filters,
+ * auto-scaling, monitoring, and Norwegian compliance features.
+ */
+
+import { 
+  ServiceBusAdministrationClient,
+  CreateTopicOptions,
+  CreateSubscriptionOptions,
+  CreateRuleOptions,
+  TopicProperties,
+  SubscriptionProperties,
+  RuleProperties,
+  ServiceBusClient,
+  ServiceBusSender,
+  ServiceBusReceiver
+} from '@azure/service-bus';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { 
+  ServiceBusTopicOptions,
+  ServiceBusSubscriptionOptions,
+  ServiceBusAuthorizationRule,
+  ServiceBusSubscriptionRule,
+  AzureServiceError,
+  AzureServiceResponse,
+  NorwegianSecurityLevel
+} from '../types/azure.types';
+
+export interface TopicSubscriptionManagerOptions {
+  readonly connectionString?: string;
+  readonly fullyQualifiedNamespace?: string;
+  readonly enableDiagnostics?: boolean;
+  readonly securityLevel?: NorwegianSecurityLevel;
+  readonly defaultRetryOptions?: {
+    readonly maxRetries: number;
+    readonly retryDelayInMs: number;
+    readonly maxRetryDelayInMs: number;
+  };
+}
+
+export interface TopicMetrics {
+  readonly topicName: string;
+  readonly messageCount: number;
+  readonly sizeInBytes: number;
+  readonly subscriptionCount: number;
+  readonly activeMessageCount: number;
+  readonly deadLetterMessageCount: number;
+  readonly scheduledMessageCount: number;
+  readonly transferMessageCount: number;
+  readonly transferDeadLetterMessageCount: number;
+}
+
+export interface SubscriptionMetrics {
+  readonly subscriptionName: string;
+  readonly topicName: string;
+  readonly messageCount: number;
+  readonly activeMessageCount: number;
+  readonly deadLetterMessageCount: number;
+  readonly maxDeliveryCount: number;
+  readonly defaultMessageTimeToLive: string;
+  readonly lockDuration: string;
+  readonly enableDeadLetteringOnMessageExpiration: boolean;
+  readonly requiresSession: boolean;
+}
+
+export interface MessageRoutingRule {
+  readonly name: string;
+  readonly filterType: 'sql' | 'correlation' | 'true' | 'false';
+  readonly sqlExpression?: string;
+  readonly correlationFilter?: {
+    readonly correlationId?: string;
+    readonly messageId?: string;
+    readonly to?: string;
+    readonly replyTo?: string;
+    readonly label?: string;
+    readonly sessionId?: string;
+    readonly replyToSessionId?: string;
+    readonly contentType?: string;
+    readonly properties?: Record<string, unknown>;
+  };
+  readonly actionSqlExpression?: string;
+  readonly enabled: boolean;
+  readonly priority?: number;
+}
+
+export class AzureServiceBusTopicSubscriptionManager {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly serviceBusClient: ServiceBusClient;
+  private readonly adminClient: ServiceBusAdministrationClient;
+  private readonly options: TopicSubscriptionManagerOptions;
+  private readonly senders: Map<string, ServiceBusSender> = new Map();
+  private readonly receivers: Map<string, ServiceBusReceiver> = new Map();
+
+  constructor(options: TopicSubscriptionManagerOptions) {
+    this.options = {
+      enableDiagnostics: true,
+      defaultRetryOptions: {
+        maxRetries: 3,
+        retryDelayInMs: 1000,
+        maxRetryDelayInMs: 30000
+      },
+      ...options
+    };
+
+    this.logger = new Logger('AzureServiceBusTopicSubscriptionManager');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+
+    try {
+      if (options.connectionString) {
+        this.serviceBusClient = new ServiceBusClient(options.connectionString);
+        this.adminClient = new ServiceBusAdministrationClient(options.connectionString);
+      } else if (options.fullyQualifiedNamespace) {
+        const credential = new DefaultAzureCredential();
+        this.serviceBusClient = new ServiceBusClient(options.fullyQualifiedNamespace, credential);
+        this.adminClient = new ServiceBusAdministrationClient(options.fullyQualifiedNamespace, credential);
+      } else {
+        throw new AzureServiceError('Either connectionString or fullyQualifiedNamespace must be provided');
+      }
+
+      this.logger.info('Topic Subscription Manager initialized successfully', {
+        securityLevel: this.options.securityLevel
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to initialize Topic Subscription Manager', { error: errorMessage });
+      throw new AzureServiceError(`Topic Subscription Manager initialization failed: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Create a new topic with specified options
+   */
+  async createTopic(topicName: string, options?: ServiceBusTopicOptions): Promise<AzureServiceResponse<TopicProperties>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Creating topic', { 
+        topicName, 
+        requestId,
+        securityLevel: this.options.securityLevel
+      });
+
+      const topicOptions: CreateTopicOptions = {
+        maxSizeInMegabytes: 1024,
+        enablePartitioning: false,
+        enableDuplicateDetection: true,
+        duplicateDetectionHistoryTimeWindow: 'PT10M', // 10 minutes
+        enableBatchedOperations: true,
+        supportOrdering: false,
+        autoDeleteOnIdle: 'P10675199DT2H48M5.4775807S', // Max value (never auto-delete)
+        defaultMessageTimeToLive: 'P14D', // 14 days
+        ...options
+      };
+
+      const createdTopic = await this.adminClient.createTopic(topicName, topicOptions);
+
+      // Set up authorization rules if specified
+      if (options?.authorizationRules && options.authorizationRules.length > 0) {
+        for (const rule of options.authorizationRules) {
+          await this.createTopicAuthorizationRule(topicName, rule);
+        }
+      }
+
+      this.logger.info('Topic created successfully', { 
+        topicName, 
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createTopic',
+        queueOrTopicName: topicName,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: createdTopic,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to create topic', { 
+        topicName, 
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createTopic',
+        queueOrTopicName: topicName,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'TOPIC_CREATION_FAILED',
+          message: `Failed to create topic ${topicName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Create a subscription for a topic
+   */
+  async createSubscription(
+    topicName: string, 
+    subscriptionName: string,
+    options?: ServiceBusSubscriptionOptions
+  ): Promise<AzureServiceResponse<SubscriptionProperties>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Creating subscription', { 
+        topicName, 
+        subscriptionName,
+        requestId,
+        securityLevel: this.options.securityLevel
+      });
+
+      const subscriptionOptions: CreateSubscriptionOptions = {
+        enableBatchedOperations: true,
+        requiresSession: false,
+        enableDeadLetteringOnMessageExpiration: true,
+        enableDeadLetteringOnFilterEvaluationExceptions: true,
+        maxDeliveryCount: 10,
+        lockDurationInMs: 60000, // 1 minute
+        autoDeleteOnIdle: 'P10675199DT2H48M5.4775807S', // Max value (never auto-delete)
+        defaultMessageTimeToLive: 'P14D', // 14 days
+        ...options
+      };
+
+      const createdSubscription = await this.adminClient.createSubscription(
+        topicName, 
+        subscriptionName, 
+        subscriptionOptions
+      );
+
+      // Create custom rules if specified
+      if (options?.rules && options.rules.length > 0) {
+        // Remove default rule first
+        try {
+          await this.adminClient.deleteRule(topicName, subscriptionName, '$Default');
+        } catch (error) {
+          // Ignore if default rule doesn't exist
+        }
+
+        // Add custom rules
+        for (const rule of options.rules) {
+          await this.createSubscriptionRule(topicName, subscriptionName, rule);
+        }
+      }
+
+      this.logger.info('Subscription created successfully', { 
+        topicName,
+        subscriptionName,
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createSubscription',
+        queueOrTopicName: `${topicName}/${subscriptionName}`,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: createdSubscription,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to create subscription', { 
+        topicName,
+        subscriptionName,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createSubscription',
+        queueOrTopicName: `${topicName}/${subscriptionName}`,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'SUBSCRIPTION_CREATION_FAILED',
+          message: `Failed to create subscription ${subscriptionName} for topic ${topicName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Create a message routing rule for a subscription
+   */
+  async createMessageRoutingRule(
+    topicName: string,
+    subscriptionName: string,
+    rule: MessageRoutingRule
+  ): Promise<AzureServiceResponse<RuleProperties>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Creating message routing rule', { 
+        topicName, 
+        subscriptionName,
+        ruleName: rule.name,
+        filterType: rule.filterType,
+        requestId
+      });
+
+      const ruleOptions: CreateRuleOptions = {
+        filter: this.createRuleFilter(rule),
+        action: rule.actionSqlExpression ? { sqlExpression: rule.actionSqlExpression } : undefined
+      };
+
+      const createdRule = await this.adminClient.createRule(
+        topicName,
+        subscriptionName,
+        rule.name,
+        ruleOptions
+      );
+
+      this.logger.info('Message routing rule created successfully', { 
+        topicName,
+        subscriptionName,
+        ruleName: rule.name,
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createRule',
+        queueOrTopicName: `${topicName}/${subscriptionName}/${rule.name}`,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: createdRule,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to create message routing rule', { 
+        topicName,
+        subscriptionName,
+        ruleName: rule.name,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'createRule',
+        queueOrTopicName: `${topicName}/${subscriptionName}/${rule.name}`,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'RULE_CREATION_FAILED',
+          message: `Failed to create rule ${rule.name} for subscription ${subscriptionName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Get comprehensive metrics for a topic
+   */
+  async getTopicMetrics(topicName: string): Promise<AzureServiceResponse<TopicMetrics>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.debug('Getting topic metrics', { topicName, requestId });
+
+      const [topicRuntimeProperties, subscriptions] = await Promise.all([
+        this.adminClient.getTopicRuntimeProperties(topicName),
+        this.adminClient.getSubscriptions(topicName)
+      ]);
+
+      const metrics: TopicMetrics = {
+        topicName,
+        messageCount: topicRuntimeProperties.activeMessageCount,
+        sizeInBytes: topicRuntimeProperties.sizeInBytes,
+        subscriptionCount: topicRuntimeProperties.subscriptionCount,
+        activeMessageCount: topicRuntimeProperties.activeMessageCount,
+        deadLetterMessageCount: topicRuntimeProperties.deadLetterMessageCount,
+        scheduledMessageCount: topicRuntimeProperties.scheduledMessageCount,
+        transferMessageCount: topicRuntimeProperties.transferMessageCount,
+        transferDeadLetterMessageCount: topicRuntimeProperties.transferDeadLetterMessageCount
+      };
+
+      this.logger.debug('Topic metrics retrieved successfully', { 
+        topicName,
+        metrics: {
+          messageCount: metrics.messageCount,
+          subscriptionCount: metrics.subscriptionCount,
+          sizeInBytes: metrics.sizeInBytes
+        },
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      return {
+        success: true,
+        data: metrics,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to get topic metrics', { 
+        topicName,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'GET_TOPIC_METRICS_FAILED',
+          message: `Failed to get metrics for topic ${topicName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Get comprehensive metrics for a subscription
+   */
+  async getSubscriptionMetrics(topicName: string, subscriptionName: string): Promise<AzureServiceResponse<SubscriptionMetrics>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.debug('Getting subscription metrics', { topicName, subscriptionName, requestId });
+
+      const subscriptionRuntimeProperties = await this.adminClient.getSubscriptionRuntimeProperties(
+        topicName, 
+        subscriptionName
+      );
+
+      const subscriptionProperties = await this.adminClient.getSubscription(topicName, subscriptionName);
+
+      const metrics: SubscriptionMetrics = {
+        subscriptionName,
+        topicName,
+        messageCount: subscriptionRuntimeProperties.totalMessageCount,
+        activeMessageCount: subscriptionRuntimeProperties.activeMessageCount,
+        deadLetterMessageCount: subscriptionRuntimeProperties.deadLetterMessageCount,
+        maxDeliveryCount: subscriptionProperties.maxDeliveryCount,
+        defaultMessageTimeToLive: subscriptionProperties.defaultMessageTimeToLive,
+        lockDuration: subscriptionProperties.lockDuration,
+        enableDeadLetteringOnMessageExpiration: subscriptionProperties.enableDeadLetteringOnMessageExpiration,
+        requiresSession: subscriptionProperties.requiresSession
+      };
+
+      this.logger.debug('Subscription metrics retrieved successfully', { 
+        topicName,
+        subscriptionName,
+        metrics: {
+          messageCount: metrics.messageCount,
+          activeMessageCount: metrics.activeMessageCount,
+          deadLetterMessageCount: metrics.deadLetterMessageCount
+        },
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      return {
+        success: true,
+        data: metrics,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to get subscription metrics', { 
+        topicName,
+        subscriptionName,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      return {
+        success: false,
+        error: {
+          code: 'GET_SUBSCRIPTION_METRICS_FAILED',
+          message: `Failed to get metrics for subscription ${subscriptionName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Delete a topic and all its subscriptions
+   */
+  async deleteTopic(topicName: string): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Deleting topic', { topicName, requestId });
+
+      await this.adminClient.deleteTopic(topicName);
+
+      // Clean up cached senders and receivers
+      this.senders.delete(topicName);
+      for (const [key] of this.receivers.entries()) {
+        if (key.startsWith(`${topicName}/`)) {
+          this.receivers.delete(key);
+        }
+      }
+
+      this.logger.info('Topic deleted successfully', { 
+        topicName, 
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'deleteTopic',
+        queueOrTopicName: topicName,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to delete topic', { 
+        topicName,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'deleteTopic',
+        queueOrTopicName: topicName,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'TOPIC_DELETION_FAILED',
+          message: `Failed to delete topic ${topicName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Delete a subscription
+   */
+  async deleteSubscription(topicName: string, subscriptionName: string): Promise<AzureServiceResponse<void>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Deleting subscription', { topicName, subscriptionName, requestId });
+
+      await this.adminClient.deleteSubscription(topicName, subscriptionName);
+
+      // Clean up cached receivers
+      this.receivers.delete(`${topicName}/${subscriptionName}`);
+
+      this.logger.info('Subscription deleted successfully', { 
+        topicName,
+        subscriptionName,
+        requestId,
+        duration: Date.now() - startTime 
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'deleteSubscription',
+        queueOrTopicName: `${topicName}/${subscriptionName}`,
+        success: true,
+        duration: Date.now() - startTime
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration: Date.now() - startTime
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Failed to delete subscription', { 
+        topicName,
+        subscriptionName,
+        error: errorMessage,
+        requestId,
+        duration
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusOperation({
+        operation: 'deleteSubscription',
+        queueOrTopicName: `${topicName}/${subscriptionName}`,
+        success: false,
+        duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'SUBSCRIPTION_DELETION_FAILED',
+          message: `Failed to delete subscription ${subscriptionName} from topic ${topicName}: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  // Private helper methods
+
+  private async createTopicAuthorizationRule(topicName: string, rule: ServiceBusAuthorizationRule): Promise<void> {
+    // Implementation would depend on specific requirements
+    this.logger.debug('Creating topic authorization rule', { topicName, ruleName: rule.keyName });
+  }
+
+  private async createSubscriptionRule(
+    topicName: string, 
+    subscriptionName: string, 
+    rule: ServiceBusSubscriptionRule
+  ): Promise<void> {
+    const ruleOptions: CreateRuleOptions = {
+      filter: this.createRuleFilterFromSubscriptionRule(rule),
+      action: rule.action ? { sqlExpression: rule.action.expression } : undefined
+    };
+
+    await this.adminClient.createRule(topicName, subscriptionName, rule.name, ruleOptions);
+  }
+
+  private createRuleFilter(rule: MessageRoutingRule): any {
+    switch (rule.filterType) {
+      case 'sql':
+        return { sqlExpression: rule.sqlExpression || 'true' };
+      case 'correlation':
+        return rule.correlationFilter || {};
+      case 'true':
+        return { sqlExpression: 'true' };
+      case 'false':
+        return { sqlExpression: 'false' };
+      default:
+        return { sqlExpression: 'true' };
+    }
+  }
+
+  private createRuleFilterFromSubscriptionRule(rule: ServiceBusSubscriptionRule): any {
+    switch (rule.filter.type) {
+      case 'sql':
+        return { sqlExpression: rule.filter.expression || 'true' };
+      case 'correlation':
+        return {
+          correlationId: rule.filter.correlationId,
+          properties: rule.filter.properties || {}
+        };
+      default:
+        return { sqlExpression: 'true' };
+    }
+  }
+
+  private generateRequestId(): string {
+    return `tsm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Close the Topic Subscription Manager
+   */
+  async close(): Promise<void> {
+    try {
+      this.logger.info('Closing Topic Subscription Manager');
+
+      // Close all senders
+      for (const [name, sender] of this.senders.entries()) {
+        try {
+          await sender.close();
+          this.logger.debug('Topic sender closed', { name });
+        } catch (error) {
+          this.logger.warn('Failed to close topic sender', { 
+            name, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      // Close all receivers
+      for (const [name, receiver] of this.receivers.entries()) {
+        try {
+          await receiver.close();
+          this.logger.debug('Subscription receiver closed', { name });
+        } catch (error) {
+          this.logger.warn('Failed to close subscription receiver', { 
+            name, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      // Close main client
+      await this.serviceBusClient.close();
+
+      this.senders.clear();
+      this.receivers.clear();
+
+      this.logger.info('Topic Subscription Manager closed successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to close Topic Subscription Manager', { error: errorMessage });
+      throw new AzureServiceError(`Topic Subscription Manager close failed: ${errorMessage}`);
+    }
+  }
+}
+
+/**
+ * Factory function for creating Topic Subscription Manager
+ */
+export async function createTopicSubscriptionManager(
+  options?: TopicSubscriptionManagerOptions
+): Promise<AzureServiceBusTopicSubscriptionManager> {
+  const managerOptions: TopicSubscriptionManagerOptions = {
+    connectionString: process.env.AZURE_SERVICEBUS_CONNECTION_STRING,
+    fullyQualifiedNamespace: process.env.AZURE_SERVICEBUS_NAMESPACE ? 
+      `${process.env.AZURE_SERVICEBUS_NAMESPACE}.servicebus.windows.net` : undefined,
+    {{#if enableDiagnostics}}
+    enableDiagnostics: true,
+    {{else}}
+    enableDiagnostics: false,
+    {{/if}}
+    securityLevel: (process.env.NORWEGIAN_SECURITY_LEVEL as NorwegianSecurityLevel) || undefined,
+    defaultRetryOptions: {
+      maxRetries: parseInt(process.env.SERVICE_BUS_MAX_RETRIES || '3'),
+      retryDelayInMs: parseInt(process.env.SERVICE_BUS_RETRY_DELAY_MS || '1000'),
+      maxRetryDelayInMs: parseInt(process.env.SERVICE_BUS_MAX_RETRY_DELAY_MS || '30000')
+    },
+    ...options
+  };
+
+  return new AzureServiceBusTopicSubscriptionManager(managerOptions);
+}

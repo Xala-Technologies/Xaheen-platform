@@ -1,0 +1,289 @@
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+import { logger } from '../utils/logger';
+
+const db = admin.firestore();
+
+{{#each collections}}
+{{#each triggers}}
+export const {{camelCase ../name}}{{pascalCase eventType}} = functions
+	.region('{{../../region}}')
+	.runWith({
+		memory: '{{../../memory}}',
+		timeoutSeconds: {{../../timeout}}
+	})
+	.firestore.document('{{../name}}/{docId}')
+	.{{eventType}}(async ({{#if (eq eventType "onWrite")}}change{{else}}{{#if (eq eventType "onUpdate")}}change{{else}}snap{{/if}}{{/if}}, context) => {
+		try {
+			logger.info('{{../name}} {{eventType}} triggered', {
+				documentId: context.params.docId,
+				eventType: context.eventType,
+				timestamp: context.timestamp
+			});
+
+			{{#if (eq eventType "onCreate")}}
+			const data = snap.data();
+			await handle{{pascalCase ../name}}Create(data, context.params.docId, context);
+			{{/if}}
+			
+			{{#if (eq eventType "onUpdate")}}
+			const beforeData = change.before.data();
+			const afterData = change.after.data();
+			await handle{{pascalCase ../name}}Update(beforeData, afterData, context.params.docId, context);
+			{{/if}}
+			
+			{{#if (eq eventType "onDelete")}}
+			const data = snap.data();
+			await handle{{pascalCase ../name}}Delete(data, context.params.docId, context);
+			{{/if}}
+			
+			{{#if (eq eventType "onWrite")}}
+			const beforeData = change.before.exists ? change.before.data() : null;
+			const afterData = change.after.exists ? change.after.data() : null;
+			await handle{{pascalCase ../name}}Write(beforeData, afterData, context.params.docId, context);
+			{{/if}}
+
+			logger.info('{{../name}} {{eventType}} processed successfully', { 
+				documentId: context.params.docId 
+			});
+		} catch (error) {
+			logger.error('Error processing {{../name}} {{eventType}}:', error, {
+				documentId: context.params.docId,
+				eventType: context.eventType
+			});
+			throw error;
+		}
+	});
+
+{{#if (eq eventType "onCreate")}}
+async function handle{{pascalCase ../name}}Create(
+	data: any,
+	docId: string,
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Processing {{../name}} creation:', { data, docId });
+	
+	try {
+		// TODO: Implement creation logic
+		{{#if ../onCreate.updateTimestamp}}
+		// Update timestamps
+		await db.collection('{{../name}}').doc(docId).update({
+			createdAt: admin.firestore.FieldValue.serverTimestamp(),
+			updatedAt: admin.firestore.FieldValue.serverTimestamp()
+		});
+		{{/if}}
+		
+		{{#if ../onCreate.createProfile}}
+		// Create related profile document
+		await db.collection('{{../name}}_profiles').doc(docId).set({
+			{{../name}}Id: docId,
+			createdAt: admin.firestore.FieldValue.serverTimestamp(),
+			...data
+		});
+		{{/if}}
+		
+		{{#if ../onCreate.sendNotification}}
+		// Send notification
+		await sendNotification('{{../name}}_created', {
+			{{../name}}Id: docId,
+			data
+		});
+		{{/if}}
+		
+		{{#if ../onCreate.updateCounters}}
+		// Update counters
+		await updateCounters('{{../name}}_count', 1);
+		{{/if}}
+		
+	} catch (error) {
+		logger.error('Error in {{../name}} creation handler:', error);
+		throw error;
+	}
+}
+{{/if}}
+
+{{#if (eq eventType "onUpdate")}}
+async function handle{{pascalCase ../name}}Update(
+	beforeData: any,
+	afterData: any,
+	docId: string,
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Processing {{../name}} update:', { beforeData, afterData, docId });
+	
+	try {
+		// TODO: Implement update logic
+		{{#if ../onUpdate.trackChanges}}
+		// Track field changes
+		const changes = getFieldChanges(beforeData, afterData);
+		if (changes.length > 0) {
+			await db.collection('{{../name}}_audit').add({
+				{{../name}}Id: docId,
+				changes,
+				timestamp: admin.firestore.FieldValue.serverTimestamp(),
+				user: context.auth?.uid || 'system'
+			});
+		}
+		{{/if}}
+		
+		{{#if ../onUpdate.updateRelated}}
+		// Update related documents
+		await updateRelatedDocuments(docId, afterData, beforeData);
+		{{/if}}
+		
+		{{#if ../onUpdate.reindexSearch}}
+		// Update search index
+		await updateSearchIndex('{{../name}}', docId, afterData);
+		{{/if}}
+		
+		{{#if ../onUpdate.sendNotification}}
+		// Send notification if significant changes
+		const significantChanges = checkSignificantChanges(beforeData, afterData);
+		if (significantChanges) {
+			await sendNotification('{{../name}}_updated', {
+				{{../name}}Id: docId,
+				changes: getFieldChanges(beforeData, afterData)
+			});
+		}
+		{{/if}}
+		
+	} catch (error) {
+		logger.error('Error in {{../name}} update handler:', error);
+		throw error;
+	}
+}
+{{/if}}
+
+{{#if (eq eventType "onDelete")}}
+async function handle{{pascalCase ../name}}Delete(
+	data: any,
+	docId: string,
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Processing {{../name}} deletion:', { data, docId });
+	
+	try {
+		// TODO: Implement deletion logic
+		{{#if ../onDelete.cleanupRelated}}
+		// Cleanup related documents
+		await cleanupRelatedDocuments(docId);
+		{{/if}}
+		
+		{{#if ../onDelete.archiveData}}
+		// Archive deleted data
+		await db.collection('{{../name}}_archive').doc(docId).set({
+			...data,
+			deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+			deletedBy: context.auth?.uid || 'system'
+		});
+		{{/if}}
+		
+		{{#if ../onDelete.updateCounters}}
+		// Update counters
+		await updateCounters('{{../name}}_count', -1);
+		{{/if}}
+		
+		{{#if ../onDelete.sendNotification}}
+		// Send deletion notification
+		await sendNotification('{{../name}}_deleted', {
+			{{../name}}Id: docId,
+			data
+		});
+		{{/if}}
+		
+	} catch (error) {
+		logger.error('Error in {{../name}} deletion handler:', error);
+		throw error;
+	}
+}
+{{/if}}
+
+{{#if (eq eventType "onWrite")}}
+async function handle{{pascalCase ../name}}Write(
+	beforeData: any | null,
+	afterData: any | null,
+	docId: string,
+	context: functions.EventContext
+): Promise<void> {
+	logger.info('Processing {{../name}} write:', { beforeData, afterData, docId });
+	
+	try {
+		if (!beforeData && afterData) {
+			// Document created
+			await handle{{pascalCase ../name}}Create(afterData, docId, context);
+		} else if (beforeData && afterData) {
+			// Document updated
+			await handle{{pascalCase ../name}}Update(beforeData, afterData, docId, context);
+		} else if (beforeData && !afterData) {
+			// Document deleted
+			await handle{{pascalCase ../name}}Delete(beforeData, docId, context);
+		}
+	} catch (error) {
+		logger.error('Error in {{../name}} write handler:', error);
+		throw error;
+	}
+}
+{{/if}}
+
+{{/each}}
+{{/each}}
+
+// Utility functions
+function getFieldChanges(before: any, after: any): Array<{field: string, before: any, after: any}> {
+	const changes: Array<{field: string, before: any, after: any}> = [];
+	
+	// Get all unique field names
+	const allFields = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+	
+	for (const field of allFields) {
+		const beforeValue = before?.[field];
+		const afterValue = after?.[field];
+		
+		if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
+			changes.push({
+				field,
+				before: beforeValue,
+				after: afterValue
+			});
+		}
+	}
+	
+	return changes;
+}
+
+async function updateCounters(counterPath: string, increment: number): Promise<void> {
+	const counterRef = db.doc(counterPath);
+	await counterRef.update({
+		count: admin.firestore.FieldValue.increment(increment),
+		lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+	});
+}
+
+async function sendNotification(type: string, data: any): Promise<void> {
+	// TODO: Implement notification logic (e.g., using FCM, email, etc.)
+	logger.info('Sending notification:', { type, data });
+}
+
+async function updateRelatedDocuments(docId: string, newData: any, oldData: any): Promise<void> {
+	// TODO: Implement related document updates
+	logger.info('Updating related documents:', { docId, newData, oldData });
+}
+
+async function cleanupRelatedDocuments(docId: string): Promise<void> {
+	// TODO: Implement related document cleanup
+	logger.info('Cleaning up related documents:', { docId });
+}
+
+async function updateSearchIndex(collection: string, docId: string, data: any): Promise<void> {
+	// TODO: Implement search index update (e.g., Algolia, Elasticsearch)
+	logger.info('Updating search index:', { collection, docId, data });
+}
+
+function checkSignificantChanges(before: any, after: any): boolean {
+	// TODO: Define what constitutes significant changes for notifications
+	const significantFields = ['status', 'priority', 'assignee']; // Example fields
+	
+	return significantFields.some(field => 
+		before?.[field] !== after?.[field]
+	);
+}

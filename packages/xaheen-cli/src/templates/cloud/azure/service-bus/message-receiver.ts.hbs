@@ -1,0 +1,749 @@
+/**
+ * Azure Service Bus Message Receiver
+ * 
+ * Production-ready message receiver with session support, parallel processing,
+ * dead letter handling, circuit breaker pattern, and Norwegian compliance.
+ */
+
+import { 
+  ServiceBusClient, 
+  ServiceBusReceiver,
+  ServiceBusReceivedMessage,
+  ServiceBusSessionReceiver
+} from '@azure/service-bus';
+import { DefaultAzureCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+{{#if enableDiagnostics}}
+import { MetricsCollector } from '../utils/metrics-collector';
+{{/if}}
+import { 
+  CircuitBreaker,
+  withRetry,
+  MessageValidator
+} from '../utils/function-utils';
+import { 
+  ServiceBusReceiverOptions,
+  AzureServiceError,
+  AzureServiceResponse,
+  NorwegianSecurityLevel
+} from '../types/azure.types';
+
+export interface MessageReceiverOptions extends ServiceBusReceiverOptions {
+  readonly connectionString?: string;
+  readonly fullyQualifiedNamespace?: string;
+  readonly queueName: string;
+  readonly subscriptionName?: string;
+  readonly topicName?: string;
+  readonly sessionEnabled?: boolean;
+  readonly maxConcurrentMessages?: number;
+  readonly messageProcessingTimeoutMs?: number;
+  readonly enableCircuitBreaker?: boolean;
+  readonly circuitBreakerThreshold?: number;
+  readonly circuitBreakerTimeoutMs?: number;
+  readonly securityLevel?: NorwegianSecurityLevel;
+  readonly enableMessageValidation?: boolean;
+  readonly enableAutoRenewLock?: boolean;
+  readonly autoRenewTimeoutMs?: number;
+}
+
+export interface MessageProcessorConfig {
+  readonly processorName: string;
+  readonly batchSize?: number;
+  readonly processingTimeoutMs?: number;
+  readonly enableParallelProcessing?: boolean;
+  readonly maxDegreeOfParallelism?: number;
+  readonly enableDeadLetterForwarding?: boolean;
+  readonly enablePoisonMessageDetection?: boolean;
+  readonly poisonMessageThreshold?: number;
+}
+
+export interface MessageProcessingContext {
+  readonly messageId: string;
+  readonly correlationId?: string;
+  readonly sessionId?: string;
+  readonly deliveryCount: number;
+  readonly enqueuedTimeUtc: Date;
+  readonly lockToken: string;
+  readonly processingStartTime: Date;
+  readonly securityLevel?: NorwegianSecurityLevel;
+  readonly userProperties: Record<string, unknown>;
+}
+
+export interface MessageProcessingResult {
+  readonly messageId: string;
+  readonly status: 'COMPLETED' | 'ABANDONED' | 'DEAD_LETTERED' | 'DEFERRED' | 'FAILED';
+  readonly processingTime: number;
+  readonly error?: string;
+  readonly retryCount?: number;
+}
+
+export type MessageProcessor<T = unknown> = (
+  messageBody: T,
+  context: MessageProcessingContext,
+  message: ServiceBusReceivedMessage
+) => Promise<MessageProcessingResult>;
+
+export class AzureServiceBusMessageReceiver<T = unknown> {
+  private readonly logger: Logger;
+  {{#if enableDiagnostics}}
+  private readonly metricsCollector: MetricsCollector;
+  {{/if}}
+  private readonly messageValidator: MessageValidator;
+  private readonly circuitBreaker: CircuitBreaker;
+  private readonly serviceBusClient: ServiceBusClient;
+  private readonly options: MessageReceiverOptions;
+  private receiver: ServiceBusReceiver | ServiceBusSessionReceiver | null = null;
+  private isProcessing = false;
+  private processingPromise: Promise<void> | null = null;
+
+  constructor(options: MessageReceiverOptions) {
+    this.options = {
+      receiveMode: 'peekLock',
+      maxConcurrentCalls: 10,
+      maxAutoLockRenewalDurationInMs: 300000, // 5 minutes
+      autoCompleteMessages: true,
+      maxConcurrentMessages: 10,
+      messageProcessingTimeoutMs: 120000, // 2 minutes
+      enableCircuitBreaker: true,
+      circuitBreakerThreshold: 5,
+      circuitBreakerTimeoutMs: 60000, // 1 minute
+      enableMessageValidation: true,
+      enableAutoRenewLock: true,
+      autoRenewTimeoutMs: 300000, // 5 minutes
+      ...options
+    };
+
+    this.logger = new Logger('AzureServiceBusMessageReceiver');
+    {{#if enableDiagnostics}}
+    this.metricsCollector = new MetricsCollector();
+    {{/if}}
+    this.messageValidator = new MessageValidator();
+    this.circuitBreaker = new CircuitBreaker(
+      this.options.circuitBreakerThreshold,
+      this.options.circuitBreakerTimeoutMs
+    );
+
+    try {
+      if (options.connectionString) {
+        this.serviceBusClient = new ServiceBusClient(options.connectionString);
+      } else if (options.fullyQualifiedNamespace) {
+        const credential = new DefaultAzureCredential();
+        this.serviceBusClient = new ServiceBusClient(options.fullyQualifiedNamespace, credential);
+      } else {
+        throw new AzureServiceError('Either connectionString or fullyQualifiedNamespace must be provided');
+      }
+
+      this.logger.info('Message Receiver initialized successfully', {
+        queueName: this.options.queueName,
+        subscriptionName: this.options.subscriptionName,
+        topicName: this.options.topicName,
+        sessionEnabled: this.options.sessionEnabled,
+        securityLevel: this.options.securityLevel
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to initialize Message Receiver', { error: errorMessage });
+      throw new AzureServiceError(`Message Receiver initialization failed: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Start processing messages with the provided processor function
+   */
+  async startProcessing(
+    processor: MessageProcessor<T>,
+    config?: MessageProcessorConfig
+  ): Promise<AzureServiceResponse<void>> {
+    if (this.isProcessing) {
+      return {
+        success: false,
+        error: {
+          code: 'ALREADY_PROCESSING',
+          message: 'Message processing is already running'
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+    }
+
+    try {
+      this.logger.info('Starting message processing', {
+        queueName: this.options.queueName,
+        config,
+        securityLevel: this.options.securityLevel
+      });
+
+      this.isProcessing = true;
+      this.receiver = await this.createReceiver();
+
+      const processingConfig: Required<MessageProcessorConfig> = {
+        processorName: 'DefaultProcessor',
+        batchSize: this.options.maxConcurrentMessages || 10,
+        processingTimeoutMs: this.options.messageProcessingTimeoutMs || 120000,
+        enableParallelProcessing: true,
+        maxDegreeOfParallelism: this.options.maxConcurrentMessages || 10,
+        enableDeadLetterForwarding: true,
+        enablePoisonMessageDetection: true,
+        poisonMessageThreshold: 5,
+        ...config
+      };
+
+      // Start the processing loop
+      this.processingPromise = this.processMessagesLoop(processor, processingConfig);
+
+      this.logger.info('Message processing started successfully', {
+        processorName: processingConfig.processorName,
+        batchSize: processingConfig.batchSize
+      });
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+
+    } catch (error) {
+      this.isProcessing = false;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to start message processing', { error: errorMessage });
+
+      return {
+        success: false,
+        error: {
+          code: 'START_PROCESSING_FAILED',
+          message: `Failed to start message processing: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+    }
+  }
+
+  /**
+   * Stop message processing gracefully
+   */
+  async stopProcessing(): Promise<AzureServiceResponse<void>> {
+    if (!this.isProcessing) {
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+    }
+
+    try {
+      this.logger.info('Stopping message processing');
+
+      this.isProcessing = false;
+
+      // Wait for current processing to complete
+      if (this.processingPromise) {
+        await this.processingPromise;
+      }
+
+      if (this.receiver) {
+        await this.receiver.close();
+        this.receiver = null;
+      }
+
+      this.logger.info('Message processing stopped successfully');
+
+      return {
+        success: true,
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to stop message processing', { error: errorMessage });
+
+      return {
+        success: false,
+        error: {
+          code: 'STOP_PROCESSING_FAILED',
+          message: `Failed to stop message processing: ${errorMessage}`
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId: this.generateRequestId()
+        }
+      };
+    }
+  }
+
+  /**
+   * Process a single batch of messages
+   */
+  async processBatch(
+    processor: MessageProcessor<T>,
+    batchSize: number = 10,
+    timeoutMs: number = 30000
+  ): Promise<AzureServiceResponse<{ processedCount: number; results: MessageProcessingResult[] }>> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Processing message batch', { 
+        batchSize, 
+        timeoutMs,
+        requestId 
+      });
+
+      if (!this.receiver) {
+        this.receiver = await this.createReceiver();
+      }
+
+      const messages = await this.receiver.receiveMessages(batchSize, {
+        maxWaitTimeInMs: timeoutMs
+      });
+
+      if (messages.length === 0) {
+        return {
+          success: true,
+          data: { processedCount: 0, results: [] },
+          metadata: {
+            timestamp: new Date(),
+            requestId,
+            duration: Date.now() - startTime
+          }
+        };
+      }
+
+      this.logger.debug('Received messages for batch processing', { 
+        messageCount: messages.length,
+        requestId 
+      });
+
+      const results: MessageProcessingResult[] = [];
+
+      // Process messages in parallel
+      const processingPromises = messages.map(async (message) => {
+        try {
+          const result = await this.processMessage(message, processor);
+          results.push(result);
+          return result;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const failedResult: MessageProcessingResult = {
+            messageId: message.messageId || 'unknown',
+            status: 'FAILED',
+            processingTime: Date.now() - startTime,
+            error: errorMessage
+          };
+          results.push(failedResult);
+          return failedResult;
+        }
+      });
+
+      await Promise.allSettled(processingPromises);
+
+      const processedCount = results.filter(r => r.status === 'COMPLETED').length;
+      const duration = Date.now() - startTime;
+
+      this.logger.info('Batch processing completed', {
+        totalMessages: messages.length,
+        processedCount,
+        duration,
+        requestId
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusBatch({
+        operation: 'processBatch',
+        queueOrTopicName: this.options.queueName,
+        batchId: requestId,
+        messagesSent: messages.length,
+        messagesProcessed: processedCount,
+        success: true,
+        processingTime: duration
+      });
+      {{/if}}
+
+      return {
+        success: true,
+        data: { processedCount, results },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Batch processing failed', {
+        error: errorMessage,
+        duration,
+        requestId
+      });
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusBatch({
+        operation: 'processBatch',
+        queueOrTopicName: this.options.queueName,
+        batchId: requestId,
+        messagesSent: batchSize,
+        messagesProcessed: 0,
+        success: false,
+        processingTime: duration,
+        error: errorMessage
+      });
+      {{/if}}
+
+      return {
+        success: false,
+        error: {
+          code: 'BATCH_PROCESSING_FAILED',
+          message: `Failed to process message batch: ${errorMessage}`,
+          details: { requestId }
+        },
+        metadata: {
+          timestamp: new Date(),
+          requestId,
+          duration
+        }
+      };
+    }
+  }
+
+  /**
+   * Main message processing loop
+   */
+  private async processMessagesLoop(
+    processor: MessageProcessor<T>,
+    config: Required<MessageProcessorConfig>
+  ): Promise<void> {
+    this.logger.info('Starting message processing loop', {
+      processorName: config.processorName,
+      batchSize: config.batchSize
+    });
+
+    while (this.isProcessing) {
+      try {
+        const batchResult = await this.processBatch(
+          processor,
+          config.batchSize,
+          10000 // 10 second timeout for batch
+        );
+
+        if (!batchResult.success) {
+          this.logger.error('Batch processing failed in loop', {
+            error: batchResult.error
+          });
+          
+          // Wait before retrying
+          await this.sleep(5000);
+          continue;
+        }
+
+        const { processedCount } = batchResult.data!;
+
+        if (processedCount === 0) {
+          // No messages to process, wait before next iteration
+          await this.sleep(1000);
+        }
+
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        this.logger.error('Error in message processing loop', { error: errorMessage });
+
+        // Check if we should continue or stop
+        if (this.shouldStopOnError(error)) {
+          this.logger.error('Critical error, stopping message processing');
+          this.isProcessing = false;
+          break;
+        }
+
+        // Wait before retrying
+        await this.sleep(5000);
+      }
+    }
+
+    this.logger.info('Message processing loop ended');
+  }
+
+  /**
+   * Process a single message
+   */
+  private async processMessage(
+    message: ServiceBusReceivedMessage,
+    processor: MessageProcessor<T>
+  ): Promise<MessageProcessingResult> {
+    const startTime = Date.now();
+    const messageId = message.messageId || 'unknown';
+
+    try {
+      // Validate message if enabled
+      if (this.options.enableMessageValidation) {
+        const validationResult = await this.messageValidator.validate(message.body);
+        if (!validationResult.isValid) {
+          this.logger.warn('Message validation failed', {
+            messageId,
+            errors: validationResult.errors
+          });
+
+          await message.deadLetter({
+            deadLetterReason: 'MessageValidationFailed',
+            deadLetterErrorDescription: validationResult.errors.join(', ')
+          });
+
+          return {
+            messageId,
+            status: 'DEAD_LETTERED',
+            processingTime: Date.now() - startTime,
+            error: 'Message validation failed'
+          };
+        }
+      }
+
+      // Create processing context
+      const context: MessageProcessingContext = {
+        messageId,
+        correlationId: message.correlationId,
+        sessionId: message.sessionId,
+        deliveryCount: message.deliveryCount || 1,
+        enqueuedTimeUtc: message.enqueuedTimeUtc || new Date(),
+        lockToken: message.lockToken || '',
+        processingStartTime: new Date(),
+        securityLevel: this.options.securityLevel,
+        userProperties: message.applicationProperties || {}
+      };
+
+      this.logger.debug('Processing message', {
+        messageId,
+        correlationId: message.correlationId,
+        deliveryCount: context.deliveryCount
+      });
+
+      // Check for poison message
+      if (context.deliveryCount > 5) {
+        this.logger.warn('Poison message detected', {
+          messageId,
+          deliveryCount: context.deliveryCount
+        });
+
+        await message.deadLetter({
+          deadLetterReason: 'PoisonMessage',
+          deadLetterErrorDescription: `Message exceeded maximum delivery count: ${context.deliveryCount}`
+        });
+
+        return {
+          messageId,
+          status: 'DEAD_LETTERED',
+          processingTime: Date.now() - startTime,
+          error: 'Poison message'
+        };
+      }
+
+      // Process message with circuit breaker and retry logic
+      const result = await this.circuitBreaker.execute(async () => {
+        return await withRetry(
+          () => processor(message.body as T, context, message),
+          this.options.retryAttempts || 3,
+          this.options.retryDelayMs || 1000
+        );
+      });
+
+      // Handle the result
+      switch (result.status) {
+        case 'COMPLETED':
+          if (this.options.autoCompleteMessages) {
+            await message.complete();
+          }
+          break;
+
+        case 'ABANDONED':
+          await message.abandon({ reason: result.error });
+          break;
+
+        case 'DEAD_LETTERED':
+          await message.deadLetter({
+            deadLetterReason: 'ProcessingFailed',
+            deadLetterErrorDescription: result.error
+          });
+          break;
+
+        case 'DEFERRED':
+          await message.defer();
+          break;
+
+        default:
+          // Default to complete if no specific action
+          if (this.options.autoCompleteMessages) {
+            await message.complete();
+          }
+      }
+
+      const processingTime = Date.now() - startTime;
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        messageId,
+        correlationId: context.correlationId || 'unknown',
+        queueName: this.options.queueName,
+        success: result.status === 'COMPLETED',
+        processingTime,
+        deliveryCount: context.deliveryCount,
+        operation: 'process'
+      });
+      {{/if}}
+
+      this.logger.debug('Message processed successfully', {
+        messageId,
+        status: result.status,
+        processingTime
+      });
+
+      return {
+        ...result,
+        processingTime
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const processingTime = Date.now() - startTime;
+
+      this.logger.error('Message processing failed', {
+        messageId,
+        error: errorMessage,
+        processingTime
+      });
+
+      // Try to abandon the message
+      try {
+        await message.abandon({ reason: errorMessage });
+      } catch (abandonError) {
+        this.logger.error('Failed to abandon message after processing error', {
+          messageId,
+          abandonError: abandonError instanceof Error ? abandonError.message : 'Unknown error'
+        });
+      }
+
+      {{#if enableDiagnostics}}
+      await this.metricsCollector.recordServiceBusMessage({
+        messageId,
+        correlationId: message.correlationId || 'unknown',
+        queueName: this.options.queueName,
+        success: false,
+        processingTime,
+        deliveryCount: message.deliveryCount || 1,
+        error: errorMessage,
+        operation: 'process'
+      });
+      {{/if}}
+
+      return {
+        messageId,
+        status: 'FAILED',
+        processingTime,
+        error: errorMessage
+      };
+    }
+  }
+
+  /**
+   * Create appropriate receiver based on configuration
+   */
+  private async createReceiver(): Promise<ServiceBusReceiver | ServiceBusSessionReceiver> {
+    if (this.options.sessionEnabled) {
+      if (this.options.subscriptionName && this.options.topicName) {
+        return this.serviceBusClient.acceptSession(this.options.topicName, this.options.subscriptionName, {
+          maxAutoLockRenewalDurationInMs: this.options.maxAutoLockRenewalDurationInMs
+        });
+      } else {
+        return this.serviceBusClient.acceptSession(this.options.queueName, {
+          maxAutoLockRenewalDurationInMs: this.options.maxAutoLockRenewalDurationInMs
+        });
+      }
+    } else {
+      if (this.options.subscriptionName && this.options.topicName) {
+        return this.serviceBusClient.createReceiver(this.options.topicName, this.options.subscriptionName, {
+          receiveMode: this.options.receiveMode,
+          maxAutoLockRenewalDurationInMs: this.options.maxAutoLockRenewalDurationInMs
+        });
+      } else {
+        return this.serviceBusClient.createReceiver(this.options.queueName, {
+          receiveMode: this.options.receiveMode,
+          maxAutoLockRenewalDurationInMs: this.options.maxAutoLockRenewalDurationInMs
+        });
+      }
+    }
+  }
+
+  /**
+   * Check if processing should stop on error
+   */
+  private shouldStopOnError(error: unknown): boolean {
+    if (error instanceof AzureServiceError) {
+      // Stop on authentication/authorization errors
+      return error.statusCode === 401 || error.statusCode === 403;
+    }
+    return false;
+  }
+
+  /**
+   * Sleep utility function
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Generate a unique request ID
+   */
+  private generateRequestId(): string {
+    return `rcv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Close the message receiver
+   */
+  async close(): Promise<void> {
+    try {
+      await this.stopProcessing();
+      await this.serviceBusClient.close();
+      this.logger.info('Message Receiver closed successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to close Message Receiver', { error: errorMessage });
+      throw new AzureServiceError(`Message Receiver close failed: ${errorMessage}`);
+    }
+  }
+}
+
+/**
+ * Factory function for creating Message Receiver
+ */
+export async function createMessageReceiver<T = unknown>(
+  options: MessageReceiverOptions
+): Promise<AzureServiceBusMessageReceiver<T>> {
+  const receiverOptions: MessageReceiverOptions = {
+    connectionString: process.env.AZURE_SERVICEBUS_CONNECTION_STRING,
+    fullyQualifiedNamespace: process.env.AZURE_SERVICEBUS_NAMESPACE ? 
+      `${process.env.AZURE_SERVICEBUS_NAMESPACE}.servicebus.windows.net` : undefined,
+    maxConcurrentMessages: parseInt(process.env.SERVICE_BUS_MAX_CONCURRENT || '10'),
+    messageProcessingTimeoutMs: parseInt(process.env.SERVICE_BUS_PROCESSING_TIMEOUT_MS || '120000'),
+    enableCircuitBreaker: process.env.SERVICE_BUS_ENABLE_CIRCUIT_BREAKER !== 'false',
+    securityLevel: (process.env.NORWEGIAN_SECURITY_LEVEL as NorwegianSecurityLevel) || undefined,
+    enableMessageValidation: process.env.SERVICE_BUS_ENABLE_VALIDATION !== 'false',
+    ...options
+  };
+
+  return new AzureServiceBusMessageReceiver<T>(receiverOptions);
+}

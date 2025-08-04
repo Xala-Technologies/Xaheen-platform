@@ -1,0 +1,545 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+{{/if}}
+{{#if enableCloudWatch}}
+import * as AWS from 'aws-sdk';
+const cloudWatch = new AWS.CloudWatch();
+const cloudWatchLogs = new AWS.CloudWatchLogs();
+{{/if}}
+
+export interface LoggerContext {
+  correlationId?: string;
+  userId?: string;
+  requestId?: string;
+  functionName?: string;
+  functionVersion?: string;
+  stage?: string;
+  [key: string]: any;
+}
+
+export class Logger {
+  private context: LoggerContext = {};
+
+  constructor() {
+    // Set default context
+    this.context = {
+      functionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+      functionVersion: process.env.AWS_LAMBDA_FUNCTION_VERSION,
+      stage: process.env.STAGE || process.env.NODE_ENV || 'development'
+    };
+  }
+
+  setCorrelationId(correlationId: string): void {
+    this.context.correlationId = correlationId;
+  }
+
+  setUserId(userId: string): void {
+    this.context.userId = userId;
+  }
+
+  setContext(context: Partial<LoggerContext>): void {
+    this.context = { ...this.context, ...context };
+  }
+
+  private formatMessage(level: string, message: string, meta?: any): string {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: level.toUpperCase(),
+      message,
+      ...this.context,
+      ...(meta && { meta })
+    };
+
+    return JSON.stringify(logEntry);
+  }
+
+  info(message: string, meta?: any): void {
+    console.log(this.formatMessage('info', message, meta));
+  }
+
+  warn(message: string, meta?: any): void {
+    console.warn(this.formatMessage('warn', message, meta));
+  }
+
+  error(message: string, meta?: any): void {
+    console.error(this.formatMessage('error', message, meta));
+  }
+
+  debug(message: string, meta?: any): void {
+    if (process.env.LOG_LEVEL === 'debug' || process.env.NODE_ENV === 'development') {
+      console.debug(this.formatMessage('debug', message, meta));
+    }
+  }
+
+  success(message: string, meta?: any): void {
+    console.log(this.formatMessage('success', message, meta));
+  }
+}
+
+export const logger = new Logger();
+
+/**
+ * Performance monitoring utilities
+ */
+export class PerformanceMonitor {
+  private startTime: number;
+  private checkpoints: Record<string, number> = {};
+
+  constructor() {
+    this.startTime = Date.now();
+  }
+
+  checkpoint(name: string): void {
+    this.checkpoints[name] = Date.now() - this.startTime;
+    logger.debug(`Performance checkpoint: ${name}`, {
+      duration: this.checkpoints[name],
+      unit: 'ms'
+    });
+  }
+
+  getCheckpoint(name: string): number | undefined {
+    return this.checkpoints[name];
+  }
+
+  getTotalDuration(): number {
+    return Date.now() - this.startTime;
+  }
+
+  getAllCheckpoints(): Record<string, number> {
+    return { ...this.checkpoints };
+  }
+
+  log(): void {
+    logger.info('Performance metrics', {
+      totalDuration: this.getTotalDuration(),
+      checkpoints: this.getAllCheckpoints(),
+      unit: 'ms'
+    });
+  }
+}
+
+/**
+ * Memory usage monitoring
+ */
+export function getMemoryUsage(): NodeJS.MemoryUsage {
+  return process.memoryUsage();
+}
+
+export function logMemoryUsage(label?: string): void {
+  const memUsage = getMemoryUsage();
+  logger.debug('Memory usage', {
+    label,
+    rss: `${Math.round(memUsage.rss / 1024 / 1024)} MB`,
+    heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)} MB`,
+    heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)} MB`,
+    external: `${Math.round(memUsage.external / 1024 / 1024)} MB`
+  });
+}
+
+/**
+ * Lambda context utilities
+ */
+export function getRemainingTime(context: any): number {
+  return context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0;
+}
+
+export function isNearTimeout(context: any, bufferMs: number = 5000): boolean {
+  const remaining = getRemainingTime(context);
+  return remaining <= bufferMs;
+}
+
+export function logLambdaContext(context: any): void {
+  logger.info('Lambda context', {
+    functionName: context.functionName,
+    functionVersion: context.functionVersion,
+    awsRequestId: context.awsRequestId,
+    logGroupName: context.logGroupName,
+    logStreamName: context.logStreamName,
+    remainingTimeInMillis: getRemainingTime(context),
+    memoryLimitInMB: context.memoryLimitInMB
+  });
+}
+
+{{#if enableCloudWatch}}
+/**
+ * CloudWatch metrics utilities
+ */
+export async function putMetric(
+  metricName: string,
+  value: number,
+  unit: string = 'Count',
+  dimensions?: Array<{ Name: string; Value: string }>
+): Promise<void> {
+  try {
+    const params = {
+      Namespace: `AWS/Lambda/${process.env.AWS_LAMBDA_FUNCTION_NAME}`,
+      MetricData: [
+        {
+          MetricName: metricName,
+          Value: value,
+          Unit: unit,
+          Dimensions: dimensions,
+          Timestamp: new Date()
+        }
+      ]
+    };
+
+    await cloudWatch.putMetricData(params).promise();
+    logger.debug('Metric sent to CloudWatch', { metricName, value, unit });
+  } catch (error) {
+    logger.error('Failed to send metric to CloudWatch', { metricName, error });
+  }
+}
+
+export async function putCustomMetrics(metrics: Array<{
+  name: string;
+  value: number;
+  unit?: string;
+  dimensions?: Array<{ Name: string; Value: string }>;
+}>): Promise<void> {
+  try {
+    const metricData = metrics.map(metric => ({
+      MetricName: metric.name,
+      Value: metric.value,
+      Unit: metric.unit || 'Count',
+      Dimensions: metric.dimensions,
+      Timestamp: new Date()
+    }));
+
+    const params = {
+      Namespace: `AWS/Lambda/${process.env.AWS_LAMBDA_FUNCTION_NAME}`,
+      MetricData: metricData
+    };
+
+    await cloudWatch.putMetricData(params).promise();
+    logger.debug('Custom metrics sent to CloudWatch', { count: metrics.length });
+  } catch (error) {
+    logger.error('Failed to send custom metrics to CloudWatch', { error });
+  }
+}
+
+/**
+ * CloudWatch Logs utilities
+ */
+export async function createLogStream(logGroupName: string, logStreamName: string): Promise<void> {
+  try {
+    await cloudWatchLogs.createLogStream({
+      logGroupName,
+      logStreamName
+    }).promise();
+    
+    logger.debug('Log stream created', { logGroupName, logStreamName });
+  } catch (error: any) {
+    if (error.code !== 'ResourceAlreadyExistsException') {
+      logger.error('Failed to create log stream', { logGroupName, logStreamName, error });
+      throw error;
+    }
+  }
+}
+
+export async function putLogEvents(
+  logGroupName: string,
+  logStreamName: string,
+  messages: string[]
+): Promise<void> {
+  try {
+    const logEvents = messages.map(message => ({
+      message,
+      timestamp: Date.now()
+    }));
+
+    await cloudWatchLogs.putLogEvents({
+      logGroupName,
+      logStreamName,
+      logEvents
+    }).promise();
+
+    logger.debug('Log events sent to CloudWatch', { 
+      logGroupName, 
+      logStreamName, 
+      eventCount: logEvents.length 
+    });
+  } catch (error) {
+    logger.error('Failed to send log events to CloudWatch', { 
+      logGroupName, 
+      logStreamName, 
+      error 
+    });
+  }
+}
+{{/if}}
+
+{{#if enableXRay}}
+/**
+ * X-Ray tracing utilities
+ */
+export function createSubsegment(name: string): any {
+  const segment = AWSXRay.getSegment();
+  if (segment) {
+    return segment.addNewSubsegment(name);
+  }
+  return null;
+}
+
+export function addAnnotation(key: string, value: string | number | boolean): void {
+  const segment = AWSXRay.getSegment();
+  if (segment) {
+    segment.addAnnotation(key, value);
+  }
+}
+
+export function addMetadata(key: string, value: any, namespace?: string): void {
+  const segment = AWSXRay.getSegment();
+  if (segment) {
+    segment.addMetadata(key, value, namespace);
+  }
+}
+
+export function traceAsyncFunction<T>(
+  name: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const subsegment = createSubsegment(name);
+    
+    fn()
+      .then(result => {
+        if (subsegment) {
+          subsegment.close();
+        }
+        resolve(result);
+      })
+      .catch(error => {
+        if (subsegment) {
+          subsegment.addError(error);
+          subsegment.close();
+        }
+        reject(error);
+      });
+  });
+}
+
+export async function captureAsyncFunc<T>(
+  name: string,
+  fn: (subsegment?: any) => Promise<T>
+): Promise<T> {
+  return AWSXRay.captureAsyncFunc(name, fn);
+}
+{{/if}}
+
+/**
+ * Environment utilities
+ */
+export function getEnvironment(): string {
+  return process.env.NODE_ENV || process.env.STAGE || 'development';
+}
+
+export function isProduction(): boolean {
+  return getEnvironment() === 'production';
+}
+
+export function isDevelopment(): boolean {
+  return getEnvironment() === 'development';
+}
+
+export function isTest(): boolean {
+  return getEnvironment() === 'test';
+}
+
+export function getRequiredEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Required environment variable ${name} is not set`);
+  }
+  return value;
+}
+
+export function getEnvVar(name: string, defaultValue?: string): string | undefined {
+  return process.env[name] || defaultValue;
+}
+
+/**
+ * Validation utilities
+ */
+export function validateJson(jsonString: string): any {
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    throw new Error(`Invalid JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export function sanitizeForLog(obj: any): any {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
+
+  const sanitized = { ...obj };
+  const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization', 'cookie'];
+  
+  for (const field of sensitiveFields) {
+    if (field in sanitized) {
+      sanitized[field] = '[REDACTED]';
+    }
+  }
+
+  return sanitized;
+}
+
+/**
+ * Error utilities
+ */
+export function createErrorResponse(
+  message: string,
+  statusCode: number = 500,
+  details?: any
+) {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT,DELETE'
+    },
+    body: JSON.stringify({
+      success: false,
+      message,
+      timestamp: new Date().toISOString(),
+      ...(details && { details })
+    })
+  };
+}
+
+export function createSuccessResponse(data: any, statusCode: number = 200) {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT,DELETE'
+    },
+    body: JSON.stringify({
+      success: true,
+      data,
+      timestamp: new Date().toISOString()
+    })
+  };
+}
+
+/**
+ * Async utilities
+ */
+export async function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function timeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage?: string
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(errorMessage || `Operation timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+}
+
+export async function retry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      logger.warn(`Retry attempt ${attempt + 1}/${maxRetries + 1}`, {
+        error: lastError.message,
+        delayMs
+      });
+
+      await delay(delayMs);
+    }
+  }
+
+  throw lastError!;
+}
+
+/**
+ * String utilities
+ */
+export function generateId(length: number = 8): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+export function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+export function truncateString(str: string, maxLength: number): string {
+  if (str.length <= maxLength) {
+    return str;
+  }
+  return str.substring(0, maxLength - 3) + '...';
+}
+
+/**
+ * Type utilities
+ */
+export function isString(value: any): value is string {
+  return typeof value === 'string';
+}
+
+export function isNumber(value: any): value is number {
+  return typeof value === 'number' && !isNaN(value);
+}
+
+export function isBoolean(value: any): value is boolean {
+  return typeof value === 'boolean';
+}
+
+export function isObject(value: any): value is object {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function isArray(value: any): value is any[] {
+  return Array.isArray(value);
+}
+
+export function isEmpty(value: any): boolean {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  
+  if (isString(value) || isArray(value)) {
+    return value.length === 0;
+  }
+  
+  if (isObject(value)) {
+    return Object.keys(value).length === 0;
+  }
+  
+  return false;
+}

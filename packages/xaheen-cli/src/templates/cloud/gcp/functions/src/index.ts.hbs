@@ -1,14 +1,14 @@
 /**
- * {{projectName}} Cloud Functions
+ * {{projectId}} Cloud Functions
  * Entry point for Google Cloud Functions
  */
 
-import { Request, Response } from 'express';
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
 import { logger } from './utils/logger';
-import { validateRequest } from './middleware/validation';
-import { errorHandler } from './middleware/error-handler';
-import { corsHandler } from './middleware/cors';
-import { rateLimiter } from './middleware/rate-limiter';
+
+// Initialize Firebase Admin SDK
+admin.initializeApp();
 
 {{#each triggers}}
 {{#if (eq type 'httpsTrigger')}}

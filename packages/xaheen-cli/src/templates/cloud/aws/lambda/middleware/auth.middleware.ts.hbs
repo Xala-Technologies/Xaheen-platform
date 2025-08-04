@@ -1,0 +1,434 @@
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import { verify, decode } from 'jsonwebtoken';
+{{#if enableCognito}}
+import { CognitoJwtVerifier } from 'aws-jwt-verify';
+{{/if}}
+import { logger } from '../utils/lambda-utils';
+
+export interface AuthResult {
+  readonly isValid: boolean;
+  readonly user?: any;
+  readonly error?: string;
+  readonly token?: string;
+}
+
+export interface DecodedToken {
+  readonly sub: string;
+  readonly email?: string;
+  readonly email_verified?: boolean;
+  readonly name?: string;
+  readonly given_name?: string;
+  readonly family_name?: string;
+  readonly aud: string;
+  readonly iss: string;
+  readonly exp: number;
+  readonly iat: number;
+  readonly auth_time?: number;
+  readonly token_use?: string;
+  readonly scope?: string;
+  readonly client_id?: string;
+  readonly username?: string;
+  readonly 'cognito:groups'?: string[];
+  readonly 'custom:role'?: string;
+  readonly [key: string]: any;
+}
+
+{{#if enableCognito}}
+// Cognito JWT Verifier configuration
+const cognitoVerifier = CognitoJwtVerifier.create({
+  userPoolId: process.env.COGNITO_USER_POOL_ID!,
+  tokenUse: 'access',
+  clientId: process.env.COGNITO_CLIENT_ID
+});
+
+const cognitoIdVerifier = CognitoJwtVerifier.create({
+  userPoolId: process.env.COGNITO_USER_POOL_ID!,
+  tokenUse: 'id',
+  clientId: process.env.COGNITO_CLIENT_ID
+});
+{{/if}}
+
+/**
+ * Validate authentication from API Gateway event
+ */
+export async function validateAuth(event: APIGatewayProxyEvent): Promise<AuthResult> {
+  try {
+    // Extract token from Authorization header
+    const authHeader = event.headers.Authorization || event.headers.authorization;
+    
+    if (!authHeader) {
+      return {
+        isValid: false,
+        error: 'Authorization header is missing'
+      };
+    }
+
+    // Extract Bearer token
+    const tokenMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+    if (!tokenMatch) {
+      return {
+        isValid: false,
+        error: 'Invalid authorization header format. Expected: Bearer <token>'
+      };
+    }
+
+    const token = tokenMatch[1];
+
+    {{#if enableCognito}}
+    // Validate Cognito JWT token
+    return await validateCognitoToken(token);
+    {{else}}
+    // Validate custom JWT token
+    return await validateCustomToken(token);
+    {{/if}}
+
+  } catch (error) {
+    logger.error('Authentication validation failed', { error });
+    return {
+      isValid: false,
+      error: 'Authentication validation failed'
+    };
+  }
+}
+
+{{#if enableCognito}}
+/**
+ * Validate Cognito JWT token
+ */
+async function validateCognitoToken(token: string): Promise<AuthResult> {
+  try {
+    // Decode token to check token_use
+    const decodedToken = decode(token) as any;
+    
+    if (!decodedToken) {
+      return {
+        isValid: false,
+        error: 'Invalid token format'
+      };
+    }
+
+    let payload: any;
+    
+    // Verify based on token type
+    if (decodedToken.token_use === 'access') {
+      payload = await cognitoVerifier.verify(token);
+    } else if (decodedToken.token_use === 'id') {
+      payload = await cognitoIdVerifier.verify(token);
+    } else {
+      return {
+        isValid: false,
+        error: 'Invalid token type'
+      };
+    }
+
+    // Extract user information
+    const user = {
+      sub: payload.sub,
+      email: payload.email,
+      emailVerified: payload.email_verified,
+      name: payload.name,
+      givenName: payload.given_name,
+      familyName: payload.family_name,
+      username: payload.username,
+      groups: payload['cognito:groups'] || [],
+      customRole: payload['custom:role'],
+      clientId: payload.client_id,
+      scope: payload.scope,
+      authTime: payload.auth_time,
+      tokenUse: payload.token_use
+    };
+
+    logger.info('Cognito token validated successfully', {
+      userId: user.sub,
+      username: user.username,
+      tokenUse: user.tokenUse
+    });
+
+    return {
+      isValid: true,
+      user,
+      token
+    };
+
+  } catch (error) {
+    logger.error('Cognito token validation failed', { error });
+    return {
+      isValid: false,
+      error: 'Invalid or expired Cognito token'
+    };
+  }
+}
+{{else}}
+/**
+ * Validate custom JWT token
+ */
+async function validateCustomToken(token: string): Promise<AuthResult> {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not configured');
+    }
+
+    // Verify JWT token
+    const payload = verify(token, jwtSecret) as DecodedToken;
+
+    // Check token expiration
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < currentTime) {
+      return {
+        isValid: false,
+        error: 'Token has expired'
+      };
+    }
+
+    // Extract user information
+    const user = {
+      sub: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      role: payload['custom:role'] || 'user',
+      scope: payload.scope,
+      iat: payload.iat,
+      exp: payload.exp
+    };
+
+    logger.info('Custom JWT token validated successfully', {
+      userId: user.sub,
+      email: user.email,
+      role: user.role
+    });
+
+    return {
+      isValid: true,
+      user,
+      token
+    };
+
+  } catch (error) {
+    logger.error('Custom JWT token validation failed', { error });
+    
+    if (error instanceof Error) {
+      if (error.message.includes('expired')) {
+        return {
+          isValid: false,
+          error: 'Token has expired'
+        };
+      } else if (error.message.includes('invalid')) {
+        return {
+          isValid: false,
+          error: 'Invalid token'
+        };
+      }
+    }
+
+    return {
+      isValid: false,
+      error: 'Token validation failed'
+    };
+  }
+}
+{{/if}}
+
+/**
+ * Validate API key authentication
+ */
+export async function validateApiKey(event: APIGatewayProxyEvent): Promise<AuthResult> {
+  try {
+    const apiKey = event.headers['X-API-Key'] || event.headers['x-api-key'];
+    
+    if (!apiKey) {
+      return {
+        isValid: false,
+        error: 'API key is missing'
+      };
+    }
+
+    // Validate API key against stored keys
+    const isValidKey = await validateApiKeyAgainstStore(apiKey);
+    
+    if (!isValidKey) {
+      return {
+        isValid: false,
+        error: 'Invalid API key'
+      };
+    }
+
+    // Get API key metadata
+    const keyMetadata = await getApiKeyMetadata(apiKey);
+
+    return {
+      isValid: true,
+      user: {
+        type: 'api_key',
+        keyId: keyMetadata.keyId,
+        clientName: keyMetadata.clientName,
+        permissions: keyMetadata.permissions
+      }
+    };
+
+  } catch (error) {
+    logger.error('API key validation failed', { error });
+    return {
+      isValid: false,
+      error: 'API key validation failed'
+    };
+  }
+}
+
+/**
+ * Check if user has required permissions
+ */
+export function hasPermission(user: any, requiredPermission: string): boolean {
+  if (!user) {
+    return false;
+  }
+
+  // Admin users have all permissions
+  if (user.role === 'admin' || user.customRole === 'admin') {
+    return true;
+  }
+
+  // Check Cognito groups
+  if (user.groups && Array.isArray(user.groups)) {
+    if (user.groups.includes('admin') || user.groups.includes(requiredPermission)) {
+      return true;
+    }
+  }
+
+  // Check API key permissions
+  if (user.type === 'api_key' && user.permissions) {
+    return user.permissions.includes(requiredPermission) || user.permissions.includes('*');
+  }
+
+  // Check custom permissions
+  if (user.permissions && Array.isArray(user.permissions)) {
+    return user.permissions.includes(requiredPermission) || user.permissions.includes('*');
+  }
+
+  return false;
+}
+
+/**
+ * Check if user has any of the required roles
+ */
+export function hasAnyRole(user: any, requiredRoles: string[]): boolean {
+  if (!user) {
+    return false;
+  }
+
+  const userRole = user.role || user.customRole || 'user';
+  
+  if (requiredRoles.includes(userRole)) {
+    return true;
+  }
+
+  // Check Cognito groups
+  if (user.groups && Array.isArray(user.groups)) {
+    return user.groups.some(group => requiredRoles.includes(group));
+  }
+
+  return false;
+}
+
+/**
+ * Require authentication middleware
+ */
+export function requireAuth(requiredPermission?: string) {
+  return async (event: APIGatewayProxyEvent): Promise<AuthResult> => {
+    const authResult = await validateAuth(event);
+    
+    if (!authResult.isValid) {
+      return authResult;
+    }
+
+    // Check permissions if required
+    if (requiredPermission && !hasPermission(authResult.user, requiredPermission)) {
+      return {
+        isValid: false,
+        error: `Insufficient permissions. Required: ${requiredPermission}`
+      };
+    }
+
+    return authResult;
+  };
+}
+
+/**
+ * Require specific roles middleware
+ */
+export function requireRoles(requiredRoles: string[]) {
+  return async (event: APIGatewayProxyEvent): Promise<AuthResult> => {
+    const authResult = await validateAuth(event);
+    
+    if (!authResult.isValid) {
+      return authResult;
+    }
+
+    // Check roles
+    if (!hasAnyRole(authResult.user, requiredRoles)) {
+      return {
+        isValid: false,
+        error: `Insufficient role. Required one of: ${requiredRoles.join(', ')}`
+      };
+    }
+
+    return authResult;
+  };
+}
+
+/**
+ * Optional authentication (allows both authenticated and anonymous users)
+ */
+export async function optionalAuth(event: APIGatewayProxyEvent): Promise<AuthResult> {
+  try {
+    const authHeader = event.headers.Authorization || event.headers.authorization;
+    
+    if (!authHeader) {
+      // No auth header provided, treat as anonymous user
+      return {
+        isValid: true,
+        user: {
+          type: 'anonymous'
+        }
+      };
+    }
+
+    // Validate if auth header is provided
+    return await validateAuth(event);
+    
+  } catch (error) {
+    logger.error('Optional authentication failed', { error });
+    // Return anonymous user on error
+    return {
+      isValid: true,
+      user: {
+        type: 'anonymous'
+      }
+    };
+  }
+}
+
+/**
+ * Helper functions for API key validation
+ */
+async function validateApiKeyAgainstStore(apiKey: string): Promise<boolean> {
+  // TODO: Implement API key validation logic
+  // This could involve checking against DynamoDB, RDS, or external service
+  logger.info('Validating API key against store', { apiKey: apiKey.substring(0, 8) + '...' });
+  
+  // Placeholder implementation
+  const validApiKeys = process.env.VALID_API_KEYS?.split(',') || [];
+  return validApiKeys.includes(apiKey);
+}
+
+async function getApiKeyMetadata(apiKey: string): Promise<any> {
+  // TODO: Implement API key metadata retrieval
+  logger.info('Getting API key metadata', { apiKey: apiKey.substring(0, 8) + '...' });
+  
+  // Placeholder implementation
+  return {
+    keyId: 'key-123',
+    clientName: 'Client App',
+    permissions: ['read', 'write']
+  };
+}
