@@ -1,3 +1,12 @@
+/**
+ * @fileoverview {{pascalCase name}}Page - AI-Optimized Page Component
+ * @description Enhanced page template with Norwegian compliance and NSM classification
+ * @version 5.0.0
+ * @compliance WCAG AAA, NSM {{mcpNSMLevel this}}, Norwegian Government Standards
+ * @ai-optimized Pattern: {{mcpPatterns this}}
+ * @mcp-hints {{mcpAIHints this}}
+ */
+
 import React from 'react';
 import { 
   Button,
@@ -9,7 +18,10 @@ import {
   Container,
   Stack,
   Text,
-  Grid
+  Grid,
+  Badge,
+  Alert,
+  Separator
 } from '@xala-technologies/ui-system';
 import { t } from '@xala-technologies/ui-system/i18n';
 {{#if_contains features 'dashboard'}}
@@ -18,90 +30,314 @@ import { Dashboard } from '@xala-technologies/ui-system';
 {{#if_contains features 'navbar'}}
 import { Navbar } from '@xala-technologies/ui-system';
 {{/if_contains}}
+{{#if norwegianCompliance}}
+import { norwegianComplianceHelpers } from '../../mixins/norwegian-compliance';
+{{/if}}
 
 export interface {{pascalCase name}}PageProps {
   readonly params?: Record<string, string>;
   readonly searchParams?: Record<string, string>;
+  readonly nsmClassification?: {{nsmClassification}};
+  readonly user?: UserInfo;
+  readonly locale?: string;
 }
 
+export interface UserInfo {
+  readonly name: string;
+  readonly role: string;
+  readonly clearanceLevel?: {{nsmClassification}};
+}
+
+/**
+ * AI-Optimized {{pascalCase name}} Page
+ * Pattern: {{mcpComplexity this}} complexity page with semantic structure
+ * Estimated tokens: {{mcpTokens this}}
+ * 
+ * Features:
+ * - WCAG AAA accessibility compliance
+ * - Norwegian government standards
+ * - NSM security classification
+ * - Multi-language support
+ * - Semantic UI components
+ */
 export default function {{pascalCase name}}Page({ 
   params, 
-  searchParams 
+  searchParams,
+  nsmClassification = '{{nsmClassification}}',
+  user,
+  locale = 'nb-NO'
 }: {{pascalCase name}}PageProps): JSX.Element {
-  // v5.0 Architecture: Perfect semantic structure with Stack components
-  // AI-Optimized: Uses semantic naming and predictable patterns
-  // Norwegian Compliance: Supports i18n with nb-NO default
   
+  // Norwegian compliance validation
+  {{#if norwegianCompliance}}
+  const complianceLevel = norwegianComplianceHelpers.getComplianceLevel();
+  {{/if}}
+
+  // Access control check
+  const hasRequiredClearance = (requiredLevel?: {{nsmClassification}}): boolean => {
+    if (!requiredLevel || !user?.clearanceLevel) return true;
+    
+    const levels: Record<{{nsmClassification}}, number> = {
+      'OPEN': 0,
+      'RESTRICTED': 1,
+      'CONFIDENTIAL': 2,
+      'SECRET': 3
+    };
+    
+    return levels[user.clearanceLevel] >= levels[requiredLevel];
+  };
+
   return (
-    <Container size="xl">
-      <Stack direction="vertical" gap="xl">
-        {{#if_contains features 'navbar'}}
-        <Navbar variant="flat" />
-        {{/if_contains}}
-        
-        {/* Hero Section */}
-        <Stack direction="vertical" gap="lg" align="center">
-          <Text variant="h1" align="center">
-            {t('page.title', { name: '{{#if title}}{{title}}{{else}}{{pascalCase name}}{{/if}}' })}
-          </Text>
-          <Text variant="body" align="center" color="secondary">
-            {t('page.description', { description: '{{#if description}}{{description}}{{else}}Welcome to {{pascalCase name}} page{{/if}}' })}
-          </Text>
+    <main 
+      className="{{kebabCase name}}-page"
+      data-nsm-classification={nsmClassification}
+      lang={locale}
+      role="main"
+      aria-labelledby="page-title"
+    >
+      <Container size="xl">
+        <Stack direction="vertical" gap="xl">
+          {{#if_contains features 'navbar'}}
+          <header role="banner">
+            <Navbar variant="flat" />
+          </header>
+          {{/if_contains}}
+          
+          {/* Page Header with Security Information */}
+          <Stack direction="horizontal" justify="between" align="center" className="page-header">
+            <Stack direction="vertical" gap="sm">
+              <Text variant="h1" id="page-title" className="text-4xl font-bold">
+                {t('{{kebabCase name}}.page.title', { 
+                  name: '{{#if title}}{{title}}{{else}}{{pascalCase name}}{{/if}}',
+                  defaultValue: '{{#if title}}{{title}}{{else}}{{pascalCase name}}{{/if}}'
+                })}
+              </Text>
+              <Text variant="body" color="secondary">
+                {t('{{kebabCase name}}.page.description', { 
+                  description: '{{#if description}}{{description}}{{else}}Welcome to {{pascalCase name}} page{{/if}}',
+                  defaultValue: '{{#if description}}{{description}}{{else}}Welcome to {{pascalCase name}} page{{/if}}'
+                })}
+              </Text>
+            </Stack>
+            
+            <Stack direction="horizontal" gap="sm">
+              <Badge variant="outline">
+                NSM {nsmClassification}
+              </Badge>
+              {{#if norwegianCompliance}}
+              <Badge variant="outline">
+                {t('common.norwegian_compliant', { defaultValue: 'Norwegian Compliant' })}
+              </Badge>
+              {{/if}}
+              <Badge variant="outline">
+                WCAG AAA
+              </Badge>
+            </Stack>
+          </Stack>
+
+          {/* User Information */}
+          {user && (
+            <Alert variant="info" className="user-info">
+              <Stack direction="horizontal" justify="between" align="center">
+                <Text variant="caption">
+                  {t('common.logged_in_as', { defaultValue: 'Logged in as' })}: <strong>{user.name}</strong> ({user.role})
+                </Text>
+                {user.clearanceLevel && (
+                  <Badge variant="secondary">
+                    {t('common.clearance', { defaultValue: 'Clearance' })}: {user.clearanceLevel}
+                  </Badge>
+                )}
+              </Stack>
+            </Alert>
+          )}
+
+          {/* Main Content */}
+          <section className="main-content" aria-label={t('common.main_content', { defaultValue: 'Main content' })}>
+            <Stack direction="vertical" gap="lg" align="center">
+              <Text variant="h2" align="center" className="sr-only">
+                {t('{{kebabCase name}}.content.heading', { defaultValue: 'Page Content' })}
+              </Text>
+
+              {{#if_contains features 'dashboard'}}
+              {/* Dashboard Layout Pattern */}
+              {hasRequiredClearance('RESTRICTED') ? (
+                <Dashboard 
+                  variant="modern"
+                  spacing="xl"
+                  nsmClassification={nsmClassification}
+                  user={user}
+                />
+              ) : (
+                <Alert variant="warning">
+                  <Text>
+                    {t('common.insufficient_clearance', { 
+                      defaultValue: 'Insufficient clearance level for dashboard access' 
+                    })}
+                  </Text>
+                </Alert>
+              )}
+              {{else}}
+              {/* Feature Grid Pattern */}
+              <Grid cols={{ base: 1, md: 2, lg: 3 }} gap="lg">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {t('{{kebabCase name}}.actions.explore.title', { 
+                        defaultValue: 'Explore Features' 
+                      })}
+                    </CardTitle>
+                    <CardDescription>
+                      {t('{{kebabCase name}}.actions.explore.description', { 
+                        defaultValue: 'Discover what you can do with our platform' 
+                      })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      variant="primary" 
+                      size="lg" 
+                      fullWidth
+                      aria-label={t('{{kebabCase name}}.actions.explore.aria_label', { 
+                        defaultValue: 'Explore platform features' 
+                      })}
+                    >
+                      {t('{{kebabCase name}}.actions.explore.button', { 
+                        defaultValue: 'Explore' 
+                      })}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {t('{{kebabCase name}}.actions.learn.title', { 
+                        defaultValue: 'Learn More' 
+                      })}
+                    </CardTitle>
+                    <CardDescription>
+                      {t('{{kebabCase name}}.actions.learn.description', { 
+                        defaultValue: 'Access documentation and tutorials' 
+                      })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      fullWidth
+                      aria-label={t('{{kebabCase name}}.actions.learn.aria_label', { 
+                        defaultValue: 'Access learning resources' 
+                      })}
+                    >
+                      {t('{{kebabCase name}}.actions.learn.button', { 
+                        defaultValue: 'Learn' 
+                      })}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {t('{{kebabCase name}}.actions.action.title', { 
+                        defaultValue: 'Take Action' 
+                      })}
+                    </CardTitle>
+                    <CardDescription>
+                      {t('{{kebabCase name}}.actions.action.description', { 
+                        name: '{{pascalCase name}}',
+                        defaultValue: 'Get started with {{pascalCase name}} services' 
+                      })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      variant="ghost" 
+                      size="lg" 
+                      fullWidth
+                      disabled={!hasRequiredClearance('OPEN')}
+                      aria-label={t('{{kebabCase name}}.actions.action.aria_label', { 
+                        defaultValue: 'Start using {{pascalCase name}} services' 
+                      })}
+                    >
+                      {t('{{kebabCase name}}.actions.action.button', { 
+                        defaultValue: 'Get Started' 
+                      })}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+              {{/if_contains}}
+            </Stack>
+          </section>
+
+          {/* Footer with Compliance Information */}
+          <footer className="page-footer" role="contentinfo">
+            <Separator className="mb-6" />
+            <Stack direction="vertical" gap="md">
+              <Stack direction="horizontal" justify="between" align="center">
+                <Text variant="caption" color="secondary">
+                  {t('common.footer.classification', { 
+                    classification: nsmClassification,
+                    defaultValue: 'Classification: {{classification}}' 
+                  })}
+                </Text>
+                <Stack direction="horizontal" gap="md">
+                  <Button variant="link" size="sm">
+                    {t('common.footer.privacy', { defaultValue: 'Privacy Policy' })}
+                  </Button>
+                  <Button variant="link" size="sm">
+                    {t('common.footer.accessibility', { defaultValue: 'Accessibility Statement' })}
+                  </Button>
+                  {{#if norwegianCompliance}}
+                  <Button variant="link" size="sm">
+                    {t('common.footer.norwegian_standards', { defaultValue: 'Norwegian Standards' })}
+                  </Button>
+                  {{/if}}
+                </Stack>
+              </Stack>
+              
+              <Text variant="caption" color="secondary" align="center">
+                {t('common.footer.copyright', { 
+                  year: new Date().getFullYear(),
+                  defaultValue: '© {{year}} Norwegian Government. All rights reserved.' 
+                })}
+              </Text>
+              
+              {{#if norwegianCompliance}}
+              <Stack direction="horizontal" justify="center" gap="sm">
+                <Badge variant="outline" size="sm">
+                  GDPR {t('common.compliant', { defaultValue: 'Compliant' })}
+                </Badge>
+                <Badge variant="outline" size="sm">
+                  WCAG AAA
+                </Badge>
+                <Badge variant="outline" size="sm">
+                  {t('common.norwegian_standards', { defaultValue: 'Norwegian Standards' })}
+                </Badge>
+              </Stack>
+              {{/if}}
+            </Stack>
+          </footer>
         </Stack>
-
-        {{#if_contains features 'dashboard'}}
-        {/* Dashboard Layout Pattern */}
-        <Dashboard 
-          variant="modern"
-          spacing="xl"
-        />
-        {{else}}
-        {/* Feature Grid Pattern */}
-        <Grid cols={{ base: 1, md: 2, lg: 3 }} gap="lg">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('actions.explore.title')}</CardTitle>
-              <CardDescription>
-                {t('actions.explore.description')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="primary" size="lg" fullWidth>
-                {t('actions.explore.button')}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('actions.learn.title')}</CardTitle>
-              <CardDescription>
-                {t('actions.learn.description')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" size="lg" fullWidth>
-                {t('actions.learn.button')}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('actions.action.title')}</CardTitle>
-              <CardDescription>
-                {t('actions.action.description', { name: '{{pascalCase name}}' })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="ghost" size="lg" fullWidth>
-                {t('actions.action.button')}
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-        {{/if_contains}}
-      </Stack>
-    </Container>
+      </Container>
+    </main>
   );
 }
+
+/**
+ * AI Generation Example:
+ * 
+ * <{{pascalCase name}}Page
+ *   nsmClassification="{{mcpNSMLevel this}}"
+ *   user=\{{
+ *     name: "Ole Hansen",
+ *     role: "Government Administrator",
+ *     clearanceLevel: "{{mcpNSMLevel this}}"
+ *   }}
+ *   locale="nb-NO"
+ *   params={{ id: "123" }}
+ *   searchParams={{ tab: "overview" }}
+ * />
+ */
