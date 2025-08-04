@@ -539,6 +539,6 @@ xala examples --platform react
 
 ---
 
-**Built with ❤️ by the Xala Technologies team for the global development community.**
+**Built by the Xala Technologies team for the global development community.**
 
 *Empowering developers to create accessible, compliant, and beautiful applications across all platforms.*

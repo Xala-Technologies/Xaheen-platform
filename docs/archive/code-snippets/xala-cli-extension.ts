@@ -298,7 +298,7 @@ ${chalk.bold("Resources:")}
   🎨 Component Explorer: ${chalk.underline("https://xala-ui.pages.dev/components")}
   🇳🇴 Norwegian Guide: ${chalk.underline("https://xala-ui.pages.dev/norwegian")}
 
-${chalk.dim("Built with ❤️ by Xala Technologies")}
+${chalk.dim("Built by Xala Technologies")}
         `),
 				);
 			} catch (error) {

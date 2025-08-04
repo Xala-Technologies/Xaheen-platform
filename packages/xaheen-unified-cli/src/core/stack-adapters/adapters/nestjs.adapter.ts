@@ -1,0 +1,723 @@
+/**
+ * NestJS Stack Adapter
+ * 
+ * Generates code for NestJS microservices with TypeScript, Prisma, and best practices
+ */
+
+import { 
+  BaseStackAdapter, 
+  GeneratorContext, 
+  GeneratedFile, 
+  StackConfig, 
+  StackPaths, 
+  FileExtensions, 
+  StackCommands, 
+  StackDependencies,
+  FieldType 
+} from '../types.js';
+
+export class NestJsAdapter extends BaseStackAdapter {
+  readonly name = 'NestJS';
+  readonly version = '10.0.0';
+  readonly type = 'nestjs' as const;
+
+  async generateModel(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+
+    // Entity class (can be used with Prisma or TypeORM)
+    files.push({
+      path: `src/modules/${this.toKebabCase(context.name)}/entities/${this.toKebabCase(context.name)}.entity.ts`,
+      type: 'model',
+      content: this.generateEntity(modelName, context)
+    });
+
+    // DTO files
+    files.push({
+      path: `src/modules/${this.toKebabCase(context.name)}/dto/create-${this.toKebabCase(context.name)}.dto.ts`,
+      type: 'validation',
+      content: this.generateCreateDto(modelName, context)
+    });
+
+    files.push({
+      path: `src/modules/${this.toKebabCase(context.name)}/dto/update-${this.toKebabCase(context.name)}.dto.ts`,
+      type: 'validation',
+      content: this.generateUpdateDto(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generateController(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    files.push({
+      path: `src/modules/${moduleName}/${moduleName}.controller.ts`,
+      type: 'controller',
+      content: this.generateControllerClass(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generateService(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    files.push({
+      path: `src/modules/${moduleName}/${moduleName}.service.ts`,
+      type: 'service',
+      content: this.generateServiceClass(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generateComponent(context: GeneratorContext): Promise<GeneratedFile[]> {
+    // NestJS doesn't have frontend components, generate a module instead
+    return this.generateModule(context);
+  }
+
+  async generateModule(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    files.push({
+      path: `src/modules/${moduleName}/${moduleName}.module.ts`,
+      type: 'component',
+      content: this.generateModuleClass(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generatePage(context: GeneratorContext): Promise<GeneratedFile[]> {
+    // NestJS is backend only, no pages
+    return [];
+  }
+
+  async generateMigration(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    
+    // For Prisma-based NestJS
+    if (context.options?.orm === 'prisma' || !context.options?.orm) {
+      const modelName = this.toPascalCase(context.name);
+      const tableName = this.toSnakeCase(context.name) + 's';
+
+      files.push({
+        path: `prisma/schema.prisma`,
+        type: 'migration',
+        content: this.generatePrismaModel(modelName, tableName, context),
+        description: 'Append to existing schema'
+      });
+    }
+
+    return files;
+  }
+
+  async generateValidation(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    // Class-validator DTOs
+    files.push({
+      path: `src/modules/${moduleName}/dto/create-${moduleName}.dto.ts`,
+      type: 'validation',
+      content: this.generateCreateDto(modelName, context)
+    });
+
+    files.push({
+      path: `src/modules/${moduleName}/dto/update-${moduleName}.dto.ts`,
+      type: 'validation',
+      content: this.generateUpdateDto(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generateTest(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    // Unit tests
+    files.push({
+      path: `src/modules/${moduleName}/${moduleName}.service.spec.ts`,
+      type: 'test',
+      content: this.generateServiceTest(modelName, context)
+    });
+
+    files.push({
+      path: `src/modules/${moduleName}/${moduleName}.controller.spec.ts`,
+      type: 'test',
+      content: this.generateControllerTest(modelName, context)
+    });
+
+    // E2E test
+    files.push({
+      path: `test/${moduleName}.e2e-spec.ts`,
+      type: 'test',
+      content: this.generateE2ETest(modelName, context)
+    });
+
+    return files;
+  }
+
+  async generateCrud(context: GeneratorContext): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+    const modelName = this.toPascalCase(context.name);
+    const moduleName = this.toKebabCase(context.name);
+
+    // Generate complete NestJS module with CRUD
+    files.push(...await this.generateModel(context));
+    files.push(...await this.generateController(context));
+    files.push(...await this.generateService(context));
+    files.push(...await this.generateModule(context));
+    files.push(...await this.generateValidation(context));
+    
+    // Add repository if using TypeORM
+    if (context.options?.orm === 'typeorm') {
+      files.push({
+        path: `src/modules/${moduleName}/${moduleName}.repository.ts`,
+        type: 'repository',
+        content: this.generateRepository(modelName, context)
+      });
+    }
+
+    // Add Prisma service if using Prisma
+    if (!context.options?.orm || context.options?.orm === 'prisma') {
+      files.push({
+        path: `src/modules/${moduleName}/${moduleName}.prisma.ts`,
+        type: 'service',
+        content: this.generatePrismaService(modelName, context)
+      });
+    }
+
+    return files;
+  }
+
+  getConfig(): StackConfig {
+    return {
+      language: 'typescript',
+      framework: 'NestJS',
+      orm: 'Prisma',
+      ui: undefined, // Backend only
+      testFramework: 'Jest',
+      packageManager: 'bun',
+      buildTool: 'NestJS CLI',
+      features: [
+        'dependency-injection',
+        'decorators',
+        'modules',
+        'middleware',
+        'guards',
+        'interceptors',
+        'pipes',
+        'microservices',
+        'websockets',
+        'graphql',
+        'openapi'
+      ]
+    };
+  }
+
+  getPaths(): StackPaths {
+    return {
+      src: 'src',
+      models: 'src/modules',
+      controllers: 'src/modules',
+      services: 'src/modules',
+      components: 'src/modules',
+      tests: 'test',
+      migrations: 'prisma/migrations',
+      config: 'src/config',
+      public: 'public',
+      assets: 'public/assets'
+    };
+  }
+
+  getFileExtensions(): FileExtensions {
+    return {
+      script: '.ts',
+      style: '.css',
+      config: '.json',
+      markup: '.ts'
+    };
+  }
+
+  getCommands(): StackCommands {
+    return {
+      install: 'bun install',
+      dev: 'bun run start:dev',
+      build: 'bun run build',
+      start: 'bun run start:prod',
+      test: 'bun test',
+      lint: 'bun run lint',
+      format: 'bun run format',
+      migrate: 'bunx prisma migrate dev',
+      seed: 'bunx prisma db seed'
+    };
+  }
+
+  getDependencies(): StackDependencies {
+    return {
+      core: [
+        '@nestjs/common',
+        '@nestjs/core',
+        '@nestjs/platform-express',
+        '@prisma/client',
+        'class-validator',
+        'class-transformer',
+        'rxjs'
+      ],
+      dev: [
+        '@nestjs/cli',
+        '@nestjs/schematics',
+        '@nestjs/testing',
+        '@types/node',
+        'typescript',
+        'prisma',
+        'jest',
+        'supertest'
+      ],
+      optional: [
+        '@nestjs/microservices',
+        '@nestjs/websockets',
+        '@nestjs/graphql',
+        '@nestjs/apollo',
+        '@nestjs/swagger',
+        '@nestjs/passport',
+        '@nestjs/jwt'
+      ]
+    };
+  }
+
+  // Private helper methods
+  private generateEntity(modelName: string, context: GeneratorContext): string {
+    return `import { ApiProperty } from '@nestjs/swagger';
+
+export class ${modelName} {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  // Add your entity properties here
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ required: false })
+  description?: string;
+}`;
+  }
+
+  private generateCreateDto(modelName: string, context: GeneratorContext): string {
+    return `import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class Create${modelName}Dto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  description?: string;
+}`;
+  }
+
+  private generateUpdateDto(modelName: string, context: GeneratorContext): string {
+    return `import { PartialType } from '@nestjs/swagger';
+import { Create${modelName}Dto } from './create-${this.toKebabCase(context.name)}.dto';
+
+export class Update${modelName}Dto extends PartialType(Create${modelName}Dto) {}`;
+  }
+
+  private generateControllerClass(modelName: string, context: GeneratorContext): string {
+    const serviceName = `${modelName}Service`;
+    const moduleNameKebab = this.toKebabCase(context.name);
+    const routeName = this.pluralize(moduleNameKebab);
+
+    return `import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ${serviceName} } from './${moduleNameKebab}.service';
+import { Create${modelName}Dto } from './dto/create-${moduleNameKebab}.dto';
+import { Update${modelName}Dto } from './dto/update-${moduleNameKebab}.dto';
+import { ${modelName} } from './entities/${moduleNameKebab}.entity';
+
+@ApiTags('${routeName}')
+@Controller('${routeName}')
+export class ${modelName}Controller {
+  constructor(private readonly ${this.toCamelCase(modelName)}Service: ${serviceName}) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create ${modelName}' })
+  @ApiResponse({ status: 201, description: 'The ${modelName} has been successfully created.', type: ${modelName} })
+  create(@Body() create${modelName}Dto: Create${modelName}Dto) {
+    return this.${this.toCamelCase(modelName)}Service.create(create${modelName}Dto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all ${routeName}' })
+  @ApiResponse({ status: 200, description: 'Return all ${routeName}.', type: [${modelName}] })
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.${this.toCamelCase(modelName)}Service.findAll({ page, limit, search });
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get ${modelName} by id' })
+  @ApiResponse({ status: 200, description: 'Return the ${modelName}.', type: ${modelName} })
+  @ApiResponse({ status: 404, description: '${modelName} not found.' })
+  findOne(@Param('id') id: string) {
+    return this.${this.toCamelCase(modelName)}Service.findOne(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update ${modelName}' })
+  @ApiResponse({ status: 200, description: 'The ${modelName} has been successfully updated.', type: ${modelName} })
+  @ApiResponse({ status: 404, description: '${modelName} not found.' })
+  update(@Param('id') id: string, @Body() update${modelName}Dto: Update${modelName}Dto) {
+    return this.${this.toCamelCase(modelName)}Service.update(id, update${modelName}Dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete ${modelName}' })
+  @ApiResponse({ status: 204, description: 'The ${modelName} has been successfully deleted.' })
+  @ApiResponse({ status: 404, description: '${modelName} not found.' })
+  remove(@Param('id') id: string) {
+    return this.${this.toCamelCase(modelName)}Service.remove(id);
+  }
+}`;
+  }
+
+  private generateServiceClass(modelName: string, context: GeneratorContext): string {
+    const moduleNameKebab = this.toKebabCase(context.name);
+    const modelCamel = this.toCamelCase(modelName);
+
+    return `import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Create${modelName}Dto } from './dto/create-${moduleNameKebab}.dto';
+import { Update${modelName}Dto } from './dto/update-${moduleNameKebab}.dto';
+
+@Injectable()
+export class ${modelName}Service {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(create${modelName}Dto: Create${modelName}Dto) {
+    return this.prisma.${modelCamel}.create({
+      data: create${modelName}Dto,
+    });
+  }
+
+  async findAll(params?: { page?: number; limit?: number; search?: string }) {
+    const page = params?.page || 1;
+    const limit = params?.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const where = params?.search
+      ? {
+          OR: [
+            { name: { contains: params.search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const [data, total] = await Promise.all([
+      this.prisma.${modelCamel}.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.${modelCamel}.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOne(id: string) {
+    const ${modelCamel} = await this.prisma.${modelCamel}.findUnique({
+      where: { id },
+    });
+
+    if (!${modelCamel}) {
+      throw new NotFoundException(\`${modelName} with ID "\${id}" not found\`);
+    }
+
+    return ${modelCamel};
+  }
+
+  async update(id: string, update${modelName}Dto: Update${modelName}Dto) {
+    await this.findOne(id); // Check if exists
+
+    return this.prisma.${modelCamel}.update({
+      where: { id },
+      data: update${modelName}Dto,
+    });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id); // Check if exists
+
+    await this.prisma.${modelCamel}.delete({
+      where: { id },
+    });
+  }
+}`;
+  }
+
+  private generateModuleClass(modelName: string, context: GeneratorContext): string {
+    const moduleNameKebab = this.toKebabCase(context.name);
+
+    return `import { Module } from '@nestjs/common';
+import { ${modelName}Service } from './${moduleNameKebab}.service';
+import { ${modelName}Controller } from './${moduleNameKebab}.controller';
+import { PrismaModule } from '../../prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [${modelName}Controller],
+  providers: [${modelName}Service],
+  exports: [${modelName}Service],
+})
+export class ${modelName}Module {}`;
+  }
+
+  private generateRepository(modelName: string, context: GeneratorContext): string {
+    return `import { EntityRepository, Repository } from 'typeorm';
+import { ${modelName} } from './entities/${this.toKebabCase(context.name)}.entity';
+
+@EntityRepository(${modelName})
+export class ${modelName}Repository extends Repository<${modelName}> {
+  // Custom repository methods
+}`;
+  }
+
+  private generatePrismaService(modelName: string, context: GeneratorContext): string {
+    const modelCamel = this.toCamelCase(modelName);
+
+    return `import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+
+@Injectable()
+export class ${modelName}PrismaService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  get ${modelCamel}() {
+    return this.prisma.${modelCamel};
+  }
+
+  // Add custom Prisma operations here
+  async findWithRelations(id: string) {
+    return this.prisma.${modelCamel}.findUnique({
+      where: { id },
+      include: {
+        // Add relations here
+      },
+    });
+  }
+
+  async searchByName(query: string) {
+    return this.prisma.${modelCamel}.findMany({
+      where: {
+        name: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
+}`;
+  }
+
+  private generatePrismaModel(modelName: string, tableName: string, context: GeneratorContext): string {
+    const fields = context.fields || [];
+    
+    let model = `model ${modelName} {\n`;
+    model += `  id        String   @id @default(cuid())\n`;
+    model += `  createdAt DateTime @default(now())\n`;
+    model += `  updatedAt DateTime @updatedAt\n\n`;
+    
+    fields.forEach(field => {
+      const prismaType = this.mapToPrismaType(field.type);
+      const optional = field.required ? '' : '?';
+      const unique = field.unique ? ' @unique' : '';
+      model += `  ${field.name} ${prismaType}${optional}${unique}\n`;
+    });
+    
+    model += `\n  @@map("${tableName}")\n`;
+    model += `}`;
+    
+    return model;
+  }
+
+  private mapToPrismaType(type: FieldType): string {
+    const typeMap: Record<FieldType, string> = {
+      'string': 'String',
+      'text': 'String',
+      'integer': 'Int',
+      'float': 'Float',
+      'decimal': 'Decimal',
+      'boolean': 'Boolean',
+      'date': 'DateTime',
+      'datetime': 'DateTime',
+      'time': 'DateTime',
+      'json': 'Json',
+      'uuid': 'String',
+      'enum': 'String',
+      'array': 'Json',
+      'object': 'Json',
+      'reference': 'String'
+    };
+    return typeMap[type] || 'String';
+  }
+
+  private generateServiceTest(modelName: string, context: GeneratorContext): string {
+    const moduleNameKebab = this.toKebabCase(context.name);
+
+    return `import { Test, TestingModule } from '@nestjs/testing';
+import { ${modelName}Service } from './${moduleNameKebab}.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
+describe('${modelName}Service', () => {
+  let service: ${modelName}Service;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ${modelName}Service,
+        {
+          provide: PrismaService,
+          useValue: {
+            ${this.toCamelCase(modelName)}: {
+              create: jest.fn(),
+              findMany: jest.fn(),
+              findUnique: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+              count: jest.fn(),
+            },
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<${modelName}Service>(${modelName}Service);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  // Add more tests here
+});`;
+  }
+
+  private generateControllerTest(modelName: string, context: GeneratorContext): string {
+    const moduleNameKebab = this.toKebabCase(context.name);
+
+    return `import { Test, TestingModule } from '@nestjs/testing';
+import { ${modelName}Controller } from './${moduleNameKebab}.controller';
+import { ${modelName}Service } from './${moduleNameKebab}.service';
+
+describe('${modelName}Controller', () => {
+  let controller: ${modelName}Controller;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [${modelName}Controller],
+      providers: [
+        {
+          provide: ${modelName}Service,
+          useValue: {
+            create: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<${modelName}Controller>(${modelName}Controller);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  // Add more tests here
+});`;
+  }
+
+  private generateE2ETest(modelName: string, context: GeneratorContext): string {
+    const routeName = this.pluralize(this.toKebabCase(context.name));
+
+    return `import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+
+describe('${modelName} (e2e)', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/${routeName} (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/${routeName}')
+      .expect(200);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});`;
+  }
+}
