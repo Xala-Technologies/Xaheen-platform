@@ -491,19 +491,19 @@ git clone https://github.com/xala-technologies/xala-cli.git
 cd xala-cli
 
 # Install dependencies
-npm install
+bun install
 
 # Build the CLI
-npm run build
+bun run build
 
 # Link for local development
-npm link
+bun link
 
 # Run tests
-npm test
+bun test
 
 # Validate code quality
-npm run validate
+bun run validate
 ```
 
 ## License
