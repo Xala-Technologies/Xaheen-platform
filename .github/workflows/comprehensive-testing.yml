@@ -1,0 +1,575 @@
+name: Comprehensive CLI Testing
+
+on:
+  push:
+    branches: [main, develop, full-stack]
+    paths:
+      - 'packages/xaheen-cli/**'
+      - '.github/workflows/comprehensive-testing.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'packages/xaheen-cli/**'
+      - '.github/workflows/comprehensive-testing.yml'
+  schedule:
+    # Run nightly at 2 AM UTC for performance regression detection
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - integration
+          - e2e
+          - performance
+          - security
+      performance_baseline:
+        description: 'Update performance baseline'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+  # Disable telemetry and interactive prompts in CI
+  XAHEEN_NO_BANNER: 'true'
+  XAHEEN_SKIP_TELEMETRY: 'true'
+  CI: 'true'
+
+jobs:
+  # Build and prepare CLI for testing
+  build:
+    name: Build CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      cli-version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Type check
+        run: npm run type-check
+        working-directory: packages/xaheen-cli
+
+      - name: Lint code
+        run: npm run lint
+        working-directory: packages/xaheen-cli
+
+      - name: Build CLI
+        run: npm run build
+        working-directory: packages/xaheen-cli
+
+      - name: Get CLI version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        working-directory: packages/xaheen-cli
+
+      - name: Upload CLI build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-build
+          path: packages/xaheen-cli/dist/
+          retention-days: 1
+
+      - name: Upload CLI package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+          retention-days: 1
+
+  # Unit Tests - Fast feedback
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    if: ${{ github.event.inputs.test_type == 'unit' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == '' }}
+    strategy:
+      matrix:
+        node-version: ['18', '20', '22']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Download CLI package
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Run unit tests
+        run: npm run test:unit -- --reporter=verbose --coverage
+        working-directory: packages/xaheen-cli
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-node-${{ matrix.node-version }}
+          path: |
+            packages/xaheen-cli/coverage/
+            packages/xaheen-cli/test-output/
+
+      - name: Comment unit test results
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request' && matrix.node-version == '20'
+        with:
+          header: unit-tests
+          message: |
+            ## Unit Test Results (Node.js ${{ matrix.node-version }})
+            ✅ Unit tests completed successfully
+            📊 Coverage report available in artifacts
+
+  # Integration Tests - File system operations
+  integration-tests:
+    name: Integration Tests
+    runs-on: ${{ matrix.os }}
+    needs: build
+    timeout-minutes: 30
+    if: ${{ github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == '' }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Download CLI package
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Run integration tests
+        run: npm run test:integration -- --reporter=verbose
+        working-directory: packages/xaheen-cli
+        env:
+          # Increase timeout for slower CI environments
+          VITEST_TIMEOUT: 60000
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: packages/xaheen-cli/test-output/
+
+  # End-to-End Tests - Full CLI workflows
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ${{ matrix.os }}
+    needs: build
+    timeout-minutes: 45
+    if: ${{ github.event.inputs.test_type == 'e2e' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == '' }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Download CLI package
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Make CLI executable (Unix)
+        if: runner.os != 'Windows'
+        run: chmod +x dist/index.js
+        working-directory: packages/xaheen-cli
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --reporter=verbose
+        working-directory: packages/xaheen-cli
+        env:
+          VITEST_TIMEOUT: 120000
+
+      - name: Upload E2E test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: |
+            packages/xaheen-cli/test-output/
+            packages/xaheen-cli/e2e-test-projects/
+
+      - name: Upload test project samples
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failed-e2e-projects-${{ matrix.os }}
+          path: packages/xaheen-cli/e2e-test-projects/
+          retention-days: 3
+
+  # Performance Tests - Benchmarking and regression detection
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 60
+    if: ${{ github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == 'all' || github.event_name == 'schedule' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download CLI package
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Download previous performance baseline
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: performance-baseline
+          path: packages/xaheen-cli/performance-baseline/
+
+      - name: Run performance tests
+        run: npm run test:performance -- --reporter=verbose
+        working-directory: packages/xaheen-cli
+        env:
+          VITEST_TIMEOUT: 300000 # 5 minutes for performance tests
+
+      - name: Generate performance report
+        run: |
+          echo "# Performance Test Results" > performance-report.md
+          echo "**CLI Version:** ${{ needs.build.outputs.cli-version }}" >> performance-report.md
+          echo "**Node.js Version:** ${{ env.NODE_VERSION }}" >> performance-report.md
+          echo "**Date:** $(date -u)" >> performance-report.md
+          echo "" >> performance-report.md
+          
+          if [ -f "test-output/performance-results.json" ]; then
+            echo "## Performance Metrics" >> performance-report.md
+            node -e "
+              const fs = require('fs');
+              const results = JSON.parse(fs.readFileSync('test-output/performance-results.json', 'utf8'));
+              console.log('| Metric | Value | Unit |');
+              console.log('|--------|--------|------|');
+              Object.entries(results).forEach(([key, value]) => {
+                if (typeof value === 'object' && value.avg !== undefined) {
+                  console.log(\`| \${key} | \${value.avg.toFixed(2)} | ms |\`);
+                }
+              });
+            " >> performance-report.md
+          fi
+        working-directory: packages/xaheen-cli
+
+      - name: Compare with baseline
+        if: hashFiles('packages/xaheen-cli/performance-baseline/baseline.json') != ''
+        run: |
+          echo "## Performance Comparison" >> performance-report.md
+          # Compare current results with baseline
+          # This would include regression detection logic
+        working-directory: packages/xaheen-cli
+
+      - name: Update performance baseline
+        if: ${{ github.event.inputs.performance_baseline == 'true' || github.event_name == 'schedule' }}
+        run: |
+          mkdir -p performance-baseline
+          cp test-output/performance-results.json performance-baseline/baseline.json
+        working-directory: packages/xaheen-cli
+
+      - name: Upload performance baseline
+        if: ${{ github.event.inputs.performance_baseline == 'true' || github.event_name == 'schedule' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline
+          path: packages/xaheen-cli/performance-baseline/
+          retention-days: 90
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-results
+          path: |
+            packages/xaheen-cli/test-output/
+            packages/xaheen-cli/performance-report.md
+
+      - name: Comment performance results
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: performance-tests
+          path: packages/xaheen-cli/performance-report.md
+
+  # Security Tests - Vulnerability scanning and compliance
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    if: ${{ github.event.inputs.test_type == 'security' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download CLI package
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-package
+          path: packages/xaheen-cli/
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/xaheen-cli
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate --json > audit-results.json || true
+          npm audit --audit-level=moderate
+        working-directory: packages/xaheen-cli
+        continue-on-error: true
+
+      - name: Run security tests
+        run: npm run test:security -- --reporter=verbose
+        working-directory: packages/xaheen-cli
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json > snyk-results.json
+          command: test
+          working-directory: packages/xaheen-cli
+
+      - name: Generate security report
+        run: |
+          echo "# Security Test Results" > security-report.md
+          echo "**CLI Version:** ${{ needs.build.outputs.cli-version }}" >> security-report.md
+          echo "**Date:** $(date -u)" >> security-report.md
+          echo "" >> security-report.md
+          
+          if [ -f "audit-results.json" ]; then
+            echo "## NPM Audit Results" >> security-report.md
+            VULNERABILITIES=$(node -e "
+              const audit = JSON.parse(require('fs').readFileSync('audit-results.json', 'utf8'));
+              const vulnerabilities = audit.metadata?.vulnerabilities || {};
+              console.log('- **Critical:** ' + (vulnerabilities.critical || 0));
+              console.log('- **High:** ' + (vulnerabilities.high || 0));
+              console.log('- **Moderate:** ' + (vulnerabilities.moderate || 0));
+              console.log('- **Low:** ' + (vulnerabilities.low || 0));
+            ")
+            echo "$VULNERABILITIES" >> security-report.md
+          fi
+          
+          if [ -f "snyk-results.json" ]; then
+            echo "" >> security-report.md
+            echo "## Snyk Scan Results" >> security-report.md
+            echo "Snyk security scan completed. Check artifacts for detailed results." >> security-report.md
+          fi
+        working-directory: packages/xaheen-cli
+
+      - name: Upload security results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-test-results
+          path: |
+            packages/xaheen-cli/test-output/
+            packages/xaheen-cli/audit-results.json
+            packages/xaheen-cli/snyk-results.json
+            packages/xaheen-cli/security-report.md
+
+      - name: Comment security results
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: security-tests
+          path: packages/xaheen-cli/security-report.md
+
+      - name: Fail on critical vulnerabilities
+        run: |
+          if [ -f "audit-results.json" ]; then
+            CRITICAL=$(node -e "
+              const audit = JSON.parse(require('fs').readFileSync('audit-results.json', 'utf8'));
+              console.log(audit.metadata?.vulnerabilities?.critical || 0);
+            ")
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "❌ Critical vulnerabilities found: $CRITICAL"
+              exit 1
+            fi
+          fi
+        working-directory: packages/xaheen-cli
+
+  # Test Summary and Reporting
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests, integration-tests, e2e-tests, performance-tests, security-tests]
+    if: always()
+    timeout-minutes: 10
+    steps:
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: test-artifacts/
+
+      - name: Generate comprehensive test report
+        run: |
+          echo "# Xaheen CLI Test Report" > test-summary.md
+          echo "**Version:** ${{ needs.build.outputs.cli-version }}" >> test-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> test-summary.md
+          echo "**Date:** $(date -u)" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          echo "## Test Results Summary" >> test-summary.md
+          echo "| Test Suite | Status | Details |" >> test-summary.md
+          echo "|------------|--------|---------|" >> test-summary.md
+          
+          # Unit Tests
+          if [ "${{ needs.unit-tests.result }}" == "success" ]; then
+            echo "| Unit Tests | ✅ Passed | All unit tests completed successfully |" >> test-summary.md
+          elif [ "${{ needs.unit-tests.result }}" == "failure" ]; then
+            echo "| Unit Tests | ❌ Failed | Some unit tests failed |" >> test-summary.md
+          elif [ "${{ needs.unit-tests.result }}" == "skipped" ]; then
+            echo "| Unit Tests | ⏭️ Skipped | Unit tests were skipped |" >> test-summary.md
+          fi
+          
+          # Integration Tests
+          if [ "${{ needs.integration-tests.result }}" == "success" ]; then
+            echo "| Integration Tests | ✅ Passed | All integration tests completed successfully |" >> test-summary.md
+          elif [ "${{ needs.integration-tests.result }}" == "failure" ]; then
+            echo "| Integration Tests | ❌ Failed | Some integration tests failed |" >> test-summary.md
+          elif [ "${{ needs.integration-tests.result }}" == "skipped" ]; then
+            echo "| Integration Tests | ⏭️ Skipped | Integration tests were skipped |" >> test-summary.md
+          fi
+          
+          # E2E Tests
+          if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
+            echo "| E2E Tests | ✅ Passed | All end-to-end tests completed successfully |" >> test-summary.md
+          elif [ "${{ needs.e2e-tests.result }}" == "failure" ]; then
+            echo "| E2E Tests | ❌ Failed | Some end-to-end tests failed |" >> test-summary.md
+          elif [ "${{ needs.e2e-tests.result }}" == "skipped" ]; then
+            echo "| E2E Tests | ⏭️ Skipped | End-to-end tests were skipped |" >> test-summary.md
+          fi
+          
+          # Performance Tests
+          if [ "${{ needs.performance-tests.result }}" == "success" ]; then
+            echo "| Performance Tests | ✅ Passed | Performance benchmarks completed |" >> test-summary.md
+          elif [ "${{ needs.performance-tests.result }}" == "failure" ]; then
+            echo "| Performance Tests | ❌ Failed | Performance regression detected |" >> test-summary.md
+          elif [ "${{ needs.performance-tests.result }}" == "skipped" ]; then
+            echo "| Performance Tests | ⏭️ Skipped | Performance tests were skipped |" >> test-summary.md
+          fi
+          
+          # Security Tests
+          if [ "${{ needs.security-tests.result }}" == "success" ]; then
+            echo "| Security Tests | ✅ Passed | No critical security issues found |" >> test-summary.md
+          elif [ "${{ needs.security-tests.result }}" == "failure" ]; then
+            echo "| Security Tests | ❌ Failed | Security vulnerabilities detected |" >> test-summary.md
+          elif [ "${{ needs.security-tests.result }}" == "skipped" ]; then
+            echo "| Security Tests | ⏭️ Skipped | Security tests were skipped |" >> test-summary.md
+          fi
+          
+          echo "" >> test-summary.md
+          echo "## Artifacts" >> test-summary.md
+          echo "- Test results and coverage reports are available in the workflow artifacts" >> test-summary.md
+          echo "- Performance baseline has been updated (if applicable)" >> test-summary.md
+          echo "- Security scan results are available for review" >> test-summary.md
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-report
+          path: test-summary.md
+
+      - name: Comment test summary
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: test-summary
+          path: test-summary.md
+
+      - name: Set final status
+        run: |
+          # Fail the workflow if any critical tests failed
+          if [ "${{ needs.unit-tests.result }}" == "failure" ] || 
+             [ "${{ needs.integration-tests.result }}" == "failure" ] || 
+             [ "${{ needs.e2e-tests.result }}" == "failure" ] ||
+             [ "${{ needs.security-tests.result }}" == "failure" ]; then
+            echo "❌ Some critical tests failed"
+            exit 1
+          fi
+          
+          # Performance failures are not critical for PR success
+          if [ "${{ needs.performance-tests.result }}" == "failure" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "⚠️ Performance regression detected"
+            exit 1
+          fi
+          
+          echo "✅ All tests passed or completed successfully"

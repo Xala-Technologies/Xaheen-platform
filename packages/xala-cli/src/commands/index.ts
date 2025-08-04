@@ -88,6 +88,10 @@ export async function registerCommands(program: Command): Promise<void> {
 		// Configuration
 		await loadCommand("./config.js", "configCommand");
 
+		// Interactive builder commands
+		console.log('Loading builder command...');
+		await loadCommand("./builder.js", "register");
+
 		// External tool integrations
 		await loadCommand(
 			"../integrations/xaheen-bridge.js",
@@ -145,17 +149,26 @@ async function loadCommand(
 		const module = await import(modulePath);
 		const command = module[exportName] || module.default;
 
+		console.log(`Loading ${modulePath} - ${exportName}:`, !!command);
+
 		if (command) {
-			if (typeof command.register === "function") {
+			if (typeof command === "function") {
+				// For commands with registration functions
+				console.log(`Calling registration function for ${modulePath}`);
+				command(registerCommand);
+			} else if (typeof command.register === "function") {
 				// For commands with custom registration
+				console.log(`Calling command.register for ${modulePath}`);
 				command.register(registerCommand);
 			} else if (typeof command === "object" && command.name) {
 				// For standard command metadata
+				console.log(`Registering command metadata for ${modulePath}:`, command.name);
 				registerCommand(command);
 			}
 		}
 	} catch (error) {
 		logger.debug(`Failed to load command from ${modulePath}:`, error);
+		console.error(`Failed to load command from ${modulePath}:`, error);
 	}
 }
 
