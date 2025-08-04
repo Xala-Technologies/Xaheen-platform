@@ -1,0 +1,587 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../lambda/utils/lambda-utils';
+
+/**
+ * Cognito client configuration
+ */
+const cognitoConfig: AWS.CognitoIdentityServiceProvider.ClientConfiguration = {
+  region: '{{region}}',
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  },
+  httpOptions: {
+    timeout: 30000,
+    connectTimeout: 5000
+  }
+};
+
+// Cognito Identity Service Provider client
+export const cognito = new AWS.CognitoIdentityServiceProvider(cognitoConfig);
+
+/**
+ * Cognito configuration constants
+ */
+export const COGNITO_CONFIG = {
+  userPoolId: process.env.COGNITO_USER_POOL_ID || '',
+  clientId: process.env.COGNITO_CLIENT_ID || '',
+  clientSecret: process.env.COGNITO_CLIENT_SECRET,
+  region: '{{region}}',
+  identityPoolId: process.env.COGNITO_IDENTITY_POOL_ID,
+  jwkUrl: `https://cognito-idp.{{region}}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}/.well-known/jwks.json`,
+  issuer: `https://cognito-idp.{{region}}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`
+} as const;
+
+/**
+ * User attributes interface
+ */
+export interface UserAttributes {
+  readonly email?: string;
+  readonly phone_number?: string;
+  readonly given_name?: string;
+  readonly family_name?: string;
+  readonly name?: string;
+  readonly preferred_username?: string;
+  readonly picture?: string;
+  readonly website?: string;
+  readonly gender?: string;
+  readonly birthdate?: string;
+  readonly zoneinfo?: string;
+  readonly locale?: string;
+  readonly updated_at?: string;
+  readonly email_verified?: boolean;
+  readonly phone_number_verified?: boolean;
+  readonly [key: string]: any;
+}
+
+/**
+ * Authentication result interface
+ */
+export interface AuthenticationResult {
+  readonly accessToken: string;
+  readonly idToken: string;
+  readonly refreshToken: string;
+  readonly tokenType: string;
+  readonly expiresIn: number;
+  readonly newDeviceMetadata?: {
+    readonly deviceKey: string;
+    readonly deviceGroupKey: string;
+  };
+}
+
+/**
+ * User info interface
+ */
+export interface CognitoUser {
+  readonly username: string;
+  readonly attributes: UserAttributes;
+  readonly userCreateDate: Date;
+  readonly userLastModifiedDate: Date;
+  readonly enabled: boolean;
+  readonly userStatus: string;
+  readonly mfaOptions?: readonly MfaOption[];
+}
+
+export interface MfaOption {
+  readonly deliveryMedium: 'SMS' | 'EMAIL';
+  readonly attributeName: string;
+}
+
+/**
+ * Cognito Client class with comprehensive user management
+ */
+export class CognitoClient {
+  private readonly userPoolId: string;
+  private readonly clientId: string;
+  private readonly clientSecret?: string;
+
+  constructor(
+    userPoolId?: string,
+    clientId?: string,
+    clientSecret?: string
+  ) {
+    this.userPoolId = userPoolId || COGNITO_CONFIG.userPoolId;
+    this.clientId = clientId || COGNITO_CONFIG.clientId;
+    this.clientSecret = clientSecret || COGNITO_CONFIG.clientSecret;
+
+    if (!this.userPoolId) {
+      throw new Error('Cognito User Pool ID is required');
+    }
+    if (!this.clientId) {
+      throw new Error('Cognito Client ID is required');
+    }
+  }
+
+  /**
+   * Create a new user (Admin operation)
+   */
+  async createUser(
+    username: string,
+    temporaryPassword: string,
+    attributes: UserAttributes,
+    options?: {
+      messageAction?: 'SUPPRESS' | 'RESEND';
+      forceAliasCreation?: boolean;
+      desiredDeliveryMediums?: Array<'SMS' | 'EMAIL'>;
+    }
+  ): Promise<AWS.CognitoIdentityServiceProvider.AdminCreateUserResponse> {
+    try {
+      logger.info('Creating Cognito user', { username });
+
+      // Convert attributes to Cognito format
+      const userAttributes = Object.entries(attributes).map(([name, value]) => ({
+        Name: name,
+        Value: String(value)
+      }));
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminCreateUserRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username,
+        TemporaryPassword: temporaryPassword,
+        UserAttributes: userAttributes,
+        MessageAction: options?.messageAction || 'SEND',
+        ForceAliasCreation: options?.forceAliasCreation || false
+      };
+
+      if (options?.desiredDeliveryMediums) {
+        params.DesiredDeliveryMediums = options.desiredDeliveryMediums;
+      }
+
+      const result = await cognito.adminCreateUser(params).promise();
+
+      logger.info('Cognito user created successfully', { username });
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to create Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Authenticate user with username and password
+   */
+  async authenticateUser(
+    username: string,
+    password: string,
+    clientMetadata?: Record<string, string>
+  ): Promise<AuthenticationResult> {
+    try {
+      logger.info('Authenticating Cognito user', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminInitiateAuthRequest = {
+        UserPoolId: this.userPoolId,
+        ClientId: this.clientId,
+        AuthFlow: 'ADMIN_NO_SRP_AUTH',
+        AuthParameters: {
+          USERNAME: username,
+          PASSWORD: password
+        }
+      };
+
+      if (this.clientSecret) {
+        params.AuthParameters!.SECRET_HASH = this.calculateSecretHash(username);
+      }
+
+      if (clientMetadata) {
+        params.ClientMetadata = clientMetadata;
+      }
+
+      const result = await cognito.adminInitiateAuth(params).promise();
+
+      if (!result.AuthenticationResult) {
+        throw new Error('Authentication failed - no result returned');
+      }
+
+      const authResult: AuthenticationResult = {
+        accessToken: result.AuthenticationResult.AccessToken!,
+        idToken: result.AuthenticationResult.IdToken!,
+        refreshToken: result.AuthenticationResult.RefreshToken!,
+        tokenType: result.AuthenticationResult.TokenType!,
+        expiresIn: result.AuthenticationResult.ExpiresIn!,
+        newDeviceMetadata: result.AuthenticationResult.NewDeviceMetadata ? {
+          deviceKey: result.AuthenticationResult.NewDeviceMetadata.DeviceKey!,
+          deviceGroupKey: result.AuthenticationResult.NewDeviceMetadata.DeviceGroupKey!
+        } : undefined
+      };
+
+      logger.info('Cognito user authenticated successfully', { username });
+
+      return authResult;
+
+    } catch (error) {
+      logger.error('Failed to authenticate Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Refresh authentication tokens
+   */
+  async refreshTokens(
+    refreshToken: string,
+    username: string
+  ): Promise<Omit<AuthenticationResult, 'refreshToken'>> {
+    try {
+      logger.info('Refreshing Cognito tokens', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminInitiateAuthRequest = {
+        UserPoolId: this.userPoolId,
+        ClientId: this.clientId,
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        AuthParameters: {
+          REFRESH_TOKEN: refreshToken
+        }
+      };
+
+      if (this.clientSecret) {
+        params.AuthParameters!.SECRET_HASH = this.calculateSecretHash(username);
+      }
+
+      const result = await cognito.adminInitiateAuth(params).promise();
+
+      if (!result.AuthenticationResult) {
+        throw new Error('Token refresh failed - no result returned');
+      }
+
+      const authResult: Omit<AuthenticationResult, 'refreshToken'> = {
+        accessToken: result.AuthenticationResult.AccessToken!,
+        idToken: result.AuthenticationResult.IdToken!,
+        tokenType: result.AuthenticationResult.TokenType!,
+        expiresIn: result.AuthenticationResult.ExpiresIn!
+      };
+
+      logger.info('Cognito tokens refreshed successfully', { username });
+
+      return authResult;
+
+    } catch (error) {
+      logger.error('Failed to refresh Cognito tokens', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Get user information
+   */
+  async getUser(username: string): Promise<CognitoUser> {
+    try {
+      logger.info('Getting Cognito user info', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminGetUserRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      const result = await cognito.adminGetUser(params).promise();
+
+      // Convert attributes from Cognito format
+      const attributes: UserAttributes = {};
+      if (result.UserAttributes) {
+        for (const attr of result.UserAttributes) {
+          if (attr.Name && attr.Value !== undefined) {
+            const value = attr.Value;
+            // Convert boolean strings to boolean
+            if (value === 'true' || value === 'false') {
+              attributes[attr.Name] = value === 'true';
+            } else {
+              attributes[attr.Name] = value;
+            }
+          }
+        }
+      }
+
+      const user: CognitoUser = {
+        username: result.Username!,
+        attributes,
+        userCreateDate: result.UserCreateDate!,
+        userLastModifiedDate: result.UserLastModifiedDate!,
+        enabled: result.Enabled!,
+        userStatus: result.UserStatus!,
+        mfaOptions: result.MFAOptions?.map(option => ({
+          deliveryMedium: option.DeliveryMedium as 'SMS' | 'EMAIL',
+          attributeName: option.AttributeName!
+        }))
+      };
+
+      logger.info('Cognito user info retrieved successfully', { username });
+
+      return user;
+
+    } catch (error) {
+      logger.error('Failed to get Cognito user info', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Update user attributes
+   */
+  async updateUserAttributes(
+    username: string,
+    attributes: Partial<UserAttributes>
+  ): Promise<void> {
+    try {
+      logger.info('Updating Cognito user attributes', { username });
+
+      // Convert attributes to Cognito format
+      const userAttributes = Object.entries(attributes).map(([name, value]) => ({
+        Name: name,
+        Value: String(value)
+      }));
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminUpdateUserAttributesRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username,
+        UserAttributes: userAttributes
+      };
+
+      await cognito.adminUpdateUserAttributes(params).promise();
+
+      logger.info('Cognito user attributes updated successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to update Cognito user attributes', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete user
+   */
+  async deleteUser(username: string): Promise<void> {
+    try {
+      logger.info('Deleting Cognito user', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminDeleteUserRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      await cognito.adminDeleteUser(params).promise();
+
+      logger.info('Cognito user deleted successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to delete Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Set user password (Admin operation)
+   */
+  async setUserPassword(
+    username: string,
+    password: string,
+    permanent: boolean = true
+  ): Promise<void> {
+    try {
+      logger.info('Setting Cognito user password', { username, permanent });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminSetUserPasswordRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username,
+        Password: password,
+        Permanent: permanent
+      };
+
+      await cognito.adminSetUserPassword(params).promise();
+
+      logger.info('Cognito user password set successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to set Cognito user password', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Enable user
+   */
+  async enableUser(username: string): Promise<void> {
+    try {
+      logger.info('Enabling Cognito user', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminEnableUserRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      await cognito.adminEnableUser(params).promise();
+
+      logger.info('Cognito user enabled successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to enable Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Disable user
+   */
+  async disableUser(username: string): Promise<void> {
+    try {
+      logger.info('Disabling Cognito user', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminDisableUserRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      await cognito.adminDisableUser(params).promise();
+
+      logger.info('Cognito user disabled successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to disable Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * List users with pagination
+   */
+  async listUsers(
+    limit?: number,
+    paginationToken?: string,
+    filter?: string
+  ): Promise<{
+    users: CognitoUser[];
+    paginationToken?: string;
+  }> {
+    try {
+      logger.info('Listing Cognito users', { limit, filter });
+
+      const params: AWS.CognitoIdentityServiceProvider.ListUsersRequest = {
+        UserPoolId: this.userPoolId,
+        Limit: limit || 60
+      };
+
+      if (paginationToken) {
+        params.PaginationToken = paginationToken;
+      }
+
+      if (filter) {
+        params.Filter = filter;
+      }
+
+      const result = await cognito.listUsers(params).promise();
+
+      const users: CognitoUser[] = (result.Users || []).map(user => {
+        // Convert attributes from Cognito format
+        const attributes: UserAttributes = {};
+        if (user.Attributes) {
+          for (const attr of user.Attributes) {
+            if (attr.Name && attr.Value !== undefined) {
+              const value = attr.Value;
+              // Convert boolean strings to boolean
+              if (value === 'true' || value === 'false') {
+                attributes[attr.Name] = value === 'true';
+              } else {
+                attributes[attr.Name] = value;
+              }
+            }
+          }
+        }
+
+        return {
+          username: user.Username!,
+          attributes,
+          userCreateDate: user.UserCreateDate!,
+          userLastModifiedDate: user.UserLastModifiedDate!,
+          enabled: user.Enabled!,
+          userStatus: user.UserStatus!,
+          mfaOptions: user.MFAOptions?.map(option => ({
+            deliveryMedium: option.DeliveryMedium as 'SMS' | 'EMAIL',
+            attributeName: option.AttributeName!
+          }))
+        };
+      });
+
+      logger.info('Cognito users listed successfully', { userCount: users.length });
+
+      return {
+        users,
+        paginationToken: result.PaginationToken
+      };
+
+    } catch (error) {
+      logger.error('Failed to list Cognito users', { error });
+      throw error;
+    }
+  }
+
+  /**
+   * Sign out user from all devices
+   */
+  async signOutUser(username: string): Promise<void> {
+    try {
+      logger.info('Signing out Cognito user', { username });
+
+      const params: AWS.CognitoIdentityServiceProvider.AdminUserGlobalSignOutRequest = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      await cognito.adminUserGlobalSignOut(params).promise();
+
+      logger.info('Cognito user signed out successfully', { username });
+
+    } catch (error) {
+      logger.error('Failed to sign out Cognito user', { username, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate secret hash for client secret
+   */
+  private calculateSecretHash(username: string): string {
+    if (!this.clientSecret) {
+      throw new Error('Client secret is required for secret hash calculation');
+    }
+
+    const crypto = require('crypto');
+    const message = username + this.clientId;
+    const hmac = crypto.createHmac('sha256', this.clientSecret);
+    hmac.update(message);
+    return hmac.digest('base64');
+  }
+
+  /**
+   * Health check - verify user pool accessibility
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      await cognito.describeUserPool({
+        UserPoolId: this.userPoolId
+      }).promise();
+      
+      logger.debug('Cognito health check passed', { userPoolId: this.userPoolId });
+      return true;
+    } catch (error) {
+      logger.error('Cognito health check failed', {
+        userPoolId: this.userPoolId,
+        error
+      });
+      return false;
+    }
+  }
+}
+
+// Export singleton instance
+export const mainCognitoClient = new CognitoClient();

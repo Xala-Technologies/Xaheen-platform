@@ -416,7 +416,7 @@ import ${componentName} from './${componentName}.vue';
             const componentName = file.replace(/\.(tsx|vue|ts|svelte)\.hbs$/, '');
             
             // Check if component already exists in list
-            let existing = components.find(comp => comp.name === componentName);
+            const existing = components.find(comp => comp.name === componentName);
             
             if (existing) {
               existing.platforms.push(platform);

@@ -3,14 +3,20 @@ import { TemplateManager } from '../../services/templates/template-loader';
 import { ProjectAnalyzer } from '../../services/analysis/project-analyzer';
 
 export interface DockerGeneratorOptions {
-  readonly projectType: 'web' | 'api' | 'microservice' | 'fullstack';
-  readonly runtime: 'node' | 'python' | 'go' | 'java' | 'dotnet' | 'php' | 'rust';
+  readonly projectType: 'web' | 'api' | 'microservice' | 'fullstack' | 'worker' | 'batch' | 'cronjob';
+  readonly runtime: 'node' | 'python' | 'go' | 'java' | 'dotnet' | 'php' | 'rust' | 'alpine' | 'distroless';
   readonly framework?: string;
   readonly enableMultiStage: boolean;
   readonly enableDevContainer: boolean;
   readonly enableSecurity: boolean;
   readonly enableHealthCheck: boolean;
   readonly enablePrometheus: boolean;
+  readonly enableTracing: boolean;
+  readonly enableLogging: boolean;
+  readonly enableSecrets: boolean;
+  readonly enableVulnerabilityScanning: boolean;
+  readonly enableMultiArch: boolean;
+  readonly enableCaching: boolean;
   readonly registryUrl?: string;
   readonly imageName: string;
   readonly imageTag: string;
@@ -28,6 +34,26 @@ export interface DockerGeneratorOptions {
   readonly optimizeForSize: boolean;
   readonly enableNonRootUser: boolean;
   readonly customBuildArgs?: readonly string[];
+  readonly secrets?: readonly string[];
+  readonly buildSecrets?: readonly string[];
+  readonly labels?: Record<string, string>;
+  readonly environmentVariables?: Record<string, string>;
+  readonly volumes?: readonly {
+    readonly source: string;
+    readonly target: string;
+    readonly type: 'bind' | 'volume' | 'tmpfs';
+    readonly readonly?: boolean;
+  }[];
+  readonly networkMode?: 'bridge' | 'host' | 'none' | 'container' | string;
+  readonly dependsOn?: readonly string[];
+  readonly initProcess?: boolean;
+  readonly oomKillDisable?: boolean;
+  readonly privileged?: boolean;
+  readonly readonlyRootfs?: boolean;
+  readonly user?: string;
+  readonly workingDir?: string;
+  readonly entrypoint?: readonly string[];
+  readonly command?: readonly string[];
 }
 
 export interface DockerConfig {
@@ -35,9 +61,30 @@ export interface DockerConfig {
   readonly buildStages: readonly string[];
   readonly healthCheck: string;
   readonly securityScanning: boolean;
+  readonly vulnerabilityScanning: boolean;
   readonly multiArchSupport: boolean;
+  readonly cachingStrategy: 'none' | 'inline' | 'registry' | 'local';
   readonly buildContext: string;
   readonly ignorePatterns: readonly string[];
+  readonly labels: Record<string, string>;
+  readonly secrets: readonly string[];
+  readonly buildSecrets: readonly string[];
+  readonly networkMode: string;
+  readonly volumes: ReadonlyArray<{
+    readonly source: string;
+    readonly target: string;
+    readonly type: 'bind' | 'volume' | 'tmpfs';
+    readonly readonly?: boolean;
+  }>;
+  readonly environmentVariables: Record<string, string>;
+  readonly initProcess: boolean;
+  readonly oomKillDisable: boolean;
+  readonly privileged: boolean;
+  readonly readonlyRootfs: boolean;
+  readonly user: string;
+  readonly workingDir: string;
+  readonly entrypoint: readonly string[];
+  readonly command: readonly string[];
 }
 
 export class DockerGenerator extends BaseGenerator<DockerGeneratorOptions> {
@@ -89,6 +136,42 @@ export class DockerGenerator extends BaseGenerator<DockerGeneratorOptions> {
         await this.generatePrometheusConfig(options);
       }
       
+      // Generate tracing configuration if enabled
+      if (options.enableTracing) {
+        await this.generateTracingConfig(options);
+      }
+      
+      // Generate logging configuration if enabled
+      if (options.enableLogging) {
+        await this.generateLoggingConfig(options);
+      }
+      
+      // Generate secrets management if enabled
+      if (options.enableSecrets) {
+        await this.generateSecretsManagement(options);
+      }
+      
+      // Generate vulnerability scanning if enabled
+      if (options.enableVulnerabilityScanning) {
+        await this.generateVulnerabilityScanning(options);
+      }
+      
+      // Generate multi-architecture build support if enabled
+      if (options.enableMultiArch) {
+        await this.generateMultiArchSupport(options);
+      }
+      
+      // Generate caching configuration if enabled
+      if (options.enableCaching) {
+        await this.generateCachingConfig(options, config);
+      }
+      
+      // Generate container registry integration
+      await this.generateRegistryIntegration(options);
+      
+      // Generate monitoring and observability stack
+      await this.generateObservabilityStack(options);
+      
       this.logger.success('Docker configuration generated successfully');
       
     } catch (error) {
@@ -119,19 +202,50 @@ export class DockerGenerator extends BaseGenerator<DockerGeneratorOptions> {
       java: `openjdk:${options.javaVersion || '17'}-jre-slim`,
       dotnet: `mcr.microsoft.com/dotnet/aspnet:${options.dotnetVersion || '8.0'}`,
       php: `php:${options.phpVersion || '8.2'}-fpm-alpine`,
-      rust: `rust:${options.rustVersion || '1.75'}-slim`
+      rust: `rust:${options.rustVersion || '1.75'}-slim`,
+      alpine: 'alpine:3.18',
+      distroless: 'gcr.io/distroless/static-debian11'
     };
 
-    const buildStages = options.enableMultiStage ? ['builder', 'runtime'] : ['runtime'];
+    const buildStages = options.enableMultiStage ? ['dependencies', 'builder', 'runtime'] : ['runtime'];
     
     return {
       baseImage: baseImages[options.runtime],
       buildStages,
       healthCheck: this.generateHealthCheckCommand(options),
       securityScanning: options.enableSecurity,
-      multiArchSupport: true,
+      vulnerabilityScanning: options.enableVulnerabilityScanning,
+      multiArchSupport: options.enableMultiArch,
+      cachingStrategy: options.enableCaching ? 'registry' : 'none',
       buildContext: '.',
-      ignorePatterns: this.getIgnorePatterns(options)
+      ignorePatterns: this.getIgnorePatterns(options),
+      labels: {
+        'org.opencontainers.image.title': options.imageName,
+        'org.opencontainers.image.description': `${options.projectType} application`,
+        'org.opencontainers.image.version': options.imageTag,
+        'org.opencontainers.image.created': new Date().toISOString(),
+        'org.opencontainers.image.source': 'https://github.com/your-org/your-repo',
+        'org.opencontainers.image.licenses': 'MIT',
+        'org.opencontainers.image.vendor': 'Xaheen Enterprise',
+        ...options.labels
+      },
+      secrets: options.secrets || [],
+      buildSecrets: options.buildSecrets || [],
+      networkMode: options.networkMode || 'bridge',
+      volumes: options.volumes || [],
+      environmentVariables: {
+        NODE_ENV: options.environment,
+        PORT: options.port.toString(),
+        ...options.environmentVariables
+      },
+      initProcess: options.initProcess || false,
+      oomKillDisable: options.oomKillDisable || false,
+      privileged: options.privileged || false,
+      readonlyRootfs: options.readonlyRootfs || true,
+      user: options.user || (options.enableNonRootUser ? '1000:1000' : 'root'),
+      workingDir: options.workingDir || options.workdir,
+      entrypoint: options.entrypoint || [],
+      command: options.command || []
     };
   }
 
@@ -661,9 +775,372 @@ fi
       java: '/actuator/health',
       dotnet: '/health',
       php: '/health',
-      rust: '/health'
+      rust: '/health',
+      alpine: '/health',
+      distroless: '/health'
     };
 
-    return endpoints[options.runtime];
+    return endpoints[options.runtime] || '/health';
+  }
+
+  /**
+   * Generate tracing configuration (Jaeger, OpenTelemetry)
+   */
+  private async generateTracingConfig(options: DockerGeneratorOptions): Promise<void> {
+    const tracingConfig = {
+      jaeger: {
+        serviceName: options.imageName,
+        agentHost: 'jaeger-agent',
+        agentPort: 6832,
+        collectorEndpoint: 'http://jaeger-collector:14268/api/traces',
+        samplingType: 'const',
+        samplingParam: options.environment === 'production' ? 0.1 : 1
+      },
+      opentelemetry: {
+        serviceName: options.imageName,
+        serviceVersion: options.imageTag,
+        exporterEndpoint: 'http://otel-collector:4317',
+        instrumentations: ['http', 'express', 'redis', 'postgresql']
+      },
+      environment: options.environment
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/tracing/jaeger-config.yml.hbs',
+      'tracing/jaeger-config.yml',
+      tracingConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/tracing/otel-config.yml.hbs',
+      'tracing/otel-config.yml',
+      tracingConfig
+    );
+  }
+
+  /**
+   * Generate logging configuration (Fluentd, Logstash)
+   */
+  private async generateLoggingConfig(options: DockerGeneratorOptions): Promise<void> {
+    const loggingConfig = {
+      fluentd: {
+        tag: options.imageName,
+        host: 'fluentd',
+        port: 24224,
+        bufferSize: '1m',
+        flushInterval: '10s'
+      },
+      logstash: {
+        host: 'logstash',
+        port: 5000,
+        format: 'json'
+      },
+      structured: {
+        format: 'json',
+        level: options.environment === 'development' ? 'debug' : 'info',
+        timestamp: true,
+        colorize: options.environment === 'development'
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/logging/fluentd.conf.hbs',
+      'logging/fluentd.conf',
+      loggingConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/logging/logstash.conf.hbs',
+      'logging/logstash.conf',
+      loggingConfig
+    );
+  }
+
+  /**
+   * Generate secrets management configuration
+   */
+  private async generateSecretsManagement(options: DockerGeneratorOptions): Promise<void> {
+    const secretsConfig = {
+      provider: 'docker-secrets',
+      secrets: options.secrets?.map(secret => ({
+        name: secret,
+        external: true,
+        file: `/run/secrets/${secret}`
+      })) || [],
+      buildSecrets: options.buildSecrets?.map(secret => ({
+        name: secret,
+        source: `build-${secret}`,
+        target: `/tmp/${secret}`
+      })) || [],
+      vault: {
+        enabled: false,
+        address: 'https://vault:8200',
+        path: 'secret/data',
+        role: options.imageName
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/secrets/secrets-config.yml.hbs',
+      'secrets/secrets-config.yml',
+      secretsConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/secrets/docker-secrets.sh.hbs',
+      'scripts/docker-secrets.sh',
+      {
+        ...secretsConfig,
+        executable: true
+      }
+    );
+  }
+
+  /**
+   * Generate vulnerability scanning configuration
+   */
+  private async generateVulnerabilityScanning(options: DockerGeneratorOptions): Promise<void> {
+    const scanningConfig = {
+      trivy: {
+        image: 'aquasec/trivy:latest',
+        severity: 'HIGH,CRITICAL',
+        ignoreUnfixed: true,
+        format: 'json',
+        output: 'trivy-results.json',
+        cacheDir: '.trivycache'
+      },
+      grype: {
+        image: 'anchore/grype:latest',
+        output: 'json',
+        file: 'grype-results.json'
+      },
+      snyk: {
+        image: 'snyk/snyk:docker',
+        severityThreshold: 'high',
+        output: 'snyk-results.json'
+      },
+      clair: {
+        enabled: true,
+        host: 'clair-scanner',
+        port: 6060
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/security/vulnerability-scan.yml.hbs',
+      'security/vulnerability-scan.yml',
+      scanningConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/security/scan-script.sh.hbs',
+      'scripts/vulnerability-scan.sh',
+      {
+        ...scanningConfig,
+        imageName: options.imageName,
+        imageTag: options.imageTag,
+        executable: true
+      }
+    );
+  }
+
+  /**
+   * Generate multi-architecture build support
+   */
+  private async generateMultiArchSupport(options: DockerGeneratorOptions): Promise<void> {
+    const multiArchConfig = {
+      platforms: [
+        'linux/amd64',
+        'linux/arm64',
+        'linux/arm/v7'
+      ],
+      builder: 'multiarch-builder',
+      buildx: true,
+      push: true,
+      imageName: options.imageName,
+      imageTag: options.imageTag,
+      registryUrl: options.registryUrl || 'docker.io'
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/multiarch/buildx-config.yml.hbs',
+      'multiarch/buildx-config.yml',
+      multiArchConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/multiarch/build-multiarch.sh.hbs',
+      'scripts/build-multiarch.sh',
+      {
+        ...multiArchConfig,
+        executable: true
+      }
+    );
+  }
+
+  /**
+   * Generate caching configuration
+   */
+  private async generateCachingConfig(options: DockerGeneratorOptions, config: DockerConfig): Promise<void> {
+    const cachingConfig = {
+      strategy: config.cachingStrategy,
+      registry: options.registryUrl || 'docker.io',
+      cacheFrom: [
+        `${options.registryUrl || 'docker.io'}/${options.imageName}:cache`,
+        `${options.registryUrl || 'docker.io'}/${options.imageName}:latest`
+      ],
+      cacheTo: `${options.registryUrl || 'docker.io'}/${options.imageName}:cache`,
+      buildkit: true,
+      inlineCache: config.cachingStrategy === 'inline',
+      localCache: config.cachingStrategy === 'local',
+      registryCache: config.cachingStrategy === 'registry'
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/caching/cache-config.yml.hbs',
+      'caching/cache-config.yml',
+      cachingConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/caching/build-with-cache.sh.hbs',
+      'scripts/build-with-cache.sh',
+      {
+        ...cachingConfig,
+        imageName: options.imageName,
+        imageTag: options.imageTag,
+        executable: true
+      }
+    );
+  }
+
+  /**
+   * Generate container registry integration
+   */
+  private async generateRegistryIntegration(options: DockerGeneratorOptions): Promise<void> {
+    const registryConfig = {
+      registry: options.registryUrl || 'docker.io',
+      imageName: options.imageName,
+      imageTag: options.imageTag,
+      credentials: {
+        username: '${REGISTRY_USERNAME}',
+        password: '${REGISTRY_PASSWORD}',
+        email: '${REGISTRY_EMAIL}'
+      },
+      repositories: [
+        {
+          name: 'production',
+          url: options.registryUrl || 'docker.io',
+          public: false
+        },
+        {
+          name: 'staging',
+          url: `${options.registryUrl || 'docker.io'}/staging`,
+          public: false
+        }
+      ],
+      retentionPolicy: {
+        keepLatest: 10,
+        keepTaggedVersions: true,
+        deleteUntagged: true,
+        maxAge: '30d'
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/registry/registry-config.yml.hbs',
+      'registry/registry-config.yml',
+      registryConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/registry/push-to-registry.sh.hbs',
+      'scripts/push-to-registry.sh',
+      {
+        ...registryConfig,
+        executable: true
+      }
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/registry/cleanup-registry.sh.hbs',
+      'scripts/cleanup-registry.sh',
+      {
+        ...registryConfig,
+        executable: true
+      }
+    );
+  }
+
+  /**
+   * Generate comprehensive observability stack
+   */
+  private async generateObservabilityStack(options: DockerGeneratorOptions): Promise<void> {
+    const observabilityConfig = {
+      prometheus: {
+        enabled: options.enablePrometheus,
+        port: 9090,
+        scrapeInterval: '15s',
+        targets: [`${options.imageName}:${options.port}`]
+      },
+      grafana: {
+        enabled: true,
+        port: 3000,
+        defaultUser: 'admin',
+        defaultPassword: '${GRAFANA_PASSWORD}',
+        datasources: [
+          {
+            name: 'Prometheus',
+            type: 'prometheus',
+            url: 'http://prometheus:9090'
+          },
+          {
+            name: 'Loki',
+            type: 'loki',
+            url: 'http://loki:3100'
+          }
+        ]
+      },
+      loki: {
+        enabled: options.enableLogging,
+        port: 3100,
+        retentionPeriod: '744h'
+      },
+      jaeger: {
+        enabled: options.enableTracing,
+        port: 16686,
+        collectorPort: 14268,
+        agentPort: 6832
+      },
+      alertmanager: {
+        enabled: true,
+        port: 9093,
+        webhookUrl: '${ALERT_WEBHOOK_URL}'
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/observability/observability-stack.yml.hbs',
+      'observability/observability-stack.yml',
+      observabilityConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/observability/prometheus-rules.yml.hbs',
+      'observability/prometheus-rules.yml',
+      {
+        ...observabilityConfig,
+        serviceName: options.imageName
+      }
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/docker/observability/grafana-dashboard.json.hbs',
+      'observability/grafana-dashboard.json',
+      {
+        ...observabilityConfig,
+        serviceName: options.imageName
+      }
+    );
   }
 }

@@ -1,0 +1,722 @@
+/**
+ * Azure OpenAI Service Client
+ * 
+ * Production-ready Azure OpenAI integration with comprehensive error handling,
+ * token management, streaming support, and enterprise security features.
+ */
+
+import { OpenAIClient } from '@azure/openai';
+import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { 
+  GetChatCompletionsOptions,
+  GetCompletionsOptions,
+  GetEmbeddingsOptions,
+  ChatCompletions,
+  Completions,
+  Embeddings,
+  ChatRequestMessage,
+  ChatRequestSystemMessage,
+  ChatRequestUserMessage,
+  ChatRequestAssistantMessage,
+  ChatRequestFunctionMessage,
+  ChatRequestToolMessage
+} from '@azure/openai';
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { RateLimiter } from '../utils/rate-limiter';
+import { TokenCounter } from '../utils/token-counter';
+import { ContentFilter } from '../utils/content-filter';
+import { 
+  AzureOpenAIConfig,
+  AzureOpenAIRequest,
+  AzureOpenAIResponse,
+  AzureOpenAIError,
+  AzureOpenAIUsage,
+  ChatMessage,
+  CompletionOptions,
+  EmbeddingOptions,
+  StreamingOptions
+} from '../types/azure-openai.types';
+
+export class AzureOpenAIClient {
+  private readonly logger: Logger;
+  private readonly metricsCollector: MetricsCollector;
+  private readonly rateLimiter: RateLimiter;
+  private readonly tokenCounter: TokenCounter;
+  private readonly contentFilter: ContentFilter;
+  private openaiClient: OpenAIClient | null = null;
+  {{#if enableKeyVault}}
+  private secretClient: SecretClient | null = null;
+  {{/if}}
+  private config: AzureOpenAIConfig;
+  private isInitialized = false;
+
+  constructor(config: AzureOpenAIConfig) {
+    this.config = config;
+    this.logger = new Logger('AzureOpenAIClient');
+    this.metricsCollector = new MetricsCollector();
+    this.rateLimiter = new RateLimiter({
+      tokensPerMinute: config.rateLimits?.tokensPerMinute || 40000,
+      requestsPerMinute: config.rateLimits?.requestsPerMinute || 300
+    });
+    this.tokenCounter = new TokenCounter();
+    this.contentFilter = new ContentFilter(config.contentFiltering);
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    try {
+      this.logger.info('Initializing Azure OpenAI client');
+
+      // Initialize credentials
+      let credential;
+      if (this.config.authentication.type === 'service-principal') {
+        credential = new ClientSecretCredential(
+          this.config.authentication.tenantId!,
+          this.config.authentication.clientId!,
+          this.config.authentication.clientSecret!
+        );
+      } else {
+        credential = new DefaultAzureCredential();
+      }
+
+      {{#if enableKeyVault}}
+      // Initialize Key Vault client for API key retrieval
+      if (this.config.keyVault?.enabled) {
+        this.secretClient = new SecretClient(
+          this.config.keyVault.url,
+          credential
+        );
+      }
+      {{/if}}
+
+      // Get API key
+      const apiKey = await this.getApiKey();
+
+      // Initialize OpenAI client
+      this.openaiClient = new OpenAIClient(
+        this.config.endpoint,
+        credential,
+        {
+          apiVersion: this.config.apiVersion || '2024-02-01',
+          userAgentPrefix: 'xaheen-azure-openai-client/1.0.0'
+        }
+      );
+
+      this.isInitialized = true;
+      this.logger.info('Azure OpenAI client initialized successfully');
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Azure OpenAI client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw new AzureOpenAIError('Initialization failed', 'INIT_ERROR', error);
+    }
+  }
+
+  {{#if enableKeyVault}}
+  private async getApiKey(): Promise<string> {
+    if (this.config.keyVault?.enabled && this.secretClient) {
+      try {
+        const secret = await this.secretClient.getSecret(this.config.keyVault.apiKeySecretName!);
+        return secret.value!;
+      } catch (error) {
+        this.logger.error('Failed to retrieve API key from Key Vault', { error });
+        throw new AzureOpenAIError('Failed to retrieve API key', 'KEY_VAULT_ERROR', error);
+      }
+    }
+    return this.config.apiKey || process.env.AZURE_OPENAI_API_KEY || '';
+  }
+  {{else}}
+  private async getApiKey(): Promise<string> {
+    return this.config.apiKey || process.env.AZURE_OPENAI_API_KEY || '';
+  }
+  {{/if}}
+
+  async getChatCompletion(
+    messages: ChatMessage[],
+    options: CompletionOptions = {}
+  ): Promise<AzureOpenAIResponse<ChatCompletions>> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      // Validate and sanitize input
+      await this.validateChatMessages(messages);
+      const sanitizedMessages = await this.sanitizeMessages(messages);
+
+      // Check rate limits
+      const estimatedTokens = this.tokenCounter.estimateTokens(sanitizedMessages);
+      await this.rateLimiter.checkLimits(estimatedTokens);
+
+      // Prepare request options
+      const requestOptions: GetChatCompletionsOptions = {
+        messages: this.convertToChatRequestMessages(sanitizedMessages),
+        maxTokens: options.maxTokens || this.config.defaults?.maxTokens || 1000,
+        temperature: options.temperature ?? this.config.defaults?.temperature ?? 0.7,
+        topP: options.topP ?? this.config.defaults?.topP ?? 1,
+        frequencyPenalty: options.frequencyPenalty ?? this.config.defaults?.frequencyPenalty ?? 0,
+        presencePenalty: options.presencePenalty ?? this.config.defaults?.presencePenalty ?? 0,
+        stop: options.stop || this.config.defaults?.stop,
+        user: options.userId || `xaheen-user-${Date.now()}`,
+        ...(options.functions && { functions: options.functions }),
+        ...(options.tools && { tools: options.tools }),
+        ...(options.responseFormat && { responseFormat: options.responseFormat })
+      };
+
+      this.logger.info('Sending chat completion request', {
+        requestId,
+        model: this.config.deploymentName,
+        messageCount: sanitizedMessages.length,
+        estimatedTokens
+      });
+
+      // Make the API call
+      const response = await this.openaiClient!.getChatCompletions(
+        this.config.deploymentName,
+        requestOptions
+      );
+
+      // Process response
+      const duration = Date.now() - startTime;
+      const usage = this.extractUsage(response);
+
+      // Record metrics
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.deploymentName,
+        type: 'chat-completion',
+        duration,
+        usage,
+        success: true
+      });
+
+      this.logger.info('Chat completion request completed', {
+        requestId,
+        duration,
+        usage
+      });
+
+      return {
+        success: true,
+        data: response,
+        usage,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.deploymentName,
+        type: 'chat-completion',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Chat completion request failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async getCompletion(
+    prompt: string,
+    options: CompletionOptions = {}
+  ): Promise<AzureOpenAIResponse<Completions>> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      // Validate and sanitize input
+      const sanitizedPrompt = await this.contentFilter.sanitize(prompt);
+      
+      // Check rate limits
+      const estimatedTokens = this.tokenCounter.estimateTokens([{ role: 'user', content: prompt }]);
+      await this.rateLimiter.checkLimits(estimatedTokens);
+
+      // Prepare request options
+      const requestOptions: GetCompletionsOptions = {
+        prompt: [sanitizedPrompt],
+        maxTokens: options.maxTokens || this.config.defaults?.maxTokens || 1000,
+        temperature: options.temperature ?? this.config.defaults?.temperature ?? 0.7,
+        topP: options.topP ?? this.config.defaults?.topP ?? 1,
+        frequencyPenalty: options.frequencyPenalty ?? this.config.defaults?.frequencyPenalty ?? 0,
+        presencePenalty: options.presencePenalty ?? this.config.defaults?.presencePenalty ?? 0,
+        stop: options.stop || this.config.defaults?.stop,
+        user: options.userId || `xaheen-user-${Date.now()}`
+      };
+
+      this.logger.info('Sending completion request', {
+        requestId,
+        model: this.config.deploymentName,
+        promptLength: prompt.length,
+        estimatedTokens
+      });
+
+      // Make the API call
+      const response = await this.openaiClient!.getCompletions(
+        this.config.deploymentName,
+        requestOptions
+      );
+
+      // Process response
+      const duration = Date.now() - startTime;
+      const usage = this.extractUsage(response);
+
+      // Record metrics
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.deploymentName,
+        type: 'completion',
+        duration,
+        usage,
+        success: true
+      });
+
+      this.logger.info('Completion request completed', {
+        requestId,
+        duration,
+        usage
+      });
+
+      return {
+        success: true,
+        data: response,
+        usage,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.deploymentName,
+        type: 'completion',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Completion request failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async getEmbeddings(
+    input: string | string[],
+    options: EmbeddingOptions = {}
+  ): Promise<AzureOpenAIResponse<Embeddings>> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      // Sanitize input
+      const sanitizedInput = Array.isArray(input) 
+        ? await Promise.all(input.map(text => this.contentFilter.sanitize(text)))
+        : await this.contentFilter.sanitize(input);
+
+      // Check rate limits
+      const estimatedTokens = Array.isArray(sanitizedInput)
+        ? sanitizedInput.reduce((total, text) => total + this.tokenCounter.estimateTokens([{ role: 'user', content: text }]), 0)
+        : this.tokenCounter.estimateTokens([{ role: 'user', content: sanitizedInput }]);
+      
+      await this.rateLimiter.checkLimits(estimatedTokens);
+
+      // Prepare request options
+      const requestOptions: GetEmbeddingsOptions = {
+        input: sanitizedInput,
+        user: options.userId || `xaheen-user-${Date.now()}`
+      };
+
+      this.logger.info('Sending embeddings request', {
+        requestId,
+        model: this.config.embeddingDeploymentName || this.config.deploymentName,
+        inputCount: Array.isArray(sanitizedInput) ? sanitizedInput.length : 1,
+        estimatedTokens
+      });
+
+      // Make the API call
+      const response = await this.openaiClient!.getEmbeddings(
+        this.config.embeddingDeploymentName || this.config.deploymentName,
+        requestOptions
+      );
+
+      // Process response
+      const duration = Date.now() - startTime;
+      const usage = this.extractUsage(response);
+
+      // Record metrics
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.embeddingDeploymentName || this.config.deploymentName,
+        type: 'embedding',
+        duration,
+        usage,
+        success: true
+      });
+
+      this.logger.info('Embeddings request completed', {
+        requestId,
+        duration,
+        usage
+      });
+
+      return {
+        success: true,
+        data: response,
+        usage,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.embeddingDeploymentName || this.config.deploymentName,
+        type: 'embedding',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Embeddings request failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async streamChatCompletion(
+    messages: ChatMessage[],
+    options: CompletionOptions & StreamingOptions = {}
+  ): Promise<AsyncIterable<AzureOpenAIResponse<any>>> {
+    await this.ensureInitialized();
+    
+    const requestId = this.generateRequestId();
+
+    try {
+      // Validate and sanitize input
+      await this.validateChatMessages(messages);
+      const sanitizedMessages = await this.sanitizeMessages(messages);
+
+      // Check rate limits
+      const estimatedTokens = this.tokenCounter.estimateTokens(sanitizedMessages);
+      await this.rateLimiter.checkLimits(estimatedTokens);
+
+      // Prepare request options
+      const requestOptions: GetChatCompletionsOptions = {
+        messages: this.convertToChatRequestMessages(sanitizedMessages),
+        maxTokens: options.maxTokens || this.config.defaults?.maxTokens || 1000,
+        temperature: options.temperature ?? this.config.defaults?.temperature ?? 0.7,
+        topP: options.topP ?? this.config.defaults?.topP ?? 1,
+        frequencyPenalty: options.frequencyPenalty ?? this.config.defaults?.frequencyPenalty ?? 0,
+        presencePenalty: options.presencePenalty ?? this.config.defaults?.presencePenalty ?? 0,
+        stop: options.stop || this.config.defaults?.stop,
+        user: options.userId || `xaheen-user-${Date.now()}`,
+        stream: true
+      };
+
+      this.logger.info('Starting streaming chat completion', {
+        requestId,
+        model: this.config.deploymentName,
+        messageCount: sanitizedMessages.length,
+        estimatedTokens
+      });
+
+      // Make the streaming API call
+      const stream = await this.openaiClient!.streamChatCompletions(
+        this.config.deploymentName,
+        requestOptions
+      );
+
+      // Return async generator
+      return this.processStreamingResponse(stream, requestId);
+
+    } catch (error) {
+      this.logger.error('Streaming chat completion failed', {
+        requestId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  private async *processStreamingResponse(
+    stream: any,
+    requestId: string
+  ): AsyncGenerator<AzureOpenAIResponse<any>, void, unknown> {
+    const startTime = Date.now();
+    let totalTokens = 0;
+
+    try {
+      for await (const chunk of stream) {
+        if (chunk.choices && chunk.choices.length > 0) {
+          const choice = chunk.choices[0];
+          
+          // Track token usage if available
+          if (chunk.usage) {
+            totalTokens = chunk.usage.totalTokens || totalTokens;
+          }
+
+          yield {
+            success: true,
+            data: chunk,
+            usage: chunk.usage ? this.extractUsage(chunk) : undefined,
+            requestId,
+            timestamp: new Date().toISOString(),
+            isStream: true,
+            isDone: choice.finishReason !== null
+          };
+
+          // If this is the final chunk, record metrics
+          if (choice.finishReason) {
+            const duration = Date.now() - startTime;
+            
+            await this.metricsCollector.recordOpenAIRequest({
+              requestId,
+              model: this.config.deploymentName,
+              type: 'streaming-chat-completion',
+              duration,
+              usage: { totalTokens, promptTokens: 0, completionTokens: totalTokens },
+              success: true
+            });
+
+            this.logger.info('Streaming chat completion completed', {
+              requestId,
+              duration,
+              totalTokens,
+              finishReason: choice.finishReason
+            });
+          }
+        }
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordOpenAIRequest({
+        requestId,
+        model: this.config.deploymentName,
+        type: 'streaming-chat-completion',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Streaming chat completion error', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private async validateChatMessages(messages: ChatMessage[]): Promise<void> {
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new AzureOpenAIError('Messages array is required and cannot be empty', 'INVALID_INPUT');
+    }
+
+    for (const message of messages) {
+      if (!message.role || !message.content) {
+        throw new AzureOpenAIError('Each message must have role and content', 'INVALID_MESSAGE');
+      }
+
+      if (!['system', 'user', 'assistant', 'function', 'tool'].includes(message.role)) {
+        throw new AzureOpenAIError(`Invalid message role: ${message.role}`, 'INVALID_ROLE');
+      }
+
+      // Content filtering
+      const isContentSafe = await this.contentFilter.validate(message.content);
+      if (!isContentSafe) {
+        throw new AzureOpenAIError('Message content violates content policy', 'CONTENT_VIOLATION');
+      }
+    }
+  }
+
+  private async sanitizeMessages(messages: ChatMessage[]): Promise<ChatMessage[]> {
+    const sanitized = [];
+    
+    for (const message of messages) {
+      const sanitizedContent = await this.contentFilter.sanitize(message.content);
+      sanitized.push({
+        ...message,
+        content: sanitizedContent
+      });
+    }
+
+    return sanitized;
+  }
+
+  private convertToChatRequestMessages(messages: ChatMessage[]): ChatRequestMessage[] {
+    return messages.map(message => {
+      switch (message.role) {
+        case 'system':
+          return {
+            role: 'system',
+            content: message.content
+          } as ChatRequestSystemMessage;
+        
+        case 'user':
+          return {
+            role: 'user',
+            content: message.content
+          } as ChatRequestUserMessage;
+        
+        case 'assistant':
+          return {
+            role: 'assistant',
+            content: message.content,
+            ...(message.toolCalls && { toolCalls: message.toolCalls })
+          } as ChatRequestAssistantMessage;
+        
+        case 'function':
+          return {
+            role: 'function',
+            content: message.content,
+            name: message.name || ''
+          } as ChatRequestFunctionMessage;
+        
+        case 'tool':
+          return {
+            role: 'tool',
+            content: message.content,
+            toolCallId: message.toolCallId || ''
+          } as ChatRequestToolMessage;
+        
+        default:
+          throw new AzureOpenAIError(`Unsupported message role: ${message.role}`, 'INVALID_ROLE');
+      }
+    });
+  }
+
+  private extractUsage(response: any): AzureOpenAIUsage {
+    const usage = response.usage;
+    return {
+      promptTokens: usage?.promptTokens || 0,
+      completionTokens: usage?.completionTokens || 0,
+      totalTokens: usage?.totalTokens || 0
+    };
+  }
+
+  private handleApiError(error: any, requestId: string): AzureOpenAIError {
+    if (error.status) {
+      // Azure OpenAI API error
+      return new AzureOpenAIError(
+        error.message || 'Azure OpenAI API error',
+        `API_ERROR_${error.status}`,
+        error,
+        error.status,
+        requestId
+      );
+    }
+
+    if (error instanceof AzureOpenAIError) {
+      return error;
+    }
+
+    // Generic error
+    return new AzureOpenAIError(
+      error instanceof Error ? error.message : 'Unknown error',
+      'UNKNOWN_ERROR',
+      error,
+      500,
+      requestId
+    );
+  }
+
+  private generateRequestId(): string {
+    return `openai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async dispose(): Promise<void> {
+    try {
+      this.logger.info('Disposing Azure OpenAI client');
+      
+      // Flush metrics
+      await this.metricsCollector.flush();
+      
+      this.isInitialized = false;
+      this.openaiClient = null;
+      
+      this.logger.info('Azure OpenAI client disposed successfully');
+    } catch (error) {
+      this.logger.error('Error disposing Azure OpenAI client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Health check method
+  async healthCheck(): Promise<{ healthy: boolean; details: Record<string, any> }> {
+    try {
+      await this.ensureInitialized();
+      
+      // Simple ping to test connectivity
+      const testResponse = await this.getChatCompletion([
+        { role: 'user', content: 'ping' }
+      ], { maxTokens: 1 });
+
+      return {
+        healthy: true,
+        details: {
+          initialized: this.isInitialized,
+          endpoint: this.config.endpoint,
+          deployment: this.config.deploymentName,
+          lastRequest: testResponse.timestamp
+        }
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        details: {
+          initialized: this.isInitialized,
+          endpoint: this.config.endpoint,
+          deployment: this.config.deploymentName,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      };
+    }
+  }
+}
+
+export default AzureOpenAIClient;

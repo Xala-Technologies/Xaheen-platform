@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Xala UI System MCP Server v6.1.2
+ * Xala UI System MCP Server v6.1.4
  * Multi-platform component generation server supporting React, Next.js, Vue, Angular, Svelte, Electron, React Native
  * v5.0 Semantic Architecture with comprehensive component library
  * Enhanced with shadcn-ui inspired developer experience improvements + comprehensive AI agent integration
@@ -33,6 +33,10 @@ import {
 	cliStyleTools,
 	cliStyleToolHandlers,
 } from "./tools/cli-style-tools.js";
+import {
+	generatorTools,
+	generatorToolHandlers,
+} from "./tools/generator-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 
 // Zod schemas for validation
@@ -202,7 +206,7 @@ class XalaUISystemMCPServer {
 		this.server = new Server(
 			{
 				name: "xala-ui-system-mcp",
-				version: "6.1.2",
+				version: "6.1.4",
 			},
 			{
 				capabilities: {
@@ -220,6 +224,8 @@ class XalaUISystemMCPServer {
 		this.server.setRequestHandler(ListToolsRequestSchema, async () => {
 			return {
 				tools: [
+					// Unified generator tool (single tool with type parameter)
+					...generatorTools,
 					// Quick generate tools (streamlined interface)
 					...quickGenerateTools,
 					// Component retrieval tools (inspired by shadcn-ui MCP)
@@ -632,7 +638,29 @@ class XalaUISystemMCPServer {
 			const { name, arguments: args } = request.params;
 
 			try {
-				// Handle quick generate tools first (highest priority)
+				// Handle unified generator tool first (highest priority)
+				if (
+					generatorToolHandlers[
+						name as keyof typeof generatorToolHandlers
+					]
+				) {
+					const result =
+						await generatorToolHandlers[
+							name as keyof typeof generatorToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+				// Handle quick generate tools
 				if (
 					quickGenerateToolHandlers[
 						name as keyof typeof quickGenerateToolHandlers

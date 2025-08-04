@@ -220,7 +220,7 @@ export class CliStyleTools {
    */
   async getVersion() {
     return {
-      mcpServer: '6.1.2',
+      mcpServer: '6.1.4',
       nodeVersion: process.version,
       platform: process.platform,
       architecture: process.arch,

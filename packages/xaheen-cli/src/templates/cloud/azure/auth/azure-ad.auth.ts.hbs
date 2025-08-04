@@ -1,0 +1,805 @@
+/**
+ * Azure Active Directory Authentication Service
+ * 
+ * Production-ready Azure AD authentication with comprehensive security features,
+ * token management, role-based access control, and enterprise integration.
+ */
+
+import { 
+  AuthenticationProvider,
+  Client,
+  AuthenticationResult,
+  PublicClientApplication,
+  ConfidentialClientApplication,
+  AccountInfo,
+  SilentFlowRequest,
+  AuthorizationUrlRequest,
+  AuthorizationCodeRequest,
+  DeviceCodeRequest,
+  UsernamePasswordRequest,
+  RefreshTokenRequest,
+  ClientCredentialRequest,
+  OnBehalfOfRequest
+} from '@azure/msal-node';
+import { DefaultAzureCredential, ClientSecretCredential, ManagedIdentityCredential } from '@azure/identity';
+import { Client as GraphClient } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { TokenCache } from '../utils/token-cache';
+import { SecurityValidator } from '../utils/security-validator';
+import { 
+  AzureADConfig,
+  AzureADUser,
+  AzureADToken,
+  AzureADError,
+  AuthenticationOptions,
+  AuthenticationFlow,
+  TokenValidationResult,
+  UserRole,
+  Permission,
+  SecurityContext,
+  AuditEvent
+} from '../types/azure-ad.types';
+
+export class AzureADAuthenticationService {
+  private readonly logger: Logger;
+  private readonly metricsCollector: MetricsCollector;
+  private readonly tokenCache: TokenCache;
+  private readonly securityValidator: SecurityValidator;
+  private publicClientApp: PublicClientApplication | null = null;
+  private confidentialClientApp: ConfidentialClientApplication | null = null;
+  private graphClient: GraphClient | null = null;
+  {{#if enableKeyVault}}
+  private secretClient: SecretClient | null = null;
+  {{/if}}
+  private config: AzureADConfig;
+  private isInitialized = false;
+  private authenticatedUsers = new Map<string, AzureADUser>();
+
+  constructor(config: AzureADConfig) {
+    this.config = config;
+    this.logger = new Logger('AzureADAuthenticationService');
+    this.metricsCollector = new MetricsCollector();
+    this.tokenCache = new TokenCache();
+    this.securityValidator = new SecurityValidator(config.security);
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    try {
+      this.logger.info('Initializing Azure AD authentication service');
+
+      {{#if enableKeyVault}}
+      // Initialize Key Vault client
+      if (this.config.keyVault?.enabled) {
+        const credential = new DefaultAzureCredential();
+        this.secretClient = new SecretClient(
+          this.config.keyVault.url,
+          credential
+        );
+      }
+      {{/if}}
+
+      // Get client secret from Key Vault or config
+      const clientSecret = await this.getClientSecret();
+
+      // Initialize public client (for user flows)
+      if (this.config.flows.includes('authorization-code') || this.config.flows.includes('device-code')) {
+        this.publicClientApp = new PublicClientApplication({
+          auth: {
+            clientId: this.config.clientId,
+            authority: `https://login.microsoftonline.com/${this.config.tenantId}`,
+            redirectUri: this.config.redirectUri
+          },
+          cache: {
+            cacheLocation: 'memory'
+          },
+          system: {
+            loggerOptions: {
+              loggerCallback: (level, message, containsPii) => {
+                if (!containsPii) {
+                  this.logger.debug('MSAL:', { level, message });
+                }
+              },
+              piiLoggingEnabled: false,
+              logLevel: {{#if enableDiagnostics}}3{{else}}1{{/if}}
+            }
+          }
+        });
+      }
+
+      // Initialize confidential client (for server-to-server flows)
+      if (this.config.flows.includes('client-credentials') || this.config.flows.includes('on-behalf-of')) {
+        this.confidentialClientApp = new ConfidentialClientApplication({
+          auth: {
+            clientId: this.config.clientId,
+            clientSecret: clientSecret,
+            authority: `https://login.microsoftonline.com/${this.config.tenantId}`
+          },
+          cache: {
+            cacheLocation: 'memory'
+          },
+          system: {
+            loggerOptions: {
+              loggerCallback: (level, message, containsPii) => {
+                if (!containsPii) {
+                  this.logger.debug('MSAL:', { level, message });
+                }
+              },
+              piiLoggingEnabled: false,
+              logLevel: {{#if enableDiagnostics}}3{{else}}1{{/if}}
+            }
+          }
+        });
+      }
+
+      // Initialize Microsoft Graph client
+      await this.initializeGraphClient();
+
+      this.isInitialized = true;
+      this.logger.info('Azure AD authentication service initialized successfully');
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Azure AD authentication service', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw new AzureADError('Initialization failed', 'INIT_ERROR', error);
+    }
+  }
+
+  {{#if enableKeyVault}}
+  private async getClientSecret(): Promise<string> {
+    if (this.config.keyVault?.enabled && this.secretClient) {
+      try {
+        const secret = await this.secretClient.getSecret(this.config.keyVault.clientSecretName!);
+        return secret.value!;
+      } catch (error) {
+        this.logger.error('Failed to retrieve client secret from Key Vault', { error });
+        throw new AzureADError('Failed to retrieve client secret', 'KEY_VAULT_ERROR', error);
+      }
+    }
+    return this.config.clientSecret || process.env.AZURE_AD_CLIENT_SECRET || '';
+  }
+  {{else}}
+  private async getClientSecret(): Promise<string> {
+    return this.config.clientSecret || process.env.AZURE_AD_CLIENT_SECRET || '';
+  }
+  {{/if}}
+
+  private async initializeGraphClient(): Promise<void> {
+    try {
+      let credential;
+      
+      if (this.config.graphApi.authMode === 'managed-identity') {
+        credential = new ManagedIdentityCredential();
+      } else if (this.config.graphApi.authMode === 'client-credentials') {
+        const clientSecret = await this.getClientSecret();
+        credential = new ClientSecretCredential(
+          this.config.tenantId,
+          this.config.clientId,
+          clientSecret
+        );
+      } else {
+        credential = new DefaultAzureCredential();
+      }
+
+      const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+        scopes: this.config.graphApi.scopes || ['https://graph.microsoft.com/.default']
+      });
+
+      this.graphClient = Client.initWithMiddleware({
+        authProvider,
+        defaultVersion: this.config.graphApi.version || 'v1.0'
+      });
+
+      this.logger.info('Microsoft Graph client initialized successfully');
+    } catch (error) {
+      this.logger.error('Failed to initialize Microsoft Graph client', { error });
+      throw new AzureADError('Graph client initialization failed', 'GRAPH_INIT_ERROR', error);
+    }
+  }
+
+  // Authentication flows
+  async authenticateWithAuthorizationCode(
+    authorizationCode: string,
+    options: AuthenticationOptions = {}
+  ): Promise<AzureADToken> {
+    await this.ensureInitialized();
+    
+    if (!this.confidentialClientApp) {
+      throw new AzureADError('Confidential client not initialized', 'CLIENT_NOT_AVAILABLE');
+    }
+
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Authenticating with authorization code', {
+        requestId,
+        clientId: this.config.clientId,
+        scopes: options.scopes
+      });
+
+      const tokenRequest: AuthorizationCodeRequest = {
+        code: authorizationCode,
+        scopes: options.scopes || this.config.defaultScopes,
+        redirectUri: this.config.redirectUri,
+        codeVerifier: options.codeVerifier
+      };
+
+      const response = await this.confidentialClientApp.acquireTokenByCode(tokenRequest);
+      
+      if (!response) {
+        throw new AzureADError('No token response received', 'NO_TOKEN_RESPONSE');
+      }
+
+      // Get user information
+      const user = await this.getUserInfo(response.account!);
+      
+      // Validate token and user
+      await this.validateTokenAndUser(response, user, options);
+
+      // Create Azure AD token
+      const azureToken = this.createAzureADToken(response, user);
+
+      // Cache token
+      await this.tokenCache.store(azureToken.accessToken, azureToken);
+
+      // Store authenticated user
+      this.authenticatedUsers.set(user.id, user);
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'authorization-code',
+        success: true,
+        duration,
+        userId: user.id,
+        clientId: this.config.clientId
+      });
+
+      // Audit log
+      await this.auditAuthenticationEvent({
+        eventType: 'authentication-success',
+        flow: 'authorization-code',
+        userId: user.id,
+        clientId: this.config.clientId,
+        ipAddress: options.ipAddress,
+        userAgent: options.userAgent,
+        requestId
+      });
+
+      this.logger.info('Authorization code authentication successful', {
+        requestId,
+        userId: user.id,
+        duration
+      });
+
+      return azureToken;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'authorization-code',
+        success: false,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        clientId: this.config.clientId
+      });
+
+      this.logger.error('Authorization code authentication failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleAuthError(error, requestId);
+    }
+  }
+
+  async authenticateWithClientCredentials(
+    options: AuthenticationOptions = {}
+  ): Promise<AzureADToken> {
+    await this.ensureInitialized();
+    
+    if (!this.confidentialClientApp) {
+      throw new AzureADError('Confidential client not initialized', 'CLIENT_NOT_AVAILABLE');
+    }
+
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Authenticating with client credentials', {
+        requestId,
+        clientId: this.config.clientId,
+        scopes: options.scopes
+      });
+
+      const tokenRequest: ClientCredentialRequest = {
+        scopes: options.scopes || ['https://graph.microsoft.com/.default']
+      };
+
+      const response = await this.confidentialClientApp.acquireTokenByClientCredential(tokenRequest);
+      
+      if (!response) {
+        throw new AzureADError('No token response received', 'NO_TOKEN_RESPONSE');
+      }
+
+      // Create system user for client credentials flow
+      const systemUser: AzureADUser = {
+        id: this.config.clientId,
+        displayName: 'System Account',
+        userPrincipalName: `${this.config.clientId}@system`,
+        email: '',
+        roles: ['system'],
+        permissions: this.config.systemPermissions || [],
+        tenantId: this.config.tenantId,
+        accountType: 'service-principal'
+      };
+
+      // Create Azure AD token
+      const azureToken = this.createAzureADToken(response, systemUser);
+
+      // Cache token
+      await this.tokenCache.store(azureToken.accessToken, azureToken);
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'client-credentials',
+        success: true,
+        duration,
+        userId: systemUser.id,
+        clientId: this.config.clientId
+      });
+
+      this.logger.info('Client credentials authentication successful', {
+        requestId,
+        duration
+      });
+
+      return azureToken;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'client-credentials',
+        success: false,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        clientId: this.config.clientId
+      });
+
+      this.logger.error('Client credentials authentication failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleAuthError(error, requestId);
+    }
+  }
+
+  async refreshToken(refreshToken: string): Promise<AzureADToken> {
+    await this.ensureInitialized();
+    
+    if (!this.confidentialClientApp) {
+      throw new AzureADError('Confidential client not initialized', 'CLIENT_NOT_AVAILABLE');
+    }
+
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Refreshing token', { requestId });
+
+      const tokenRequest: RefreshTokenRequest = {
+        refreshToken,
+        scopes: this.config.defaultScopes
+      };
+
+      const response = await this.confidentialClientApp.acquireTokenByRefreshToken(tokenRequest);
+      
+      if (!response) {
+        throw new AzureADError('No token response received', 'NO_TOKEN_RESPONSE');
+      }
+
+      // Get user information
+      const user = await this.getUserInfo(response.account!);
+
+      // Create Azure AD token
+      const azureToken = this.createAzureADToken(response, user);
+
+      // Cache new token
+      await this.tokenCache.store(azureToken.accessToken, azureToken);
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'refresh-token',
+        success: true,
+        duration,
+        userId: user.id,
+        clientId: this.config.clientId
+      });
+
+      this.logger.info('Token refresh successful', {
+        requestId,
+        userId: user.id,
+        duration
+      });
+
+      return azureToken;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordAuthenticationEvent({
+        requestId,
+        flow: 'refresh-token',
+        success: false,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        clientId: this.config.clientId
+      });
+
+      this.logger.error('Token refresh failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleAuthError(error, requestId);
+    }
+  }
+
+  // Token validation
+  async validateToken(token: string): Promise<TokenValidationResult> {
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Validating token', { requestId });
+
+      // Check token cache first
+      const cachedToken = await this.tokenCache.get(token);
+      
+      if (cachedToken) {
+        // Check if token is expired
+        if (new Date() > new Date(cachedToken.expiresOn)) {
+          await this.tokenCache.remove(token);
+          return {
+            valid: false,
+            reason: 'TOKEN_EXPIRED',
+            requestId
+          };
+        }
+
+        return {
+          valid: true,
+          user: cachedToken.user,
+          scopes: cachedToken.scopes,
+          expiresOn: cachedToken.expiresOn,
+          requestId
+        };
+      }
+
+      // Validate token using Azure AD
+      const validationResult = await this.securityValidator.validateToken(token);
+      
+      if (!validationResult.valid) {
+        return {
+          valid: false,
+          reason: validationResult.reason,
+          requestId
+        };
+      }
+
+      const duration = Date.now() - startTime;
+      
+      this.logger.info('Token validation completed', {
+        requestId,
+        valid: validationResult.valid,
+        duration
+      });
+
+      return {
+        ...validationResult,
+        requestId
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      this.logger.error('Token validation failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      return {
+        valid: false,
+        reason: 'VALIDATION_ERROR',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestId
+      };
+    }
+  }
+
+  // User management
+  async getUserInfo(account: AccountInfo): Promise<AzureADUser> {
+    if (!this.graphClient) {
+      throw new AzureADError('Graph client not initialized', 'GRAPH_NOT_AVAILABLE');
+    }
+
+    try {
+      const graphUser = await this.graphClient
+        .api(`/users/${account.homeAccountId || account.localAccountId}`)
+        .get();
+
+      // Get user roles and permissions
+      const memberOf = await this.graphClient
+        .api(`/users/${account.homeAccountId || account.localAccountId}/memberOf`)
+        .get();
+
+      const roles = memberOf.value
+        ?.filter((group: any) => group['@odata.type'] === '#microsoft.graph.directoryRole')
+        .map((role: any) => role.displayName) || [];
+
+      const permissions = await this.getUserPermissions(roles);
+
+      const user: AzureADUser = {
+        id: graphUser.id,
+        displayName: graphUser.displayName || '',
+        userPrincipalName: graphUser.userPrincipalName || '',
+        email: graphUser.mail || graphUser.userPrincipalName || '',
+        roles,
+        permissions,
+        tenantId: this.config.tenantId,
+        accountType: 'user',
+        department: graphUser.department,
+        jobTitle: graphUser.jobTitle,
+        manager: graphUser.manager?.displayName,
+        lastSignIn: graphUser.signInActivity?.lastSignInDateTime 
+          ? new Date(graphUser.signInActivity.lastSignInDateTime)
+          : undefined
+      };
+
+      return user;
+    } catch (error) {
+      this.logger.error('Failed to get user info from Graph API', { error });
+      
+      // Fallback to account info
+      return {
+        id: account.localAccountId || account.homeAccountId || 'unknown',
+        displayName: account.name || 'Unknown User',
+        userPrincipalName: account.username || '',
+        email: account.username || '',
+        roles: [],
+        permissions: [],
+        tenantId: this.config.tenantId,
+        accountType: 'user'
+      };
+    }
+  }
+
+  private async getUserPermissions(roles: string[]): Promise<Permission[]> {
+    // Map roles to permissions based on configuration
+    const permissions: Permission[] = [];
+    
+    for (const role of roles) {
+      const rolePermissions = this.config.rolePermissions?.[role] || [];
+      permissions.push(...rolePermissions);
+    }
+
+    // Remove duplicates
+    return permissions.filter((permission, index, self) => 
+      index === self.findIndex(p => p.resource === permission.resource && p.action === permission.action)
+    );
+  }
+
+  // Authorization helpers
+  async hasPermission(userId: string, resource: string, action: string): Promise<boolean> {
+    const user = this.authenticatedUsers.get(userId);
+    if (!user) {
+      return false;
+    }
+
+    return user.permissions.some(permission => 
+      permission.resource === resource && permission.action === action
+    );
+  }
+
+  async hasRole(userId: string, role: string): Promise<boolean> {
+    const user = this.authenticatedUsers.get(userId);
+    if (!user) {
+      return false;
+    }
+
+    return user.roles.includes(role);
+  }
+
+  async createSecurityContext(token: string): Promise<SecurityContext> {
+    const validationResult = await this.validateToken(token);
+    
+    if (!validationResult.valid || !validationResult.user) {
+      throw new AzureADError('Invalid token for security context', 'INVALID_TOKEN');
+    }
+
+    return {
+      user: validationResult.user,
+      token,
+      permissions: validationResult.user.permissions,
+      roles: validationResult.user.roles,
+      tenantId: this.config.tenantId,
+      isAuthenticated: true,
+      authenticationTime: new Date(),
+      expiresOn: new Date(validationResult.expiresOn!)
+    };
+  }
+
+  // Utility methods
+  private createAzureADToken(response: AuthenticationResult, user: AzureADUser): AzureADToken {
+    return {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      idToken: response.idToken,
+      tokenType: 'Bearer',
+      scopes: response.scopes || [],
+      expiresOn: response.expiresOn?.toISOString() || new Date(Date.now() + 3600000).toISOString(),
+      user,
+      issuedAt: new Date().toISOString(),
+      tenantId: this.config.tenantId
+    };
+  }
+
+  private async validateTokenAndUser(
+    response: AuthenticationResult,
+    user: AzureADUser,
+    options: AuthenticationOptions
+  ): Promise<void> {
+    // Security validation
+    if (this.config.security.requireMfa && !response.account?.idTokenClaims?.['amr']?.includes('mfa')) {
+      throw new AzureADError('Multi-factor authentication required', 'MFA_REQUIRED');
+    }
+
+    // IP address validation
+    if (options.ipAddress && this.config.security.allowedIpRanges) {
+      const isAllowed = await this.securityValidator.validateIpAddress(
+        options.ipAddress,
+        this.config.security.allowedIpRanges
+      );
+      
+      if (!isAllowed) {
+        throw new AzureADError('IP address not allowed', 'IP_NOT_ALLOWED');
+      }
+    }
+
+    // User validation
+    if (this.config.security.blockedUsers?.includes(user.id)) {
+      throw new AzureADError('User is blocked', 'USER_BLOCKED');
+    }
+  }
+
+  private async auditAuthenticationEvent(event: AuditEvent): Promise<void> {
+    try {
+      await this.metricsCollector.recordAuditEvent(event);
+      
+      {{#if enableDiagnostics}}
+      this.logger.info('Authentication audit event', event);
+      {{/if}}
+    } catch (error) {
+      this.logger.error('Failed to record audit event', { error, event });
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private handleAuthError(error: any, requestId: string): AzureADError {
+    if (error.errorCode || error.code) {
+      return new AzureADError(
+        error.errorMessage || error.message || 'Authentication error',
+        error.errorCode || error.code,
+        error,
+        error.status || error.statusCode,
+        requestId
+      );
+    }
+
+    if (error instanceof AzureADError) {
+      return error;
+    }
+
+    return new AzureADError(
+      error instanceof Error ? error.message : 'Unknown authentication error',
+      'UNKNOWN_AUTH_ERROR',
+      error,
+      500,
+      requestId
+    );
+  }
+
+  private generateRequestId(): string {
+    return `auth-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async dispose(): Promise<void> {
+    try {
+      this.logger.info('Disposing Azure AD authentication service');
+      
+      await this.metricsCollector.flush();
+      await this.tokenCache.clear();
+      this.authenticatedUsers.clear();
+      
+      this.isInitialized = false;
+      this.publicClientApp = null;
+      this.confidentialClientApp = null;
+      this.graphClient = null;
+      
+      this.logger.info('Azure AD authentication service disposed successfully');
+    } catch (error) {
+      this.logger.error('Error disposing Azure AD authentication service', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async healthCheck(): Promise<{ healthy: boolean; details: Record<string, any> }> {
+    try {
+      await this.ensureInitialized();
+      
+      // Test Graph API connectivity
+      let graphHealthy = false;
+      if (this.graphClient) {
+        try {
+          await this.graphClient.api('/me').get();
+          graphHealthy = true;
+        } catch {
+          // Graph API test failed, but service might still be functional
+        }
+      }
+
+      return {
+        healthy: this.isInitialized,
+        details: {
+          initialized: this.isInitialized,
+          tenantId: this.config.tenantId,
+          clientId: this.config.clientId,
+          flows: this.config.flows,
+          graphApiHealthy: graphHealthy,
+          authenticatedUsers: this.authenticatedUsers.size,
+          lastCheck: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        details: {
+          initialized: this.isInitialized,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      };
+    }
+  }
+}
+
+export default AzureADAuthenticationService;

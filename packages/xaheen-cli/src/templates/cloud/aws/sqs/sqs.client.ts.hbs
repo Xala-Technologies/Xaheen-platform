@@ -1,0 +1,666 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../lambda/utils/lambda-utils';
+
+/**
+ * SQS client configuration
+ */
+const sqsConfig: AWS.SQS.ClientConfiguration = {
+  region: '{{region}}',
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  },
+  httpOptions: {
+    timeout: 30000,
+    connectTimeout: 5000
+  }
+};
+
+// SQS client instance
+export const sqs = new AWS.SQS(sqsConfig);
+
+/**
+ * Message attributes interface
+ */
+export interface MessageAttributes {
+  readonly [key: string]: {
+    readonly DataType: 'String' | 'Number' | 'Binary';
+    readonly StringValue?: string;
+    readonly BinaryValue?: Buffer;
+  };
+}
+
+/**
+ * SQS message interface
+ */
+export interface SQSMessage<T = any> {
+  readonly messageId: string;
+  readonly receiptHandle: string;
+  readonly body: T;
+  readonly attributes: Record<string, string>;
+  readonly messageAttributes?: MessageAttributes;
+  readonly md5OfBody: string;
+  readonly md5OfMessageAttributes?: string;
+}
+
+/**
+ * Send message options interface
+ */
+export interface SendMessageOptions {
+  readonly delaySeconds?: number;
+  readonly messageAttributes?: MessageAttributes;
+  readonly messageGroupId?: string; // For FIFO queues
+  readonly messageDeduplicationId?: string; // For FIFO queues
+}
+
+/**
+ * Receive message options interface
+ */
+export interface ReceiveMessageOptions {
+  readonly maxNumberOfMessages?: number;
+  readonly visibilityTimeoutSeconds?: number;
+  readonly waitTimeSeconds?: number;
+  readonly attributeNames?: string[];
+  readonly messageAttributeNames?: string[];
+}
+
+/**
+ * SQS Client class with comprehensive queue operations
+ */
+export class SQSClient {
+  private readonly queueUrl: string;
+  private readonly queueName: string;
+
+  constructor(queueUrl: string) {
+    this.queueUrl = queueUrl;
+    // Extract queue name from URL
+    this.queueName = queueUrl.split('/').pop() || 'unknown';
+  }
+
+  /**
+   * Send a message to the queue
+   */
+  async sendMessage<T>(
+    messageBody: T,
+    options?: SendMessageOptions
+  ): Promise<AWS.SQS.SendMessageResult> {
+    try {
+      logger.info('Sending SQS message', {
+        queueName: this.queueName,
+        delaySeconds: options?.delaySeconds,
+        hasMessageAttributes: !!options?.messageAttributes
+      });
+
+      const params: AWS.SQS.SendMessageRequest = {
+        QueueUrl: this.queueUrl,
+        MessageBody: typeof messageBody === 'string' ? messageBody : JSON.stringify(messageBody)
+      };
+
+      if (options?.delaySeconds !== undefined) {
+        params.DelaySeconds = options.delaySeconds;
+      }
+
+      if (options?.messageAttributes) {
+        params.MessageAttributes = options.messageAttributes;
+      }
+
+      if (options?.messageGroupId) {
+        params.MessageGroupId = options.messageGroupId;
+      }
+
+      if (options?.messageDeduplicationId) {
+        params.MessageDeduplicationId = options.messageDeduplicationId;
+      }
+
+      const result = await sqs.sendMessage(params).promise();
+
+      logger.info('SQS message sent successfully', {
+        queueName: this.queueName,
+        messageId: result.MessageId,
+        md5OfBody: result.MD5OfBody
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to send SQS message', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Send multiple messages to the queue (batch operation)
+   */
+  async sendMessages<T>(
+    messages: Array<{
+      id: string;
+      body: T;
+      delaySeconds?: number;
+      messageAttributes?: MessageAttributes;
+      messageGroupId?: string;
+      messageDeduplicationId?: string;
+    }>
+  ): Promise<AWS.SQS.SendMessageBatchResult> {
+    try {
+      if (messages.length === 0) {
+        throw new Error('No messages provided for batch send');
+      }
+
+      if (messages.length > 10) {
+        throw new Error('Cannot send more than 10 messages in a single batch');
+      }
+
+      logger.info('Sending SQS message batch', {
+        queueName: this.queueName,
+        messageCount: messages.length
+      });
+
+      const entries: AWS.SQS.SendMessageBatchRequestEntry[] = messages.map(msg => {
+        const entry: AWS.SQS.SendMessageBatchRequestEntry = {
+          Id: msg.id,
+          MessageBody: typeof msg.body === 'string' ? msg.body : JSON.stringify(msg.body)
+        };
+
+        if (msg.delaySeconds !== undefined) {
+          entry.DelaySeconds = msg.delaySeconds;
+        }
+
+        if (msg.messageAttributes) {
+          entry.MessageAttributes = msg.messageAttributes;
+        }
+
+        if (msg.messageGroupId) {
+          entry.MessageGroupId = msg.messageGroupId;
+        }
+
+        if (msg.messageDeduplicationId) {
+          entry.MessageDeduplicationId = msg.messageDeduplicationId;
+        }
+
+        return entry;
+      });
+
+      const params: AWS.SQS.SendMessageBatchRequest = {
+        QueueUrl: this.queueUrl,
+        Entries: entries
+      };
+
+      const result = await sqs.sendMessageBatch(params).promise();
+
+      logger.info('SQS message batch sent successfully', {
+        queueName: this.queueName,
+        successfulCount: result.Successful?.length || 0,
+        failedCount: result.Failed?.length || 0
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to send SQS message batch', {
+        queueName: this.queueName,
+        messageCount: messages.length,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Receive messages from the queue
+   */
+  async receiveMessages<T = any>(
+    options?: ReceiveMessageOptions
+  ): Promise<SQSMessage<T>[]> {
+    try {
+      logger.debug('Receiving SQS messages', {
+        queueName: this.queueName,
+        maxMessages: options?.maxNumberOfMessages,
+        waitTime: options?.waitTimeSeconds
+      });
+
+      const params: AWS.SQS.ReceiveMessageRequest = {
+        QueueUrl: this.queueUrl,
+        MaxNumberOfMessages: options?.maxNumberOfMessages || 10,
+        WaitTimeSeconds: options?.waitTimeSeconds || 0,
+        VisibilityTimeout: options?.visibilityTimeoutSeconds || 30
+      };
+
+      if (options?.attributeNames) {
+        params.AttributeNames = options.attributeNames;
+      }
+
+      if (options?.messageAttributeNames) {
+        params.MessageAttributeNames = options.messageAttributeNames;
+      }
+
+      const result = await sqs.receiveMessage(params).promise();
+
+      const messages: SQSMessage<T>[] = (result.Messages || []).map(msg => ({
+        messageId: msg.MessageId!,
+        receiptHandle: msg.ReceiptHandle!,
+        body: this.parseMessageBody<T>(msg.Body!),
+        attributes: msg.Attributes || {},
+        messageAttributes: msg.MessageAttributes,
+        md5OfBody: msg.MD5OfBody!,
+        md5OfMessageAttributes: msg.MD5OfMessageAttributes
+      }));
+
+      logger.debug('SQS messages received', {
+        queueName: this.queueName,
+        messageCount: messages.length
+      });
+
+      return messages;
+
+    } catch (error) {
+      logger.error('Failed to receive SQS messages', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a message from the queue
+   */
+  async deleteMessage(receiptHandle: string): Promise<void> {
+    try {
+      logger.debug('Deleting SQS message', {
+        queueName: this.queueName
+      });
+
+      const params: AWS.SQS.DeleteMessageRequest = {
+        QueueUrl: this.queueUrl,
+        ReceiptHandle: receiptHandle
+      };
+
+      await sqs.deleteMessage(params).promise();
+
+      logger.debug('SQS message deleted successfully', {
+        queueName: this.queueName
+      });
+
+    } catch (error) {
+      logger.error('Failed to delete SQS message', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete multiple messages from the queue (batch operation)
+   */
+  async deleteMessages(
+    receiptHandles: Array<{ id: string; receiptHandle: string }>
+  ): Promise<AWS.SQS.DeleteMessageBatchResult> {
+    try {
+      if (receiptHandles.length === 0) {
+        throw new Error('No receipt handles provided for batch delete');
+      }
+
+      if (receiptHandles.length > 10) {
+        throw new Error('Cannot delete more than 10 messages in a single batch');
+      }
+
+      logger.debug('Deleting SQS message batch', {
+        queueName: this.queueName,
+        messageCount: receiptHandles.length
+      });
+
+      const entries: AWS.SQS.DeleteMessageBatchRequestEntry[] = receiptHandles.map(item => ({
+        Id: item.id,
+        ReceiptHandle: item.receiptHandle
+      }));
+
+      const params: AWS.SQS.DeleteMessageBatchRequest = {
+        QueueUrl: this.queueUrl,
+        Entries: entries
+      };
+
+      const result = await sqs.deleteMessageBatch(params).promise();
+
+      logger.debug('SQS message batch deleted successfully', {
+        queueName: this.queueName,
+        successfulCount: result.Successful?.length || 0,
+        failedCount: result.Failed?.length || 0
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to delete SQS message batch', {
+        queueName: this.queueName,
+        messageCount: receiptHandles.length,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Change message visibility timeout
+   */
+  async changeMessageVisibility(
+    receiptHandle: string,
+    visibilityTimeoutSeconds: number
+  ): Promise<void> {
+    try {
+      logger.debug('Changing SQS message visibility', {
+        queueName: this.queueName,
+        visibilityTimeout: visibilityTimeoutSeconds
+      });
+
+      const params: AWS.SQS.ChangeMessageVisibilityRequest = {
+        QueueUrl: this.queueUrl,
+        ReceiptHandle: receiptHandle,
+        VisibilityTimeout: visibilityTimeoutSeconds
+      };
+
+      await sqs.changeMessageVisibility(params).promise();
+
+      logger.debug('SQS message visibility changed successfully', {
+        queueName: this.queueName,
+        visibilityTimeout: visibilityTimeoutSeconds
+      });
+
+    } catch (error) {
+      logger.error('Failed to change SQS message visibility', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get queue attributes
+   */
+  async getQueueAttributes(
+    attributeNames?: string[]
+  ): Promise<Record<string, string>> {
+    try {
+      logger.debug('Getting SQS queue attributes', {
+        queueName: this.queueName,
+        attributeNames
+      });
+
+      const params: AWS.SQS.GetQueueAttributesRequest = {
+        QueueUrl: this.queueUrl,
+        AttributeNames: attributeNames || ['All']
+      };
+
+      const result = await sqs.getQueueAttributes(params).promise();
+
+      logger.debug('SQS queue attributes retrieved', {
+        queueName: this.queueName,
+        attributeCount: Object.keys(result.Attributes || {}).length
+      });
+
+      return result.Attributes || {};
+
+    } catch (error) {
+      logger.error('Failed to get SQS queue attributes', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get approximate number of messages in the queue
+   */
+  async getMessageCount(): Promise<{
+    approximateNumberOfMessages: number;
+    approximateNumberOfMessagesNotVisible: number;
+    approximateNumberOfMessagesDelayed: number;
+  }> {
+    try {
+      const attributes = await this.getQueueAttributes([
+        'ApproximateNumberOfMessages',
+        'ApproximateNumberOfMessagesNotVisible',
+        'ApproximateNumberOfMessagesDelayed'
+      ]);
+
+      return {
+        approximateNumberOfMessages: parseInt(attributes.ApproximateNumberOfMessages || '0', 10),
+        approximateNumberOfMessagesNotVisible: parseInt(attributes.ApproximateNumberOfMessagesNotVisible || '0', 10),
+        approximateNumberOfMessagesDelayed: parseInt(attributes.ApproximateNumberOfMessagesDelayed || '0', 10)
+      };
+
+    } catch (error) {
+      logger.error('Failed to get SQS message count', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Purge all messages from the queue
+   */
+  async purgeQueue(): Promise<void> {
+    try {
+      logger.warn('Purging SQS queue', {
+        queueName: this.queueName
+      });
+
+      const params: AWS.SQS.PurgeQueueRequest = {
+        QueueUrl: this.queueUrl
+      };
+
+      await sqs.purgeQueue(params).promise();
+
+      logger.warn('SQS queue purged successfully', {
+        queueName: this.queueName
+      });
+
+    } catch (error) {
+      logger.error('Failed to purge SQS queue', {
+        queueName: this.queueName,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Parse message body (try JSON first, fallback to string)
+   */
+  private parseMessageBody<T>(body: string): T {
+    try {
+      return JSON.parse(body) as T;
+    } catch {
+      return body as unknown as T;
+    }
+  }
+
+  /**
+   * Health check - verify queue accessibility
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      await this.getQueueAttributes(['QueueArn']);
+      logger.debug('SQS health check passed', { queueName: this.queueName });
+      return true;
+    } catch (error) {
+      logger.error('SQS health check failed', {
+        queueName: this.queueName,
+        error
+      });
+      return false;
+    }
+  }
+}
+
+/**
+ * Message Producer class for simplified message sending
+ */
+export class SQSMessageProducer<T = any> extends SQSClient {
+  /**
+   * Produce a message with automatic retry logic
+   */
+  async produce(
+    message: T,
+    options?: SendMessageOptions & {
+      retryAttempts?: number;
+      retryDelay?: number;
+    }
+  ): Promise<void> {
+    const maxRetries = options?.retryAttempts || 3;
+    const retryDelay = options?.retryDelay || 1000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.sendMessage(message, options);
+        return;
+      } catch (error) {
+        if (attempt === maxRetries) {
+          logger.error('Failed to produce message after all retry attempts', {
+            queueName: this.queueName,
+            attempt,
+            error
+          });
+          throw error;
+        }
+
+        logger.warn('Message production failed, retrying', {
+          queueName: this.queueName,
+          attempt,
+          maxRetries,
+          error
+        });
+
+        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+      }
+    }
+  }
+}
+
+/**
+ * Message Consumer class for simplified message processing
+ */
+export class SQSMessageConsumer<T = any> extends SQSClient {
+  private readonly messageHandler: (message: T) => Promise<void>;
+  private readonly errorHandler?: (error: Error, message?: SQSMessage<T>) => Promise<void>;
+  private isConsuming = false;
+
+  constructor(
+    queueUrl: string,
+    messageHandler: (message: T) => Promise<void>,
+    errorHandler?: (error: Error, message?: SQSMessage<T>) => Promise<void>
+  ) {
+    super(queueUrl);
+    this.messageHandler = messageHandler;
+    this.errorHandler = errorHandler;
+  }
+
+  /**
+   * Start consuming messages
+   */
+  async startConsuming(options?: ReceiveMessageOptions): Promise<void> {
+    if (this.isConsuming) {
+      logger.warn('Consumer is already running', { queueName: this.queueName });
+      return;
+    }
+
+    this.isConsuming = true;
+    logger.info('Starting SQS message consumer', { queueName: this.queueName });
+
+    while (this.isConsuming) {
+      try {
+        const messages = await this.receiveMessages<T>(options);
+
+        for (const message of messages) {
+          try {
+            await this.messageHandler(message.body);
+            await this.deleteMessage(message.receiptHandle);
+            
+            logger.debug('Message processed successfully', {
+              queueName: this.queueName,
+              messageId: message.messageId
+            });
+          } catch (error) {
+            logger.error('Failed to process message', {
+              queueName: this.queueName,
+              messageId: message.messageId,
+              error
+            });
+
+            if (this.errorHandler) {
+              try {
+                await this.errorHandler(error as Error, message);
+              } catch (handlerError) {
+                logger.error('Error handler failed', {
+                  queueName: this.queueName,
+                  messageId: message.messageId,
+                  error: handlerError
+                });
+              }
+            }
+          }
+        }
+
+        // Short delay if no messages were received to avoid tight polling
+        if (messages.length === 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+      } catch (error) {
+        logger.error('Failed to receive messages', {
+          queueName: this.queueName,
+          error
+        });
+
+        if (this.errorHandler) {
+          try {
+            await this.errorHandler(error as Error);
+          } catch (handlerError) {
+            logger.error('Error handler failed', {
+              queueName: this.queueName,
+              error: handlerError
+            });
+          }
+        }
+
+        // Delay before retrying to avoid rapid error loops
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+
+    logger.info('SQS message consumer stopped', { queueName: this.queueName });
+  }
+
+  /**
+   * Stop consuming messages
+   */
+  stopConsuming(): void {
+    logger.info('Stopping SQS message consumer', { queueName: this.queueName });
+    this.isConsuming = false;
+  }
+
+  /**
+   * Check if consumer is running
+   */
+  isRunning(): boolean {
+    return this.isConsuming;
+  }
+}

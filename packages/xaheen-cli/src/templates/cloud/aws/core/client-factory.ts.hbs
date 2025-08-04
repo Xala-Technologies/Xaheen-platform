@@ -1,0 +1,336 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { AWS_CONFIG } from '../config/aws.config';
+
+/**
+ * AWS Client Factory
+ * Centralized creation and configuration of AWS service clients
+ */
+
+// Configure AWS SDK
+AWS.config.update({
+  region: '{{region}}',
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  }
+});
+
+/**
+ * Client Factory class for creating AWS service clients
+ */
+export class AWSClientFactory {
+  private static instance: AWSClientFactory;
+  private clients: Map<string, any> = new Map();
+
+  private constructor() {}
+
+  public static getInstance(): AWSClientFactory {
+    if (!AWSClientFactory.instance) {
+      AWSClientFactory.instance = new AWSClientFactory();
+    }
+    return AWSClientFactory.instance;
+  }
+
+  /**
+   * Get or create a client for the specified service
+   */
+  private getClient<T>(serviceName: string, ClientClass: new (config?: any) => T, config?: any): T {
+    if (!this.clients.has(serviceName)) {
+      const serviceConfig = {
+        region: '{{region}}',
+        ...config
+      };
+      
+      const client = new ClientClass(serviceConfig);
+      this.clients.set(serviceName, client);
+    }
+    
+    return this.clients.get(serviceName);
+  }
+
+  {{#if (includes servicesToGenerate "lambda")}}
+  /**
+   * Get Lambda client
+   */
+  public getLambdaClient(): AWS.Lambda {
+    return this.getClient('lambda', AWS.Lambda, {
+      timeout: 60000
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "dynamodb")}}
+  /**
+   * Get DynamoDB Document Client
+   */
+  public getDynamoDBDocumentClient(): AWS.DynamoDB.DocumentClient {
+    return this.getClient('dynamodb-document', AWS.DynamoDB.DocumentClient, {
+      convertEmptyValues: true,
+      httpOptions: {
+        timeout: 5000,
+        connectTimeout: 3000
+      }
+    });
+  }
+
+  /**
+   * Get DynamoDB client (raw)
+   */
+  public getDynamoDBClient(): AWS.DynamoDB {
+    return this.getClient('dynamodb', AWS.DynamoDB, {
+      httpOptions: {
+        timeout: 5000,
+        connectTimeout: 3000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "s3")}}
+  /**
+   * Get S3 client
+   */
+  public getS3Client(): AWS.S3 {
+    return this.getClient('s3', AWS.S3, {
+      signatureVersion: 'v4',
+      s3ForcePathStyle: false,
+      httpOptions: {
+        timeout: 120000,
+        connectTimeout: 10000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "sqs")}}
+  /**
+   * Get SQS client
+   */
+  public getSQSClient(): AWS.SQS {
+    return this.getClient('sqs', AWS.SQS, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "sns")}}
+  /**
+   * Get SNS client
+   */
+  public getSNSClient(): AWS.SNS {
+    return this.getClient('sns', AWS.SNS, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "cognito")}}
+  /**
+   * Get Cognito Identity Provider client
+   */
+  public getCognitoIdentityProviderClient(): AWS.CognitoIdentityServiceProvider {
+    return this.getClient('cognito-idp', AWS.CognitoIdentityServiceProvider, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "rds")}}
+  /**
+   * Get RDS client
+   */
+  public getRDSClient(): AWS.RDS {
+    return this.getClient('rds', AWS.RDS, {
+      httpOptions: {
+        timeout: 60000,
+        connectTimeout: 10000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "secretsmanager")}}
+  /**
+   * Get Secrets Manager client
+   */
+  public getSecretsManagerClient(): AWS.SecretsManager {
+    return this.getClient('secretsmanager', AWS.SecretsManager, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "parameter-store")}}
+  /**
+   * Get Systems Manager client (for Parameter Store)
+   */
+  public getSSMClient(): AWS.SSM {
+    return this.getClient('ssm', AWS.SSM, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "eventbridge")}}
+  /**
+   * Get EventBridge client
+   */
+  public getEventBridgeClient(): AWS.EventBridge {
+    return this.getClient('eventbridge', AWS.EventBridge, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "step-functions")}}
+  /**
+   * Get Step Functions client
+   */
+  public getStepFunctionsClient(): AWS.StepFunctions {
+    return this.getClient('stepfunctions', AWS.StepFunctions, {
+      httpOptions: {
+        timeout: 60000,
+        connectTimeout: 10000
+      }
+    });
+  }
+  {{/if}}
+
+  {{#if (includes servicesToGenerate "cloudwatch")}}
+  /**
+   * Get CloudWatch client
+   */
+  public getCloudWatchClient(): AWS.CloudWatch {
+    return this.getClient('cloudwatch', AWS.CloudWatch, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+
+  /**
+   * Get CloudWatch Logs client
+   */
+  public getCloudWatchLogsClient(): AWS.CloudWatchLogs {
+    return this.getClient('cloudwatchlogs', AWS.CloudWatchLogs, {
+      httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+      }
+    });
+  }
+  {{/if}}
+
+  /**
+   * Health check for all configured clients
+   */
+  public async healthCheck(): Promise<Record<string, boolean>> {
+    const results: Record<string, boolean> = {};
+    
+    for (const [serviceName, client] of this.clients.entries()) {
+      try {
+        // Perform a lightweight operation to check connectivity
+        switch (serviceName) {
+          {{#if (includes servicesToGenerate "dynamodb")}}
+          case 'dynamodb':
+            await (client as AWS.DynamoDB).listTables({ Limit: 1 }).promise();
+            break;
+          {{/if}}
+          {{#if (includes servicesToGenerate "s3")}}
+          case 's3':
+            await (client as AWS.S3).listBuckets().promise();
+            break;
+          {{/if}}
+          {{#if (includes servicesToGenerate "lambda")}}
+          case 'lambda':
+            await (client as AWS.Lambda).listFunctions({ MaxItems: 1 }).promise();
+            break;
+          {{/if}}
+          default:
+            // Generic health check - just verify the client exists
+            break;
+        }
+        results[serviceName] = true;
+      } catch (error) {
+        console.error(`Health check failed for ${serviceName}:`, error);
+        results[serviceName] = false;
+      }
+    }
+    
+    return results;
+  }
+
+  /**
+   * Clear all cached clients (useful for testing)
+   */
+  public clearClients(): void {
+    this.clients.clear();
+  }
+}
+
+// Export singleton instance
+export const awsClientFactory = AWSClientFactory.getInstance();
+
+// Export convenient client getters
+{{#if (includes servicesToGenerate "lambda")}}
+export const lambdaClient = awsClientFactory.getLambdaClient();
+{{/if}}
+{{#if (includes servicesToGenerate "dynamodb")}}
+export const dynamoDbClient = awsClientFactory.getDynamoDBDocumentClient();
+export const dynamoDbRawClient = awsClientFactory.getDynamoDBClient();
+{{/if}}
+{{#if (includes servicesToGenerate "s3")}}
+export const s3Client = awsClientFactory.getS3Client();
+{{/if}}
+{{#if (includes servicesToGenerate "sqs")}}
+export const sqsClient = awsClientFactory.getSQSClient();
+{{/if}}
+{{#if (includes servicesToGenerate "sns")}}
+export const snsClient = awsClientFactory.getSNSClient();
+{{/if}}
+{{#if (includes servicesToGenerate "cognito")}}
+export const cognitoClient = awsClientFactory.getCognitoIdentityProviderClient();
+{{/if}}
+{{#if (includes servicesToGenerate "parameter-store")}}
+export const ssmClient = awsClientFactory.getSSMClient();
+{{/if}}
+{{#if (includes servicesToGenerate "eventbridge")}}
+export const eventBridgeClient = awsClientFactory.getEventBridgeClient();
+{{/if}}
+{{#if (includes servicesToGenerate "step-functions")}}
+export const stepFunctionsClient = awsClientFactory.getStepFunctionsClient();
+{{/if}}
+{{#if (includes servicesToGenerate "cloudwatch")}}
+export const cloudWatchClient = awsClientFactory.getCloudWatchClient();
+export const cloudWatchLogsClient = awsClientFactory.getCloudWatchLogsClient();
+{{/if}}

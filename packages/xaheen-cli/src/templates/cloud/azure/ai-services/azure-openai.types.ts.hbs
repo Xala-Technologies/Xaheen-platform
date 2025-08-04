@@ -1,0 +1,384 @@
+/**
+ * Azure OpenAI Service Types
+ * 
+ * Comprehensive type definitions for Azure OpenAI integration
+ * with enterprise-grade configuration and error handling.
+ */
+
+export interface AzureOpenAIConfig {
+  readonly endpoint: string;
+  readonly deploymentName: string;
+  readonly embeddingDeploymentName?: string;
+  readonly apiKey?: string;
+  readonly apiVersion?: string;
+  readonly authentication: {
+    readonly type: 'managed-identity' | 'service-principal' | 'api-key';
+    readonly tenantId?: string;
+    readonly clientId?: string;
+    readonly clientSecret?: string;
+  };
+  {{#if enableKeyVault}}
+  readonly keyVault?: {
+    readonly enabled: boolean;
+    readonly url: string;
+    readonly apiKeySecretName: string;
+  };
+  {{/if}}
+  readonly defaults?: {
+    readonly maxTokens?: number;
+    readonly temperature?: number;
+    readonly topP?: number;
+    readonly frequencyPenalty?: number;
+    readonly presencePenalty?: number;
+    readonly stop?: string[];
+  };
+  readonly rateLimits?: {
+    readonly tokensPerMinute: number;
+    readonly requestsPerMinute: number;
+  };
+  readonly contentFiltering?: {
+    readonly enabled: boolean;
+    readonly categories?: string[];
+    readonly threshold?: 'low' | 'medium' | 'high';
+  };
+  readonly monitoring?: {
+    readonly enabled: boolean;
+    readonly metricsEndpoint?: string;
+  };
+}
+
+export interface ChatMessage {
+  readonly role: 'system' | 'user' | 'assistant' | 'function' | 'tool';
+  readonly content: string;
+  readonly name?: string;
+  readonly toolCallId?: string;
+  readonly toolCalls?: ToolCall[];
+}
+
+export interface ToolCall {
+  readonly id: string;
+  readonly type: 'function';
+  readonly function: {
+    readonly name: string;
+    readonly arguments: string;
+  };
+}
+
+export interface FunctionDefinition {
+  readonly name: string;
+  readonly description?: string;
+  readonly parameters: Record<string, any>;
+}
+
+export interface ToolDefinition {
+  readonly type: 'function';
+  readonly function: FunctionDefinition;
+}
+
+export interface CompletionOptions {
+  readonly maxTokens?: number;
+  readonly temperature?: number;
+  readonly topP?: number;
+  readonly frequencyPenalty?: number;
+  readonly presencePenalty?: number;
+  readonly stop?: string[];
+  readonly userId?: string;
+  readonly functions?: FunctionDefinition[];
+  readonly tools?: ToolDefinition[];
+  readonly responseFormat?: {
+    readonly type: 'text' | 'json_object';
+  };
+}
+
+export interface EmbeddingOptions {
+  readonly userId?: string;
+  readonly dimensions?: number;
+}
+
+export interface StreamingOptions {
+  readonly onChunk?: (chunk: any) => void;
+  readonly onComplete?: (response: any) => void;
+  readonly onError?: (error: Error) => void;
+}
+
+export interface AzureOpenAIUsage {
+  readonly promptTokens: number;
+  readonly completionTokens: number;
+  readonly totalTokens: number;
+}
+
+export interface AzureOpenAIResponse<T> {
+  readonly success: boolean;
+  readonly data: T;
+  readonly usage?: AzureOpenAIUsage;
+  readonly requestId: string;
+  readonly timestamp: string;
+  readonly isStream?: boolean;
+  readonly isDone?: boolean;
+}
+
+export interface AzureOpenAIRequest {
+  readonly type: 'chat-completion' | 'completion' | 'embedding' | 'streaming';
+  readonly model: string;
+  readonly messages?: ChatMessage[];
+  readonly prompt?: string;
+  readonly input?: string | string[];
+  readonly options?: CompletionOptions | EmbeddingOptions;
+  readonly requestId?: string;
+  readonly userId?: string;
+  readonly correlationId?: string;
+}
+
+export class AzureOpenAIError extends Error {
+  public readonly code: string;
+  public readonly statusCode?: number;
+  public readonly requestId?: string;
+  public readonly details?: any;
+  public readonly originalError?: any;
+
+  constructor(
+    message: string,
+    code: string = 'AZURE_OPENAI_ERROR',
+    originalError?: any,
+    statusCode?: number,
+    requestId?: string,
+    details?: any
+  ) {
+    super(message);
+    this.name = 'AzureOpenAIError';
+    this.code = code;
+    this.statusCode = statusCode;
+    this.requestId = requestId;
+    this.details = details;
+    this.originalError = originalError;
+
+    // Ensure proper error prototype chain
+    Object.setPrototypeOf(this, AzureOpenAIError.prototype);
+  }
+
+  toJSON(): Record<string, any> {
+    return {
+      name: this.name,
+      message: this.message,
+      code: this.code,
+      statusCode: this.statusCode,
+      requestId: this.requestId,
+      details: this.details,
+      stack: this.stack
+    };
+  }
+}
+
+// Content filtering types
+export interface ContentFilterConfig {
+  readonly enabled: boolean;
+  readonly categories: ContentFilterCategory[];
+  readonly threshold: 'low' | 'medium' | 'high';
+  readonly customFilters?: CustomFilter[];
+}
+
+export interface ContentFilterCategory {
+  readonly name: string;
+  readonly severity: 'low' | 'medium' | 'high';
+  readonly enabled: boolean;
+}
+
+export interface CustomFilter {
+  readonly name: string;
+  readonly pattern: string | RegExp;
+  readonly replacement?: string;
+  readonly action: 'block' | 'replace' | 'warn';
+}
+
+export interface ContentFilterResult {
+  readonly passed: boolean;
+  readonly violations: ContentFilterViolation[];
+  readonly sanitizedContent?: string;
+}
+
+export interface ContentFilterViolation {
+  readonly category: string;
+  readonly severity: 'low' | 'medium' | 'high';
+  readonly confidence: number;
+  readonly location?: {
+    readonly start: number;
+    readonly end: number;
+  };
+}
+
+// Token counting types
+export interface TokenCountOptions {
+  readonly model?: string;
+  readonly encoding?: string;
+}
+
+export interface TokenUsage {
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+  readonly totalTokens: number;
+  readonly cost?: {
+    readonly inputCost: number;
+    readonly outputCost: number;
+    readonly totalCost: number;
+    readonly currency: string;
+  };
+}
+
+// Rate limiting types
+export interface RateLimitConfig {
+  readonly tokensPerMinute: number;
+  readonly requestsPerMinute: number;
+  readonly tokensPerHour?: number;
+  readonly requestsPerHour?: number;
+  readonly tokensPerDay?: number;
+  readonly requestsPerDay?: number;
+}
+
+export interface RateLimitStatus {
+  readonly tokensUsed: number;
+  readonly requestsUsed: number;
+  readonly tokensRemaining: number;
+  readonly requestsRemaining: number;
+  readonly resetTime: Date;
+  readonly isLimited: boolean;
+}
+
+// Metrics and monitoring types
+export interface OpenAIMetrics {
+  readonly requestId: string;
+  readonly model: string;
+  readonly type: string;
+  readonly duration: number;
+  readonly usage?: AzureOpenAIUsage;
+  readonly success: boolean;
+  readonly error?: string;
+  readonly timestamp: string;
+  readonly userId?: string;
+  readonly correlationId?: string;
+}
+
+export interface HealthCheckResult {
+  readonly healthy: boolean;
+  readonly details: {
+    readonly initialized: boolean;
+    readonly endpoint: string;
+    readonly deployment: string;
+    readonly lastRequest?: string;
+    readonly error?: string;
+    readonly latency?: number;
+    readonly rateLimitStatus?: RateLimitStatus;
+  };
+}
+
+// Function calling types
+export interface FunctionCallResult {
+  readonly success: boolean;
+  readonly result?: any;
+  readonly error?: string;
+  readonly duration: number;
+}
+
+export interface FunctionCallHandler {
+  readonly name: string;
+  readonly handler: (args: any) => Promise<FunctionCallResult>;
+  readonly schema: Record<string, any>;
+}
+
+// Prompt management types
+export interface PromptTemplate {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly template: string;
+  readonly variables: PromptVariable[];
+  readonly metadata?: Record<string, any>;
+}
+
+export interface PromptVariable {
+  readonly name: string;
+  readonly type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  readonly required: boolean;
+  readonly description?: string;
+  readonly defaultValue?: any;
+  readonly validation?: {
+    readonly pattern?: string;
+    readonly minLength?: number;
+    readonly maxLength?: number;
+    readonly min?: number;
+    readonly max?: number;
+  };
+}
+
+export interface PromptRenderOptions {
+  readonly variables: Record<string, any>;
+  readonly validate?: boolean;
+  readonly sanitize?: boolean;
+}
+
+// Conversation management types
+export interface Conversation {
+  readonly id: string;
+  readonly userId: string;
+  readonly messages: ChatMessage[];
+  readonly metadata?: Record<string, any>;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ConversationOptions {
+  readonly maxMessages?: number;
+  readonly retentionPeriod?: number;
+  readonly persistMessages?: boolean;
+  readonly summarizeOldMessages?: boolean;
+}
+
+// Configuration validation types
+export interface ConfigValidationResult {
+  readonly valid: boolean;
+  readonly errors: ConfigValidationError[];
+  readonly warnings: ConfigValidationWarning[];
+}
+
+export interface ConfigValidationError {
+  readonly field: string;
+  readonly message: string;
+  readonly code: string;
+}
+
+export interface ConfigValidationWarning {
+  readonly field: string;
+  readonly message: string;
+  readonly suggestion?: string;
+}
+
+// Export utility types
+export type AzureOpenAIClientConfig = AzureOpenAIConfig;
+export type OpenAIResponse<T = any> = AzureOpenAIResponse<T>;
+export type OpenAIError = AzureOpenAIError;
+export type OpenAIUsage = AzureOpenAIUsage;
+
+// Default configurations
+export const DEFAULT_AZURE_OPENAI_CONFIG: Partial<AzureOpenAIConfig> = {
+  apiVersion: '2024-02-01',
+  authentication: {
+    type: 'managed-identity'
+  },
+  defaults: {
+    maxTokens: 1000,
+    temperature: 0.7,
+    topP: 1,
+    frequencyPenalty: 0,
+    presencePenalty: 0
+  },
+  rateLimits: {
+    tokensPerMinute: 40000,
+    requestsPerMinute: 300
+  },
+  contentFiltering: {
+    enabled: true,
+    threshold: 'medium'
+  },
+  monitoring: {
+    enabled: {{#if enableDiagnostics}}true{{else}}false{{/if}}
+  }
+};

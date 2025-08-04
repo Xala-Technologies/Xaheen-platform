@@ -1,0 +1,663 @@
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+{{else}}
+import * as AWS from 'aws-sdk';
+{{/if}}
+import { logger } from '../lambda/utils/lambda-utils';
+
+/**
+ * S3 client configuration with optimizations
+ */
+const s3Config: AWS.S3.ClientConfiguration = {
+  region: '{{region}}',
+  signatureVersion: 'v4',
+  s3ForcePathStyle: false,
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  },
+  httpOptions: {
+    timeout: 120000, // 2 minutes for file operations
+    connectTimeout: 10000
+  }
+};
+
+// S3 client instance
+export const s3 = new AWS.S3(s3Config);
+
+/**
+ * S3 bucket configuration
+ */
+export interface S3BucketConfig {
+  readonly bucketName: string;
+  readonly region: string;
+  readonly encryption?: boolean;
+  readonly versioning?: boolean;
+  readonly publicRead?: boolean;
+  readonly corsEnabled?: boolean;
+  readonly lifecycleRules?: readonly LifecycleRule[];
+}
+
+export interface LifecycleRule {
+  readonly id: string;
+  readonly status: 'Enabled' | 'Disabled';
+  readonly prefix?: string;
+  readonly transitions?: readonly Transition[];
+  readonly expiration?: {
+    readonly days: number;
+  };
+}
+
+export interface Transition {
+  readonly days: number;
+  readonly storageClass: 'STANDARD_IA' | 'ONEZONE_IA' | 'GLACIER' | 'DEEP_ARCHIVE';
+}
+
+/**
+ * Upload options interface
+ */
+export interface UploadOptions {
+  readonly contentType?: string;
+  readonly contentEncoding?: string;
+  readonly cacheControl?: string;
+  readonly metadata?: Record<string, string>;
+  readonly tags?: Record<string, string>;
+  readonly serverSideEncryption?: 'AES256' | 'aws:kms';
+  readonly storageClass?: 'STANDARD' | 'REDUCED_REDUNDANCY' | 'STANDARD_IA' | 'ONEZONE_IA' | 'INTELLIGENT_TIERING' | 'GLACIER' | 'DEEP_ARCHIVE';
+  readonly acl?: 'private' | 'public-read' | 'public-read-write' | 'authenticated-read';
+}
+
+/**
+ * Download options interface
+ */
+export interface DownloadOptions {
+  readonly range?: string;
+  readonly versionId?: string;
+  readonly responseContentType?: string;
+  readonly responseContentLanguage?: string;
+  readonly responseExpires?: Date;
+  readonly responseCacheControl?: string;
+  readonly responseContentDisposition?: string;
+  readonly responseContentEncoding?: string;
+}
+
+/**
+ * S3 Client class with comprehensive operations
+ */
+export class S3Client {
+  private readonly bucketName: string;
+  private readonly region: string;
+
+  constructor(bucketName: string, region: string = '{{region}}') {
+    this.bucketName = bucketName;
+    this.region = region;
+  }
+
+  /**
+   * Upload file to S3
+   */
+  async uploadFile(
+    key: string,
+    body: Buffer | Uint8Array | Blob | string | ReadableStream,
+    options?: UploadOptions
+  ): Promise<AWS.S3.ManagedUpload.SendData> {
+    try {
+      logger.info('S3 upload started', {
+        bucket: this.bucketName,
+        key,
+        contentType: options?.contentType
+      });
+
+      const uploadParams: AWS.S3.PutObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key,
+        Body: body,
+        ContentType: options?.contentType || 'application/octet-stream',
+        ServerSideEncryption: options?.serverSideEncryption || 'AES256',
+        StorageClass: options?.storageClass || 'STANDARD',
+        ACL: options?.acl || 'private'
+      };
+
+      // Add optional parameters
+      if (options?.contentEncoding) {
+        uploadParams.ContentEncoding = options.contentEncoding;
+      }
+
+      if (options?.cacheControl) {
+        uploadParams.CacheControl = options.cacheControl;
+      }
+
+      if (options?.metadata) {
+        uploadParams.Metadata = options.metadata;
+      }
+
+      if (options?.tags) {
+        const tagSet = Object.entries(options.tags).map(([Key, Value]) => ({ Key, Value }));
+        uploadParams.Tagging = tagSet.map(tag => `${tag.Key}=${tag.Value}`).join('&');
+      }
+
+      const result = await s3.upload(uploadParams).promise();
+
+      logger.info('S3 upload completed', {
+        bucket: this.bucketName,
+        key,
+        location: result.Location,
+        etag: result.ETag
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('S3 upload failed', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Download file from S3
+   */
+  async downloadFile(
+    key: string,
+    options?: DownloadOptions
+  ): Promise<AWS.S3.GetObjectOutput> {
+    try {
+      logger.info('S3 download started', {
+        bucket: this.bucketName,
+        key,
+        versionId: options?.versionId
+      });
+
+      const downloadParams: AWS.S3.GetObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key
+      };
+
+      // Add optional parameters
+      if (options?.range) {
+        downloadParams.Range = options.range;
+      }
+
+      if (options?.versionId) {
+        downloadParams.VersionId = options.versionId;
+      }
+
+      if (options?.responseContentType) {
+        downloadParams.ResponseContentType = options.responseContentType;
+      }
+
+      if (options?.responseContentLanguage) {
+        downloadParams.ResponseContentLanguage = options.responseContentLanguage;
+      }
+
+      if (options?.responseExpires) {
+        downloadParams.ResponseExpires = options.responseExpires;
+      }
+
+      if (options?.responseCacheControl) {
+        downloadParams.ResponseCacheControl = options.responseCacheControl;
+      }
+
+      if (options?.responseContentDisposition) {
+        downloadParams.ResponseContentDisposition = options.responseContentDisposition;
+      }
+
+      if (options?.responseContentEncoding) {
+        downloadParams.ResponseContentEncoding = options.responseContentEncoding;
+      }
+
+      const result = await s3.getObject(downloadParams).promise();
+
+      logger.info('S3 download completed', {
+        bucket: this.bucketName,
+        key,
+        contentLength: result.ContentLength,
+        lastModified: result.LastModified
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('S3 download failed', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Generate presigned URL for upload
+   */
+  async generatePresignedUploadUrl(
+    key: string,
+    expiresIn: number = 3600, // 1 hour default
+    options?: {
+      contentType?: string;
+      contentLength?: number;
+      metadata?: Record<string, string>;
+      acl?: string;
+    }
+  ): Promise<string> {
+    try {
+      logger.info('Generating presigned upload URL', {
+        bucket: this.bucketName,
+        key,
+        expiresIn
+      });
+
+      const params: AWS.S3.PutObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key,
+        ACL: options?.acl || 'private'
+      };
+
+      if (options?.contentType) {
+        params.ContentType = options.contentType;
+      }
+
+      if (options?.contentLength) {
+        params.ContentLength = options.contentLength;
+      }
+
+      if (options?.metadata) {
+        params.Metadata = options.metadata;
+      }
+
+      const url = await s3.getSignedUrlPromise('putObject', {
+        ...params,
+        Expires: expiresIn
+      });
+
+      logger.info('Presigned upload URL generated', {
+        bucket: this.bucketName,
+        key,
+        expiresIn
+      });
+
+      return url;
+
+    } catch (error) {
+      logger.error('Failed to generate presigned upload URL', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Generate presigned URL for download
+   */
+  async generatePresignedDownloadUrl(
+    key: string,
+    expiresIn: number = 3600, // 1 hour default
+    options?: {
+      versionId?: string;
+      responseContentType?: string;
+      responseContentDisposition?: string;
+    }
+  ): Promise<string> {
+    try {
+      logger.info('Generating presigned download URL', {
+        bucket: this.bucketName,
+        key,
+        expiresIn
+      });
+
+      const params: AWS.S3.GetObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key
+      };
+
+      if (options?.versionId) {
+        params.VersionId = options.versionId;
+      }
+
+      if (options?.responseContentType) {
+        params.ResponseContentType = options.responseContentType;
+      }
+
+      if (options?.responseContentDisposition) {
+        params.ResponseContentDisposition = options.responseContentDisposition;
+      }
+
+      const url = await s3.getSignedUrlPromise('getObject', {
+        ...params,
+        Expires: expiresIn
+      });
+
+      logger.info('Presigned download URL generated', {
+        bucket: this.bucketName,
+        key,
+        expiresIn
+      });
+
+      return url;
+
+    } catch (error) {
+      logger.error('Failed to generate presigned download URL', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete file from S3
+   */
+  async deleteFile(key: string, versionId?: string): Promise<void> {
+    try {
+      logger.info('S3 delete started', {
+        bucket: this.bucketName,
+        key,
+        versionId
+      });
+
+      const deleteParams: AWS.S3.DeleteObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key
+      };
+
+      if (versionId) {
+        deleteParams.VersionId = versionId;
+      }
+
+      await s3.deleteObject(deleteParams).promise();
+
+      logger.info('S3 delete completed', {
+        bucket: this.bucketName,
+        key,
+        versionId
+      });
+
+    } catch (error) {
+      logger.error('S3 delete failed', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete multiple files from S3
+   */
+  async deleteFiles(keys: string[]): Promise<AWS.S3.DeleteObjectsOutput> {
+    try {
+      if (keys.length === 0) {
+        throw new Error('No keys provided for deletion');
+      }
+
+      if (keys.length > 1000) {
+        throw new Error('Cannot delete more than 1000 objects at once');
+      }
+
+      logger.info('S3 batch delete started', {
+        bucket: this.bucketName,
+        keyCount: keys.length
+      });
+
+      const deleteParams: AWS.S3.DeleteObjectsRequest = {
+        Bucket: this.bucketName,
+        Delete: {
+          Objects: keys.map(key => ({ Key: key })),
+          Quiet: false
+        }
+      };
+
+      const result = await s3.deleteObjects(deleteParams).promise();
+
+      logger.info('S3 batch delete completed', {
+        bucket: this.bucketName,
+        deletedCount: result.Deleted?.length || 0,
+        errorCount: result.Errors?.length || 0
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('S3 batch delete failed', {
+        bucket: this.bucketName,
+        keyCount: keys.length,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * List objects in bucket
+   */
+  async listObjects(
+    prefix?: string,
+    maxKeys?: number,
+    continuationToken?: string
+  ): Promise<{
+    objects: AWS.S3.Object[];
+    nextContinuationToken?: string;
+    hasMore: boolean;
+  }> {
+    try {
+      logger.info('S3 list objects started', {
+        bucket: this.bucketName,
+        prefix,
+        maxKeys
+      });
+
+      const listParams: AWS.S3.ListObjectsV2Request = {
+        Bucket: this.bucketName,
+        MaxKeys: maxKeys || 1000
+      };
+
+      if (prefix) {
+        listParams.Prefix = prefix;
+      }
+
+      if (continuationToken) {
+        listParams.ContinuationToken = continuationToken;
+      }
+
+      const result = await s3.listObjectsV2(listParams).promise();
+
+      logger.info('S3 list objects completed', {
+        bucket: this.bucketName,
+        objectCount: result.Contents?.length || 0,
+        hasMore: result.IsTruncated || false
+      });
+
+      return {
+        objects: result.Contents || [],
+        nextContinuationToken: result.NextContinuationToken,
+        hasMore: result.IsTruncated || false
+      };
+
+    } catch (error) {
+      logger.error('S3 list objects failed', {
+        bucket: this.bucketName,
+        prefix,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if object exists
+   */
+  async objectExists(key: string, versionId?: string): Promise<boolean> {
+    try {
+      const headParams: AWS.S3.HeadObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key
+      };
+
+      if (versionId) {
+        headParams.VersionId = versionId;
+      }
+
+      await s3.headObject(headParams).promise();
+      return true;
+
+    } catch (error: any) {
+      if (error.code === 'NotFound' || error.statusCode === 404) {
+        return false;
+      }
+      logger.error('S3 object exists check failed', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get object metadata
+   */
+  async getObjectMetadata(key: string, versionId?: string): Promise<AWS.S3.HeadObjectOutput> {
+    try {
+      logger.info('Getting S3 object metadata', {
+        bucket: this.bucketName,
+        key,
+        versionId
+      });
+
+      const headParams: AWS.S3.HeadObjectRequest = {
+        Bucket: this.bucketName,
+        Key: key
+      };
+
+      if (versionId) {
+        headParams.VersionId = versionId;
+      }
+
+      const result = await s3.headObject(headParams).promise();
+
+      logger.info('S3 object metadata retrieved', {
+        bucket: this.bucketName,
+        key,
+        contentLength: result.ContentLength,
+        lastModified: result.LastModified
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('S3 get object metadata failed', {
+        bucket: this.bucketName,
+        key,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Copy object within S3
+   */
+  async copyObject(
+    sourceKey: string,
+    destinationKey: string,
+    options?: {
+      sourceBucket?: string;
+      sourceVersionId?: string;
+      metadata?: Record<string, string>;
+      metadataDirective?: 'COPY' | 'REPLACE';
+      contentType?: string;
+      acl?: string;
+    }
+  ): Promise<AWS.S3.CopyObjectOutput> {
+    try {
+      logger.info('S3 copy object started', {
+        sourceBucket: options?.sourceBucket || this.bucketName,
+        sourceKey,
+        destinationBucket: this.bucketName,
+        destinationKey
+      });
+
+      const sourceBucket = options?.sourceBucket || this.bucketName;
+      let copySource = `${sourceBucket}/${sourceKey}`;
+      
+      if (options?.sourceVersionId) {
+        copySource += `?versionId=${options.sourceVersionId}`;
+      }
+
+      const copyParams: AWS.S3.CopyObjectRequest = {
+        Bucket: this.bucketName,
+        Key: destinationKey,
+        CopySource: copySource,
+        MetadataDirective: options?.metadataDirective || 'COPY'
+      };
+
+      if (options?.metadata && options.metadataDirective === 'REPLACE') {
+        copyParams.Metadata = options.metadata;
+      }
+
+      if (options?.contentType) {
+        copyParams.ContentType = options.contentType;
+      }
+
+      if (options?.acl) {
+        copyParams.ACL = options.acl;
+      }
+
+      const result = await s3.copyObject(copyParams).promise();
+
+      logger.info('S3 copy object completed', {
+        sourceBucket,
+        sourceKey,
+        destinationBucket: this.bucketName,
+        destinationKey,
+        etag: result.CopyObjectResult?.ETag
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('S3 copy object failed', {
+        sourceBucket: options?.sourceBucket || this.bucketName,
+        sourceKey,
+        destinationBucket: this.bucketName,
+        destinationKey,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Health check - verify bucket accessibility
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      await s3.headBucket({ Bucket: this.bucketName }).promise();
+      logger.debug('S3 health check passed', { bucket: this.bucketName });
+      return true;
+    } catch (error) {
+      logger.error('S3 health check failed', {
+        bucket: this.bucketName,
+        error
+      });
+      return false;
+    }
+  }
+}
+
+// Export default client for main bucket
+export const mainS3Client = new S3Client('{{projectName}}-{{environment}}-main-bucket');

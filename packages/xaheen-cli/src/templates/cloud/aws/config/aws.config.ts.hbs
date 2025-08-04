@@ -1,0 +1,199 @@
+import { config } from 'aws-sdk';
+{{#if enableXRay}}
+import * as AWSXRay from 'aws-xray-sdk-core';
+{{/if}}
+
+/**
+ * AWS SDK Configuration
+ * Centralized configuration for all AWS services
+ */
+
+// Set AWS region
+config.update({
+  region: '{{region}}',
+  maxRetries: 3,
+  retryDelayOptions: {
+    customBackoff: (retryCount: number) => {
+      // Exponential backoff with jitter
+      const baseDelay = 100;
+      const maxDelay = 20000;
+      const exponentialDelay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay;
+      return exponentialDelay + jitter;
+    }
+  }
+});
+
+{{#if enableXRay}}
+// Configure X-Ray tracing
+AWSXRay.config([
+  AWSXRay.plugins.ECSPlugin,
+  AWSXRay.plugins.EC2Plugin,
+]);
+
+// Set X-Ray service name
+AWSXRay.middleware.setSamplingRules({
+  version: 2,
+  default: {
+    fixed_target: 1,
+    rate: 0.1
+  },
+  rules: []
+});
+{{/if}}
+
+/**
+ * AWS Configuration constants
+ */
+export const AWS_CONFIG = {
+  region: '{{region}}',
+  accountId: '{{accountId}}',
+  projectName: '{{projectName}}',
+  environment: '{{environment}}',
+  
+  // Common tags applied to all resources
+  tags: {
+    Project: '{{projectName}}',
+    Environment: '{{environment}}',
+    ManagedBy: 'xaheen-cli',
+    {{#each tags}}
+    '{{@key}}': '{{this}}',
+    {{/each}}
+  },
+  
+  // Service-specific configurations
+  lambda: {
+    runtime: 'nodejs18.x',
+    timeout: 30,
+    memorySize: 256,
+    retryAttempts: 3
+  },
+  
+  dynamodb: {
+    billingMode: 'PAY_PER_REQUEST',
+    pointInTimeRecovery: true,
+    encryption: {
+      sseSpecification: {
+        enabled: true
+      }
+    }
+  },
+  
+  s3: {
+    versioning: true,
+    encryption: {
+      rules: [{
+        applyServerSideEncryptionByDefault: {
+          sseAlgorithm: 'AES256'
+        }
+      }]
+    }
+  },
+  
+  apiGateway: {
+    endpointType: 'REGIONAL',
+    minimumCompressionSize: 1024,
+    binaryMediaTypes: [
+      'application/octet-stream',
+      'image/*',
+      'video/*',
+      'audio/*'
+    ]
+  },
+  
+  cognito: {
+    userPool: {
+      mfaConfiguration: 'OPTIONAL',
+      passwordPolicy: {
+        minimumLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireNumbers: true,
+        requireSymbols: true
+      }
+    }
+  },
+  
+  cloudWatch: {
+    retentionInDays: 14,
+    logLevel: '{{environment}}' === 'production' ? 'INFO' : 'DEBUG'
+  }
+} as const;
+
+/**
+ * Environment-specific overrides
+ */
+export const getEnvironmentConfig = () => {
+  const environment = '{{environment}}';
+  
+  switch (environment) {
+    case 'development':
+      return {
+        ...AWS_CONFIG,
+        lambda: {
+          ...AWS_CONFIG.lambda,
+          timeout: 60, // Longer timeout for development
+          retryAttempts: 1
+        },
+        cloudWatch: {
+          ...AWS_CONFIG.cloudWatch,
+          retentionInDays: 7,
+          logLevel: 'DEBUG'
+        }
+      };
+      
+    case 'staging':
+      return {
+        ...AWS_CONFIG,
+        lambda: {
+          ...AWS_CONFIG.lambda,
+          memorySize: 512 // More memory for staging
+        },
+        cloudWatch: {
+          ...AWS_CONFIG.cloudWatch,
+          retentionInDays: 30,
+          logLevel: 'INFO'
+        }
+      };
+      
+    case 'production':
+      return {
+        ...AWS_CONFIG,
+        lambda: {
+          ...AWS_CONFIG.lambda,
+          memorySize: 1024, // Production memory allocation
+          retryAttempts: 5
+        },
+        cloudWatch: {
+          ...AWS_CONFIG.cloudWatch,
+          retentionInDays: 90,
+          logLevel: 'WARN'
+        }
+      };
+      
+    default:
+      return AWS_CONFIG;
+  }
+};
+
+/**
+ * Validate AWS configuration
+ */
+export const validateAWSConfig = (): boolean => {
+  const requiredEnvVars = [
+    'AWS_REGION',
+    'AWS_ACCOUNT_ID',
+  ];
+  
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error('Missing required environment variables:', missingVars);
+    return false;
+  }
+  
+  return true;
+};
+
+// Export environment-specific configuration
+export default getEnvironmentConfig();

@@ -1,0 +1,813 @@
+/**
+ * Azure Cognitive Services Client
+ * 
+ * Production-ready client for Azure Cognitive Services including
+ * Text Analytics, Language Understanding, and Computer Vision.
+ */
+
+import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity';
+import { TextAnalyticsClient } from '@azure/ai-text-analytics';
+import { ComputerVisionClient } from '@azure/cognitiveservices-computervision';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { RateLimiter } from '../utils/rate-limiter';
+import { 
+  CognitiveServicesConfig,
+  TextAnalyticsRequest,
+  ComputerVisionRequest,
+  CognitiveServicesResponse,
+  CognitiveServicesError,
+  SentimentAnalysisResult,
+  KeyPhraseExtractionResult,
+  EntityRecognitionResult,
+  LanguageDetectionResult,
+  ImageAnalysisResult,
+  OCRResult,
+  FaceDetectionResult
+} from '../types/cognitive-services.types';
+
+export class CognitiveServicesClient {
+  private readonly logger: Logger;
+  private readonly metricsCollector: MetricsCollector;
+  private readonly rateLimiter: RateLimiter;
+  private textAnalyticsClient: TextAnalyticsClient | null = null;
+  private computerVisionClient: ComputerVisionClient | null = null;
+  {{#if enableKeyVault}}
+  private secretClient: SecretClient | null = null;
+  {{/if}}
+  private config: CognitiveServicesConfig;
+  private isInitialized = false;
+
+  constructor(config: CognitiveServicesConfig) {
+    this.config = config;
+    this.logger = new Logger('CognitiveServicesClient');
+    this.metricsCollector = new MetricsCollector();
+    this.rateLimiter = new RateLimiter({
+      requestsPerSecond: config.rateLimits?.requestsPerSecond || 10,
+      requestsPerMinute: config.rateLimits?.requestsPerMinute || 600
+    });
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    try {
+      this.logger.info('Initializing Cognitive Services client');
+
+      // Initialize credentials
+      let credential;
+      if (this.config.authentication.type === 'service-principal') {
+        credential = new ClientSecretCredential(
+          this.config.authentication.tenantId!,
+          this.config.authentication.clientId!,
+          this.config.authentication.clientSecret!
+        );
+      } else {
+        credential = new DefaultAzureCredential();
+      }
+
+      {{#if enableKeyVault}}
+      // Initialize Key Vault client
+      if (this.config.keyVault?.enabled) {
+        this.secretClient = new SecretClient(
+          this.config.keyVault.url,
+          credential
+        );
+      }
+      {{/if}}
+
+      // Get API keys
+      const textAnalyticsKey = await this.getApiKey('textAnalytics');
+      const computerVisionKey = await this.getApiKey('computerVision');
+
+      // Initialize Text Analytics client
+      if (this.config.services.textAnalytics.enabled) {
+        this.textAnalyticsClient = new TextAnalyticsClient(
+          this.config.services.textAnalytics.endpoint,
+          credential
+        );
+      }
+
+      // Initialize Computer Vision client
+      if (this.config.services.computerVision.enabled) {
+        this.computerVisionClient = new ComputerVisionClient(
+          credential,
+          this.config.services.computerVision.endpoint
+        );
+      }
+
+      this.isInitialized = true;
+      this.logger.info('Cognitive Services client initialized successfully');
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Cognitive Services client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw new CognitiveServicesError('Initialization failed', 'INIT_ERROR', error);
+    }
+  }
+
+  {{#if enableKeyVault}}
+  private async getApiKey(service: 'textAnalytics' | 'computerVision'): Promise<string> {
+    if (this.config.keyVault?.enabled && this.secretClient) {
+      try {
+        const secretName = service === 'textAnalytics' 
+          ? this.config.keyVault.textAnalyticsKeySecretName!
+          : this.config.keyVault.computerVisionKeySecretName!;
+        
+        const secret = await this.secretClient.getSecret(secretName);
+        return secret.value!;
+      } catch (error) {
+        this.logger.error(`Failed to retrieve ${service} API key from Key Vault`, { error });
+        throw new CognitiveServicesError(`Failed to retrieve ${service} API key`, 'KEY_VAULT_ERROR', error);
+      }
+    }
+    
+    return service === 'textAnalytics' 
+      ? this.config.services.textAnalytics.apiKey || process.env.AZURE_TEXT_ANALYTICS_API_KEY || ''
+      : this.config.services.computerVision.apiKey || process.env.AZURE_COMPUTER_VISION_API_KEY || '';
+  }
+  {{else}}
+  private async getApiKey(service: 'textAnalytics' | 'computerVision'): Promise<string> {
+    return service === 'textAnalytics' 
+      ? this.config.services.textAnalytics.apiKey || process.env.AZURE_TEXT_ANALYTICS_API_KEY || ''
+      : this.config.services.computerVision.apiKey || process.env.AZURE_COMPUTER_VISION_API_KEY || '';
+  }
+  {{/if}}
+
+  // Text Analytics Methods
+  async analyzeSentiment(
+    documents: string[],
+    language?: string
+  ): Promise<CognitiveServicesResponse<SentimentAnalysisResult[]>> {
+    await this.ensureInitialized();
+    await this.checkTextAnalyticsAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Analyzing sentiment', {
+        requestId,
+        documentCount: documents.length,
+        language
+      });
+
+      const inputs = documents.map((text, index) => ({
+        id: index.toString(),
+        text,
+        language: language || 'en'
+      }));
+
+      const results = await this.textAnalyticsClient!.analyzeSentiment(inputs);
+      
+      const processedResults: SentimentAnalysisResult[] = results.map((result, index) => {
+        if (result.error) {
+          return {
+            id: index.toString(),
+            success: false,
+            error: result.error.message
+          };
+        }
+
+        return {
+          id: index.toString(),
+          success: true,
+          sentiment: result.sentiment,
+          confidenceScores: result.confidenceScores,
+          sentences: result.sentences?.map(sentence => ({
+            text: sentence.text,
+            sentiment: sentence.sentiment,
+            confidenceScores: sentence.confidenceScores,
+            offset: sentence.offset,
+            length: sentence.length
+          })) || []
+        };
+      });
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'sentiment-analysis',
+        duration,
+        success: true,
+        documentCount: documents.length
+      });
+
+      this.logger.info('Sentiment analysis completed', {
+        requestId,
+        duration,
+        documentCount: documents.length
+      });
+
+      return {
+        success: true,
+        data: processedResults,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'sentiment-analysis',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Sentiment analysis failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async extractKeyPhrases(
+    documents: string[],
+    language?: string
+  ): Promise<CognitiveServicesResponse<KeyPhraseExtractionResult[]>> {
+    await this.ensureInitialized();
+    await this.checkTextAnalyticsAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Extracting key phrases', {
+        requestId,
+        documentCount: documents.length,
+        language
+      });
+
+      const inputs = documents.map((text, index) => ({
+        id: index.toString(),
+        text,
+        language: language || 'en'
+      }));
+
+      const results = await this.textAnalyticsClient!.extractKeyPhrases(inputs);
+      
+      const processedResults: KeyPhraseExtractionResult[] = results.map((result, index) => {
+        if (result.error) {
+          return {
+            id: index.toString(),
+            success: false,
+            error: result.error.message
+          };
+        }
+
+        return {
+          id: index.toString(),
+          success: true,
+          keyPhrases: result.keyPhrases || []
+        };
+      });
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'key-phrase-extraction',
+        duration,
+        success: true,
+        documentCount: documents.length
+      });
+
+      this.logger.info('Key phrase extraction completed', {
+        requestId,
+        duration,
+        documentCount: documents.length
+      });
+
+      return {
+        success: true,
+        data: processedResults,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'key-phrase-extraction',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Key phrase extraction failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async recognizeEntities(
+    documents: string[],
+    language?: string
+  ): Promise<CognitiveServicesResponse<EntityRecognitionResult[]>> {
+    await this.ensureInitialized();
+    await this.checkTextAnalyticsAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Recognizing entities', {
+        requestId,
+        documentCount: documents.length,
+        language
+      });
+
+      const inputs = documents.map((text, index) => ({
+        id: index.toString(),
+        text,
+        language: language || 'en'
+      }));
+
+      const results = await this.textAnalyticsClient!.recognizeEntities(inputs);
+      
+      const processedResults: EntityRecognitionResult[] = results.map((result, index) => {
+        if (result.error) {
+          return {
+            id: index.toString(),
+            success: false,
+            error: result.error.message
+          };
+        }
+
+        return {
+          id: index.toString(),
+          success: true,
+          entities: result.entities?.map(entity => ({
+            text: entity.text,
+            category: entity.category,
+            subCategory: entity.subCategory,
+            confidenceScore: entity.confidenceScore,
+            offset: entity.offset,
+            length: entity.length
+          })) || []
+        };
+      });
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'entity-recognition',
+        duration,
+        success: true,
+        documentCount: documents.length
+      });
+
+      this.logger.info('Entity recognition completed', {
+        requestId,
+        duration,
+        documentCount: documents.length
+      });
+
+      return {
+        success: true,
+        data: processedResults,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'entity-recognition',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Entity recognition failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async detectLanguage(
+    documents: string[]
+  ): Promise<CognitiveServicesResponse<LanguageDetectionResult[]>> {
+    await this.ensureInitialized();
+    await this.checkTextAnalyticsAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Detecting language', {
+        requestId,
+        documentCount: documents.length
+      });
+
+      const inputs = documents.map((text, index) => ({
+        id: index.toString(),
+        text
+      }));
+
+      const results = await this.textAnalyticsClient!.detectLanguage(inputs);
+      
+      const processedResults: LanguageDetectionResult[] = results.map((result, index) => {
+        if (result.error) {
+          return {
+            id: index.toString(),
+            success: false,
+            error: result.error.message
+          };
+        }
+
+        return {
+          id: index.toString(),
+          success: true,
+          primaryLanguage: result.primaryLanguage ? {
+            name: result.primaryLanguage.name,
+            iso6391Name: result.primaryLanguage.iso6391Name,
+            confidenceScore: result.primaryLanguage.confidenceScore
+          } : undefined
+        };
+      });
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'language-detection',
+        duration,
+        success: true,
+        documentCount: documents.length
+      });
+
+      this.logger.info('Language detection completed', {
+        requestId,
+        duration,
+        documentCount: documents.length
+      });
+
+      return {
+        success: true,
+        data: processedResults,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'text-analytics',
+        operation: 'language-detection',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Language detection failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  // Computer Vision Methods
+  async analyzeImage(
+    imageUrl: string,
+    features: string[] = ['categories', 'description', 'tags']
+  ): Promise<CognitiveServicesResponse<ImageAnalysisResult>> {
+    await this.ensureInitialized();
+    await this.checkComputerVisionAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Analyzing image', {
+        requestId,
+        imageUrl,
+        features
+      });
+
+      const result = await this.computerVisionClient!.analyzeImage(imageUrl, {
+        visualFeatures: features
+      });
+
+      const processedResult: ImageAnalysisResult = {
+        success: true,
+        categories: result.categories?.map(cat => ({
+          name: cat.name || '',
+          score: cat.score || 0,
+          detail: cat.detail
+        })) || [],
+        description: result.description ? {
+          tags: result.description.tags || [],
+          captions: result.description.captions?.map(cap => ({
+            text: cap.text || '',
+            confidence: cap.confidence || 0
+          })) || []
+        } : undefined,
+        tags: result.tags?.map(tag => ({
+          name: tag.name || '',
+          confidence: tag.confidence || 0,
+          hint: tag.hint
+        })) || [],
+        color: result.color ? {
+          dominantColorForeground: result.color.dominantColorForeground || '',
+          dominantColorBackground: result.color.dominantColorBackground || '',
+          dominantColors: result.color.dominantColors || [],
+          accentColor: result.color.accentColor || '',
+          isBwImg: result.color.isBwImg || false
+        } : undefined,
+        metadata: result.metadata ? {
+          width: result.metadata.width || 0,
+          height: result.metadata.height || 0,
+          format: result.metadata.format || ''
+        } : undefined
+      };
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'computer-vision',
+        operation: 'image-analysis',
+        duration,
+        success: true
+      });
+
+      this.logger.info('Image analysis completed', {
+        requestId,
+        duration
+      });
+
+      return {
+        success: true,
+        data: processedResult,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'computer-vision',
+        operation: 'image-analysis',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Image analysis failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async performOCR(
+    imageUrl: string,
+    language?: string
+  ): Promise<CognitiveServicesResponse<OCRResult>> {
+    await this.ensureInitialized();
+    await this.checkComputerVisionAvailable();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Performing OCR', {
+        requestId,
+        imageUrl,
+        language
+      });
+
+      const result = await this.computerVisionClient!.recognizePrintedText(
+        false, // detectOrientation
+        imageUrl,
+        { language: language || 'en' }
+      );
+
+      const processedResult: OCRResult = {
+        success: true,
+        language: result.language || '',
+        orientation: result.orientation || '',
+        textAngle: result.textAngle || 0,
+        regions: result.regions?.map(region => ({
+          boundingBox: region.boundingBox || '',
+          lines: region.lines?.map(line => ({
+            boundingBox: line.boundingBox || '',
+            words: line.words?.map(word => ({
+              boundingBox: word.boundingBox || '',
+              text: word.text || ''
+            })) || []
+          })) || []
+        })) || []
+      };
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'computer-vision',
+        operation: 'ocr',
+        duration,
+        success: true
+      });
+
+      this.logger.info('OCR completed', {
+        requestId,
+        duration
+      });
+
+      return {
+        success: true,
+        data: processedResult,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordCognitiveServicesRequest({
+        requestId,
+        service: 'computer-vision',
+        operation: 'ocr',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('OCR failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private async checkTextAnalyticsAvailable(): Promise<void> {
+    if (!this.config.services.textAnalytics.enabled || !this.textAnalyticsClient) {
+      throw new CognitiveServicesError('Text Analytics service is not enabled or initialized', 'SERVICE_NOT_AVAILABLE');
+    }
+  }
+
+  private async checkComputerVisionAvailable(): Promise<void> {
+    if (!this.config.services.computerVision.enabled || !this.computerVisionClient) {
+      throw new CognitiveServicesError('Computer Vision service is not enabled or initialized', 'SERVICE_NOT_AVAILABLE');
+    }
+  }
+
+  private handleApiError(error: any, requestId: string): CognitiveServicesError {
+    if (error.status || error.statusCode) {
+      return new CognitiveServicesError(
+        error.message || 'Cognitive Services API error',
+        `API_ERROR_${error.status || error.statusCode}`,
+        error,
+        error.status || error.statusCode,
+        requestId
+      );
+    }
+
+    if (error instanceof CognitiveServicesError) {
+      return error;
+    }
+
+    return new CognitiveServicesError(
+      error instanceof Error ? error.message : 'Unknown error',
+      'UNKNOWN_ERROR',
+      error,
+      500,
+      requestId
+    );
+  }
+
+  private generateRequestId(): string {
+    return `cognitive-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async dispose(): Promise<void> {
+    try {
+      this.logger.info('Disposing Cognitive Services client');
+      
+      await this.metricsCollector.flush();
+      
+      this.isInitialized = false;
+      this.textAnalyticsClient = null;
+      this.computerVisionClient = null;
+      
+      this.logger.info('Cognitive Services client disposed successfully');
+    } catch (error) {
+      this.logger.error('Error disposing Cognitive Services client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async healthCheck(): Promise<{ healthy: boolean; details: Record<string, any> }> {
+    try {
+      await this.ensureInitialized();
+      
+      const details: Record<string, any> = {
+        initialized: this.isInitialized,
+        services: {
+          textAnalytics: {
+            enabled: this.config.services.textAnalytics.enabled,
+            available: !!this.textAnalyticsClient
+          },
+          computerVision: {
+            enabled: this.config.services.computerVision.enabled,
+            available: !!this.computerVisionClient
+          }
+        }
+      };
+
+      // Test a simple operation if possible
+      if (this.textAnalyticsClient) {
+        try {
+          await this.detectLanguage(['test']);
+          details.services.textAnalytics.lastTest = new Date().toISOString();
+        } catch (error) {
+          details.services.textAnalytics.lastTestError = error instanceof Error ? error.message : 'Unknown error';
+        }
+      }
+
+      const healthy = this.isInitialized && (
+        (this.config.services.textAnalytics.enabled && this.textAnalyticsClient) ||
+        (this.config.services.computerVision.enabled && this.computerVisionClient)
+      );
+
+      return { healthy, details };
+    } catch (error) {
+      return {
+        healthy: false,
+        details: {
+          initialized: this.isInitialized,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      };
+    }
+  }
+}
+
+export default CognitiveServicesClient;

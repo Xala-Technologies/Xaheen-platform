@@ -13,15 +13,24 @@ export interface KubernetesGeneratorOptions {
   readonly environment: 'development' | 'staging' | 'production';
   readonly enableIngress: boolean;
   readonly enableHPA: boolean;
+  readonly enableVPA: boolean;
+  readonly enablePDB: boolean;
   readonly enableConfigMap: boolean;
   readonly enableSecrets: boolean;
   readonly enableServiceMesh: boolean;
   readonly enablePrometheus: boolean;
   readonly enableLogging: boolean;
+  readonly enableTracing: boolean;
   readonly enableNetworkPolicies: boolean;
   readonly enablePodSecurityPolicies: boolean;
   readonly enableHelm: boolean;
   readonly enableIstio: boolean;
+  readonly enableArgoCD: boolean;
+  readonly enableFluxCD: boolean;
+  readonly enableKeda: boolean;
+  readonly enableCertManager: boolean;
+  readonly enableExternalSecrets: boolean;
+  readonly enableMultiCluster: boolean;
   readonly clusterIssuer?: string;
   readonly ingressClassName?: string;
   readonly hostName?: string;
@@ -71,12 +80,20 @@ export interface KubernetesManifests {
   readonly service: any;
   readonly ingress?: any;
   readonly hpa?: any;
+  readonly vpa?: any;
+  readonly pdb?: any;
   readonly configMap?: any;
   readonly secrets?: any;
   readonly networkPolicy?: any;
   readonly podSecurityPolicy?: any;
   readonly serviceAccount?: any;
   readonly rbac?: any;
+  readonly pvc?: any;
+  readonly kedaScaler?: any;
+  readonly certManager?: any;
+  readonly externalSecrets?: any;
+  readonly argoApplication?: any;
+  readonly fluxKustomization?: any;
 }
 
 export class KubernetesGenerator extends BaseGenerator<KubernetesGeneratorOptions> {
@@ -113,6 +130,16 @@ export class KubernetesGenerator extends BaseGenerator<KubernetesGeneratorOption
       // Generate HPA if enabled
       if (options.enableHPA) {
         await this.generateHPA(options, manifests);
+      }
+      
+      // Generate VPA if enabled
+      if (options.enableVPA) {
+        await this.generateVPA(options, manifests);
+      }
+      
+      // Generate PDB if enabled
+      if (options.enablePDB) {
+        await this.generatePDB(options, manifests);
       }
       
       // Generate ConfigMap if enabled
@@ -155,11 +182,55 @@ export class KubernetesGenerator extends BaseGenerator<KubernetesGeneratorOption
         await this.generateHelmChart(options, manifests);
       }
       
+      // Generate KEDA autoscaling if enabled
+      if (options.enableKeda) {
+        await this.generateKedaScaler(options, manifests);
+      }
+      
+      // Generate Cert-Manager configuration if enabled
+      if (options.enableCertManager) {
+        await this.generateCertManager(options);
+      }
+      
+      // Generate External Secrets if enabled
+      if (options.enableExternalSecrets) {
+        await this.generateExternalSecrets(options);
+      }
+      
+      // Generate ArgoCD application if enabled
+      if (options.enableArgoCD) {
+        await this.generateArgoApplication(options, manifests);
+      }
+      
+      // Generate FluxCD configuration if enabled
+      if (options.enableFluxCD) {
+        await this.generateFluxKustomization(options, manifests);
+      }
+      
+      // Generate tracing configuration if enabled
+      if (options.enableTracing) {
+        await this.generateTracingConfig(options);
+      }
+      
+      // Generate multi-cluster configuration if enabled
+      if (options.enableMultiCluster) {
+        await this.generateMultiClusterConfig(options);
+      }
+      
       // Generate Kustomization files
       await this.generateKustomization(options);
       
       // Generate deployment scripts
       await this.generateDeploymentScripts(options);
+      
+      // Generate GitOps workflows
+      await this.generateGitOpsWorkflows(options);
+      
+      // Generate security policies
+      await this.generateSecurityPolicies(options);
+      
+      // Generate disaster recovery configuration
+      await this.generateDisasterRecovery(options);
       
       this.logger.success('Kubernetes configuration generated successfully');
       
@@ -210,12 +281,20 @@ export class KubernetesGenerator extends BaseGenerator<KubernetesGeneratorOption
       service: this.createServiceManifest(options, commonLabels),
       ingress: options.enableIngress ? this.createIngressManifest(options, commonLabels) : undefined,
       hpa: options.enableHPA ? this.createHPAManifest(options, commonLabels) : undefined,
+      vpa: options.enableVPA ? this.createVPAManifest(options, commonLabels) : undefined,
+      pdb: options.enablePDB ? this.createPDBManifest(options, commonLabels) : undefined,
       configMap: options.enableConfigMap ? this.createConfigMapManifest(options, commonLabels) : undefined,
       secrets: options.enableSecrets ? this.createSecretsManifest(options, commonLabels) : undefined,
       networkPolicy: options.enableNetworkPolicies ? this.createNetworkPolicyManifest(options, commonLabels) : undefined,
       podSecurityPolicy: options.enablePodSecurityPolicies ? this.createPodSecurityPolicyManifest(options) : undefined,
       serviceAccount: this.createServiceAccountManifest(options, commonLabels),
-      rbac: this.createRBACManifest(options, commonLabels)
+      rbac: this.createRBACManifest(options, commonLabels),
+      pvc: options.storage?.enabled ? this.createPVCManifest(options, commonLabels) : undefined,
+      kedaScaler: options.enableKeda ? this.createKedaScalerManifest(options, commonLabels) : undefined,
+      certManager: options.enableCertManager ? this.createCertManagerManifest(options, commonLabels) : undefined,
+      externalSecrets: options.enableExternalSecrets ? this.createExternalSecretsManifest(options, commonLabels) : undefined,
+      argoApplication: options.enableArgoCD ? this.createArgoApplicationManifest(options, commonLabels) : undefined,
+      fluxKustomization: options.enableFluxCD ? this.createFluxKustomizationManifest(options, commonLabels) : undefined
     };
   }
 
@@ -1135,5 +1214,884 @@ echo "Undeployment completed successfully!"
     }
 
     return volumes;
+  }
+
+  /**
+   * Generate VPA (Vertical Pod Autoscaler) manifest
+   */
+  private async generateVPA(
+    options: KubernetesGeneratorOptions,
+    manifests: KubernetesManifests
+  ): Promise<void> {
+    if (!manifests.vpa) return;
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/vpa.yaml.hbs',
+      `k8s/${options.appName}-vpa.yaml`,
+      {
+        manifest: manifests.vpa,
+        options
+      }
+    );
+  }
+
+  /**
+   * Generate PDB (Pod Disruption Budget) manifest
+   */
+  private async generatePDB(
+    options: KubernetesGeneratorOptions,
+    manifests: KubernetesManifests
+  ): Promise<void> {
+    if (!manifests.pdb) return;
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/pdb.yaml.hbs',
+      `k8s/${options.appName}-pdb.yaml`,
+      {
+        manifest: manifests.pdb,
+        options
+      }
+    );
+  }
+
+  /**
+   * Generate KEDA ScaledObject
+   */
+  private async generateKedaScaler(
+    options: KubernetesGeneratorOptions,
+    manifests: KubernetesManifests
+  ): Promise<void> {
+    if (!manifests.kedaScaler) return;
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/keda/scaledobject.yaml.hbs',
+      `k8s/keda/${options.appName}-scaledobject.yaml`,
+      {
+        manifest: manifests.kedaScaler,
+        options
+      }
+    );
+  }
+
+  /**
+   * Generate Cert-Manager Certificate
+   */
+  private async generateCertManager(options: KubernetesGeneratorOptions): Promise<void> {
+    const certificate = {
+      apiVersion: 'cert-manager.io/v1',
+      kind: 'Certificate',
+      metadata: {
+        name: `${options.appName}-tls`,
+        namespace: options.namespace
+      },
+      spec: {
+        secretName: options.tlsSecretName || `${options.appName}-tls`,
+        issuerRef: {
+          name: options.clusterIssuer || 'letsencrypt-prod',
+          kind: 'ClusterIssuer'
+        },
+        dnsNames: [options.hostName || `${options.appName}.example.com`]
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/cert-manager/certificate.yaml.hbs',
+      `k8s/cert-manager/${options.appName}-certificate.yaml`,
+      { manifest: certificate, options }
+    );
+
+    // Generate ClusterIssuer
+    const clusterIssuer = {
+      apiVersion: 'cert-manager.io/v1',
+      kind: 'ClusterIssuer',
+      metadata: {
+        name: options.clusterIssuer || 'letsencrypt-prod'
+      },
+      spec: {
+        acme: {
+          server: 'https://acme-v02.api.letsencrypt.org/directory',
+          email: '${ACME_EMAIL}',
+          privateKeySecretRef: {
+            name: 'letsencrypt-prod'
+          },
+          solvers: [
+            {
+              http01: {
+                ingress: {
+                  class: options.ingressClassName || 'nginx'
+                }
+              }
+            }
+          ]
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/cert-manager/cluster-issuer.yaml.hbs',
+      `k8s/cert-manager/cluster-issuer.yaml`,
+      { manifest: clusterIssuer, options }
+    );
+  }
+
+  /**
+   * Generate External Secrets configuration
+   */
+  private async generateExternalSecrets(options: KubernetesGeneratorOptions): Promise<void> {
+    const secretStore = {
+      apiVersion: 'external-secrets.io/v1beta1',
+      kind: 'SecretStore',
+      metadata: {
+        name: `${options.appName}-secret-store`,
+        namespace: options.namespace
+      },
+      spec: {
+        provider: {
+          aws: {
+            service: 'SecretsManager',
+            region: '${AWS_REGION}',
+            auth: {
+              secretRef: {
+                accessKeyID: {
+                  name: 'aws-secret',
+                  key: 'access-key-id'
+                },
+                secretAccessKey: {
+                  name: 'aws-secret',
+                  key: 'secret-access-key'
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const externalSecret = {
+      apiVersion: 'external-secrets.io/v1beta1',
+      kind: 'ExternalSecret',
+      metadata: {
+        name: `${options.appName}-external-secret`,
+        namespace: options.namespace
+      },
+      spec: {
+        refreshInterval: '1h',
+        secretStoreRef: {
+          name: `${options.appName}-secret-store`,
+          kind: 'SecretStore'
+        },
+        target: {
+          name: `${options.appName}-secrets`,
+          creationPolicy: 'Owner'
+        },
+        data: [
+          {
+            secretKey: 'database-url',
+            remoteRef: {
+              key: `${options.appName}/database-url`
+            }
+          },
+          {
+            secretKey: 'api-key',
+            remoteRef: {
+              key: `${options.appName}/api-key`
+            }
+          }
+        ]
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/external-secrets/secret-store.yaml.hbs',
+      `k8s/external-secrets/${options.appName}-secret-store.yaml`,
+      { manifest: secretStore, options }
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/external-secrets/external-secret.yaml.hbs',
+      `k8s/external-secrets/${options.appName}-external-secret.yaml`,
+      { manifest: externalSecret, options }
+    );
+  }
+
+  /**
+   * Generate ArgoCD Application
+   */
+  private async generateArgoApplication(
+    options: KubernetesGeneratorOptions,
+    manifests: KubernetesManifests
+  ): Promise<void> {
+    if (!manifests.argoApplication) return;
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/argocd/application.yaml.hbs',
+      `argocd/${options.appName}-application.yaml`,
+      {
+        manifest: manifests.argoApplication,
+        options
+      }
+    );
+
+    // Generate ArgoCD AppProject
+    const appProject = {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'AppProject',
+      metadata: {
+        name: options.appName,
+        namespace: 'argocd'
+      },
+      spec: {
+        description: `Project for ${options.appName}`,
+        sourceRepos: ['*'],
+        destinations: [
+          {
+            namespace: options.namespace,
+            server: 'https://kubernetes.default.svc'
+          }
+        ],
+        clusterResourceWhitelist: [
+          {
+            group: '',
+            kind: 'Namespace'
+          }
+        ],
+        namespaceResourceWhitelist: [
+          {
+            group: '',
+            kind: '*'
+          }
+        ]
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/argocd/appproject.yaml.hbs',
+      `argocd/${options.appName}-appproject.yaml`,
+      { manifest: appProject, options }
+    );
+  }
+
+  /**
+   * Generate FluxCD Kustomization
+   */
+  private async generateFluxKustomization(
+    options: KubernetesGeneratorOptions,
+    manifests: KubernetesManifests
+  ): Promise<void> {
+    if (!manifests.fluxKustomization) return;
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/flux/kustomization.yaml.hbs',
+      `flux/${options.appName}-kustomization.yaml`,
+      {
+        manifest: manifests.fluxKustomization,
+        options
+      }
+    );
+
+    // Generate Flux GitRepository
+    const gitRepository = {
+      apiVersion: 'source.toolkit.fluxcd.io/v1beta2',
+      kind: 'GitRepository',
+      metadata: {
+        name: options.appName,
+        namespace: 'flux-system'
+      },
+      spec: {
+        interval: '1m',
+        url: '${GIT_REPOSITORY_URL}',
+        ref: {
+          branch: 'main'
+        },
+        secretRef: {
+          name: 'git-credentials'
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/flux/gitrepository.yaml.hbs',
+      `flux/${options.appName}-gitrepository.yaml`,
+      { manifest: gitRepository, options }
+    );
+  }
+
+  /**
+   * Generate tracing configuration
+   */
+  private async generateTracingConfig(options: KubernetesGeneratorOptions): Promise<void> {
+    const jaegerConfig = {
+      apiVersion: 'jaegertracing.io/v1',
+      kind: 'Jaeger',
+      metadata: {
+        name: 'jaeger',
+        namespace: options.namespace
+      },
+      spec: {
+        strategy: 'production',
+        storage: {
+          type: 'elasticsearch',
+          elasticsearch: {
+            nodeCount: 3,
+            storage: {
+              size: '10Gi'
+            }
+          }
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/tracing/jaeger.yaml.hbs',
+      `k8s/tracing/jaeger.yaml`,
+      { manifest: jaegerConfig, options }
+    );
+
+    // Generate OpenTelemetry Collector
+    const otelCollector = {
+      apiVersion: 'opentelemetry.io/v1alpha1',
+      kind: 'OpenTelemetryCollector',
+      metadata: {
+        name: 'otel-collector',
+        namespace: options.namespace
+      },
+      spec: {
+        config: `
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  jaeger:
+    endpoint: jaeger-collector:14250
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger]
+        `
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/tracing/otel-collector.yaml.hbs',
+      `k8s/tracing/otel-collector.yaml`,
+      { manifest: otelCollector, options }
+    );
+  }
+
+  /**
+   * Generate multi-cluster configuration
+   */
+  private async generateMultiClusterConfig(options: KubernetesGeneratorOptions): Promise<void> {
+    const admiraltyConfig = {
+      apiVersion: 'multicluster.admiralty.io/v1alpha1',
+      kind: 'MultiClusterService',
+      metadata: {
+        name: options.appName,
+        namespace: options.namespace
+      },
+      spec: {
+        template: {
+          metadata: {
+            labels: {
+              app: options.appName,
+              'multicluster.admiralty.io/clusterset': 'default'
+            }
+          },
+          spec: {
+            containers: [
+              {
+                name: options.appName,
+                image: `${options.image}:${options.imageTag}`
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/multicluster/multicluster-service.yaml.hbs',
+      `k8s/multicluster/${options.appName}-multicluster-service.yaml`,
+      { manifest: admiraltyConfig, options }
+    );
+
+    // Generate Cluster Role for cross-cluster access
+    const clusterRole = {
+      apiVersion: 'rbac.authorization.k8s.io/v1',
+      kind: 'ClusterRole',
+      metadata: {
+        name: `${options.appName}-multicluster`
+      },
+      rules: [
+        {
+          apiGroups: [''],
+          resources: ['pods', 'services'],
+          verbs: ['get', 'list', 'watch']
+        },
+        {
+          apiGroups: ['multicluster.admiralty.io'],
+          resources: ['*'],
+          verbs: ['*']
+        }
+      ]
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/multicluster/cluster-role.yaml.hbs',
+      `k8s/multicluster/cluster-role.yaml`,
+      { manifest: clusterRole, options }
+    );
+  }
+
+  /**
+   * Generate GitOps workflows
+   */
+  private async generateGitOpsWorkflows(options: KubernetesGeneratorOptions): Promise<void> {
+    const workflowConfig = {
+      name: `${options.appName}-gitops`,
+      trigger: {
+        push: {
+          branches: ['main', 'develop'],
+          paths: [`apps/${options.appName}/**`]
+        },
+        pullRequest: {
+          branches: ['main']
+        }
+      },
+      jobs: {
+        validate: {
+          steps: [
+            'Validate YAML syntax',
+            'Run security scans',
+            'Validate resource limits',
+            'Check naming conventions'
+          ]
+        },
+        deploy: {
+          environment: options.environment,
+          steps: [
+            'Deploy to staging',
+            'Run integration tests',
+            'Deploy to production',
+            'Verify deployment'
+          ]
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/gitops/github-workflow.yml.hbs',
+      `.github/workflows/${options.appName}-gitops.yml`,
+      workflowConfig
+    );
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/gitops/gitlab-ci.yml.hbs',
+      `.gitlab-ci.yml`,
+      workflowConfig
+    );
+  }
+
+  /**
+   * Generate security policies
+   */
+  private async generateSecurityPolicies(options: KubernetesGeneratorOptions): Promise<void> {
+    // Generate OPA Gatekeeper policies
+    const constraintTemplate = {
+      apiVersion: 'templates.gatekeeper.sh/v1beta1',
+      kind: 'ConstraintTemplate',
+      metadata: {
+        name: 'k8srequiredlabels'
+      },
+      spec: {
+        crd: {
+          spec: {
+            names: {
+              kind: 'K8sRequiredLabels'
+            },
+            validation: {
+              properties: {
+                labels: {
+                  type: 'array',
+                  items: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        targets: [
+          {
+            target: 'admission.k8s.gatekeeper.sh',
+            rego: `
+package k8srequiredlabels
+
+violation[{"msg": msg}] {
+  required := input.parameters.labels
+  provided := input.review.object.metadata.labels
+  missing := required[_]
+  not provided[missing]
+  msg := sprintf("Missing required label: %v", [missing])
+}
+            `
+          }
+        ]
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/security/constraint-template.yaml.hbs',
+      `k8s/security/constraint-template.yaml`,
+      { manifest: constraintTemplate, options }
+    );
+
+    // Generate Falco rules
+    const falcoRules = {
+      customRules: `
+- rule: Suspicious Activity in ${options.appName}
+  desc: Detect suspicious activity in ${options.appName} containers
+  condition: >
+    container.name="${options.appName}" and
+    (proc.name in (nc, ncat, netcat, telnet, wget, curl) or
+     (proc.name=bash and proc.args contains "-i"))
+  output: >
+    Suspicious activity in ${options.appName} container 
+    (command=%proc.cmdline container=%container.name)
+  priority: WARNING
+  tags: [container, ${options.appName}]
+      `
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/security/falco-rules.yaml.hbs',
+      `k8s/security/falco-rules.yaml`,
+      falcoRules
+    );
+  }
+
+  /**
+   * Generate disaster recovery configuration
+   */
+  private async generateDisasterRecovery(options: KubernetesGeneratorOptions): Promise<void> {
+    const veleroConfig = {
+      apiVersion: 'velero.io/v1',
+      kind: 'Schedule',
+      metadata: {
+        name: `${options.appName}-backup`,
+        namespace: 'velero'
+      },
+      spec: {
+        schedule: '0 2 * * *',
+        template: {
+          includedNamespaces: [options.namespace],
+          labelSelector: {
+            matchLabels: {
+              app: options.appName
+            }
+          },
+          storageLocation: 'default',
+          ttl: '720h0m0s'
+        }
+      }
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/disaster-recovery/velero-schedule.yaml.hbs',
+      `k8s/disaster-recovery/${options.appName}-backup-schedule.yaml`,
+      { manifest: veleroConfig, options }
+    );
+
+    // Generate disaster recovery runbook
+    const runbook = {
+      title: `Disaster Recovery Runbook for ${options.appName}`,
+      procedures: [
+        {
+          name: 'Backup Verification',
+          steps: [
+            'Check backup status',
+            'Verify backup integrity',
+            'Test restore procedure'
+          ]
+        },
+        {
+          name: 'Failover Procedure',
+          steps: [
+            'Switch DNS to backup cluster',
+            'Restore from backup',
+            'Verify application functionality',
+            'Monitor system health'
+          ]
+        },
+        {
+          name: 'Recovery Procedure',
+          steps: [
+            'Assess damage',
+            'Restore from latest backup',
+            'Verify data integrity',
+            'Resume normal operations'
+          ]
+        }
+      ]
+    };
+
+    await this.templateManager.renderTemplate(
+      'devops/kubernetes/disaster-recovery/runbook.md.hbs',
+      `docs/disaster-recovery-runbook.md`,
+      runbook
+    );
+  }
+
+  // Create the new manifest methods
+  private createVPAManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'autoscaling.k8s.io/v1',
+      kind: 'VerticalPodAutoscaler',
+      metadata: {
+        name: options.appName,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        targetRef: {
+          apiVersion: 'apps/v1',
+          kind: 'Deployment',
+          name: options.appName
+        },
+        updatePolicy: {
+          updateMode: 'Auto'
+        },
+        resourcePolicy: {
+          containerPolicies: [
+            {
+              containerName: options.appName,
+              minAllowed: {
+                cpu: '100m',
+                memory: '128Mi'
+              },
+              maxAllowed: {
+                cpu: '2',
+                memory: '2Gi'
+              }
+            }
+          ]
+        }
+      }
+    };
+  }
+
+  private createPDBManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'policy/v1',
+      kind: 'PodDisruptionBudget',
+      metadata: {
+        name: options.appName,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        minAvailable: Math.floor(options.replicas * 0.5),
+        selector: {
+          matchLabels: {
+            app: options.appName
+          }
+        }
+      }
+    };
+  }
+
+  private createPVCManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'v1',
+      kind: 'PersistentVolumeClaim',
+      metadata: {
+        name: `${options.appName}-pvc`,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        accessModes: [options.storage?.accessMode || 'ReadWriteOnce'],
+        resources: {
+          requests: {
+            storage: options.storage?.size || '10Gi'
+          }
+        },
+        storageClassName: options.storage?.storageClass || 'standard'
+      }
+    };
+  }
+
+  private createKedaScalerManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'keda.sh/v1alpha1',
+      kind: 'ScaledObject',
+      metadata: {
+        name: options.appName,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        scaleTargetRef: {
+          name: options.appName
+        },
+        minReplicaCount: options.hpa.minReplicas,
+        maxReplicaCount: options.hpa.maxReplicas,
+        triggers: [
+          {
+            type: 'prometheus',
+            metadata: {
+              serverAddress: 'http://prometheus:9090',
+              metricName: 'http_requests_per_second',
+              threshold: '10',
+              query: `rate(http_requests_total{job="${options.appName}"}[1m])`
+            }
+          }
+        ]
+      }
+    };
+  }
+
+  private createCertManagerManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'cert-manager.io/v1',
+      kind: 'Certificate',
+      metadata: {
+        name: `${options.appName}-tls`,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        secretName: options.tlsSecretName || `${options.appName}-tls`,
+        issuerRef: {
+          name: options.clusterIssuer || 'letsencrypt-prod',
+          kind: 'ClusterIssuer'
+        },
+        dnsNames: [options.hostName || `${options.appName}.example.com`]
+      }
+    };
+  }
+
+  private createExternalSecretsManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'external-secrets.io/v1beta1',
+      kind: 'ExternalSecret',
+      metadata: {
+        name: `${options.appName}-external-secret`,
+        namespace: options.namespace,
+        labels
+      },
+      spec: {
+        refreshInterval: '1h',
+        secretStoreRef: {
+          name: `${options.appName}-secret-store`,
+          kind: 'SecretStore'
+        },
+        target: {
+          name: `${options.appName}-secrets`,
+          creationPolicy: 'Owner'
+        },
+        data: [
+          {
+            secretKey: 'database-url',
+            remoteRef: {
+              key: `${options.appName}/database-url`
+            }
+          }
+        ]
+      }
+    };
+  }
+
+  private createArgoApplicationManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        name: options.appName,
+        namespace: 'argocd',
+        labels
+      },
+      spec: {
+        project: options.appName,
+        source: {
+          repoURL: '${GIT_REPOSITORY_URL}',
+          targetRevision: 'HEAD',
+          path: `k8s`,
+          kustomize: {
+            images: [`${options.image}:${options.imageTag}`]
+          }
+        },
+        destination: {
+          server: 'https://kubernetes.default.svc',
+          namespace: options.namespace
+        },
+        syncPolicy: {
+          automated: {
+            prune: true,
+            selfHeal: true
+          },
+          syncOptions: [
+            'CreateNamespace=true'
+          ]
+        }
+      }
+    };
+  }
+
+  private createFluxKustomizationManifest(
+    options: KubernetesGeneratorOptions,
+    labels: Record<string, string>
+  ): any {
+    return {
+      apiVersion: 'kustomize.toolkit.fluxcd.io/v1beta2',
+      kind: 'Kustomization',
+      metadata: {
+        name: options.appName,
+        namespace: 'flux-system',
+        labels
+      },
+      spec: {
+        interval: '1m',
+        sourceRef: {
+          kind: 'GitRepository',
+          name: options.appName
+        },
+        path: './k8s',
+        prune: true,
+        targetNamespace: options.namespace
+      }
+    };
   }
 }

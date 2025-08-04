@@ -1,0 +1,612 @@
+/**
+ * Azure Document Intelligence (Form Recognizer) Client
+ * 
+ * Production-ready client for Azure Document Intelligence service
+ * supporting document analysis, custom models, and data extraction.
+ */
+
+import { DocumentAnalysisClient, AnalyzeDocumentCommand } from '@azure/ai-form-recognizer';
+import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity';
+{{#if enableKeyVault}}
+import { SecretClient } from '@azure/keyvault-secrets';
+{{/if}}
+import { Logger } from '../utils/logger';
+import { MetricsCollector } from '../utils/metrics-collector';
+import { RateLimiter } from '../utils/rate-limiter';
+import { 
+  DocumentIntelligenceConfig,
+  DocumentAnalysisRequest,
+  DocumentAnalysisResponse,
+  DocumentIntelligenceError,
+  AnalyzedDocument,
+  DocumentField,
+  DocumentTable,
+  DocumentSelectionMark,
+  DocumentKeyValuePair,
+  BoundingRegion,
+  DocumentSpan,
+  PrebuiltModelType,
+  CustomModelInfo,
+  DocumentModelDetails
+} from '../types/document-intelligence.types';
+
+export class DocumentIntelligenceClient {
+  private readonly logger: Logger;
+  private readonly metricsCollector: MetricsCollector;
+  private readonly rateLimiter: RateLimiter;
+  private documentClient: DocumentAnalysisClient | null = null;
+  {{#if enableKeyVault}}
+  private secretClient: SecretClient | null = null;
+  {{/if}}
+  private config: DocumentIntelligenceConfig;
+  private isInitialized = false;
+
+  constructor(config: DocumentIntelligenceConfig) {
+    this.config = config;
+    this.logger = new Logger('DocumentIntelligenceClient');
+    this.metricsCollector = new MetricsCollector();
+    this.rateLimiter = new RateLimiter({
+      requestsPerSecond: config.rateLimits?.requestsPerSecond || 15,
+      requestsPerMinute: config.rateLimits?.requestsPerMinute || 300
+    });
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    try {
+      this.logger.info('Initializing Document Intelligence client');
+
+      // Initialize credentials
+      let credential;
+      if (this.config.authentication.type === 'service-principal') {
+        credential = new ClientSecretCredential(
+          this.config.authentication.tenantId!,
+          this.config.authentication.clientId!,
+          this.config.authentication.clientSecret!
+        );
+      } else {
+        credential = new DefaultAzureCredential();
+      }
+
+      {{#if enableKeyVault}}
+      // Initialize Key Vault client
+      if (this.config.keyVault?.enabled) {
+        this.secretClient = new SecretClient(
+          this.config.keyVault.url,
+          credential
+        );
+      }
+      {{/if}}
+
+      // Get API key
+      const apiKey = await this.getApiKey();
+
+      // Initialize Document Analysis client
+      this.documentClient = new DocumentAnalysisClient(
+        this.config.endpoint,
+        credential,
+        {
+          apiVersion: this.config.apiVersion || '2023-07-31'
+      });
+
+      this.isInitialized = true;
+      this.logger.info('Document Intelligence client initialized successfully');
+
+    } catch (error) {
+      this.logger.error('Failed to initialize Document Intelligence client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw new DocumentIntelligenceError('Initialization failed', 'INIT_ERROR', error);
+    }
+  }
+
+  {{#if enableKeyVault}}
+  private async getApiKey(): Promise<string> {
+    if (this.config.keyVault?.enabled && this.secretClient) {
+      try {
+        const secret = await this.secretClient.getSecret(this.config.keyVault.apiKeySecretName!);
+        return secret.value!;
+      } catch (error) {
+        this.logger.error('Failed to retrieve API key from Key Vault', { error });
+        throw new DocumentIntelligenceError('Failed to retrieve API key', 'KEY_VAULT_ERROR', error);
+      }
+    }
+    return this.config.apiKey || process.env.AZURE_DOCUMENT_INTELLIGENCE_API_KEY || '';
+  }
+  {{else}}
+  private async getApiKey(): Promise<string> {
+    return this.config.apiKey || process.env.AZURE_DOCUMENT_INTELLIGENCE_API_KEY || '';
+  }
+  {{/if}}
+
+  async analyzeDocument(
+    modelId: PrebuiltModelType | string,
+    documentSource: string | Uint8Array,
+    options: {
+      pages?: string;
+      locale?: string;
+      features?: string[];
+    } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      await this.rateLimiter.checkLimits();
+
+      this.logger.info('Analyzing document', {
+        requestId,
+        modelId,
+        documentType: typeof documentSource === 'string' ? 'url' : 'bytes',
+        options
+      });
+
+      // Prepare document source
+      let documentInput: any;
+      if (typeof documentSource === 'string') {
+        // URL input
+        documentInput = { urlSource: documentSource };
+      } else {
+        // Byte array input
+        documentInput = { bytes: documentSource };
+      }
+
+      // Start document analysis
+      const poller = await this.documentClient!.beginAnalyzeDocument(
+        modelId,
+        documentInput,
+        {
+          pages: options.pages,
+          locale: options.locale,
+          features: options.features as any
+        }
+      );
+
+      // Wait for completion
+      const result = await poller.pollUntilDone();
+
+      // Process results
+      const analyzedDocuments: AnalyzedDocument[] = [];
+      
+      if (result.documents) {
+        for (const doc of result.documents) {
+          const analyzedDoc: AnalyzedDocument = {
+            docType: doc.docType || 'unknown',
+            confidence: doc.confidence || 0,
+            spans: this.convertSpans(doc.spans || []),
+            fields: this.convertFields(doc.fields || {}),
+            boundingRegions: this.convertBoundingRegions(doc.boundingRegions || [])
+          };
+          analyzedDocuments.push(analyzedDoc);
+        }
+      }
+
+      // Extract tables
+      const tables = this.convertTables(result.tables || []);
+
+      // Extract key-value pairs
+      const keyValuePairs = this.convertKeyValuePairs(result.keyValuePairs || []);
+
+      // Extract content
+      const content = result.content || '';
+
+      const response: DocumentAnalysisResponse = {
+        success: true,
+        modelId,
+        documents: analyzedDocuments,
+        tables,
+        keyValuePairs,
+        content,
+        pages: result.pages?.map(page => ({
+          pageNumber: page.pageNumber || 0,
+          angle: page.angle || 0,
+          width: page.width || 0,
+          height: page.height || 0,
+          unit: page.unit || 'pixel',
+          words: page.words?.map(word => ({
+            content: word.content || '',
+            boundingBox: word.boundingBox || [],
+            confidence: word.confidence || 0,
+            span: {
+              offset: word.span?.offset || 0,
+              length: word.span?.length || 0
+            }
+          })) || [],
+          lines: page.lines?.map(line => ({
+            content: line.content || '',
+            boundingBox: line.boundingBox || [],
+            spans: line.spans?.map(span => ({
+              offset: span.offset || 0,
+              length: span.length || 0
+            })) || []
+          })) || [],
+          selectionMarks: page.selectionMarks?.map(mark => ({
+            state: mark.state as 'selected' | 'unselected',
+            boundingBox: mark.boundingBox || [],
+            confidence: mark.confidence || 0,
+            span: {
+              offset: mark.span?.offset || 0,
+              length: mark.span?.length || 0
+            }
+          })) || []
+        })) || [],
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        modelId,
+        operation: 'analyze-document',
+        duration,
+        success: true,
+        pageCount: result.pages?.length || 0,
+        documentCount: analyzedDocuments.length
+      });
+
+      this.logger.info('Document analysis completed', {
+        requestId,
+        duration,
+        documentCount: analyzedDocuments.length,
+        pageCount: result.pages?.length || 0
+      });
+
+      return response;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        modelId,
+        operation: 'analyze-document',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Document analysis failed', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  // Prebuilt model methods
+  async analyzeInvoice(
+    documentSource: string | Uint8Array,
+    options: { locale?: string } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-invoice', documentSource, options);
+  }
+
+  async analyzeReceipt(
+    documentSource: string | Uint8Array,
+    options: { locale?: string } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-receipt', documentSource, options);
+  }
+
+  async analyzeBusinessCard(
+    documentSource: string | Uint8Array,
+    options: { locale?: string } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-businessCard', documentSource, options);
+  }
+
+  async analyzeIdDocument(
+    documentSource: string | Uint8Array,
+    options: { locale?: string } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-idDocument', documentSource, options);
+  }
+
+  async analyzeW2Form(
+    documentSource: string | Uint8Array
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-tax.us.w2', documentSource);
+  }
+
+  async analyzeLayout(
+    documentSource: string | Uint8Array,
+    options: { pages?: string; features?: string[] } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-layout', documentSource, options);
+  }
+
+  async analyzeRead(
+    documentSource: string | Uint8Array,
+    options: { pages?: string; locale?: string } = {}
+  ): Promise<DocumentAnalysisResponse> {
+    return this.analyzeDocument('prebuilt-read', documentSource, options);
+  }
+
+  // Custom model methods
+  async listCustomModels(): Promise<CustomModelInfo[]> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Listing custom models', { requestId });
+
+      const models: CustomModelInfo[] = [];
+      const modelsIterable = this.documentClient!.listDocumentModels();
+
+      for await (const model of modelsIterable) {
+        models.push({
+          modelId: model.modelId || '',
+          description: model.description || '',
+          createdDateTime: model.createdDateTime || new Date(),
+          tags: model.tags || {},
+          apiVersion: model.apiVersion || ''
+        });
+      }
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        operation: 'list-models',
+        duration,
+        success: true,
+        modelCount: models.length
+      });
+
+      this.logger.info('Custom models listed', {
+        requestId,
+        duration,
+        modelCount: models.length
+      });
+
+      return models;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        operation: 'list-models',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Failed to list custom models', {
+        requestId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  async getCustomModel(modelId: string): Promise<DocumentModelDetails> {
+    await this.ensureInitialized();
+    
+    const startTime = Date.now();
+    const requestId = this.generateRequestId();
+
+    try {
+      this.logger.info('Getting custom model details', { requestId, modelId });
+
+      const model = await this.documentClient!.getDocumentModel(modelId);
+
+      const modelDetails: DocumentModelDetails = {
+        modelId: model.modelId || '',
+        description: model.description || '',
+        createdDateTime: model.createdDateTime || new Date(),
+        tags: model.tags || {},
+        apiVersion: model.apiVersion || '',
+        docTypes: Object.entries(model.docTypes || {}).reduce((acc, [key, value]) => {
+          acc[key] = {
+            description: value.description || '',
+            buildMode: value.buildMode || 'template',
+            fieldSchema: value.fieldSchema || {},
+            fieldConfidence: value.fieldConfidence || {}
+          };
+          return acc;
+        }, {} as any)
+      };
+
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        modelId,
+        operation: 'get-model',
+        duration,
+        success: true
+      });
+
+      this.logger.info('Custom model details retrieved', {
+        requestId,
+        duration,
+        modelId
+      });
+
+      return modelDetails;
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      await this.metricsCollector.recordDocumentIntelligenceRequest({
+        requestId,
+        modelId,
+        operation: 'get-model',
+        duration,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      this.logger.error('Failed to get custom model details', {
+        requestId,
+        duration,
+        modelId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw this.handleApiError(error, requestId);
+    }
+  }
+
+  // Helper methods for data conversion
+  private convertSpans(spans: any[]): DocumentSpan[] {
+    return spans.map(span => ({
+      offset: span.offset || 0,
+      length: span.length || 0
+    }));
+  }
+
+  private convertFields(fields: Record<string, any>): Record<string, DocumentField> {
+    const result: Record<string, DocumentField> = {};
+    
+    for (const [key, field] of Object.entries(fields)) {
+      result[key] = {
+        type: field.type || 'string',
+        value: field.value,
+        content: field.content || '',
+        confidence: field.confidence || 0,
+        spans: this.convertSpans(field.spans || []),
+        boundingRegions: this.convertBoundingRegions(field.boundingRegions || [])
+      };
+    }
+    
+    return result;
+  }
+
+  private convertBoundingRegions(regions: any[]): BoundingRegion[] {
+    return regions.map(region => ({
+      pageNumber: region.pageNumber || 0,
+      boundingBox: region.boundingBox || []
+    }));
+  }
+
+  private convertTables(tables: any[]): DocumentTable[] {
+    return tables.map(table => ({
+      rowCount: table.rowCount || 0,
+      columnCount: table.columnCount || 0,
+      cells: table.cells?.map((cell: any) => ({
+        rowIndex: cell.rowIndex || 0,
+        columnIndex: cell.columnIndex || 0,
+        content: cell.content || '',
+        boundingRegions: this.convertBoundingRegions(cell.boundingRegions || []),
+        spans: this.convertSpans(cell.spans || []),
+        kind: cell.kind || 'content',
+        rowSpan: cell.rowSpan || 1,
+        columnSpan: cell.columnSpan || 1
+      })) || [],
+      boundingRegions: this.convertBoundingRegions(table.boundingRegions || []),
+      spans: this.convertSpans(table.spans || [])
+    }));
+  }
+
+  private convertKeyValuePairs(pairs: any[]): DocumentKeyValuePair[] {
+    return pairs.map(pair => ({
+      key: {
+        content: pair.key?.content || '',
+        boundingRegions: this.convertBoundingRegions(pair.key?.boundingRegions || []),
+        spans: this.convertSpans(pair.key?.spans || [])
+      },
+      value: pair.value ? {
+        content: pair.value.content || '',
+        boundingRegions: this.convertBoundingRegions(pair.value.boundingRegions || []),
+        spans: this.convertSpans(pair.value.spans || [])
+      } : undefined,
+      confidence: pair.confidence || 0
+    }));
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+  }
+
+  private handleApiError(error: any, requestId: string): DocumentIntelligenceError {
+    if (error.status || error.statusCode) {
+      return new DocumentIntelligenceError(
+        error.message || 'Document Intelligence API error',
+        `API_ERROR_${error.status || error.statusCode}`,
+        error,
+        error.status || error.statusCode,
+        requestId
+      );
+    }
+
+    if (error instanceof DocumentIntelligenceError) {
+      return error;
+    }
+
+    return new DocumentIntelligenceError(
+      error instanceof Error ? error.message : 'Unknown error',
+      'UNKNOWN_ERROR',
+      error,
+      500,
+      requestId
+    );
+  }
+
+  private generateRequestId(): string {
+    return `document-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async dispose(): Promise<void> {
+    try {
+      this.logger.info('Disposing Document Intelligence client');
+      
+      await this.metricsCollector.flush();
+      
+      this.isInitialized = false;
+      this.documentClient = null;
+      
+      this.logger.info('Document Intelligence client disposed successfully');
+    } catch (error) {
+      this.logger.error('Error disposing Document Intelligence client', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async healthCheck(): Promise<{ healthy: boolean; details: Record<string, any> }> {
+    try {
+      await this.ensureInitialized();
+      
+      // Test by listing models (lightweight operation)
+      const models = await this.listCustomModels();
+      
+      return {
+        healthy: true,
+        details: {
+          initialized: this.isInitialized,
+          endpoint: this.config.endpoint,
+          customModelCount: models.length,
+          lastCheck: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        details: {
+          initialized: this.isInitialized,
+          endpoint: this.config.endpoint,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      };
+    }
+  }
+}
+
+export default DocumentIntelligenceClient;
