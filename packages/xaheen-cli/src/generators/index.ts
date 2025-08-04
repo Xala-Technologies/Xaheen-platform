@@ -115,6 +115,9 @@ const GENERATOR_CATEGORIES = {
 	// Configuration generators
 	config: ["config", "env", "docs"],
 
+	// Monitoring generators
+	monitoring: ["telemetry-analytics"],
+
 	// Pattern generators
 	patterns: [
 		"ddd",
