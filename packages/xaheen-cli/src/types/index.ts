@@ -296,6 +296,115 @@ export interface GeneratedFile {
   type: 'create' | 'update' | 'append';
 }
 
+// Generator types for Rails-inspired full-stack code generation
+export type GeneratorType = 
+  // Frontend generators
+  | 'component'
+  | 'page'
+  | 'layout'
+  | 'hook'
+  | 'context'
+  | 'provider'
+  // Backend generators
+  | 'api'
+  | 'model'
+  | 'controller'
+  | 'service'
+  | 'middleware'
+  | 'guard'
+  | 'interceptor'
+  | 'pipe'
+  | 'decorator'
+  // Database generators
+  | 'migration'
+  | 'seed'
+  | 'schema'
+  | 'repository'
+  // Full-stack generators
+  | 'scaffold'
+  | 'crud'
+  | 'auth'
+  | 'feature'
+  // Infrastructure generators
+  | 'docker'
+  | 'k8s'
+  | 'ci'
+  | 'deployment'
+  // Integration generators
+  | 'webhook'
+  | 'queue'
+  | 'cron'
+  | 'worker'
+  | 'integration'
+  // Testing generators
+  | 'test'
+  | 'e2e'
+  | 'mock'
+  // Configuration generators
+  | 'config'
+  | 'env'
+  | 'docs';
+
+export interface GeneratorOptions {
+  fields?: string;
+  actions?: string;
+  ai?: string;
+  platform?: string;
+  layout?: string;
+  provider?: string;
+  dryRun?: boolean;
+  force?: boolean;
+  skipTests?: boolean;
+  typescript?: boolean;
+  javascript?: boolean;
+}
+
+export interface GeneratorResult {
+  success: boolean;
+  message: string;
+  files?: string[];
+  commands?: string[];
+  nextSteps?: string[];
+  error?: string;
+}
+
+export interface ProjectContext {
+  name: string;
+  framework: string;
+  backend?: string;
+  database?: string;
+  path: string;
+  config?: any;
+}
+
+// AI-powered generation types
+export interface AIGenerationRequest {
+  type: GeneratorType;
+  name: string;
+  description: string;
+  context: ProjectContext;
+  constraints?: {
+    compliance?: 'norwegian' | 'gdpr' | 'wcag';
+    framework?: string;
+    platform?: string;
+  };
+}
+
+export interface AIGenerationResult {
+  content: string;
+  metadata: {
+    language: string;
+    framework: string;
+    dependencies: string[];
+    imports: string[];
+  };
+  validation: {
+    syntax: boolean;
+    compliance: boolean;
+    accessibility: boolean;
+  };
+}
+
 // Utility types
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
