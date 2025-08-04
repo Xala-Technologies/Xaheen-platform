@@ -3,57 +3,60 @@
  * Single Responsibility: Generate CLI commands from stack configuration
  */
 
-import type { StackState } from '../types/base';
+import type { StackState } from "../types/base";
 
 export class CommandGeneratorService {
 	/**
 	 * Generate CLI command from stack configuration
 	 */
 	public generateCommand(stack: StackState): string {
-		const parts: string[] = ['xaheen create'];
-		
+		const parts: string[] = ["xaheen create"];
+
 		// Add project name
 		parts.push(this.escapeProjectName(stack.projectName));
 
 		// Add framework flags
-		if (stack.webFrontend.length > 0 && !stack.webFrontend.includes('none')) {
-			parts.push(`--web=${stack.webFrontend.join(',')}`);
+		if (stack.webFrontend.length > 0 && !stack.webFrontend.includes("none")) {
+			parts.push(`--web=${stack.webFrontend.join(",")}`);
 		}
 
-		if (stack.nativeFrontend.length > 0 && !stack.nativeFrontend.includes('none')) {
-			parts.push(`--native=${stack.nativeFrontend.join(',')}`);
+		if (
+			stack.nativeFrontend.length > 0 &&
+			!stack.nativeFrontend.includes("none")
+		) {
+			parts.push(`--native=${stack.nativeFrontend.join(",")}`);
 		}
 
 		// Add backend and database
-		if (stack.backend !== 'none') {
+		if (stack.backend !== "none") {
 			parts.push(`--backend=${stack.backend}`);
 		}
 
-		if (stack.database !== 'none') {
+		if (stack.database !== "none") {
 			parts.push(`--database=${stack.database}`);
 		}
 
-		if (stack.orm !== 'none') {
+		if (stack.orm !== "none") {
 			parts.push(`--orm=${stack.orm}`);
 		}
 
 		// Add authentication
-		if (stack.auth !== 'none') {
+		if (stack.auth !== "none") {
 			parts.push(`--auth=${stack.auth}`);
 		}
 
 		// Add UI system
-		if (stack.uiSystem !== 'none') {
+		if (stack.uiSystem !== "none") {
 			parts.push(`--ui=${stack.uiSystem}`);
 		}
 
 		// Add package manager
-		if (stack.packageManager !== 'bun') {
+		if (stack.packageManager !== "bun") {
 			parts.push(`--package-manager=${stack.packageManager}`);
 		}
 
 		// Add runtime
-		if (stack.runtime !== 'bun') {
+		if (stack.runtime !== "bun") {
 			parts.push(`--runtime=${stack.runtime}`);
 		}
 
@@ -61,25 +64,25 @@ export class CommandGeneratorService {
 		this.addIntegrationFlags(parts, stack);
 
 		// Add compliance
-		if (stack.compliance.length > 0 && !stack.compliance.includes('none')) {
-			parts.push(`--compliance=${stack.compliance.join(',')}`);
+		if (stack.compliance.length > 0 && !stack.compliance.includes("none")) {
+			parts.push(`--compliance=${stack.compliance.join(",")}`);
 		}
 
 		// Add addons
-		if (stack.addons.length > 0 && !stack.addons.includes('none')) {
-			parts.push(`--addons=${stack.addons.join(',')}`);
+		if (stack.addons.length > 0 && !stack.addons.includes("none")) {
+			parts.push(`--addons=${stack.addons.join(",")}`);
 		}
 
 		// Add flags
-		if (stack.git === 'true') {
-			parts.push('--git');
+		if (stack.git === "true") {
+			parts.push("--git");
 		}
 
-		if (stack.install === 'true') {
-			parts.push('--install');
+		if (stack.install === "true") {
+			parts.push("--install");
 		}
 
-		return parts.join(' ');
+		return parts.join(" ");
 	}
 
 	private escapeProjectName(projectName: string): string {
@@ -92,49 +95,49 @@ export class CommandGeneratorService {
 
 	private addIntegrationFlags(parts: string[], stack: StackState): void {
 		const integrations: Array<[string, string]> = [
-			['notifications', stack.notifications],
-			['documents', stack.documents],
-			['payments', stack.payments],
-			['analytics', stack.analytics],
-			['monitoring', stack.monitoring],
-			['messaging', stack.messaging],
-			['testing', stack.testing],
-			['devops', stack.devops],
-			['search', stack.search],
-			['caching', stack.caching],
-			['backgroundJobs', stack.backgroundJobs],
-			['i18n', stack.i18n],
-			['cms', stack.cms],
-			['security', stack.security],
+			["notifications", stack.notifications],
+			["documents", stack.documents],
+			["payments", stack.payments],
+			["analytics", stack.analytics],
+			["monitoring", stack.monitoring],
+			["messaging", stack.messaging],
+			["testing", stack.testing],
+			["devops", stack.devops],
+			["search", stack.search],
+			["caching", stack.caching],
+			["backgroundJobs", stack.backgroundJobs],
+			["i18n", stack.i18n],
+			["cms", stack.cms],
+			["security", stack.security],
 		];
 
 		for (const [flag, value] of integrations) {
-			if (value && value !== 'none') {
+			if (value && value !== "none") {
 				parts.push(`--${flag}=${value}`);
 			}
 		}
 
 		// Add SaaS-specific flags
 		const saasIntegrations: Array<[string, string]> = [
-			['saas-admin', stack.saasAdmin],
-			['subscriptions', stack.subscriptions],
-			['licensing', stack.licensing],
-			['rbac', stack.rbac],
-			['multi-tenancy', stack.multiTenancy],
+			["saas-admin", stack.saasAdmin],
+			["subscriptions", stack.subscriptions],
+			["licensing", stack.licensing],
+			["rbac", stack.rbac],
+			["multi-tenancy", stack.multiTenancy],
 		];
 
 		for (const [flag, value] of saasIntegrations) {
-			if (value && value !== 'none') {
+			if (value && value !== "none") {
 				parts.push(`--${flag}=${value}`);
 			}
 		}
 
 		// Add deployment flags
-		if (stack.webDeploy && stack.webDeploy !== 'none') {
+		if (stack.webDeploy && stack.webDeploy !== "none") {
 			parts.push(`--deploy=${stack.webDeploy}`);
 		}
 
-		if (stack.api && stack.api !== 'none') {
+		if (stack.api && stack.api !== "none") {
 			parts.push(`--api=${stack.api}`);
 		}
 	}
@@ -143,61 +146,61 @@ export class CommandGeneratorService {
 	 * Parse command back to stack configuration (for URL state)
 	 */
 	public parseCommand(command: string): Partial<StackState> {
-		const parts = command.split(' ');
+		const parts = command.split(" ");
 		const stack: Partial<StackState> = {};
 
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i];
-			
-			if (part.startsWith('--')) {
-				const [flag, value] = part.split('=');
+
+			if (part.startsWith("--")) {
+				const [flag, value] = part.split("=");
 				const flagName = flag.substring(2);
 
 				switch (flagName) {
-					case 'web':
-						stack.webFrontend = value?.split(',') || [];
+					case "web":
+						stack.webFrontend = value?.split(",") || [];
 						break;
-					case 'native':
-						stack.nativeFrontend = value?.split(',') || [];
+					case "native":
+						stack.nativeFrontend = value?.split(",") || [];
 						break;
-					case 'backend':
+					case "backend":
 						stack.backend = value;
 						break;
-					case 'database':
+					case "database":
 						stack.database = value;
 						break;
-					case 'orm':
+					case "orm":
 						stack.orm = value;
 						break;
-					case 'auth':
+					case "auth":
 						stack.auth = value;
 						break;
-					case 'ui':
+					case "ui":
 						stack.uiSystem = value;
 						break;
-					case 'package-manager':
+					case "package-manager":
 						stack.packageManager = value;
 						break;
-					case 'runtime':
+					case "runtime":
 						stack.runtime = value;
 						break;
-					case 'compliance':
-						stack.compliance = value?.split(',') || [];
+					case "compliance":
+						stack.compliance = value?.split(",") || [];
 						break;
-					case 'addons':
-						stack.addons = value?.split(',') || [];
+					case "addons":
+						stack.addons = value?.split(",") || [];
 						break;
-					case 'git':
-						stack.git = 'true';
+					case "git":
+						stack.git = "true";
 						break;
-					case 'install':
-						stack.install = 'true';
+					case "install":
+						stack.install = "true";
 						break;
 					// Add more parsing rules as needed
 				}
 			} else if (i === 2) {
 				// Project name is the third part (after 'xaheen create')
-				stack.projectName = part.replace(/^"|"$/g, ''); // Remove quotes
+				stack.projectName = part.replace(/^"|"$/g, ""); // Remove quotes
 			}
 		}
 

@@ -1,4 +1,4 @@
-export type ProjectType = 
+export type ProjectType =
 	| "landing-page"
 	| "ecommerce"
 	| "blog"

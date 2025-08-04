@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
-import { TechIcon } from "./tech-icon";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { TechIcon } from "./tech-icon";
 
 interface TechOption {
 	id: string;
@@ -66,9 +66,7 @@ export const TechOptionCard: React.FC<TechOptionCardProps> = ({
 									<span
 										className={cn(
 											"font-medium text-xs sm:text-sm",
-											isSelected
-												? "text-primary"
-												: "text-foreground",
+											isSelected ? "text-primary" : "text-foreground",
 										)}
 									>
 										{tech.name}

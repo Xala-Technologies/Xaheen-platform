@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { useTheme } from "@xala-technologies/ui-system/hooks";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface TechIconProps {
@@ -23,10 +23,10 @@ export const TechIcon: React.FC<TechIconProps> = ({
 
 	const isExternalIcon = icon.startsWith("http");
 	// Handle icon path - if it already starts with /, use as-is, otherwise add /icon/ prefix
-	const iconSrc = isExternalIcon 
-		? icon 
-		: icon.startsWith("/") 
-			? `/icon${icon}` 
+	const iconSrc = isExternalIcon
+		? icon
+		: icon.startsWith("/")
+			? `/icon${icon}`
 			: `/icon/${icon}.svg`;
 
 	return (
@@ -42,7 +42,8 @@ export const TechIcon: React.FC<TechIconProps> = ({
 					target.style.display = "none";
 				}}
 				style={{
-					filter: theme === "dark" && !isExternalIcon ? "brightness(0.9)" : "none",
+					filter:
+						theme === "dark" && !isExternalIcon ? "brightness(0.9)" : "none",
 				}}
 			/>
 		</div>

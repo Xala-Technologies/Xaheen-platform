@@ -3,7 +3,7 @@
  * Single Responsibility: Encapsulate project type behavior and data
  */
 
-import type { ProjectTypeConfig, ProjectType } from '../types/base';
+import type { ProjectType, ProjectTypeConfig } from "../types/base";
 
 export class ProjectTypeDefinition implements ProjectTypeConfig {
 	constructor(
@@ -13,14 +13,16 @@ export class ProjectTypeDefinition implements ProjectTypeConfig {
 		public readonly icon: string,
 		public readonly color: string,
 		public readonly relevantCategories: readonly string[],
-		public readonly defaultSelections: Record<string, string | string[]>
+		public readonly defaultSelections: Record<string, string | string[]>,
 	) {}
 
 	public isRelevantCategory(category: string): boolean {
 		return this.relevantCategories.includes(category);
 	}
 
-	public getDefaultForCategory(category: string): string | string[] | undefined {
+	public getDefaultForCategory(
+		category: string,
+	): string | string[] | undefined {
 		return this.defaultSelections[category];
 	}
 
@@ -35,7 +37,7 @@ export class ProjectTypeDefinition implements ProjectTypeConfig {
 
 export class ProjectTypeRegistry {
 	constructor(
-		private readonly projectTypes: Map<ProjectType, ProjectTypeDefinition>
+		private readonly projectTypes: Map<ProjectType, ProjectTypeDefinition>,
 	) {}
 
 	public getProjectType(id: ProjectType): ProjectTypeDefinition | null {
@@ -54,7 +56,11 @@ export class ProjectTypeRegistry {
 		return this.projectTypes.has(id);
 	}
 
-	public findByRelevantCategory(category: string): readonly ProjectTypeDefinition[] {
-		return this.getAllProjectTypes().filter(pt => pt.isRelevantCategory(category));
+	public findByRelevantCategory(
+		category: string,
+	): readonly ProjectTypeDefinition[] {
+		return this.getAllProjectTypes().filter((pt) =>
+			pt.isRelevantCategory(category),
+		);
 	}
 }

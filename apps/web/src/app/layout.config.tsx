@@ -7,12 +7,7 @@ import mainLogo from "@/public/logo.svg";
 
 export const logo = (
 	<>
-		<Image
-			alt="Xaheen"
-			src={mainLogo}
-			className="w-8"
-			aria-label="Xaheen"
-		/>
+		<Image alt="Xaheen" src={mainLogo} className="w-8" aria-label="Xaheen" />
 	</>
 );
 

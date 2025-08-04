@@ -61,7 +61,8 @@ button {
 }
 
 /* Enhanced input typography */
-input, textarea {
+input,
+textarea {
 	font-size: 1rem; /* 16px */
 	line-height: 1.5;
 }
@@ -140,7 +141,8 @@ textarea:focus-visible {
 }
 
 /* Enhanced readability for code blocks */
-code, pre {
+code,
+pre {
 	font-size: 0.9em;
 	line-height: 1.4;
 	letter-spacing: 0.01em;
@@ -151,15 +153,15 @@ code, pre {
 	h1 {
 		font-size: 2rem; /* 32px on mobile */
 	}
-	
+
 	h2 {
 		font-size: 1.75rem; /* 28px on mobile */
 	}
-	
+
 	h3 {
 		font-size: 1.375rem; /* 22px on mobile */
 	}
-	
+
 	p {
 		font-size: 1rem; /* 16px on mobile */
 	}

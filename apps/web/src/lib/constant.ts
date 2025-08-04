@@ -1655,13 +1655,19 @@ export const PROJECT_TYPES = [
 		description: "Marketing sites and product showcases",
 		icon: "/icon/landing-page.svg",
 		color: "from-blue-500 to-blue-700",
-		relevantCategories: ["webFrontend", "uiSystem", "analytics", "cms", "webDeploy"],
+		relevantCategories: [
+			"webFrontend",
+			"uiSystem",
+			"analytics",
+			"cms",
+			"webDeploy",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			uiSystem: "xala",
 			analytics: "vercel-analytics",
-			webDeploy: "vercel"
-		}
+			webDeploy: "vercel",
+		},
 	},
 	{
 		id: "ecommerce",
@@ -1669,7 +1675,16 @@ export const PROJECT_TYPES = [
 		description: "Online stores and marketplaces",
 		icon: "/icon/ecommerce.svg",
 		color: "from-green-500 to-green-700",
-		relevantCategories: ["webFrontend", "backend", "database", "auth", "payments", "analytics", "security", "uiSystem"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"auth",
+			"payments",
+			"analytics",
+			"security",
+			"uiSystem",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
@@ -1677,8 +1692,8 @@ export const PROJECT_TYPES = [
 			auth: ["better-auth"],
 			payments: "stripe",
 			analytics: "vercel-analytics",
-			security: ["snyk"]
-		}
+			security: ["snyk"],
+		},
 	},
 	{
 		id: "blog",
@@ -1686,13 +1701,19 @@ export const PROJECT_TYPES = [
 		description: "Content management and publishing",
 		icon: "/icon/blog.svg",
 		color: "from-purple-500 to-purple-700",
-		relevantCategories: ["webFrontend", "cms", "analytics", "uiSystem", "webDeploy"],
+		relevantCategories: [
+			"webFrontend",
+			"cms",
+			"analytics",
+			"uiSystem",
+			"webDeploy",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			cms: ["strapi"],
 			analytics: "vercel-analytics",
-			uiSystem: ["xala"]
-		}
+			uiSystem: ["xala"],
+		},
 	},
 	{
 		id: "portfolio",
@@ -1704,8 +1725,8 @@ export const PROJECT_TYPES = [
 		defaultSelections: {
 			webFrontend: ["next"],
 			uiSystem: "xala",
-			analytics: "vercel-analytics"
-		}
+			analytics: "vercel-analytics",
+		},
 	},
 	{
 		id: "dashboard",
@@ -1713,14 +1734,22 @@ export const PROJECT_TYPES = [
 		description: "Admin panels and analytics dashboards",
 		icon: "/icon/dashboard.svg",
 		color: "from-indigo-500 to-indigo-700",
-		relevantCategories: ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"auth",
+			"analytics",
+			"monitoring",
+			"uiSystem",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
 			database: ["postgres"],
 			auth: ["better-auth"],
-			monitoring: "sentry"
-		}
+			monitoring: "sentry",
+		},
 	},
 	{
 		id: "api-backend",
@@ -1728,15 +1757,24 @@ export const PROJECT_TYPES = [
 		description: "Microservices and API-first applications",
 		icon: "/icon/api-backend.svg",
 		color: "from-gray-500 to-gray-700",
-		relevantCategories: ["api", "backend", "database", "orm", "auth", "monitoring", "testing", "security"],
+		relevantCategories: [
+			"api",
+			"backend",
+			"database",
+			"orm",
+			"auth",
+			"monitoring",
+			"testing",
+			"security",
+		],
 		defaultSelections: {
 			api: ["trpc"],
 			backend: ["hono"],
 			database: ["postgres"],
 			orm: ["drizzle"],
 			auth: ["better-auth"],
-			monitoring: "sentry"
-		}
+			monitoring: "sentry",
+		},
 	},
 	{
 		id: "saas-multi-tenant",
@@ -1744,7 +1782,23 @@ export const PROJECT_TYPES = [
 		description: "Shared infrastructure SAAS platform",
 		icon: "/icon/saas-multi-tenant.svg",
 		color: "from-blue-600 to-purple-600",
-		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"orm",
+			"auth",
+			"saasAdmin",
+			"subscriptions",
+			"licensing",
+			"rbac",
+			"multiTenancy",
+			"analytics",
+			"monitoring",
+			"security",
+			"testing",
+			"compliance",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
@@ -1758,8 +1812,8 @@ export const PROJECT_TYPES = [
 			multiTenancy: ["schema-separation"],
 			monitoring: "sentry",
 			security: ["snyk"],
-			compliance: ["gdpr"]
-		}
+			compliance: ["gdpr"],
+		},
 	},
 	{
 		id: "saas-single-tenant",
@@ -1767,7 +1821,23 @@ export const PROJECT_TYPES = [
 		description: "Dedicated per-customer SAAS",
 		icon: "/icon/saas-single-tenant.svg",
 		color: "from-purple-600 to-purple-800",
-		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "analytics", "monitoring", "security", "testing", "compliance", "devops"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"orm",
+			"auth",
+			"saasAdmin",
+			"subscriptions",
+			"licensing",
+			"rbac",
+			"analytics",
+			"monitoring",
+			"security",
+			"testing",
+			"compliance",
+			"devops",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
@@ -1778,8 +1848,8 @@ export const PROJECT_TYPES = [
 			subscriptions: "stripe-billing",
 			licensing: "feature-flags",
 			rbac: "role-permissions",
-			devops: ["docker"]
-		}
+			devops: ["docker"],
+		},
 	},
 	{
 		id: "saas-enterprise",
@@ -1787,7 +1857,25 @@ export const PROJECT_TYPES = [
 		description: "Large organization SAAS platform",
 		icon: "/icon/saas-enterprise.svg",
 		color: "from-red-600 to-red-800",
-		relevantCategories: ["webFrontend", "backend", "database", "orm", "auth", "saasAdmin", "subscriptions", "licensing", "rbac", "multiTenancy", "analytics", "monitoring", "security", "testing", "compliance", "devops", "messaging"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"orm",
+			"auth",
+			"saasAdmin",
+			"subscriptions",
+			"licensing",
+			"rbac",
+			"multiTenancy",
+			"analytics",
+			"monitoring",
+			"security",
+			"testing",
+			"compliance",
+			"devops",
+			"messaging",
+		],
 		defaultSelections: {
 			webFrontend: ["angular"],
 			backend: ["dotnet"],
@@ -1800,8 +1888,8 @@ export const PROJECT_TYPES = [
 			rbac: "role-permissions",
 			multiTenancy: ["schema-separation"],
 			messaging: "rabbitmq",
-			compliance: ["iso27001"]
-		}
+			compliance: ["iso27001"],
+		},
 	},
 	{
 		id: "b2b-platform",
@@ -1809,15 +1897,26 @@ export const PROJECT_TYPES = [
 		description: "Business-to-business applications",
 		icon: "/icon/b2b-platform.svg",
 		color: "from-teal-600 to-teal-800",
-		relevantCategories: ["webFrontend", "backend", "database", "auth", "rbac", "analytics", "monitoring", "security", "compliance", "messaging"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"auth",
+			"rbac",
+			"analytics",
+			"monitoring",
+			"security",
+			"compliance",
+			"messaging",
+		],
 		defaultSelections: {
 			webFrontend: ["angular"],
 			backend: ["dotnet"],
 			database: ["postgres"],
 			auth: ["auth0"],
 			rbac: "role-permissions",
-			messaging: ["rabbitmq"]
-		}
+			messaging: ["rabbitmq"],
+		},
 	},
 	{
 		id: "b2c-app",
@@ -1825,15 +1924,24 @@ export const PROJECT_TYPES = [
 		description: "Consumer-facing applications",
 		icon: "/icon/b2c-app.svg",
 		color: "from-orange-500 to-orange-700",
-		relevantCategories: ["webFrontend", "backend", "database", "auth", "analytics", "monitoring", "uiSystem", "compliance"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"auth",
+			"analytics",
+			"monitoring",
+			"uiSystem",
+			"compliance",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
 			database: ["postgres"],
 			auth: ["better-auth"],
 			analytics: "vercel-analytics",
-			uiSystem: ["xala"]
-		}
+			uiSystem: ["xala"],
+		},
 	},
 	{
 		id: "marketplace",
@@ -1841,7 +1949,18 @@ export const PROJECT_TYPES = [
 		description: "Multi-vendor platforms",
 		icon: "/icon/marketplace.svg",
 		color: "from-yellow-600 to-yellow-800",
-		relevantCategories: ["webFrontend", "backend", "database", "auth", "payments", "rbac", "analytics", "monitoring", "security", "messaging"],
+		relevantCategories: [
+			"webFrontend",
+			"backend",
+			"database",
+			"auth",
+			"payments",
+			"rbac",
+			"analytics",
+			"monitoring",
+			"security",
+			"messaging",
+		],
 		defaultSelections: {
 			webFrontend: ["next"],
 			backend: ["next"],
@@ -1849,9 +1968,9 @@ export const PROJECT_TYPES = [
 			auth: ["auth0"],
 			payments: "stripe",
 			rbac: "role-permissions",
-			messaging: ["rabbitmq"]
-		}
-	}
+			messaging: ["rabbitmq"],
+		},
+	},
 ];
 
 export const PRESET_TEMPLATES = [

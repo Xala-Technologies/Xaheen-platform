@@ -1,4 +1,4 @@
-import { RefreshCw, Shuffle, Settings, Star, Share2 } from "lucide-react";
+import { RefreshCw, Settings, Share2, Shuffle, Star } from "lucide-react";
 import type { StackState } from "@/lib/types/index";
 
 interface StackActionsProps {

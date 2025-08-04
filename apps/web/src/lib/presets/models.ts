@@ -3,7 +3,7 @@
  * Single Responsibility: Encapsulate preset template behavior
  */
 
-import type { PresetTemplate, StackState, ProjectType } from '../types/base';
+import type { PresetTemplate, ProjectType, StackState } from "../types/base";
 
 export class PresetDefinition implements PresetTemplate {
 	constructor(
@@ -12,7 +12,7 @@ export class PresetDefinition implements PresetTemplate {
 		public readonly description: string,
 		public readonly projectType: string,
 		public readonly stack: Partial<StackState>,
-		public readonly examples: readonly string[] = []
+		public readonly examples: readonly string[] = [],
 	) {}
 
 	public getProjectType(): ProjectType {
@@ -33,20 +33,22 @@ export class PresetDefinition implements PresetTemplate {
 }
 
 export class PresetRegistry {
-	constructor(
-		private readonly presets: readonly PresetDefinition[]
-	) {}
+	constructor(private readonly presets: readonly PresetDefinition[]) {}
 
 	public getAllPresets(): readonly PresetDefinition[] {
 		return this.presets;
 	}
 
 	public getPresetById(id: string): PresetDefinition | null {
-		return this.presets.find(preset => preset.id === id) || null;
+		return this.presets.find((preset) => preset.id === id) || null;
 	}
 
-	public getPresetsForProjectType(projectType: ProjectType): readonly PresetDefinition[] {
-		return this.presets.filter(preset => preset.isForProjectType(projectType));
+	public getPresetsForProjectType(
+		projectType: ProjectType,
+	): readonly PresetDefinition[] {
+		return this.presets.filter((preset) =>
+			preset.isForProjectType(projectType),
+		);
 	}
 
 	public hasPresets(): boolean {

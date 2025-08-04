@@ -3,18 +3,16 @@
  * Centralized export for presets functionality
  */
 
+// Data
+export { PRESET_DEFINITIONS } from "./data";
 // Models
 export {
 	PresetDefinition,
 	PresetRegistry,
-} from './models';
-
+} from "./models";
 // Registry
 export {
-	presetRegistry,
 	createPresetRegistry,
 	getLegacyPresetTemplates,
-} from './registry';
-
-// Data
-export { PRESET_DEFINITIONS } from './data';
+	presetRegistry,
+} from "./registry";

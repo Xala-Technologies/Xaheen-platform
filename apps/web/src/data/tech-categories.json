@@ -1,148 +1,148 @@
 {
-    "categories": [
-      {
-        "id": "webFrontend",
-        "sort_order": 1
-      },
-      {
-        "id": "backend",
-        "sort_order": 2
-      },
-      {
-        "id": "nativeFrontend",
-        "sort_order": 3
-      },
-      {
-        "id": "api",
-        "sort_order": 4
-      },
-      {
-        "id": "runtime",
-        "sort_order": 5
-      },
-      {
-        "id": "database",
-        "sort_order": 6
-      },
-      {
-        "id": "orm",
-        "sort_order": 7
-      },
-      {
-        "id": "dbSetup",
-        "sort_order": 8
-      },
-      {
-        "id": "webDeploy",
-        "sort_order": 9
-      },
-      {
-        "id": "auth",
-        "sort_order": 10
-      },
-      {
-        "id": "packageManager",
-        "sort_order": 11
-      },
-      {
-        "id": "uiSystem",
-        "sort_order": 12
-      },
-      {
-        "id": "compliance",
-        "sort_order": 13
-      },
-      {
-        "id": "addons",
-        "sort_order": 14
-      },
-      {
-        "id": "git",
-        "sort_order": 15
-      },
-      {
-        "id": "notifications",
-        "sort_order": 16
-      },
-      {
-        "id": "documents",
-        "sort_order": 17
-      },
-      {
-        "id": "payments",
-        "sort_order": 18
-      },
-      {
-        "id": "analytics",
-        "sort_order": 19
-      },
-      {
-        "id": "monitoring",
-        "sort_order": 20
-      },
-      {
-        "id": "messaging",
-        "sort_order": 21
-      },
-      {
-        "id": "install",
-        "sort_order": 22
-      },
-      {
-        "id": "testing",
-        "sort_order": 23
-      },
-      {
-        "id": "devops",
-        "sort_order": 24
-      },
-      {
-        "id": "search",
-        "sort_order": 25
-      },
-      {
-        "id": "caching",
-        "sort_order": 26
-      },
-      {
-        "id": "backgroundJobs",
-        "sort_order": 27
-      },
-      {
-        "id": "i18n",
-        "sort_order": 29
-      },
-      {
-        "id": "cms",
-        "sort_order": 30
-      },
-      {
-        "id": "security",
-        "sort_order": 31
-      },
-      {
-        "id": "saasAdmin",
-        "sort_order": 32
-      },
-      {
-        "id": "subscriptions",
-        "sort_order": 33
-      },
-      {
-        "id": "licensing",
-        "sort_order": 34
-      },
-      {
-        "id": "rbac",
-        "sort_order": 35
-      },
-      {
-        "id": "multiTenancy",
-        "sort_order": 36
-      },
-      {
-        "id": "examples",
-        "sort_order": 37
-      }
-    ]
+	"categories": [
+		{
+			"id": "webFrontend",
+			"sort_order": 1
+		},
+		{
+			"id": "backend",
+			"sort_order": 2
+		},
+		{
+			"id": "nativeFrontend",
+			"sort_order": 3
+		},
+		{
+			"id": "api",
+			"sort_order": 4
+		},
+		{
+			"id": "runtime",
+			"sort_order": 5
+		},
+		{
+			"id": "database",
+			"sort_order": 6
+		},
+		{
+			"id": "orm",
+			"sort_order": 7
+		},
+		{
+			"id": "dbSetup",
+			"sort_order": 8
+		},
+		{
+			"id": "webDeploy",
+			"sort_order": 9
+		},
+		{
+			"id": "auth",
+			"sort_order": 10
+		},
+		{
+			"id": "packageManager",
+			"sort_order": 11
+		},
+		{
+			"id": "uiSystem",
+			"sort_order": 12
+		},
+		{
+			"id": "compliance",
+			"sort_order": 13
+		},
+		{
+			"id": "addons",
+			"sort_order": 14
+		},
+		{
+			"id": "git",
+			"sort_order": 15
+		},
+		{
+			"id": "notifications",
+			"sort_order": 16
+		},
+		{
+			"id": "documents",
+			"sort_order": 17
+		},
+		{
+			"id": "payments",
+			"sort_order": 18
+		},
+		{
+			"id": "analytics",
+			"sort_order": 19
+		},
+		{
+			"id": "monitoring",
+			"sort_order": 20
+		},
+		{
+			"id": "messaging",
+			"sort_order": 21
+		},
+		{
+			"id": "install",
+			"sort_order": 22
+		},
+		{
+			"id": "testing",
+			"sort_order": 23
+		},
+		{
+			"id": "devops",
+			"sort_order": 24
+		},
+		{
+			"id": "search",
+			"sort_order": 25
+		},
+		{
+			"id": "caching",
+			"sort_order": 26
+		},
+		{
+			"id": "backgroundJobs",
+			"sort_order": 27
+		},
+		{
+			"id": "i18n",
+			"sort_order": 29
+		},
+		{
+			"id": "cms",
+			"sort_order": 30
+		},
+		{
+			"id": "security",
+			"sort_order": 31
+		},
+		{
+			"id": "saasAdmin",
+			"sort_order": 32
+		},
+		{
+			"id": "subscriptions",
+			"sort_order": 33
+		},
+		{
+			"id": "licensing",
+			"sort_order": 34
+		},
+		{
+			"id": "rbac",
+			"sort_order": 35
+		},
+		{
+			"id": "multiTenancy",
+			"sort_order": 36
+		},
+		{
+			"id": "examples",
+			"sort_order": 37
+		}
+	]
 }

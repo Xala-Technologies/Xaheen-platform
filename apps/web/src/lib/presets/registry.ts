@@ -3,8 +3,8 @@
  * Single Responsibility: Centralized registry for preset templates
  */
 
-import { PresetRegistry } from './models';
-import { PRESET_DEFINITIONS } from './data';
+import { PRESET_DEFINITIONS } from "./data";
+import { PresetRegistry } from "./models";
 
 /**
  * Factory function to create the presets registry
@@ -22,7 +22,7 @@ export const presetRegistry = createPresetRegistry();
  * Legacy compatibility layer
  */
 export function getLegacyPresetTemplates(): readonly any[] {
-	return PRESET_DEFINITIONS.map(def => ({
+	return PRESET_DEFINITIONS.map((def) => ({
 		id: def.id,
 		name: def.name,
 		description: def.description,

@@ -1,31 +1,29 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { CATEGORY_ORDER, PRESET_TEMPLATES, TECH_OPTIONS } from "@/lib/data";
 import {
-	TECH_OPTIONS,
-	PRESET_TEMPLATES,
-	CATEGORY_ORDER,
-} from "@/lib/data";
-
+	generateCommandFromStack,
+	mapStackToServices,
+} from "@/lib/services/cli-v2-command-generator";
+import { cn } from "@/lib/utils";
+import { CommandDisplayV2 } from "./stack-builder/command-display-v2";
+import { generateCommand } from "./stack-builder/command-generator";
+import { analyzeStackCompatibility } from "./stack-builder/compatibility-analysis";
+import { QuickPresets } from "./stack-builder/quick-presets";
+import { SelectedStackDisplay } from "./stack-builder/selected-stack-display";
+import { StackActions } from "./stack-builder/stack-actions";
+import { StackBuilderTabs } from "./stack-builder/stack-builder-tabs";
 // Import modular components
 import { TechCategorySection } from "./stack-builder/tech-category-section";
-import { StackActions } from "./stack-builder/stack-actions";
-import { CommandDisplayV2 } from "./stack-builder/command-display-v2";
-import { SelectedStackDisplay } from "./stack-builder/selected-stack-display";
-import { QuickPresets } from "./stack-builder/quick-presets";
-import { StackBuilderTabs } from "./stack-builder/stack-builder-tabs";
 import { useStackBuilder } from "./stack-builder/use-stack-builder";
 import { getBadgeColors, getCategoryDisplayName } from "./stack-builder/utils";
-import { analyzeStackCompatibility } from "./stack-builder/compatibility-analysis";
-import { generateCommand } from "./stack-builder/command-generator";
-import { generateCommandFromStack, mapStackToServices } from "@/lib/services/cli-v2-command-generator";
 
 /**
  * StackBuilder component - Refactored following SOLID principles
- * 
+ *
  * Single Responsibility: Main component only handles layout and coordination
  * Open/Closed: Extensible through modular components
  * Liskov Substitution: Components are interchangeable
@@ -43,7 +41,7 @@ const StackBuilder: React.FC = () => {
 		lastSavedStack,
 		sectionRefs,
 		contentRef,
-		
+
 		// Actions
 		resetToDefaults,
 		getRandomStack,
@@ -60,15 +58,17 @@ const StackBuilder: React.FC = () => {
 	const [selectedBundle, setSelectedBundle] = useState<string>("");
 
 	// Analyze stack compatibility
-	const compatibilityAnalysis = useMemo(() => 
-		analyzeStackCompatibility(stack), [stack]
+	const compatibilityAnalysis = useMemo(
+		() => analyzeStackCompatibility(stack),
+		[stack],
 	);
 
 	// Generate CLI commands (v1 and v2)
-	const command = useMemo(() => 
-		generateCommand({ ...stack, projectName }), [stack, projectName]
+	const command = useMemo(
+		() => generateCommand({ ...stack, projectName }),
+		[stack, projectName],
 	);
-	
+
 	const commandV2 = useMemo(() => {
 		if (selectedBundle) {
 			// Use bundle-based command
@@ -81,13 +81,15 @@ const StackBuilder: React.FC = () => {
 	// Generate selected badges
 	const selectedBadges = useMemo(() => {
 		const badges: React.ReactNode[] = [];
-		
+
 		Object.entries(stack).forEach(([categoryKey, value]) => {
 			if (categoryKey === "projectName") return;
-			
+
 			const values = Array.isArray(value) ? value : [value];
-			const validValues = values.filter(v => v && v !== "none" && v !== "false");
-			
+			const validValues = values.filter(
+				(v) => v && v !== "none" && v !== "false",
+			);
+
 			validValues.forEach((val) => {
 				const colorClasses = getBadgeColors(categoryKey);
 				badges.push(
@@ -95,15 +97,15 @@ const StackBuilder: React.FC = () => {
 						key={`${categoryKey}-${val}`}
 						className={cn(
 							"inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
-							colorClasses
+							colorClasses,
 						)}
 					>
 						{val}
-					</span>
+					</span>,
 				);
 			});
 		});
-		
+
 		return badges;
 	}, [stack]);
 

@@ -1,23 +1,20 @@
-import { useEffect, useRef, useState } from "react";
 import { useQueryStates } from "nuqs";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-	DEFAULT_STACK,
-	PRESET_TEMPLATES,
-	TECH_OPTIONS,
-} from "@/lib/data";
-import {
-	isOptionCompatible as isCompatible,
-} from "@/lib/tech-compatibility";
-import type { StackState, TechCategory } from "@/lib/types/base";
+import { DEFAULT_STACK, PRESET_TEMPLATES, TECH_OPTIONS } from "@/lib/data";
 import { stackParsers, stackQueryStatesOptions } from "@/lib/stack-url-state";
+import { isOptionCompatible as isCompatible } from "@/lib/tech-compatibility";
+import type { StackState, TechCategory } from "@/lib/types/base";
 
 /**
  * Custom hook for managing stack builder state and logic
  * Follows Single Responsibility Principle - only handles state management
  */
 export const useStackBuilder = () => {
-	const [stack, setStack] = useQueryStates(stackParsers, stackQueryStatesOptions);
+	const [stack, setStack] = useQueryStates(
+		stackParsers,
+		stackQueryStatesOptions,
+	);
 	const [projectName, setProjectName] = useState("");
 	const [copied, setCopied] = useState(false);
 	const [lastSavedStack, setLastSavedStack] = useState<StackState | null>(null);
@@ -43,19 +40,24 @@ export const useStackBuilder = () => {
 
 	const getRandomStack = (): void => {
 		const randomStack: Partial<StackState> = {};
-		
+
 		Object.entries(TECH_OPTIONS).forEach(([category, options]) => {
 			if (options.length > 0) {
-				const randomOption = options[Math.floor(Math.random() * options.length)];
-				if (category === "addons" || category === "examples" || 
-					category === "webFrontend" || category === "nativeFrontend") {
+				const randomOption =
+					options[Math.floor(Math.random() * options.length)];
+				if (
+					category === "addons" ||
+					category === "examples" ||
+					category === "webFrontend" ||
+					category === "nativeFrontend"
+				) {
 					randomStack[category as keyof StackState] = [randomOption.id] as any;
 				} else {
 					randomStack[category as keyof StackState] = randomOption.id as any;
 				}
 			}
 		});
-		
+
 		setStack(randomStack as StackState);
 		toast.success("Random stack generated");
 	};
@@ -90,9 +92,13 @@ export const useStackBuilder = () => {
 
 	const handleTechSelect = (category: string, techId: string): void => {
 		const categoryKey = category as keyof StackState;
-		
-		if (categoryKey === "addons" || categoryKey === "examples" || 
-			categoryKey === "webFrontend" || categoryKey === "nativeFrontend") {
+
+		if (
+			categoryKey === "addons" ||
+			categoryKey === "examples" ||
+			categoryKey === "webFrontend" ||
+			categoryKey === "nativeFrontend"
+		) {
 			const currentArray = (stack[categoryKey] as string[]) || [];
 			const newArray = currentArray.includes(techId)
 				? currentArray.filter((id) => id !== techId)
@@ -117,7 +123,11 @@ export const useStackBuilder = () => {
 		}
 	};
 
-	const isOptionCompatible = (stack: StackState, category: string, techId: string): boolean => {
+	const isOptionCompatible = (
+		stack: StackState,
+		category: string,
+		techId: string,
+	): boolean => {
 		return isCompatible(category as TechCategory, techId, stack);
 	};
 
@@ -131,7 +141,7 @@ export const useStackBuilder = () => {
 		lastSavedStack,
 		sectionRefs,
 		contentRef,
-		
+
 		// Actions
 		resetToDefaults,
 		getRandomStack,

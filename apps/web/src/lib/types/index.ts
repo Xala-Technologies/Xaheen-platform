@@ -3,22 +3,19 @@
  * Centralized export for all type definitions
  */
 
-export type {
-	TechOption,
-	TechOptions,
-	ProjectTypeConfig,
-	PresetTemplate,
-	StackState,
-	TechCategory,
-	ProjectType,
-	ProjectTypeId,
-	CompatibilityResult,
-	ReadonlyStackState
-} from './base';
-
 // Legacy compatibility exports
 export type {
-	TechOption as TechStackOption,
+	CompatibilityResult,
+	PresetTemplate,
+	PresetTemplate as PresetDefinition,
+	ProjectType,
+	ProjectTypeConfig,
 	ProjectTypeConfig as ProjectTypeDefinition,
-	PresetTemplate as PresetDefinition
-} from './base';
+	ProjectTypeId,
+	ReadonlyStackState,
+	StackState,
+	TechCategory,
+	TechOption,
+	TechOption as TechStackOption,
+	TechOptions,
+} from "./base";

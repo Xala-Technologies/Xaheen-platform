@@ -19,17 +19,20 @@ const NpmPackage = () => {
 				if (data && data.length > 0) {
 					// Handle different tag formats: v1.0.0, 1.0.0, @scope/package@1.0.0
 					let latestVersion = data[0].tag_name;
-					
+
 					// Remove 'v' prefix if present
-					if (latestVersion.startsWith('v')) {
+					if (latestVersion.startsWith("v")) {
 						latestVersion = latestVersion.substring(1);
 					}
-					
+
 					// Handle @scope/package@version format
-					if (latestVersion.includes('@') && latestVersion.split('@').length > 1) {
-						latestVersion = latestVersion.split('@').pop();
+					if (
+						latestVersion.includes("@") &&
+						latestVersion.split("@").length > 1
+					) {
+						latestVersion = latestVersion.split("@").pop();
 					}
-					
+
 					setVersion(latestVersion);
 				} else {
 					setVersion("?.?.?");

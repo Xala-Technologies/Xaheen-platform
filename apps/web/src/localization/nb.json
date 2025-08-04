@@ -1,19 +1,19 @@
 {
-  "homepage": {
-    "build_title": "Bygg noe fantastisk",
-    "build_description": "Beskriv prosjektideen din og kom i gang umiddelbart",
-    "subtitle": "Produksjonsklar • Tilpassbar • Beste praksis inkludert",
-    "quick_templates_title": "Hurtigstart-maler",
-    "quick_templates_description": "Velg fra våre kuraterte prosjektmaler",
-    "generate_button": "Generer",
-    "generated_command_title": "Generert kommando",
-    "copy_button": "KOPIER",
-    "copied_button": "KOPIERT!",
-    "textarea_placeholder": "Be Xaheen om å lage et dashbord for å..."
-  },
-  "common": {
-    "loading": "Laster...",
-    "error": "Feil",
-    "success": "Suksess"
-  }
+	"homepage": {
+		"build_title": "Bygg noe fantastisk",
+		"build_description": "Beskriv prosjektideen din og kom i gang umiddelbart",
+		"subtitle": "Produksjonsklar • Tilpassbar • Beste praksis inkludert",
+		"quick_templates_title": "Hurtigstart-maler",
+		"quick_templates_description": "Velg fra våre kuraterte prosjektmaler",
+		"generate_button": "Generer",
+		"generated_command_title": "Generert kommando",
+		"copy_button": "KOPIER",
+		"copied_button": "KOPIERT!",
+		"textarea_placeholder": "Be Xaheen om å lage et dashbord for å..."
+	},
+	"common": {
+		"loading": "Laster...",
+		"error": "Feil",
+		"success": "Suksess"
+	}
 }

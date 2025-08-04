@@ -1,178 +1,245 @@
 {
-  "version": "2.0.0",
-  "features": {
-    "serviceArchitecture": {
-      "title": "Service-Based Architecture",
-      "description": "Modular service system following SOLID principles",
-      "highlights": [
-        "Frontend frameworks (Next.js, Nuxt, Remix)",
-        "Authentication providers (Clerk, Auth0, Better Auth)",
-        "Database integrations (PostgreSQL, MySQL, MongoDB)",
-        "Payment systems (Stripe, Vipps)",
-        "Norwegian compliance (BankID, Altinn)"
-      ]
-    },
-    "intelligentBundling": {
-      "title": "Intelligent Service Bundling",
-      "description": "Pre-configured bundles for common use cases",
-      "bundles": [
-        {
-          "id": "saas-starter",
-          "name": "SaaS Starter",
-          "emoji": "🚀",
-          "description": "Essential SaaS features for getting started",
-          "services": ["frontend", "backend", "database", "auth", "payments"]
-        },
-        {
-          "id": "saas-professional", 
-          "name": "SaaS Professional",
-          "emoji": "💼",
-          "description": "Full-featured SaaS platform with advanced capabilities",
-          "services": ["frontend", "backend", "database", "auth", "payments", "email", "monitoring", "rbac", "multitenancy"]
-        },
-        {
-          "id": "saas-complete",
-          "name": "SaaS Complete",
-          "emoji": "💎", 
-          "description": "Complete SaaS application with multi-tenancy and billing",
-          "services": ["frontend", "backend", "database", "auth", "payments", "email", "monitoring", "rbac", "multitenancy", "analytics", "ai"]
-        },
-        {
-          "id": "marketing-site",
-          "name": "Marketing Site",
-          "emoji": "🌐",
-          "description": "Modern landing page with Next.js and Xala UI",
-          "services": ["frontend", "cms", "analytics", "email"]
-        },
-        {
-          "id": "portfolio-site",
-          "name": "Portfolio Site", 
-          "emoji": "🎨",
-          "description": "Creative portfolio with animations and CMS",
-          "services": ["frontend", "cms", "image", "analytics"]
-        },
-        {
-          "id": "dashboard-app",
-          "name": "Dashboard App",
-          "emoji": "📊", 
-          "description": "Admin dashboard with authentication and database",
-          "services": ["frontend", "backend", "database", "auth", "charts", "monitoring"]
-        },
-        {
-          "id": "fullstack-app",
-          "name": "Full-Stack App",
-          "emoji": "🚀",
-          "description": "Complete web application with payments and notifications",
-          "services": ["frontend", "backend", "database", "auth", "payments", "email", "realtime"]
-        },
-        {
-          "id": "mobile-app", 
-          "name": "Mobile App",
-          "emoji": "📱",
-          "description": "React Native app with backend API",
-          "services": ["frontend", "backend", "database", "auth", "push-notifications"]
-        },
-        {
-          "id": "rest-api",
-          "name": "REST API",
-          "emoji": "🔌",
-          "description": "Backend API with authentication and documentation",
-          "services": ["backend", "database", "auth", "api", "monitoring"]
-        },
-        {
-          "id": "enterprise-app",
-          "name": "Enterprise App", 
-          "emoji": "🏢",
-          "description": "Enterprise web application with Microsoft stack",
-          "services": ["frontend", "backend", "database", "auth", "rbac", "monitoring", "audit"]
-        },
-        {
-          "id": "norwegian-gov",
-          "name": "Norwegian Government",
-          "emoji": "🇳🇴",
-          "description": "Norwegian government compliant application",
-          "services": ["frontend", "backend", "database", "bankid", "vipps", "altinn", "monitoring"]
-        },
-        {
-          "id": "municipality-portal",
-          "name": "Municipality Portal",
-          "emoji": "🏛️", 
-          "description": "Norwegian municipality citizen services portal",
-          "services": ["frontend", "backend", "database", "bankid", "altinn", "email", "monitoring"]
-        },
-        {
-          "id": "healthcare-management",
-          "name": "Healthcare Management",
-          "emoji": "🏥",
-          "description": "Norwegian healthcare management system with GDPR compliance",
-          "services": ["frontend", "backend", "database", "auth", "rbac", "audit", "monitoring"]
-        }
-      ]
-    },
-    "templateSystem": {
-      "title": "Advanced Template System",
-      "description": "Handlebars-based templates with intelligent injection",
-      "capabilities": [
-        "File creation and modification",
-        "JSON merging for configurations",
-        "Environment variable management",
-        "Post-installation steps automation",
-        "Dependency resolution"
-      ]
-    },
-    "commands": {
-      "create": {
-        "description": "Create new projects with intelligent defaults",
-        "flags": [
-          "--preset <bundle>",
-          "--framework <framework>",
-          "--backend <backend>",
-          "--database <database>",
-          "--dry-run"
-        ]
-      },
-      "add": {
-        "description": "Add services to existing projects",
-        "flags": [
-          "--provider <provider>",
-          "--force"
-        ]
-      },
-      "validate": {
-        "description": "Validate project health and configuration",
-        "flags": [
-          "--fix",
-          "--services",
-          "--deps",
-          "--env"
-        ]
-      },
-      "bundle": {
-        "description": "Manage service bundles",
-        "subcommands": ["list", "info", "create"]
-      }
-    }
-  },
-  "improvements": {
-    "architecture": [
-      "SOLID principles implementation",
-      "Type-safe TypeScript throughout",
-      "Modular service providers",
-      "Template factory pattern",
-      "Repository pattern for templates"
-    ],
-    "performance": [
-      "Smaller bundle size (328KB)",
-      "Faster initialization",
-      "Cached template loading",
-      "Parallel service injection"
-    ],
-    "developer-experience": [
-      "Better error messages",
-      "Interactive prompts with Clack",
-      "Comprehensive validation",
-      "Dry-run mode for testing",
-      "Debug mode for troubleshooting"
-    ]
-  }
+	"version": "2.0.0",
+	"features": {
+		"serviceArchitecture": {
+			"title": "Service-Based Architecture",
+			"description": "Modular service system following SOLID principles",
+			"highlights": [
+				"Frontend frameworks (Next.js, Nuxt, Remix)",
+				"Authentication providers (Clerk, Auth0, Better Auth)",
+				"Database integrations (PostgreSQL, MySQL, MongoDB)",
+				"Payment systems (Stripe, Vipps)",
+				"Norwegian compliance (BankID, Altinn)"
+			]
+		},
+		"intelligentBundling": {
+			"title": "Intelligent Service Bundling",
+			"description": "Pre-configured bundles for common use cases",
+			"bundles": [
+				{
+					"id": "saas-starter",
+					"name": "SaaS Starter",
+					"emoji": "🚀",
+					"description": "Essential SaaS features for getting started",
+					"services": ["frontend", "backend", "database", "auth", "payments"]
+				},
+				{
+					"id": "saas-professional",
+					"name": "SaaS Professional",
+					"emoji": "💼",
+					"description": "Full-featured SaaS platform with advanced capabilities",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"payments",
+						"email",
+						"monitoring",
+						"rbac",
+						"multitenancy"
+					]
+				},
+				{
+					"id": "saas-complete",
+					"name": "SaaS Complete",
+					"emoji": "💎",
+					"description": "Complete SaaS application with multi-tenancy and billing",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"payments",
+						"email",
+						"monitoring",
+						"rbac",
+						"multitenancy",
+						"analytics",
+						"ai"
+					]
+				},
+				{
+					"id": "marketing-site",
+					"name": "Marketing Site",
+					"emoji": "🌐",
+					"description": "Modern landing page with Next.js and Xala UI",
+					"services": ["frontend", "cms", "analytics", "email"]
+				},
+				{
+					"id": "portfolio-site",
+					"name": "Portfolio Site",
+					"emoji": "🎨",
+					"description": "Creative portfolio with animations and CMS",
+					"services": ["frontend", "cms", "image", "analytics"]
+				},
+				{
+					"id": "dashboard-app",
+					"name": "Dashboard App",
+					"emoji": "📊",
+					"description": "Admin dashboard with authentication and database",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"charts",
+						"monitoring"
+					]
+				},
+				{
+					"id": "fullstack-app",
+					"name": "Full-Stack App",
+					"emoji": "🚀",
+					"description": "Complete web application with payments and notifications",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"payments",
+						"email",
+						"realtime"
+					]
+				},
+				{
+					"id": "mobile-app",
+					"name": "Mobile App",
+					"emoji": "📱",
+					"description": "React Native app with backend API",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"push-notifications"
+					]
+				},
+				{
+					"id": "rest-api",
+					"name": "REST API",
+					"emoji": "🔌",
+					"description": "Backend API with authentication and documentation",
+					"services": ["backend", "database", "auth", "api", "monitoring"]
+				},
+				{
+					"id": "enterprise-app",
+					"name": "Enterprise App",
+					"emoji": "🏢",
+					"description": "Enterprise web application with Microsoft stack",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"rbac",
+						"monitoring",
+						"audit"
+					]
+				},
+				{
+					"id": "norwegian-gov",
+					"name": "Norwegian Government",
+					"emoji": "🇳🇴",
+					"description": "Norwegian government compliant application",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"bankid",
+						"vipps",
+						"altinn",
+						"monitoring"
+					]
+				},
+				{
+					"id": "municipality-portal",
+					"name": "Municipality Portal",
+					"emoji": "🏛️",
+					"description": "Norwegian municipality citizen services portal",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"bankid",
+						"altinn",
+						"email",
+						"monitoring"
+					]
+				},
+				{
+					"id": "healthcare-management",
+					"name": "Healthcare Management",
+					"emoji": "🏥",
+					"description": "Norwegian healthcare management system with GDPR compliance",
+					"services": [
+						"frontend",
+						"backend",
+						"database",
+						"auth",
+						"rbac",
+						"audit",
+						"monitoring"
+					]
+				}
+			]
+		},
+		"templateSystem": {
+			"title": "Advanced Template System",
+			"description": "Handlebars-based templates with intelligent injection",
+			"capabilities": [
+				"File creation and modification",
+				"JSON merging for configurations",
+				"Environment variable management",
+				"Post-installation steps automation",
+				"Dependency resolution"
+			]
+		},
+		"commands": {
+			"create": {
+				"description": "Create new projects with intelligent defaults",
+				"flags": [
+					"--preset <bundle>",
+					"--framework <framework>",
+					"--backend <backend>",
+					"--database <database>",
+					"--dry-run"
+				]
+			},
+			"add": {
+				"description": "Add services to existing projects",
+				"flags": ["--provider <provider>", "--force"]
+			},
+			"validate": {
+				"description": "Validate project health and configuration",
+				"flags": ["--fix", "--services", "--deps", "--env"]
+			},
+			"bundle": {
+				"description": "Manage service bundles",
+				"subcommands": ["list", "info", "create"]
+			}
+		}
+	},
+	"improvements": {
+		"architecture": [
+			"SOLID principles implementation",
+			"Type-safe TypeScript throughout",
+			"Modular service providers",
+			"Template factory pattern",
+			"Repository pattern for templates"
+		],
+		"performance": [
+			"Smaller bundle size (328KB)",
+			"Faster initialization",
+			"Cached template loading",
+			"Parallel service injection"
+		],
+		"developer-experience": [
+			"Better error messages",
+			"Interactive prompts with Clack",
+			"Comprehensive validation",
+			"Dry-run mode for testing",
+			"Debug mode for troubleshooting"
+		]
+	}
 }

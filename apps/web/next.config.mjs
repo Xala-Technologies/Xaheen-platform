@@ -16,7 +16,7 @@ const config = {
 		ignoreDuringBuilds: true,
 	},
 	compiler: {
-		removeConsole: process.env.NODE_ENV === 'production',
+		removeConsole: process.env.NODE_ENV === "production",
 	},
 	images: {
 		remotePatterns: [
@@ -29,9 +29,9 @@ const config = {
 		// Optimize bundle for UI system
 		config.resolve.alias = {
 			...config.resolve.alias,
-			'@xala-technologies/ui-system': '@xala-technologies/ui-system/dist',
+			"@xala-technologies/ui-system": "@xala-technologies/ui-system/dist",
 		};
-		
+
 		return config;
 	},
 	async rewrites() {

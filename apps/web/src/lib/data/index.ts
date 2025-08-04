@@ -1,7 +1,7 @@
 /**
  * Centralized Data Library for Xaheen Stack Builder
  * Single source of truth for all JSON data with proper TypeScript types
- * 
+ *
  * Following SOLID principles:
  * - Single Responsibility: Each function has one clear purpose
  * - Open/Closed: Extensible through new data sources
@@ -10,22 +10,22 @@
  * - Dependency Inversion: Depends on abstractions, not concrete implementations
  */
 
-// Import JSON data files
-import techOptionsData from "@/data/tech-options.json";
-import techCategoriesData from "@/data/tech-categories.json";
+import defaultStackData from "@/data/default-stack.json";
 import projectTypesData from "@/data/project-types.json";
 import quickPresetsData from "@/data/quick-presets.json";
-import defaultStackData from "@/data/default-stack.json";
+import techCategoriesData from "@/data/tech-categories.json";
 import techCompatibilityData from "@/data/tech-compatibility.json";
+// Import JSON data files
+import techOptionsData from "@/data/tech-options.json";
 
 // Import types
 import type {
-	TechOptions,
-	TechOption,
-	TechCategory,
-	ProjectType,
 	PresetTemplate,
+	ProjectType,
 	StackState,
+	TechCategory,
+	TechOption,
+	TechOptions,
 } from "@/lib/types/base";
 
 /**
@@ -71,7 +71,9 @@ export function getTechOptions(): TechOptions {
  */
 export function getTechCategories(): readonly CategoryConfig[] {
 	const data = techCategoriesData as CategoriesData;
-	return [...data.categories].sort((a: CategoryConfig, b: CategoryConfig) => a.sort_order - b.sort_order);
+	return [...data.categories].sort(
+		(a: CategoryConfig, b: CategoryConfig) => a.sort_order - b.sort_order,
+	);
 }
 
 /**
@@ -79,7 +81,7 @@ export function getTechCategories(): readonly CategoryConfig[] {
  * @returns Array of category IDs in display order
  */
 export function getCategoryOrder(): readonly TechCategory[] {
-	return getTechCategories().map(cat => cat.id);
+	return getTechCategories().map((cat) => cat.id);
 }
 
 /**
@@ -122,9 +124,12 @@ export function getTechCompatibility(): TechCompatibilityData {
  * @param id - Option ID
  * @returns Tech option or undefined if not found
  */
-export function getTechOption(category: TechCategory, id: string): TechOption | undefined {
+export function getTechOption(
+	category: TechCategory,
+	id: string,
+): TechOption | undefined {
 	const options = getTechOptions();
-	return options[category]?.find(option => option.id === id);
+	return options[category]?.find((option) => option.id === id);
 }
 
 /**
@@ -132,10 +137,14 @@ export function getTechOption(category: TechCategory, id: string): TechOption | 
  * @param category - Tech category
  * @returns Array of tech options sorted by sort_order
  */
-export function getCategoryOptions(category: TechCategory): readonly TechOption[] {
+export function getCategoryOptions(
+	category: TechCategory,
+): readonly TechOption[] {
 	const options = getTechOptions();
 	const categoryOptions = options[category] || [];
-	return [...categoryOptions].sort((a: TechOption, b: TechOption) => (a.sort_order || 0) - (b.sort_order || 0));
+	return [...categoryOptions].sort(
+		(a: TechOption, b: TechOption) => (a.sort_order || 0) - (b.sort_order || 0),
+	);
 }
 
 /**
@@ -144,7 +153,7 @@ export function getCategoryOptions(category: TechCategory): readonly TechOption[
  * @returns Array of valid option IDs
  */
 export function getValidOptionIds(category: TechCategory): string[] {
-	return getCategoryOptions(category).map(option => option.id);
+	return getCategoryOptions(category).map((option) => option.id);
 }
 
 /**
@@ -152,9 +161,11 @@ export function getValidOptionIds(category: TechCategory): string[] {
  * @param category - Tech category
  * @returns Default option or first option if no default specified
  */
-export function getDefaultOption(category: TechCategory): TechOption | undefined {
+export function getDefaultOption(
+	category: TechCategory,
+): TechOption | undefined {
 	const options = getCategoryOptions(category);
-	return options.find(option => option.default) || options[0];
+	return options.find((option) => option.default) || options[0];
 }
 
 /**
@@ -163,7 +174,7 @@ export function getDefaultOption(category: TechCategory): TechOption | undefined
  * @returns Project type or undefined if not found
  */
 export function getProjectType(id: string): ProjectType | undefined {
-	return getProjectTypes().find(type => type.id === id);
+	return getProjectTypes().find((type) => type.id === id);
 }
 
 /**
@@ -172,7 +183,7 @@ export function getProjectType(id: string): ProjectType | undefined {
  * @returns Preset template or undefined if not found
  */
 export function getPresetTemplate(id: string): PresetTemplate | undefined {
-	return getQuickPresets().find(preset => preset.id === id);
+	return getQuickPresets().find((preset) => preset.id === id);
 }
 
 /**
@@ -203,16 +214,16 @@ export function getAllCategories(): readonly TechCategory[] {
 export function isStackDefault(
 	stack: StackState,
 	key: keyof StackState,
-	value: unknown
+	value: unknown,
 ): boolean {
 	const defaultStack = getDefaultStack();
 	const defaultValue = defaultStack[key];
-	
+
 	// Handle array values
 	if (Array.isArray(defaultValue) && Array.isArray(value)) {
 		return JSON.stringify(defaultValue.sort()) === JSON.stringify(value.sort());
 	}
-	
+
 	// Handle primitive values
 	return defaultValue === value;
 }

@@ -23,15 +23,15 @@ export const stackParsers = {
 	backend: parseAsStringEnum<StackState["backend"]>(
 		getValidOptionIds("backend"),
 	).withDefault(DEFAULT_STACK.backend),
-	api: parseAsStringEnum<StackState["api"]>(getValidOptionIds("api")).withDefault(
-		DEFAULT_STACK.api,
-	),
+	api: parseAsStringEnum<StackState["api"]>(
+		getValidOptionIds("api"),
+	).withDefault(DEFAULT_STACK.api),
 	database: parseAsStringEnum<StackState["database"]>(
 		getValidOptionIds("database"),
 	).withDefault(DEFAULT_STACK.database),
-	orm: parseAsStringEnum<StackState["orm"]>(getValidOptionIds("orm")).withDefault(
-		DEFAULT_STACK.orm,
-	),
+	orm: parseAsStringEnum<StackState["orm"]>(
+		getValidOptionIds("orm"),
+	).withDefault(DEFAULT_STACK.orm),
 	dbSetup: parseAsStringEnum<StackState["dbSetup"]>(
 		getValidOptionIds("dbSetup"),
 	).withDefault(DEFAULT_STACK.dbSetup),
@@ -44,7 +44,9 @@ export const stackParsers = {
 	uiSystem: parseAsStringEnum<StackState["uiSystem"]>(
 		getValidOptionIds("uiSystem"),
 	).withDefault(DEFAULT_STACK.uiSystem),
-	compliance: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.compliance),
+	compliance: parseAsArrayOf(parseAsString).withDefault(
+		DEFAULT_STACK.compliance,
+	),
 	addons: parseAsArrayOf(parseAsString).withDefault(DEFAULT_STACK.addons),
 	notifications: parseAsStringEnum<StackState["notifications"]>(
 		getValidOptionIds("notifications"),

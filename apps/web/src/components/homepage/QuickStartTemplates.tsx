@@ -1,49 +1,48 @@
+import {
+	Card,
+	Container,
+	Grid,
+	Skeleton,
+	Stack,
+	Typography,
+} from "@xala-technologies/ui-system";
 import React from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { PresetCard } from "./PresetCard";
-import {
-  Card,
-  Stack,
-  Typography,
-  Skeleton,
-  Grid,
-  Container,
-  useTokens,
-} from "@xala-technologies/ui-system";
 
 interface PresetStack {
-  projectName: string;
-  webFrontend: string[];
-  nativeFrontend: string[];
-  uiSystem: string;
-  runtime: string;
-  backend: string;
-  database: string;
-  orm: string;
-  auth: string;
-  packageManager: string;
-  addons: string[];
-  examples: string[];
-  git: string;
-  install: string;
-  api: string;
-  [key: string]: any;
+	projectName: string;
+	webFrontend: string[];
+	nativeFrontend: string[];
+	uiSystem: string;
+	runtime: string;
+	backend: string;
+	database: string;
+	orm: string;
+	auth: string;
+	packageManager: string;
+	addons: string[];
+	examples: string[];
+	git: string;
+	install: string;
+	api: string;
+	[key: string]: any;
 }
 
 interface Preset {
-  id: string;
-  name: string;
-  description: string;
-  projectType: string;
-  stack: PresetStack;
-  sort_order: number;
+	id: string;
+	name: string;
+	description: string;
+	projectType: string;
+	stack: PresetStack;
+	sort_order: number;
 }
 
 interface QuickStartTemplatesProps {
-  presets: Preset[];
-  selectedPresetId: string | null;
-  isLoading: boolean;
-  onPresetSelect: (preset: Preset) => void;
+	presets: Preset[];
+	selectedPresetId: string | null;
+	isLoading: boolean;
+	onPresetSelect: (preset: Preset) => void;
 }
 
 /**
@@ -56,64 +55,50 @@ interface QuickStartTemplatesProps {
  * @returns Quick start templates component
  */
 export function QuickStartTemplates({
-  presets,
-  selectedPresetId,
-  isLoading,
-  onPresetSelect,
+	presets,
+	selectedPresetId,
+	isLoading,
+	onPresetSelect,
 }: QuickStartTemplatesProps): React.JSX.Element {
-  const { t } = useLocalization();
+	const { t } = useLocalization();
 
-  const handlePresetSelect = (preset: Preset): void => {
-    onPresetSelect(preset);
-  };
+	const handlePresetSelect = (preset: Preset): void => {
+		onPresetSelect(preset);
+	};
 
-  const tokens = useTokens();
+	const renderLoadingSkeleton = (): React.JSX.Element => (
+		<Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
+			{Array.from({ length: 9 }).map((_, index) => (
+				<Skeleton key={index} height={200} width="100%" variant="text" />
+			))}
+		</Grid>
+	);
 
-  const renderLoadingSkeleton = (): React.JSX.Element => (
-    <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
-      {Array.from({ length: 9 }).map((_, index) => (
-        <Skeleton
-          key={index}
-          height={200}
-          width="100%"
-          variant="text"
-        />
-      ))}
-    </Grid>
-  );
+	const renderPresets = (): React.JSX.Element => (
+		<Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
+			{presets.slice(0, 12).map((preset) => (
+				<PresetCard
+					key={preset.id}
+					preset={preset}
+					isSelected={selectedPresetId === preset.id}
+					onSelect={handlePresetSelect}
+				/>
+			))}
+		</Grid>
+	);
 
-  const renderPresets = (): React.JSX.Element => (
-    <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="xl">
-      {presets.slice(0, 12).map((preset) => (
-        <PresetCard
-          key={preset.id}
-          preset={preset}
-          isSelected={selectedPresetId === preset.id}
-          onSelect={handlePresetSelect}
-        />
-      ))}
-    </Grid>
-  );
+	return (
+		<Stack direction="vertical" gap="2xl">
+			<Stack direction="vertical" gap="lg" align="center">
+				<Typography variant="h2">
+					{t("homepage.quick_templates_title")}
+				</Typography>
+				<Typography variant="body" color="muted">
+					{t("homepage.quick_templates_description")}
+				</Typography>
+			</Stack>
 
-  return (
-    <Stack 
-      direction="vertical" 
-      gap="2xl"
-    >
-      <Stack 
-        direction="vertical" 
-        gap="lg"
-        align="center"
-      >
-        <Typography variant="h2">
-          {t('homepage.quick_templates_title')}
-        </Typography>
-        <Typography variant="body" color="muted">
-          {t('homepage.quick_templates_description')}
-        </Typography>
-      </Stack>
-      
-      {isLoading ? renderLoadingSkeleton() : renderPresets()}
-    </Stack>
-  );
+			{isLoading ? renderLoadingSkeleton() : renderPresets()}
+		</Stack>
+	);
 }

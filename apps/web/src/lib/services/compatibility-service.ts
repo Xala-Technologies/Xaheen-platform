@@ -4,8 +4,12 @@
  * Open/Closed Principle: Easy to extend with new compatibility rules
  */
 
-import type { StackState, CompatibilityResult, TechCategory } from '../types/base';
-import { techStackRegistry } from '../tech-stack/registry';
+import { techStackRegistry } from "../tech-stack/registry";
+import type {
+	CompatibilityResult,
+	StackState,
+	TechCategory,
+} from "../types/base";
 
 export interface CompatibilityRule {
 	readonly name: string;
@@ -38,7 +42,7 @@ export class CompatibilityService {
 		// Run all compatibility rules
 		for (const rule of this.rules) {
 			const result = rule.validate(stack);
-			
+
 			if (!result.isValid) {
 				notes[rule.name] = {
 					notes: [...result.issues, ...result.suggestions],
@@ -48,7 +52,7 @@ export class CompatibilityService {
 				// Apply adjustments if provided
 				if (result.adjustments) {
 					adjustedStack = { ...adjustedStack, ...result.adjustments };
-					
+
 					for (const [category, value] of Object.entries(result.adjustments)) {
 						changes.push({
 							category,
@@ -71,11 +75,11 @@ export class CompatibilityService {
 	 */
 	public getDisabledOptions(
 		stack: StackState,
-		category: TechCategory
+		category: TechCategory,
 	): readonly string[] {
 		const disabled: string[] = [];
 		const categoryData = techStackRegistry.getCategory(category);
-		
+
 		if (!categoryData) {
 			return disabled;
 		}
@@ -84,8 +88,8 @@ export class CompatibilityService {
 		for (const option of categoryData.getAllOptions()) {
 			const testStack = { ...stack, [category]: option.id };
 			const result = this.analyzeStackCompatibility(testStack);
-			
-			if (Object.values(result.notes).some(note => note.hasIssue)) {
+
+			if (Object.values(result.notes).some((note) => note.hasIssue)) {
 				disabled.push(option.id);
 			}
 		}
@@ -99,27 +103,27 @@ export class CompatibilityService {
 	public isOptionCompatible(
 		stack: StackState,
 		category: TechCategory,
-		optionId: string
+		optionId: string,
 	): boolean {
 		const testStack = { ...stack, [category]: optionId };
 		const result = this.analyzeStackCompatibility(testStack);
-		return !Object.values(result.notes).some(note => note.hasIssue);
+		return !Object.values(result.notes).some((note) => note.hasIssue);
 	}
 
 	/**
 	 * Get filtered categories based on project type relevance
 	 */
 	public getFilteredCategories(
-		relevantCategories?: readonly string[]
+		relevantCategories?: readonly string[],
 	): readonly TechCategory[] {
 		const allCategories = techStackRegistry.getCategoryKeys();
-		
+
 		if (!relevantCategories || relevantCategories.length === 0) {
 			return allCategories;
 		}
 
-		return allCategories.filter(category => 
-			relevantCategories.includes(category)
+		return allCategories.filter((category) =>
+			relevantCategories.includes(category),
 		);
 	}
 
@@ -135,12 +139,12 @@ export class CompatibilityService {
 		const warnings: string[] = [];
 
 		const analysis = this.analyzeStackCompatibility(stack);
-		
+
 		for (const [ruleName, note] of Object.entries(analysis.notes)) {
 			if (note.hasIssue) {
-				errors.push(`${ruleName}: ${note.notes.join(', ')}`);
+				errors.push(`${ruleName}: ${note.notes.join(", ")}`);
 			} else {
-				warnings.push(`${ruleName}: ${note.notes.join(', ')}`);
+				warnings.push(`${ruleName}: ${note.notes.join(", ")}`);
 			}
 		}
 
@@ -156,23 +160,23 @@ export class CompatibilityService {
  * Basic compatibility rules
  */
 export class PWACompatibilityRule implements CompatibilityRule {
-	readonly name = 'PWA Compatibility';
-	readonly description = 'Validates PWA compatibility with frontend frameworks';
+	readonly name = "PWA Compatibility";
+	readonly description = "Validates PWA compatibility with frontend frameworks";
 
 	validate(stack: StackState): CompatibilityValidationResult {
-		const hasPWA = stack.addons.includes('pwa');
-		const pwaCompatibleFrontends = ['next', 'vite', 'nuxt', 'sveltekit'];
-		const isCompatible = stack.webFrontend.some(frontend => 
-			pwaCompatibleFrontends.includes(frontend)
+		const hasPWA = stack.addons.includes("pwa");
+		const pwaCompatibleFrontends = ["next", "vite", "nuxt", "sveltekit"];
+		const isCompatible = stack.webFrontend.some((frontend) =>
+			pwaCompatibleFrontends.includes(frontend),
 		);
 
 		if (hasPWA && !isCompatible) {
 			return {
 				isValid: false,
-				issues: ['PWA addon requires a compatible frontend framework'],
-				suggestions: ['Consider using Next.js, Vite, Nuxt.js, or SvelteKit'],
+				issues: ["PWA addon requires a compatible frontend framework"],
+				suggestions: ["Consider using Next.js, Vite, Nuxt.js, or SvelteKit"],
 				adjustments: {
-					addons: stack.addons.filter(addon => addon !== 'pwa'),
+					addons: stack.addons.filter((addon) => addon !== "pwa"),
 				},
 			};
 		}
@@ -186,23 +190,31 @@ export class PWACompatibilityRule implements CompatibilityRule {
 }
 
 export class TauriCompatibilityRule implements CompatibilityRule {
-	readonly name = 'Tauri Compatibility';
-	readonly description = 'Validates Tauri compatibility with frontend frameworks';
+	readonly name = "Tauri Compatibility";
+	readonly description =
+		"Validates Tauri compatibility with frontend frameworks";
 
 	validate(stack: StackState): CompatibilityValidationResult {
-		const hasTauri = stack.nativeFrontend.includes('tauri');
-		const tauriCompatibleFrontends = ['vite', 'next', 'sveltekit', 'solid-start'];
-		const isCompatible = stack.webFrontend.some(frontend => 
-			tauriCompatibleFrontends.includes(frontend)
+		const hasTauri = stack.nativeFrontend.includes("tauri");
+		const tauriCompatibleFrontends = [
+			"vite",
+			"next",
+			"sveltekit",
+			"solid-start",
+		];
+		const isCompatible = stack.webFrontend.some((frontend) =>
+			tauriCompatibleFrontends.includes(frontend),
 		);
 
 		if (hasTauri && !isCompatible) {
 			return {
 				isValid: false,
-				issues: ['Tauri requires a compatible frontend framework'],
-				suggestions: ['Consider using Vite, Next.js, SvelteKit, or SolidStart'],
+				issues: ["Tauri requires a compatible frontend framework"],
+				suggestions: ["Consider using Vite, Next.js, SvelteKit, or SolidStart"],
 				adjustments: {
-					nativeFrontend: stack.nativeFrontend.filter(frontend => frontend !== 'tauri'),
+					nativeFrontend: stack.nativeFrontend.filter(
+						(frontend) => frontend !== "tauri",
+					),
 				},
 			};
 		}

@@ -1,1834 +1,1834 @@
 {
-  "webFrontend": [
-    {
-      "id": "tanstack-router",
-      "name": "TanStack Router",
-      "description": "Modern type-safe router for React",
-      "icon": "/tanstack.svg",
-      "color": "from-blue-400 to-blue-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "react-router",
-      "name": "React Router",
-      "description": "Declarative routing for React",
-      "icon": "/react-router.svg",
-      "color": "from-cyan-400 to-cyan-600",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "tanstack-start",
-      "name": "TanStack Start (vite)",
-      "description": "Full-stack React and Solid framework powered by TanStack Router",
-      "icon": "/tanstack.svg",
-      "color": "from-purple-400 to-purple-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "next",
-      "name": "Next.js",
-      "description": "React framework with hybrid rendering",
-      "icon": "/nextjs.svg",
-      "color": "from-gray-700 to-black",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "nuxt",
-      "name": "Nuxt",
-      "description": "Vue full-stack framework (SSR, SSG, hybrid)",
-      "icon": "/nuxt.svg",
-      "color": "from-green-400 to-green-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "svelte",
-      "name": "Svelte",
-      "description": "Cybernetically enhanced web apps",
-      "icon": "/svelte.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "solid",
-      "name": "Solid",
-      "description": "Simple and performant reactivity for building UIs",
-      "icon": "/solid.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "angular",
-      "name": "Angular",
-      "description": "Platform for building mobile and desktop web applications",
-      "icon": "/angular.svg",
-      "color": "from-red-600 to-red-800",
-      "default": false,
-      "sort_order": 8
-    },
-    {
-      "id": "blazor",
-      "name": "Blazor",
-      "description": "Build interactive web UIs using C# instead of JavaScript",
-      "icon": "/blazor.svg",
-      "color": "from-purple-600 to-blue-600",
-      "default": false,
-      "sort_order": 9
-    },
-    {
-      "id": "none",
-      "name": "No Web Frontend",
-      "description": "No web-based frontend",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 10
-    }
-  ],
-  "backend": [
-    {
-      "id": "hono",
-      "name": "Hono",
-      "description": "Ultrafast web framework",
-      "icon": "/hono.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "next",
-      "name": "Next.js",
-      "description": "App Router and API Routes",
-      "icon": "/nextjs.svg",
-      "color": "from-gray-700 to-black",
-      "sort_order": 2
-    },
-    {
-      "id": "elysia",
-      "name": "Elysia",
-      "description": "TypeScript web framework",
-      "icon": "/elysia.svg",
-      "color": "from-purple-500 to-purple-700",
-      "sort_order": 3
-    },
-    {
-      "id": "express",
-      "name": "Express",
-      "description": "Popular Node.js framework",
-      "icon": "/express.svg",
-      "color": "from-gray-500 to-gray-700",
-      "sort_order": 4
-    },
-    {
-      "id": "fastify",
-      "name": "Fastify",
-      "description": "Fast, low-overhead web framework for Node.js",
-      "icon": "/fastify.svg",
-      "color": "from-gray-500 to-gray-700",
-      "sort_order": 5
-    },
-    {
-      "id": "convex",
-      "name": "Convex",
-      "description": "Reactive backend-as-a-service",
-      "icon": "/convex.svg",
-      "color": "from-pink-500 to-pink-700",
-      "sort_order": 6
-    },
-    {
-      "id": "laravel",
-      "name": "Laravel",
-      "description": "PHP web application framework",
-      "icon": "/laravel.svg",
-      "color": "from-red-500 to-red-700",
-      "sort_order": 7
-    },
-    {
-      "id": "django",
-      "name": "Django",
-      "description": "Python web framework",
-      "icon": "/django.svg",
-      "color": "from-green-600 to-green-800",
-      "sort_order": 8
-    },
-    {
-      "id": "dotnet",
-      "name": ".NET",
-      "description": "Microsoft .NET framework",
-      "icon": "/dotnet.svg",
-      "color": "from-purple-600 to-blue-600",
-      "sort_order": 9
-    },
-    {
-      "id": "none",
-      "name": "No Backend",
-      "description": "Skip backend integration (frontend only)",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "sort_order": 10
-    }
-  ],
-  "nativeFrontend": [
-    {
-      "id": "native-nativewind",
-      "name": "React Native + NativeWind",
-      "description": "Expo with NativeWind (Tailwind)",
-      "icon": "/expo.svg",
-      "color": "from-purple-400 to-purple-600",
-      "className": "invert-0 dark:invert",
-      "default": false,
-      "sort_order": 1
-    },
-    {
-      "id": "native-unistyles",
-      "name": "React Native + Unistyles",
-      "description": "Expo with Unistyles",
-      "icon": "/expo.svg",
-      "color": "from-pink-400 to-pink-600",
-      "className": "invert-0 dark:invert",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "none",
-      "name": "No Native Frontend",
-      "description": "No native mobile frontend",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 3
-    }
-  ],
-  "api": [
-    {
-      "id": "trpc",
-      "name": "tRPC",
-      "description": "End-to-end typesafe APIs",
-      "icon": "/trpc.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "orpc",
-      "name": "oRPC",
-      "description": "Typesafe APIs Made Simple",
-      "icon": "/orpc.svg",
-      "color": "from-indigo-400 to-indigo-600",
-      "sort_order": 2
-    },
-    {
-      "id": "none",
-      "name": "No API",
-      "description": "No API layer (API routes disabled)",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "sort_order": 3
-    }
-  ],
-  "runtime": [
-    {
-      "id": "bun",
-      "name": "Bun",
-      "description": "Fast JavaScript runtime & toolkit",
-      "icon": "/bun.svg",
-      "color": "from-amber-400 to-amber-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "node",
-      "name": "Node.js",
-      "description": "JavaScript runtime environment",
-      "icon": "/node.svg",
-      "color": "from-green-400 to-green-600",
-      "sort_order": 2
-    },
-    {
-      "id": "workers",
-      "name": "Cloudflare Workers",
-      "description": "Serverless runtime for the edge",
-      "icon": "/workers.svg",
-      "color": "from-orange-400 to-orange-600",
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No Runtime",
-      "description": "No specific runtime",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "sort_order": 4
-    }
-  ],
-  "database": [
-    {
-      "id": "sqlite",
-      "name": "SQLite",
-      "description": "File-based SQL database",
-      "icon": "/sqlite.svg",
-      "color": "from-blue-400 to-cyan-500",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "postgres",
-      "name": "PostgreSQL",
-      "description": "Advanced SQL database",
-      "icon": "/postgres.svg",
-      "color": "from-indigo-400 to-indigo-600",
-      "sort_order": 2
-    },
-    {
-      "id": "mysql",
-      "name": "MySQL",
-      "description": "Popular relational database",
-      "icon": "/mysql.svg",
-      "color": "from-blue-500 to-blue-700",
-      "sort_order": 3
-    },
-    {
-      "id": "mongodb",
-      "name": "MongoDB",
-      "description": "NoSQL document database",
-      "icon": "/mongodb.svg",
-      "color": "from-green-400 to-green-600",
-      "sort_order": 4
-    },
-    {
-      "id": "mssql",
-      "name": "SQL Server",
-      "description": "Microsoft SQL Server database",
-      "icon": "/mssql.svg",
-      "color": "from-red-600 to-red-800",
-      "sort_order": 5
-    },
-    {
-      "id": "none",
-      "name": "No Database",
-      "description": "Skip database integration",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "sort_order": 6
-    }
-  ],
-  "orm": [
-    {
-      "id": "drizzle",
-      "name": "Drizzle",
-      "description": "TypeScript ORM",
-      "icon": "/drizzle.svg",
-      "color": "from-cyan-400 to-cyan-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "prisma",
-      "name": "Prisma",
-      "description": "Next-gen ORM",
-      "icon": "/prisma.svg",
-      "color": "from-purple-400 to-purple-600",
-      "sort_order": 2
-    },
-    {
-      "id": "mongoose",
-      "name": "Mongoose",
-      "description": "Elegant object modeling tool",
-      "icon": "/mongoose.svg",
-      "color": "from-blue-400 to-blue-600",
-      "sort_order": 3
-    },
-    {
-      "id": "entity-framework",
-      "name": "Entity Framework",
-      "description": "Microsoft's object-relational mapper for .NET",
-      "icon": "/entity-framework.svg",
-      "color": "from-purple-600 to-blue-600",
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No ORM",
-      "description": "Skip ORM integration",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "sort_order": 5
-    }
-  ],
-  "dbSetup": [
-    {
-      "id": "turso",
-      "name": "Turso",
-      "description": "SQLite cloud database powered by libSQL",
-      "icon": "/turso.svg",
-      "color": "from-pink-400 to-pink-600",
-      "sort_order": 1
-    },
-    {
-      "id": "d1",
-      "name": "Cloudflare D1",
-      "description": "Serverless SQLite database on Cloudflare Workers",
-      "icon": "/workers.svg",
-      "color": "from-orange-400 to-orange-600",
-      "sort_order": 2
-    },
-    {
-      "id": "neon",
-      "name": "Neon Postgres",
-      "description": "Serverless PostgreSQL with Neon",
-      "icon": "/neon.svg",
-      "color": "from-blue-400 to-blue-600",
-      "sort_order": 3
-    },
-    {
-      "id": "prisma-postgres",
-      "name": "Prisma PostgreSQL",
-      "description": "Set up PostgreSQL with Prisma",
-      "icon": "/prisma.svg",
-      "color": "from-indigo-400 to-indigo-600",
-      "sort_order": 4
-    },
-    {
-      "id": "mongodb-atlas",
-      "name": "MongoDB Atlas",
-      "description": "Cloud MongoDB setup with Atlas",
-      "icon": "/mongodb.svg",
-      "color": "from-green-400 to-green-600",
-      "sort_order": 5
-    },
-    {
-      "id": "supabase",
-      "name": "Supabase",
-      "description": "Local Supabase stack (requires Docker)",
-      "icon": "/supabase.svg",
-      "color": "from-emerald-400 to-emerald-600",
-      "sort_order": 6
-    },
-    {
-      "id": "docker",
-      "name": "Docker",
-      "description": "Local database with Docker Compose",
-      "icon": "/docker.svg",
-      "color": "from-blue-500 to-blue-700",
-      "sort_order": 7
-    },
-    {
-      "id": "none",
-      "name": "Basic Setup",
-      "description": "No cloud DB integration",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": true,
-      "sort_order": 8
-    }
-  ],
-  "webDeploy": [
-    {
-      "id": "workers",
-      "name": "Cloudflare Workers",
-      "description": "Deploy to Cloudflare Workers",
-      "icon": "/workers.svg",
-      "color": "from-orange-400 to-orange-600",
-      "sort_order": 1
-    },
-    {
-      "id": "none",
-      "name": "No Deployment",
-      "description": "Skip deployment configuration",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": true,
-      "sort_order": 2
-    }
-  ],
-  "auth": [
-    {
-      "id": "bankid",
-      "name": "BankID (Norwegian)",
-      "description": "Norwegian digital identity with highest security",
-      "icon": "/bankid.svg",
-      "color": "from-red-600 to-blue-800",
-      "default": false,
-      "sort_order": 1
-    },
-    {
-      "id": "vipps",
-      "name": "Vipps Login",
-      "description": "Norwegian mobile payment and login",
-      "icon": "/vipps.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "better-auth",
-      "name": "Better Auth",
-      "description": "Modern auth with social providers and 2FA",
-      "icon": "/better-auth.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": true,
-      "sort_order": 3
-    },
-    {
-      "id": "next-auth",
-      "name": "NextAuth.js",
-      "description": "Complete authentication solution for Next.js",
-      "icon": "/nextauth.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "clerk",
-      "name": "Clerk",
-      "description": "Complete user management with UI components",
-      "icon": "/clerk.svg",
-      "color": "from-indigo-500 to-indigo-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "supabase-auth",
-      "name": "Supabase Auth",
-      "description": "Authentication with Supabase backend",
-      "icon": "/supabase.svg",
-      "color": "from-emerald-500 to-emerald-700",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "firebase-auth",
-      "name": "Firebase Auth",
-      "description": "Google Firebase authentication service",
-      "icon": "/firebase.svg",
-      "color": "from-yellow-500 to-orange-600",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "auth0",
-      "name": "Auth0",
-      "description": "Enterprise identity platform",
-      "icon": "/auth0.svg",
-      "color": "from-orange-600 to-red-600",
-      "default": false,
-      "sort_order": 8
-    },
-    {
-      "id": "identity-server",
-      "name": "Identity Server",
-      "description": "OpenID Connect and OAuth 2.0 framework for .NET",
-      "icon": "/identity-server.svg",
-      "color": "from-blue-600 to-purple-600",
-      "default": false,
-      "sort_order": 9
-    },
-    {
-      "id": "custom",
-      "name": "Custom Auth",
-      "description": "Build your own authentication system",
-      "icon": "/custom-auth.svg",
-      "color": "from-gray-500 to-gray-700",
-      "default": false,
-      "sort_order": 10
-    },
-    {
-      "id": "none",
-      "name": "No Authentication",
-      "description": "Skip authentication setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 11
-    }
-  ],
-  "packageManager": [
-    {
-      "id": "npm",
-      "name": "npm",
-      "description": "Default package manager",
-      "icon": "/npm.svg",
-      "color": "from-red-500 to-red-700",
-      "className": "invert-0 dark:invert",
-      "sort_order": 1
-    },
-    {
-      "id": "pnpm",
-      "name": "pnpm",
-      "description": "Fast, disk space efficient",
-      "icon": "/pnpm.svg",
-      "color": "from-orange-500 to-orange-700",
-      "sort_order": 2
-    },
-    {
-      "id": "bun",
-      "name": "bun",
-      "description": "All-in-one toolkit",
-      "icon": "/bun.svg",
-      "color": "from-amber-500 to-amber-700",
-      "default": true,
-      "sort_order": 3
-    }
-  ],
-  "uiSystem": [
-    {
-      "id": "xala",
-      "name": "Xala UI System",
-      "description": "Enterprise-grade design system with Norwegian compliance",
-      "icon": "/xala.svg",
-      "color": "from-blue-600 to-purple-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "shadcn",
-      "name": "shadcn/ui",
-      "description": "Beautifully designed components built with Radix UI",
-      "icon": "/shadcn.svg",
-      "color": "from-gray-700 to-black",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "tailwind",
-      "name": "Tailwind CSS",
-      "description": "Utility-first CSS framework",
-      "icon": "/tailwind.svg",
-      "color": "from-cyan-400 to-cyan-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No UI System",
-      "description": "Build custom components from scratch",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 4
-    }
-  ],
-  "compliance": [
-    {
-      "id": "norwegian",
-      "name": "Norwegian Government",
-      "description": "BankID, Altinn, Digdir & NSM compliance",
-      "icon": "/norway.svg",
-      "color": "from-red-600 to-blue-800",
-      "default": false,
-      "sort_order": 1
-    },
-    {
-      "id": "gdpr",
-      "name": "GDPR Compliance",
-      "description": "EU data protection and privacy compliance",
-      "icon": "/gdpr.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "wcag-aaa",
-      "name": "WCAG 2.2 AAA",
-      "description": "Highest level accessibility compliance",
-      "icon": "/accessibility.svg",
-      "color": "from-green-500 to-green-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "iso27001",
-      "name": "ISO 27001",
-      "description": "Information security management compliance",
-      "icon": "/iso27001.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Compliance",
-      "description": "Basic implementation without compliance features",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": true,
-      "sort_order": 5
-    }
-  ],
-  "addons": [
-    {
-      "id": "pwa",
-      "name": "PWA (Progressive Web App)",
-      "description": "Make your app installable and work offline",
-      "icon": "",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 1
-    },
-    {
-      "id": "tauri",
-      "name": "Tauri",
-      "description": "Build native desktop apps",
-      "icon": "/tauri.svg",
-      "color": "from-amber-500 to-amber-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "starlight",
-      "name": "Starlight",
-      "description": "Build stellar docs with astro",
-      "icon": "/starlight.svg",
-      "color": "from-teal-500 to-teal-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "biome",
-      "name": "Biome",
-      "description": "Format, lint, and more",
-      "icon": "/biome.svg",
-      "color": "from-green-500 to-green-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "husky",
-      "name": "Husky",
-      "description": "Modern native Git hooks made easy",
-      "icon": "",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "ultracite",
-      "name": "Ultracite",
-      "description": "Biome preset with AI integration",
-      "icon": "/ultracite.svg",
-      "color": "from-blue-500 to-blue-700",
-      "className": "invert-0 dark:invert",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "fumadocs",
-      "name": "Fumadocs",
-      "description": "Build excellent documentation site",
-      "icon": "",
-      "color": "from-indigo-500 to-indigo-700",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "oxlint",
-      "name": "Oxlint",
-      "description": "Rust-powered linter",
-      "icon": "",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 8
-    },
-    {
-      "id": "turborepo",
-      "name": "Turborepo",
-      "description": "High-performance build system",
-      "icon": "/turborepo.svg",
-      "color": "from-gray-400 to-gray-700",
-      "default": true,
-      "sort_order": 9
-    }
-  ],
-  "examples": [
-    {
-      "id": "todo",
-      "name": "Todo Example",
-      "description": "Simple todo application",
-      "icon": "",
-      "color": "from-indigo-500 to-indigo-700",
-      "default": false,
-      "sort_order": 1
-    },
-    {
-      "id": "ai",
-      "name": "AI Example",
-      "description": "AI integration example using AI SDK",
-      "icon": "",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 2
-    }
-  ],
-  "git": [
-    {
-      "id": "true",
-      "name": "Git",
-      "description": "Initialize Git repository",
-      "icon": "/git.svg",
-      "color": "from-gray-500 to-gray-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "false",
-      "name": "No Git",
-      "description": "Skip Git initialization",
-      "icon": "",
-      "color": "from-red-400 to-red-600",
-      "sort_order": 2
-    }
-  ],
-  "notifications": [
-    {
-      "id": "resend",
-      "name": "Resend",
-      "description": "Email API for developers with React Email templates",
-      "icon": "/resend.svg",
-      "color": "from-black to-gray-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "nodemailer",
-      "name": "Nodemailer",
-      "description": "Send emails via SMTP with custom templates",
-      "icon": "/nodemailer.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "sendgrid",
-      "name": "SendGrid",
-      "description": "Twilio SendGrid email delivery platform",
-      "icon": "/sendgrid.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "mailgun",
-      "name": "Mailgun",
-      "description": "Email automation and delivery service",
-      "icon": "/mailgun.svg",
-      "color": "from-red-500 to-red-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "postmark",
-      "name": "Postmark",
-      "description": "Fast and reliable transactional email",
-      "icon": "/postmark.svg",
-      "color": "from-yellow-500 to-orange-600",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "pusher",
-      "name": "Pusher",
-      "description": "Real-time messaging and push notifications",
-      "icon": "/pusher.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "twilio",
-      "name": "Twilio",
-      "description": "SMS, voice, and communication APIs",
-      "icon": "/twilio.svg",
-      "color": "from-red-600 to-red-800",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "none",
-      "name": "No Notifications",
-      "description": "Skip notification setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 8
-    }
-  ],
-  "documents": [
-    {
-      "id": "uploadthing",
-      "name": "UploadThing",
-      "description": "File uploads for Next.js with type safety",
-      "icon": "/uploadthing.svg",
-      "color": "from-red-500 to-red-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "cloudinary",
-      "name": "Cloudinary",
-      "description": "Image and video management in the cloud",
-      "icon": "/cloudinary.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "aws-s3",
-      "name": "AWS S3",
-      "description": "Amazon S3 object storage service",
-      "icon": "/aws-s3.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "google-drive",
-      "name": "Google Drive API",
-      "description": "Google Drive file storage and management",
-      "icon": "/google-drive.svg",
-      "color": "from-blue-400 to-green-500",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "dropbox",
-      "name": "Dropbox API",
-      "description": "Dropbox file storage and sharing",
-      "icon": "/dropbox.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "pdf-lib",
-      "name": "PDF Generation",
-      "description": "Create and manipulate PDF documents",
-      "icon": "/pdf.svg",
-      "color": "from-red-500 to-red-700",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "none",
-      "name": "No Document Services",
-      "description": "Skip document management setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 7
-    }
-  ],
-  "payments": [
-    {
-      "id": "stripe",
-      "name": "Stripe",
-      "description": "Complete payment processing platform",
-      "icon": "/stripe.svg",
-      "color": "from-purple-600 to-blue-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "vipps-pay",
-      "name": "Vipps Payment",
-      "description": "Norwegian mobile payment solution",
-      "icon": "/vipps.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "paypal",
-      "name": "PayPal",
-      "description": "PayPal payment processing",
-      "icon": "/paypal.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "klarna",
-      "name": "Klarna",
-      "description": "Buy now, pay later payment solution",
-      "icon": "/klarna.svg",
-      "color": "from-pink-500 to-pink-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "square",
-      "name": "Square",
-      "description": "Square payment processing",
-      "icon": "/square.svg",
-      "color": "from-gray-700 to-black",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "adyen",
-      "name": "Adyen",
-      "description": "Global payment platform",
-      "icon": "/adyen.svg",
-      "color": "from-green-600 to-green-800",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "razorpay",
-      "name": "Razorpay",
-      "description": "Indian payment gateway",
-      "icon": "/razorpay.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "none",
-      "name": "No Payments",
-      "description": "Skip payment integration",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 8
-    }
-  ],
-  "analytics": [
-    {
-      "id": "vercel-analytics",
-      "name": "Vercel Analytics",
-      "description": "Privacy-friendly web analytics",
-      "icon": "/vercel.svg",
-      "color": "from-black to-gray-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "google-analytics",
-      "name": "Google Analytics",
-      "description": "Comprehensive web analytics platform",
-      "icon": "/google-analytics.svg",
-      "color": "from-orange-500 to-red-600",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "posthog",
-      "name": "PostHog",
-      "description": "Product analytics and feature flags",
-      "icon": "/posthog.svg",
-      "color": "from-yellow-500 to-orange-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "mixpanel",
-      "name": "Mixpanel",
-      "description": "Advanced product analytics",
-      "icon": "/mixpanel.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "amplitude",
-      "name": "Amplitude",
-      "description": "Digital analytics and optimization",
-      "icon": "/amplitude.svg",
-      "color": "from-blue-500 to-indigo-600",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "hotjar",
-      "name": "Hotjar",
-      "description": "Heatmaps and user behavior analytics",
-      "icon": "/hotjar.svg",
-      "color": "from-red-500 to-orange-600",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "none",
-      "name": "No Analytics",
-      "description": "Skip analytics setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 7
-    }
-  ],
-  "monitoring": [
-    {
-      "id": "sentry",
-      "name": "Sentry",
-      "description": "Application monitoring and error tracking",
-      "icon": "/sentry.svg",
-      "color": "from-purple-600 to-pink-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "datadog",
-      "name": "Datadog",
-      "description": "Infrastructure monitoring and APM",
-      "icon": "/datadog.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "newrelic",
-      "name": "New Relic",
-      "description": "Full-stack observability platform",
-      "icon": "/newrelic.svg",
-      "color": "from-green-500 to-teal-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "grafana",
-      "name": "Grafana",
-      "description": "Open source analytics and monitoring",
-      "icon": "/grafana.svg",
-      "color": "from-orange-500 to-red-600",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "app-insights",
-      "name": "Azure App Insights",
-      "description": "Microsoft Azure application monitoring",
-      "icon": "/azure-app-insights.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "prometheus",
-      "name": "Prometheus",
-      "description": "Open source monitoring and alerting",
-      "icon": "/prometheus.svg",
-      "color": "from-orange-600 to-red-700",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "elastic",
-      "name": "Elastic Stack",
-      "description": "Elasticsearch, Logstash, and Kibana",
-      "icon": "/elastic.svg",
-      "color": "from-yellow-500 to-orange-600",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "none",
-      "name": "No Monitoring",
-      "description": "Skip monitoring setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 8
-    }
-  ],
-  "messaging": [
-    {
-      "id": "rabbitmq",
-      "name": "RabbitMQ",
-      "description": "Message broker for distributed systems",
-      "icon": "/rabbitmq.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "kafka",
-      "name": "Apache Kafka",
-      "description": "Distributed streaming platform",
-      "icon": "/kafka.svg",
-      "color": "from-gray-700 to-black",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "azure-service-bus",
-      "name": "Azure Service Bus",
-      "description": "Microsoft Azure messaging service",
-      "icon": "/azure-service-bus.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "aws-sqs",
-      "name": "AWS SQS",
-      "description": "Amazon Simple Queue Service",
-      "icon": "/aws-sqs.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "redis-pub-sub",
-      "name": "Redis Pub/Sub",
-      "description": "Redis publish/subscribe messaging",
-      "icon": "/redis.svg",
-      "color": "from-red-500 to-red-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "google-pub-sub",
-      "name": "Google Pub/Sub",
-      "description": "Google Cloud messaging service",
-      "icon": "/google-pubsub.svg",
-      "color": "from-blue-400 to-green-500",
-      "default": false,
-      "sort_order": 6
-    },
-    {
-      "id": "nats",
-      "name": "NATS",
-      "description": "High-performance messaging system",
-      "icon": "/nats.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 7
-    },
-    {
-      "id": "none",
-      "name": "No Messaging",
-      "description": "Skip messaging setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 8
-    }
-  ],
-  "install": [
-    {
-      "id": "true",
-      "name": "Install Dependencies",
-      "description": "Install packages automatically",
-      "icon": "",
-      "color": "from-green-400 to-green-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "false",
-      "name": "Skip Install",
-      "description": "Skip dependency installation",
-      "icon": "",
-      "color": "from-yellow-400 to-yellow-600",
-      "sort_order": 2
-    }
-  ],
-  "testing": [
-    {
-      "id": "jest",
-      "name": "Jest",
-      "description": "Delightful JavaScript testing framework",
-      "icon": "/jest.svg",
-      "color": "from-red-500 to-red-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "vitest",
-      "name": "Vitest",
-      "description": "Blazing fast unit test framework",
-      "icon": "/vitest.svg",
-      "color": "from-green-500 to-green-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "playwright",
-      "name": "Playwright",
-      "description": "End-to-end testing framework",
-      "icon": "/playwright.svg",
-      "color": "from-blue-500 to-green-500",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "cypress",
-      "name": "Cypress",
-      "description": "Fast, easy and reliable testing",
-      "icon": "/cypress.svg",
-      "color": "from-gray-700 to-green-600",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "k6",
-      "name": "k6",
-      "description": "Modern load testing tool",
-      "icon": "/k6.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "none",
-      "name": "No Testing",
-      "description": "Skip testing setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 6
-    }
-  ],
-  "devops": [
-    {
-      "id": "github-actions",
-      "name": "GitHub Actions",
-      "description": "CI/CD workflows for GitHub",
-      "icon": "/github-actions.svg",
-      "color": "from-gray-800 to-blue-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "docker",
-      "name": "Docker",
-      "description": "Containerization platform",
-      "icon": "/docker.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "terraform",
-      "name": "Terraform",
-      "description": "Infrastructure as Code",
-      "icon": "/terraform.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "kubernetes",
-      "name": "Kubernetes",
-      "description": "Container orchestration platform",
-      "icon": "/kubernetes.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "jenkins",
-      "name": "Jenkins",
-      "description": "Open source automation server",
-      "icon": "/jenkins.svg",
-      "color": "from-blue-500 to-red-600",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "none",
-      "name": "No DevOps",
-      "description": "Skip DevOps setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 6
-    }
-  ],
-  "search": [
-    {
-      "id": "elasticsearch",
-      "name": "Elasticsearch",
-      "description": "Distributed search and analytics engine",
-      "icon": "/elasticsearch.svg",
-      "color": "from-yellow-500 to-orange-600",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "algolia",
-      "name": "Algolia",
-      "description": "Hosted search API",
-      "icon": "/algolia.svg",
-      "color": "from-blue-500 to-purple-600",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "meilisearch",
-      "name": "MeiliSearch",
-      "description": "Lightning fast search engine",
-      "icon": "/meilisearch.svg",
-      "color": "from-pink-500 to-purple-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "typesense",
-      "name": "Typesense",
-      "description": "Fast, typo-tolerant search engine",
-      "icon": "/typesense.svg",
-      "color": "from-blue-600 to-indigo-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Search",
-      "description": "Skip search setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "caching": [
-    {
-      "id": "redis",
-      "name": "Redis",
-      "description": "In-memory data structure store",
-      "icon": "/redis.svg",
-      "color": "from-red-500 to-red-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "memcached",
-      "name": "Memcached",
-      "description": "High-performance distributed memory caching",
-      "icon": "/memcached.svg",
-      "color": "from-green-500 to-green-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "cloudflare",
-      "name": "Cloudflare",
-      "description": "Global CDN and edge computing",
-      "icon": "/cloudflare.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "aws-cloudfront",
-      "name": "AWS CloudFront",
-      "description": "Amazon content delivery network",
-      "icon": "/aws-cloudfront.svg",
-      "color": "from-orange-500 to-orange-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Caching",
-      "description": "Skip caching setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "backgroundJobs": [
-    {
-      "id": "bullmq",
-      "name": "BullMQ",
-      "description": "Premium queue package for handling distributed jobs",
-      "icon": "/bullmq.svg",
-      "color": "from-red-600 to-red-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "agenda",
-      "name": "Agenda",
-      "description": "Lightweight job scheduling for Node.js",
-      "icon": "/agenda.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "inngest",
-      "name": "Inngest",
-      "description": "Durable workflow engine",
-      "icon": "/inngest.svg",
-      "color": "from-purple-500 to-purple-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "temporal",
-      "name": "Temporal",
-      "description": "Microservice orchestration platform",
-      "icon": "/temporal.svg",
-      "color": "from-blue-600 to-indigo-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Background Jobs",
-      "description": "Skip background job setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "i18n": [
-    {
-      "id": "next-intl",
-      "name": "next-intl",
-      "description": "Internationalization for Next.js",
-      "icon": "/next-intl.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "react-i18next",
-      "name": "react-i18next",
-      "description": "Internationalization framework for React",
-      "icon": "/react-i18next.svg",
-      "color": "from-blue-400 to-cyan-500",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "formatjs",
-      "name": "FormatJS",
-      "description": "Modular collection of JavaScript libraries",
-      "icon": "/formatjs.svg",
-      "color": "from-orange-500 to-red-600",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "crowdin",
-      "name": "Crowdin",
-      "description": "Translation management platform",
-      "icon": "/crowdin.svg",
-      "color": "from-green-500 to-green-700",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Internationalization",
-      "description": "Skip i18n setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "cms": [
-    {
-      "id": "strapi",
-      "name": "Strapi",
-      "description": "Leading open-source headless CMS",
-      "icon": "/strapi.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "contentful",
-      "name": "Contentful",
-      "description": "API-first content management platform",
-      "icon": "/contentful.svg",
-      "color": "from-blue-500 to-blue-700",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "sanity",
-      "name": "Sanity",
-      "description": "Platform for structured content",
-      "icon": "/sanity.svg",
-      "color": "from-red-500 to-red-700",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "payload",
-      "name": "Payload CMS",
-      "description": "TypeScript headless CMS",
-      "icon": "/payload.svg",
-      "color": "from-gray-700 to-gray-900",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "ghost",
-      "name": "Ghost",
-      "description": "Professional publishing platform",
-      "icon": "/ghost.svg",
-      "color": "from-gray-800 to-black",
-      "default": false,
-      "sort_order": 5
-    },
-    {
-      "id": "none",
-      "name": "No CMS",
-      "description": "Skip CMS setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 6
-    }
-  ],
-  "security": [
-    {
-      "id": "snyk",
-      "name": "Snyk",
-      "description": "Developer security platform",
-      "icon": "/snyk.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "sonarqube",
-      "name": "SonarQube",
-      "description": "Code quality and security analysis",
-      "icon": "/sonarqube.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "owasp-zap",
-      "name": "OWASP ZAP",
-      "description": "Web application security scanner",
-      "icon": "/owasp.svg",
-      "color": "from-red-600 to-red-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "semgrep",
-      "name": "Semgrep",
-      "description": "Static analysis tool for security",
-      "icon": "/semgrep.svg",
-      "color": "from-green-600 to-green-800",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Security Scanning",
-      "description": "Skip security setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "saasAdmin": [
-    {
-      "id": "admin-dashboard",
-      "name": "Admin Dashboard",
-      "description": "Complete SAAS administration dashboard",
-      "icon": "/admin-dashboard.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "tenant-management",
-      "name": "Tenant Management",
-      "description": "Multi-tenant organization management",
-      "icon": "/tenant-management.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "user-management",
-      "name": "User Management",
-      "description": "Advanced user administration tools",
-      "icon": "/user-management.svg",
-      "color": "from-green-600 to-green-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No SAAS Admin",
-      "description": "Skip SAAS administration setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 4
-    }
-  ],
-  "subscriptions": [
-    {
-      "id": "stripe-billing",
-      "name": "Stripe Billing",
-      "description": "Complete subscription management with Stripe",
-      "icon": "/stripe.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "paddle",
-      "name": "Paddle",
-      "description": "All-in-one subscription billing platform",
-      "icon": "/paddle.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "chargebee",
-      "name": "Chargebee",
-      "description": "Subscription billing and revenue operations",
-      "icon": "/chargebee.svg",
-      "color": "from-orange-600 to-orange-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "custom-billing",
-      "name": "Custom Billing",
-      "description": "Build your own subscription system",
-      "icon": "/custom-billing.svg",
-      "color": "from-gray-600 to-gray-800",
-      "default": false,
-      "sort_order": 4
-    },
-    {
-      "id": "none",
-      "name": "No Subscriptions",
-      "description": "Skip subscription management",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 5
-    }
-  ],
-  "licensing": [
-    {
-      "id": "feature-flags",
-      "name": "Feature Flags",
-      "description": "Dynamic feature toggling and licensing",
-      "icon": "/feature-flags.svg",
-      "color": "from-green-600 to-green-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "usage-limits",
-      "name": "Usage Limits",
-      "description": "API rate limiting and usage tracking",
-      "icon": "/usage-limits.svg",
-      "color": "from-yellow-600 to-yellow-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "license-validation",
-      "name": "License Validation",
-      "description": "Software license verification system",
-      "icon": "/license-validation.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No Licensing",
-      "description": "Skip license management",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 4
-    }
-  ],
-  "rbac": [
-    {
-      "id": "role-permissions",
-      "name": "Role & Permissions",
-      "description": "Complete role-based access control system",
-      "icon": "/rbac.svg",
-      "color": "from-indigo-600 to-indigo-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "casbin",
-      "name": "Casbin",
-      "description": "Authorization library with access control models",
-      "icon": "/casbin.svg",
-      "color": "from-red-600 to-red-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "opa",
-      "name": "Open Policy Agent",
-      "description": "Policy-based control for cloud native environments",
-      "icon": "/opa.svg",
-      "color": "from-cyan-600 to-cyan-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No RBAC",
-      "description": "Skip role-based access control",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 4
-    }
-  ],
-  "multiTenancy": [
-    {
-      "id": "schema-separation",
-      "name": "Schema Separation",
-      "description": "Database schema per tenant isolation",
-      "icon": "/schema-separation.svg",
-      "color": "from-purple-600 to-purple-800",
-      "default": true,
-      "sort_order": 1
-    },
-    {
-      "id": "row-level-security",
-      "name": "Row Level Security",
-      "description": "Database row-level tenant isolation",
-      "icon": "/rls.svg",
-      "color": "from-green-600 to-green-800",
-      "default": false,
-      "sort_order": 2
-    },
-    {
-      "id": "tenant-routing",
-      "name": "Tenant Routing",
-      "description": "Subdomain and path-based tenant routing",
-      "icon": "/tenant-routing.svg",
-      "color": "from-blue-600 to-blue-800",
-      "default": false,
-      "sort_order": 3
-    },
-    {
-      "id": "none",
-      "name": "No Multi-Tenancy",
-      "description": "Skip multi-tenant setup",
-      "icon": "",
-      "color": "from-gray-400 to-gray-600",
-      "default": false,
-      "sort_order": 4
-    }
-  ]
+	"webFrontend": [
+		{
+			"id": "tanstack-router",
+			"name": "TanStack Router",
+			"description": "Modern type-safe router for React",
+			"icon": "/tanstack.svg",
+			"color": "from-blue-400 to-blue-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "react-router",
+			"name": "React Router",
+			"description": "Declarative routing for React",
+			"icon": "/react-router.svg",
+			"color": "from-cyan-400 to-cyan-600",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "tanstack-start",
+			"name": "TanStack Start (vite)",
+			"description": "Full-stack React and Solid framework powered by TanStack Router",
+			"icon": "/tanstack.svg",
+			"color": "from-purple-400 to-purple-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "next",
+			"name": "Next.js",
+			"description": "React framework with hybrid rendering",
+			"icon": "/nextjs.svg",
+			"color": "from-gray-700 to-black",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "nuxt",
+			"name": "Nuxt",
+			"description": "Vue full-stack framework (SSR, SSG, hybrid)",
+			"icon": "/nuxt.svg",
+			"color": "from-green-400 to-green-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "svelte",
+			"name": "Svelte",
+			"description": "Cybernetically enhanced web apps",
+			"icon": "/svelte.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "solid",
+			"name": "Solid",
+			"description": "Simple and performant reactivity for building UIs",
+			"icon": "/solid.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "angular",
+			"name": "Angular",
+			"description": "Platform for building mobile and desktop web applications",
+			"icon": "/angular.svg",
+			"color": "from-red-600 to-red-800",
+			"default": false,
+			"sort_order": 8
+		},
+		{
+			"id": "blazor",
+			"name": "Blazor",
+			"description": "Build interactive web UIs using C# instead of JavaScript",
+			"icon": "/blazor.svg",
+			"color": "from-purple-600 to-blue-600",
+			"default": false,
+			"sort_order": 9
+		},
+		{
+			"id": "none",
+			"name": "No Web Frontend",
+			"description": "No web-based frontend",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 10
+		}
+	],
+	"backend": [
+		{
+			"id": "hono",
+			"name": "Hono",
+			"description": "Ultrafast web framework",
+			"icon": "/hono.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "next",
+			"name": "Next.js",
+			"description": "App Router and API Routes",
+			"icon": "/nextjs.svg",
+			"color": "from-gray-700 to-black",
+			"sort_order": 2
+		},
+		{
+			"id": "elysia",
+			"name": "Elysia",
+			"description": "TypeScript web framework",
+			"icon": "/elysia.svg",
+			"color": "from-purple-500 to-purple-700",
+			"sort_order": 3
+		},
+		{
+			"id": "express",
+			"name": "Express",
+			"description": "Popular Node.js framework",
+			"icon": "/express.svg",
+			"color": "from-gray-500 to-gray-700",
+			"sort_order": 4
+		},
+		{
+			"id": "fastify",
+			"name": "Fastify",
+			"description": "Fast, low-overhead web framework for Node.js",
+			"icon": "/fastify.svg",
+			"color": "from-gray-500 to-gray-700",
+			"sort_order": 5
+		},
+		{
+			"id": "convex",
+			"name": "Convex",
+			"description": "Reactive backend-as-a-service",
+			"icon": "/convex.svg",
+			"color": "from-pink-500 to-pink-700",
+			"sort_order": 6
+		},
+		{
+			"id": "laravel",
+			"name": "Laravel",
+			"description": "PHP web application framework",
+			"icon": "/laravel.svg",
+			"color": "from-red-500 to-red-700",
+			"sort_order": 7
+		},
+		{
+			"id": "django",
+			"name": "Django",
+			"description": "Python web framework",
+			"icon": "/django.svg",
+			"color": "from-green-600 to-green-800",
+			"sort_order": 8
+		},
+		{
+			"id": "dotnet",
+			"name": ".NET",
+			"description": "Microsoft .NET framework",
+			"icon": "/dotnet.svg",
+			"color": "from-purple-600 to-blue-600",
+			"sort_order": 9
+		},
+		{
+			"id": "none",
+			"name": "No Backend",
+			"description": "Skip backend integration (frontend only)",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"sort_order": 10
+		}
+	],
+	"nativeFrontend": [
+		{
+			"id": "native-nativewind",
+			"name": "React Native + NativeWind",
+			"description": "Expo with NativeWind (Tailwind)",
+			"icon": "/expo.svg",
+			"color": "from-purple-400 to-purple-600",
+			"className": "invert-0 dark:invert",
+			"default": false,
+			"sort_order": 1
+		},
+		{
+			"id": "native-unistyles",
+			"name": "React Native + Unistyles",
+			"description": "Expo with Unistyles",
+			"icon": "/expo.svg",
+			"color": "from-pink-400 to-pink-600",
+			"className": "invert-0 dark:invert",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "none",
+			"name": "No Native Frontend",
+			"description": "No native mobile frontend",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 3
+		}
+	],
+	"api": [
+		{
+			"id": "trpc",
+			"name": "tRPC",
+			"description": "End-to-end typesafe APIs",
+			"icon": "/trpc.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "orpc",
+			"name": "oRPC",
+			"description": "Typesafe APIs Made Simple",
+			"icon": "/orpc.svg",
+			"color": "from-indigo-400 to-indigo-600",
+			"sort_order": 2
+		},
+		{
+			"id": "none",
+			"name": "No API",
+			"description": "No API layer (API routes disabled)",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"sort_order": 3
+		}
+	],
+	"runtime": [
+		{
+			"id": "bun",
+			"name": "Bun",
+			"description": "Fast JavaScript runtime & toolkit",
+			"icon": "/bun.svg",
+			"color": "from-amber-400 to-amber-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "node",
+			"name": "Node.js",
+			"description": "JavaScript runtime environment",
+			"icon": "/node.svg",
+			"color": "from-green-400 to-green-600",
+			"sort_order": 2
+		},
+		{
+			"id": "workers",
+			"name": "Cloudflare Workers",
+			"description": "Serverless runtime for the edge",
+			"icon": "/workers.svg",
+			"color": "from-orange-400 to-orange-600",
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No Runtime",
+			"description": "No specific runtime",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"sort_order": 4
+		}
+	],
+	"database": [
+		{
+			"id": "sqlite",
+			"name": "SQLite",
+			"description": "File-based SQL database",
+			"icon": "/sqlite.svg",
+			"color": "from-blue-400 to-cyan-500",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "postgres",
+			"name": "PostgreSQL",
+			"description": "Advanced SQL database",
+			"icon": "/postgres.svg",
+			"color": "from-indigo-400 to-indigo-600",
+			"sort_order": 2
+		},
+		{
+			"id": "mysql",
+			"name": "MySQL",
+			"description": "Popular relational database",
+			"icon": "/mysql.svg",
+			"color": "from-blue-500 to-blue-700",
+			"sort_order": 3
+		},
+		{
+			"id": "mongodb",
+			"name": "MongoDB",
+			"description": "NoSQL document database",
+			"icon": "/mongodb.svg",
+			"color": "from-green-400 to-green-600",
+			"sort_order": 4
+		},
+		{
+			"id": "mssql",
+			"name": "SQL Server",
+			"description": "Microsoft SQL Server database",
+			"icon": "/mssql.svg",
+			"color": "from-red-600 to-red-800",
+			"sort_order": 5
+		},
+		{
+			"id": "none",
+			"name": "No Database",
+			"description": "Skip database integration",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"sort_order": 6
+		}
+	],
+	"orm": [
+		{
+			"id": "drizzle",
+			"name": "Drizzle",
+			"description": "TypeScript ORM",
+			"icon": "/drizzle.svg",
+			"color": "from-cyan-400 to-cyan-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "prisma",
+			"name": "Prisma",
+			"description": "Next-gen ORM",
+			"icon": "/prisma.svg",
+			"color": "from-purple-400 to-purple-600",
+			"sort_order": 2
+		},
+		{
+			"id": "mongoose",
+			"name": "Mongoose",
+			"description": "Elegant object modeling tool",
+			"icon": "/mongoose.svg",
+			"color": "from-blue-400 to-blue-600",
+			"sort_order": 3
+		},
+		{
+			"id": "entity-framework",
+			"name": "Entity Framework",
+			"description": "Microsoft's object-relational mapper for .NET",
+			"icon": "/entity-framework.svg",
+			"color": "from-purple-600 to-blue-600",
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No ORM",
+			"description": "Skip ORM integration",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"sort_order": 5
+		}
+	],
+	"dbSetup": [
+		{
+			"id": "turso",
+			"name": "Turso",
+			"description": "SQLite cloud database powered by libSQL",
+			"icon": "/turso.svg",
+			"color": "from-pink-400 to-pink-600",
+			"sort_order": 1
+		},
+		{
+			"id": "d1",
+			"name": "Cloudflare D1",
+			"description": "Serverless SQLite database on Cloudflare Workers",
+			"icon": "/workers.svg",
+			"color": "from-orange-400 to-orange-600",
+			"sort_order": 2
+		},
+		{
+			"id": "neon",
+			"name": "Neon Postgres",
+			"description": "Serverless PostgreSQL with Neon",
+			"icon": "/neon.svg",
+			"color": "from-blue-400 to-blue-600",
+			"sort_order": 3
+		},
+		{
+			"id": "prisma-postgres",
+			"name": "Prisma PostgreSQL",
+			"description": "Set up PostgreSQL with Prisma",
+			"icon": "/prisma.svg",
+			"color": "from-indigo-400 to-indigo-600",
+			"sort_order": 4
+		},
+		{
+			"id": "mongodb-atlas",
+			"name": "MongoDB Atlas",
+			"description": "Cloud MongoDB setup with Atlas",
+			"icon": "/mongodb.svg",
+			"color": "from-green-400 to-green-600",
+			"sort_order": 5
+		},
+		{
+			"id": "supabase",
+			"name": "Supabase",
+			"description": "Local Supabase stack (requires Docker)",
+			"icon": "/supabase.svg",
+			"color": "from-emerald-400 to-emerald-600",
+			"sort_order": 6
+		},
+		{
+			"id": "docker",
+			"name": "Docker",
+			"description": "Local database with Docker Compose",
+			"icon": "/docker.svg",
+			"color": "from-blue-500 to-blue-700",
+			"sort_order": 7
+		},
+		{
+			"id": "none",
+			"name": "Basic Setup",
+			"description": "No cloud DB integration",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": true,
+			"sort_order": 8
+		}
+	],
+	"webDeploy": [
+		{
+			"id": "workers",
+			"name": "Cloudflare Workers",
+			"description": "Deploy to Cloudflare Workers",
+			"icon": "/workers.svg",
+			"color": "from-orange-400 to-orange-600",
+			"sort_order": 1
+		},
+		{
+			"id": "none",
+			"name": "No Deployment",
+			"description": "Skip deployment configuration",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": true,
+			"sort_order": 2
+		}
+	],
+	"auth": [
+		{
+			"id": "bankid",
+			"name": "BankID (Norwegian)",
+			"description": "Norwegian digital identity with highest security",
+			"icon": "/bankid.svg",
+			"color": "from-red-600 to-blue-800",
+			"default": false,
+			"sort_order": 1
+		},
+		{
+			"id": "vipps",
+			"name": "Vipps Login",
+			"description": "Norwegian mobile payment and login",
+			"icon": "/vipps.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "better-auth",
+			"name": "Better Auth",
+			"description": "Modern auth with social providers and 2FA",
+			"icon": "/better-auth.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": true,
+			"sort_order": 3
+		},
+		{
+			"id": "next-auth",
+			"name": "NextAuth.js",
+			"description": "Complete authentication solution for Next.js",
+			"icon": "/nextauth.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "clerk",
+			"name": "Clerk",
+			"description": "Complete user management with UI components",
+			"icon": "/clerk.svg",
+			"color": "from-indigo-500 to-indigo-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "supabase-auth",
+			"name": "Supabase Auth",
+			"description": "Authentication with Supabase backend",
+			"icon": "/supabase.svg",
+			"color": "from-emerald-500 to-emerald-700",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "firebase-auth",
+			"name": "Firebase Auth",
+			"description": "Google Firebase authentication service",
+			"icon": "/firebase.svg",
+			"color": "from-yellow-500 to-orange-600",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "auth0",
+			"name": "Auth0",
+			"description": "Enterprise identity platform",
+			"icon": "/auth0.svg",
+			"color": "from-orange-600 to-red-600",
+			"default": false,
+			"sort_order": 8
+		},
+		{
+			"id": "identity-server",
+			"name": "Identity Server",
+			"description": "OpenID Connect and OAuth 2.0 framework for .NET",
+			"icon": "/identity-server.svg",
+			"color": "from-blue-600 to-purple-600",
+			"default": false,
+			"sort_order": 9
+		},
+		{
+			"id": "custom",
+			"name": "Custom Auth",
+			"description": "Build your own authentication system",
+			"icon": "/custom-auth.svg",
+			"color": "from-gray-500 to-gray-700",
+			"default": false,
+			"sort_order": 10
+		},
+		{
+			"id": "none",
+			"name": "No Authentication",
+			"description": "Skip authentication setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 11
+		}
+	],
+	"packageManager": [
+		{
+			"id": "npm",
+			"name": "npm",
+			"description": "Default package manager",
+			"icon": "/npm.svg",
+			"color": "from-red-500 to-red-700",
+			"className": "invert-0 dark:invert",
+			"sort_order": 1
+		},
+		{
+			"id": "pnpm",
+			"name": "pnpm",
+			"description": "Fast, disk space efficient",
+			"icon": "/pnpm.svg",
+			"color": "from-orange-500 to-orange-700",
+			"sort_order": 2
+		},
+		{
+			"id": "bun",
+			"name": "bun",
+			"description": "All-in-one toolkit",
+			"icon": "/bun.svg",
+			"color": "from-amber-500 to-amber-700",
+			"default": true,
+			"sort_order": 3
+		}
+	],
+	"uiSystem": [
+		{
+			"id": "xala",
+			"name": "Xala UI System",
+			"description": "Enterprise-grade design system with Norwegian compliance",
+			"icon": "/xala.svg",
+			"color": "from-blue-600 to-purple-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "shadcn",
+			"name": "shadcn/ui",
+			"description": "Beautifully designed components built with Radix UI",
+			"icon": "/shadcn.svg",
+			"color": "from-gray-700 to-black",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "tailwind",
+			"name": "Tailwind CSS",
+			"description": "Utility-first CSS framework",
+			"icon": "/tailwind.svg",
+			"color": "from-cyan-400 to-cyan-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No UI System",
+			"description": "Build custom components from scratch",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 4
+		}
+	],
+	"compliance": [
+		{
+			"id": "norwegian",
+			"name": "Norwegian Government",
+			"description": "BankID, Altinn, Digdir & NSM compliance",
+			"icon": "/norway.svg",
+			"color": "from-red-600 to-blue-800",
+			"default": false,
+			"sort_order": 1
+		},
+		{
+			"id": "gdpr",
+			"name": "GDPR Compliance",
+			"description": "EU data protection and privacy compliance",
+			"icon": "/gdpr.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "wcag-aaa",
+			"name": "WCAG 2.2 AAA",
+			"description": "Highest level accessibility compliance",
+			"icon": "/accessibility.svg",
+			"color": "from-green-500 to-green-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "iso27001",
+			"name": "ISO 27001",
+			"description": "Information security management compliance",
+			"icon": "/iso27001.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Compliance",
+			"description": "Basic implementation without compliance features",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": true,
+			"sort_order": 5
+		}
+	],
+	"addons": [
+		{
+			"id": "pwa",
+			"name": "PWA (Progressive Web App)",
+			"description": "Make your app installable and work offline",
+			"icon": "",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 1
+		},
+		{
+			"id": "tauri",
+			"name": "Tauri",
+			"description": "Build native desktop apps",
+			"icon": "/tauri.svg",
+			"color": "from-amber-500 to-amber-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "starlight",
+			"name": "Starlight",
+			"description": "Build stellar docs with astro",
+			"icon": "/starlight.svg",
+			"color": "from-teal-500 to-teal-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "biome",
+			"name": "Biome",
+			"description": "Format, lint, and more",
+			"icon": "/biome.svg",
+			"color": "from-green-500 to-green-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "husky",
+			"name": "Husky",
+			"description": "Modern native Git hooks made easy",
+			"icon": "",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "ultracite",
+			"name": "Ultracite",
+			"description": "Biome preset with AI integration",
+			"icon": "/ultracite.svg",
+			"color": "from-blue-500 to-blue-700",
+			"className": "invert-0 dark:invert",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "fumadocs",
+			"name": "Fumadocs",
+			"description": "Build excellent documentation site",
+			"icon": "",
+			"color": "from-indigo-500 to-indigo-700",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "oxlint",
+			"name": "Oxlint",
+			"description": "Rust-powered linter",
+			"icon": "",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 8
+		},
+		{
+			"id": "turborepo",
+			"name": "Turborepo",
+			"description": "High-performance build system",
+			"icon": "/turborepo.svg",
+			"color": "from-gray-400 to-gray-700",
+			"default": true,
+			"sort_order": 9
+		}
+	],
+	"examples": [
+		{
+			"id": "todo",
+			"name": "Todo Example",
+			"description": "Simple todo application",
+			"icon": "",
+			"color": "from-indigo-500 to-indigo-700",
+			"default": false,
+			"sort_order": 1
+		},
+		{
+			"id": "ai",
+			"name": "AI Example",
+			"description": "AI integration example using AI SDK",
+			"icon": "",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 2
+		}
+	],
+	"git": [
+		{
+			"id": "true",
+			"name": "Git",
+			"description": "Initialize Git repository",
+			"icon": "/git.svg",
+			"color": "from-gray-500 to-gray-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "false",
+			"name": "No Git",
+			"description": "Skip Git initialization",
+			"icon": "",
+			"color": "from-red-400 to-red-600",
+			"sort_order": 2
+		}
+	],
+	"notifications": [
+		{
+			"id": "resend",
+			"name": "Resend",
+			"description": "Email API for developers with React Email templates",
+			"icon": "/resend.svg",
+			"color": "from-black to-gray-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "nodemailer",
+			"name": "Nodemailer",
+			"description": "Send emails via SMTP with custom templates",
+			"icon": "/nodemailer.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "sendgrid",
+			"name": "SendGrid",
+			"description": "Twilio SendGrid email delivery platform",
+			"icon": "/sendgrid.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "mailgun",
+			"name": "Mailgun",
+			"description": "Email automation and delivery service",
+			"icon": "/mailgun.svg",
+			"color": "from-red-500 to-red-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "postmark",
+			"name": "Postmark",
+			"description": "Fast and reliable transactional email",
+			"icon": "/postmark.svg",
+			"color": "from-yellow-500 to-orange-600",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "pusher",
+			"name": "Pusher",
+			"description": "Real-time messaging and push notifications",
+			"icon": "/pusher.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "twilio",
+			"name": "Twilio",
+			"description": "SMS, voice, and communication APIs",
+			"icon": "/twilio.svg",
+			"color": "from-red-600 to-red-800",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "none",
+			"name": "No Notifications",
+			"description": "Skip notification setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 8
+		}
+	],
+	"documents": [
+		{
+			"id": "uploadthing",
+			"name": "UploadThing",
+			"description": "File uploads for Next.js with type safety",
+			"icon": "/uploadthing.svg",
+			"color": "from-red-500 to-red-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "cloudinary",
+			"name": "Cloudinary",
+			"description": "Image and video management in the cloud",
+			"icon": "/cloudinary.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "aws-s3",
+			"name": "AWS S3",
+			"description": "Amazon S3 object storage service",
+			"icon": "/aws-s3.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "google-drive",
+			"name": "Google Drive API",
+			"description": "Google Drive file storage and management",
+			"icon": "/google-drive.svg",
+			"color": "from-blue-400 to-green-500",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "dropbox",
+			"name": "Dropbox API",
+			"description": "Dropbox file storage and sharing",
+			"icon": "/dropbox.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "pdf-lib",
+			"name": "PDF Generation",
+			"description": "Create and manipulate PDF documents",
+			"icon": "/pdf.svg",
+			"color": "from-red-500 to-red-700",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "none",
+			"name": "No Document Services",
+			"description": "Skip document management setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 7
+		}
+	],
+	"payments": [
+		{
+			"id": "stripe",
+			"name": "Stripe",
+			"description": "Complete payment processing platform",
+			"icon": "/stripe.svg",
+			"color": "from-purple-600 to-blue-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "vipps-pay",
+			"name": "Vipps Payment",
+			"description": "Norwegian mobile payment solution",
+			"icon": "/vipps.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "paypal",
+			"name": "PayPal",
+			"description": "PayPal payment processing",
+			"icon": "/paypal.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "klarna",
+			"name": "Klarna",
+			"description": "Buy now, pay later payment solution",
+			"icon": "/klarna.svg",
+			"color": "from-pink-500 to-pink-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "square",
+			"name": "Square",
+			"description": "Square payment processing",
+			"icon": "/square.svg",
+			"color": "from-gray-700 to-black",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "adyen",
+			"name": "Adyen",
+			"description": "Global payment platform",
+			"icon": "/adyen.svg",
+			"color": "from-green-600 to-green-800",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "razorpay",
+			"name": "Razorpay",
+			"description": "Indian payment gateway",
+			"icon": "/razorpay.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "none",
+			"name": "No Payments",
+			"description": "Skip payment integration",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 8
+		}
+	],
+	"analytics": [
+		{
+			"id": "vercel-analytics",
+			"name": "Vercel Analytics",
+			"description": "Privacy-friendly web analytics",
+			"icon": "/vercel.svg",
+			"color": "from-black to-gray-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "google-analytics",
+			"name": "Google Analytics",
+			"description": "Comprehensive web analytics platform",
+			"icon": "/google-analytics.svg",
+			"color": "from-orange-500 to-red-600",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "posthog",
+			"name": "PostHog",
+			"description": "Product analytics and feature flags",
+			"icon": "/posthog.svg",
+			"color": "from-yellow-500 to-orange-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "mixpanel",
+			"name": "Mixpanel",
+			"description": "Advanced product analytics",
+			"icon": "/mixpanel.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "amplitude",
+			"name": "Amplitude",
+			"description": "Digital analytics and optimization",
+			"icon": "/amplitude.svg",
+			"color": "from-blue-500 to-indigo-600",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "hotjar",
+			"name": "Hotjar",
+			"description": "Heatmaps and user behavior analytics",
+			"icon": "/hotjar.svg",
+			"color": "from-red-500 to-orange-600",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "none",
+			"name": "No Analytics",
+			"description": "Skip analytics setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 7
+		}
+	],
+	"monitoring": [
+		{
+			"id": "sentry",
+			"name": "Sentry",
+			"description": "Application monitoring and error tracking",
+			"icon": "/sentry.svg",
+			"color": "from-purple-600 to-pink-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "datadog",
+			"name": "Datadog",
+			"description": "Infrastructure monitoring and APM",
+			"icon": "/datadog.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "newrelic",
+			"name": "New Relic",
+			"description": "Full-stack observability platform",
+			"icon": "/newrelic.svg",
+			"color": "from-green-500 to-teal-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "grafana",
+			"name": "Grafana",
+			"description": "Open source analytics and monitoring",
+			"icon": "/grafana.svg",
+			"color": "from-orange-500 to-red-600",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "app-insights",
+			"name": "Azure App Insights",
+			"description": "Microsoft Azure application monitoring",
+			"icon": "/azure-app-insights.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "prometheus",
+			"name": "Prometheus",
+			"description": "Open source monitoring and alerting",
+			"icon": "/prometheus.svg",
+			"color": "from-orange-600 to-red-700",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "elastic",
+			"name": "Elastic Stack",
+			"description": "Elasticsearch, Logstash, and Kibana",
+			"icon": "/elastic.svg",
+			"color": "from-yellow-500 to-orange-600",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "none",
+			"name": "No Monitoring",
+			"description": "Skip monitoring setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 8
+		}
+	],
+	"messaging": [
+		{
+			"id": "rabbitmq",
+			"name": "RabbitMQ",
+			"description": "Message broker for distributed systems",
+			"icon": "/rabbitmq.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "kafka",
+			"name": "Apache Kafka",
+			"description": "Distributed streaming platform",
+			"icon": "/kafka.svg",
+			"color": "from-gray-700 to-black",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "azure-service-bus",
+			"name": "Azure Service Bus",
+			"description": "Microsoft Azure messaging service",
+			"icon": "/azure-service-bus.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "aws-sqs",
+			"name": "AWS SQS",
+			"description": "Amazon Simple Queue Service",
+			"icon": "/aws-sqs.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "redis-pub-sub",
+			"name": "Redis Pub/Sub",
+			"description": "Redis publish/subscribe messaging",
+			"icon": "/redis.svg",
+			"color": "from-red-500 to-red-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "google-pub-sub",
+			"name": "Google Pub/Sub",
+			"description": "Google Cloud messaging service",
+			"icon": "/google-pubsub.svg",
+			"color": "from-blue-400 to-green-500",
+			"default": false,
+			"sort_order": 6
+		},
+		{
+			"id": "nats",
+			"name": "NATS",
+			"description": "High-performance messaging system",
+			"icon": "/nats.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 7
+		},
+		{
+			"id": "none",
+			"name": "No Messaging",
+			"description": "Skip messaging setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 8
+		}
+	],
+	"install": [
+		{
+			"id": "true",
+			"name": "Install Dependencies",
+			"description": "Install packages automatically",
+			"icon": "",
+			"color": "from-green-400 to-green-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "false",
+			"name": "Skip Install",
+			"description": "Skip dependency installation",
+			"icon": "",
+			"color": "from-yellow-400 to-yellow-600",
+			"sort_order": 2
+		}
+	],
+	"testing": [
+		{
+			"id": "jest",
+			"name": "Jest",
+			"description": "Delightful JavaScript testing framework",
+			"icon": "/jest.svg",
+			"color": "from-red-500 to-red-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "vitest",
+			"name": "Vitest",
+			"description": "Blazing fast unit test framework",
+			"icon": "/vitest.svg",
+			"color": "from-green-500 to-green-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "playwright",
+			"name": "Playwright",
+			"description": "End-to-end testing framework",
+			"icon": "/playwright.svg",
+			"color": "from-blue-500 to-green-500",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "cypress",
+			"name": "Cypress",
+			"description": "Fast, easy and reliable testing",
+			"icon": "/cypress.svg",
+			"color": "from-gray-700 to-green-600",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "k6",
+			"name": "k6",
+			"description": "Modern load testing tool",
+			"icon": "/k6.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "none",
+			"name": "No Testing",
+			"description": "Skip testing setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 6
+		}
+	],
+	"devops": [
+		{
+			"id": "github-actions",
+			"name": "GitHub Actions",
+			"description": "CI/CD workflows for GitHub",
+			"icon": "/github-actions.svg",
+			"color": "from-gray-800 to-blue-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "docker",
+			"name": "Docker",
+			"description": "Containerization platform",
+			"icon": "/docker.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "terraform",
+			"name": "Terraform",
+			"description": "Infrastructure as Code",
+			"icon": "/terraform.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "kubernetes",
+			"name": "Kubernetes",
+			"description": "Container orchestration platform",
+			"icon": "/kubernetes.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "jenkins",
+			"name": "Jenkins",
+			"description": "Open source automation server",
+			"icon": "/jenkins.svg",
+			"color": "from-blue-500 to-red-600",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "none",
+			"name": "No DevOps",
+			"description": "Skip DevOps setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 6
+		}
+	],
+	"search": [
+		{
+			"id": "elasticsearch",
+			"name": "Elasticsearch",
+			"description": "Distributed search and analytics engine",
+			"icon": "/elasticsearch.svg",
+			"color": "from-yellow-500 to-orange-600",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "algolia",
+			"name": "Algolia",
+			"description": "Hosted search API",
+			"icon": "/algolia.svg",
+			"color": "from-blue-500 to-purple-600",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "meilisearch",
+			"name": "MeiliSearch",
+			"description": "Lightning fast search engine",
+			"icon": "/meilisearch.svg",
+			"color": "from-pink-500 to-purple-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "typesense",
+			"name": "Typesense",
+			"description": "Fast, typo-tolerant search engine",
+			"icon": "/typesense.svg",
+			"color": "from-blue-600 to-indigo-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Search",
+			"description": "Skip search setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"caching": [
+		{
+			"id": "redis",
+			"name": "Redis",
+			"description": "In-memory data structure store",
+			"icon": "/redis.svg",
+			"color": "from-red-500 to-red-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "memcached",
+			"name": "Memcached",
+			"description": "High-performance distributed memory caching",
+			"icon": "/memcached.svg",
+			"color": "from-green-500 to-green-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "cloudflare",
+			"name": "Cloudflare",
+			"description": "Global CDN and edge computing",
+			"icon": "/cloudflare.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "aws-cloudfront",
+			"name": "AWS CloudFront",
+			"description": "Amazon content delivery network",
+			"icon": "/aws-cloudfront.svg",
+			"color": "from-orange-500 to-orange-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Caching",
+			"description": "Skip caching setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"backgroundJobs": [
+		{
+			"id": "bullmq",
+			"name": "BullMQ",
+			"description": "Premium queue package for handling distributed jobs",
+			"icon": "/bullmq.svg",
+			"color": "from-red-600 to-red-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "agenda",
+			"name": "Agenda",
+			"description": "Lightweight job scheduling for Node.js",
+			"icon": "/agenda.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "inngest",
+			"name": "Inngest",
+			"description": "Durable workflow engine",
+			"icon": "/inngest.svg",
+			"color": "from-purple-500 to-purple-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "temporal",
+			"name": "Temporal",
+			"description": "Microservice orchestration platform",
+			"icon": "/temporal.svg",
+			"color": "from-blue-600 to-indigo-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Background Jobs",
+			"description": "Skip background job setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"i18n": [
+		{
+			"id": "next-intl",
+			"name": "next-intl",
+			"description": "Internationalization for Next.js",
+			"icon": "/next-intl.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "react-i18next",
+			"name": "react-i18next",
+			"description": "Internationalization framework for React",
+			"icon": "/react-i18next.svg",
+			"color": "from-blue-400 to-cyan-500",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "formatjs",
+			"name": "FormatJS",
+			"description": "Modular collection of JavaScript libraries",
+			"icon": "/formatjs.svg",
+			"color": "from-orange-500 to-red-600",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "crowdin",
+			"name": "Crowdin",
+			"description": "Translation management platform",
+			"icon": "/crowdin.svg",
+			"color": "from-green-500 to-green-700",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Internationalization",
+			"description": "Skip i18n setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"cms": [
+		{
+			"id": "strapi",
+			"name": "Strapi",
+			"description": "Leading open-source headless CMS",
+			"icon": "/strapi.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "contentful",
+			"name": "Contentful",
+			"description": "API-first content management platform",
+			"icon": "/contentful.svg",
+			"color": "from-blue-500 to-blue-700",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "sanity",
+			"name": "Sanity",
+			"description": "Platform for structured content",
+			"icon": "/sanity.svg",
+			"color": "from-red-500 to-red-700",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "payload",
+			"name": "Payload CMS",
+			"description": "TypeScript headless CMS",
+			"icon": "/payload.svg",
+			"color": "from-gray-700 to-gray-900",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "ghost",
+			"name": "Ghost",
+			"description": "Professional publishing platform",
+			"icon": "/ghost.svg",
+			"color": "from-gray-800 to-black",
+			"default": false,
+			"sort_order": 5
+		},
+		{
+			"id": "none",
+			"name": "No CMS",
+			"description": "Skip CMS setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 6
+		}
+	],
+	"security": [
+		{
+			"id": "snyk",
+			"name": "Snyk",
+			"description": "Developer security platform",
+			"icon": "/snyk.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "sonarqube",
+			"name": "SonarQube",
+			"description": "Code quality and security analysis",
+			"icon": "/sonarqube.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "owasp-zap",
+			"name": "OWASP ZAP",
+			"description": "Web application security scanner",
+			"icon": "/owasp.svg",
+			"color": "from-red-600 to-red-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "semgrep",
+			"name": "Semgrep",
+			"description": "Static analysis tool for security",
+			"icon": "/semgrep.svg",
+			"color": "from-green-600 to-green-800",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Security Scanning",
+			"description": "Skip security setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"saasAdmin": [
+		{
+			"id": "admin-dashboard",
+			"name": "Admin Dashboard",
+			"description": "Complete SAAS administration dashboard",
+			"icon": "/admin-dashboard.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "tenant-management",
+			"name": "Tenant Management",
+			"description": "Multi-tenant organization management",
+			"icon": "/tenant-management.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "user-management",
+			"name": "User Management",
+			"description": "Advanced user administration tools",
+			"icon": "/user-management.svg",
+			"color": "from-green-600 to-green-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No SAAS Admin",
+			"description": "Skip SAAS administration setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 4
+		}
+	],
+	"subscriptions": [
+		{
+			"id": "stripe-billing",
+			"name": "Stripe Billing",
+			"description": "Complete subscription management with Stripe",
+			"icon": "/stripe.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "paddle",
+			"name": "Paddle",
+			"description": "All-in-one subscription billing platform",
+			"icon": "/paddle.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "chargebee",
+			"name": "Chargebee",
+			"description": "Subscription billing and revenue operations",
+			"icon": "/chargebee.svg",
+			"color": "from-orange-600 to-orange-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "custom-billing",
+			"name": "Custom Billing",
+			"description": "Build your own subscription system",
+			"icon": "/custom-billing.svg",
+			"color": "from-gray-600 to-gray-800",
+			"default": false,
+			"sort_order": 4
+		},
+		{
+			"id": "none",
+			"name": "No Subscriptions",
+			"description": "Skip subscription management",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 5
+		}
+	],
+	"licensing": [
+		{
+			"id": "feature-flags",
+			"name": "Feature Flags",
+			"description": "Dynamic feature toggling and licensing",
+			"icon": "/feature-flags.svg",
+			"color": "from-green-600 to-green-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "usage-limits",
+			"name": "Usage Limits",
+			"description": "API rate limiting and usage tracking",
+			"icon": "/usage-limits.svg",
+			"color": "from-yellow-600 to-yellow-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "license-validation",
+			"name": "License Validation",
+			"description": "Software license verification system",
+			"icon": "/license-validation.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No Licensing",
+			"description": "Skip license management",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 4
+		}
+	],
+	"rbac": [
+		{
+			"id": "role-permissions",
+			"name": "Role & Permissions",
+			"description": "Complete role-based access control system",
+			"icon": "/rbac.svg",
+			"color": "from-indigo-600 to-indigo-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "casbin",
+			"name": "Casbin",
+			"description": "Authorization library with access control models",
+			"icon": "/casbin.svg",
+			"color": "from-red-600 to-red-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "opa",
+			"name": "Open Policy Agent",
+			"description": "Policy-based control for cloud native environments",
+			"icon": "/opa.svg",
+			"color": "from-cyan-600 to-cyan-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No RBAC",
+			"description": "Skip role-based access control",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 4
+		}
+	],
+	"multiTenancy": [
+		{
+			"id": "schema-separation",
+			"name": "Schema Separation",
+			"description": "Database schema per tenant isolation",
+			"icon": "/schema-separation.svg",
+			"color": "from-purple-600 to-purple-800",
+			"default": true,
+			"sort_order": 1
+		},
+		{
+			"id": "row-level-security",
+			"name": "Row Level Security",
+			"description": "Database row-level tenant isolation",
+			"icon": "/rls.svg",
+			"color": "from-green-600 to-green-800",
+			"default": false,
+			"sort_order": 2
+		},
+		{
+			"id": "tenant-routing",
+			"name": "Tenant Routing",
+			"description": "Subdomain and path-based tenant routing",
+			"icon": "/tenant-routing.svg",
+			"color": "from-blue-600 to-blue-800",
+			"default": false,
+			"sort_order": 3
+		},
+		{
+			"id": "none",
+			"name": "No Multi-Tenancy",
+			"description": "Skip multi-tenant setup",
+			"icon": "",
+			"color": "from-gray-400 to-gray-600",
+			"default": false,
+			"sort_order": 4
+		}
+	]
 }

@@ -1,5 +1,5 @@
-import type { StackState } from "@/lib/types/index";
 import { TECH_OPTIONS } from "@/lib";
+import type { StackState } from "@/lib/types/index";
 import { getCategoryDisplayName } from "./utils";
 
 export interface CompatibilityResult {
@@ -37,7 +37,9 @@ const CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
  * Analyzes stack compatibility and returns adjusted stack with notes
  * Follows Single Responsibility Principle - only handles compatibility logic
  */
-export const analyzeStackCompatibility = (stack: StackState): CompatibilityResult => {
+export const analyzeStackCompatibility = (
+	stack: StackState,
+): CompatibilityResult => {
 	const nextStack = { ...stack };
 	let changed = false;
 	const notes: CompatibilityResult["notes"] = {};

@@ -3,7 +3,7 @@
  * Encapsulates tech stack related data and behavior
  */
 
-import type { TechOption, TechCategory } from '../types/base';
+import type { TechCategory, TechOption } from "../types/base";
 
 export class TechStackOption implements TechOption {
 	constructor(
@@ -13,7 +13,7 @@ export class TechStackOption implements TechOption {
 		public readonly icon: string,
 		public readonly color: string,
 		public readonly isDefaultOption: boolean = false,
-		public readonly className?: string
+		public readonly className?: string,
 	) {}
 
 	public isDefault(): boolean {
@@ -28,15 +28,15 @@ export class TechStackOption implements TechOption {
 export class TechStackCategory {
 	constructor(
 		public readonly key: TechCategory,
-		public readonly options: readonly TechStackOption[]
+		public readonly options: readonly TechStackOption[],
 	) {}
 
 	public getDefaultOption(): TechStackOption | null {
-		return this.options.find(option => option.isDefault()) || null;
+		return this.options.find((option) => option.isDefault()) || null;
 	}
 
 	public getOptionById(id: string): TechStackOption | null {
-		return this.options.find(option => option.id === id) || null;
+		return this.options.find((option) => option.id === id) || null;
 	}
 
 	public getAllOptions(): readonly TechStackOption[] {
@@ -50,7 +50,7 @@ export class TechStackCategory {
 
 export class TechStackRegistry {
 	constructor(
-		private readonly categories: Map<TechCategory, TechStackCategory>
+		private readonly categories: Map<TechCategory, TechStackCategory>,
 	) {}
 
 	public getCategory(key: TechCategory): TechStackCategory | null {

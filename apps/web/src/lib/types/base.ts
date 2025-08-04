@@ -80,50 +80,51 @@ export type ReadonlyStackState = Readonly<StackState> & {
 	readonly compliance: readonly string[];
 	readonly addons: readonly string[];
 	readonly examples: readonly string[];
-}
+};
 
-export type TechCategory = keyof Pick<StackState, 
-	| 'webFrontend'
-	| 'nativeFrontend' 
-	| 'runtime'
-	| 'backend'
-	| 'database'
-	| 'orm'
-	| 'dbSetup'
-	| 'auth'
-	| 'packageManager'
-	| 'uiSystem'
-	| 'compliance'
-	| 'addons'
-	| 'notifications'
-	| 'documents'
-	| 'payments'
-	| 'analytics'
-	| 'monitoring'
-	| 'messaging'
-	| 'testing'
-	| 'devops'
-	| 'search'
-	| 'caching'
-	| 'backgroundJobs'
-	| 'i18n'
-	| 'cms'
-	| 'security'
-	| 'saasAdmin'
-	| 'subscriptions'
-	| 'licensing'
-	| 'rbac'
-	| 'multiTenancy'
-	| 'examples'
-	| 'git'
-	| 'install'
-	| 'api'
-	| 'webDeploy'
+export type TechCategory = keyof Pick<
+	StackState,
+	| "webFrontend"
+	| "nativeFrontend"
+	| "runtime"
+	| "backend"
+	| "database"
+	| "orm"
+	| "dbSetup"
+	| "auth"
+	| "packageManager"
+	| "uiSystem"
+	| "compliance"
+	| "addons"
+	| "notifications"
+	| "documents"
+	| "payments"
+	| "analytics"
+	| "monitoring"
+	| "messaging"
+	| "testing"
+	| "devops"
+	| "search"
+	| "caching"
+	| "backgroundJobs"
+	| "i18n"
+	| "cms"
+	| "security"
+	| "saasAdmin"
+	| "subscriptions"
+	| "licensing"
+	| "rbac"
+	| "multiTenancy"
+	| "examples"
+	| "git"
+	| "install"
+	| "api"
+	| "webDeploy"
 >;
 
 export type TechOptions = Record<TechCategory, readonly TechOption[]>;
 
-export type ProjectTypeId = 
+export type ProjectTypeId =
 	| "landing-page"
 	| "ecommerce"
 	| "blog"
@@ -149,10 +150,13 @@ export interface ProjectType {
 
 export interface CompatibilityResult {
 	adjustedStack: StackState | null;
-	notes: Record<string, {
-		notes: string[];
-		hasIssue: boolean;
-	}>;
+	notes: Record<
+		string,
+		{
+			notes: string[];
+			hasIssue: boolean;
+		}
+	>;
 	changes: Array<{
 		category: string;
 		message: string;

@@ -3,12 +3,15 @@
  * Centralized export for all services
  */
 
-// Stack Configuration Service
+// Command Generator Service
 export {
-	StackConfigurationService,
-	stackConfigurationService,
-} from './stack-service';
-
+	CommandGeneratorService,
+	commandGeneratorService,
+} from "./command-generator";
+export type {
+	CompatibilityRule,
+	CompatibilityValidationResult,
+} from "./compatibility-service";
 // Compatibility Service
 export {
 	CompatibilityService,
@@ -16,15 +19,9 @@ export {
 	createCompatibilityService,
 	PWACompatibilityRule,
 	TauriCompatibilityRule,
-} from './compatibility-service';
-
-export type {
-	CompatibilityRule,
-	CompatibilityValidationResult,
-} from './compatibility-service';
-
-// Command Generator Service
+} from "./compatibility-service";
+// Stack Configuration Service
 export {
-	CommandGeneratorService,
-	commandGeneratorService,
-} from './command-generator';
+	StackConfigurationService,
+	stackConfigurationService,
+} from "./stack-service";

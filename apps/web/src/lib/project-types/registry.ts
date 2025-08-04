@@ -3,9 +3,9 @@
  * Single Responsibility: Centralized registry for project types
  */
 
-import type { ProjectType } from '../types/base';
-import { ProjectTypeRegistry } from './models';
-import { PROJECT_TYPE_DEFINITIONS } from './data';
+import type { ProjectType } from "../types/base";
+import { PROJECT_TYPE_DEFINITIONS } from "./data";
+import { ProjectTypeRegistry } from "./models";
 
 /**
  * Factory function to create the project types registry
@@ -29,7 +29,7 @@ export const projectTypeRegistry = createProjectTypeRegistry();
  * Legacy compatibility layer
  */
 export function getLegacyProjectTypes(): readonly any[] {
-	return PROJECT_TYPE_DEFINITIONS.map(def => ({
+	return PROJECT_TYPE_DEFINITIONS.map((def) => ({
 		id: def.id,
 		name: def.name,
 		description: def.description,

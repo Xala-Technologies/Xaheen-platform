@@ -11,5 +11,7 @@ if (posthogKey) {
 		debug: process.env.NODE_ENV === "development",
 	});
 } else {
-	console.warn("PostHog not initialized: NEXT_PUBLIC_POSTHOG_KEY environment variable not set");
+	console.warn(
+		"PostHog not initialized: NEXT_PUBLIC_POSTHOG_KEY environment variable not set",
+	);
 }

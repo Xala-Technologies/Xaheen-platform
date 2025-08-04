@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Check, ClipboardCopy } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface CommandDisplayProps {

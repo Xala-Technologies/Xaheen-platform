@@ -1,19 +1,19 @@
 {
-  "homepage": {
-    "build_title": "Construisez quelque chose d'incroyable",
-    "build_description": "Décrivez votre idée de projet et commencez instantanément",
-    "subtitle": "Prêt pour la production • Personnalisable • Meilleures pratiques incluses",
-    "quick_templates_title": "Modèles de démarrage rapide",
-    "quick_templates_description": "Choisissez parmi nos modèles de projet sélectionnés",
-    "generate_button": "Générer",
-    "generated_command_title": "Commande générée",
-    "copy_button": "COPIER",
-    "copied_button": "COPIÉ!",
-    "textarea_placeholder": "Demandez à Xaheen de créer un tableau de bord pour..."
-  },
-  "common": {
-    "loading": "Chargement...",
-    "error": "Erreur",
-    "success": "Succès"
-  }
+	"homepage": {
+		"build_title": "Construisez quelque chose d'incroyable",
+		"build_description": "Décrivez votre idée de projet et commencez instantanément",
+		"subtitle": "Prêt pour la production • Personnalisable • Meilleures pratiques incluses",
+		"quick_templates_title": "Modèles de démarrage rapide",
+		"quick_templates_description": "Choisissez parmi nos modèles de projet sélectionnés",
+		"generate_button": "Générer",
+		"generated_command_title": "Commande générée",
+		"copy_button": "COPIER",
+		"copied_button": "COPIÉ!",
+		"textarea_placeholder": "Demandez à Xaheen de créer un tableau de bord pour..."
+	},
+	"common": {
+		"loading": "Chargement...",
+		"error": "Erreur",
+		"success": "Succès"
+	}
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { Card, ScrollArea } from "@xala-technologies/ui-system";
+import { useTheme } from "@xala-technologies/ui-system/hooks";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { useTheme } from "@xala-technologies/ui-system/hooks";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 

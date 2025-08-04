@@ -1,12 +1,12 @@
+import { InfoIcon, Terminal } from "lucide-react";
 import { forwardRef } from "react";
-import { Terminal, InfoIcon } from "lucide-react";
-import { TechOptionCard } from "./tech-option-card";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { StackState } from "@/lib/types/index";
+import { TechOptionCard } from "./tech-option-card";
 
 interface TechOption {
 	id: string;
@@ -29,23 +29,33 @@ interface TechCategorySectionProps {
 	stack: StackState;
 	compatibilityNotes?: CompatibilityNote;
 	onTechSelect: (categoryKey: string, techId: string) => void;
-	isOptionCompatible: (stack: StackState, category: string, techId: string) => boolean;
+	isOptionCompatible: (
+		stack: StackState,
+		category: string,
+		techId: string,
+	) => boolean;
 }
 
 /**
  * TechCategorySection component for displaying a category of technology options
  * Follows Single Responsibility Principle - only handles category display logic
  */
-export const TechCategorySection = forwardRef<HTMLElement, TechCategorySectionProps>(
-	({
-		categoryKey,
-		categoryDisplayName,
-		options,
-		stack,
-		compatibilityNotes,
-		onTechSelect,
-		isOptionCompatible,
-	}, ref) => {
+export const TechCategorySection = forwardRef<
+	HTMLElement,
+	TechCategorySectionProps
+>(
+	(
+		{
+			categoryKey,
+			categoryDisplayName,
+			options,
+			stack,
+			compatibilityNotes,
+			onTechSelect,
+			isOptionCompatible,
+		},
+		ref,
+	) => {
 		const getIsSelected = (tech: TechOption): boolean => {
 			const category = categoryKey as keyof StackState;
 			const currentValue = stack[category];
@@ -109,7 +119,7 @@ export const TechCategorySection = forwardRef<HTMLElement, TechCategorySectionPr
 				</div>
 			</section>
 		);
-	}
+	},
 );
 
 TechCategorySection.displayName = "TechCategorySection";

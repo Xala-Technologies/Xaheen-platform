@@ -1,7 +1,7 @@
 /**
  * Homepage - Xala UI System v5.0.0 Compliant
  * Generated with Xaheen CLI
- * 
+ *
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
  * ✅ ONLY semantic components from @xala-technologies/ui-system
@@ -12,29 +12,27 @@
  * ✅ Explicit TypeScript return types (no 'any' types)
  */
 
-import { 
-  Container, 
-  Stack, 
-  Typography
-} from '@xala-technologies/ui-system';
-import { PageProps } from '@/types/i18n';
-import { getI18nInstance } from '@/lib/i18n';
-import { HomePage } from '@/components/homepage/HomePage';
+import { Container, Stack, Typography } from "@xala-technologies/ui-system";
+import { HomePage } from "@/components/homepage/HomePage";
+import { getI18nInstance } from "@/lib/i18n";
+import { PageProps } from "@/types/i18n";
 
 /**
  * Main homepage with proper Xala UI System v5.0.0 integration
  * Features full localization, accessibility, and responsive design
  */
-export default async function LocalizedHomePage({ params }: PageProps): Promise<React.JSX.Element> {
-  const { locale } = await params;
-  const i18n = await getI18nInstance(locale);
-  const t = i18n.getFixedT(locale, 'common');
+export default async function LocalizedHomePage({
+	params,
+}: PageProps): Promise<React.JSX.Element> {
+	const { locale } = await params;
+	const i18n = await getI18nInstance(locale);
+	const t = i18n.getFixedT(locale, "common");
 
-  return (
-    <Container size="full" padding="none">
-      <Stack direction="vertical" gap="xl">
-        <HomePage />
-      </Stack>
-    </Container>
-  );
+	return (
+		<Container size="full" padding="none">
+			<Stack direction="vertical" gap="xl">
+				<HomePage />
+			</Stack>
+		</Container>
+	);
 }

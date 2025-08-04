@@ -4,14 +4,15 @@
 	"scripts": {
 		"build": "turbo build",
 		"dev": "turbo dev",
-		"dev:cli": "turbo run dev --filter=xaheen",
-		"cli": "cd apps/cli && node dist/index.js",
+		"dev:cli": "turbo run dev --filter=@xala-technologies/xaheen-cli",
+		"cli": "cd packages/cli && node dist/index.js",
 		"dev:web": "turbo run dev --filter=web",
 		"build:web": "turbo run build --filter=web",
-		"build:cli": "turbo run build --filter=xaheen",
+		"build:cli": "turbo run build --filter=@xala-technologies/xaheen-cli",
 		"check": "turbo check",
 		"format": "biome check --write .",
-		"publish-packages": "turbo run build --filter=xaheen && changeset publish",
+		"publish-packages": "./scripts/deployment/publish-packages.sh",
+		"build:all": "./scripts/build/build-all.sh",
 		"deploy:web": "bun run --filter=web generate-analytics && bun run --filter=web generate-schema && turbo run --filter=web deploy"
 	},
 	"devDependencies": {
@@ -32,6 +33,7 @@
 	},
 	"packageManager": "bun@1.2.16",
 	"workspaces": [
-		"apps/*"
+		"apps/*",
+		"packages/*"
 	]
 }
