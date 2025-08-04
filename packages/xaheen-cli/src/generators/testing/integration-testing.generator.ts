@@ -1,124 +1,157 @@
-import { BaseGenerator } from '../base.generator';
-import { IntegrationTestOptions, TestTemplate } from './types';
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import { BaseGenerator } from "../base.generator";
+import { IntegrationTestOptions, TestTemplate } from "./types";
+import { promises as fs } from "fs";
+import * as path from "path";
 
 export class IntegrationTestingGenerator extends BaseGenerator<IntegrationTestOptions> {
-  async generate(options: IntegrationTestOptions): Promise<void> {
-    await this.validateOptions(options);
-    
-    this.logger.info('Generating comprehensive integration test suite...');
-    
-    try {
-      // Generate test configuration
-      await this.generateTestConfiguration(options);
-      
-      // Generate test setup and teardown
-      await this.generateTestSetup(options);
-      
-      // Generate service integration tests
-      await this.generateServiceIntegrationTests(options);
-      
-      // Generate database integration tests
-      if (options.databases.length > 0) {
-        await this.generateDatabaseTests(options);
-      }
-      
-      // Generate external service integration tests
-      if (options.externalServices.length > 0) {
-        await this.generateExternalServiceTests(options);
-      }
-      
-      // Generate test utilities and helpers
-      await this.generateIntegrationHelpers(options);
-      
-      this.logger.success('Integration test suite generated successfully!');
-      
-    } catch (error) {
-      this.logger.error('Failed to generate integration test suite', error);
-      throw error;
-    }
-  }
+	async generate(options: IntegrationTestOptions): Promise<void> {
+		await this.validateOptions(options);
 
-  private async generateTestConfiguration(options: IntegrationTestOptions): Promise<void> {
-    const configTemplate = this.getIntegrationTestConfig(options);
-    await this.writeTemplate(configTemplate, options.projectPath);
-  }
+		this.logger.info("Generating comprehensive integration test suite...");
 
-  private async generateTestSetup(options: IntegrationTestOptions): Promise<void> {
-    const setupTemplate = this.getSetupTemplate(options);
-    const teardownTemplate = this.getTeardownTemplate(options);
-    
-    await this.writeTemplate(setupTemplate, options.projectPath);
-    await this.writeTemplate(teardownTemplate, options.projectPath);
-  }
+		try {
+			// Generate test configuration
+			await this.generateTestConfiguration(options);
 
-  private async generateServiceIntegrationTests(options: IntegrationTestOptions): Promise<void> {
-    for (const service of options.services) {
-      const templates = this.getServiceIntegrationTemplates(service, options);
-      
-      for (const template of templates) {
-        const servicePath = path.join(options.projectPath, 'tests', 'integration', 'services');
-        await this.ensureDirectoryExists(servicePath);
-        await this.writeTemplate(template, servicePath);
-      }
-    }
-  }
+			// Generate test setup and teardown
+			await this.generateTestSetup(options);
 
-  private async generateDatabaseTests(options: IntegrationTestOptions): Promise<void> {
-    for (const database of options.databases) {
-      const templates = this.getDatabaseIntegrationTemplates(database, options);
-      
-      for (const template of templates) {
-        const dbPath = path.join(options.projectPath, 'tests', 'integration', 'database');
-        await this.ensureDirectoryExists(dbPath);
-        await this.writeTemplate(template, dbPath);
-      }
-    }
-  }
+			// Generate service integration tests
+			await this.generateServiceIntegrationTests(options);
 
-  private async generateExternalServiceTests(options: IntegrationTestOptions): Promise<void> {
-    for (const service of options.externalServices) {
-      const templates = this.getExternalServiceTemplates(service, options);
-      
-      for (const template of templates) {
-        const externalPath = path.join(options.projectPath, 'tests', 'integration', 'external');
-        await this.ensureDirectoryExists(externalPath);
-        await this.writeTemplate(template, externalPath);
-      }
-    }
-  }
+			// Generate database integration tests
+			if (options.databases.length > 0) {
+				await this.generateDatabaseTests(options);
+			}
 
-  private async generateIntegrationHelpers(options: IntegrationTestOptions): Promise<void> {
-    const helperTemplates = this.getIntegrationHelperTemplates(options);
-    
-    for (const template of helperTemplates) {
-      const helpersPath = path.join(options.projectPath, 'tests', 'integration', 'helpers');
-      await this.ensureDirectoryExists(helpersPath);
-      await this.writeTemplate(template, helpersPath);
-    }
-  }
+			// Generate external service integration tests
+			if (options.externalServices.length > 0) {
+				await this.generateExternalServiceTests(options);
+			}
 
-  private getIntegrationTestConfig(options: IntegrationTestOptions): TestTemplate {
-    if (options.testingFramework === 'jest') {
-      return {
-        name: 'jest.integration.config.js',
-        path: 'jest.integration.config.js',
-        content: this.getJestIntegrationConfig(options),
-        dependencies: ['jest', '@types/jest', 'ts-jest']
-      };
-    } else {
-      return {
-        name: 'vitest.integration.config.ts',
-        path: 'vitest.integration.config.ts',
-        content: this.getVitestIntegrationConfig(options),
-        dependencies: ['vitest', '@vitest/ui', 'c8']
-      };
-    }
-  }
+			// Generate test utilities and helpers
+			await this.generateIntegrationHelpers(options);
 
-  private getJestIntegrationConfig(options: IntegrationTestOptions): string {
-    return `/** @type {import('jest').Config} */
+			this.logger.success("Integration test suite generated successfully!");
+		} catch (error) {
+			this.logger.error("Failed to generate integration test suite", error);
+			throw error;
+		}
+	}
+
+	private async generateTestConfiguration(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		const configTemplate = this.getIntegrationTestConfig(options);
+		await this.writeTemplate(configTemplate, options.projectPath);
+	}
+
+	private async generateTestSetup(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		const setupTemplate = this.getSetupTemplate(options);
+		const teardownTemplate = this.getTeardownTemplate(options);
+
+		await this.writeTemplate(setupTemplate, options.projectPath);
+		await this.writeTemplate(teardownTemplate, options.projectPath);
+	}
+
+	private async generateServiceIntegrationTests(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		for (const service of options.services) {
+			const templates = this.getServiceIntegrationTemplates(service, options);
+
+			for (const template of templates) {
+				const servicePath = path.join(
+					options.projectPath,
+					"tests",
+					"integration",
+					"services",
+				);
+				await this.ensureDirectoryExists(servicePath);
+				await this.writeTemplate(template, servicePath);
+			}
+		}
+	}
+
+	private async generateDatabaseTests(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		for (const database of options.databases) {
+			const templates = this.getDatabaseIntegrationTemplates(database, options);
+
+			for (const template of templates) {
+				const dbPath = path.join(
+					options.projectPath,
+					"tests",
+					"integration",
+					"database",
+				);
+				await this.ensureDirectoryExists(dbPath);
+				await this.writeTemplate(template, dbPath);
+			}
+		}
+	}
+
+	private async generateExternalServiceTests(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		for (const service of options.externalServices) {
+			const templates = this.getExternalServiceTemplates(service, options);
+
+			for (const template of templates) {
+				const externalPath = path.join(
+					options.projectPath,
+					"tests",
+					"integration",
+					"external",
+				);
+				await this.ensureDirectoryExists(externalPath);
+				await this.writeTemplate(template, externalPath);
+			}
+		}
+	}
+
+	private async generateIntegrationHelpers(
+		options: IntegrationTestOptions,
+	): Promise<void> {
+		const helperTemplates = this.getIntegrationHelperTemplates(options);
+
+		for (const template of helperTemplates) {
+			const helpersPath = path.join(
+				options.projectPath,
+				"tests",
+				"integration",
+				"helpers",
+			);
+			await this.ensureDirectoryExists(helpersPath);
+			await this.writeTemplate(template, helpersPath);
+		}
+	}
+
+	private getIntegrationTestConfig(
+		options: IntegrationTestOptions,
+	): TestTemplate {
+		if (options.testingFramework === "jest") {
+			return {
+				name: "jest.integration.config.js",
+				path: "jest.integration.config.js",
+				content: this.getJestIntegrationConfig(options),
+				dependencies: ["jest", "@types/jest", "ts-jest"],
+			};
+		} else {
+			return {
+				name: "vitest.integration.config.ts",
+				path: "vitest.integration.config.ts",
+				content: this.getVitestIntegrationConfig(options),
+				dependencies: ["vitest", "@vitest/ui", "c8"],
+			};
+		}
+	}
+
+	private getJestIntegrationConfig(options: IntegrationTestOptions): string {
+		return `/** @type {import('jest').Config} */
 module.exports = {
   displayName: '${options.projectName} - Integration Tests',
   preset: 'ts-jest',
@@ -174,10 +207,10 @@ module.exports = {
   // Detect open handles
   detectOpenHandles: true
 };`;
-  }
+	}
 
-  private getVitestIntegrationConfig(options: IntegrationTestOptions): string {
-    return `import { defineConfig } from 'vitest/config';
+	private getVitestIntegrationConfig(options: IntegrationTestOptions): string {
+		return `import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -230,13 +263,13 @@ export default defineConfig({
     }
   }
 });`;
-  }
+	}
 
-  private getSetupTemplate(options: IntegrationTestOptions): TestTemplate {
-    return {
-      name: 'global-setup.ts',
-      path: 'tests/integration/setup/global-setup.ts',
-      content: `import { Pool } from 'pg';
+	private getSetupTemplate(options: IntegrationTestOptions): TestTemplate {
+		return {
+			name: "global-setup.ts",
+			path: "tests/integration/setup/global-setup.ts",
+			content: `import { Pool } from 'pg';
 import { createClient } from 'redis';
 
 /**
@@ -369,15 +402,15 @@ async function runMigrations(): Promise<void> {
     throw error;
   }
 }`,
-      dependencies: ['pg', '@types/pg', 'redis']
-    };
-  }
+			dependencies: ["pg", "@types/pg", "redis"],
+		};
+	}
 
-  private getTeardownTemplate(options: IntegrationTestOptions): TestTemplate {
-    return {
-      name: 'global-teardown.ts',
-      path: 'tests/integration/setup/global-teardown.ts',
-      content: `import { testEnvironment } from './global-setup';
+	private getTeardownTemplate(options: IntegrationTestOptions): TestTemplate {
+		return {
+			name: "global-teardown.ts",
+			path: "tests/integration/setup/global-teardown.ts",
+			content: `import { testEnvironment } from './global-setup';
 
 /**
  * Global teardown for integration tests
@@ -459,15 +492,19 @@ async function cleanupServer(): Promise<void> {
     }
   }
 }`,
-      dependencies: []
-    };
-  }
+			dependencies: [],
+		};
+	}
 
-  private getServiceIntegrationTemplates(service: string, options: IntegrationTestOptions): TestTemplate[] {
-    return [{
-      name: `${service}-integration.test.ts`,
-      path: `${service}-integration.test.ts`,
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getServiceIntegrationTemplates(
+		service: string,
+		options: IntegrationTestOptions,
+	): TestTemplate[] {
+		return [
+			{
+				name: `${service}-integration.test.ts`,
+				path: `${service}-integration.test.ts`,
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testEnvironment } from '../setup/global-setup';
 import { integrationTestHelpers } from '../helpers/integration-helpers';
 
@@ -757,15 +794,20 @@ describe('${service} Integration Tests', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getDatabaseIntegrationTemplates(database: string, options: IntegrationTestOptions): TestTemplate[] {
-    return [{
-      name: `${database}-integration.test.ts`,
-      path: `${database}-integration.test.ts`,
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getDatabaseIntegrationTemplates(
+		database: string,
+		options: IntegrationTestOptions,
+	): TestTemplate[] {
+		return [
+			{
+				name: `${database}-integration.test.ts`,
+				path: `${database}-integration.test.ts`,
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testEnvironment } from '../setup/global-setup';
 import { integrationTestHelpers } from '../helpers/integration-helpers';
 
@@ -1181,15 +1223,20 @@ describe('${database} Database Integration Tests', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getExternalServiceTemplates(service: string, options: IntegrationTestOptions): TestTemplate[] {
-    return [{
-      name: `${service}-external.test.ts`,
-      path: `${service}-external.test.ts`,
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getExternalServiceTemplates(
+		service: string,
+		options: IntegrationTestOptions,
+	): TestTemplate[] {
+		return [
+			{
+				name: `${service}-external.test.ts`,
+				path: `${service}-external.test.ts`,
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import axios from 'axios';
 import { integrationTestHelpers } from '../helpers/integration-helpers';
 
@@ -1199,8 +1246,8 @@ import { integrationTestHelpers } from '../helpers/integration-helpers';
  */
 
 // Mock axios for external service calls
-${options.testingFramework === 'jest' ? 'jest.mock(\'axios\');' : 'vi.mock(\'axios\');'}
-const mockedAxios = axios as ${options.testingFramework === 'jest' ? 'jest.Mocked<typeof axios>' : 'MockedType<typeof axios>'};
+${options.testingFramework === "jest" ? "jest.mock('axios');" : "vi.mock('axios');"}
+const mockedAxios = axios as ${options.testingFramework === "jest" ? "jest.Mocked<typeof axios>" : "MockedType<typeof axios>"};
 
 describe('${service} External Service Integration Tests', () => {
   let ${service.toLowerCase()}Client: any;
@@ -1215,7 +1262,7 @@ describe('${service} External Service Integration Tests', () => {
 
   beforeEach(() => {
     // Clear all mocks before each test
-    ${options.testingFramework === 'jest' ? 'jest.clearAllMocks' : 'vi.clearAllMocks'}();
+    ${options.testingFramework === "jest" ? "jest.clearAllMocks" : "vi.clearAllMocks"}();
   });
 
   describe('${service} API Integration', () => {
@@ -1603,23 +1650,31 @@ describe('${service} External Service Integration Tests', () => {
   });
 });
 
-${options.testingFramework === 'vitest' ? `
+${
+	options.testingFramework === "vitest"
+		? `
 // Vitest-specific type for mocked axios
 type MockedType<T> = T & {
   [K in keyof T]: T[K] extends (...args: any[]) => any 
     ? ReturnType<typeof vi.fn> & T[K]
     : T[K];
 };
-` : ''}`,
-      dependencies: ['axios']
-    }];
-  }
+`
+		: ""
+}`,
+				dependencies: ["axios"],
+			},
+		];
+	}
 
-  private getIntegrationHelperTemplates(options: IntegrationTestOptions): TestTemplate[] {
-    return [{
-      name: 'integration-helpers.ts',
-      path: 'integration-helpers.ts',
-      content: `import { Pool } from 'pg';
+	private getIntegrationHelperTemplates(
+		options: IntegrationTestOptions,
+	): TestTemplate[] {
+		return [
+			{
+				name: "integration-helpers.ts",
+				path: "integration-helpers.ts",
+				content: `import { Pool } from 'pg';
 import { createClient } from 'redis';
 
 /**
@@ -1958,25 +2013,29 @@ export const integrationTestHelpers = {
     };
   }
 };`,
-      dependencies: ['pg', '@types/pg', 'redis']
-    }];
-  }
+				dependencies: ["pg", "@types/pg", "redis"],
+			},
+		];
+	}
 
-  private async writeTemplate(template: TestTemplate, basePath: string): Promise<void> {
-    const fullPath = path.join(basePath, template.path);
-    const dirPath = path.dirname(fullPath);
-    
-    await this.ensureDirectoryExists(dirPath);
-    await fs.writeFile(fullPath, template.content, 'utf8');
-    
-    this.logger.info(`Generated: ${template.name}`);
-  }
+	private async writeTemplate(
+		template: TestTemplate,
+		basePath: string,
+	): Promise<void> {
+		const fullPath = path.join(basePath, template.path);
+		const dirPath = path.dirname(fullPath);
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
-    try {
-      await fs.access(dirPath);
-    } catch {
-      await fs.mkdir(dirPath, { recursive: true });
-    }
-  }
+		await this.ensureDirectoryExists(dirPath);
+		await fs.writeFile(fullPath, template.content, "utf8");
+
+		this.logger.info(`Generated: ${template.name}`);
+	}
+
+	private async ensureDirectoryExists(dirPath: string): Promise<void> {
+		try {
+			await fs.access(dirPath);
+		} catch {
+			await fs.mkdir(dirPath, { recursive: true });
+		}
+	}
 }

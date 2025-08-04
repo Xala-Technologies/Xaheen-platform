@@ -1,252 +1,274 @@
-import { BaseGenerator } from '../base.generator';
-import { GeneratedFile } from '../../types/generator.types';
+import { BaseGenerator } from "../base.generator";
+import { GeneratedFile } from "../../types/generator.types";
 
 export interface MessageQueueOptions {
-  projectName: string;
-  framework: 'nestjs' | 'express' | 'fastify' | 'hono';
-  provider: 'redis' | 'rabbitmq' | 'kafka' | 'aws-sqs' | 'gcp-pubsub' | 'azure-servicebus';
-  features: MessageQueueFeature[];
-  clustering: boolean;
-  persistence: boolean;
-  dlq: boolean; // Dead Letter Queue
-  monitoring: boolean;
-  security: {
-    authentication: boolean;
-    encryption: boolean;
-    ssl: boolean;
-  };
-  performance: {
-    batchProcessing: boolean;
-    priorityQueues: boolean;
-    rateLimiting: boolean;
-  };
+	projectName: string;
+	framework: "nestjs" | "express" | "fastify" | "hono";
+	provider:
+		| "redis"
+		| "rabbitmq"
+		| "kafka"
+		| "aws-sqs"
+		| "gcp-pubsub"
+		| "azure-servicebus";
+	features: MessageQueueFeature[];
+	clustering: boolean;
+	persistence: boolean;
+	dlq: boolean; // Dead Letter Queue
+	monitoring: boolean;
+	security: {
+		authentication: boolean;
+		encryption: boolean;
+		ssl: boolean;
+	};
+	performance: {
+		batchProcessing: boolean;
+		priorityQueues: boolean;
+		rateLimiting: boolean;
+	};
 }
 
-export type MessageQueueFeature = 
-  | 'job-processing'
-  | 'event-streaming'
-  | 'pub-sub'
-  | 'task-scheduling'
-  | 'file-processing'
-  | 'email-queue'
-  | 'notification-queue'
-  | 'analytics-events'
-  | 'audit-logging';
+export type MessageQueueFeature =
+	| "job-processing"
+	| "event-streaming"
+	| "pub-sub"
+	| "task-scheduling"
+	| "file-processing"
+	| "email-queue"
+	| "notification-queue"
+	| "analytics-events"
+	| "audit-logging";
 
 export class MessageQueueGenerator extends BaseGenerator {
-  async generate(options: MessageQueueOptions): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+	async generate(options: MessageQueueOptions): Promise<GeneratedFile[]> {
+		const files: GeneratedFile[] = [];
 
-    // Core message queue infrastructure
-    files.push(...this.generateProviderImplementation(options));
-    files.push(this.generateMessageQueueModule(options));
-    files.push(this.generateMessageQueueService(options));
+		// Core message queue infrastructure
+		files.push(...this.generateProviderImplementation(options));
+		files.push(this.generateMessageQueueModule(options));
+		files.push(this.generateMessageQueueService(options));
 
-    // Feature-specific implementations
-    for (const feature of options.features) {
-      files.push(...this.generateFeatureImplementation(feature, options));
-    }
+		// Feature-specific implementations
+		for (const feature of options.features) {
+			files.push(...this.generateFeatureImplementation(feature, options));
+		}
 
-    // Dead Letter Queue implementation
-    if (options.dlq) {
-      files.push(...this.generateDLQImplementation(options));
-    }
+		// Dead Letter Queue implementation
+		if (options.dlq) {
+			files.push(...this.generateDLQImplementation(options));
+		}
 
-    // Monitoring and metrics
-    if (options.monitoring) {
-      files.push(...this.generateMonitoringImplementation(options));
-    }
+		// Monitoring and metrics
+		if (options.monitoring) {
+			files.push(...this.generateMonitoringImplementation(options));
+		}
 
-    // Configuration and types
-    files.push(this.generateTypes(options));
-    files.push(this.generateConfiguration(options));
+		// Configuration and types
+		files.push(this.generateTypes(options));
+		files.push(this.generateConfiguration(options));
 
-    // Testing utilities
-    files.push(...this.generateTestFiles(options));
+		// Testing utilities
+		files.push(...this.generateTestFiles(options));
 
-    // Client utilities and patterns
-    files.push(...this.generateClientUtils(options));
+		// Client utilities and patterns
+		files.push(...this.generateClientUtils(options));
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateProviderImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateProviderImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    switch (options.provider) {
-      case 'redis':
-        files.push(...this.generateRedisImplementation(options));
-        break;
-      case 'rabbitmq':
-        files.push(...this.generateRabbitMQImplementation(options));
-        break;
-      case 'kafka':
-        files.push(...this.generateKafkaImplementation(options));
-        break;
-      case 'aws-sqs':
-        files.push(...this.generateAWSSQSImplementation(options));
-        break;
-      case 'gcp-pubsub':
-        files.push(...this.generateGCPPubSubImplementation(options));
-        break;
-      case 'azure-servicebus':
-        files.push(...this.generateAzureServiceBusImplementation(options));
-        break;
-    }
+		switch (options.provider) {
+			case "redis":
+				files.push(...this.generateRedisImplementation(options));
+				break;
+			case "rabbitmq":
+				files.push(...this.generateRabbitMQImplementation(options));
+				break;
+			case "kafka":
+				files.push(...this.generateKafkaImplementation(options));
+				break;
+			case "aws-sqs":
+				files.push(...this.generateAWSSQSImplementation(options));
+				break;
+			case "gcp-pubsub":
+				files.push(...this.generateGCPPubSubImplementation(options));
+				break;
+			case "azure-servicebus":
+				files.push(...this.generateAzureServiceBusImplementation(options));
+				break;
+		}
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateRedisImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateRedisImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // Redis Queue Service
-    files.push({
-      path: `src/messaging/redis/${options.projectName}-redis-queue.service.ts`,
-      content: this.getRedisQueueServiceTemplate(options),
-      type: 'service'
-    });
+		// Redis Queue Service
+		files.push({
+			path: `src/messaging/redis/${options.projectName}-redis-queue.service.ts`,
+			content: this.getRedisQueueServiceTemplate(options),
+			type: "service",
+		});
 
-    // Redis Pub/Sub Service
-    files.push({
-      path: `src/messaging/redis/${options.projectName}-redis-pubsub.service.ts`,
-      content: this.getRedisPubSubServiceTemplate(options),
-      type: 'service'
-    });
+		// Redis Pub/Sub Service
+		files.push({
+			path: `src/messaging/redis/${options.projectName}-redis-pubsub.service.ts`,
+			content: this.getRedisPubSubServiceTemplate(options),
+			type: "service",
+		});
 
-    // Redis Queue Processor
-    files.push({
-      path: `src/messaging/redis/${options.projectName}-redis-processor.service.ts`,
-      content: this.getRedisProcessorServiceTemplate(options),
-      type: 'service'
-    });
+		// Redis Queue Processor
+		files.push({
+			path: `src/messaging/redis/${options.projectName}-redis-processor.service.ts`,
+			content: this.getRedisProcessorServiceTemplate(options),
+			type: "service",
+		});
 
-    // Redis Configuration
-    files.push({
-      path: `src/messaging/redis/redis.config.ts`,
-      content: this.getRedisConfigTemplate(options),
-      type: 'config'
-    });
+		// Redis Configuration
+		files.push({
+			path: `src/messaging/redis/redis.config.ts`,
+			content: this.getRedisConfigTemplate(options),
+			type: "config",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateRabbitMQImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateRabbitMQImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // RabbitMQ Service
-    files.push({
-      path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq.service.ts`,
-      content: this.getRabbitMQServiceTemplate(options),
-      type: 'service'
-    });
+		// RabbitMQ Service
+		files.push({
+			path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq.service.ts`,
+			content: this.getRabbitMQServiceTemplate(options),
+			type: "service",
+		});
 
-    // RabbitMQ Producer
-    files.push({
-      path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq-producer.service.ts`,
-      content: this.getRabbitMQProducerTemplate(options),
-      type: 'service'
-    });
+		// RabbitMQ Producer
+		files.push({
+			path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq-producer.service.ts`,
+			content: this.getRabbitMQProducerTemplate(options),
+			type: "service",
+		});
 
-    // RabbitMQ Consumer
-    files.push({
-      path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq-consumer.service.ts`,
-      content: this.getRabbitMQConsumerTemplate(options),
-      type: 'service'
-    });
+		// RabbitMQ Consumer
+		files.push({
+			path: `src/messaging/rabbitmq/${options.projectName}-rabbitmq-consumer.service.ts`,
+			content: this.getRabbitMQConsumerTemplate(options),
+			type: "service",
+		});
 
-    // Exchange and Queue Setup
-    files.push({
-      path: `src/messaging/rabbitmq/rabbitmq-setup.service.ts`,
-      content: this.getRabbitMQSetupTemplate(options),
-      type: 'service'
-    });
+		// Exchange and Queue Setup
+		files.push({
+			path: `src/messaging/rabbitmq/rabbitmq-setup.service.ts`,
+			content: this.getRabbitMQSetupTemplate(options),
+			type: "service",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateKafkaImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateKafkaImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // Kafka Service
-    files.push({
-      path: `src/messaging/kafka/${options.projectName}-kafka.service.ts`,
-      content: this.getKafkaServiceTemplate(options),
-      type: 'service'
-    });
+		// Kafka Service
+		files.push({
+			path: `src/messaging/kafka/${options.projectName}-kafka.service.ts`,
+			content: this.getKafkaServiceTemplate(options),
+			type: "service",
+		});
 
-    // Kafka Producer
-    files.push({
-      path: `src/messaging/kafka/${options.projectName}-kafka-producer.service.ts`,
-      content: this.getKafkaProducerTemplate(options),
-      type: 'service'
-    });
+		// Kafka Producer
+		files.push({
+			path: `src/messaging/kafka/${options.projectName}-kafka-producer.service.ts`,
+			content: this.getKafkaProducerTemplate(options),
+			type: "service",
+		});
 
-    // Kafka Consumer
-    files.push({
-      path: `src/messaging/kafka/${options.projectName}-kafka-consumer.service.ts`,
-      content: this.getKafkaConsumerTemplate(options),
-      type: 'service'
-    });
+		// Kafka Consumer
+		files.push({
+			path: `src/messaging/kafka/${options.projectName}-kafka-consumer.service.ts`,
+			content: this.getKafkaConsumerTemplate(options),
+			type: "service",
+		});
 
-    // Kafka Admin
-    files.push({
-      path: `src/messaging/kafka/kafka-admin.service.ts`,
-      content: this.getKafkaAdminTemplate(options),
-      type: 'service'
-    });
+		// Kafka Admin
+		files.push({
+			path: `src/messaging/kafka/kafka-admin.service.ts`,
+			content: this.getKafkaAdminTemplate(options),
+			type: "service",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateAWSSQSImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateAWSSQSImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // AWS SQS Service
-    files.push({
-      path: `src/messaging/aws-sqs/${options.projectName}-sqs.service.ts`,
-      content: this.getAWSSQSServiceTemplate(options),
-      type: 'service'
-    });
+		// AWS SQS Service
+		files.push({
+			path: `src/messaging/aws-sqs/${options.projectName}-sqs.service.ts`,
+			content: this.getAWSSQSServiceTemplate(options),
+			type: "service",
+		});
 
-    // SQS Queue Manager
-    files.push({
-      path: `src/messaging/aws-sqs/sqs-queue-manager.service.ts`,
-      content: this.getSQSQueueManagerTemplate(options),
-      type: 'service'
-    });
+		// SQS Queue Manager
+		files.push({
+			path: `src/messaging/aws-sqs/sqs-queue-manager.service.ts`,
+			content: this.getSQSQueueManagerTemplate(options),
+			type: "service",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateGCPPubSubImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateGCPPubSubImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // GCP Pub/Sub Service
-    files.push({
-      path: `src/messaging/gcp-pubsub/${options.projectName}-pubsub.service.ts`,
-      content: this.getGCPPubSubServiceTemplate(options),
-      type: 'service'
-    });
+		// GCP Pub/Sub Service
+		files.push({
+			path: `src/messaging/gcp-pubsub/${options.projectName}-pubsub.service.ts`,
+			content: this.getGCPPubSubServiceTemplate(options),
+			type: "service",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateAzureServiceBusImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateAzureServiceBusImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // Azure Service Bus Service
-    files.push({
-      path: `src/messaging/azure-servicebus/${options.projectName}-servicebus.service.ts`,
-      content: this.getAzureServiceBusServiceTemplate(options),
-      type: 'service'
-    });
+		// Azure Service Bus Service
+		files.push({
+			path: `src/messaging/azure-servicebus/${options.projectName}-servicebus.service.ts`,
+			content: this.getAzureServiceBusServiceTemplate(options),
+			type: "service",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateMessageQueueModule(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+	private generateMessageQueueModule(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		const content = `/**
  * Message Queue Module
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -259,10 +281,12 @@ import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.sli
 ${this.getProviderImports(options)}
 
 // Feature services
-${options.features.map(feature => {
-  const serviceName = this.getFeatureServiceName(feature);
-  return `import { ${serviceName} } from './features/${feature.replace(/-/g, '-')}.service';`;
-}).join('\n')}
+${options.features
+	.map((feature) => {
+		const serviceName = this.getFeatureServiceName(feature);
+		return `import { ${serviceName} } from './features/${feature.replace(/-/g, "-")}.service';`;
+	})
+	.join("\n")}
 
 @Module({
   imports: [
@@ -271,25 +295,27 @@ ${options.features.map(feature => {
   providers: [
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}MessageQueueService,
     ${this.getProviderServices(options)},
-    ${options.features.map(feature => this.getFeatureServiceName(feature)).join(',\n    ')}
+    ${options.features.map((feature) => this.getFeatureServiceName(feature)).join(",\n    ")}
   ],
   exports: [
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}MessageQueueService,
     ${this.getProviderServices(options)},
-    ${options.features.map(feature => this.getFeatureServiceName(feature)).join(',\n    ')}
+    ${options.features.map((feature) => this.getFeatureServiceName(feature)).join(",\n    ")}
   ]
 })
 export class ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}MessageQueueModule {}`;
 
-    return {
-      path: `src/messaging/${options.projectName}-message-queue.module.ts`,
-      content,
-      type: 'module'
-    };
-  }
+		return {
+			path: `src/messaging/${options.projectName}-message-queue.module.ts`,
+			content,
+			type: "module",
+		};
+	}
 
-  private generateMessageQueueService(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+	private generateMessageQueueService(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		const content = `/**
  * Message Queue Service
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -322,7 +348,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
       await this.setupProviderQueues();
       
       // Setup monitoring if enabled
-      ${options.monitoring ? 'await this.setupMonitoring();' : ''}
+      ${options.monitoring ? "await this.setupMonitoring();" : ""}
       
       this.logger.log('Message queues initialized successfully');
     } catch (error) {
@@ -437,7 +463,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     }
   }
 
-  ${options.dlq ? this.getDLQMethods() : ''}
+  ${options.dlq ? this.getDLQMethods() : ""}
 
   // Provider-specific implementations
   private async setupProviderQueues(): Promise<void> {
@@ -477,7 +503,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     message.failedAt = Date.now();
 
     if (message.attempts >= message.maxAttempts) {
-      ${options.dlq ? 'await this.sendToDeadLetterQueue(queueName, message, error);' : ''}
+      ${options.dlq ? "await this.sendToDeadLetterQueue(queueName, message, error);" : ""}
       this.updateStats(queueName, 'failed');
       this.logger.error(\`Message \${message.id} failed permanently after \${message.attempts} attempts\`);
     } else {
@@ -533,54 +559,59 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     return \`msg_\${Date.now()}_\${Math.random().toString(36).substr(2, 9)}\`;
   }
 
-  ${options.monitoring ? this.getMonitoringMethods() : ''}
+  ${options.monitoring ? this.getMonitoringMethods() : ""}
 }`;
 
-    return {
-      path: `src/messaging/${options.projectName}-message-queue.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/messaging/${options.projectName}-message-queue.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateFeatureImplementation(feature: MessageQueueFeature, options: MessageQueueOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    switch (feature) {
-      case 'job-processing':
-        files.push(this.generateJobProcessingFeature(options));
-        break;
-      case 'event-streaming':
-        files.push(this.generateEventStreamingFeature(options));
-        break;
-      case 'pub-sub':
-        files.push(this.generatePubSubFeature(options));
-        break;
-      case 'task-scheduling':
-        files.push(this.generateTaskSchedulingFeature(options));
-        break;
-      case 'file-processing':
-        files.push(this.generateFileProcessingFeature(options));
-        break;
-      case 'email-queue':
-        files.push(this.generateEmailQueueFeature(options));
-        break;
-      case 'notification-queue':
-        files.push(this.generateNotificationQueueFeature(options));
-        break;
-      case 'analytics-events':
-        files.push(this.generateAnalyticsEventsFeature(options));
-        break;
-      case 'audit-logging':
-        files.push(this.generateAuditLoggingFeature(options));
-        break;
-    }
-    
-    return files;
-  }
+	private generateFeatureImplementation(
+		feature: MessageQueueFeature,
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-  private generateJobProcessingFeature(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+		switch (feature) {
+			case "job-processing":
+				files.push(this.generateJobProcessingFeature(options));
+				break;
+			case "event-streaming":
+				files.push(this.generateEventStreamingFeature(options));
+				break;
+			case "pub-sub":
+				files.push(this.generatePubSubFeature(options));
+				break;
+			case "task-scheduling":
+				files.push(this.generateTaskSchedulingFeature(options));
+				break;
+			case "file-processing":
+				files.push(this.generateFileProcessingFeature(options));
+				break;
+			case "email-queue":
+				files.push(this.generateEmailQueueFeature(options));
+				break;
+			case "notification-queue":
+				files.push(this.generateNotificationQueueFeature(options));
+				break;
+			case "analytics-events":
+				files.push(this.generateAnalyticsEventsFeature(options));
+				break;
+			case "audit-logging":
+				files.push(this.generateAuditLoggingFeature(options));
+				break;
+		}
+
+		return files;
+	}
+
+	private generateJobProcessingFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		const content = `/**
  * Job Processing Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -838,15 +869,17 @@ export class JobScheduler {
 }
 `;
 
-    return {
-      path: `src/messaging/features/job-processing.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/messaging/features/job-processing.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateEventStreamingFeature(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+	private generateEventStreamingFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		const content = `/**
  * Event Streaming Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1185,16 +1218,16 @@ export class EventBuilder {
 }
 `;
 
-    return {
-      path: `src/messaging/features/event-streaming.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/messaging/features/event-streaming.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  // Template methods for provider-specific implementations
-  private getRedisQueueServiceTemplate(options: MessageQueueOptions): string {
-    return `/**
+	// Template methods for provider-specific implementations
+	private getRedisQueueServiceTemplate(options: MessageQueueOptions): string {
+		return `/**
  * Redis Queue Service
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1269,7 +1302,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
       }, delay);
     } else {
       // Send to DLQ
-      ${options.dlq ? 'await this.addToQueue(`dlq:${queueName}`, message);' : ''}
+      ${options.dlq ? "await this.addToQueue(`dlq:${queueName}`, message);" : ""}
     }
   }
 
@@ -1284,10 +1317,10 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     return length;
   }
 }`;
-  }
+	}
 
-  private getRedisPubSubServiceTemplate(options: MessageQueueOptions): string {
-    return `/**
+	private getRedisPubSubServiceTemplate(options: MessageQueueOptions): string {
+		return `/**
  * Redis Pub/Sub Service
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1353,11 +1386,11 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     });
   }
 }`;
-  }
+	}
 
-  // Additional template methods would go here for RabbitMQ, Kafka, etc.
-  private getRabbitMQServiceTemplate(options: MessageQueueOptions): string {
-    return `/**
+	// Additional template methods would go here for RabbitMQ, Kafka, etc.
+	private getRabbitMQServiceTemplate(options: MessageQueueOptions): string {
+		return `/**
  * RabbitMQ Service Implementation
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1411,74 +1444,79 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     await this.channel.assertExchange(exchangeName, type, { durable: true });
   }
 }`;
-  }
+	}
 
-  // Helper methods for generating provider-specific code
-  private getProviderImports(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `import { RedisModule } from '@nestjs-modules/ioredis';
+	// Helper methods for generating provider-specific code
+	private getProviderImports(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `import { RedisModule } from '@nestjs-modules/ioredis';
 import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisQueueService } from './redis/${options.projectName}-redis-queue.service';
 import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisPubSubService } from './redis/${options.projectName}-redis-pubsub.service';`;
-      case 'rabbitmq':
-        return `import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService } from './rabbitmq/${options.projectName}-rabbitmq.service';`;
-      case 'kafka':
-        return `import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService } from './kafka/${options.projectName}-kafka.service';`;
-      default:
-        return '';
-    }
-  }
+			case "rabbitmq":
+				return `import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService } from './rabbitmq/${options.projectName}-rabbitmq.service';`;
+			case "kafka":
+				return `import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService } from './kafka/${options.projectName}-kafka.service';`;
+			default:
+				return "";
+		}
+	}
 
-  private getProviderModuleImports(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `RedisModule.forRootAsync({
+	private getProviderModuleImports(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
         url: process.env.REDIS_URL || 'redis://localhost:6379',
       }),
     })`;
-      default:
-        return '// Provider-specific module imports';
-    }
-  }
+			default:
+				return "// Provider-specific module imports";
+		}
+	}
 
-  private getProviderServices(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisQueueService,
+	private getProviderServices(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisQueueService,
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisPubSubService`;
-      case 'rabbitmq':
-        return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService`;
-      case 'kafka':
-        return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService`;
-      default:
-        return '// Provider-specific services';
-    }
-  }
+			case "rabbitmq":
+				return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService`;
+			case "kafka":
+				return `${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService`;
+			default:
+				return "// Provider-specific services";
+		}
+	}
 
-  private getProviderConstructorInjections(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `private readonly redisQueue: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisQueueService,
+	private getProviderConstructorInjections(
+		options: MessageQueueOptions,
+	): string {
+		switch (options.provider) {
+			case "redis":
+				return `private readonly redisQueue: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisQueueService,
     private readonly redisPubSub: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RedisPubSubService`;
-      case 'rabbitmq':
-        return `private readonly rabbitMQ: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService`;
-      case 'kafka':
-        return `private readonly kafka: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService`;
-      default:
-        return '// Provider-specific constructor injections';
-    }
-  }
+			case "rabbitmq":
+				return `private readonly rabbitMQ: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}RabbitMQService`;
+			case "kafka":
+				return `private readonly kafka: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}KafkaService`;
+			default:
+				return "// Provider-specific constructor injections";
+		}
+	}
 
-  private getFeatureServiceName(feature: MessageQueueFeature): string {
-    return feature.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join('') + 'Service';
-  }
+	private getFeatureServiceName(feature: MessageQueueFeature): string {
+		return (
+			feature
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("") + "Service"
+		);
+	}
 
-  private getDLQMethods(): string {
-    return `
+	private getDLQMethods(): string {
+		return `
   public async sendToDeadLetterQueue<T>(
     originalQueue: string,
     message: QueueMessage<T>,
@@ -1499,10 +1537,10 @@ import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.sli
     // Implementation to reprocess messages from DLQ
     return 0;
   }`;
-  }
+	}
 
-  private getMonitoringMethods(): string {
-    return `
+	private getMonitoringMethods(): string {
+		return `
   private async setupMonitoring(): Promise<void> {
     // Setup metrics collection
     setInterval(() => {
@@ -1516,160 +1554,180 @@ import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.sli
       this.logger.debug(\`Queue \${queueName} metrics:\`, stats);
     }
   }`;
-  }
+	}
 
-  private getProviderSetupCode(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `
+	private getProviderSetupCode(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `
     // Redis-specific setup
     this.logger.log('Setting up Redis queues');`;
-      case 'rabbitmq':
-        return `
+			case "rabbitmq":
+				return `
     // RabbitMQ-specific setup
     await this.rabbitMQ.connect();
     this.logger.log('Setting up RabbitMQ queues');`;
-      case 'kafka':
-        return `
+			case "kafka":
+				return `
     // Kafka-specific setup
     this.logger.log('Setting up Kafka topics');`;
-      default:
-        return '// Provider-specific setup code';
-    }
-  }
+			default:
+				return "// Provider-specific setup code";
+		}
+	}
 
-  private getProviderPublishCode(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `await this.redisQueue.addToQueue(queueName, message);`;
-      case 'rabbitmq':
-        return `await this.rabbitMQ.publish('direct', queueName, message);`;
-      case 'kafka':
-        return `await this.kafka.produce(queueName, message);`;
-      default:
-        return '// Provider-specific publish code';
-    }
-  }
+	private getProviderPublishCode(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `await this.redisQueue.addToQueue(queueName, message);`;
+			case "rabbitmq":
+				return `await this.rabbitMQ.publish('direct', queueName, message);`;
+			case "kafka":
+				return `await this.kafka.produce(queueName, message);`;
+			default:
+				return "// Provider-specific publish code";
+		}
+	}
 
-  private getProviderProcessorCode(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `await this.redisQueue.processQueue(queueName, processor);`;
-      case 'rabbitmq':
-        return `await this.rabbitMQ.consume(queueName, async (msg) => {
+	private getProviderProcessorCode(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `await this.redisQueue.processQueue(queueName, processor);`;
+			case "rabbitmq":
+				return `await this.rabbitMQ.consume(queueName, async (msg) => {
         const result = await processor(msg);
         return result;
       });`;
-      case 'kafka':
-        return `await this.kafka.subscribe(queueName, processor);`;
-      default:
-        return '// Provider-specific processor code';
-    }
-  }
+			case "kafka":
+				return `await this.kafka.subscribe(queueName, processor);`;
+			default:
+				return "// Provider-specific processor code";
+		}
+	}
 
-  private getProviderPurgeCode(options: MessageQueueOptions): string {
-    switch (options.provider) {
-      case 'redis':
-        return `return await this.redisQueue.purgeQueue(queueName);`;
-      case 'rabbitmq':
-        return `return await this.rabbitMQ.purgeQueue(queueName);`;
-      default:
-        return 'return 0; // Provider-specific purge code';
-    }
-  }
+	private getProviderPurgeCode(options: MessageQueueOptions): string {
+		switch (options.provider) {
+			case "redis":
+				return `return await this.redisQueue.purgeQueue(queueName);`;
+			case "rabbitmq":
+				return `return await this.rabbitMQ.purgeQueue(queueName);`;
+			default:
+				return "return 0; // Provider-specific purge code";
+		}
+	}
 
-  private getProviderPauseCode(options: MessageQueueOptions): string {
-    return '// Provider-specific pause implementation';
-  }
+	private getProviderPauseCode(options: MessageQueueOptions): string {
+		return "// Provider-specific pause implementation";
+	}
 
-  private getProviderResumeCode(options: MessageQueueOptions): string {
-    return '// Provider-specific resume implementation';
-  }
+	private getProviderResumeCode(options: MessageQueueOptions): string {
+		return "// Provider-specific resume implementation";
+	}
 
-  // Continue with other feature implementations...
-  private generatePubSubFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for pub/sub feature
-    return {
-      path: `src/messaging/features/pub-sub.service.ts`,
-      content: '// Pub/Sub feature implementation',
-      type: 'service'
-    };
-  }
+	// Continue with other feature implementations...
+	private generatePubSubFeature(options: MessageQueueOptions): GeneratedFile {
+		// Implementation for pub/sub feature
+		return {
+			path: `src/messaging/features/pub-sub.service.ts`,
+			content: "// Pub/Sub feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateTaskSchedulingFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for task scheduling feature
-    return {
-      path: `src/messaging/features/task-scheduling.service.ts`,
-      content: '// Task scheduling feature implementation',
-      type: 'service'
-    };
-  }
+	private generateTaskSchedulingFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for task scheduling feature
+		return {
+			path: `src/messaging/features/task-scheduling.service.ts`,
+			content: "// Task scheduling feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateFileProcessingFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for file processing feature
-    return {
-      path: `src/messaging/features/file-processing.service.ts`,
-      content: '// File processing feature implementation',
-      type: 'service'
-    };
-  }
+	private generateFileProcessingFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for file processing feature
+		return {
+			path: `src/messaging/features/file-processing.service.ts`,
+			content: "// File processing feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateEmailQueueFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for email queue feature
-    return {
-      path: `src/messaging/features/email-queue.service.ts`,
-      content: '// Email queue feature implementation',
-      type: 'service'
-    };
-  }
+	private generateEmailQueueFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for email queue feature
+		return {
+			path: `src/messaging/features/email-queue.service.ts`,
+			content: "// Email queue feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateNotificationQueueFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for notification queue feature
-    return {
-      path: `src/messaging/features/notification-queue.service.ts`,
-      content: '// Notification queue feature implementation',
-      type: 'service'
-    };
-  }
+	private generateNotificationQueueFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for notification queue feature
+		return {
+			path: `src/messaging/features/notification-queue.service.ts`,
+			content: "// Notification queue feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateAnalyticsEventsFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for analytics events feature
-    return {
-      path: `src/messaging/features/analytics-events.service.ts`,
-      content: '// Analytics events feature implementation',
-      type: 'service'
-    };
-  }
+	private generateAnalyticsEventsFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for analytics events feature
+		return {
+			path: `src/messaging/features/analytics-events.service.ts`,
+			content: "// Analytics events feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateAuditLoggingFeature(options: MessageQueueOptions): GeneratedFile {
-    // Implementation for audit logging feature
-    return {
-      path: `src/messaging/features/audit-logging.service.ts`,
-      content: '// Audit logging feature implementation',
-      type: 'service'
-    };
-  }
+	private generateAuditLoggingFeature(
+		options: MessageQueueOptions,
+	): GeneratedFile {
+		// Implementation for audit logging feature
+		return {
+			path: `src/messaging/features/audit-logging.service.ts`,
+			content: "// Audit logging feature implementation",
+			type: "service",
+		};
+	}
 
-  private generateDLQImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    // Dead Letter Queue implementation
-    return [{
-      path: `src/messaging/dlq/dead-letter-queue.service.ts`,
-      content: '// Dead Letter Queue implementation',
-      type: 'service'
-    }];
-  }
+	private generateDLQImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		// Dead Letter Queue implementation
+		return [
+			{
+				path: `src/messaging/dlq/dead-letter-queue.service.ts`,
+				content: "// Dead Letter Queue implementation",
+				type: "service",
+			},
+		];
+	}
 
-  private generateMonitoringImplementation(options: MessageQueueOptions): GeneratedFile[] {
-    // Monitoring implementation
-    return [{
-      path: `src/messaging/monitoring/queue-monitoring.service.ts`,
-      content: '// Queue monitoring implementation',
-      type: 'service'
-    }];
-  }
+	private generateMonitoringImplementation(
+		options: MessageQueueOptions,
+	): GeneratedFile[] {
+		// Monitoring implementation
+		return [
+			{
+				path: `src/messaging/monitoring/queue-monitoring.service.ts`,
+				content: "// Queue monitoring implementation",
+				type: "service",
+			},
+		];
+	}
 
-  private generateTypes(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+	private generateTypes(options: MessageQueueOptions): GeneratedFile {
+		const content = `/**
  * Message Queue Types
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1717,7 +1775,7 @@ export interface DeadLetterMessage<T = any> extends QueueMessage<T> {
   reason: string;
 }
 
-export type MessageQueueFeature = ${options.features.map(f => `'${f}'`).join(' | ')};
+export type MessageQueueFeature = ${options.features.map((f) => `'${f}'`).join(" | ")};
 
 export interface MessageQueueConfiguration {
   provider: '${options.provider}';
@@ -1737,15 +1795,15 @@ export interface MessageQueueConfiguration {
   };
 }`;
 
-    return {
-      path: `src/messaging/types/message-queue.types.ts`,
-      content,
-      type: 'types'
-    };
-  }
+		return {
+			path: `src/messaging/types/message-queue.types.ts`,
+			content,
+			type: "types",
+		};
+	}
 
-  private generateConfiguration(options: MessageQueueOptions): GeneratedFile {
-    const content = `/**
+	private generateConfiguration(options: MessageQueueOptions): GeneratedFile {
+		const content = `/**
  * Message Queue Configuration
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1771,10 +1829,12 @@ export const messageQueueConfig: MessageQueueConfiguration = {
 };
 
 export const queueNames = {
-  ${options.features.map(feature => {
-    const queueName = feature.replace(/-/g, '_').toUpperCase();
-    return `${queueName}: '${feature}'`;
-  }).join(',\n  ')}
+  ${options.features
+		.map((feature) => {
+			const queueName = feature.replace(/-/g, "_").toUpperCase();
+			return `${queueName}: '${feature}'`;
+		})
+		.join(",\n  ")}
 };
 
 export const providerConfig = {
@@ -1794,83 +1854,87 @@ export const providerConfig = {
   }
 };`;
 
-    return {
-      path: `src/messaging/config/message-queue.config.ts`,
-      content,
-      type: 'config'
-    };
-  }
+		return {
+			path: `src/messaging/config/message-queue.config.ts`,
+			content,
+			type: "config",
+		};
+	}
 
-  private generateTestFiles(options: MessageQueueOptions): GeneratedFile[] {
-    return [
-      {
-        path: `src/messaging/__tests__/${options.projectName}-message-queue.service.spec.ts`,
-        content: '// Message queue service tests',
-        type: 'test'
-      }
-    ];
-  }
+	private generateTestFiles(options: MessageQueueOptions): GeneratedFile[] {
+		return [
+			{
+				path: `src/messaging/__tests__/${options.projectName}-message-queue.service.spec.ts`,
+				content: "// Message queue service tests",
+				type: "test",
+			},
+		];
+	}
 
-  private generateClientUtils(options: MessageQueueOptions): GeneratedFile[] {
-    return [
-      {
-        path: `src/messaging/utils/message-queue-client.ts`,
-        content: '// Message queue client utilities',
-        type: 'utility'
-      }
-    ];
-  }
+	private generateClientUtils(options: MessageQueueOptions): GeneratedFile[] {
+		return [
+			{
+				path: `src/messaging/utils/message-queue-client.ts`,
+				content: "// Message queue client utilities",
+				type: "utility",
+			},
+		];
+	}
 
-  // Additional template methods for other providers would go here...
-  private getKafkaServiceTemplate(options: MessageQueueOptions): string {
-    return '// Kafka service implementation';
-  }
+	// Additional template methods for other providers would go here...
+	private getKafkaServiceTemplate(options: MessageQueueOptions): string {
+		return "// Kafka service implementation";
+	}
 
-  private getKafkaProducerTemplate(options: MessageQueueOptions): string {
-    return '// Kafka producer implementation';
-  }
+	private getKafkaProducerTemplate(options: MessageQueueOptions): string {
+		return "// Kafka producer implementation";
+	}
 
-  private getKafkaConsumerTemplate(options: MessageQueueOptions): string {
-    return '// Kafka consumer implementation';
-  }
+	private getKafkaConsumerTemplate(options: MessageQueueOptions): string {
+		return "// Kafka consumer implementation";
+	}
 
-  private getKafkaAdminTemplate(options: MessageQueueOptions): string {
-    return '// Kafka admin implementation';
-  }
+	private getKafkaAdminTemplate(options: MessageQueueOptions): string {
+		return "// Kafka admin implementation";
+	}
 
-  private getAWSSQSServiceTemplate(options: MessageQueueOptions): string {
-    return '// AWS SQS service implementation';
-  }
+	private getAWSSQSServiceTemplate(options: MessageQueueOptions): string {
+		return "// AWS SQS service implementation";
+	}
 
-  private getSQSQueueManagerTemplate(options: MessageQueueOptions): string {
-    return '// SQS queue manager implementation';
-  }
+	private getSQSQueueManagerTemplate(options: MessageQueueOptions): string {
+		return "// SQS queue manager implementation";
+	}
 
-  private getGCPPubSubServiceTemplate(options: MessageQueueOptions): string {
-    return '// GCP Pub/Sub service implementation';
-  }
+	private getGCPPubSubServiceTemplate(options: MessageQueueOptions): string {
+		return "// GCP Pub/Sub service implementation";
+	}
 
-  private getAzureServiceBusServiceTemplate(options: MessageQueueOptions): string {
-    return '// Azure Service Bus service implementation';
-  }
+	private getAzureServiceBusServiceTemplate(
+		options: MessageQueueOptions,
+	): string {
+		return "// Azure Service Bus service implementation";
+	}
 
-  private getRedisProcessorServiceTemplate(options: MessageQueueOptions): string {
-    return '// Redis processor service implementation';
-  }
+	private getRedisProcessorServiceTemplate(
+		options: MessageQueueOptions,
+	): string {
+		return "// Redis processor service implementation";
+	}
 
-  private getRedisConfigTemplate(options: MessageQueueOptions): string {
-    return '// Redis configuration';
-  }
+	private getRedisConfigTemplate(options: MessageQueueOptions): string {
+		return "// Redis configuration";
+	}
 
-  private getRabbitMQProducerTemplate(options: MessageQueueOptions): string {
-    return '// RabbitMQ producer implementation';
-  }
+	private getRabbitMQProducerTemplate(options: MessageQueueOptions): string {
+		return "// RabbitMQ producer implementation";
+	}
 
-  private getRabbitMQConsumerTemplate(options: MessageQueueOptions): string {
-    return '// RabbitMQ consumer implementation';
-  }
+	private getRabbitMQConsumerTemplate(options: MessageQueueOptions): string {
+		return "// RabbitMQ consumer implementation";
+	}
 
-  private getRabbitMQSetupTemplate(options: MessageQueueOptions): string {
-    return '// RabbitMQ setup implementation';
-  }
+	private getRabbitMQSetupTemplate(options: MessageQueueOptions): string {
+		return "// RabbitMQ setup implementation";
+	}
 }

@@ -4,7 +4,12 @@
  * Follows infrastructure-as-code best practices with remote state management
  */
 
-import { InfrastructureGenerator, InfrastructureGeneratorOptions, InfrastructureGeneratorResult, GeneratedInfrastructureFile } from "./index.js";
+import {
+	InfrastructureGenerator,
+	InfrastructureGeneratorOptions,
+	InfrastructureGeneratorResult,
+	GeneratedInfrastructureFile,
+} from "./index.js";
 
 export interface TerraformOptions extends InfrastructureGeneratorOptions {
 	readonly cloudProvider: "aws" | "azure" | "gcp" | "multi-cloud";
@@ -70,7 +75,15 @@ export interface ComputeInstance {
 
 export interface DatabaseConfig {
 	readonly name: string;
-	readonly engine: "postgresql" | "mysql" | "mariadb" | "oracle" | "sqlserver" | "mongodb" | "redis" | "elasticsearch";
+	readonly engine:
+		| "postgresql"
+		| "mysql"
+		| "mariadb"
+		| "oracle"
+		| "sqlserver"
+		| "mongodb"
+		| "redis"
+		| "elasticsearch";
 	readonly version: string;
 	readonly instanceClass: string;
 	readonly allocatedStorage: number;
@@ -114,7 +127,10 @@ export class TerraformGenerator extends InfrastructureGenerator {
 			}
 
 			// Generate storage infrastructure
-			if (options.storage.databases.length > 0 || options.storage.objectStorage) {
+			if (
+				options.storage.databases.length > 0 ||
+				options.storage.objectStorage
+			) {
 				files.push(...this.generateStorageInfrastructure(options));
 			}
 
@@ -128,11 +144,22 @@ export class TerraformGenerator extends InfrastructureGenerator {
 
 			// Generate environment-specific configurations
 			if (options.environment === "all") {
-				files.push(...this.generateEnvironmentConfigurations(options, "development"));
-				files.push(...this.generateEnvironmentConfigurations(options, "staging"));
-				files.push(...this.generateEnvironmentConfigurations(options, "production"));
+				files.push(
+					...this.generateEnvironmentConfigurations(options, "development"),
+				);
+				files.push(
+					...this.generateEnvironmentConfigurations(options, "staging"),
+				);
+				files.push(
+					...this.generateEnvironmentConfigurations(options, "production"),
+				);
 			} else {
-				files.push(...this.generateEnvironmentConfigurations(options, options.environment));
+				files.push(
+					...this.generateEnvironmentConfigurations(
+						options,
+						options.environment,
+					),
+				);
 			}
 
 			// Generate Terraform commands
@@ -140,7 +167,7 @@ export class TerraformGenerator extends InfrastructureGenerator {
 				"terraform init",
 				"terraform validate",
 				"terraform plan",
-				"terraform apply -auto-approve"
+				"terraform apply -auto-approve",
 			);
 
 			const nextSteps = this.generateNextSteps(options);
@@ -166,7 +193,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate base Terraform files (main.tf, variables.tf, outputs.tf)
 	 */
-	private generateBaseTerraformFiles(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateBaseTerraformFiles(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		// Generate main.tf
@@ -215,7 +244,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate provider configurations
 	 */
-	private generateProviderConfigurations(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateProviderConfigurations(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		switch (options.cloudProvider) {
@@ -259,7 +290,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate networking infrastructure
 	 */
-	private generateNetworkingInfrastructure(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateNetworkingInfrastructure(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		switch (options.cloudProvider) {
@@ -319,7 +352,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate compute infrastructure
 	 */
-	private generateComputeInfrastructure(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateComputeInfrastructure(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		switch (options.cloudProvider) {
@@ -387,7 +422,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate storage infrastructure
 	 */
-	private generateStorageInfrastructure(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateStorageInfrastructure(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		if (options.storage.databases.length > 0) {
@@ -454,7 +491,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate security infrastructure
 	 */
-	private generateSecurityInfrastructure(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateSecurityInfrastructure(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		switch (options.cloudProvider) {
@@ -522,7 +561,9 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	/**
 	 * Generate monitoring infrastructure
 	 */
-	private generateMonitoringInfrastructure(options: TerraformOptions): GeneratedInfrastructureFile[] {
+	private generateMonitoringInfrastructure(
+		options: TerraformOptions,
+	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
 		switch (options.cloudProvider) {
@@ -574,7 +615,7 @@ export class TerraformGenerator extends InfrastructureGenerator {
 	 */
 	private generateEnvironmentConfigurations(
 		options: TerraformOptions,
-		environment: "development" | "staging" | "production"
+		environment: "development" | "staging" | "production",
 	): GeneratedInfrastructureFile[] {
 		const files: GeneratedInfrastructureFile[] = [];
 
@@ -631,7 +672,9 @@ locals {
 }
 
 # Networking module
-${options.networking.vpc ? `
+${
+	options.networking.vpc
+		? `
 module "networking" {
   source = "./modules/networking"
   
@@ -648,10 +691,14 @@ module "networking" {
   
   tags = local.common_tags
 }
-` : "# Networking module disabled"}
+`
+		: "# Networking module disabled"
+}
 
 # Compute module
-${options.compute.instances.length > 0 ? `
+${
+	options.compute.instances.length > 0
+		? `
 module "compute" {
   source = "./modules/compute"
   
@@ -672,10 +719,14 @@ module "compute" {
   
   tags = local.common_tags
 }
-` : "# Compute module disabled"}
+`
+		: "# Compute module disabled"
+}
 
 # Storage module
-${options.storage.databases.length > 0 || options.storage.objectStorage ? `
+${
+	options.storage.databases.length > 0 || options.storage.objectStorage
+		? `
 module "storage" {
   source = "./modules/storage"
   
@@ -695,7 +746,9 @@ module "storage" {
   
   tags = local.common_tags
 }
-` : "# Storage module disabled"}
+`
+		: "# Storage module disabled"
+}
 
 # Security module
 module "security" {
@@ -714,7 +767,9 @@ module "security" {
 }
 
 # Monitoring module
-${options.monitoring.cloudWatch || options.monitoring.logging ? `
+${
+	options.monitoring.cloudWatch || options.monitoring.logging
+		? `
 module "monitoring" {
   source = "./modules/monitoring"
   
@@ -728,7 +783,9 @@ module "monitoring" {
   
   tags = local.common_tags
 }
-` : "# Monitoring module disabled"}`;
+`
+		: "# Monitoring module disabled"
+}`;
 	}
 
 	/**
@@ -765,7 +822,9 @@ variable "owner" {
 }
 
 # Networking variables
-${options.networking.vpc ? `
+${
+	options.networking.vpc
+		? `
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
@@ -801,10 +860,14 @@ variable "enable_vpn_gateway" {
   type        = bool
   default     = ${options.networking.enableVpnGateway}
 }
-` : ""}
+`
+		: ""
+}
 
 # Compute variables
-${options.compute.instances.length > 0 ? `
+${
+	options.compute.instances.length > 0
+		? `
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
@@ -840,10 +903,14 @@ variable "enable_auto_scaling" {
   type        = bool
   default     = ${options.compute.autoScaling}
 }
-` : ""}
+`
+		: ""
+}
 
 # Storage variables
-${options.storage.databases.length > 0 ? `
+${
+	options.storage.databases.length > 0
+		? `
 variable "db_engine" {
   description = "Database engine"
   type        = string
@@ -867,7 +934,9 @@ variable "db_allocated_storage" {
   type        = number
   default     = ${options.storage.databases[0]?.allocatedStorage || 20}
 }
-` : ""}
+`
+		: ""
+}
 
 variable "enable_object_storage" {
   description = "Enable object storage (S3)"
@@ -976,7 +1045,9 @@ output "region" {
 }
 
 # Networking outputs
-${options.networking.vpc ? `
+${
+	options.networking.vpc
+		? `
 output "vpc_id" {
   description = "ID of the VPC"
   value       = module.networking.vpc_id
@@ -1006,10 +1077,14 @@ output "nat_gateway_ids" {
   description = "List of NAT Gateway IDs"
   value       = module.networking.nat_gateway_ids
 }
-` : ""}
+`
+		: ""
+}
 
 # Compute outputs
-${options.compute.instances.length > 0 ? `
+${
+	options.compute.instances.length > 0
+		? `
 output "instance_ids" {
   description = "List of EC2 instance IDs"
   value       = module.compute.instance_ids
@@ -1024,9 +1099,13 @@ output "instance_private_ips" {
   description = "List of private IP addresses assigned to the instances"
   value       = module.compute.instance_private_ips
 }
-` : ""}
+`
+		: ""
+}
 
-${options.compute.loadBalancer ? `
+${
+	options.compute.loadBalancer
+		? `
 output "load_balancer_dns_name" {
   description = "DNS name of the load balancer"
   value       = module.compute.load_balancer_dns_name
@@ -1036,10 +1115,14 @@ output "load_balancer_zone_id" {
   description = "Canonical hosted zone ID of the load balancer"
   value       = module.compute.load_balancer_zone_id
 }
-` : ""}
+`
+		: ""
+}
 
 # Storage outputs
-${options.storage.databases.length > 0 ? `
+${
+	options.storage.databases.length > 0
+		? `
 output "database_endpoint" {
   description = "Database endpoint"
   value       = module.storage.database_endpoint
@@ -1055,9 +1138,13 @@ output "database_name" {
   description = "Database name"
   value       = module.storage.database_name
 }
-` : ""}
+`
+		: ""
+}
 
-${options.storage.objectStorage ? `
+${
+	options.storage.objectStorage
+		? `
 output "s3_bucket_id" {
   description = "S3 bucket ID"
   value       = module.storage.s3_bucket_id
@@ -1067,7 +1154,9 @@ output "s3_bucket_domain_name" {
   description = "S3 bucket domain name"
   value       = module.storage.s3_bucket_domain_name
 }
-` : ""}
+`
+		: ""
+}
 
 # Security outputs
 output "kms_key_id" {
@@ -1082,19 +1171,27 @@ output "iam_role_arns" {
 }
 
 # Monitoring outputs
-${options.monitoring.logging ? `
+${
+	options.monitoring.logging
+		? `
 output "log_group_names" {
   description = "Names of CloudWatch log groups"
   value       = module.monitoring.log_group_names
 }
-` : ""}
+`
+		: ""
+}
 
-${options.monitoring.alerting ? `
+${
+	options.monitoring.alerting
+		? `
 output "sns_topic_arns" {
   description = "ARNs of SNS topics for alerts"
   value       = module.monitoring.sns_topic_arns
 }
-` : ""}`;
+`
+		: ""
+}`;
 	}
 
 	/**
@@ -1113,35 +1210,47 @@ owner        = "your-team@company.com"
 region = "${options.region}"
 
 # Networking configuration
-${options.networking.vpc ? `
+${
+	options.networking.vpc
+		? `
 vpc_cidr             = "10.0.0.0/16"
 availability_zones   = ["${options.region}a", "${options.region}b", "${options.region}c"]
 public_subnets       = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 private_subnets      = ["10.0.10.0/24", "10.0.20.0/24", "10.0.30.0/24"]
 enable_nat_gateway   = ${options.networking.enableNatGateway}
 enable_vpn_gateway   = ${options.networking.enableVpnGateway}
-` : ""}
+`
+		: ""
+}
 
 # Compute configuration
-${options.compute.instances.length > 0 ? `
+${
+	options.compute.instances.length > 0
+		? `
 instance_type        = "${options.compute.instances[0]?.instanceType || "t3.micro"}"
 min_size            = ${options.compute.instances[0]?.minSize || 1}
 max_size            = ${options.compute.instances[0]?.maxSize || 3}
 desired_capacity    = ${options.compute.instances[0]?.desiredCapacity || 2}
 enable_load_balancer = ${options.compute.loadBalancer}
 enable_auto_scaling  = ${options.compute.autoScaling}
-` : ""}
+`
+		: ""
+}
 
 # Storage configuration
 enable_object_storage = ${options.storage.objectStorage}
 enable_file_system   = ${options.storage.fileSystem}
 
-${options.storage.databases.length > 0 ? `
+${
+	options.storage.databases.length > 0
+		? `
 db_engine            = "${options.storage.databases[0]?.engine || "postgresql"}"
 db_version           = "${options.storage.databases[0]?.version || "15"}"
 db_instance_class    = "${options.storage.databases[0]?.instanceClass || "db.t3.micro"}"
 db_allocated_storage = ${options.storage.databases[0]?.allocatedStorage || 20}
-` : ""}
+`
+		: ""
+}
 
 # Security configuration
 enable_kms             = ${options.security.keyManagement}
@@ -1168,14 +1277,15 @@ audit_logs_enabled    = ${options.compliance.auditLogs}`;
 	private generateVersionsTf(options: TerraformOptions): string {
 		const providers = {
 			aws: 'aws = {\n      source  = "hashicorp/aws"\n      version = "~> 5.0"\n    }',
-			azure: 'azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 3.0"\n    }',
-			gcp: 'google = {\n      source  = "hashicorp/google"\n      version = "~> 4.0"\n    }'
+			azure:
+				'azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 3.0"\n    }',
+			gcp: 'google = {\n      source  = "hashicorp/google"\n      version = "~> 4.0"\n    }',
 		};
 
 		let requiredProviders = "";
-		
+
 		if (options.cloudProvider === "multi-cloud") {
-			requiredProviders = Object.values(providers).join('\n    ');
+			requiredProviders = Object.values(providers).join("\n    ");
 		} else {
 			requiredProviders = providers[options.cloudProvider] || providers.aws;
 		}
@@ -1629,7 +1739,7 @@ resource "aws_security_group" "db" {
 		steps.push(
 			"Test your infrastructure deployment",
 			"Set up monitoring and alerting",
-			"Document your infrastructure"
+			"Document your infrastructure",
 		);
 
 		return steps;
@@ -3132,8 +3242,10 @@ resource "aws_iam_role_policy" "ec2_policy" {
 }
 
 # Custom IAM roles
-${options.security.iamRoles.map(role => `
-resource "aws_iam_role" "${role.toLowerCase().replace(/[^a-z0-9]/g, '_')}_role" {
+${options.security.iamRoles
+	.map(
+		(role) => `
+resource "aws_iam_role" "${role.toLowerCase().replace(/[^a-z0-9]/g, "_")}_role" {
   name = "\\\${var.project_name}-\\\${var.environment}-${role.toLowerCase()}-role"
   
   assume_role_policy = jsonencode({
@@ -3150,7 +3262,9 @@ resource "aws_iam_role" "${role.toLowerCase().replace(/[^a-z0-9]/g, '_')}_role" 
   })
   
   tags = var.tags
-}`).join('')}`;
+}`,
+	)
+	.join("")}`;
 	}
 
 	// AWS KMS Configuration
@@ -3629,17 +3743,23 @@ resource "google_monitoring_notification_channel" "email" {
 }`;
 	}
 
-	private generateEnvironmentTfVars(options: TerraformOptions, environment: string): string {
+	private generateEnvironmentTfVars(
+		options: TerraformOptions,
+		environment: string,
+	): string {
 		return `# Environment-specific variables for ${environment}
 project_name = "xaheen-${environment}"
 environment  = "${environment}"`;
 	}
 
-	private generateEnvironmentBackend(options: TerraformOptions, environment: string): string {
+	private generateEnvironmentBackend(
+		options: TerraformOptions,
+		environment: string,
+	): string {
 		return `# Backend configuration for ${environment} environment
 terraform {
   backend "${options.remoteState.backend}" {
-    bucket = "${options.remoteState.bucket || 'xaheen-terraform-state'}"
+    bucket = "${options.remoteState.bucket || "xaheen-terraform-state"}"
     key    = "environments/${environment}/terraform.tfstate"
     region = "${options.remoteState.region || options.region}"
   }

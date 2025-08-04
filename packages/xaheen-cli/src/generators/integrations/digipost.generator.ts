@@ -6,149 +6,154 @@
 import type { GeneratedFile } from "../../types/index.js";
 
 export interface DigipostIntegrationOptions {
-  name: string;
-  environment: "test" | "production";
-  features: DigipostFeature[];
-  authentication: {
-    brokerId: string;
-    keyStore: string;
-    keyStorePassword: string;
-    keyAlias: string;
-  };
-  compliance: {
-    gdpr: boolean;
-    auditLogging: boolean;
-    dataResidency: "norway" | "eu";
-    documentClassification: "OPEN" | "RESTRICTED" | "CONFIDENTIAL" | "SECRET";
-  };
-  senderInformation: {
-    organizationNumber: string;
-    organizationName: string;
-    contactPerson: string;
-    contactEmail: string;
-  };
+	name: string;
+	environment: "test" | "production";
+	features: DigipostFeature[];
+	authentication: {
+		brokerId: string;
+		keyStore: string;
+		keyStorePassword: string;
+		keyAlias: string;
+	};
+	compliance: {
+		gdpr: boolean;
+		auditLogging: boolean;
+		dataResidency: "norway" | "eu";
+		documentClassification: "OPEN" | "RESTRICTED" | "CONFIDENTIAL" | "SECRET";
+	};
+	senderInformation: {
+		organizationNumber: string;
+		organizationName: string;
+		contactPerson: string;
+		contactEmail: string;
+	};
 }
 
 export type DigipostFeature =
-  | "document-delivery"
-  | "digital-signatures"
-  | "document-tracking"
-  | "bulk-sending"
-  | "template-based-documents"
-  | "secure-document-storage"
-  | "receipt-management"
-  | "multi-recipient"
-  | "document-encryption"
-  | "audit-trail"
-  | "webhook-notifications"
-  | "print-fallback";
+	| "document-delivery"
+	| "digital-signatures"
+	| "document-tracking"
+	| "bulk-sending"
+	| "template-based-documents"
+	| "secure-document-storage"
+	| "receipt-management"
+	| "multi-recipient"
+	| "document-encryption"
+	| "audit-trail"
+	| "webhook-notifications"
+	| "print-fallback";
 
 export class DigipostIntegrationGenerator {
-  async generate(options: DigipostIntegrationOptions): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+	async generate(
+		options: DigipostIntegrationOptions,
+	): Promise<GeneratedFile[]> {
+		const files: GeneratedFile[] = [];
 
-    // Core Digipost service files
-    files.push(...this.generateCoreServices(options));
+		// Core Digipost service files
+		files.push(...this.generateCoreServices(options));
 
-    // Document delivery features
-    if (options.features.includes("document-delivery")) {
-      files.push(...this.generateDocumentDelivery(options));
-    }
+		// Document delivery features
+		if (options.features.includes("document-delivery")) {
+			files.push(...this.generateDocumentDelivery(options));
+		}
 
-    if (options.features.includes("digital-signatures")) {
-      files.push(...this.generateDigitalSignatures(options));
-    }
+		if (options.features.includes("digital-signatures")) {
+			files.push(...this.generateDigitalSignatures(options));
+		}
 
-    if (options.features.includes("document-tracking")) {
-      files.push(...this.generateDocumentTracking(options));
-    }
+		if (options.features.includes("document-tracking")) {
+			files.push(...this.generateDocumentTracking(options));
+		}
 
-    if (options.features.includes("secure-document-storage")) {
-      files.push(...this.generateSecureStorage(options));
-    }
+		if (options.features.includes("secure-document-storage")) {
+			files.push(...this.generateSecureStorage(options));
+		}
 
-    if (options.features.includes("bulk-sending")) {
-      files.push(...this.generateBulkSending(options));
-    }
+		if (options.features.includes("bulk-sending")) {
+			files.push(...this.generateBulkSending(options));
+		}
 
-    if (options.features.includes("template-based-documents")) {
-      files.push(...this.generateTemplateEngine(options));
-    }
+		if (options.features.includes("template-based-documents")) {
+			files.push(...this.generateTemplateEngine(options));
+		}
 
-    // Webhook handlers
-    if (options.features.includes("webhook-notifications")) {
-      files.push(...this.generateWebhookHandlers(options));
-    }
+		// Webhook handlers
+		if (options.features.includes("webhook-notifications")) {
+			files.push(...this.generateWebhookHandlers(options));
+		}
 
-    // Compliance and security
-    if (options.compliance.auditLogging) {
-      files.push(...this.generateAuditLogging(options));
-    }
+		// Compliance and security
+		if (options.compliance.auditLogging) {
+			files.push(...this.generateAuditLogging(options));
+		}
 
-    // Document encryption
-    if (options.features.includes("document-encryption")) {
-      files.push(...this.generateEncryptionServices(options));
-    }
+		// Document encryption
+		if (options.features.includes("document-encryption")) {
+			files.push(...this.generateEncryptionServices(options));
+		}
 
-    // Error handling and monitoring
-    files.push(...this.generateErrorHandling(options));
+		// Error handling and monitoring
+		files.push(...this.generateErrorHandling(options));
 
-    // Tests
-    files.push(...this.generateTests(options));
+		// Tests
+		files.push(...this.generateTests(options));
 
-    // Documentation
-    files.push(...this.generateDocumentation(options));
+		// Documentation
+		files.push(...this.generateDocumentation(options));
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateCoreServices(options: DigipostIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateCoreServices(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // Configuration
-    files.push({
-      path: `${options.name}/integrations/digipost/config/digipost.config.ts`,
-      content: this.generateDigipostConfig(options),
-      type: "create",
-    });
+		// Configuration
+		files.push({
+			path: `${options.name}/integrations/digipost/config/digipost.config.ts`,
+			content: this.generateDigipostConfig(options),
+			type: "create",
+		});
 
-    // Types and interfaces
-    files.push({
-      path: `${options.name}/integrations/digipost/types/digipost.types.ts`,
-      content: this.generateDigipostTypes(options),
-      type: "create",
-    });
+		// Types and interfaces
+		files.push({
+			path: `${options.name}/integrations/digipost/types/digipost.types.ts`,
+			content: this.generateDigipostTypes(options),
+			type: "create",
+		});
 
-    // Main service
-    files.push({
-      path: `${options.name}/integrations/digipost/services/digipost.service.ts`,
-      content: this.generateDigipostService(options),
-      type: "create",
-    });
+		// Main service
+		files.push({
+			path: `${options.name}/integrations/digipost/services/digipost.service.ts`,
+			content: this.generateDigipostService(options),
+			type: "create",
+		});
 
-    // HTTP client with certificate authentication
-    files.push({
-      path: `${options.name}/integrations/digipost/services/digipost-http.client.ts`,
-      content: this.generateDigipostHttpClient(options),
-      type: "create",
-    });
+		// HTTP client with certificate authentication
+		files.push({
+			path: `${options.name}/integrations/digipost/services/digipost-http.client.ts`,
+			content: this.generateDigipostHttpClient(options),
+			type: "create",
+		});
 
-    // Authentication service
-    files.push({
-      path: `${options.name}/integrations/digipost/services/digipost-auth.service.ts`,
-      content: this.generateDigipostAuthService(options),
-      type: "create",
-    });
+		// Authentication service
+		files.push({
+			path: `${options.name}/integrations/digipost/services/digipost-auth.service.ts`,
+			content: this.generateDigipostAuthService(options),
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateDigipostConfig(options: DigipostIntegrationOptions): string {
-    const baseUrl = options.environment === "production" 
-      ? "https://api.digipost.no" 
-      : "https://api-test.digipost.no";
+	private generateDigipostConfig(options: DigipostIntegrationOptions): string {
+		const baseUrl =
+			options.environment === "production"
+				? "https://api.digipost.no"
+				: "https://api-test.digipost.no";
 
-    return `/**
+		return `/**
  * Digipost Configuration
  * Norwegian digital mailbox service - Enterprise configuration
  */
@@ -264,10 +269,10 @@ export const DOCUMENT_CLASSIFICATION = {
     retention: 30 * 365, // 30 years
   },
 } as const;`;
-  }
+	}
 
-  private generateDigipostTypes(options: DigipostIntegrationOptions): string {
-    return `/**
+	private generateDigipostTypes(options: DigipostIntegrationOptions): string {
+		return `/**
  * Digipost TypeScript Types and Interfaces
  * Comprehensive type definitions for Norwegian Digipost integration
  */
@@ -629,10 +634,10 @@ export interface DigipostBulkOperation {
   readonly endTime?: Date;
   readonly errors?: DigipostError[];
 }`;
-  }
+	}
 
-  private generateDigipostService(options: DigipostIntegrationOptions): string {
-    return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+	private generateDigipostService(options: DigipostIntegrationOptions): string {
+		return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { DigipostHttpClient } from './digipost-http.client';
 import { DigipostAuthService } from './digipost-auth.service';
 import { 
@@ -1118,10 +1123,12 @@ export class DigipostService {
     );
   }
 }`;
-  }
+	}
 
-  private generateDigipostHttpClient(options: DigipostIntegrationOptions): string {
-    return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+	private generateDigipostHttpClient(
+		options: DigipostIntegrationOptions,
+	): string {
+		return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as https from 'https';
@@ -1347,10 +1354,12 @@ export class DigipostHttpClient {
     return apiError;
   }
 }`;
-  }
+	}
 
-  private generateDigipostAuthService(options: DigipostIntegrationOptions): string {
-    return `import { Injectable, Logger } from '@nestjs/common';
+	private generateDigipostAuthService(
+		options: DigipostIntegrationOptions,
+	): string {
+		return `import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import { digipostConfig } from '../config/digipost.config';
@@ -1458,15 +1467,17 @@ export class DigipostAuthService {
     }
   }
 }`;
-  }
+	}
 
-  // Continue with more method implementations...
-  private generateDocumentDelivery(options: DigipostIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/digipost/services/digipost-document-delivery.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	// Continue with more method implementations...
+	private generateDocumentDelivery(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/digipost/services/digipost-document-delivery.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { DigipostService } from './digipost.service';
 import { 
   DigipostDocument,
@@ -1596,18 +1607,20 @@ export class DigipostDocumentDeliveryService {
     return '*'.repeat(ssn.length);
   }
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateDigitalSignatures(options: DigipostIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/digipost/services/digipost-signature.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateDigitalSignatures(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/digipost/services/digipost-signature.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { DigipostService } from './digipost.service';
 import { 
   DigipostSignatureJob,
@@ -1847,16 +1860,19 @@ interface SignatureVerificationReport {
   signers: any[];
   technicalDetails: string;
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateDocumentTracking(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/services/digipost-tracking.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateDocumentTracking(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/services/digipost-tracking.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import { DigipostService } from './digipost.service';
 import { DigipostDeliveryStatus, DigipostMessageStatus } from '../types/digipost.types';
 
@@ -1923,14 +1939,18 @@ interface TrackingEvent {
   description: string;
   details: string;
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateSecureStorage(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/services/digipost-storage.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateSecureStorage(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/services/digipost-storage.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { DigipostDocument, DigipostClassification } from '../types/digipost.types';
 
@@ -2012,14 +2032,18 @@ export class DigipostStorageService {
     return \`storage_\${Date.now()}_\${crypto.randomBytes(8).toString('hex')}\`;
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateBulkSending(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/services/digipost-bulk.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateBulkSending(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/services/digipost-bulk.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import { DigipostService } from './digipost.service';
 import { DigipostBatch, DigipostMessage } from '../types/digipost.types';
 
@@ -2068,14 +2092,18 @@ export class DigipostBulkService {
     };
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateTemplateEngine(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/services/digipost-template.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateTemplateEngine(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/services/digipost-template.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import { DigipostService } from './digipost.service';
 import { DigipostTemplate, DigipostRecipient } from '../types/digipost.types';
 
@@ -2153,14 +2181,18 @@ interface InvoiceItem {
   unitPrice: number;
   totalPrice: number;
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateWebhookHandlers(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/controllers/digipost-webhook.controller.ts`,
-      content: `import { 
+	private generateWebhookHandlers(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/controllers/digipost-webhook.controller.ts`,
+				content: `import { 
   Controller, 
   Post, 
   Body, 
@@ -2202,14 +2234,18 @@ export class DigipostWebhookController {
     return { success: true };
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateAuditLogging(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/audit/digipost-audit.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateAuditLogging(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/audit/digipost-audit.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 
 /**
  * Digipost Audit Service
@@ -2260,14 +2296,18 @@ export class DigipostAuditService {
     this.logger.log(\`Signature requested audit: \${JSON.stringify(auditEntry)}\`);
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateEncryptionServices(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/encryption/digipost-encryption.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateEncryptionServices(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/encryption/digipost-encryption.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 /**
@@ -2326,14 +2366,18 @@ export class DigipostEncryptionService {
     return decrypted;
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateErrorHandling(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/error/digipost-error-handler.service.ts`,
-      content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+	private generateErrorHandling(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/error/digipost-error-handler.service.ts`,
+				content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 
 /**
  * Digipost Error Handler Service
@@ -2366,14 +2410,16 @@ export class DigipostErrorHandlerService {
     );
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateTests(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/tests/digipost.service.spec.ts`,
-      content: `import { Test, TestingModule } from '@nestjs/testing';
+	private generateTests(options: DigipostIntegrationOptions): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/tests/digipost.service.spec.ts`,
+				content: `import { Test, TestingModule } from '@nestjs/testing';
 import { DigipostService } from '../services/digipost.service';
 import { DigipostHttpClient } from '../services/digipost-http.client';
 import { DigipostAuthService } from '../services/digipost-auth.service';
@@ -2441,20 +2487,24 @@ describe('DigipostService', () => {
     });
   });
 });`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateDocumentation(options: DigipostIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/digipost/README.md`,
-      content: `# Digipost Integration
+	private generateDocumentation(
+		options: DigipostIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/digipost/README.md`,
+				content: `# Digipost Integration
 
 Norwegian digital mailbox service integration with enterprise-grade features.
 
 ## Features
 
-${options.features.map(feature => `- ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('\n')}
+${options.features.map((feature) => `- ${feature.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`).join("\n")}
 
 ## Environment Variables
 
@@ -2536,8 +2586,8 @@ This integration follows Norwegian regulations and standards:
 
 - **Data Residency**: ${options.compliance.dataResidency.toUpperCase()}
 - **Document Classification**: ${options.compliance.documentClassification}
-- **GDPR Compliance**: ${options.compliance.gdpr ? 'Enabled' : 'Disabled'}
-- **Audit Logging**: ${options.compliance.auditLogging ? 'Enabled' : 'Disabled'}
+- **GDPR Compliance**: ${options.compliance.gdpr ? "Enabled" : "Disabled"}
+- **Audit Logging**: ${options.compliance.auditLogging ? "Enabled" : "Disabled"}
 - **Certificate Authentication**: Required for all API calls
 - **Document Encryption**: End-to-end encryption for sensitive documents
 - **Retention Policies**: Automatic document retention according to Norwegian law
@@ -2577,7 +2627,8 @@ For technical support, refer to:
 - [Digipost Developer Portal](https://developer.digipost.no/)
 - [Digipost API Documentation](https://developer.digipost.no/api/)
 `,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 }

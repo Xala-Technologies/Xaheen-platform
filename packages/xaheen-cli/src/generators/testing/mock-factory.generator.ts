@@ -1,90 +1,110 @@
-import { BaseGenerator } from '../base.generator';
-import { MockFactoryOptions, TestTemplate } from './types';
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import { BaseGenerator } from "../base.generator";
+import { MockFactoryOptions, TestTemplate } from "./types";
+import { promises as fs } from "fs";
+import * as path from "path";
 
 export class MockFactoryGenerator extends BaseGenerator<MockFactoryOptions> {
-  async generate(options: MockFactoryOptions): Promise<void> {
-    await this.validateOptions(options);
-    
-    this.logger.info('Generating comprehensive mock factories and test data generators...');
-    
-    try {
-      // Generate factory base classes
-      await this.generateFactoryBase(options);
-      
-      // Generate entity-specific factories
-      for (const entity of options.entities) {
-        await this.generateEntityFactory(entity, options);
-      }
-      
-      // Generate mock builders
-      await this.generateMockBuilders(options);
-      
-      // Generate test data generators
-      await this.generateTestDataGenerators(options);
-      
-      // Generate faker integration
-      await this.generateFakerIntegration(options);
-      
-      // Generate factory registry
-      await this.generateFactoryRegistry(options);
-      
-      this.logger.success('Mock factories and test data generators created successfully!');
-      
-    } catch (error) {
-      this.logger.error('Failed to generate mock factories', error);
-      throw error;
-    }
-  }
+	async generate(options: MockFactoryOptions): Promise<void> {
+		await this.validateOptions(options);
 
-  private async generateFactoryBase(options: MockFactoryOptions): Promise<void> {
-    const template = this.getFactoryBaseTemplate(options);
-    const factoriesPath = path.join(options.projectPath, 'tests', 'factories');
-    await this.ensureDirectoryExists(factoriesPath);
-    await this.writeTemplate(template, factoriesPath);
-  }
+		this.logger.info(
+			"Generating comprehensive mock factories and test data generators...",
+		);
 
-  private async generateEntityFactory(entity: string, options: MockFactoryOptions): Promise<void> {
-    const template = this.getEntityFactoryTemplate(entity, options);
-    const factoriesPath = path.join(options.projectPath, 'tests', 'factories');
-    await this.ensureDirectoryExists(factoriesPath);
-    await this.writeTemplate(template, factoriesPath);
-  }
+		try {
+			// Generate factory base classes
+			await this.generateFactoryBase(options);
 
-  private async generateMockBuilders(options: MockFactoryOptions): Promise<void> {
-    const template = this.getMockBuildersTemplate(options);
-    const mocksPath = path.join(options.projectPath, 'tests', 'mocks');
-    await this.ensureDirectoryExists(mocksPath);
-    await this.writeTemplate(template, mocksPath);
-  }
+			// Generate entity-specific factories
+			for (const entity of options.entities) {
+				await this.generateEntityFactory(entity, options);
+			}
 
-  private async generateTestDataGenerators(options: MockFactoryOptions): Promise<void> {
-    const template = this.getTestDataGeneratorsTemplate(options);
-    const generatorsPath = path.join(options.projectPath, 'tests', 'generators');
-    await this.ensureDirectoryExists(generatorsPath);
-    await this.writeTemplate(template, generatorsPath);
-  }
+			// Generate mock builders
+			await this.generateMockBuilders(options);
 
-  private async generateFakerIntegration(options: MockFactoryOptions): Promise<void> {
-    const template = this.getFakerIntegrationTemplate(options);
-    const utilsPath = path.join(options.projectPath, 'tests', 'utils');
-    await this.ensureDirectoryExists(utilsPath);
-    await this.writeTemplate(template, utilsPath);
-  }
+			// Generate test data generators
+			await this.generateTestDataGenerators(options);
 
-  private async generateFactoryRegistry(options: MockFactoryOptions): Promise<void> {
-    const template = this.getFactoryRegistryTemplate(options);
-    const factoriesPath = path.join(options.projectPath, 'tests', 'factories');
-    await this.ensureDirectoryExists(factoriesPath);
-    await this.writeTemplate(template, factoriesPath);
-  }
+			// Generate faker integration
+			await this.generateFakerIntegration(options);
 
-  private getFactoryBaseTemplate(options: MockFactoryOptions): TestTemplate {
-    return {
-      name: 'base-factory.ts',
-      path: 'base-factory.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+			// Generate factory registry
+			await this.generateFactoryRegistry(options);
+
+			this.logger.success(
+				"Mock factories and test data generators created successfully!",
+			);
+		} catch (error) {
+			this.logger.error("Failed to generate mock factories", error);
+			throw error;
+		}
+	}
+
+	private async generateFactoryBase(
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getFactoryBaseTemplate(options);
+		const factoriesPath = path.join(options.projectPath, "tests", "factories");
+		await this.ensureDirectoryExists(factoriesPath);
+		await this.writeTemplate(template, factoriesPath);
+	}
+
+	private async generateEntityFactory(
+		entity: string,
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getEntityFactoryTemplate(entity, options);
+		const factoriesPath = path.join(options.projectPath, "tests", "factories");
+		await this.ensureDirectoryExists(factoriesPath);
+		await this.writeTemplate(template, factoriesPath);
+	}
+
+	private async generateMockBuilders(
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getMockBuildersTemplate(options);
+		const mocksPath = path.join(options.projectPath, "tests", "mocks");
+		await this.ensureDirectoryExists(mocksPath);
+		await this.writeTemplate(template, mocksPath);
+	}
+
+	private async generateTestDataGenerators(
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getTestDataGeneratorsTemplate(options);
+		const generatorsPath = path.join(
+			options.projectPath,
+			"tests",
+			"generators",
+		);
+		await this.ensureDirectoryExists(generatorsPath);
+		await this.writeTemplate(template, generatorsPath);
+	}
+
+	private async generateFakerIntegration(
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getFakerIntegrationTemplate(options);
+		const utilsPath = path.join(options.projectPath, "tests", "utils");
+		await this.ensureDirectoryExists(utilsPath);
+		await this.writeTemplate(template, utilsPath);
+	}
+
+	private async generateFactoryRegistry(
+		options: MockFactoryOptions,
+	): Promise<void> {
+		const template = this.getFactoryRegistryTemplate(options);
+		const factoriesPath = path.join(options.projectPath, "tests", "factories");
+		await this.ensureDirectoryExists(factoriesPath);
+		await this.writeTemplate(template, factoriesPath);
+	}
+
+	private getFactoryBaseTemplate(options: MockFactoryOptions): TestTemplate {
+		return {
+			name: "base-factory.ts",
+			path: "base-factory.ts",
+			content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { faker } from '@faker-js/faker';
 
 /**
@@ -451,41 +471,44 @@ export const MockGenerators = {
     const store = new Map<string, string>();
     
     return {
-      get: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((key: string) => Promise.resolve(store.get(key) || null)),
-      set: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((key: string, value: string) => {
+      get: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((key: string) => Promise.resolve(store.get(key) || null)),
+      set: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((key: string, value: string) => {
         store.set(key, value);
         return Promise.resolve('OK');
       }),
-      del: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((key: string) => {
+      del: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((key: string) => {
         const existed = store.has(key);
         store.delete(key);
         return Promise.resolve(existed ? 1 : 0);
       }),
-      exists: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((key: string) => Promise.resolve(store.has(key) ? 1 : 0)),
-      expire: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => Promise.resolve(1)),
-      flushDb: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => {
+      exists: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((key: string) => Promise.resolve(store.has(key) ? 1 : 0)),
+      expire: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => Promise.resolve(1)),
+      flushDb: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => {
         store.clear();
         return Promise.resolve('OK');
       }),
-      ping: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => Promise.resolve('PONG')),
-      connect: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => Promise.resolve()),
-      disconnect: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => Promise.resolve()),
-      quit: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(() => Promise.resolve())
+      ping: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => Promise.resolve('PONG')),
+      connect: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => Promise.resolve()),
+      disconnect: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => Promise.resolve()),
+      quit: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(() => Promise.resolve())
     };
   }
 };`,
-      dependencies: ['@faker-js/faker']
-    };
-  }
+			dependencies: ["@faker-js/faker"],
+		};
+	}
 
-  private getEntityFactoryTemplate(entity: string, options: MockFactoryOptions): TestTemplate {
-    const entityLower = entity.toLowerCase();
-    const entityUpper = entity.charAt(0).toUpperCase() + entity.slice(1);
-    
-    return {
-      name: `${entityLower}-factory.ts`,
-      path: `${entityLower}-factory.ts`,
-      content: `import { BaseFactory, TraitDefinition, FactoryUtils, Sequence } from './base-factory';
+	private getEntityFactoryTemplate(
+		entity: string,
+		options: MockFactoryOptions,
+	): TestTemplate {
+		const entityLower = entity.toLowerCase();
+		const entityUpper = entity.charAt(0).toUpperCase() + entity.slice(1);
+
+		return {
+			name: `${entityLower}-factory.ts`,
+			path: `${entityLower}-factory.ts`,
+			content: `import { BaseFactory, TraitDefinition, FactoryUtils, Sequence } from './base-factory';
 import { faker } from '@faker-js/faker';
 
 /**
@@ -535,88 +558,88 @@ export const create${entityUpper}s = (count: number, overrides?: Partial<${entit
 
 // Export trait builders
 export const ${entityLower}Traits = ${entityLower}Factory.states();`,
-      dependencies: ['@faker-js/faker']
-    };
-  }
+			dependencies: ["@faker-js/faker"],
+		};
+	}
 
-  private getEntityFields(entity: string, options: MockFactoryOptions): string {
-    // Basic fields that most entities would have
-    const commonFields = [
-      'name: string;',
-      'description?: string;',
-      'isActive: boolean;'
-    ];
+	private getEntityFields(entity: string, options: MockFactoryOptions): string {
+		// Basic fields that most entities would have
+		const commonFields = [
+			"name: string;",
+			"description?: string;",
+			"isActive: boolean;",
+		];
 
-    // Add entity-specific fields based on entity name
-    const specificFields = this.getEntitySpecificFields(entity);
-    
-    return [...commonFields, ...specificFields].join('\n  ');
-  }
+		// Add entity-specific fields based on entity name
+		const specificFields = this.getEntitySpecificFields(entity);
 
-  private getEntitySpecificFields(entity: string): string[] {
-    const entityLower = entity.toLowerCase();
-    
-    switch (entityLower) {
-      case 'user':
-        return [
-          'email: string;',
-          'username?: string;',
-          'firstName?: string;',
-          'lastName?: string;',
-          'avatar?: string;',
-          'role: string;',
-          'lastLoginAt?: Date;'
-        ];
-        
-      case 'product':
-        return [
-          'sku: string;',
-          'price: number;',
-          'categoryId?: number;',
-          'tags: string[];',
-          'stock: number;',
-          'images: string[];'
-        ];
-        
-      case 'order':
-        return [
-          'userId: number;',
-          'total: number;',
-          'subtotal: number;',
-          'tax: number;',
-          'status: string;',
-          'items: OrderItem[];',
-          'shippingAddress?: Address;',
-          'billingAddress?: Address;'
-        ];
-        
-      case 'article':
-      case 'post':
-        return [
-          'title: string;',
-          'content: string;',
-          'summary?: string;',
-          'authorId: number;',
-          'categoryId?: number;',
-          'tags: string[];',
-          'publishedAt?: Date;',
-          'viewCount: number;'
-        ];
-        
-      default:
-        return [
-          'status: string;',
-          'metadata?: Record<string, any>;'
-        ];
-    }
-  }
+		return [...commonFields, ...specificFields].join("\n  ");
+	}
 
-  private getDefaultValues(entity: string, options: MockFactoryOptions): string {
-    const entityLower = entity.toLowerCase();
-    
-    switch (entityLower) {
-      case 'user':
-        return `email: FactoryUtils.uniqueEmail(),
+	private getEntitySpecificFields(entity: string): string[] {
+		const entityLower = entity.toLowerCase();
+
+		switch (entityLower) {
+			case "user":
+				return [
+					"email: string;",
+					"username?: string;",
+					"firstName?: string;",
+					"lastName?: string;",
+					"avatar?: string;",
+					"role: string;",
+					"lastLoginAt?: Date;",
+				];
+
+			case "product":
+				return [
+					"sku: string;",
+					"price: number;",
+					"categoryId?: number;",
+					"tags: string[];",
+					"stock: number;",
+					"images: string[];",
+				];
+
+			case "order":
+				return [
+					"userId: number;",
+					"total: number;",
+					"subtotal: number;",
+					"tax: number;",
+					"status: string;",
+					"items: OrderItem[];",
+					"shippingAddress?: Address;",
+					"billingAddress?: Address;",
+				];
+
+			case "article":
+			case "post":
+				return [
+					"title: string;",
+					"content: string;",
+					"summary?: string;",
+					"authorId: number;",
+					"categoryId?: number;",
+					"tags: string[];",
+					"publishedAt?: Date;",
+					"viewCount: number;",
+				];
+
+			default:
+				return ["status: string;", "metadata?: Record<string, any>;"];
+		}
+	}
+
+	private getDefaultValues(
+		entity: string,
+		options: MockFactoryOptions,
+	): string {
+		const entityLower = entity.toLowerCase();
+
+		switch (entityLower) {
+			case "user":
+				return `email: FactoryUtils.uniqueEmail(),
       username: FactoryUtils.uniqueUsername(),
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
@@ -626,9 +649,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
       role: 'user',
       isActive: true,
       lastLoginAt: FactoryUtils.randomPastDate(7),`;
-        
-      case 'product':
-        return `name: faker.commerce.productName(),
+
+			case "product":
+				return `name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
       sku: \`SKU-\${Sequence.next('product_sku').toString().padStart(6, '0')}\`,
       price: parseFloat(faker.commerce.price()),
@@ -637,9 +660,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
       stock: faker.datatype.number({ min: 0, max: 1000 }),
       images: [faker.image.business(), faker.image.business(), faker.image.business()],
       isActive: true,`;
-        
-      case 'order':
-        return `name: \`Order #\${Sequence.next('order_number')}\`,
+
+			case "order":
+				return `name: \`Order #\${Sequence.next('order_number')}\`,
       description: 'Test order',
       userId: faker.datatype.number({ min: 1, max: 1000 }),
       total: parseFloat(faker.commerce.price()),
@@ -648,10 +671,10 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
       status: FactoryUtils.randomChoice(['pending', 'confirmed', 'shipped', 'delivered']),
       items: [],
       isActive: true,`;
-        
-      case 'article':
-      case 'post':
-        return `name: faker.lorem.sentence(),
+
+			case "article":
+			case "post":
+				return `name: faker.lorem.sentence(),
       title: faker.lorem.sentence(),
       description: faker.lorem.paragraph(),
       content: faker.lorem.paragraphs(5),
@@ -662,20 +685,23 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
       publishedAt: FactoryUtils.randomPastDate(30),
       viewCount: faker.datatype.number({ min: 0, max: 10000 }),
       isActive: true,`;
-        
-      default:
-        return `name: faker.lorem.words(2),
+
+			default:
+				return `name: faker.lorem.words(2),
       description: faker.lorem.sentence(),
       status: FactoryUtils.randomChoice(['active', 'inactive', 'pending']),
       metadata: {},
       isActive: true,`;
-    }
-  }
+		}
+	}
 
-  private getTraitDefinitions(entity: string, options: MockFactoryOptions): string {
-    const entityLower = entity.toLowerCase();
-    
-    const commonTraits = `
+	private getTraitDefinitions(
+		entity: string,
+		options: MockFactoryOptions,
+	): string {
+		const entityLower = entity.toLowerCase();
+
+		const commonTraits = `
       inactive: { isActive: false },
       withoutDescription: { description: undefined },
       recent: (data) => ({
@@ -689,9 +715,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
         updatedAt: FactoryUtils.randomPastDate(30)
       })`;
 
-    switch (entityLower) {
-      case 'user':
-        return `${commonTraits},
+		switch (entityLower) {
+			case "user":
+				return `${commonTraits},
       admin: { role: 'admin' },
       moderator: { role: 'moderator' },
       premium: { role: 'premium' },
@@ -699,28 +725,28 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
       withoutAvatar: { avatar: undefined },
       verified: { emailVerifiedAt: new Date() },
       recentLogin: { lastLoginAt: FactoryUtils.randomPastDate(1) }`;
-        
-      case 'product':
-        return `${commonTraits},
+
+			case "product":
+				return `${commonTraits},
       expensive: { price: faker.datatype.number({ min: 1000, max: 5000 }) },
       cheap: { price: faker.datatype.number({ min: 1, max: 50 }) },
       outOfStock: { stock: 0 },
       lowStock: { stock: faker.datatype.number({ min: 1, max: 5 }) },
       featured: { tags: (data: any) => [...data.tags, 'featured'] },
       onSale: { tags: (data: any) => [...data.tags, 'sale'] }`;
-        
-      case 'order':
-        return `${commonTraits},
+
+			case "order":
+				return `${commonTraits},
       confirmed: { status: 'confirmed' },
       shipped: { status: 'shipped' },
       delivered: { status: 'delivered' },
       cancelled: { status: 'cancelled' },
       highValue: { total: faker.datatype.number({ min: 1000, max: 5000 }) },
       lowValue: { total: faker.datatype.number({ min: 1, max: 50 }) }`;
-        
-      case 'article':
-      case 'post':
-        return `${commonTraits},
+
+			case "article":
+			case "post":
+				return `${commonTraits},
       published: { publishedAt: FactoryUtils.randomPastDate(30) },
       draft: { publishedAt: undefined },
       popular: { viewCount: faker.datatype.number({ min: 1000, max: 100000 }) },
@@ -728,18 +754,21 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
         viewCount: faker.datatype.number({ min: 500, max: 5000 }),
         createdAt: FactoryUtils.randomPastDate(7)
       }`;
-        
-      default:
-        return commonTraits;
-    }
-  }
 
-  private getConvenienceMethods(entity: string, options: MockFactoryOptions): string {
-    const entityLower = entity.toLowerCase();
-    
-    switch (entityLower) {
-      case 'user':
-        return `
+			default:
+				return commonTraits;
+		}
+	}
+
+	private getConvenienceMethods(
+		entity: string,
+		options: MockFactoryOptions,
+	): string {
+		const entityLower = entity.toLowerCase();
+
+		switch (entityLower) {
+			case "user":
+				return `
   /**
    * Create admin user
    */
@@ -760,9 +789,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
   withEmail(email: string, overrides?: Partial<${entity}>): ${entity} {
     return this.create({ overrides: { email, ...overrides } });
   }`;
-        
-      case 'product':
-        return `
+
+			case "product":
+				return `
   /**
    * Create product with specific price
    */
@@ -783,9 +812,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
   outOfStock(overrides?: Partial<${entity}>): ${entity} {
     return this.withTraits('outOfStock').create({ overrides });
   }`;
-        
-      case 'order':
-        return `
+
+			case "order":
+				return `
   /**
    * Create order for specific user
    */
@@ -806,9 +835,9 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
   highValue(overrides?: Partial<${entity}>): ${entity} {
     return this.withTraits('highValue').create({ overrides });
   }`;
-        
-      default:
-        return `
+
+			default:
+				return `
   /**
    * Create ${entityLower} with specific status
    */
@@ -822,14 +851,14 @@ export const ${entityLower}Traits = ${entityLower}Factory.states();`,
   active(overrides?: Partial<${entity}>): ${entity} {
     return this.create({ overrides: { isActive: true, ...overrides } });
   }`;
-    }
-  }
+		}
+	}
 
-  private getMockBuildersTemplate(options: MockFactoryOptions): TestTemplate {
-    return {
-      name: 'mock-builders.ts',
-      path: 'mock-builders.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getMockBuildersTemplate(options: MockFactoryOptions): TestTemplate {
+		return {
+			name: "mock-builders.ts",
+			path: "mock-builders.ts",
+			content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { faker } from '@faker-js/faker';
 
 /**
@@ -847,7 +876,7 @@ export class ServiceMockBuilder<T = any> {
    * Add a method that returns a resolved promise
    */
   withAsyncMethod(methodName: string, returnValue?: any): this {
-    this.methods.set(methodName, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set(methodName, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -855,7 +884,7 @@ export class ServiceMockBuilder<T = any> {
    * Add a method that returns a rejected promise
    */
   withFailingMethod(methodName: string, error: Error): this {
-    this.methods.set(methodName, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(error));
+    this.methods.set(methodName, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(error));
     return this;
   }
 
@@ -863,7 +892,7 @@ export class ServiceMockBuilder<T = any> {
    * Add a synchronous method
    */
   withSyncMethod(methodName: string, returnValue?: any): this {
-    this.methods.set(methodName, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockReturnValue(returnValue));
+    this.methods.set(methodName, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockReturnValue(returnValue));
     return this;
   }
 
@@ -871,7 +900,7 @@ export class ServiceMockBuilder<T = any> {
    * Add a method with custom implementation
    */
   withCustomMethod(methodName: string, implementation: (...args: any[]) => any): this {
-    this.methods.set(methodName, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockImplementation(implementation));
+    this.methods.set(methodName, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockImplementation(implementation));
     return this;
   }
 
@@ -910,7 +939,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock find all method
    */
   withFindAll(returnValue: T[] = []): this {
-    this.methods.set('findAll', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('findAll', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -918,7 +947,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock find by ID method
    */
   withFindById(returnValue: T | null = null): this {
-    this.methods.set('findById', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('findById', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -926,7 +955,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock find by criteria method
    */
   withFindBy(returnValue: T[] = []): this {
-    this.methods.set('findBy', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('findBy', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -934,7 +963,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock create method
    */
   withCreate(returnValue?: T): this {
-    this.methods.set('create', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('create', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -942,7 +971,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock update method
    */
   withUpdate(returnValue?: T): this {
-    this.methods.set('update', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('update', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -950,7 +979,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock delete method
    */
   withDelete(returnValue: boolean = true): this {
-    this.methods.set('delete', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('delete', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -958,7 +987,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock count method
    */
   withCount(returnValue: number = 0): this {
-    this.methods.set('count', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('count', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -966,7 +995,7 @@ export class RepositoryMockBuilder<T = any> {
    * Mock exists method
    */
   withExists(returnValue: boolean = false): this {
-    this.methods.set('exists', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue));
+    this.methods.set('exists', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue));
     return this;
   }
 
@@ -978,7 +1007,7 @@ export class RepositoryMockBuilder<T = any> {
       return await callback(this.build());
     };
     
-    this.methods.set('transaction', ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockImplementation(implementation || defaultImpl));
+    this.methods.set('transaction', ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockImplementation(implementation || defaultImpl));
     return this;
   }
 
@@ -1012,8 +1041,8 @@ export class RepositoryMockBuilder<T = any> {
 export class HttpClientMockBuilder {
   private methods: Map<string, any> = new Map();
   private interceptors: any = {
-    request: { use: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}() },
-    response: { use: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}() }
+    request: { use: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}() },
+    response: { use: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}() }
   };
 
   static create(): HttpClientMockBuilder {
@@ -1024,7 +1053,7 @@ export class HttpClientMockBuilder {
    * Mock GET request
    */
   withGet(url: string | RegExp, response: any, status: number = 200): this {
-    const mockFn = this.methods.get('get') || ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+    const mockFn = this.methods.get('get') || ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     
     if (typeof url === 'string') {
       mockFn.mockImplementation((requestUrl: string, config?: any) => {
@@ -1050,7 +1079,7 @@ export class HttpClientMockBuilder {
    * Mock POST request
    */
   withPost(url: string | RegExp, response: any, status: number = 201): this {
-    const mockFn = this.methods.get('post') || ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+    const mockFn = this.methods.get('post') || ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     
     if (typeof url === 'string') {
       mockFn.mockImplementation((requestUrl: string, data?: any, config?: any) => {
@@ -1076,7 +1105,7 @@ export class HttpClientMockBuilder {
    * Mock PUT request
    */
   withPut(url: string | RegExp, response: any, status: number = 200): this {
-    const mockFn = this.methods.get('put') || ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+    const mockFn = this.methods.get('put') || ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     
     if (typeof url === 'string') {
       mockFn.mockImplementation((requestUrl: string, data?: any, config?: any) => {
@@ -1102,7 +1131,7 @@ export class HttpClientMockBuilder {
    * Mock DELETE request
    */
   withDelete(url: string | RegExp, response: any = null, status: number = 204): this {
-    const mockFn = this.methods.get('delete') || ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+    const mockFn = this.methods.get('delete') || ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     
     if (typeof url === 'string') {
       mockFn.mockImplementation((requestUrl: string, config?: any) => {
@@ -1128,7 +1157,7 @@ export class HttpClientMockBuilder {
    * Mock request error
    */
   withError(method: 'get' | 'post' | 'put' | 'delete', error: any): this {
-    this.methods.set(method, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(error));
+    this.methods.set(method, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(error));
     return this;
   }
 
@@ -1138,7 +1167,7 @@ export class HttpClientMockBuilder {
   withDefaultMethods(): this {
     ['get', 'post', 'put', 'delete', 'patch'].forEach(method => {
       if (!this.methods.has(method)) {
-        this.methods.set(method, ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(
+        this.methods.set(method, ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(
           new Error(\`Unexpected \${method.toUpperCase()} request\`)
         ));
       }
@@ -1184,19 +1213,19 @@ export class EventEmitterMockBuilder {
    */
   build(): any {
     return {
-      on: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((event: string, callback: Function) => {
+      on: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((event: string, callback: Function) => {
         const callbacks = this.listeners.get(event) || [];
         callbacks.push(callback);
         this.listeners.set(event, callbacks);
       }),
       
-      emit: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((event: string, ...args: any[]) => {
+      emit: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((event: string, ...args: any[]) => {
         const callbacks = this.listeners.get(event) || [];
         callbacks.forEach(callback => callback(...args));
         return callbacks.length > 0;
       }),
       
-      removeListener: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((event: string, callback: Function) => {
+      removeListener: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((event: string, callback: Function) => {
         const callbacks = this.listeners.get(event) || [];
         const index = callbacks.indexOf(callback);
         if (index > -1) {
@@ -1205,7 +1234,7 @@ export class EventEmitterMockBuilder {
         }
       }),
       
-      removeAllListeners: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((event?: string) => {
+      removeAllListeners: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((event?: string) => {
         if (event) {
           this.listeners.delete(event);
         } else {
@@ -1213,7 +1242,7 @@ export class EventEmitterMockBuilder {
         }
       }),
       
-      listenerCount: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}((event: string) => {
+      listenerCount: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}((event: string) => {
         return this.listeners.get(event)?.length || 0;
       })
     };
@@ -1228,76 +1257,82 @@ export const MockFactory = {
    * Create a mock logger
    */
   logger: () => ({
-    info: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    warn: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    error: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    debug: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}()
+    info: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    warn: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    error: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    debug: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}()
   }),
 
   /**
    * Create a mock database connection
    */
   database: () => ({
-    query: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    connect: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    release: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    end: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}()
+    query: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    connect: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    release: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    end: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}()
   }),
 
   /**
    * Create a mock cache client
    */
   cache: () => ({
-    get: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    set: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    del: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    exists: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    expire: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    flush: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}()
+    get: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    set: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    del: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    exists: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    expire: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    flush: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}()
   }),
 
   /**
    * Create a mock email service
    */
   emailService: () => ({
-    send: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue({ messageId: faker.datatype.uuid() }),
-    sendBulk: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue({ sent: 0, failed: 0 }),
-    verifyConnection: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(true)
+    send: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue({ messageId: faker.datatype.uuid() }),
+    sendBulk: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue({ sent: 0, failed: 0 }),
+    verifyConnection: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(true)
   }),
 
   /**
    * Create a mock file storage service
    */
   fileStorage: () => ({
-    upload: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue({ url: faker.internet.url(), key: faker.datatype.uuid() }),
-    download: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(Buffer.from('test-content')),
-    delete: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(true),
-    exists: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(false),
-    getSignedUrl: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(faker.internet.url())
+    upload: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue({ url: faker.internet.url(), key: faker.datatype.uuid() }),
+    download: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(Buffer.from('test-content')),
+    delete: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(true),
+    exists: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(false),
+    getSignedUrl: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(faker.internet.url())
   })
 };`,
-      dependencies: ['@faker-js/faker']
-    };
-  }
+			dependencies: ["@faker-js/faker"],
+		};
+	}
 
-  private getTestDataGeneratorsTemplate(options: MockFactoryOptions): TestTemplate {
-    return {
-      name: 'test-data-generators.ts',
-      path: 'test-data-generators.ts',
-      content: `import { faker } from '@faker-js/faker';
+	private getTestDataGeneratorsTemplate(
+		options: MockFactoryOptions,
+	): TestTemplate {
+		return {
+			name: "test-data-generators.ts",
+			path: "test-data-generators.ts",
+			content: `import { faker } from '@faker-js/faker';
 
 /**
  * Specialized test data generators for different scenarios
  */
 
 export class TestDataGenerator {
-  ${options.localization ? `
+  ${
+		options.localization
+			? `
   /**
    * Set locale for generated data
    */
   static setLocale(locale: string): void {
     faker.setLocale(locale);
-  }` : ''}
+  }`
+			: ""
+	}
 
   /**
    * Generate realistic user data
@@ -1691,21 +1726,25 @@ export const generate = {
   files: (count: number, type?: 'image' | 'document' | 'video' | 'audio', overrides?: any) => 
     TestDataGenerator.bulk(() => TestDataGenerator.file(type, overrides), count)
 };`,
-      dependencies: ['@faker-js/faker']
-    };
-  }
+			dependencies: ["@faker-js/faker"],
+		};
+	}
 
-  private getFakerIntegrationTemplate(options: MockFactoryOptions): TestTemplate {
-    return {
-      name: 'faker-integration.ts',
-      path: 'faker-integration.ts',
-      content: `import { faker } from '@faker-js/faker';
+	private getFakerIntegrationTemplate(
+		options: MockFactoryOptions,
+	): TestTemplate {
+		return {
+			name: "faker-integration.ts",
+			path: "faker-integration.ts",
+			content: `import { faker } from '@faker-js/faker';
 
 /**
  * Enhanced Faker.js integration with custom providers and utilities
  */
 
-${options.localization ? `
+${
+	options.localization
+		? `
 /**
  * Locale-specific data generators
  */
@@ -1763,7 +1802,9 @@ export class LocalizedFaker {
       }
     }));
   }
-}` : ''}
+}`
+		: ""
+}
 
 /**
  * Custom providers for domain-specific data
@@ -2090,20 +2131,25 @@ export const customFaker = {
   testing: CustomProviders.testing,
   seed: SeedManager,
   validate: DataValidation,
-  ${options.localization ? 'localized: LocalizedFaker,' : ''}
+  ${options.localization ? "localized: LocalizedFaker," : ""}
 };`,
-      dependencies: ['@faker-js/faker']
-    };
-  }
+			dependencies: ["@faker-js/faker"],
+		};
+	}
 
-  private getFactoryRegistryTemplate(options: MockFactoryOptions): TestTemplate {
-    return {
-      name: 'factory-registry.ts',
-      path: 'factory-registry.ts',
-      content: `import { BaseFactory } from './base-factory';
-${options.entities.map(entity => 
-  `import { ${entity.toLowerCase()}Factory } from './${entity.toLowerCase()}-factory';`
-).join('\n')}
+	private getFactoryRegistryTemplate(
+		options: MockFactoryOptions,
+	): TestTemplate {
+		return {
+			name: "factory-registry.ts",
+			path: "factory-registry.ts",
+			content: `import { BaseFactory } from './base-factory';
+${options.entities
+	.map(
+		(entity) =>
+			`import { ${entity.toLowerCase()}Factory } from './${entity.toLowerCase()}-factory';`,
+	)
+	.join("\n")}
 
 /**
  * Central registry for all factories
@@ -2119,9 +2165,12 @@ export class FactoryRegistry {
   private static initialize(): void {
     if (this.initialized) return;
 
-    ${options.entities.map(entity => 
-      `this.factories.set('${entity.toLowerCase()}', ${entity.toLowerCase()}Factory);`
-    ).join('\n    ')}
+    ${options.entities
+			.map(
+				(entity) =>
+					`this.factories.set('${entity.toLowerCase()}', ${entity.toLowerCase()}Factory);`,
+			)
+			.join("\n    ")}
 
     this.initialized = true;
   }
@@ -2340,7 +2389,9 @@ export const RelationshipTemplates = {
     }
   ],
 
-  ${options.entities.includes('Article') ? `
+  ${
+		options.entities.includes("Article")
+			? `
   articleWithAuthor: (): RelationshipDefinition[] => [
     {
       name: 'author',
@@ -2354,7 +2405,9 @@ export const RelationshipTemplates = {
       foreignKey: 'authorId',
       references: 'author'
     }
-  ],` : ''}
+  ],`
+			: ""
+	}
 
   ecommerceComplete: (): RelationshipDefinition[] => [
     {
@@ -2381,27 +2434,30 @@ export const RelationshipTemplates = {
 
 // Export all factories for direct access
 export {
-  ${options.entities.map(entity => `${entity.toLowerCase()}Factory`).join(',\n  ')}
+  ${options.entities.map((entity) => `${entity.toLowerCase()}Factory`).join(",\n  ")}
 };`,
-      dependencies: []
-    };
-  }
+			dependencies: [],
+		};
+	}
 
-  private async writeTemplate(template: TestTemplate, basePath: string): Promise<void> {
-    const fullPath = path.join(basePath, template.path);
-    const dirPath = path.dirname(fullPath);
-    
-    await this.ensureDirectoryExists(dirPath);
-    await fs.writeFile(fullPath, template.content, 'utf8');
-    
-    this.logger.info(`Generated: ${template.name}`);
-  }
+	private async writeTemplate(
+		template: TestTemplate,
+		basePath: string,
+	): Promise<void> {
+		const fullPath = path.join(basePath, template.path);
+		const dirPath = path.dirname(fullPath);
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
-    try {
-      await fs.access(dirPath);
-    } catch {
-      await fs.mkdir(dirPath, { recursive: true });
-    }
-  }
+		await this.ensureDirectoryExists(dirPath);
+		await fs.writeFile(fullPath, template.content, "utf8");
+
+		this.logger.info(`Generated: ${template.name}`);
+	}
+
+	private async ensureDirectoryExists(dirPath: string): Promise<void> {
+		try {
+			await fs.access(dirPath);
+		} catch {
+			await fs.mkdir(dirPath, { recursive: true });
+		}
+	}
 }

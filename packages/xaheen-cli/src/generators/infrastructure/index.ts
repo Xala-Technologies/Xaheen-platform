@@ -57,8 +57,18 @@ export interface ServiceResources {
 
 // Type definitions for resource limits
 type Environment = "development" | "staging" | "production";
-type ServiceType = "web" | "api" | "database" | "cache" | "queue" | "storage" | "monitoring";
-type ResourceLimits = Record<Environment, Record<ServiceType, ServiceResources>>;
+type ServiceType =
+	| "web"
+	| "api"
+	| "database"
+	| "cache"
+	| "queue"
+	| "storage"
+	| "monitoring";
+type ResourceLimits = Record<
+	Environment,
+	Record<ServiceType, ServiceResources>
+>;
 
 export interface ServiceVolume {
 	readonly name: string;
@@ -78,8 +88,21 @@ export interface InfrastructureGeneratorResult {
 export interface GeneratedInfrastructureFile {
 	readonly path: string;
 	readonly content: string;
-	readonly type: "dockerfile" | "compose" | "k8s" | "ci" | "config" | "script" | "terraform";
-	readonly language: "dockerfile" | "yaml" | "json" | "bash" | "typescript" | "hcl";
+	readonly type:
+		| "dockerfile"
+		| "compose"
+		| "k8s"
+		| "ci"
+		| "config"
+		| "script"
+		| "terraform";
+	readonly language:
+		| "dockerfile"
+		| "yaml"
+		| "json"
+		| "bash"
+		| "typescript"
+		| "hcl";
 }
 
 /**
@@ -209,8 +232,9 @@ export abstract class InfrastructureGenerator {
 		};
 
 		// Handle 'all' environment by defaulting to production resources
-		const targetEnvironment: Environment = environment === "all" ? "production" : environment as Environment;
-		
+		const targetEnvironment: Environment =
+			environment === "all" ? "production" : (environment as Environment);
+
 		return (
 			baseResources[targetEnvironment]?.[serviceType] || {
 				cpu: "100m",

@@ -80,7 +80,7 @@ export class WebSocketGenerator {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-${options.authentication === 'jwt' ? "import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';" : ""}
+${options.authentication === "jwt" ? "import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';" : ""}
 import { RateLimitGuard } from './guards/rate-limit.guard';
 import { WebSocketService } from './websocket.service';
 import { 
@@ -118,7 +118,9 @@ export class WebSocketGateway
     try {
       this.logger.log(\`Client connected: \${client.id}\`);
       
-      ${options.authentication !== 'none' ? `
+      ${
+				options.authentication !== "none"
+					? `
       // Authentication
       const user = await this.websocketService.authenticateSocket(client);
       if (!user) {
@@ -127,7 +129,9 @@ export class WebSocketGateway
       }
       
       (client as AuthenticatedSocket).user = user;
-      ` : ''}
+      `
+					: ""
+			}
       
       // Join client to personal room
       client.join(\`user_\${client.id}\`);
@@ -171,7 +175,9 @@ export class WebSocketGateway
     }
   }
 
-  ${options.features.includes('chat') ? `
+  ${
+		options.features.includes("chat")
+			? `
   @UseGuards(RateLimitGuard)
   @SubscribeMessage('chat:send')
   async handleChatMessage(
@@ -196,9 +202,13 @@ export class WebSocketGateway
   ): Promise<void> {
     await this.websocketService.leaveChatRoom(data.roomId, client);
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('typing-indicators') ? `
+  ${
+		options.features.includes("typing-indicators")
+			? `
   @SubscribeMessage('typing:start')
   async handleTypingStart(
     @MessageBody() data: { roomId: string },
@@ -214,9 +224,13 @@ export class WebSocketGateway
   ): Promise<void> {
     await this.websocketService.handleTypingStop(data.roomId, client);
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('presence') ? `
+  ${
+		options.features.includes("presence")
+			? `
   @SubscribeMessage('presence:update')
   async handlePresenceUpdate(
     @MessageBody() data: { status: 'online' | 'away' | 'busy' | 'offline' },
@@ -224,9 +238,13 @@ export class WebSocketGateway
   ): Promise<void> {
     await this.websocketService.updatePresence(client, data.status);
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('live-updates') ? `
+  ${
+		options.features.includes("live-updates")
+			? `
   @SubscribeMessage('subscribe:updates')
   async handleSubscribeUpdates(
     @MessageBody() data: { channels: string[] },
@@ -242,7 +260,9 @@ export class WebSocketGateway
   ): Promise<void> {
     await this.websocketService.unsubscribeFromUpdates(client, data.channels);
   }
-  ` : ''}
+  `
+			: ""
+	}
 }`;
 
 		return {
@@ -257,31 +277,31 @@ export class WebSocketGateway
 		const content = `import { Module } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
-${options.scaling === 'redis' ? "import { RedisModule } from '../redis/redis.module';" : ""}
-${options.authentication === 'jwt' ? "import { AuthModule } from '../auth/auth.module';" : ""}
+${options.scaling === "redis" ? "import { RedisModule } from '../redis/redis.module';" : ""}
+${options.authentication === "jwt" ? "import { AuthModule } from '../auth/auth.module';" : ""}
 import { RateLimitGuard } from './guards/rate-limit.guard';
-${options.features.includes('chat') ? "import { ChatService } from './services/chat.service';" : ""}
-${options.features.includes('notifications') ? "import { NotificationService } from './services/notification.service';" : ""}
-${options.features.includes('presence') ? "import { PresenceService } from './services/presence.service';" : ""}
+${options.features.includes("chat") ? "import { ChatService } from './services/chat.service';" : ""}
+${options.features.includes("notifications") ? "import { NotificationService } from './services/notification.service';" : ""}
+${options.features.includes("presence") ? "import { PresenceService } from './services/presence.service';" : ""}
 
 @Module({
   imports: [
-    ${options.scaling === 'redis' ? 'RedisModule,' : ''}
-    ${options.authentication === 'jwt' ? 'AuthModule,' : ''}
+    ${options.scaling === "redis" ? "RedisModule," : ""}
+    ${options.authentication === "jwt" ? "AuthModule," : ""}
   ],
   providers: [
     WebSocketGateway,
     WebSocketService,
     RateLimitGuard,
-    ${options.features.includes('chat') ? 'ChatService,' : ''}
-    ${options.features.includes('notifications') ? 'NotificationService,' : ''}
-    ${options.features.includes('presence') ? 'PresenceService,' : ''}
+    ${options.features.includes("chat") ? "ChatService," : ""}
+    ${options.features.includes("notifications") ? "NotificationService," : ""}
+    ${options.features.includes("presence") ? "PresenceService," : ""}
   ],
   exports: [
     WebSocketService,
-    ${options.features.includes('chat') ? 'ChatService,' : ''}
-    ${options.features.includes('notifications') ? 'NotificationService,' : ''}
-    ${options.features.includes('presence') ? 'PresenceService,' : ''}
+    ${options.features.includes("chat") ? "ChatService," : ""}
+    ${options.features.includes("notifications") ? "NotificationService," : ""}
+    ${options.features.includes("presence") ? "PresenceService," : ""}
   ],
 })
 export class WebSocketModule {}`;
@@ -297,16 +317,16 @@ export class WebSocketModule {}`;
 	private generateWebSocketService(options: WebSocketOptions): GeneratedFile {
 		const content = `import { Injectable, Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
-${options.scaling === 'redis' ? "import { RedisService } from '../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../redis/redis.service';" : ""}
 import { 
   WebSocketMessage, 
   WebSocketResponse, 
   AuthenticatedSocket,
   UserPresence 
 } from './types/websocket.types';
-${options.features.includes('chat') ? "import { ChatService } from './services/chat.service';" : ""}
-${options.features.includes('notifications') ? "import { NotificationService } from './services/notification.service';" : ""}
-${options.features.includes('presence') ? "import { PresenceService } from './services/presence.service';" : ""}
+${options.features.includes("chat") ? "import { ChatService } from './services/chat.service';" : ""}
+${options.features.includes("notifications") ? "import { NotificationService } from './services/notification.service';" : ""}
+${options.features.includes("presence") ? "import { PresenceService } from './services/presence.service';" : ""}
 
 @Injectable()
 export class WebSocketService {
@@ -315,10 +335,10 @@ export class WebSocketService {
   private readonly connectedClients = new Map<string, AuthenticatedSocket>();
 
   constructor(
-    ${options.scaling === 'redis' ? 'private readonly redisService: RedisService,' : ''}
-    ${options.features.includes('chat') ? 'private readonly chatService: ChatService,' : ''}
-    ${options.features.includes('notifications') ? 'private readonly notificationService: NotificationService,' : ''}
-    ${options.features.includes('presence') ? 'private readonly presenceService: PresenceService,' : ''}
+    ${options.scaling === "redis" ? "private readonly redisService: RedisService," : ""}
+    ${options.features.includes("chat") ? "private readonly chatService: ChatService," : ""}
+    ${options.features.includes("notifications") ? "private readonly notificationService: NotificationService," : ""}
+    ${options.features.includes("presence") ? "private readonly presenceService: PresenceService," : ""}
   ) {}
 
   setServer(server: Server): void {
@@ -327,7 +347,9 @@ export class WebSocketService {
 
   async authenticateSocket(socket: any): Promise<any> {
     try {
-      ${options.authentication === 'jwt' ? `
+      ${
+				options.authentication === "jwt"
+					? `
       const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
       if (!token) {
         throw new Error('No authentication token provided');
@@ -336,7 +358,9 @@ export class WebSocketService {
       // Verify JWT token
       const user = await this.verifyJwtToken(token);
       return user;
-      ` : options.authentication === 'session' ? `
+      `
+					: options.authentication === "session"
+						? `
       const sessionId = socket.handshake.auth.sessionId;
       if (!sessionId) {
         throw new Error('No session ID provided');
@@ -345,35 +369,47 @@ export class WebSocketService {
       // Verify session
       const user = await this.verifySession(sessionId);
       return user;
-      ` : `
+      `
+						: `
       // No authentication required
       return { id: socket.id, anonymous: true };
-      `}
+      `
+			}
     } catch (error) {
       this.logger.error('Socket authentication failed:', error);
       return null;
     }
   }
 
-  ${options.authentication === 'jwt' ? `
+  ${
+		options.authentication === "jwt"
+			? `
   private async verifyJwtToken(token: string): Promise<any> {
     // Implement JWT verification logic
     // This should integrate with your auth service
     return { id: 'user-id', email: 'user@example.com' };
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.authentication === 'session' ? `
+  ${
+		options.authentication === "session"
+			? `
   private async verifySession(sessionId: string): Promise<any> {
     // Implement session verification logic
     return { id: 'user-id', email: 'user@example.com' };
   }
-  ` : ''}
+  `
+			: ""
+	}
 
   async onClientConnect(client: AuthenticatedSocket): Promise<void> {
     this.connectedClients.set(client.id, client);
     
-    ${options.features.includes('presence') ? `
+    ${
+			options.features.includes("presence")
+				? `
     // Update user presence
     if (client.user && !client.user.anonymous) {
       await this.presenceService.setUserOnline(client.user.id, client.id);
@@ -385,7 +421,9 @@ export class WebSocketService {
         timestamp: new Date().toISOString(),
       });
     }
-    ` : ''}
+    `
+				: ""
+		}
     
     this.logger.log(\`Client \${client.id} connected successfully\`);
   }
@@ -393,7 +431,9 @@ export class WebSocketService {
   async onClientDisconnect(client: AuthenticatedSocket): Promise<void> {
     this.connectedClients.delete(client.id);
     
-    ${options.features.includes('presence') ? `
+    ${
+			options.features.includes("presence")
+				? `
     // Update user presence
     if (client.user && !client.user.anonymous) {
       await this.presenceService.setUserOffline(client.user.id, client.id);
@@ -405,7 +445,9 @@ export class WebSocketService {
         timestamp: new Date().toISOString(),
       });
     }
-    ` : ''}
+    `
+				: ""
+		}
     
     this.logger.log(\`Client \${client.id} disconnected\`);
   }
@@ -444,7 +486,9 @@ export class WebSocketService {
     }
   }
 
-  ${options.features.includes('chat') ? `
+  ${
+		options.features.includes("chat")
+			? `
   async handleChatMessage(
     data: { roomId: string; message: string; type?: 'text' | 'image' | 'file' },
     client: AuthenticatedSocket,
@@ -481,9 +525,13 @@ export class WebSocketService {
       timestamp: new Date().toISOString(),
     });
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('typing-indicators') ? `
+  ${
+		options.features.includes("typing-indicators")
+			? `
   async handleTypingStart(roomId: string, client: AuthenticatedSocket): Promise<void> {
     client.to(roomId).emit('typing:start', {
       userId: client.user.id,
@@ -499,9 +547,13 @@ export class WebSocketService {
       timestamp: new Date().toISOString(),
     });
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('presence') ? `
+  ${
+		options.features.includes("presence")
+			? `
   async updatePresence(
     client: AuthenticatedSocket,
     status: 'online' | 'away' | 'busy' | 'offline',
@@ -517,9 +569,13 @@ export class WebSocketService {
       });
     }
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('live-updates') ? `
+  ${
+		options.features.includes("live-updates")
+			? `
   async subscribeToUpdates(client: AuthenticatedSocket, channels: string[]): Promise<void> {
     for (const channel of channels) {
       await client.join(\`updates_\${channel}\`);
@@ -549,9 +605,13 @@ export class WebSocketService {
       timestamp: new Date().toISOString(),
     });
   }
-  ` : ''}
+  `
+			: ""
+	}
 
-  ${options.features.includes('notifications') ? `
+  ${
+		options.features.includes("notifications")
+			? `
   async sendNotification(userId: string, notification: any): Promise<void> {
     // Find user's connected sockets
     const userSockets = Array.from(this.connectedClients.values())
@@ -571,7 +631,9 @@ export class WebSocketService {
       timestamp: new Date().toISOString(),
     });
   }
-  ` : ''}
+  `
+			: ""
+	}
 
   // Utility methods
   getConnectedClients(): Map<string, AuthenticatedSocket> {
@@ -626,7 +688,7 @@ export class WebSocketService {
 
 	private generateChatService(options: WebSocketOptions): GeneratedFile[] {
 		const chatService = `import { Injectable, Logger } from '@nestjs/common';
-${options.scaling === 'redis' ? "import { RedisService } from '../../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../../redis/redis.service';" : ""}
 
 export interface ChatMessage {
   readonly id: string;
@@ -654,7 +716,7 @@ export class ChatService {
   private readonly rooms = new Map<string, ChatRoom>();
 
   constructor(
-    ${options.scaling === 'redis' ? 'private readonly redisService: RedisService,' : ''}
+    ${options.scaling === "redis" ? "private readonly redisService: RedisService," : ""}
   ) {}
 
   async createMessage(data: {
@@ -674,7 +736,9 @@ export class ChatService {
       metadata: data.metadata,
     };
 
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     // Store in Redis
     await this.redisService.hset(
       \`chat:messages:\${data.roomId}\`,
@@ -688,20 +752,24 @@ export class ChatService {
       Date.now(),
       message.id
     );
-    ` : `
+    `
+				: `
     // Store in memory
     if (!this.messages.has(data.roomId)) {
       this.messages.set(data.roomId, []);
     }
     this.messages.get(data.roomId)!.push(message);
-    `}
+    `
+		}
 
     this.logger.log(\`Message created in room \${data.roomId}\`);
     return message;
   }
 
   async getMessages(roomId: string, limit = 50, offset = 0): Promise<ChatMessage[]> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     // Get message IDs from sorted set
     const messageIds = await this.redisService.zrevrange(
       \`chat:timeline:\${roomId}\`,
@@ -722,12 +790,14 @@ export class ChatService {
     return messages
       .filter(Boolean)
       .map(msg => JSON.parse(msg));
-    ` : `
+    `
+				: `
     const roomMessages = this.messages.get(roomId) || [];
     return roomMessages
       .slice(offset, offset + limit)
       .reverse();
-    `}
+    `
+		}
   }
 
   async createRoom(data: {
@@ -744,7 +814,9 @@ export class ChatService {
       updatedAt: new Date().toISOString(),
     };
 
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     await this.redisService.hset(
       'chat:rooms',
       room.id,
@@ -758,16 +830,20 @@ export class ChatService {
         room.id
       );
     }
-    ` : `
+    `
+				: `
     this.rooms.set(room.id, room);
-    `}
+    `
+		}
 
     this.logger.log(\`Chat room created: \${room.id}\`);
     return room;
   }
 
   async getUserRooms(userId: string): Promise<ChatRoom[]> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const roomIds = await this.redisService.smembers(\`chat:user_rooms:\${userId}\`);
     
     if (roomIds.length === 0) {
@@ -779,14 +855,18 @@ export class ChatService {
     return rooms
       .filter(Boolean)
       .map(room => JSON.parse(room));
-    ` : `
+    `
+				: `
     return Array.from(this.rooms.values())
       .filter(room => room.participants.includes(userId));
-    `}
+    `
+		}
   }
 
   async joinRoom(roomId: string, userId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const roomData = await this.redisService.hget('chat:rooms', roomId);
     if (!roomData) {
       throw new Error('Room not found');
@@ -800,7 +880,8 @@ export class ChatService {
       await this.redisService.hset('chat:rooms', roomId, JSON.stringify(room));
       await this.redisService.sadd(\`chat:user_rooms:\${userId}\`, roomId);
     }
-    ` : `
+    `
+				: `
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Room not found');
@@ -809,11 +890,14 @@ export class ChatService {
     if (!room.participants.includes(userId)) {
       room.participants.push(userId);
     }
-    `}
+    `
+		}
   }
 
   async leaveRoom(roomId: string, userId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const roomData = await this.redisService.hget('chat:rooms', roomId);
     if (!roomData) {
       throw new Error('Room not found');
@@ -825,12 +909,14 @@ export class ChatService {
     
     await this.redisService.hset('chat:rooms', roomId, JSON.stringify(room));
     await this.redisService.srem(\`chat:user_rooms:\${userId}\`, roomId);
-    ` : `
+    `
+				: `
     const room = this.rooms.get(roomId);
     if (room) {
       room.participants = room.participants.filter(id => id !== userId);
     }
-    `}
+    `
+		}
   }
 
   private generateId(): string {
@@ -848,9 +934,11 @@ export class ChatService {
 		];
 	}
 
-	private generateNotificationService(options: WebSocketOptions): GeneratedFile[] {
+	private generateNotificationService(
+		options: WebSocketOptions,
+	): GeneratedFile[] {
 		const notificationService = `import { Injectable, Logger } from '@nestjs/common';
-${options.scaling === 'redis' ? "import { RedisService } from '../../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../../redis/redis.service';" : ""}
 
 export interface Notification {
   readonly id: string;
@@ -879,7 +967,7 @@ export class NotificationService {
   private readonly preferences = new Map<string, NotificationPreferences>();
 
   constructor(
-    ${options.scaling === 'redis' ? 'private readonly redisService: RedisService,' : ''}
+    ${options.scaling === "redis" ? "private readonly redisService: RedisService," : ""}
   ) {}
 
   async createNotification(data: {
@@ -902,7 +990,9 @@ export class NotificationService {
       expiresAt: data.expiresAt?.toISOString(),
     };
 
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     // Store in Redis
     await this.redisService.hset(
       \`notifications:\${data.userId}\`,
@@ -924,13 +1014,15 @@ export class NotificationService {
         Math.floor(data.expiresAt.getTime() / 1000)
       );
     }
-    ` : `
+    `
+				: `
     // Store in memory
     if (!this.notifications.has(data.userId)) {
       this.notifications.set(data.userId, []);
     }
     this.notifications.get(data.userId)!.push(notification);
-    `}
+    `
+		}
 
     this.logger.log(\`Notification created for user \${data.userId}\`);
     return notification;
@@ -946,7 +1038,9 @@ export class NotificationService {
   ): Promise<Notification[]> {
     const { limit = 50, offset = 0, unreadOnly = false } = options;
 
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     // Get notification IDs from sorted set
     const notificationIds = await this.redisService.zrevrange(
       \`notifications:timeline:\${userId}\`,
@@ -967,10 +1061,12 @@ export class NotificationService {
     let result = notifications
       .filter(Boolean)
       .map(notif => JSON.parse(notif));
-    ` : `
+    `
+				: `
     let result = this.notifications.get(userId) || [];
     result = result.slice(offset, offset + limit);
-    `}
+    `
+		}
 
     if (unreadOnly) {
       result = result.filter(notif => !notif.read);
@@ -980,7 +1076,9 @@ export class NotificationService {
   }
 
   async markAsRead(userId: string, notificationId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const notificationData = await this.redisService.hget(
       \`notifications:\${userId}\`,
       notificationId
@@ -996,17 +1094,21 @@ export class NotificationService {
         JSON.stringify(notification)
       );
     }
-    ` : `
+    `
+				: `
     const userNotifications = this.notifications.get(userId) || [];
     const notification = userNotifications.find(n => n.id === notificationId);
     if (notification) {
       (notification as any).read = true;
     }
-    `}
+    `
+		}
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const notificationIds = await this.redisService.zrange(
       \`notifications:timeline:\${userId}\`,
       0,
@@ -1030,29 +1132,37 @@ export class NotificationService {
         );
       }
     }
-    ` : `
+    `
+				: `
     const userNotifications = this.notifications.get(userId) || [];
     userNotifications.forEach(notif => {
       (notif as any).read = true;
     });
-    `}
+    `
+		}
   }
 
   async deleteNotification(userId: string, notificationId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     await this.redisService.hdel(\`notifications:\${userId}\`, notificationId);
     await this.redisService.zrem(\`notifications:timeline:\${userId}\`, notificationId);
-    ` : `
+    `
+				: `
     const userNotifications = this.notifications.get(userId) || [];
     const index = userNotifications.findIndex(n => n.id === notificationId);
     if (index !== -1) {
       userNotifications.splice(index, 1);
     }
-    `}
+    `
+		}
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const notificationIds = await this.redisService.zrange(
       \`notifications:timeline:\${userId}\`,
       0,
@@ -1075,10 +1185,12 @@ export class NotificationService {
     }
     
     return unreadCount;
-    ` : `
+    `
+				: `
     const userNotifications = this.notifications.get(userId) || [];
     return userNotifications.filter(notif => !notif.read).length;
-    `}
+    `
+		}
   }
 
   async updatePreferences(
@@ -1096,24 +1208,32 @@ export class NotificationService {
     const updated = { ...current, ...preferences };
     this.preferences.set(userId, updated);
 
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     await this.redisService.hset(
       'notification:preferences',
       userId,
       JSON.stringify(updated)
     );
-    ` : ''}
+    `
+				: ""
+		}
 
     return updated;
   }
 
   async getPreferences(userId: string): Promise<NotificationPreferences> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const data = await this.redisService.hget('notification:preferences', userId);
     if (data) {
       return JSON.parse(data);
     }
-    ` : ''}
+    `
+				: ""
+		}
 
     return this.preferences.get(userId) || {
       userId,
@@ -1141,7 +1261,7 @@ export class NotificationService {
 
 	private generatePresenceService(options: WebSocketOptions): GeneratedFile[] {
 		const presenceService = `import { Injectable, Logger } from '@nestjs/common';
-${options.scaling === 'redis' ? "import { RedisService } from '../../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../../redis/redis.service';" : ""}
 
 export interface UserPresence {
   readonly userId: string;
@@ -1157,11 +1277,13 @@ export class PresenceService {
   private readonly presence = new Map<string, UserPresence>();
 
   constructor(
-    ${options.scaling === 'redis' ? 'private readonly redisService: RedisService,' : ''}
+    ${options.scaling === "redis" ? "private readonly redisService: RedisService," : ""}
   ) {}
 
   async setUserOnline(userId: string, socketId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const presenceKey = \`presence:\${userId}\`;
     const currentData = await this.redisService.hget('user:presence', userId);
     
@@ -1185,7 +1307,8 @@ export class PresenceService {
     
     await this.redisService.hset('user:presence', userId, JSON.stringify(presence));
     await this.redisService.sadd('online:users', userId);
-    ` : `
+    `
+				: `
     let presence = this.presence.get(userId);
     if (presence) {
       if (!presence.socketIds.includes(socketId)) {
@@ -1203,13 +1326,16 @@ export class PresenceService {
     (presence as any).status = 'online';
     (presence as any).lastSeen = new Date().toISOString();
     this.presence.set(userId, presence);
-    `}
+    `
+		}
 
     this.logger.log(\`User \${userId} is now online\`);
   }
 
   async setUserOffline(userId: string, socketId: string): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const currentData = await this.redisService.hget('user:presence', userId);
     if (!currentData) return;
     
@@ -1224,7 +1350,8 @@ export class PresenceService {
     }
     
     await this.redisService.hset('user:presence', userId, JSON.stringify(presence));
-    ` : `
+    `
+				: `
     const presence = this.presence.get(userId);
     if (presence) {
       (presence as any).socketIds = presence.socketIds.filter(id => id !== socketId);
@@ -1236,7 +1363,8 @@ export class PresenceService {
       
       this.presence.set(userId, presence);
     }
-    `}
+    `
+		}
 
     this.logger.log(\`User \${userId} socket \${socketId} disconnected\`);
   }
@@ -1245,7 +1373,9 @@ export class PresenceService {
     userId: string,
     status: 'online' | 'away' | 'busy' | 'offline'
   ): Promise<void> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const currentData = await this.redisService.hget('user:presence', userId);
     if (!currentData) return;
     
@@ -1260,37 +1390,49 @@ export class PresenceService {
     } else {
       await this.redisService.sadd('online:users', userId);
     }
-    ` : `
+    `
+				: `
     const presence = this.presence.get(userId);
     if (presence) {
       (presence as any).status = status;
       (presence as any).lastSeen = new Date().toISOString();
       this.presence.set(userId, presence);
     }
-    `}
+    `
+		}
   }
 
   async getUserPresence(userId: string): Promise<UserPresence | null> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const data = await this.redisService.hget('user:presence', userId);
     return data ? JSON.parse(data) : null;
-    ` : `
+    `
+				: `
     return this.presence.get(userId) || null;
-    `}
+    `
+		}
   }
 
   async getOnlineUsers(): Promise<string[]> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     return await this.redisService.smembers('online:users');
-    ` : `
+    `
+				: `
     return Array.from(this.presence.entries())
       .filter(([_, presence]) => presence.status !== 'offline')
       .map(([userId, _]) => userId);
-    `}
+    `
+		}
   }
 
   async getUsersByStatus(status: 'online' | 'away' | 'busy' | 'offline'): Promise<string[]> {
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const allUsers = await this.redisService.hkeys('user:presence');
     const usersWithStatus: string[] = [];
     
@@ -1305,17 +1447,21 @@ export class PresenceService {
     }
     
     return usersWithStatus;
-    ` : `
+    `
+				: `
     return Array.from(this.presence.entries())
       .filter(([_, presence]) => presence.status === status)
       .map(([userId, _]) => userId);
-    `}
+    `
+		}
   }
 
   async cleanupOfflineUsers(olderThanMinutes = 30): Promise<void> {
     const cutoffTime = new Date(Date.now() - olderThanMinutes * 60 * 1000);
     
-    ${options.scaling === 'redis' ? `
+    ${
+			options.scaling === "redis"
+				? `
     const allUsers = await this.redisService.hkeys('user:presence');
     
     for (const userId of allUsers) {
@@ -1330,7 +1476,8 @@ export class PresenceService {
         }
       }
     }
-    ` : `
+    `
+				: `
     for (const [userId, presence] of this.presence.entries()) {
       const lastSeen = new Date(presence.lastSeen);
       
@@ -1338,7 +1485,8 @@ export class PresenceService {
         this.presence.delete(userId);
       }
     }
-    `}
+    `
+		}
 
     this.logger.log(\`Cleaned up offline users older than \${olderThanMinutes} minutes\`);
   }
@@ -1354,7 +1502,9 @@ export class PresenceService {
 		];
 	}
 
-	private generateFileSharingService(options: WebSocketOptions): GeneratedFile[] {
+	private generateFileSharingService(
+		options: WebSocketOptions,
+	): GeneratedFile[] {
 		const fileSharingService = `import { Injectable, Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
 import * as fs from 'fs/promises';
@@ -1916,10 +2066,12 @@ export function setupCluster(): void {
 		];
 	}
 
-	private generateSecurityMiddleware(options: WebSocketOptions): GeneratedFile[] {
+	private generateSecurityMiddleware(
+		options: WebSocketOptions,
+	): GeneratedFile[] {
 		const rateLimitGuard = `import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Socket } from 'socket.io';
-${options.scaling === 'redis' ? "import { RedisService } from '../../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../../redis/redis.service';" : ""}
 
 interface RateLimitEntry {
 	count: number;
@@ -1933,7 +2085,7 @@ export class RateLimitGuard implements CanActivate {
 	private readonly store = new Map<string, RateLimitEntry>();
 
 	constructor(
-		${options.scaling === 'redis' ? 'private readonly redisService?: RedisService,' : ''}
+		${options.scaling === "redis" ? "private readonly redisService?: RedisService," : ""}
 	) {
 		this.windowMs = ${options.security?.rateLimit?.windowMs || 60000}; // 1 minute
 		this.maxRequests = ${options.security?.rateLimit?.maxRequests || 100}; // 100 requests per window
@@ -1943,11 +2095,15 @@ export class RateLimitGuard implements CanActivate {
 		const client = context.switchToWs().getClient<Socket>();
 		const key = this.getClientKey(client);
 		
-		${options.scaling === 'redis' ? `
+		${
+			options.scaling === "redis"
+				? `
 		if (this.redisService) {
 			return this.checkRateLimitRedis(key);
 		}
-		` : ''}
+		`
+				: ""
+		}
 		
 		return this.checkRateLimitMemory(key);
 	}
@@ -1959,7 +2115,9 @@ export class RateLimitGuard implements CanActivate {
 		return userId ? \`user:\${userId}\` : \`ip:\${ip}\`;
 	}
 
-	${options.scaling === 'redis' ? `
+	${
+		options.scaling === "redis"
+			? `
 	private async checkRateLimitRedis(key: string): Promise<boolean> {
 		const redisKey = \`rate_limit:\${key}\`;
 		const current = await this.redisService!.get(redisKey);
@@ -1986,7 +2144,9 @@ export class RateLimitGuard implements CanActivate {
 		
 		return true;
 	}
-	` : ''}
+	`
+			: ""
+	}
 
 	private checkRateLimitMemory(key: string): boolean {
 		const now = Date.now();
@@ -2109,58 +2269,100 @@ export interface AuthenticatedSocket extends Socket {
 // Event types
 export interface ClientEvents {
 	message: (data: WebSocketMessage) => void;
-	${options.features.includes('chat') ? `
+	${
+		options.features.includes("chat")
+			? `
 	'chat:send': (data: { roomId: string; message: string; type?: 'text' | 'image' | 'file' }) => void;
 	'chat:join': (data: { roomId: string }) => void;
 	'chat:leave': (data: { roomId: string }) => void;
-	` : ''}
-	${options.features.includes('typing-indicators') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("typing-indicators")
+			? `
 	'typing:start': (data: { roomId: string }) => void;
 	'typing:stop': (data: { roomId: string }) => void;
-	` : ''}
-	${options.features.includes('presence') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("presence")
+			? `
 	'presence:update': (data: { status: 'online' | 'away' | 'busy' | 'offline' }) => void;
-	` : ''}
-	${options.features.includes('live-updates') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("live-updates")
+			? `
 	'subscribe:updates': (data: { channels: string[] }) => void;
 	'unsubscribe:updates': (data: { channels: string[] }) => void;
-	` : ''}
-	${options.features.includes('file-sharing') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("file-sharing")
+			? `
 	'file:upload-start': (data: { fileName: string; fileSize: number; mimeType: string }) => void;
 	'file:upload-chunk': (data: { transferId: string; chunk: Buffer; chunkIndex: number; isLastChunk: boolean }) => void;
 	'file:download': (data: { transferId: string }) => void;
-	` : ''}
+	`
+			: ""
+	}
 }
 
 export interface ServerEvents {
 	connected: (data: { clientId: string; timestamp: string }) => void;
 	notification: (data: any) => void;
-	${options.features.includes('chat') ? `
+	${
+		options.features.includes("chat")
+			? `
 	'chat:message': (data: any) => void;
 	'chat:user-joined': (data: { userId: string; roomId: string; timestamp: string }) => void;
 	'chat:user-left': (data: { userId: string; roomId: string; timestamp: string }) => void;
-	` : ''}
-	${options.features.includes('typing-indicators') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("typing-indicators")
+			? `
 	'typing:start': (data: { userId: string; roomId: string; timestamp: string }) => void;
 	'typing:stop': (data: { userId: string; roomId: string; timestamp: string }) => void;
-	` : ''}
-	${options.features.includes('presence') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("presence")
+			? `
 	'presence:update': (data: { userId: string; status: string; timestamp: string }) => void;
-	` : ''}
-	${options.features.includes('live-updates') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("live-updates")
+			? `
 	'subscribed:updates': (data: { channels: string[]; timestamp: string }) => void;
 	'unsubscribed:updates': (data: { channels: string[]; timestamp: string }) => void;
 	'live:update': (data: { channel: string; data: any; timestamp: string }) => void;
-	` : ''}
-	${options.features.includes('file-sharing') ? `
+	`
+			: ""
+	}
+	${
+		options.features.includes("file-sharing")
+			? `
 	'file:upload-progress': (data: { transferId: string; progress: number }) => void;
 	'file:upload-complete': (data: { transferId: string; fileUrl: string }) => void;
 	'file:upload-error': (data: { transferId: string; error: string }) => void;
-	` : ''}
+	`
+			: ""
+	}
 }
 
 // Feature-specific types
-${options.features.includes('presence') ? `
+${
+	options.features.includes("presence")
+		? `
 export interface UserPresence {
 	readonly userId: string;
 	readonly status: 'online' | 'away' | 'busy' | 'offline';
@@ -2168,9 +2370,13 @@ export interface UserPresence {
 	readonly socketIds: string[];
 	readonly metadata?: Record<string, any>;
 }
-` : ''}
+`
+		: ""
+}
 
-${options.features.includes('chat') ? `
+${
+	options.features.includes("chat")
+		? `
 export interface ChatRoom {
 	readonly id: string;
 	readonly name: string;
@@ -2189,9 +2395,13 @@ export interface ChatMessage {
 	readonly timestamp: string;
 	readonly metadata?: Record<string, any>;
 }
-` : ''}
+`
+		: ""
+}
 
-${options.features.includes('notifications') ? `
+${
+	options.features.includes("notifications")
+		? `
 export interface Notification {
 	readonly id: string;
 	readonly userId: string;
@@ -2203,7 +2413,9 @@ export interface Notification {
 	readonly createdAt: string;
 	readonly expiresAt?: string;
 }
-` : ''}
+`
+		: ""
+}
 
 // Configuration types
 export interface WebSocketConfig {
@@ -2243,24 +2455,36 @@ export const websocketConfig: WebSocketConfig = {
 		origin: ${JSON.stringify(options.security?.cors || ["http://localhost:3000"])},
 		credentials: true,
 	},
-	${options.security?.rateLimit ? `
+	${
+		options.security?.rateLimit
+			? `
 	rateLimit: {
 		windowMs: ${options.security.rateLimit.windowMs},
 		maxRequests: ${options.security.rateLimit.maxRequests},
 	},
-	` : ''}
-	${options.scaling === 'redis' ? `
+	`
+			: ""
+	}
+	${
+		options.scaling === "redis"
+			? `
 	redis: {
 		url: process.env.REDIS_URL || 'redis://localhost:6379',
 		keyPrefix: 'websocket:',
 	},
-	` : ''}
-	${options.scaling === 'cluster' ? `
+	`
+			: ""
+	}
+	${
+		options.scaling === "cluster"
+			? `
 	cluster: {
 		enabled: true,
 		workers: process.env.CLUSTER_WORKERS ? parseInt(process.env.CLUSTER_WORKERS) : undefined,
 	},
-	` : ''}
+	`
+			: ""
+	}
 };
 
 export const getWebSocketConfig = (): WebSocketConfig => {
@@ -2425,7 +2649,9 @@ export class XaheenWebSocketClient implements WebSocketClient {
 		}, delay);
 	}
 
-	${options.features.includes('chat') ? `
+	${
+		options.features.includes("chat")
+			? `
 	// Chat methods
 	sendChatMessage(roomId: string, message: string, type: 'text' | 'image' | 'file' = 'text'): void {
 		this.emit('chat:send', { roomId, message, type });
@@ -2442,9 +2668,13 @@ export class XaheenWebSocketClient implements WebSocketClient {
 	onChatMessage(callback: (message: any) => void): void {
 		this.on('chat:message', callback);
 	}
-	` : ''}
+	`
+			: ""
+	}
 
-	${options.features.includes('presence') ? `
+	${
+		options.features.includes("presence")
+			? `
 	// Presence methods
 	updatePresence(status: 'online' | 'away' | 'busy' | 'offline'): void {
 		this.emit('presence:update', { status });
@@ -2453,16 +2683,24 @@ export class XaheenWebSocketClient implements WebSocketClient {
 	onPresenceUpdate(callback: (data: { userId: string; status: string; timestamp: string }) => void): void {
 		this.on('presence:update', callback);
 	}
-	` : ''}
+	`
+			: ""
+	}
 
-	${options.features.includes('notifications') ? `
+	${
+		options.features.includes("notifications")
+			? `
 	// Notification methods
 	onNotification(callback: (notification: any) => void): void {
 		this.on('notification', callback);
 	}
-	` : ''}
+	`
+			: ""
+	}
 
-	${options.features.includes('live-updates') ? `
+	${
+		options.features.includes("live-updates")
+			? `
 	// Live updates methods
 	subscribeToUpdates(channels: string[]): void {
 		this.emit('subscribe:updates', { channels });
@@ -2475,7 +2713,9 @@ export class XaheenWebSocketClient implements WebSocketClient {
 	onLiveUpdate(callback: (data: { channel: string; data: any; timestamp: string }) => void): void {
 		this.on('live:update', callback);
 	}
-	` : ''}
+	`
+			: ""
+	}
 }
 
 // Factory function
@@ -2558,7 +2798,9 @@ export function useWebSocket(options: WebSocketClientOptions): UseWebSocketRetur
 	};
 }
 
-${options.features.includes('chat') ? `
+${
+	options.features.includes("chat")
+		? `
 export interface UseChatReturn {
 	readonly messages: any[];
 	readonly sendMessage: (roomId: string, message: string, type?: 'text' | 'image' | 'file') => void;
@@ -2608,9 +2850,13 @@ export function useChat(client: XaheenWebSocketClient | null): UseChatReturn {
 		leaveRoom,
 	};
 }
-` : ''}
+`
+		: ""
+}
 
-${options.features.includes('presence') ? `
+${
+	options.features.includes("presence")
+		? `
 export interface UsePresenceReturn {
 	readonly status: string;
 	readonly updateStatus: (status: 'online' | 'away' | 'busy' | 'offline') => void;
@@ -2654,7 +2900,9 @@ export function usePresence(client: XaheenWebSocketClient | null): UsePresenceRe
 		userPresence,
 	};
 }
-` : ''}`;
+`
+		: ""
+}`;
 
 		return [
 			{
@@ -2703,11 +2951,15 @@ describe('WebSocketGateway', () => {
 						onClientConnect: jest.fn(),
 						onClientDisconnect: jest.fn(),
 						handleMessage: jest.fn().mockResolvedValue({ success: true, data: { type: 'pong' }, timestamp: new Date().toISOString() }),
-						${options.features.includes('chat') ? `
+						${
+							options.features.includes("chat")
+								? `
 						handleChatMessage: jest.fn(),
 						joinChatRoom: jest.fn(),
 						leaveChatRoom: jest.fn(),
-						` : ''}
+						`
+								: ""
+						}
 					},
 				},
 			],
@@ -2786,7 +3038,9 @@ describe('WebSocketGateway', () => {
 		});
 	});
 
-	${options.features.includes('chat') ? `
+	${
+		options.features.includes("chat")
+			? `
 	describe('Chat Features', () => {
 		it('should handle chat message', (done) => {
 			const chatData = { roomId: 'test-room', message: 'Hello, world!' };
@@ -2810,22 +3064,26 @@ describe('WebSocketGateway', () => {
 			}, 100);
 		});
 	});
-	` : ''}
+	`
+			: ""
+	}
 });`;
 
 		const serviceTest = `import { Test, TestingModule } from '@nestjs/testing';
 import { WebSocketService } from '../websocket.service';
-${options.scaling === 'redis' ? "import { RedisService } from '../../redis/redis.service';" : ""}
+${options.scaling === "redis" ? "import { RedisService } from '../../redis/redis.service';" : ""}
 
 describe('WebSocketService', () => {
 	let service: WebSocketService;
-	${options.scaling === 'redis' ? 'let redisService: RedisService;' : ''}
+	${options.scaling === "redis" ? "let redisService: RedisService;" : ""}
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				WebSocketService,
-				${options.scaling === 'redis' ? `
+				${
+					options.scaling === "redis"
+						? `
 				{
 					provide: RedisService,
 					useValue: {
@@ -2836,12 +3094,14 @@ describe('WebSocketService', () => {
 						hget: jest.fn(),
 					},
 				},
-				` : ''}
+				`
+						: ""
+				}
 			],
 		}).compile();
 
 		service = module.get<WebSocketService>(WebSocketService);
-		${options.scaling === 'redis' ? 'redisService = module.get<RedisService>(RedisService);' : ''}
+		${options.scaling === "redis" ? "redisService = module.get<RedisService>(RedisService);" : ""}
 	});
 
 	it('should be defined', () => {
@@ -2859,12 +3119,18 @@ describe('WebSocketService', () => {
 
 			const user = await service.authenticateSocket(mockSocket);
 			
-			${options.authentication === 'jwt' ? `
+			${
+				options.authentication === "jwt"
+					? `
 			expect(user).toBeDefined();
 			expect(user.id).toBeDefined();
-			` : options.authentication === 'none' ? `
+			`
+					: options.authentication === "none"
+						? `
 			expect(user).toEqual({ id: mockSocket.id, anonymous: true });
-			` : ''}
+			`
+						: ""
+			}
 		});
 
 		it('should reject socket with invalid token', async () => {
@@ -2877,11 +3143,15 @@ describe('WebSocketService', () => {
 
 			const user = await service.authenticateSocket(mockSocket);
 			
-			${options.authentication !== 'none' ? `
+			${
+				options.authentication !== "none"
+					? `
 			expect(user).toBeNull();
-			` : `
+			`
+					: `
 			expect(user).toBeDefined();
-			`}
+			`
+			}
 		});
 	});
 
@@ -3016,7 +3286,9 @@ describe('WebSocket E2E', () => {
 		sendMessage();
 	});
 
-	${options.features.includes('chat') ? `
+	${
+		options.features.includes("chat")
+			? `
 	it('should handle chat flow', (done) => {
 		const roomId = 'test-room';
 		const message = 'Hello, WebSocket!';
@@ -3036,9 +3308,13 @@ describe('WebSocket E2E', () => {
 			clientSocket.emit('chat:send', { roomId, message });
 		}, 100);
 	});
-	` : ''}
+	`
+			: ""
+	}
 
-	${options.features.includes('presence') ? `
+	${
+		options.features.includes("presence")
+			? `
 	it('should handle presence updates', (done) => {
 		clientSocket.on('presence:update', (data) => {
 			expect(data).toHaveProperty('userId');
@@ -3049,7 +3325,9 @@ describe('WebSocket E2E', () => {
 
 		clientSocket.emit('presence:update', { status: 'online' });
 	});
-	` : ''}
+	`
+			: ""
+	}
 });`;
 
 		return [

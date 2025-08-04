@@ -558,7 +558,7 @@ export class GitHubActionsGenerator extends BaseGenerator<GitHubActionsGenerator
 
     if (options.enableDocker) {
       env.REGISTRY = 'ghcr.io';
-      env.IMAGE_NAME = `${{ github.repository }}`;
+      env.IMAGE_NAME = '\${{ github.repository }}';
     }
 
     return env;
@@ -735,7 +735,7 @@ export class GitHubActionsGenerator extends BaseGenerator<GitHubActionsGenerator
         uses: 'actions/cache@v4',
         with: {
           path: this.getCachePaths(options),
-          key: `${{ runner.os }}-build-${{ hashFiles('${this.getDefaultDependencyPath(options)}') }}`
+          key: '\${{ runner.os }}-build-\${{ hashFiles(\'' + this.getDefaultDependencyPath(options) + '\') }}'
         }
       });
     }
@@ -1128,7 +1128,7 @@ export class GitHubActionsGenerator extends BaseGenerator<GitHubActionsGenerator
         uses: 'actions/cache@v4',
         with: {
           path: this.getCachePaths(options),
-          key: `${{ runner.os }}-deps-${{ hashFiles('${{ inputs.cache_dependency_path }}') }}`
+          key: '\${{ runner.os }}-deps-\${{ hashFiles(\'\${{ inputs.cache_dependency_path }}\') }}'
         }
       },
       {

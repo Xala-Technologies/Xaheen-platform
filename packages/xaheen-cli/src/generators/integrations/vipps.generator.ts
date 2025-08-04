@@ -6,140 +6,149 @@
 import type { GeneratedFile } from "../../types/index.js";
 
 export interface VippsIntegrationOptions {
-  name: string;
-  environment: "test" | "production";
-  features: VippsFeature[];
-  authentication: {
-    merchantSerialNumber: string;
-    clientId: string;
-    clientSecret: string;
-    subscriptionKey: string;
-  };
-  compliance: {
-    gdpr: boolean;
-    pciDss: boolean;
-    auditLogging: boolean;
-    dataResidency: "norway" | "eu";
-  };
-  webhookUrl?: string;
-  callbackPrefix?: string;
-  fallbackUrl?: string;
+	name: string;
+	environment: "test" | "production";
+	features: VippsFeature[];
+	authentication: {
+		merchantSerialNumber: string;
+		clientId: string;
+		clientSecret: string;
+		subscriptionKey: string;
+	};
+	compliance: {
+		gdpr: boolean;
+		pciDss: boolean;
+		auditLogging: boolean;
+		dataResidency: "norway" | "eu";
+	};
+	webhookUrl?: string;
+	callbackPrefix?: string;
+	fallbackUrl?: string;
 }
 
 export type VippsFeature =
-  | "one-time-payment"
-  | "express-checkout"
-  | "recurring-payment" 
-  | "subscription"
-  | "refunds"
-  | "partial-refunds"
-  | "capture-later"
-  | "mobile-payments"
-  | "qr-payments"
-  | "invoice-payments"
-  | "installments"
-  | "loyalty-points"
-  | "payment-reconciliation";
+	| "one-time-payment"
+	| "express-checkout"
+	| "recurring-payment"
+	| "subscription"
+	| "refunds"
+	| "partial-refunds"
+	| "capture-later"
+	| "mobile-payments"
+	| "qr-payments"
+	| "invoice-payments"
+	| "installments"
+	| "loyalty-points"
+	| "payment-reconciliation";
 
 export class VippsIntegrationGenerator {
-  async generate(options: VippsIntegrationOptions): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+	async generate(options: VippsIntegrationOptions): Promise<GeneratedFile[]> {
+		const files: GeneratedFile[] = [];
 
-    // Core Vipps service files
-    files.push(...this.generateCoreServices(options));
+		// Core Vipps service files
+		files.push(...this.generateCoreServices(options));
 
-    // Payment flow implementations
-    if (options.features.includes("one-time-payment")) {
-      files.push(...this.generateOneTimePayment(options));
-    }
+		// Payment flow implementations
+		if (options.features.includes("one-time-payment")) {
+			files.push(...this.generateOneTimePayment(options));
+		}
 
-    if (options.features.includes("express-checkout")) {
-      files.push(...this.generateExpressCheckout(options));
-    }
+		if (options.features.includes("express-checkout")) {
+			files.push(...this.generateExpressCheckout(options));
+		}
 
-    if (options.features.includes("recurring-payment") || options.features.includes("subscription")) {
-      files.push(...this.generateRecurringPayments(options));
-    }
+		if (
+			options.features.includes("recurring-payment") ||
+			options.features.includes("subscription")
+		) {
+			files.push(...this.generateRecurringPayments(options));
+		}
 
-    if (options.features.includes("refunds") || options.features.includes("partial-refunds")) {
-      files.push(...this.generateRefundServices(options));
-    }
+		if (
+			options.features.includes("refunds") ||
+			options.features.includes("partial-refunds")
+		) {
+			files.push(...this.generateRefundServices(options));
+		}
 
-    if (options.features.includes("payment-reconciliation")) {
-      files.push(...this.generateReconciliationServices(options));
-    }
+		if (options.features.includes("payment-reconciliation")) {
+			files.push(...this.generateReconciliationServices(options));
+		}
 
-    // Webhook handlers
-    files.push(...this.generateWebhookHandlers(options));
+		// Webhook handlers
+		files.push(...this.generateWebhookHandlers(options));
 
-    // Compliance and security
-    if (options.compliance.pciDss) {
-      files.push(...this.generatePCICompliance(options));
-    }
+		// Compliance and security
+		if (options.compliance.pciDss) {
+			files.push(...this.generatePCICompliance(options));
+		}
 
-    if (options.compliance.auditLogging) {
-      files.push(...this.generateAuditLogging(options));
-    }
+		if (options.compliance.auditLogging) {
+			files.push(...this.generateAuditLogging(options));
+		}
 
-    // Error handling and monitoring
-    files.push(...this.generateErrorHandling(options));
+		// Error handling and monitoring
+		files.push(...this.generateErrorHandling(options));
 
-    // Tests
-    files.push(...this.generateTests(options));
+		// Tests
+		files.push(...this.generateTests(options));
 
-    // Documentation
-    files.push(...this.generateDocumentation(options));
+		// Documentation
+		files.push(...this.generateDocumentation(options));
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateCoreServices(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
+	private generateCoreServices(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-    // Configuration
-    files.push({
-      path: `${options.name}/integrations/vipps/config/vipps.config.ts`,
-      content: this.generateVippsConfig(options),
-      type: "create",
-    });
+		// Configuration
+		files.push({
+			path: `${options.name}/integrations/vipps/config/vipps.config.ts`,
+			content: this.generateVippsConfig(options),
+			type: "create",
+		});
 
-    // Types and interfaces
-    files.push({
-      path: `${options.name}/integrations/vipps/types/vipps.types.ts`,
-      content: this.generateVippsTypes(options),
-      type: "create",
-    });
+		// Types and interfaces
+		files.push({
+			path: `${options.name}/integrations/vipps/types/vipps.types.ts`,
+			content: this.generateVippsTypes(options),
+			type: "create",
+		});
 
-    // Main service
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps.service.ts`,
-      content: this.generateVippsService(options),
-      type: "create",
-    });
+		// Main service
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps.service.ts`,
+			content: this.generateVippsService(options),
+			type: "create",
+		});
 
-    // HTTP client
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-http.client.ts`,
-      content: this.generateVippsHttpClient(options),
-      type: "create",
-    });
+		// HTTP client
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-http.client.ts`,
+			content: this.generateVippsHttpClient(options),
+			type: "create",
+		});
 
-    // Token management
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-token.service.ts`,
-      content: this.generateVippsTokenService(options),
-      type: "create",
-    });
+		// Token management
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-token.service.ts`,
+			content: this.generateVippsTokenService(options),
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateVippsConfig(options: VippsIntegrationOptions): string {
-    const baseUrl = options.environment === "production" 
-      ? "https://api.vipps.no" 
-      : "https://apitest.vipps.no";
+	private generateVippsConfig(options: VippsIntegrationOptions): string {
+		const baseUrl =
+			options.environment === "production"
+				? "https://api.vipps.no"
+				: "https://apitest.vipps.no";
 
-    return `/**
+		return `/**
  * Vipps Configuration
  * Norway's leading mobile payment solution - Enterprise grade configuration
  */
@@ -210,10 +219,10 @@ export const SECURITY_CONFIG = {
     max: 1000, // requests per window
   },
 } as const;`;
-  }
+	}
 
-  private generateVippsTypes(options: VippsIntegrationOptions): string {
-    return `/**
+	private generateVippsTypes(options: VippsIntegrationOptions): string {
+		return `/**
  * Vipps TypeScript Types and Interfaces
  * Comprehensive type definitions for Norwegian Vipps integration
  */
@@ -529,10 +538,10 @@ export interface VippsLoyaltyPoints {
   readonly pointsValue: number; // Value in øre
   readonly loyaltyProgramId: string;
 }`;
-  }
+	}
 
-  private generateVippsService(options: VippsIntegrationOptions): string {
-    return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+	private generateVippsService(options: VippsIntegrationOptions): string {
+		return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { VippsHttpClient } from './vipps-http.client';
 import { VippsTokenService } from './vipps-token.service';
@@ -965,10 +974,10 @@ export class VippsService {
     );
   }
 }`;
-  }
+	}
 
-  private generateVippsHttpClient(options: VippsIntegrationOptions): string {
-    return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+	private generateVippsHttpClient(options: VippsIntegrationOptions): string {
+		return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { VippsTokenService } from './vipps-token.service';
@@ -1169,10 +1178,10 @@ export class VippsHttpClient {
     return apiError;
   }
 }`;
-  }
+	}
 
-  private generateVippsTokenService(options: VippsIntegrationOptions): string {
-    return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+	private generateVippsTokenService(options: VippsIntegrationOptions): string {
+		return `import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { VippsTokenResponse } from '../types/vipps.types';
@@ -1313,14 +1322,16 @@ export class VippsTokenService {
     return \`token_\${timestamp}_\${random}\`;
   }
 }`;
-  }
+	}
 
-  private generateOneTimePayment(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-payment.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateOneTimePayment(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-payment.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { VippsService } from './vipps.service';
 import { 
   VippsPaymentRequest,
@@ -1423,18 +1434,20 @@ export class VippsPaymentService {
     }
   }
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateExpressCheckout(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-express-checkout.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateExpressCheckout(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-express-checkout.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { VippsService } from './vipps.service';
 import { 
   VippsExpressCheckoutSession,
@@ -1606,18 +1619,20 @@ interface ShippingOption {
   estimatedDelivery: string;
   description: string;
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateRecurringPayments(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-recurring.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateRecurringPayments(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-recurring.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { VippsService } from './vipps.service';
 import { 
   VippsRecurringAgreement,
@@ -1853,18 +1868,20 @@ export class VippsRecurringService {
     this.logger.log(\`Stopping recurring agreement \${agreementId}\`);
   }
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateRefundServices(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-refund.service.ts`,
-      content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+	private generateRefundServices(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-refund.service.ts`,
+			content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { VippsService } from './vipps.service';
 import { VippsPaymentDetails, VippsTransactionStatus } from '../types/vipps.types';
 
@@ -2097,19 +2114,21 @@ interface RefundHistoryEntry {
   timestamp: string;
   transactionId: string;
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  // Continue with other generation methods...
-  private generateReconciliationServices(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-reconciliation.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	// Continue with other generation methods...
+	private generateReconciliationServices(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-reconciliation.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { VippsService } from './vipps.service';
 import { VippsReconciliationReport, VippsReconciliationTransaction } from '../types/vipps.types';
 
@@ -2215,18 +2234,20 @@ interface SettlementDiscrepancy {
   amount: number; // Amount in øre
   severity: 'low' | 'medium' | 'high';
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateWebhookHandlers(options: VippsIntegrationOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    files.push({
-      path: `${options.name}/integrations/vipps/controllers/vipps-webhook.controller.ts`,
-      content: `import { 
+	private generateWebhookHandlers(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		files.push({
+			path: `${options.name}/integrations/vipps/controllers/vipps-webhook.controller.ts`,
+			content: `import { 
   Controller, 
   Post, 
   Body, 
@@ -2381,12 +2402,12 @@ export class VippsWebhookController {
     return result === 0;
   }
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    files.push({
-      path: `${options.name}/integrations/vipps/services/vipps-webhook.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+		files.push({
+			path: `${options.name}/integrations/vipps/services/vipps-webhook.service.ts`,
+			content: `import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { 
   VippsWebhookPayload,
@@ -2572,16 +2593,19 @@ export class VippsWebhookService {
     });
   }
 }`,
-      type: "create",
-    });
+			type: "create",
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generatePCICompliance(options: VippsIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/vipps/compliance/pci-compliance.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generatePCICompliance(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/vipps/compliance/pci-compliance.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 /**
@@ -2658,14 +2682,18 @@ interface EncryptedPaymentData {
   authTag: string;
   algorithm: string;
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateAuditLogging(options: VippsIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/vipps/audit/vipps-audit.service.ts`,
-      content: `import { Injectable, Logger } from '@nestjs/common';
+	private generateAuditLogging(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/vipps/audit/vipps-audit.service.ts`,
+				content: `import { Injectable, Logger } from '@nestjs/common';
 
 /**
  * Vipps Audit Service
@@ -2721,14 +2749,18 @@ export class VippsAuditService {
     return 'unknown';
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateErrorHandling(options: VippsIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/vipps/error/vipps-error-handler.service.ts`,
-      content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+	private generateErrorHandling(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/vipps/error/vipps-error-handler.service.ts`,
+				content: `import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { VippsApiError } from '../types/vipps.types';
 
 /**
@@ -2784,14 +2816,16 @@ export class VippsErrorHandlerService {
     );
   }
 }`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateTests(options: VippsIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/vipps/tests/vipps.service.spec.ts`,
-      content: `import { Test, TestingModule } from '@nestjs/testing';
+	private generateTests(options: VippsIntegrationOptions): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/vipps/tests/vipps.service.spec.ts`,
+				content: `import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 import { VippsService } from '../services/vipps.service';
@@ -2912,20 +2946,24 @@ describe('VippsService', () => {
     });
   });
 });`,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 
-  private generateDocumentation(options: VippsIntegrationOptions): GeneratedFile[] {
-    return [{
-      path: `${options.name}/integrations/vipps/README.md`,
-      content: `# Vipps Payment Integration
+	private generateDocumentation(
+		options: VippsIntegrationOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `${options.name}/integrations/vipps/README.md`,
+				content: `# Vipps Payment Integration
 
 Norwegian mobile payment solution integration with enterprise-grade features.
 
 ## Features
 
-${options.features.map(feature => `- ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('\n')}
+${options.features.map((feature) => `- ${feature.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`).join("\n")}
 
 ## Environment Variables
 
@@ -3002,8 +3040,8 @@ This integration follows Norwegian regulations and best practices:
 - **Language**: Error messages and descriptions in Norwegian
 - **Data Residency**: ${options.compliance.dataResidency.toUpperCase()} data residency
 - **Audit Logging**: Comprehensive audit trail for compliance
-- **PCI DSS**: ${options.compliance.pciDss ? 'Enabled' : 'Disabled'}
-- **GDPR**: ${options.compliance.gdpr ? 'Compliant' : 'Not configured'}
+- **PCI DSS**: ${options.compliance.pciDss ? "Enabled" : "Disabled"}
+- **GDPR**: ${options.compliance.gdpr ? "Compliant" : "Not configured"}
 
 ## Error Handling
 
@@ -3033,7 +3071,8 @@ For technical support, refer to:
 - [Vipps Developer Portal](https://developer.vipps.no/)
 - [Vipps API Documentation](https://vippsas.github.io/vipps-ecom-api/)
 `,
-      type: "create",
-    }];
-  }
+				type: "create",
+			},
+		];
+	}
 }

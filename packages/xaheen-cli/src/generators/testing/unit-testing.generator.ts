@@ -1,119 +1,123 @@
-import { BaseGenerator } from '../base.generator';
-import { UnitTestOptions, TestTemplate } from './types';
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import { BaseGenerator } from "../base.generator";
+import { UnitTestOptions, TestTemplate } from "./types";
+import { promises as fs } from "fs";
+import * as path from "path";
 
 export class UnitTestingGenerator extends BaseGenerator<UnitTestOptions> {
-  async generate(options: UnitTestOptions): Promise<void> {
-    await this.validateOptions(options);
-    
-    this.logger.info('Generating comprehensive unit test suite...');
-    
-    try {
-      // Generate test configuration
-      await this.generateTestConfiguration(options);
-      
-      // Generate test setup files
-      await this.generateTestSetup(options);
-      
-      // Generate layer-specific tests
-      for (const layer of options.layers) {
-        await this.generateLayerTests(layer, options);
-      }
-      
-      // Generate utility test helpers
-      await this.generateTestHelpers(options);
-      
-      // Generate mock factories if requested
-      if (options.includeMocks) {
-        await this.generateMockFactories(options);
-      }
-      
-      this.logger.success('Unit test suite generated successfully!');
-      
-    } catch (error) {
-      this.logger.error('Failed to generate unit test suite', error);
-      throw error;
-    }
-  }
+	async generate(options: UnitTestOptions): Promise<void> {
+		await this.validateOptions(options);
 
-  private async generateTestConfiguration(options: UnitTestOptions): Promise<void> {
-    const configTemplates = this.getConfigurationTemplates(options);
-    
-    for (const template of configTemplates) {
-      await this.writeTemplate(template, options.projectPath);
-    }
-  }
+		this.logger.info("Generating comprehensive unit test suite...");
 
-  private async generateTestSetup(options: UnitTestOptions): Promise<void> {
-    const setupTemplate = this.getSetupTemplate(options);
-    await this.writeTemplate(setupTemplate, options.projectPath);
-    
-    // Generate global test utilities
-    const globalUtilsTemplate = this.getGlobalUtilsTemplate(options);
-    await this.writeTemplate(globalUtilsTemplate, options.projectPath);
-  }
+		try {
+			// Generate test configuration
+			await this.generateTestConfiguration(options);
 
-  private async generateLayerTests(layer: string, options: UnitTestOptions): Promise<void> {
-    this.logger.info(`Generating ${layer} layer tests...`);
-    
-    const templates = this.getLayerTestTemplates(layer, options);
-    
-    for (const template of templates) {
-      const layerPath = path.join(options.projectPath, 'tests', 'unit', layer);
-      await this.ensureDirectoryExists(layerPath);
-      await this.writeTemplate(template, layerPath);
-    }
-  }
+			// Generate test setup files
+			await this.generateTestSetup(options);
 
-  private async generateTestHelpers(options: UnitTestOptions): Promise<void> {
-    const helperTemplates = this.getTestHelperTemplates(options);
-    
-    for (const template of helperTemplates) {
-      const helpersPath = path.join(options.projectPath, 'tests', 'helpers');
-      await this.ensureDirectoryExists(helpersPath);
-      await this.writeTemplate(template, helpersPath);
-    }
-  }
+			// Generate layer-specific tests
+			for (const layer of options.layers) {
+				await this.generateLayerTests(layer, options);
+			}
 
-  private async generateMockFactories(options: UnitTestOptions): Promise<void> {
-    const mockTemplates = this.getMockFactoryTemplates(options);
-    
-    for (const template of mockTemplates) {
-      const mocksPath = path.join(options.projectPath, 'tests', 'mocks');
-      await this.ensureDirectoryExists(mocksPath);
-      await this.writeTemplate(template, mocksPath);
-    }
-  }
+			// Generate utility test helpers
+			await this.generateTestHelpers(options);
 
-  private getConfigurationTemplates(options: UnitTestOptions): TestTemplate[] {
-    const templates: TestTemplate[] = [];
-    
-    if (options.testingFramework === 'jest') {
-      templates.push({
-        name: 'jest.config.js',
-        path: 'jest.config.js',
-        content: this.getJestConfiguration(options),
-        dependencies: ['jest', '@types/jest', 'ts-jest']
-      });
-    } else if (options.testingFramework === 'vitest') {
-      templates.push({
-        name: 'vitest.config.ts',
-        path: 'vitest.config.ts',
-        content: this.getVitestConfiguration(options),
-        dependencies: ['vitest', '@vitest/ui', 'c8']
-      });
-    }
-    
-    return templates;
-  }
+			// Generate mock factories if requested
+			if (options.includeMocks) {
+				await this.generateMockFactories(options);
+			}
 
-  private getJestConfiguration(options: UnitTestOptions): string {
-    return `/** @type {import('jest').Config} */
+			this.logger.success("Unit test suite generated successfully!");
+		} catch (error) {
+			this.logger.error("Failed to generate unit test suite", error);
+			throw error;
+		}
+	}
+
+	private async generateTestConfiguration(
+		options: UnitTestOptions,
+	): Promise<void> {
+		const configTemplates = this.getConfigurationTemplates(options);
+
+		for (const template of configTemplates) {
+			await this.writeTemplate(template, options.projectPath);
+		}
+	}
+
+	private async generateTestSetup(options: UnitTestOptions): Promise<void> {
+		const setupTemplate = this.getSetupTemplate(options);
+		await this.writeTemplate(setupTemplate, options.projectPath);
+
+		// Generate global test utilities
+		const globalUtilsTemplate = this.getGlobalUtilsTemplate(options);
+		await this.writeTemplate(globalUtilsTemplate, options.projectPath);
+	}
+
+	private async generateLayerTests(
+		layer: string,
+		options: UnitTestOptions,
+	): Promise<void> {
+		this.logger.info(`Generating ${layer} layer tests...`);
+
+		const templates = this.getLayerTestTemplates(layer, options);
+
+		for (const template of templates) {
+			const layerPath = path.join(options.projectPath, "tests", "unit", layer);
+			await this.ensureDirectoryExists(layerPath);
+			await this.writeTemplate(template, layerPath);
+		}
+	}
+
+	private async generateTestHelpers(options: UnitTestOptions): Promise<void> {
+		const helperTemplates = this.getTestHelperTemplates(options);
+
+		for (const template of helperTemplates) {
+			const helpersPath = path.join(options.projectPath, "tests", "helpers");
+			await this.ensureDirectoryExists(helpersPath);
+			await this.writeTemplate(template, helpersPath);
+		}
+	}
+
+	private async generateMockFactories(options: UnitTestOptions): Promise<void> {
+		const mockTemplates = this.getMockFactoryTemplates(options);
+
+		for (const template of mockTemplates) {
+			const mocksPath = path.join(options.projectPath, "tests", "mocks");
+			await this.ensureDirectoryExists(mocksPath);
+			await this.writeTemplate(template, mocksPath);
+		}
+	}
+
+	private getConfigurationTemplates(options: UnitTestOptions): TestTemplate[] {
+		const templates: TestTemplate[] = [];
+
+		if (options.testingFramework === "jest") {
+			templates.push({
+				name: "jest.config.js",
+				path: "jest.config.js",
+				content: this.getJestConfiguration(options),
+				dependencies: ["jest", "@types/jest", "ts-jest"],
+			});
+		} else if (options.testingFramework === "vitest") {
+			templates.push({
+				name: "vitest.config.ts",
+				path: "vitest.config.ts",
+				content: this.getVitestConfiguration(options),
+				dependencies: ["vitest", "@vitest/ui", "c8"],
+			});
+		}
+
+		return templates;
+	}
+
+	private getJestConfiguration(options: UnitTestOptions): string {
+		return `/** @type {import('jest').Config} */
 module.exports = {
   displayName: '${options.projectName} - Unit Tests',
   preset: 'ts-jest',
-  testEnvironment: '${options.platform === 'browser' ? 'jsdom' : 'node'}',
+  testEnvironment: '${options.platform === "browser" ? "jsdom" : "node"}',
   
   // Test file patterns
   testMatch: [
@@ -128,7 +132,7 @@ module.exports = {
   // Coverage configuration
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage/unit',
-  coverageReporters: ${JSON.stringify(options.coverage?.reporters || ['text', 'lcov', 'html'])},
+  coverageReporters: ${JSON.stringify(options.coverage?.reporters || ["text", "lcov", "html"])},
   coverageThreshold: {
     global: {
       branches: ${options.coverage?.threshold || 80},
@@ -162,16 +166,16 @@ module.exports = {
   // Verbose output
   verbose: true
 };`;
-  }
+	}
 
-  private getVitestConfiguration(options: UnitTestOptions): string {
-    return `import { defineConfig } from 'vitest/config';
+	private getVitestConfiguration(options: UnitTestOptions): string {
+		return `import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
   test: {
     name: '${options.projectName} - Unit Tests',
-    environment: '${options.platform === 'browser' ? 'happy-dom' : 'node'}',
+    environment: '${options.platform === "browser" ? "happy-dom" : "node"}',
     
     // Test file patterns
     include: [
@@ -186,7 +190,7 @@ export default defineConfig({
     // Coverage configuration
     coverage: {
       provider: 'c8',
-      reporter: ${JSON.stringify(options.coverage?.reporters || ['text', 'lcov', 'html'])},
+      reporter: ${JSON.stringify(options.coverage?.reporters || ["text", "lcov", "html"])},
       reportsDirectory: 'coverage/unit',
       thresholds: {
         branches: ${options.coverage?.threshold || 80},
@@ -220,28 +224,32 @@ export default defineConfig({
     }
   }
 });`;
-  }
+	}
 
-  private getSetupTemplate(options: UnitTestOptions): TestTemplate {
-    const setupFileName = options.testingFramework === 'jest' ? 'jest-setup.ts' : 'vitest-setup.ts';
-    
-    return {
-      name: setupFileName,
-      path: `tests/setup/${setupFileName}`,
-      content: this.getSetupContent(options),
-      dependencies: []
-    };
-  }
+	private getSetupTemplate(options: UnitTestOptions): TestTemplate {
+		const setupFileName =
+			options.testingFramework === "jest" ? "jest-setup.ts" : "vitest-setup.ts";
 
-  private getSetupContent(options: UnitTestOptions): string {
-    const imports = options.testingFramework === 'jest' 
-      ? "import 'jest-extended';\nimport { TextEncoder, TextDecoder } from 'util';"
-      : "import { vi } from 'vitest';\nimport { TextEncoder, TextDecoder } from 'util';";
+		return {
+			name: setupFileName,
+			path: `tests/setup/${setupFileName}`,
+			content: this.getSetupContent(options),
+			dependencies: [],
+		};
+	}
 
-    return `${imports}
+	private getSetupContent(options: UnitTestOptions): string {
+		const imports =
+			options.testingFramework === "jest"
+				? "import 'jest-extended';\nimport { TextEncoder, TextDecoder } from 'util';"
+				: "import { vi } from 'vitest';\nimport { TextEncoder, TextDecoder } from 'util';";
+
+		return `${imports}
 
 // Global setup for ${options.testingFramework} tests
-${options.platform === 'node' ? `
+${
+	options.platform === "node"
+		? `
 // Node.js environment setup
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as any;
@@ -249,25 +257,27 @@ global.TextDecoder = TextDecoder as any;
 // Environment variables for testing
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'error';
-` : `
+`
+		: `
 // Browser environment setup
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockImplementation(query => ({
+  value: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    removeListener: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    addEventListener: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    removeEventListener: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-    dispatchEvent: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+    addListener: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    removeListener: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    addEventListener: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    removeEventListener: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+    dispatchEvent: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
   })),
 });
 
 // Mock fetch globally
-global.fetch = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
-`}
+global.fetch = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
+`
+}
 
 // Custom matchers and utilities
 expect.extend({
@@ -288,7 +298,7 @@ expect.extend({
 });
 
 // Test timeout configuration
-${options.testingFramework === 'jest' ? 'jest.setTimeout(10000);' : ''}
+${options.testingFramework === "jest" ? "jest.setTimeout(10000);" : ""}
 
 // Console override for cleaner test output
 const originalError = console.error;
@@ -301,13 +311,13 @@ console.error = (...args: any[]) => {
   }
   originalError.call(console, ...args);
 };`;
-  }
+	}
 
-  private getGlobalUtilsTemplate(options: UnitTestOptions): TestTemplate {
-    return {
-      name: 'test-utils.ts',
-      path: 'tests/utils/test-utils.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getGlobalUtilsTemplate(options: UnitTestOptions): TestTemplate {
+		return {
+			name: "test-utils.ts",
+			path: "tests/utils/test-utils.ts",
+			content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 
 /**
  * Common test utilities and helpers
@@ -333,28 +343,32 @@ export const testUtils = {
    */
   mockConsole: () => {
     const consoleMock = {
-      log: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      error: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      warn: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      info: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+      log: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      error: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      warn: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      info: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
     };
 
-    ${options.testingFramework === 'jest' 
-      ? 'jest.spyOn(console, \'log\').mockImplementation(consoleMock.log);'
-      : 'vi.spyOn(console, \'log\').mockImplementation(consoleMock.log);'
-    }
-    ${options.testingFramework === 'jest' 
-      ? 'jest.spyOn(console, \'error\').mockImplementation(consoleMock.error);'
-      : 'vi.spyOn(console, \'error\').mockImplementation(consoleMock.error);'
-    }
-    ${options.testingFramework === 'jest' 
-      ? 'jest.spyOn(console, \'warn\').mockImplementation(consoleMock.warn);'
-      : 'vi.spyOn(console, \'warn\').mockImplementation(consoleMock.warn);'
-    }
-    ${options.testingFramework === 'jest' 
-      ? 'jest.spyOn(console, \'info\').mockImplementation(consoleMock.info);'
-      : 'vi.spyOn(console, \'info\').mockImplementation(consoleMock.info);'
-    }
+    ${
+			options.testingFramework === "jest"
+				? "jest.spyOn(console, 'log').mockImplementation(consoleMock.log);"
+				: "vi.spyOn(console, 'log').mockImplementation(consoleMock.log);"
+		}
+    ${
+			options.testingFramework === "jest"
+				? "jest.spyOn(console, 'error').mockImplementation(consoleMock.error);"
+				: "vi.spyOn(console, 'error').mockImplementation(consoleMock.error);"
+		}
+    ${
+			options.testingFramework === "jest"
+				? "jest.spyOn(console, 'warn').mockImplementation(consoleMock.warn);"
+				: "vi.spyOn(console, 'warn').mockImplementation(consoleMock.warn);"
+		}
+    ${
+			options.testingFramework === "jest"
+				? "jest.spyOn(console, 'info').mockImplementation(consoleMock.info);"
+				: "vi.spyOn(console, 'info').mockImplementation(consoleMock.info);"
+		}
 
     return consoleMock;
   },
@@ -372,8 +386,8 @@ export const testUtils = {
   /**
    * Create mock function with type safety
    */
-  createMockFunction: <T extends (...args: any[]) => any>(): ${options.testingFramework === 'jest' ? 'jest.MockedFunction<T>' : 'MockedFunction<T>'} => {
-    return ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}() as ${options.testingFramework === 'jest' ? 'jest.MockedFunction<T>' : 'MockedFunction<T>'};
+  createMockFunction: <T extends (...args: any[]) => any>(): ${options.testingFramework === "jest" ? "jest.MockedFunction<T>" : "MockedFunction<T>"} => {
+    return ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}() as ${options.testingFramework === "jest" ? "jest.MockedFunction<T>" : "MockedFunction<T>"};
   },
 
   /**
@@ -416,10 +430,11 @@ export const dateUtils = {
    */
   mockDateNow: (date: string | Date = '2024-01-01T00:00:00.000Z'): void => {
     const fixedDate = typeof date === 'string' ? new Date(date) : date;
-    ${options.testingFramework === 'jest' 
-      ? 'jest.spyOn(Date, \'now\').mockReturnValue(fixedDate.getTime());'
-      : 'vi.spyOn(Date, \'now\').mockReturnValue(fixedDate.getTime());'
-    }
+    ${
+			options.testingFramework === "jest"
+				? "jest.spyOn(Date, 'now').mockReturnValue(fixedDate.getTime());"
+				: "vi.spyOn(Date, 'now').mockReturnValue(fixedDate.getTime());"
+		}
   },
 };
 
@@ -469,7 +484,9 @@ export const asyncUtils = {
   },
 };
 
-${options.testingFramework === 'vitest' ? `
+${
+	options.testingFramework === "vitest"
+		? `
 // Vitest-specific type extensions
 declare module 'vitest' {
   interface Assertion<T = any> {
@@ -486,33 +503,39 @@ type MockedFunction<T extends (...args: any[]) => any> = T & {
   mockReset: () => void;
   mockRestore: () => void;
 };
-` : ''}`,
-      dependencies: []
-    };
-  }
+`
+		: ""
+}`,
+			dependencies: [],
+		};
+	}
 
-  private getLayerTestTemplates(layer: string, options: UnitTestOptions): TestTemplate[] {
-    switch (layer) {
-      case 'controller':
-        return this.getControllerTestTemplates(options);
-      case 'service':
-        return this.getServiceTestTemplates(options);
-      case 'repository':
-        return this.getRepositoryTestTemplates(options);
-      case 'utils':
-        return this.getUtilsTestTemplates(options);
-      case 'components':
-        return this.getComponentTestTemplates(options);
-      default:
-        return [];
-    }
-  }
+	private getLayerTestTemplates(
+		layer: string,
+		options: UnitTestOptions,
+	): TestTemplate[] {
+		switch (layer) {
+			case "controller":
+				return this.getControllerTestTemplates(options);
+			case "service":
+				return this.getServiceTestTemplates(options);
+			case "repository":
+				return this.getRepositoryTestTemplates(options);
+			case "utils":
+				return this.getUtilsTestTemplates(options);
+			case "components":
+				return this.getComponentTestTemplates(options);
+			default:
+				return [];
+		}
+	}
 
-  private getControllerTestTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [{
-      name: 'example-controller.test.ts',
-      path: 'example-controller.test.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getControllerTestTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "example-controller.test.ts",
+				path: "example-controller.test.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testUtils } from '@tests/utils/test-utils';
 
 // Example controller test
@@ -522,11 +545,11 @@ describe('ExampleController', () => {
 
   beforeEach(() => {
     mockService = {
-      findAll: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      findById: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      create: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      update: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      delete: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+      findAll: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      findById: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      create: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      update: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      delete: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
     };
 
     // Initialize controller with mocked dependencies
@@ -534,7 +557,7 @@ describe('ExampleController', () => {
   });
 
   afterEach(() => {
-    ${options.testingFramework === 'jest' ? 'jest.clearAllMocks' : 'vi.clearAllMocks'}();
+    ${options.testingFramework === "jest" ? "jest.clearAllMocks" : "vi.clearAllMocks"}();
   });
 
   describe('GET /examples', () => {
@@ -548,8 +571,8 @@ describe('ExampleController', () => {
 
       const mockRequest = {};
       const mockResponse = {
-        json: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-        status: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockReturnThis(),
+        json: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+        status: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockReturnThis(),
       };
 
       // Act
@@ -567,8 +590,8 @@ describe('ExampleController', () => {
 
       const mockRequest = {};
       const mockResponse = {
-        json: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-        status: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockReturnThis(),
+        json: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+        status: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockReturnThis(),
       };
 
       // Act & Assert
@@ -590,8 +613,8 @@ describe('ExampleController', () => {
 
       const mockRequest = { body: newExample };
       const mockResponse = {
-        json: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-        status: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockReturnThis(),
+        json: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+        status: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockReturnThis(),
       };
 
       // Act
@@ -608,8 +631,8 @@ describe('ExampleController', () => {
       const invalidExample = {}; // Missing required fields
       const mockRequest = { body: invalidExample };
       const mockResponse = {
-        json: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-        status: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockReturnThis(),
+        json: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+        status: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockReturnThis(),
       };
 
       // Act
@@ -621,15 +644,17 @@ describe('ExampleController', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getServiceTestTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [{
-      name: 'example-service.test.ts',
-      path: 'example-service.test.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getServiceTestTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "example-service.test.ts",
+				path: "example-service.test.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testUtils, asyncUtils } from '@tests/utils/test-utils';
 
 // Example service test
@@ -640,18 +665,18 @@ describe('ExampleService', () => {
 
   beforeEach(() => {
     mockRepository = {
-      findAll: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      findById: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      create: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      update: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      delete: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+      findAll: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      findById: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      create: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      update: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      delete: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
     };
 
     mockLogger = {
-      info: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      error: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      warn: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      debug: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+      info: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      error: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      warn: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      debug: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
     };
 
     // Initialize service with mocked dependencies
@@ -659,7 +684,7 @@ describe('ExampleService', () => {
   });
 
   afterEach(() => {
-    ${options.testingFramework === 'jest' ? 'jest.clearAllMocks' : 'vi.clearAllMocks'}();
+    ${options.testingFramework === "jest" ? "jest.clearAllMocks" : "vi.clearAllMocks"}();
   });
 
   describe('findAll', () => {
@@ -858,15 +883,17 @@ describe('ExampleService', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getRepositoryTestTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [{
-      name: 'example-repository.test.ts',
-      path: 'example-repository.test.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getRepositoryTestTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "example-repository.test.ts",
+				path: "example-repository.test.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testUtils, dateUtils } from '@tests/utils/test-utils';
 
 // Example repository test
@@ -876,9 +903,9 @@ describe('ExampleRepository', () => {
 
   beforeEach(() => {
     mockDatabase = {
-      query: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      transaction: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
-      close: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+      query: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      transaction: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
+      close: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
     };
 
     // Initialize repository with mocked database
@@ -889,8 +916,8 @@ describe('ExampleRepository', () => {
   });
 
   afterEach(() => {
-    ${options.testingFramework === 'jest' ? 'jest.clearAllMocks' : 'vi.clearAllMocks'}();
-    ${options.testingFramework === 'jest' ? 'jest.restoreAllMocks' : 'vi.restoreAllMocks'}();
+    ${options.testingFramework === "jest" ? "jest.clearAllMocks" : "vi.clearAllMocks"}();
+    ${options.testingFramework === "jest" ? "jest.restoreAllMocks" : "vi.restoreAllMocks"}();
   });
 
   describe('findAll', () => {
@@ -1082,7 +1109,7 @@ describe('ExampleRepository', () => {
   describe('transaction handling', () => {
     it('should execute operations within transaction', async () => {
       // Arrange
-      const mockTransactionCallback = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue('transaction result');
+      const mockTransactionCallback = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue('transaction result');
       mockDatabase.transaction.mockImplementation(async (callback: any) => {
         return await callback(mockDatabase);
       });
@@ -1097,7 +1124,7 @@ describe('ExampleRepository', () => {
 
     it('should handle transaction rollback on error', async () => {
       // Arrange
-      const mockTransactionCallback = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(new Error('Transaction failed'));
+      const mockTransactionCallback = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(new Error('Transaction failed'));
       mockDatabase.transaction.mockImplementation(async (callback: any) => {
         throw new Error('Transaction rolled back');
       });
@@ -1109,15 +1136,17 @@ describe('ExampleRepository', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getUtilsTestTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [{
-      name: 'string-utils.test.ts',
-      path: 'string-utils.test.ts',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getUtilsTestTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "string-utils.test.ts",
+				path: "string-utils.test.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { testUtils } from '@tests/utils/test-utils';
 
 // Example utility function tests
@@ -1335,19 +1364,21 @@ describe('StringUtils', () => {
     });
   });
 });`,
-      dependencies: []
-    }];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private getComponentTestTemplates(options: UnitTestOptions): TestTemplate[] {
-    if (options.platform !== 'browser') {
-      return [];
-    }
+	private getComponentTestTemplates(options: UnitTestOptions): TestTemplate[] {
+		if (options.platform !== "browser") {
+			return [];
+		}
 
-    return [{
-      name: 'example-component.test.tsx',
-      path: 'example-component.test.tsx',
-      content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+		return [
+			{
+				name: "example-component.test.tsx",
+				path: "example-component.test.tsx",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { testUtils } from '@tests/utils/test-utils';
 
@@ -1355,11 +1386,11 @@ import { testUtils } from '@tests/utils/test-utils';
 describe('ExampleComponent', () => {
   const defaultProps = {
     title: 'Test Title',
-    onButtonClick: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(),
+    onButtonClick: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(),
   };
 
   beforeEach(() => {
-    ${options.testingFramework === 'jest' ? 'jest.clearAllMocks' : 'vi.clearAllMocks'}();
+    ${options.testingFramework === "jest" ? "jest.clearAllMocks" : "vi.clearAllMocks"}();
   });
 
   it('should render component with title', () => {
@@ -1446,7 +1477,7 @@ describe('ExampleComponent', () => {
       // Arrange
       const asyncProps = {
         ...defaultProps,
-        fetchData: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue({ data: 'loaded data' })
+        fetchData: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue({ data: 'loaded data' })
       };
 
       // Act
@@ -1463,7 +1494,7 @@ describe('ExampleComponent', () => {
       // Arrange
       const asyncProps = {
         ...defaultProps,
-        fetchData: ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(new Error('Fetch failed'))
+        fetchData: ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(new Error('Fetch failed'))
       };
 
       // Act
@@ -1505,16 +1536,17 @@ describe('ExampleComponent', () => {
     });
   });
 });`,
-      dependencies: ['@testing-library/react', '@testing-library/jest-dom']
-    }];
-  }
+				dependencies: ["@testing-library/react", "@testing-library/jest-dom"],
+			},
+		];
+	}
 
-  private getTestHelperTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [
-      {
-        name: 'mock-builders.ts',
-        path: 'mock-builders.ts',
-        content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getTestHelperTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "mock-builders.ts",
+				path: "mock-builders.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 
 /**
  * Mock builders for creating test doubles
@@ -1527,13 +1559,13 @@ export class MockBuilder<T> {
     return new MockBuilder<T>();
   }
 
-  with<K extends keyof T>(key: K, value: T[K] | ${options.testingFramework === 'jest' ? 'jest.MockedFunction<any>' : 'MockedFunction<any>'}): this {
+  with<K extends keyof T>(key: K, value: T[K] | ${options.testingFramework === "jest" ? "jest.MockedFunction<any>" : "MockedFunction<any>"}): this {
     this.mockObject[key] = value;
     return this;
   }
 
   withMethod<K extends keyof T>(key: K, implementation?: T[K]): this {
-    const mockFn = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(implementation);
+    const mockFn = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(implementation);
     this.mockObject[key] = mockFn as T[K];
     return this;
   }
@@ -1554,32 +1586,32 @@ export class RepositoryMockBuilder<T> {
   }
 
   withFindAll(returnValue: T[] = []): this {
-    this.repository.findAll = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue);
+    this.repository.findAll = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue);
     return this;
   }
 
   withFindById(returnValue: T | null = null): this {
-    this.repository.findById = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue);
+    this.repository.findById = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue);
     return this;
   }
 
   withCreate(returnValue?: T): this {
-    this.repository.create = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue);
+    this.repository.create = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue);
     return this;
   }
 
   withUpdate(returnValue?: T): this {
-    this.repository.update = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue);
+    this.repository.update = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue);
     return this;
   }
 
   withDelete(returnValue: boolean = true): this {
-    this.repository.delete = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(returnValue);
+    this.repository.delete = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(returnValue);
     return this;
   }
 
   withCustomMethod(methodName: string, implementation?: any): this {
-    this.repository[methodName] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(implementation);
+    this.repository[methodName] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(implementation);
     return this;
   }
 
@@ -1599,15 +1631,15 @@ export class ServiceMockBuilder<T> {
   }
 
   withMethod(methodName: string, implementation?: any): this {
-    this.service[methodName] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}(implementation);
+    this.service[methodName] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}(implementation);
     return this;
   }
 
   withAsyncMethod(methodName: string, resolvedValue?: any, rejectedValue?: any): this {
     if (rejectedValue) {
-      this.service[methodName] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(rejectedValue);
+      this.service[methodName] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(rejectedValue);
     } else {
-      this.service[methodName] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockResolvedValue(resolvedValue);
+      this.service[methodName] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockResolvedValue(resolvedValue);
     }
     return this;
   }
@@ -1629,7 +1661,7 @@ export class HttpClientMockBuilder {
 
   withGet(url: string | RegExp, response: any, status: number = 200): this {
     if (!this.client.get) {
-      this.client.get = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+      this.client.get = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     }
     
     if (typeof url === 'string') {
@@ -1653,7 +1685,7 @@ export class HttpClientMockBuilder {
 
   withPost(url: string | RegExp, response: any, status: number = 201): this {
     if (!this.client.post) {
-      this.client.post = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+      this.client.post = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     }
     
     if (typeof url === 'string') {
@@ -1676,7 +1708,7 @@ export class HttpClientMockBuilder {
   }
 
   withError(method: 'get' | 'post' | 'put' | 'delete', error: Error): this {
-    this.client[method] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(error);
+    this.client[method] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(error);
     return this;
   }
 
@@ -1697,7 +1729,7 @@ export class DatabaseMockBuilder {
 
   withQuery(sql: string | RegExp, result: any): this {
     if (!this.database.query) {
-      this.database.query = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}();
+      this.database.query = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}();
     }
 
     if (typeof sql === 'string') {
@@ -1720,7 +1752,7 @@ export class DatabaseMockBuilder {
   }
 
   withTransaction(callback?: (client: any) => Promise<any>): this {
-    this.database.transaction = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockImplementation(async (fn: any) => {
+    this.database.transaction = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockImplementation(async (fn: any) => {
       if (callback) {
         return await callback(this.database);
       }
@@ -1730,7 +1762,7 @@ export class DatabaseMockBuilder {
   }
 
   withError(method: string, error: Error): this {
-    this.database[method] = ${options.testingFramework === 'jest' ? 'jest.fn' : 'vi.fn'}().mockRejectedValue(error);
+    this.database[method] = ${options.testingFramework === "jest" ? "jest.fn" : "vi.fn"}().mockRejectedValue(error);
     return this;
   }
 
@@ -1739,7 +1771,9 @@ export class DatabaseMockBuilder {
   }
 }
 
-${options.testingFramework === 'vitest' ? `
+${
+	options.testingFramework === "vitest"
+		? `
 // Vitest-specific type extensions
 type MockedFunction<T extends (...args: any[]) => any> = T & {
   mockImplementation: (fn: T) => MockedFunction<T>;
@@ -1750,18 +1784,20 @@ type MockedFunction<T extends (...args: any[]) => any> = T & {
   mockReset: () => void;
   mockRestore: () => void;
 };
-` : ''}`,
-        dependencies: []
-      }
-    ];
-  }
+`
+		: ""
+}`,
+				dependencies: [],
+			},
+		];
+	}
 
-  private getMockFactoryTemplates(options: UnitTestOptions): TestTemplate[] {
-    return [
-      {
-        name: 'entity-factories.ts',
-        path: 'entity-factories.ts',
-        content: `import { ${options.testingFramework === 'jest' ? 'jest' : 'vi'} } from '${options.testingFramework}';
+	private getMockFactoryTemplates(options: UnitTestOptions): TestTemplate[] {
+		return [
+			{
+				name: "entity-factories.ts",
+				path: "entity-factories.ts",
+				content: `import { ${options.testingFramework === "jest" ? "jest" : "vi"} } from '${options.testingFramework}';
 
 /**
  * Entity factories for generating test data
@@ -2054,26 +2090,29 @@ export const testDataUtils = {
     return Array.from({ length }, generator);
   },
 };`,
-        dependencies: []
-      }
-    ];
-  }
+				dependencies: [],
+			},
+		];
+	}
 
-  private async writeTemplate(template: TestTemplate, basePath: string): Promise<void> {
-    const fullPath = path.join(basePath, template.path);
-    const dirPath = path.dirname(fullPath);
-    
-    await this.ensureDirectoryExists(dirPath);
-    await fs.writeFile(fullPath, template.content, 'utf8');
-    
-    this.logger.info(`Generated: ${template.name}`);
-  }
+	private async writeTemplate(
+		template: TestTemplate,
+		basePath: string,
+	): Promise<void> {
+		const fullPath = path.join(basePath, template.path);
+		const dirPath = path.dirname(fullPath);
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
-    try {
-      await fs.access(dirPath);
-    } catch {
-      await fs.mkdir(dirPath, { recursive: true });
-    }
-  }
+		await this.ensureDirectoryExists(dirPath);
+		await fs.writeFile(fullPath, template.content, "utf8");
+
+		this.logger.info(`Generated: ${template.name}`);
+	}
+
+	private async ensureDirectoryExists(dirPath: string): Promise<void> {
+		try {
+			await fs.access(dirPath);
+		} catch {
+			await fs.mkdir(dirPath, { recursive: true });
+		}
+	}
 }

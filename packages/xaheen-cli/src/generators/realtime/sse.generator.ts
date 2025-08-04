@@ -1,140 +1,143 @@
-import { BaseGenerator } from '../base.generator';
-import { GeneratedFile } from '../../types/generator.types';
+import { BaseGenerator } from "../base.generator";
+import { GeneratedFile } from "../../types/generator.types";
 
 export interface SSEOptions {
-  projectName: string;
-  framework: 'nestjs' | 'express' | 'fastify' | 'hono';
-  features: SSEFeature[];
-  authentication: 'none' | 'jwt' | 'api-key' | 'session';
-  cors: boolean;
-  rateLimit: {
-    enabled: boolean;
-    requests: number;
-    window: string;
-  };
-  heartbeat: {
-    enabled: boolean;
-    interval: number;
-  };
-  compression: boolean;
-  monitoring: boolean;
-  cluster: boolean;
+	projectName: string;
+	framework: "nestjs" | "express" | "fastify" | "hono";
+	features: SSEFeature[];
+	authentication: "none" | "jwt" | "api-key" | "session";
+	cors: boolean;
+	rateLimit: {
+		enabled: boolean;
+		requests: number;
+		window: string;
+	};
+	heartbeat: {
+		enabled: boolean;
+		interval: number;
+	};
+	compression: boolean;
+	monitoring: boolean;
+	cluster: boolean;
 }
 
-export type SSEFeature = 
-  | 'live-dashboard'
-  | 'progress-tracking'
-  | 'notifications'
-  | 'metrics-stream'
-  | 'log-stream'
-  | 'stock-ticker'
-  | 'game-updates'
-  | 'system-status';
+export type SSEFeature =
+	| "live-dashboard"
+	| "progress-tracking"
+	| "notifications"
+	| "metrics-stream"
+	| "log-stream"
+	| "stock-ticker"
+	| "game-updates"
+	| "system-status";
 
 export class SSEGenerator extends BaseGenerator {
-  async generate(options: SSEOptions): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+	async generate(options: SSEOptions): Promise<GeneratedFile[]> {
+		const files: GeneratedFile[] = [];
 
-    // Core SSE server
-    files.push(this.generateSSEController(options));
-    files.push(this.generateSSEService(options));
-    files.push(this.generateSSEModule(options));
+		// Core SSE server
+		files.push(this.generateSSEController(options));
+		files.push(this.generateSSEService(options));
+		files.push(this.generateSSEModule(options));
 
-    // Feature-specific implementations
-    for (const feature of options.features) {
-      files.push(...this.generateFeatureImplementation(feature, options));
-    }
+		// Feature-specific implementations
+		for (const feature of options.features) {
+			files.push(...this.generateFeatureImplementation(feature, options));
+		}
 
-    // Client reconnection logic
-    files.push(this.generateClientReconnection(options));
+		// Client reconnection logic
+		files.push(this.generateClientReconnection(options));
 
-    // Middleware and guards
-    if (options.authentication !== 'none') {
-      files.push(...this.generateAuthMiddleware(options));
-    }
+		// Middleware and guards
+		if (options.authentication !== "none") {
+			files.push(...this.generateAuthMiddleware(options));
+		}
 
-    if (options.rateLimit.enabled) {
-      files.push(this.generateRateLimitMiddleware(options));
-    }
+		if (options.rateLimit.enabled) {
+			files.push(this.generateRateLimitMiddleware(options));
+		}
 
-    // Configuration and types
-    files.push(this.generateTypes(options));
-    files.push(this.generateConfiguration(options));
+		// Configuration and types
+		files.push(this.generateTypes(options));
+		files.push(this.generateConfiguration(options));
 
-    // Testing utilities
-    files.push(...this.generateTestFiles(options));
+		// Testing utilities
+		files.push(...this.generateTestFiles(options));
 
-    // Client utilities
-    files.push(this.generateClientUtils(options));
+		// Client utilities
+		files.push(this.generateClientUtils(options));
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateSSEController(options: SSEOptions): GeneratedFile {
-    const content = this.getSSEControllerTemplate(options);
-    
-    return {
-      path: `src/realtime/sse/${options.projectName}-sse.controller.ts`,
-      content,
-      type: 'controller'
-    };
-  }
+	private generateSSEController(options: SSEOptions): GeneratedFile {
+		const content = this.getSSEControllerTemplate(options);
 
-  private generateSSEService(options: SSEOptions): GeneratedFile {
-    const content = this.getSSEServiceTemplate(options);
-    
-    return {
-      path: `src/realtime/sse/${options.projectName}-sse.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/${options.projectName}-sse.controller.ts`,
+			content,
+			type: "controller",
+		};
+	}
 
-  private generateSSEModule(options: SSEOptions): GeneratedFile {
-    const content = this.getSSEModuleTemplate(options);
-    
-    return {
-      path: `src/realtime/sse/${options.projectName}-sse.module.ts`,
-      content,
-      type: 'module'
-    };
-  }
+	private generateSSEService(options: SSEOptions): GeneratedFile {
+		const content = this.getSSEServiceTemplate(options);
 
-  private generateFeatureImplementation(feature: SSEFeature, options: SSEOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    switch (feature) {
-      case 'live-dashboard':
-        files.push(this.generateLiveDashboardFeature(options));
-        break;
-      case 'progress-tracking':
-        files.push(this.generateProgressTrackingFeature(options));
-        break;
-      case 'notifications':
-        files.push(this.generateNotificationsFeature(options));
-        break;
-      case 'metrics-stream':
-        files.push(this.generateMetricsStreamFeature(options));
-        break;
-      case 'log-stream':
-        files.push(this.generateLogStreamFeature(options));
-        break;
-      case 'stock-ticker':
-        files.push(this.generateStockTickerFeature(options));
-        break;
-      case 'game-updates':
-        files.push(this.generateGameUpdatesFeature(options));
-        break;
-      case 'system-status':
-        files.push(this.generateSystemStatusFeature(options));
-        break;
-    }
-    
-    return files;
-  }
+		return {
+			path: `src/realtime/sse/${options.projectName}-sse.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateClientReconnection(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateSSEModule(options: SSEOptions): GeneratedFile {
+		const content = this.getSSEModuleTemplate(options);
+
+		return {
+			path: `src/realtime/sse/${options.projectName}-sse.module.ts`,
+			content,
+			type: "module",
+		};
+	}
+
+	private generateFeatureImplementation(
+		feature: SSEFeature,
+		options: SSEOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
+
+		switch (feature) {
+			case "live-dashboard":
+				files.push(this.generateLiveDashboardFeature(options));
+				break;
+			case "progress-tracking":
+				files.push(this.generateProgressTrackingFeature(options));
+				break;
+			case "notifications":
+				files.push(this.generateNotificationsFeature(options));
+				break;
+			case "metrics-stream":
+				files.push(this.generateMetricsStreamFeature(options));
+				break;
+			case "log-stream":
+				files.push(this.generateLogStreamFeature(options));
+				break;
+			case "stock-ticker":
+				files.push(this.generateStockTickerFeature(options));
+				break;
+			case "game-updates":
+				files.push(this.generateGameUpdatesFeature(options));
+				break;
+			case "system-status":
+				files.push(this.generateSystemStatusFeature(options));
+				break;
+		}
+
+		return files;
+	}
+
+	private generateClientReconnection(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * SSE Client with automatic reconnection logic
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -322,15 +325,15 @@ export function useSSE(options: SSEClientOptions) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/client/sse-client.ts`,
-      content,
-      type: 'utility'
-    };
-  }
+		return {
+			path: `src/realtime/sse/client/sse-client.ts`,
+			content,
+			type: "utility",
+		};
+	}
 
-  private generateLiveDashboardFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateLiveDashboardFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Live Dashboard SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -393,15 +396,15 @@ export class LiveDashboardService {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/live-dashboard.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/live-dashboard.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateProgressTrackingFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateProgressTrackingFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Progress Tracking SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -529,15 +532,15 @@ export function useProgressTracking(operationId: string) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/progress-tracking.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/progress-tracking.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateNotificationsFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateNotificationsFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Notifications SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -728,15 +731,15 @@ export function useNotifications(userId?: string) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/notifications.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/notifications.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateMetricsStreamFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateMetricsStreamFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Metrics Stream SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -993,15 +996,15 @@ export function useMetricsStream(metricNames: string[]) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/metrics-stream.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/metrics-stream.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateLogStreamFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateLogStreamFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Log Stream SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1267,15 +1270,15 @@ export function useLogStream(filter?: LogFilter) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/log-stream.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/log-stream.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateStockTickerFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateStockTickerFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Stock Ticker SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1536,15 +1539,15 @@ export function useStockTicker(symbols?: string[]) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/stock-ticker.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/stock-ticker.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateGameUpdatesFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateGameUpdatesFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Game Updates SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1929,15 +1932,15 @@ export function useGameUpdates(gameId: string) {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/game-updates.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/game-updates.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateSystemStatusFeature(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateSystemStatusFeature(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * System Status SSE Feature
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2373,41 +2376,41 @@ export function useSystemStatus() {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/features/system-status.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/realtime/sse/features/system-status.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateAuthMiddleware(options: SSEOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    if (options.authentication === 'jwt') {
-      files.push({
-        path: `src/realtime/sse/middleware/jwt-auth.middleware.ts`,
-        content: this.getJWTAuthMiddlewareTemplate(options),
-        type: 'middleware'
-      });
-    } else if (options.authentication === 'api-key') {
-      files.push({
-        path: `src/realtime/sse/middleware/api-key-auth.middleware.ts`,
-        content: this.getAPIKeyAuthMiddlewareTemplate(options),
-        type: 'middleware'
-      });
-    } else if (options.authentication === 'session') {
-      files.push({
-        path: `src/realtime/sse/middleware/session-auth.middleware.ts`,
-        content: this.getSessionAuthMiddlewareTemplate(options),
-        type: 'middleware'
-      });
-    }
-    
-    return files;
-  }
+	private generateAuthMiddleware(options: SSEOptions): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-  private generateRateLimitMiddleware(options: SSEOptions): GeneratedFile {
-    const content = `/**
+		if (options.authentication === "jwt") {
+			files.push({
+				path: `src/realtime/sse/middleware/jwt-auth.middleware.ts`,
+				content: this.getJWTAuthMiddlewareTemplate(options),
+				type: "middleware",
+			});
+		} else if (options.authentication === "api-key") {
+			files.push({
+				path: `src/realtime/sse/middleware/api-key-auth.middleware.ts`,
+				content: this.getAPIKeyAuthMiddlewareTemplate(options),
+				type: "middleware",
+			});
+		} else if (options.authentication === "session") {
+			files.push({
+				path: `src/realtime/sse/middleware/session-auth.middleware.ts`,
+				content: this.getSessionAuthMiddlewareTemplate(options),
+				type: "middleware",
+			});
+		}
+
+		return files;
+	}
+
+	private generateRateLimitMiddleware(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * Rate Limit Middleware for SSE
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2503,15 +2506,15 @@ export class SSERateLimitMiddleware implements NestMiddleware {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/middleware/rate-limit.middleware.ts`,
-      content,
-      type: 'middleware'
-    };
-  }
+		return {
+			path: `src/realtime/sse/middleware/rate-limit.middleware.ts`,
+			content,
+			type: "middleware",
+		};
+	}
 
-  private generateTypes(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateTypes(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * SSE Types and Interfaces
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2578,7 +2581,7 @@ export interface SSEHealthCheck {
   errors: string[];
 }
 
-export type SSEFeature = ${options.features.map(f => `'${f}'`).join(' | ')};
+export type SSEFeature = ${options.features.map((f) => `'${f}'`).join(" | ")};
 
 export interface SSEConfiguration {
   heartbeatInterval: number;
@@ -2625,15 +2628,15 @@ export interface SSEChannelOptions {
 }
 `;
 
-    return {
-      path: `src/realtime/sse/types/sse.types.ts`,
-      content,
-      type: 'types'
-    };
-  }
+		return {
+			path: `src/realtime/sse/types/sse.types.ts`,
+			content,
+			type: "types",
+		};
+	}
 
-  private generateConfiguration(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateConfiguration(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * SSE Configuration
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2658,7 +2661,7 @@ export const sseConfig: SSEConfiguration = {
   },
   authentication: {
     type: '${options.authentication}',
-    required: ${options.authentication !== 'none'}
+    required: ${options.authentication !== "none"}
   },
   monitoring: {
     enabled: ${options.monitoring},
@@ -2667,28 +2670,30 @@ export const sseConfig: SSEConfiguration = {
 };
 
 export const sseEndpoints = {
-  ${options.features.map(feature => {
-    switch (feature) {
-      case 'live-dashboard':
-        return `'${feature}': '/api/sse/dashboard'`;
-      case 'progress-tracking':
-        return `'${feature}': '/api/sse/progress'`;
-      case 'notifications':
-        return `'${feature}': '/api/sse/notifications'`;
-      case 'metrics-stream':
-        return `'${feature}': '/api/sse/metrics'`;
-      case 'log-stream':
-        return `'${feature}': '/api/sse/logs'`;
-      case 'stock-ticker':
-        return `'${feature}': '/api/sse/stocks'`;
-      case 'game-updates':
-        return `'${feature}': '/api/sse/games'`;
-      case 'system-status':
-        return `'${feature}': '/api/sse/system-status'`;
-      default:
-        return `'${feature}': '/api/sse/${feature}'`;
-    }
-  }).join(',\n  ')}
+  ${options.features
+		.map((feature) => {
+			switch (feature) {
+				case "live-dashboard":
+					return `'${feature}': '/api/sse/dashboard'`;
+				case "progress-tracking":
+					return `'${feature}': '/api/sse/progress'`;
+				case "notifications":
+					return `'${feature}': '/api/sse/notifications'`;
+				case "metrics-stream":
+					return `'${feature}': '/api/sse/metrics'`;
+				case "log-stream":
+					return `'${feature}': '/api/sse/logs'`;
+				case "stock-ticker":
+					return `'${feature}': '/api/sse/stocks'`;
+				case "game-updates":
+					return `'${feature}': '/api/sse/games'`;
+				case "system-status":
+					return `'${feature}': '/api/sse/system-status'`;
+				default:
+					return `'${feature}': '/api/sse/${feature}'`;
+			}
+		})
+		.join(",\n  ")}
 };
 
 export const sseMessages = {
@@ -2715,30 +2720,30 @@ export const sseMessages = {
 };
 `;
 
-    return {
-      path: `src/realtime/sse/config/sse.config.ts`,
-      content,
-      type: 'config'
-    };
-  }
+		return {
+			path: `src/realtime/sse/config/sse.config.ts`,
+			content,
+			type: "config",
+		};
+	}
 
-  private generateTestFiles(options: SSEOptions): GeneratedFile[] {
-    return [
-      {
-        path: `src/realtime/sse/__tests__/${options.projectName}-sse.service.spec.ts`,
-        content: this.getSSEServiceTestTemplate(options),
-        type: 'test'
-      },
-      {
-        path: `src/realtime/sse/__tests__/${options.projectName}-sse.controller.spec.ts`,
-        content: this.getSSEControllerTestTemplate(options),
-        type: 'test'
-      }
-    ];
-  }
+	private generateTestFiles(options: SSEOptions): GeneratedFile[] {
+		return [
+			{
+				path: `src/realtime/sse/__tests__/${options.projectName}-sse.service.spec.ts`,
+				content: this.getSSEServiceTestTemplate(options),
+				type: "test",
+			},
+			{
+				path: `src/realtime/sse/__tests__/${options.projectName}-sse.controller.spec.ts`,
+				content: this.getSSEControllerTestTemplate(options),
+				type: "test",
+			},
+		];
+	}
 
-  private generateClientUtils(options: SSEOptions): GeneratedFile {
-    const content = `/**
+	private generateClientUtils(options: SSEOptions): GeneratedFile {
+		const content = `/**
  * SSE Client Utilities
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2883,16 +2888,16 @@ export function useSSEMultiple(connections: Array<{ id: string; options: SSEClie
 }
 `;
 
-    return {
-      path: `src/realtime/sse/client/sse-client-utils.ts`,
-      content,
-      type: 'utility'
-    };
-  }
+		return {
+			path: `src/realtime/sse/client/sse-client-utils.ts`,
+			content,
+			type: "utility",
+		};
+	}
 
-  // Template methods
-  private getSSEControllerTemplate(options: SSEOptions): string {
-    return `/**
+	// Template methods
+	private getSSEControllerTemplate(options: SSEOptions): string {
+		return `/**
  * SSE Controller
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2900,7 +2905,7 @@ export function useSSEMultiple(connections: Array<{ id: string; options: SSEClie
 import { Controller, Get, Req, Res, Query, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEService } from './${options.projectName}-sse.service';
-${options.authentication === 'jwt' ? "import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';" : ""}
+${options.authentication === "jwt" ? "import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';" : ""}
 ${options.rateLimit.enabled ? "import { SSERateLimitMiddleware } from './middleware/rate-limit.middleware';" : ""}
 
 @Controller('sse')
@@ -2909,13 +2914,14 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     private readonly sseService: ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEService
   ) {}
 
-  ${options.features.map(feature => {
-    const methodName = feature.replace(/-/g, '');
-    const routePath = feature.replace(/_/g, '-');
-    
-    return `
+  ${options.features
+		.map((feature) => {
+			const methodName = feature.replace(/-/g, "");
+			const routePath = feature.replace(/_/g, "-");
+
+			return `
   @Get('${routePath}')
-  ${options.authentication !== 'none' ? '@UseGuards(JwtAuthGuard)' : ''}
+  ${options.authentication !== "none" ? "@UseGuards(JwtAuthGuard)" : ""}
   async ${methodName}(
     @Req() req: Request,
     @Res() res: Response,
@@ -2923,7 +2929,8 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
   ): Promise<void> {
     await this.sseService.handleConnection(req, res, '${feature}', query);
   }`;
-  }).join('')}
+		})
+		.join("")}
 
   @Get('health')
   async health(): Promise<{ status: string; connections: number }> {
@@ -2935,10 +2942,10 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     return this.sseService.getMetrics();
   }
 }`;
-  }
+	}
 
-  private getSSEServiceTemplate(options: SSEOptions): string {
-    return `/**
+	private getSSEServiceTemplate(options: SSEOptions): string {
+		return `/**
  * SSE Service
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3237,10 +3244,10 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     return (req as any).user?.id;
   }
 }`;
-  }
+	}
 
-  private getSSEModuleTemplate(options: SSEOptions): string {
-    return `/**
+	private getSSEModuleTemplate(options: SSEOptions): string {
+		return `/**
  * SSE Module
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3250,37 +3257,51 @@ import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.sli
 import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEService } from './${options.projectName}-sse.service';
 
 // Feature services
-${options.features.map(feature => {
-  const serviceName = feature.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join('') + 'Service';
-  return `import { ${serviceName} } from './features/${feature}.service';`;
-}).join('\n')}
+${options.features
+	.map((feature) => {
+		const serviceName =
+			feature
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("") + "Service";
+		return `import { ${serviceName} } from './features/${feature}.service';`;
+	})
+	.join("\n")}
 
 @Module({
   controllers: [${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEController],
   providers: [
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEService,
-    ${options.features.map(feature => {
-      return feature.split('-').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join('') + 'Service';
-    }).join(',\n    ')}
+    ${options.features
+			.map((feature) => {
+				return (
+					feature
+						.split("-")
+						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+						.join("") + "Service"
+				);
+			})
+			.join(",\n    ")}
   ],
   exports: [
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEService,
-    ${options.features.map(feature => {
-      return feature.split('-').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join('') + 'Service';
-    }).join(',\n    ')}
+    ${options.features
+			.map((feature) => {
+				return (
+					feature
+						.split("-")
+						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+						.join("") + "Service"
+				);
+			})
+			.join(",\n    ")}
   ]
 })
 export class ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}SSEModule {}`;
-  }
+	}
 
-  private getJWTAuthMiddlewareTemplate(options: SSEOptions): string {
-    return `/**
+	private getJWTAuthMiddlewareTemplate(options: SSEOptions): string {
+		return `/**
  * JWT Authentication Middleware for SSE
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3335,10 +3356,10 @@ export class JWTSSEAuthMiddleware implements NestMiddleware {
     return null;
   }
 }`;
-  }
+	}
 
-  private getAPIKeyAuthMiddlewareTemplate(options: SSEOptions): string {
-    return `/**
+	private getAPIKeyAuthMiddlewareTemplate(options: SSEOptions): string {
+		return `/**
  * API Key Authentication Middleware for SSE
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3393,10 +3414,10 @@ export class APIKeySSEAuthMiddleware implements NestMiddleware {
     return null;
   }
 }`;
-  }
+	}
 
-  private getSessionAuthMiddlewareTemplate(options: SSEOptions): string {
-    return `/**
+	private getSessionAuthMiddlewareTemplate(options: SSEOptions): string {
+		return `/**
  * Session Authentication Middleware for SSE
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3424,10 +3445,10 @@ export class SessionSSEAuthMiddleware implements NestMiddleware {
     }
   }
 }`;
-  }
+	}
 
-  private getSSEServiceTestTemplate(options: SSEOptions): string {
-    return `/**
+	private getSSEServiceTestTemplate(options: SSEOptions): string {
+		return `/**
  * SSE Service Tests
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3476,10 +3497,10 @@ describe('${options.projectName.charAt(0).toUpperCase() + options.projectName.sl
     });
   });
 });`;
-  }
+	}
 
-  private getSSEControllerTestTemplate(options: SSEOptions): string {
-    return `/**
+	private getSSEControllerTestTemplate(options: SSEOptions): string {
+		return `/**
  * SSE Controller Tests
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -3535,5 +3556,5 @@ describe('${options.projectName.charAt(0).toUpperCase() + options.projectName.sl
     });
   });
 });`;
-  }
+	}
 }

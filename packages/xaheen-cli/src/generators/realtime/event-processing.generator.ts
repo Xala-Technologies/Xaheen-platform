@@ -1,105 +1,105 @@
-import { BaseGenerator } from '../base.generator';
-import { GeneratedFile } from '../../types/generator.types';
+import { BaseGenerator } from "../base.generator";
+import { GeneratedFile } from "../../types/generator.types";
 
 export interface EventProcessingOptions {
-  projectName: string;
-  framework: 'nestjs' | 'express' | 'fastify' | 'hono';
-  patterns: EventPattern[];
-  storage: 'memory' | 'redis' | 'mongodb' | 'postgresql' | 'eventstore';
-  features: EventProcessingFeature[];
-  retry: {
-    enabled: boolean;
-    maxAttempts: number;
-    backoffStrategy: 'exponential' | 'linear' | 'fixed';
-    baseDelay: number;
-  };
-  eventSourcing: {
-    enabled: boolean;
-    snapshotInterval: number;
-    replayFromSnapshot: boolean;
-  };
-  monitoring: boolean;
-  validation: {
-    enabled: boolean;
-    schemaRegistry: boolean;
-  };
+	projectName: string;
+	framework: "nestjs" | "express" | "fastify" | "hono";
+	patterns: EventPattern[];
+	storage: "memory" | "redis" | "mongodb" | "postgresql" | "eventstore";
+	features: EventProcessingFeature[];
+	retry: {
+		enabled: boolean;
+		maxAttempts: number;
+		backoffStrategy: "exponential" | "linear" | "fixed";
+		baseDelay: number;
+	};
+	eventSourcing: {
+		enabled: boolean;
+		snapshotInterval: number;
+		replayFromSnapshot: boolean;
+	};
+	monitoring: boolean;
+	validation: {
+		enabled: boolean;
+		schemaRegistry: boolean;
+	};
 }
 
-export type EventPattern = 
-  | 'event-sourcing'
-  | 'cqrs'
-  | 'saga'
-  | 'event-replay'
-  | 'event-projection'
-  | 'event-handler'
-  | 'event-aggregation'
-  | 'event-filtering';
+export type EventPattern =
+	| "event-sourcing"
+	| "cqrs"
+	| "saga"
+	| "event-replay"
+	| "event-projection"
+	| "event-handler"
+	| "event-aggregation"
+	| "event-filtering";
 
-export type EventProcessingFeature = 
-  | 'domain-events'
-  | 'integration-events'
-  | 'command-handling'
-  | 'query-handling'
-  | 'saga-orchestration'
-  | 'event-store'
-  | 'read-model-projection'
-  | 'event-versioning';
+export type EventProcessingFeature =
+	| "domain-events"
+	| "integration-events"
+	| "command-handling"
+	| "query-handling"
+	| "saga-orchestration"
+	| "event-store"
+	| "read-model-projection"
+	| "event-versioning";
 
 export class EventProcessingGenerator extends BaseGenerator {
-  async generate(options: EventProcessingOptions): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+	async generate(options: EventProcessingOptions): Promise<GeneratedFile[]> {
+		const files: GeneratedFile[] = [];
 
-    // Core event processing infrastructure
-    files.push(this.generateEventBus(options));
-    files.push(this.generateEventStore(options));
-    files.push(this.generateEventProcessor(options));
-    files.push(this.generateEventProcessingModule(options));
+		// Core event processing infrastructure
+		files.push(this.generateEventBus(options));
+		files.push(this.generateEventStore(options));
+		files.push(this.generateEventProcessor(options));
+		files.push(this.generateEventProcessingModule(options));
 
-    // Pattern implementations
-    for (const pattern of options.patterns) {
-      files.push(...this.generatePatternImplementation(pattern, options));
-    }
+		// Pattern implementations
+		for (const pattern of options.patterns) {
+			files.push(...this.generatePatternImplementation(pattern, options));
+		}
 
-    // Feature implementations
-    for (const feature of options.features) {
-      files.push(...this.generateFeatureImplementation(feature, options));
-    }
+		// Feature implementations
+		for (const feature of options.features) {
+			files.push(...this.generateFeatureImplementation(feature, options));
+		}
 
-    // Event sourcing implementation
-    if (options.eventSourcing.enabled) {
-      files.push(...this.generateEventSourcingImplementation(options));
-    }
+		// Event sourcing implementation
+		if (options.eventSourcing.enabled) {
+			files.push(...this.generateEventSourcingImplementation(options));
+		}
 
-    // Retry mechanism
-    if (options.retry.enabled) {
-      files.push(this.generateRetryHandler(options));
-    }
+		// Retry mechanism
+		if (options.retry.enabled) {
+			files.push(this.generateRetryHandler(options));
+		}
 
-    // Schema validation
-    if (options.validation.enabled) {
-      files.push(...this.generateValidationImplementation(options));
-    }
+		// Schema validation
+		if (options.validation.enabled) {
+			files.push(...this.generateValidationImplementation(options));
+		}
 
-    // Monitoring and metrics
-    if (options.monitoring) {
-      files.push(...this.generateMonitoringImplementation(options));
-    }
+		// Monitoring and metrics
+		if (options.monitoring) {
+			files.push(...this.generateMonitoringImplementation(options));
+		}
 
-    // Configuration and types
-    files.push(this.generateTypes(options));
-    files.push(this.generateConfiguration(options));
+		// Configuration and types
+		files.push(this.generateTypes(options));
+		files.push(this.generateConfiguration(options));
 
-    // Testing utilities
-    files.push(...this.generateTestFiles(options));
+		// Testing utilities
+		files.push(...this.generateTestFiles(options));
 
-    // Client utilities and projections
-    files.push(...this.generateClientUtils(options));
+		// Client utilities and projections
+		files.push(...this.generateClientUtils(options));
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateEventBus(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateEventBus(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * Event Bus
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -275,16 +275,20 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
         result
       };
     } catch (error) {
-      ${options.retry.enabled ? `
+      ${
+				options.retry.enabled
+					? `
       // Apply retry logic if enabled
       return await this.retryHandler(handler, event, error, isReplay);
-      ` : `
+      `
+					: `
       throw error;
-      `}
+      `
+			}
     }
   }
 
-  ${options.retry.enabled ? this.getRetryLogic(options) : ''}
+  ${options.retry.enabled ? this.getRetryLogic(options) : ""}
 
   private enrichEventWithMetadata<T = any>(event: DomainEvent<T>): DomainEvent<T> {
     const metadata: EventMetadata = {
@@ -364,15 +368,15 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
   }
 }`;
 
-    return {
-      path: `src/events/${options.projectName}-event-bus.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/${options.projectName}-event-bus.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateEventStore(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateEventStore(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * Event Store
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -394,15 +398,19 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
   private globalSequence = 0;
 
   constructor() {
-    ${options.storage !== 'memory' ? 'this.initializeStorage();' : ''}
+    ${options.storage !== "memory" ? "this.initializeStorage();" : ""}
   }
 
-  ${options.storage !== 'memory' ? `
+  ${
+		options.storage !== "memory"
+			? `
   private async initializeStorage(): Promise<void> {
     // Initialize ${options.storage} storage
     this.logger.log('Initializing ${options.storage} event storage...');
   }
-  ` : ''}
+  `
+			: ""
+	}
 
   public async saveEvents(
     aggregateId: string,
@@ -434,7 +442,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
 
       this.events.get(aggregateId)!.push(...eventsWithSequence);
 
-      ${options.storage !== 'memory' ? 'await this.persistEvents(aggregateId, eventsWithSequence);' : ''}
+      ${options.storage !== "memory" ? "await this.persistEvents(aggregateId, eventsWithSequence);" : ""}
 
       this.logger.debug(
         \`Saved \${events.length} events for aggregate \${aggregateId}\`
@@ -526,7 +534,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     };
   }
 
-  ${options.eventSourcing.enabled ? this.getEventSourcingMethods(options) : ''}
+  ${options.eventSourcing.enabled ? this.getEventSourcingMethods(options) : ""}
 
   public async getCurrentVersion(aggregateId: string): Promise<number> {
     const events = this.events.get(aggregateId) || [];
@@ -539,7 +547,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     this.events.delete(aggregateId);
     this.snapshots.delete(aggregateId);
 
-    ${options.storage !== 'memory' ? 'await this.deleteFromStorage(aggregateId);' : ''}
+    ${options.storage !== "memory" ? "await this.deleteFromStorage(aggregateId);" : ""}
 
     this.logger.warn(\`Deleted all events for aggregate: \${aggregateId}\`);
   }
@@ -602,18 +610,20 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     return events.length + 1;
   }
 
-  ${options.storage !== 'memory' ? this.getStorageMethods(options) : ''}
+  ${options.storage !== "memory" ? this.getStorageMethods(options) : ""}
 }`;
 
-    return {
-      path: `src/events/${options.projectName}-event-store.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/${options.projectName}-event-store.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateEventProcessor(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateEventProcessor(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		const content = `/**
  * Event Processor
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -713,12 +723,16 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
         \`Failed to process event: \${event.type} - \${error.message}\`
       );
 
-      ${options.retry.enabled ? `
+      ${
+				options.retry.enabled
+					? `
       // Apply retry logic
       return await this.handleEventProcessingRetry(event, error, context);
-      ` : `
+      `
+					: `
       throw error;
-      `}
+      `
+			}
     }
   }
 
@@ -776,7 +790,7 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
     };
   }
 
-  ${options.retry.enabled ? this.getEventProcessingRetryLogic(options) : ''}
+  ${options.retry.enabled ? this.getEventProcessingRetryLogic(options) : ""}
 
   private updateStats(processingTime: number, success: boolean): void {
     if (success) {
@@ -828,15 +842,17 @@ export class ${options.projectName.charAt(0).toUpperCase() + options.projectName
   }
 }`;
 
-    return {
-      path: `src/events/${options.projectName}-event-processor.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/${options.projectName}-event-processor.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateEventProcessingModule(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateEventProcessingModule(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		const content = `/**
  * Event Processing Module
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -848,20 +864,24 @@ import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.sli
 import { ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}EventProcessor } from './${options.projectName}-event-processor.service';
 
 // Pattern implementations
-${options.patterns.map(pattern => {
-  const serviceName = this.getPatternServiceName(pattern);
-  return `import { ${serviceName} } from './patterns/${pattern.replace(/-/g, '-')}.service';`;
-}).join('\n')}
+${options.patterns
+	.map((pattern) => {
+		const serviceName = this.getPatternServiceName(pattern);
+		return `import { ${serviceName} } from './patterns/${pattern.replace(/-/g, "-")}.service';`;
+	})
+	.join("\n")}
 
 // Feature implementations
-${options.features.map(feature => {
-  const serviceName = this.getFeatureServiceName(feature);
-  return `import { ${serviceName} } from './features/${feature.replace(/-/g, '-')}.service';`;
-}).join('\n')}
+${options.features
+	.map((feature) => {
+		const serviceName = this.getFeatureServiceName(feature);
+		return `import { ${serviceName} } from './features/${feature.replace(/-/g, "-")}.service';`;
+	})
+	.join("\n")}
 
-${options.retry.enabled ? `import { EventRetryHandler } from './retry/event-retry.handler';` : ''}
-${options.validation.enabled ? `import { EventValidationService } from './validation/event-validation.service';` : ''}
-${options.monitoring ? `import { EventMonitoringService } from './monitoring/event-monitoring.service';` : ''}
+${options.retry.enabled ? `import { EventRetryHandler } from './retry/event-retry.handler';` : ""}
+${options.validation.enabled ? `import { EventValidationService } from './validation/event-validation.service';` : ""}
+${options.monitoring ? `import { EventMonitoringService } from './monitoring/event-monitoring.service';` : ""}
 
 @Module({
   imports: [
@@ -879,14 +899,14 @@ ${options.monitoring ? `import { EventMonitoringService } from './monitoring/eve
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}EventProcessor,
     
     // Pattern implementations
-    ${options.patterns.map(pattern => this.getPatternServiceName(pattern)).join(',\n    ')},
+    ${options.patterns.map((pattern) => this.getPatternServiceName(pattern)).join(",\n    ")},
     
     // Feature implementations
-    ${options.features.map(feature => this.getFeatureServiceName(feature)).join(',\n    ')},
+    ${options.features.map((feature) => this.getFeatureServiceName(feature)).join(",\n    ")},
     
-    ${options.retry.enabled ? 'EventRetryHandler,' : ''}
-    ${options.validation.enabled ? 'EventValidationService,' : ''}
-    ${options.monitoring ? 'EventMonitoringService,' : ''}
+    ${options.retry.enabled ? "EventRetryHandler," : ""}
+    ${options.validation.enabled ? "EventValidationService," : ""}
+    ${options.monitoring ? "EventMonitoringService," : ""}
   ],
   exports: [
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}EventBus,
@@ -894,56 +914,61 @@ ${options.monitoring ? `import { EventMonitoringService } from './monitoring/eve
     ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}EventProcessor,
     
     // Pattern implementations
-    ${options.patterns.map(pattern => this.getPatternServiceName(pattern)).join(',\n    ')},
+    ${options.patterns.map((pattern) => this.getPatternServiceName(pattern)).join(",\n    ")},
     
     // Feature implementations
-    ${options.features.map(feature => this.getFeatureServiceName(feature)).join(',\n    ')},
+    ${options.features.map((feature) => this.getFeatureServiceName(feature)).join(",\n    ")},
   ]
 })
 export class ${options.projectName.charAt(0).toUpperCase() + options.projectName.slice(1)}EventProcessingModule {}`;
 
-    return {
-      path: `src/events/${options.projectName}-event-processing.module.ts`,
-      content,
-      type: 'module'
-    };
-  }
+		return {
+			path: `src/events/${options.projectName}-event-processing.module.ts`,
+			content,
+			type: "module",
+		};
+	}
 
-  private generatePatternImplementation(pattern: EventPattern, options: EventProcessingOptions): GeneratedFile[] {
-    const files: GeneratedFile[] = [];
-    
-    switch (pattern) {
-      case 'event-sourcing':
-        files.push(this.generateEventSourcingPattern(options));
-        break;
-      case 'cqrs':
-        files.push(this.generateCQRSPattern(options));
-        break;
-      case 'saga':
-        files.push(this.generateSagaPattern(options));
-        break;
-      case 'event-replay':
-        files.push(this.generateEventReplayPattern(options));
-        break;
-      case 'event-projection':
-        files.push(this.generateEventProjectionPattern(options));
-        break;
-      case 'event-handler':
-        files.push(this.generateEventHandlerPattern(options));
-        break;
-      case 'event-aggregation':
-        files.push(this.generateEventAggregationPattern(options));
-        break;
-      case 'event-filtering':
-        files.push(this.generateEventFilteringPattern(options));
-        break;
-    }
-    
-    return files;
-  }
+	private generatePatternImplementation(
+		pattern: EventPattern,
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		const files: GeneratedFile[] = [];
 
-  private generateEventSourcingPattern(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+		switch (pattern) {
+			case "event-sourcing":
+				files.push(this.generateEventSourcingPattern(options));
+				break;
+			case "cqrs":
+				files.push(this.generateCQRSPattern(options));
+				break;
+			case "saga":
+				files.push(this.generateSagaPattern(options));
+				break;
+			case "event-replay":
+				files.push(this.generateEventReplayPattern(options));
+				break;
+			case "event-projection":
+				files.push(this.generateEventProjectionPattern(options));
+				break;
+			case "event-handler":
+				files.push(this.generateEventHandlerPattern(options));
+				break;
+			case "event-aggregation":
+				files.push(this.generateEventAggregationPattern(options));
+				break;
+			case "event-filtering":
+				files.push(this.generateEventFilteringPattern(options));
+				break;
+		}
+
+		return files;
+	}
+
+	private generateEventSourcingPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		const content = `/**
  * Event Sourcing Pattern Implementation
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1137,15 +1162,15 @@ export abstract class BaseAggregateRoot implements AggregateRoot {
   }
 }`;
 
-    return {
-      path: `src/events/patterns/event-sourcing.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/patterns/event-sourcing.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateCQRSPattern(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateCQRSPattern(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * CQRS Pattern Implementation
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1384,15 +1409,15 @@ export class QueryBuilder<T = any> {
   }
 }`;
 
-    return {
-      path: `src/events/patterns/cqrs.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/patterns/cqrs.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateSagaPattern(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateSagaPattern(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * Saga Pattern Implementation
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1700,74 +1725,93 @@ export class SagaBuilder {
   }
 }`;
 
-    return {
-      path: `src/events/patterns/saga.service.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/patterns/saga.service.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  // Continue with additional pattern implementations...
-  private generateEventReplayPattern(options: EventProcessingOptions): GeneratedFile {
-    return {
-      path: `src/events/patterns/event-replay.service.ts`,
-      content: '// Event Replay pattern implementation',
-      type: 'service'
-    };
-  }
+	// Continue with additional pattern implementations...
+	private generateEventReplayPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		return {
+			path: `src/events/patterns/event-replay.service.ts`,
+			content: "// Event Replay pattern implementation",
+			type: "service",
+		};
+	}
 
-  private generateEventProjectionPattern(options: EventProcessingOptions): GeneratedFile {
-    return {
-      path: `src/events/patterns/event-projection.service.ts`,
-      content: '// Event Projection pattern implementation',
-      type: 'service'
-    };
-  }
+	private generateEventProjectionPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		return {
+			path: `src/events/patterns/event-projection.service.ts`,
+			content: "// Event Projection pattern implementation",
+			type: "service",
+		};
+	}
 
-  private generateEventHandlerPattern(options: EventProcessingOptions): GeneratedFile {
-    return {
-      path: `src/events/patterns/event-handler.service.ts`,
-      content: '// Event Handler pattern implementation',
-      type: 'service'
-    };
-  }
+	private generateEventHandlerPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		return {
+			path: `src/events/patterns/event-handler.service.ts`,
+			content: "// Event Handler pattern implementation",
+			type: "service",
+		};
+	}
 
-  private generateEventAggregationPattern(options: EventProcessingOptions): GeneratedFile {
-    return {
-      path: `src/events/patterns/event-aggregation.service.ts`,
-      content: '// Event Aggregation pattern implementation',
-      type: 'service'
-    };
-  }
+	private generateEventAggregationPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		return {
+			path: `src/events/patterns/event-aggregation.service.ts`,
+			content: "// Event Aggregation pattern implementation",
+			type: "service",
+		};
+	}
 
-  private generateEventFilteringPattern(options: EventProcessingOptions): GeneratedFile {
-    return {
-      path: `src/events/patterns/event-filtering.service.ts`,
-      content: '// Event Filtering pattern implementation',
-      type: 'service'
-    };
-  }
+	private generateEventFilteringPattern(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		return {
+			path: `src/events/patterns/event-filtering.service.ts`,
+			content: "// Event Filtering pattern implementation",
+			type: "service",
+		};
+	}
 
-  private generateFeatureImplementation(feature: EventProcessingFeature, options: EventProcessingOptions): GeneratedFile[] {
-    // Feature implementations would go here
-    return [{
-      path: `src/events/features/${feature.replace(/-/g, '-')}.service.ts`,
-      content: `// ${feature} feature implementation`,
-      type: 'service'
-    }];
-  }
+	private generateFeatureImplementation(
+		feature: EventProcessingFeature,
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		// Feature implementations would go here
+		return [
+			{
+				path: `src/events/features/${feature.replace(/-/g, "-")}.service.ts`,
+				content: `// ${feature} feature implementation`,
+				type: "service",
+			},
+		];
+	}
 
-  private generateEventSourcingImplementation(options: EventProcessingOptions): GeneratedFile[] {
-    // Event sourcing specific implementations
-    return [{
-      path: `src/events/event-sourcing/aggregate-repository.service.ts`,
-      content: '// Aggregate repository implementation',
-      type: 'service'
-    }];
-  }
+	private generateEventSourcingImplementation(
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		// Event sourcing specific implementations
+		return [
+			{
+				path: `src/events/event-sourcing/aggregate-repository.service.ts`,
+				content: "// Aggregate repository implementation",
+				type: "service",
+			},
+		];
+	}
 
-  private generateRetryHandler(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateRetryHandler(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * Event Retry Handler
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -1839,31 +1883,39 @@ interface RetryItem {
   nextAttempt: number;
 }`;
 
-    return {
-      path: `src/events/retry/event-retry.handler.ts`,
-      content,
-      type: 'service'
-    };
-  }
+		return {
+			path: `src/events/retry/event-retry.handler.ts`,
+			content,
+			type: "service",
+		};
+	}
 
-  private generateValidationImplementation(options: EventProcessingOptions): GeneratedFile[] {
-    return [{
-      path: `src/events/validation/event-validation.service.ts`,
-      content: '// Event validation implementation',
-      type: 'service'
-    }];
-  }
+	private generateValidationImplementation(
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `src/events/validation/event-validation.service.ts`,
+				content: "// Event validation implementation",
+				type: "service",
+			},
+		];
+	}
 
-  private generateMonitoringImplementation(options: EventProcessingOptions): GeneratedFile[] {
-    return [{
-      path: `src/events/monitoring/event-monitoring.service.ts`,
-      content: '// Event monitoring implementation',
-      type: 'service'
-    }];
-  }
+	private generateMonitoringImplementation(
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `src/events/monitoring/event-monitoring.service.ts`,
+				content: "// Event monitoring implementation",
+				type: "service",
+			},
+		];
+	}
 
-  private generateTypes(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateTypes(options: EventProcessingOptions): GeneratedFile {
+		const content = `/**
  * Event Processing Types
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2062,8 +2114,8 @@ export interface EventFilter {
 }
 
 // Configuration types
-export type EventPattern = ${options.patterns.map(p => `'${p}'`).join(' | ')};
-export type EventProcessingFeature = ${options.features.map(f => `'${f}'`).join(' | ')};
+export type EventPattern = ${options.patterns.map((p) => `'${p}'`).join(" | ")};
+export type EventProcessingFeature = ${options.features.map((f) => `'${f}'`).join(" | ")};
 
 export interface EventProcessingConfiguration {
   patterns: EventPattern[];
@@ -2087,15 +2139,17 @@ export interface EventProcessingConfiguration {
   };
 }`;
 
-    return {
-      path: `src/events/types/event-processing.types.ts`,
-      content,
-      type: 'types'
-    };
-  }
+		return {
+			path: `src/events/types/event-processing.types.ts`,
+			content,
+			type: "types",
+		};
+	}
 
-  private generateConfiguration(options: EventProcessingOptions): GeneratedFile {
-    const content = `/**
+	private generateConfiguration(
+		options: EventProcessingOptions,
+	): GeneratedFile {
+		const content = `/**
  * Event Processing Configuration
  * Generated by Xaheen CLI for ${options.projectName}
  */
@@ -2103,9 +2157,9 @@ export interface EventProcessingConfiguration {
 import { EventProcessingConfiguration } from './types/event-processing.types';
 
 export const eventProcessingConfig: EventProcessingConfiguration = {
-  patterns: [${options.patterns.map(p => `'${p}'`).join(', ')}],
+  patterns: [${options.patterns.map((p) => `'${p}'`).join(", ")}],
   storage: '${options.storage}',
-  features: [${options.features.map(f => `'${f}'`).join(', ')}],
+  features: [${options.features.map((f) => `'${f}'`).join(", ")}],
   retry: {
     enabled: ${options.retry.enabled},
     maxAttempts: ${options.retry.maxAttempts},
@@ -2125,10 +2179,12 @@ export const eventProcessingConfig: EventProcessingConfiguration = {
 };
 
 export const eventTypes = {
-  ${options.features.map(feature => {
-    const eventName = feature.replace(/-/g, '_').toUpperCase();
-    return `${eventName}: '${feature}'`;
-  }).join(',\n  ')}
+  ${options.features
+		.map((feature) => {
+			const eventName = feature.replace(/-/g, "_").toUpperCase();
+			return `${eventName}: '${feature}'`;
+		})
+		.join(",\n  ")}
 };
 
 export const storageConfig = {
@@ -2161,53 +2217,61 @@ export const storageConfig = {
   }
 };`;
 
-    return {
-      path: `src/events/config/event-processing.config.ts`,
-      content,
-      type: 'config'
-    };
-  }
+		return {
+			path: `src/events/config/event-processing.config.ts`,
+			content,
+			type: "config",
+		};
+	}
 
-  private generateTestFiles(options: EventProcessingOptions): GeneratedFile[] {
-    return [
-      {
-        path: `src/events/__tests__/${options.projectName}-event-bus.service.spec.ts`,
-        content: '// Event bus service tests',
-        type: 'test'
-      },
-      {
-        path: `src/events/__tests__/${options.projectName}-event-store.service.spec.ts`,
-        content: '// Event store service tests',
-        type: 'test'
-      }
-    ];
-  }
+	private generateTestFiles(options: EventProcessingOptions): GeneratedFile[] {
+		return [
+			{
+				path: `src/events/__tests__/${options.projectName}-event-bus.service.spec.ts`,
+				content: "// Event bus service tests",
+				type: "test",
+			},
+			{
+				path: `src/events/__tests__/${options.projectName}-event-store.service.spec.ts`,
+				content: "// Event store service tests",
+				type: "test",
+			},
+		];
+	}
 
-  private generateClientUtils(options: EventProcessingOptions): GeneratedFile[] {
-    return [
-      {
-        path: `src/events/utils/event-processing-client.ts`,
-        content: '// Event processing client utilities',
-        type: 'utility'
-      }
-    ];
-  }
+	private generateClientUtils(
+		options: EventProcessingOptions,
+	): GeneratedFile[] {
+		return [
+			{
+				path: `src/events/utils/event-processing-client.ts`,
+				content: "// Event processing client utilities",
+				type: "utility",
+			},
+		];
+	}
 
-  // Helper methods
-  private getPatternServiceName(pattern: EventPattern): string {
-    return pattern.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join('') + 'Service';
-  }
+	// Helper methods
+	private getPatternServiceName(pattern: EventPattern): string {
+		return (
+			pattern
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("") + "Service"
+		);
+	}
 
-  private getFeatureServiceName(feature: EventProcessingFeature): string {
-    return feature.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join('') + 'Service';
-  }
+	private getFeatureServiceName(feature: EventProcessingFeature): string {
+		return (
+			feature
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("") + "Service"
+		);
+	}
 
-  private getRetryLogic(options: EventProcessingOptions): string {
-    return `
+	private getRetryLogic(options: EventProcessingOptions): string {
+		return `
   private async retryHandler<T = any>(
     handler: EventHandler<T>,
     event: DomainEvent<T>,
@@ -2254,10 +2318,12 @@ export const storageConfig = {
         return ${options.retry.baseDelay};
     }
   }`;
-  }
+	}
 
-  private getEventProcessingRetryLogic(options: EventProcessingOptions): string {
-    return `
+	private getEventProcessingRetryLogic(
+		options: EventProcessingOptions,
+	): string {
+		return `
   private async handleEventProcessingRetry<T = any>(
     event: DomainEvent<T>,
     error: Error,
@@ -2301,13 +2367,13 @@ export const storageConfig = {
         return ${options.retry.baseDelay};
     }
   }`;
-  }
+	}
 
-  private getEventSourcingMethods(options: EventProcessingOptions): string {
-    return `
+	private getEventSourcingMethods(options: EventProcessingOptions): string {
+		return `
   public async saveSnapshot(snapshot: EventSnapshot): Promise<void> {
     this.snapshots.set(snapshot.aggregateId, snapshot);
-    ${options.storage !== 'memory' ? 'await this.persistSnapshot(snapshot);' : ''}
+    ${options.storage !== "memory" ? "await this.persistSnapshot(snapshot);" : ""}
     
     this.logger.debug(\`Snapshot saved for aggregate: \${snapshot.aggregateId}\`);
   }
@@ -2318,12 +2384,12 @@ export const storageConfig = {
 
   public async deleteSnapshot(aggregateId: string): Promise<void> {
     this.snapshots.delete(aggregateId);
-    ${options.storage !== 'memory' ? 'await this.deleteSnapshotFromStorage(aggregateId);' : ''}
+    ${options.storage !== "memory" ? "await this.deleteSnapshotFromStorage(aggregateId);" : ""}
   }`;
-  }
+	}
 
-  private getStorageMethods(options: EventProcessingOptions): string {
-    return `
+	private getStorageMethods(options: EventProcessingOptions): string {
+		return `
   private async persistEvents(aggregateId: string, events: DomainEvent[]): Promise<void> {
     // Implement ${options.storage} persistence
     // This would be specific to the chosen storage provider
@@ -2340,5 +2406,5 @@ export const storageConfig = {
   private async deleteSnapshotFromStorage(aggregateId: string): Promise<void> {
     // Implement ${options.storage} snapshot deletion
   }`;
-  }
+	}
 }

@@ -1,74 +1,76 @@
-import { BaseGenerator } from '../base.generator.js';
-import type { OpenAIOptions } from './types.js';
-import { promises as fs } from 'fs';
-import { join } from 'path';
+import { BaseGenerator } from "../base.generator.js";
+import type { OpenAIOptions } from "./types.js";
+import { promises as fs } from "fs";
+import { join } from "path";
 
 export class OpenAIGenerator extends BaseGenerator<OpenAIOptions> {
-  async generate(options: OpenAIOptions): Promise<void> {
-    await this.validateOptions(options);
-    
-    this.logger.info(`Generating OpenAI service: ${options.name}`);
-    
-    try {
-      // Generate main OpenAI service
-      await this.generateOpenAIService(options);
-      
-      // Generate types
-      if (options.includeTypes !== false) {
-        await this.generateTypes(options);
-      }
-      
-      // Generate specific feature implementations
-      if (options.enableFunctionCalling) {
-        await this.generateFunctionCalling(options);
-      }
-      
-      if (options.enableEmbeddings) {
-        await this.generateEmbeddings(options);
-      }
-      
-      if (options.enableStreaming) {
-        await this.generateStreaming(options);
-      }
-      
-      if (options.enableVision) {
-        await this.generateVision(options);
-      }
-      
-      if (options.enableAudio) {
-        await this.generateAudio(options);
-      }
-      
-      // Generate utilities
-      await this.generateUtilities(options);
-      
-      // Generate tests
-      if (options.includeTests) {
-        await this.generateTests(options);
-      }
-      
-      // Generate configuration
-      await this.generateConfig(options);
-      
-      this.logger.success(`OpenAI service generated successfully at ${options.outputPath}`);
-    } catch (error) {
-      this.logger.error('Failed to generate OpenAI service', error);
-      throw error;
-    }
-  }
+	async generate(options: OpenAIOptions): Promise<void> {
+		await this.validateOptions(options);
 
-  protected async validateOptions(options: OpenAIOptions): Promise<void> {
-    if (!options.name || !options.outputPath) {
-      throw new Error('Name and output path are required');
-    }
-    
-    if (!options.models || options.models.length === 0) {
-      throw new Error('At least one OpenAI model must be specified');
-    }
-  }
+		this.logger.info(`Generating OpenAI service: ${options.name}`);
 
-  private async generateOpenAIService(options: OpenAIOptions): Promise<void> {
-    const serviceContent = `import OpenAI from 'openai';
+		try {
+			// Generate main OpenAI service
+			await this.generateOpenAIService(options);
+
+			// Generate types
+			if (options.includeTypes !== false) {
+				await this.generateTypes(options);
+			}
+
+			// Generate specific feature implementations
+			if (options.enableFunctionCalling) {
+				await this.generateFunctionCalling(options);
+			}
+
+			if (options.enableEmbeddings) {
+				await this.generateEmbeddings(options);
+			}
+
+			if (options.enableStreaming) {
+				await this.generateStreaming(options);
+			}
+
+			if (options.enableVision) {
+				await this.generateVision(options);
+			}
+
+			if (options.enableAudio) {
+				await this.generateAudio(options);
+			}
+
+			// Generate utilities
+			await this.generateUtilities(options);
+
+			// Generate tests
+			if (options.includeTests) {
+				await this.generateTests(options);
+			}
+
+			// Generate configuration
+			await this.generateConfig(options);
+
+			this.logger.success(
+				`OpenAI service generated successfully at ${options.outputPath}`,
+			);
+		} catch (error) {
+			this.logger.error("Failed to generate OpenAI service", error);
+			throw error;
+		}
+	}
+
+	protected async validateOptions(options: OpenAIOptions): Promise<void> {
+		if (!options.name || !options.outputPath) {
+			throw new Error("Name and output path are required");
+		}
+
+		if (!options.models || options.models.length === 0) {
+			throw new Error("At least one OpenAI model must be specified");
+		}
+	}
+
+	private async generateOpenAIService(options: OpenAIOptions): Promise<void> {
+		const serviceContent = `import OpenAI from 'openai';
 import type { 
   ChatCompletionMessageParam,
   ChatCompletionCreateParams,
@@ -108,17 +110,17 @@ export class ${options.name}Service {
     this.errorHandler = new ErrorHandler(config.errorHandling);
   }
 
-  ${options.features.includes('chat-completion') ? this.generateChatCompletionMethod() : ''}
+  ${options.features.includes("chat-completion") ? this.generateChatCompletionMethod() : ""}
   
-  ${options.enableStreaming ? this.generateStreamingMethod() : ''}
+  ${options.enableStreaming ? this.generateStreamingMethod() : ""}
   
-  ${options.enableEmbeddings ? this.generateEmbeddingsMethod() : ''}
+  ${options.enableEmbeddings ? this.generateEmbeddingsMethod() : ""}
   
-  ${options.enableFunctionCalling ? this.generateFunctionCallingMethod() : ''}
+  ${options.enableFunctionCalling ? this.generateFunctionCallingMethod() : ""}
   
-  ${options.enableVision ? this.generateVisionMethod() : ''}
+  ${options.enableVision ? this.generateVisionMethod() : ""}
   
-  ${options.enableAudio ? this.generateAudioMethods() : ''}
+  ${options.enableAudio ? this.generateAudioMethods() : ""}
 
   private async executeWithRateLimit<T>(
     operation: () => Promise<T>,
@@ -182,15 +184,15 @@ export class ${options.name}Service {
   }
 }`;
 
-    await this.ensureDirectoryExists(options.outputPath);
-    await fs.writeFile(
-      join(options.outputPath, `${options.name.toLowerCase()}.service.ts`),
-      serviceContent
-    );
-  }
+		await this.ensureDirectoryExists(options.outputPath);
+		await fs.writeFile(
+			join(options.outputPath, `${options.name.toLowerCase()}.service.ts`),
+			serviceContent,
+		);
+	}
 
-  private generateChatCompletionMethod(): string {
-    return `
+	private generateChatCompletionMethod(): string {
+		return `
   async chatCompletion(
     messages: ChatCompletionMessageParam[],
     options: ChatOptions = {}
@@ -218,10 +220,10 @@ export class ${options.name}Service {
       return completion.choices[0]?.message?.content || '';
     }, cacheKey);
   }`;
-  }
+	}
 
-  private generateStreamingMethod(): string {
-    return `
+	private generateStreamingMethod(): string {
+		return `
   async *streamChatCompletion(
     messages: ChatCompletionMessageParam[],
     options: StreamOptions = {}
@@ -251,10 +253,10 @@ export class ${options.name}Service {
       throw error;
     }
   }`;
-  }
+	}
 
-  private generateEmbeddingsMethod(): string {
-    return `
+	private generateEmbeddingsMethod(): string {
+		return `
   async createEmbedding(
     input: string | string[],
     options: EmbeddingOptions = {}
@@ -292,10 +294,10 @@ export class ${options.name}Service {
 
     return results;
   }`;
-  }
+	}
 
-  private generateFunctionCallingMethod(): string {
-    return `
+	private generateFunctionCallingMethod(): string {
+		return `
   async callFunction(
     messages: ChatCompletionMessageParam[],
     functions: any[],
@@ -363,10 +365,10 @@ export class ${options.name}Service {
       };
     });
   }`;
-  }
+	}
 
-  private generateVisionMethod(): string {
-    return `
+	private generateVisionMethod(): string {
+		return `
   async analyzeImage(
     imageUrl: string,
     prompt: string,
@@ -418,10 +420,10 @@ export class ${options.name}Service {
       model: options.model || 'gpt-4o'
     });
   }`;
-  }
+	}
 
-  private generateAudioMethods(): string {
-    return `
+	private generateAudioMethods(): string {
+		return `
   async textToSpeech(
     text: string,
     options: {
@@ -471,10 +473,10 @@ export class ${options.name}Service {
       return typeof response === 'string' ? response : response.text;
     });
   }`;
-  }
+	}
 
-  private async generateTypes(options: OpenAIOptions): Promise<void> {
-    const typesContent = `import type { 
+	private async generateTypes(options: OpenAIOptions): Promise<void> {
+		const typesContent = `import type { 
   ChatCompletionMessageParam,
   ChatCompletionTool,
   ChatCompletionToolChoiceOption 
@@ -573,20 +575,17 @@ export interface HealthStatus {
   readonly uptime: number;
 }`;
 
-    await fs.writeFile(
-      join(options.outputPath, 'types.ts'),
-      typesContent
-    );
-  }
+		await fs.writeFile(join(options.outputPath, "types.ts"), typesContent);
+	}
 
-  private async generateUtilities(options: OpenAIOptions): Promise<void> {
-    await this.generateRateLimiter(options);
-    await this.generateCacheManager(options);
-    await this.generateErrorHandler(options);
-  }
+	private async generateUtilities(options: OpenAIOptions): Promise<void> {
+		await this.generateRateLimiter(options);
+		await this.generateCacheManager(options);
+		await this.generateErrorHandler(options);
+	}
 
-  private async generateRateLimiter(options: OpenAIOptions): Promise<void> {
-    const rateLimiterContent = `import type { RateLimitConfig } from '../types.js';
+	private async generateRateLimiter(options: OpenAIOptions): Promise<void> {
+		const rateLimiterContent = `import type { RateLimitConfig } from '../types.js';
 
 export class RateLimiter {
   private requests: number = 0;
@@ -663,13 +662,13 @@ export class RateLimiter {
   }
 }`;
 
-    const utilsDir = join(options.outputPath, 'utils');
-    await this.ensureDirectoryExists(utilsDir);
-    await fs.writeFile(join(utilsDir, 'rate-limiter.ts'), rateLimiterContent);
-  }
+		const utilsDir = join(options.outputPath, "utils");
+		await this.ensureDirectoryExists(utilsDir);
+		await fs.writeFile(join(utilsDir, "rate-limiter.ts"), rateLimiterContent);
+	}
 
-  private async generateCacheManager(options: OpenAIOptions): Promise<void> {
-    const cacheManagerContent = `import type { CacheConfig } from '../types.js';
+	private async generateCacheManager(options: OpenAIOptions): Promise<void> {
+		const cacheManagerContent = `import type { CacheConfig } from '../types.js';
 import { createHash } from 'crypto';
 
 export class CacheManager {
@@ -744,12 +743,12 @@ export class CacheManager {
   }
 }`;
 
-    const utilsDir = join(options.outputPath, 'utils');
-    await fs.writeFile(join(utilsDir, 'cache-manager.ts'), cacheManagerContent);
-  }
+		const utilsDir = join(options.outputPath, "utils");
+		await fs.writeFile(join(utilsDir, "cache-manager.ts"), cacheManagerContent);
+	}
 
-  private async generateErrorHandler(options: OpenAIOptions): Promise<void> {
-    const errorHandlerContent = `import type { ErrorHandlingConfig } from '../types.js';
+	private async generateErrorHandler(options: OpenAIOptions): Promise<void> {
+		const errorHandlerContent = `import type { ErrorHandlingConfig } from '../types.js';
 
 export class ErrorHandler {
   private errorCount = 0;
@@ -859,12 +858,12 @@ export class ErrorHandler {
   }
 }`;
 
-    const utilsDir = join(options.outputPath, 'utils');
-    await fs.writeFile(join(utilsDir, 'error-handler.ts'), errorHandlerContent);
-  }
+		const utilsDir = join(options.outputPath, "utils");
+		await fs.writeFile(join(utilsDir, "error-handler.ts"), errorHandlerContent);
+	}
 
-  private async generateConfig(options: OpenAIOptions): Promise<void> {
-    const configContent = `import type { ${options.name}Config } from './types.js';
+	private async generateConfig(options: OpenAIOptions): Promise<void> {
+		const configContent = `import type { ${options.name}Config } from './types.js';
 
 export const default${options.name}Config: Partial<${options.name}Config> = {
   timeout: 30000,
@@ -899,14 +898,11 @@ export function create${options.name}Config(
   };
 }`;
 
-    await fs.writeFile(
-      join(options.outputPath, 'config.ts'),
-      configContent
-    );
-  }
+		await fs.writeFile(join(options.outputPath, "config.ts"), configContent);
+	}
 
-  private async generateTests(options: OpenAIOptions): Promise<void> {
-    const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
+	private async generateTests(options: OpenAIOptions): Promise<void> {
+		const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ${options.name}Service } from '../${options.name.toLowerCase()}.service.js';
 import type { ${options.name}Config } from '../types.js';
 
@@ -962,7 +958,9 @@ describe('${options.name}Service', () => {
     });
   });
 
-  ${options.enableEmbeddings ? `
+  ${
+		options.enableEmbeddings
+			? `
   describe('createEmbedding', () => {
     it('should create embeddings successfully', async () => {
       const mockEmbedding = {
@@ -978,7 +976,9 @@ describe('${options.name}Service', () => {
 
       expect(result).toEqual([[0.1, 0.2, 0.3]]);
     });
-  });` : ''}
+  });`
+			: ""
+	}
 
   describe('healthCheck', () => {
     it('should return healthy status when API is accessible', async () => {
@@ -1013,19 +1013,19 @@ describe('${options.name}Service', () => {
   });
 });`;
 
-    const testsDir = join(options.outputPath, '__tests__');
-    await this.ensureDirectoryExists(testsDir);
-    await fs.writeFile(
-      join(testsDir, `${options.name.toLowerCase()}.service.test.ts`),
-      testContent
-    );
-  }
+		const testsDir = join(options.outputPath, "__tests__");
+		await this.ensureDirectoryExists(testsDir);
+		await fs.writeFile(
+			join(testsDir, `${options.name.toLowerCase()}.service.test.ts`),
+			testContent,
+		);
+	}
 
-  private async ensureDirectoryExists(dir: string): Promise<void> {
-    try {
-      await fs.mkdir(dir, { recursive: true });
-    } catch (error) {
-      // Directory might already exist
-    }
-  }
+	private async ensureDirectoryExists(dir: string): Promise<void> {
+		try {
+			await fs.mkdir(dir, { recursive: true });
+		} catch (error) {
+			// Directory might already exist
+		}
+	}
 }

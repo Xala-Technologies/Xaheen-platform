@@ -13,7 +13,10 @@ import { consola } from "consola";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import type { GeneratorOptions } from "../types";
-import { nsmClassifier, type NSMClassification } from "../../services/compliance/nsm-classifier";
+import {
+	nsmClassifier,
+	type NSMClassification,
+} from "../../services/compliance/nsm-classifier";
 
 export interface NSMSecurityOptions extends GeneratorOptions {
 	readonly classification: NSMClassification;
@@ -44,7 +47,10 @@ export class NSMSecurityGenerator {
 	private readonly outputPath: string;
 
 	constructor(private readonly options: NSMSecurityOptions) {
-		this.templatePath = join(__dirname, "../../templates/compliance/nsm-security");
+		this.templatePath = join(
+			__dirname,
+			"../../templates/compliance/nsm-security",
+		);
 		this.outputPath = options.outputDir || process.cwd();
 	}
 
@@ -53,7 +59,9 @@ export class NSMSecurityGenerator {
 	 */
 	async generate(): Promise<void> {
 		try {
-			consola.info(`Generating NSM Security implementation for ${this.options.classification} classification...`);
+			consola.info(
+				`Generating NSM Security implementation for ${this.options.classification} classification...`,
+			);
 
 			// Validate classification and user clearance
 			this.validateSecurity();
@@ -82,8 +90,9 @@ export class NSMSecurityGenerator {
 			// Generate compliance documentation
 			await this.generateComplianceDocumentation(context);
 
-			consola.success(`NSM Security implementation generated successfully for ${this.options.classification} classification`);
-
+			consola.success(
+				`NSM Security implementation generated successfully for ${this.options.classification} classification`,
+			);
 		} catch (error) {
 			consola.error("Failed to generate NSM Security implementation:", error);
 			throw error;
@@ -100,7 +109,7 @@ export class NSMSecurityGenerator {
 		// Validate user clearance
 		if (!nsmClassifier.validateAccess(userClearance, classification)) {
 			throw new Error(
-				`Insufficient clearance: ${userClearance} cannot access ${classification} classification`
+				`Insufficient clearance: ${userClearance} cannot access ${classification} classification`,
 			);
 		}
 
@@ -109,21 +118,28 @@ export class NSMSecurityGenerator {
 			const determinedClassification = nsmClassifier.determineClassification({
 				dataTypes: this.options.dataTypes,
 				retentionPeriod: this.options.retentionPeriod,
-				internationalTransfer: this.options.internationalTransfer
+				internationalTransfer: this.options.internationalTransfer,
 			});
 
-			const levels: NSMClassification[] = ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"];
+			const levels: NSMClassification[] = [
+				"OPEN",
+				"RESTRICTED",
+				"CONFIDENTIAL",
+				"SECRET",
+			];
 			const requiredLevel = levels.indexOf(determinedClassification);
 			const providedLevel = levels.indexOf(classification);
 
 			if (providedLevel < requiredLevel) {
 				consola.warn(
-					`Data types suggest ${determinedClassification} classification, but ${classification} was specified. Consider upgrading classification level.`
+					`Data types suggest ${determinedClassification} classification, but ${classification} was specified. Consider upgrading classification level.`,
 				);
 			}
 		}
 
-		consola.debug(`Security validation passed for ${classification} classification`);
+		consola.debug(
+			`Security validation passed for ${classification} classification`,
+		);
 	}
 
 	/**
@@ -141,10 +157,10 @@ export class NSMSecurityGenerator {
 			"src/utils/security",
 			"src/types/security",
 			"docs/security",
-			"config/security"
+			"config/security",
 		];
 
-		dirs.forEach(dir => {
+		dirs.forEach((dir) => {
 			const fullPath = join(this.outputPath, dir);
 			if (!existsSync(fullPath)) {
 				mkdirSync(fullPath, { recursive: true });
@@ -160,7 +176,8 @@ export class NSMSecurityGenerator {
 	private createSecurityContext(): NSMSecurityContext {
 		const classification = this.options.classification;
 		const metadata = nsmClassifier.getClassification(classification);
-		const complianceContext = nsmClassifier.generateComplianceContext(classification);
+		const complianceContext =
+			nsmClassifier.generateComplianceContext(classification);
 
 		if (!metadata) {
 			throw new Error(`Unknown classification: ${classification}`);
@@ -176,49 +193,53 @@ export class NSMSecurityGenerator {
 				level: metadata.auditLevel,
 				dataAccess: metadata.dataHandling.auditTrail,
 				realTimeMonitoring: metadata.auditLevel === "maximum",
-				retentionPeriod: metadata.dataHandling.dataRetention
+				retentionPeriod: metadata.dataHandling.dataRetention,
 			},
 			dataProtection: complianceContext.nsm.dataProtection,
 			uiSecurity: {
 				watermarks: metadata.uiRequirements.watermarks,
 				classificationLabels: metadata.uiRequirements.classificationLabels,
 				restrictedActions: metadata.uiRequirements.restrictedActions,
-				sessionTimeout: this.options.sessionTimeout || metadata.uiRequirements.sessionTimeout
+				sessionTimeout:
+					this.options.sessionTimeout || metadata.uiRequirements.sessionTimeout,
 			},
 			developmentGuidelines: {
 				codeReview: metadata.developmentRequirements.codeReview,
 				securityTesting: metadata.developmentRequirements.securityTesting,
 				penetrationTesting: metadata.developmentRequirements.penetrationTesting,
-				complianceValidation: metadata.developmentRequirements.complianceValidation
-			}
+				complianceValidation:
+					metadata.developmentRequirements.complianceValidation,
+			},
 		};
 	}
 
 	/**
 	 * Generate core security files
 	 */
-	private async generateSecurityFiles(context: NSMSecurityContext): Promise<void> {
+	private async generateSecurityFiles(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const files = [
 			{
 				template: "nsm-security-config.ts.hbs",
-				output: "src/security/nsm/security-config.ts"
+				output: "src/security/nsm/security-config.ts",
 			},
 			{
 				template: "nsm-classification-service.ts.hbs",
-				output: "src/security/nsm/classification-service.ts"
+				output: "src/security/nsm/classification-service.ts",
 			},
 			{
 				template: "nsm-security-headers.ts.hbs",
-				output: "src/security/nsm/security-headers.ts"
+				output: "src/security/nsm/security-headers.ts",
 			},
 			{
 				template: "nsm-session-manager.ts.hbs",
-				output: "src/security/nsm/session-manager.ts"
+				output: "src/security/nsm/session-manager.ts",
 			},
 			{
 				template: "nsm-types.ts.hbs",
-				output: "src/types/security/nsm-types.ts"
-			}
+				output: "src/types/security/nsm-types.ts",
+			},
 		];
 
 		for (const file of files) {
@@ -231,48 +252,54 @@ export class NSMSecurityGenerator {
 	/**
 	 * Generate classification-specific components
 	 */
-	private async generateClassificationComponents(context: NSMSecurityContext): Promise<void> {
+	private async generateClassificationComponents(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const components = [
 			{
 				template: "classification-banner.tsx.hbs",
-				output: "src/components/security/ClassificationBanner.tsx"
+				output: "src/components/security/ClassificationBanner.tsx",
 			},
 			{
 				template: "security-watermark.tsx.hbs",
-				output: "src/components/security/SecurityWatermark.tsx"
+				output: "src/components/security/SecurityWatermark.tsx",
 			},
 			{
 				template: "access-control-guard.tsx.hbs",
-				output: "src/components/security/AccessControlGuard.tsx"
+				output: "src/components/security/AccessControlGuard.tsx",
 			},
 			{
 				template: "session-timeout-monitor.tsx.hbs",
-				output: "src/components/security/SessionTimeoutMonitor.tsx"
+				output: "src/components/security/SessionTimeoutMonitor.tsx",
 			},
 			{
 				template: "restricted-actions.tsx.hbs",
-				output: "src/components/security/RestrictedActions.tsx"
-			}
+				output: "src/components/security/RestrictedActions.tsx",
+			},
 		];
 
 		for (const component of components) {
-			await this.generateFromTemplate(component.template, component.output, context);
+			await this.generateFromTemplate(
+				component.template,
+				component.output,
+				context,
+			);
 		}
 
 		// Generate security hooks
 		const hooks = [
 			{
 				template: "use-nsm-classification.ts.hbs",
-				output: "src/hooks/security/useNSMClassification.ts"
+				output: "src/hooks/security/useNSMClassification.ts",
 			},
 			{
 				template: "use-security-context.ts.hbs",
-				output: "src/hooks/security/useSecurityContext.ts"
+				output: "src/hooks/security/useSecurityContext.ts",
 			},
 			{
 				template: "use-access-control.ts.hbs",
-				output: "src/hooks/security/useAccessControl.ts"
-			}
+				output: "src/hooks/security/useAccessControl.ts",
+			},
 		];
 
 		for (const hook of hooks) {
@@ -285,28 +312,30 @@ export class NSMSecurityGenerator {
 	/**
 	 * Generate audit and monitoring system
 	 */
-	private async generateAuditSystem(context: NSMSecurityContext): Promise<void> {
+	private async generateAuditSystem(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const auditFiles = [
 			{
 				template: "audit-logger.ts.hbs",
-				output: "src/security/audit/audit-logger.ts"
+				output: "src/security/audit/audit-logger.ts",
 			},
 			{
 				template: "audit-trail.ts.hbs",
-				output: "src/security/audit/audit-trail.ts"
+				output: "src/security/audit/audit-trail.ts",
 			},
 			{
 				template: "security-monitor.ts.hbs",
-				output: "src/security/monitoring/security-monitor.ts"
+				output: "src/security/monitoring/security-monitor.ts",
 			},
 			{
 				template: "compliance-reporter.ts.hbs",
-				output: "src/security/audit/compliance-reporter.ts"
+				output: "src/security/audit/compliance-reporter.ts",
 			},
 			{
 				template: "audit-dashboard.tsx.hbs",
-				output: "src/components/security/AuditDashboard.tsx"
-			}
+				output: "src/components/security/AuditDashboard.tsx",
+			},
 		];
 
 		for (const file of auditFiles) {
@@ -319,24 +348,26 @@ export class NSMSecurityGenerator {
 	/**
 	 * Generate access control system
 	 */
-	private async generateAccessControl(context: NSMSecurityContext): Promise<void> {
+	private async generateAccessControl(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const accessFiles = [
 			{
 				template: "access-control-service.ts.hbs",
-				output: "src/security/access-control/access-control-service.ts"
+				output: "src/security/access-control/access-control-service.ts",
 			},
 			{
 				template: "role-based-access.ts.hbs",
-				output: "src/security/access-control/role-based-access.ts"
+				output: "src/security/access-control/role-based-access.ts",
 			},
 			{
 				template: "clearance-validator.ts.hbs",
-				output: "src/security/access-control/clearance-validator.ts"
+				output: "src/security/access-control/clearance-validator.ts",
 			},
 			{
 				template: "access-control-middleware.ts.hbs",
-				output: "src/security/middleware/access-control-middleware.ts"
-			}
+				output: "src/security/middleware/access-control-middleware.ts",
+			},
 		];
 
 		for (const file of accessFiles) {
@@ -349,24 +380,26 @@ export class NSMSecurityGenerator {
 	/**
 	 * Generate security middleware
 	 */
-	private async generateSecurityMiddleware(context: NSMSecurityContext): Promise<void> {
+	private async generateSecurityMiddleware(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const middlewareFiles = [
 			{
 				template: "security-headers-middleware.ts.hbs",
-				output: "src/security/middleware/security-headers-middleware.ts"
+				output: "src/security/middleware/security-headers-middleware.ts",
 			},
 			{
 				template: "classification-middleware.ts.hbs",
-				output: "src/security/middleware/classification-middleware.ts"
+				output: "src/security/middleware/classification-middleware.ts",
 			},
 			{
 				template: "audit-middleware.ts.hbs",
-				output: "src/security/middleware/audit-middleware.ts"
+				output: "src/security/middleware/audit-middleware.ts",
 			},
 			{
 				template: "session-security-middleware.ts.hbs",
-				output: "src/security/middleware/session-security-middleware.ts"
-			}
+				output: "src/security/middleware/session-security-middleware.ts",
+			},
 		];
 
 		for (const file of middlewareFiles) {
@@ -379,24 +412,26 @@ export class NSMSecurityGenerator {
 	/**
 	 * Generate compliance documentation
 	 */
-	private async generateComplianceDocumentation(context: NSMSecurityContext): Promise<void> {
+	private async generateComplianceDocumentation(
+		context: NSMSecurityContext,
+	): Promise<void> {
 		const docFiles = [
 			{
 				template: "nsm-security-guide.md.hbs",
-				output: "docs/security/NSM-Security-Guide.md"
+				output: "docs/security/NSM-Security-Guide.md",
 			},
 			{
 				template: "classification-procedures.md.hbs",
-				output: "docs/security/Classification-Procedures.md"
+				output: "docs/security/Classification-Procedures.md",
 			},
 			{
 				template: "security-implementation.md.hbs",
-				output: "docs/security/Security-Implementation.md"
+				output: "docs/security/Security-Implementation.md",
 			},
 			{
 				template: "audit-procedures.md.hbs",
-				output: "docs/security/Audit-Procedures.md"
-			}
+				output: "docs/security/Audit-Procedures.md",
+			},
 		];
 
 		for (const file of docFiles) {
@@ -407,7 +442,7 @@ export class NSMSecurityGenerator {
 		await this.generateFromTemplate(
 			"security-config.json.hbs",
 			"config/security/nsm-security.json",
-			context
+			context,
 		);
 
 		consola.debug("Generated NSM compliance documentation");
@@ -419,12 +454,12 @@ export class NSMSecurityGenerator {
 	private async generateFromTemplate(
 		templateName: string,
 		outputPath: string,
-		context: NSMSecurityContext
+		context: NSMSecurityContext,
 	): Promise<void> {
 		// This would use Handlebars or similar template engine
 		// For now, we'll create placeholder implementation
 		consola.debug(`Generating ${outputPath} from ${templateName}`);
-		
+
 		// In actual implementation, this would:
 		// 1. Load template from templatePath
 		// 2. Render with context
@@ -447,33 +482,32 @@ export class NSMSecurityGenerator {
 				"Use HSM for key management",
 				"Implement network segmentation",
 				"Enable comprehensive monitoring",
-				...(classification === "SECRET" || classification === "CONFIDENTIAL" 
-					? ["Use air-gapped systems where possible", "Implement quantum-resistant encryption"]
-					: []
-				)
+				...(classification === "SECRET" || classification === "CONFIDENTIAL"
+					? [
+							"Use air-gapped systems where possible",
+							"Implement quantum-resistant encryption",
+						]
+					: []),
 			],
 			development: [
 				"Follow secure coding practices",
 				"Implement comprehensive testing",
 				"Use static code analysis",
-				...(metadata.developmentRequirements.codeReview 
-					? ["Mandatory code review process"] 
-					: []
-				),
-				...(metadata.developmentRequirements.penetrationTesting 
-					? ["Regular penetration testing"] 
-					: []
-				)
+				...(metadata.developmentRequirements.codeReview
+					? ["Mandatory code review process"]
+					: []),
+				...(metadata.developmentRequirements.penetrationTesting
+					? ["Regular penetration testing"]
+					: []),
 			],
 			operational: [
 				"Regular security assessments",
 				"Incident response procedures",
 				"Staff security training",
-				...(metadata.auditLevel === "maximum" 
-					? ["24/7 security monitoring", "Real-time threat detection"] 
-					: []
-				)
-			]
+				...(metadata.auditLevel === "maximum"
+					? ["24/7 security monitoring", "Real-time threat detection"]
+					: []),
+			],
 		};
 	}
 
@@ -492,7 +526,7 @@ export class NSMSecurityGenerator {
 		const requiredFiles = [
 			"src/security/nsm/security-config.ts",
 			"src/security/audit/audit-logger.ts",
-			"src/security/access-control/access-control-service.ts"
+			"src/security/access-control/access-control-service.ts",
 		];
 
 		for (const file of requiredFiles) {
@@ -503,18 +537,37 @@ export class NSMSecurityGenerator {
 		}
 
 		// Classification-specific validation
-		const metadata = nsmClassifier.getClassification(this.options.classification);
+		const metadata = nsmClassifier.getClassification(
+			this.options.classification,
+		);
 		if (metadata) {
-			if (metadata.dataHandling.encryption && !existsSync(join(this.outputPath, "src/security/encryption"))) {
-				issues.push("Encryption implementation required for this classification level");
+			if (
+				metadata.dataHandling.encryption &&
+				!existsSync(join(this.outputPath, "src/security/encryption"))
+			) {
+				issues.push(
+					"Encryption implementation required for this classification level",
+				);
 			}
 
-			if (metadata.uiRequirements.watermarks && !existsSync(join(this.outputPath, "src/components/security/SecurityWatermark.tsx"))) {
-				issues.push("Security watermarks required for this classification level");
+			if (
+				metadata.uiRequirements.watermarks &&
+				!existsSync(
+					join(
+						this.outputPath,
+						"src/components/security/SecurityWatermark.tsx",
+					),
+				)
+			) {
+				issues.push(
+					"Security watermarks required for this classification level",
+				);
 			}
 
 			if (metadata.developmentRequirements.penetrationTesting) {
-				recommendations.push("Schedule regular penetration testing for this classification level");
+				recommendations.push(
+					"Schedule regular penetration testing for this classification level",
+				);
 			}
 		}
 
@@ -525,8 +578,8 @@ export class NSMSecurityGenerator {
 				...recommendations,
 				...this.getSecurityRecommendations().infrastructure,
 				...this.getSecurityRecommendations().development,
-				...this.getSecurityRecommendations().operational
-			]
+				...this.getSecurityRecommendations().operational,
+			],
 		};
 	}
 }
@@ -534,24 +587,28 @@ export class NSMSecurityGenerator {
 /**
  * Factory function to create NSM Security generator
  */
-export function createNSMSecurityGenerator(options: NSMSecurityOptions): NSMSecurityGenerator {
+export function createNSMSecurityGenerator(
+	options: NSMSecurityOptions,
+): NSMSecurityGenerator {
 	return new NSMSecurityGenerator(options);
 }
 
 /**
  * Generate NSM Security implementation
  */
-export async function generateNSMSecurity(options: NSMSecurityOptions): Promise<void> {
+export async function generateNSMSecurity(
+	options: NSMSecurityOptions,
+): Promise<void> {
 	const generator = createNSMSecurityGenerator(options);
 	await generator.generate();
-	
+
 	// Validate implementation
 	const validation = await generator.validateImplementation();
-	
+
 	if (!validation.valid) {
 		consola.warn("Security implementation has issues:", validation.issues);
 	}
-	
+
 	if (validation.recommendations.length > 0) {
 		consola.info("Security recommendations:", validation.recommendations);
 	}

@@ -14,7 +14,10 @@ import { RESTAPIGenerator } from "./api/index.js";
 // Generator imports
 import { BackendGenerator } from "./backend/index.js";
 import { PrismaGenerator } from "./database/index.js";
-import { DockerGenerator, createInfrastructureGenerator } from "./infrastructure/index.js";
+import {
+	DockerGenerator,
+	createInfrastructureGenerator,
+} from "./infrastructure/index.js";
 
 // Placeholder generator factory functions
 function createApiGenerator(type: string) {
@@ -29,17 +32,17 @@ function createBackendGenerator(type: string) {
 	return new BackendGenerator();
 }
 // Pattern generators
-import { 
-  DDDPatternGenerator,
-  CleanArchitectureGenerator,
-  CQRSEventSourcingGenerator,
-  DependencyInjectionGenerator,
-  PATTERN_GENERATORS,
-  PatternGeneratorFactory,
-  getPatternGenerator,
-  isPatternGeneratorSupported,
-  getPatternHelp,
-  validatePatternOptions
+import {
+	DDDPatternGenerator,
+	CleanArchitectureGenerator,
+	CQRSEventSourcingGenerator,
+	DependencyInjectionGenerator,
+	PATTERN_GENERATORS,
+	PatternGeneratorFactory,
+	getPatternGenerator,
+	isPatternGeneratorSupported,
+	getPatternHelp,
+	validatePatternOptions,
 } from "./patterns/index.js";
 
 /**
@@ -95,7 +98,13 @@ const GENERATOR_CATEGORIES = {
 	infrastructure: ["docker", "k8s", "ci", "deployment", "terraform"],
 
 	// DevOps generators
-	devops: ["docker", "kubernetes", "github-actions", "azure-devops", "gitlab-ci"],
+	devops: [
+		"docker",
+		"kubernetes",
+		"github-actions",
+		"azure-devops",
+		"gitlab-ci",
+	],
 
 	// Integration generators
 	integration: ["webhook", "queue", "cron", "worker", "integration"],
@@ -107,7 +116,14 @@ const GENERATOR_CATEGORIES = {
 	config: ["config", "env", "docs"],
 
 	// Pattern generators
-	patterns: ["ddd", "clean-architecture", "cqrs", "event-sourcing", "di", "adapter"],
+	patterns: [
+		"ddd",
+		"clean-architecture",
+		"cqrs",
+		"event-sourcing",
+		"di",
+		"adapter",
+	],
 
 	// Compliance generators
 	compliance: ["nsm-security", "gdpr-compliance"],
@@ -445,46 +461,58 @@ async function executePatternGenerator(
 	const { type, name, options, projectInfo } = context;
 
 	// Extract pattern type from the name (e.g., "ddd:aggregate" -> "ddd")
-	const [patternType, subPattern] = name.includes(':') ? name.split(':', 2) : [type, name];
+	const [patternType, subPattern] = name.includes(":")
+		? name.split(":", 2)
+		: [type, name];
 
 	// Validate pattern generator exists
 	if (!isPatternGeneratorSupported(patternType)) {
 		return {
 			success: false,
 			message: `Unknown pattern generator: ${patternType}`,
-			error: `Pattern generator '${patternType}' is not supported. Available patterns: ${Object.keys(PATTERN_GENERATORS).join(', ')}`,
+			error: `Pattern generator '${patternType}' is not supported. Available patterns: ${Object.keys(PATTERN_GENERATORS).join(", ")}`,
 		};
 	}
 
 	// Validate pattern options
-	const validationErrors = validatePatternOptions(`${patternType}:${subPattern}`, options);
+	const validationErrors = validatePatternOptions(
+		`${patternType}:${subPattern}`,
+		options,
+	);
 	if (validationErrors.length > 0) {
 		return {
 			success: false,
 			message: `Pattern validation failed`,
-			error: `Validation errors: ${validationErrors.join(', ')}`,
+			error: `Validation errors: ${validationErrors.join(", ")}`,
 		};
 	}
 
 	try {
 		// Create pattern generator instance
-		const generator = PatternGeneratorFactory.create(patternType, process.cwd());
+		const generator = PatternGeneratorFactory.create(
+			patternType,
+			process.cwd(),
+		);
 
 		// Execute pattern generation
-		const result = await generator.generate(subPattern || name, options, projectInfo);
+		const result = await generator.generate(
+			subPattern || name,
+			options,
+			projectInfo,
+		);
 
 		// Add pattern-specific help information
 		const patternHelp = getPatternHelp(patternType);
 		if (patternHelp && result.success) {
 			result.nextSteps = [
 				...(result.nextSteps || []),
-				'',
-				'Pattern Documentation:',
+				"",
+				"Pattern Documentation:",
 				`- ${patternHelp.description}`,
-				`- Available patterns: ${patternHelp.patterns.join(', ')}`,
-				'',
-				'Example commands:',
-				...patternHelp.examples.map(example => `  ${example}`),
+				`- Available patterns: ${patternHelp.patterns.join(", ")}`,
+				"",
+				"Example commands:",
+				...patternHelp.examples.map((example) => `  ${example}`),
 			];
 		}
 
@@ -508,14 +536,14 @@ async function executeDevOpsGenerator(
 
 	try {
 		const { DevOpsGeneratorFactory } = await import("./devops/index");
-		
+
 		switch (type) {
 			case "docker":
 				const dockerGenerator = DevOpsGeneratorFactory.createDockerGenerator();
 				await dockerGenerator.generate({
 					projectName: name,
-					projectType: options.projectType || 'web',
-					runtime: options.runtime || 'node',
+					projectType: options.projectType || "web",
+					runtime: options.runtime || "node",
 					enableMultiStage: options.enableMultiStage !== false,
 					enableDevContainer: options.enableDevContainer !== false,
 					enableSecurity: options.enableSecurity !== false,
@@ -523,54 +551,54 @@ async function executeDevOpsGenerator(
 					enablePrometheus: options.enablePrometheus || false,
 					registryUrl: options.registryUrl,
 					imageName: options.imageName || name,
-					imageTag: options.imageTag || 'latest',
-					workdir: options.workdir || '/app',
+					imageTag: options.imageTag || "latest",
+					workdir: options.workdir || "/app",
 					port: options.port || 3000,
 					exposePorts: options.exposePorts || [],
-					environment: options.environment || 'production',
+					environment: options.environment || "production",
 					optimizeForSize: options.optimizeForSize !== false,
 					enableNonRootUser: options.enableNonRootUser !== false,
-					customBuildArgs: options.customBuildArgs || []
+					customBuildArgs: options.customBuildArgs || [],
 				});
 
 				return {
 					success: true,
 					message: `Docker configuration for '${name}' generated successfully`,
 					files: [
-						'Dockerfile',
-						'docker-compose.yml',
-						'.dockerignore',
-						'.devcontainer/devcontainer.json',
-						'scripts/docker-build.sh',
-						'scripts/docker-run.sh',
-						'scripts/docker-push.sh',
-						'scripts/docker-clean.sh'
+						"Dockerfile",
+						"docker-compose.yml",
+						".dockerignore",
+						".devcontainer/devcontainer.json",
+						"scripts/docker-build.sh",
+						"scripts/docker-run.sh",
+						"scripts/docker-push.sh",
+						"scripts/docker-clean.sh",
 					],
 					commands: [
-						'chmod +x scripts/docker-*.sh',
-						'docker build -t ' + (options.imageName || name) + ' .',
-						'docker-compose up -d'
+						"chmod +x scripts/docker-*.sh",
+						"docker build -t " + (options.imageName || name) + " .",
+						"docker-compose up -d",
 					],
 					nextSteps: [
-						'Configure environment variables in .env file',
-						'Customize Docker settings for your specific needs',
-						'Set up container registry authentication',
-						'Configure CI/CD pipeline to build and push images',
-						'Test the container locally before deployment'
-					]
+						"Configure environment variables in .env file",
+						"Customize Docker settings for your specific needs",
+						"Set up container registry authentication",
+						"Configure CI/CD pipeline to build and push images",
+						"Test the container locally before deployment",
+					],
 				};
 
 			case "kubernetes":
 				const k8sGenerator = DevOpsGeneratorFactory.createKubernetesGenerator();
 				await k8sGenerator.generate({
 					appName: name,
-					namespace: options.namespace || 'default',
+					namespace: options.namespace || "default",
 					image: options.image || `${name}:latest`,
-					imageTag: options.imageTag || 'latest',
+					imageTag: options.imageTag || "latest",
 					port: options.port || 3000,
 					targetPort: options.targetPort || 3000,
 					replicas: options.replicas || 3,
-					environment: options.environment || 'production',
+					environment: options.environment || "production",
 					enableIngress: options.enableIngress !== false,
 					enableHPA: options.enableHPA !== false,
 					enableConfigMap: options.enableConfigMap !== false,
@@ -584,58 +612,67 @@ async function executeDevOpsGenerator(
 					enableIstio: options.enableIstio || false,
 					hostName: options.hostName,
 					resources: options.resources || {
-						requests: { cpu: '100m', memory: '128Mi' },
-						limits: { cpu: '500m', memory: '512Mi' }
+						requests: { cpu: "100m", memory: "128Mi" },
+						limits: { cpu: "500m", memory: "512Mi" },
 					},
 					hpa: options.hpa || {
 						minReplicas: 2,
 						maxReplicas: 10,
 						targetCPUUtilization: 80,
-						targetMemoryUtilization: 80
+						targetMemoryUtilization: 80,
 					},
 					probes: options.probes || {
-						liveness: { path: '/health', initialDelaySeconds: 30, periodSeconds: 10 },
-						readiness: { path: '/ready', initialDelaySeconds: 5, periodSeconds: 5 }
-					}
+						liveness: {
+							path: "/health",
+							initialDelaySeconds: 30,
+							periodSeconds: 10,
+						},
+						readiness: {
+							path: "/ready",
+							initialDelaySeconds: 5,
+							periodSeconds: 5,
+						},
+					},
 				});
 
 				return {
 					success: true,
 					message: `Kubernetes manifests for '${name}' generated successfully`,
 					files: [
-						'k8s/namespace.yaml',
-						'k8s/deployment.yaml',
-						'k8s/service.yaml',
-						'k8s/ingress.yaml',
-						'k8s/hpa.yaml',
-						'k8s/configmap.yaml',
-						'k8s/secrets.yaml',
-						'k8s/kustomization.yaml',
-						'scripts/k8s-deploy.sh',
-						'scripts/k8s-undeploy.sh'
+						"k8s/namespace.yaml",
+						"k8s/deployment.yaml",
+						"k8s/service.yaml",
+						"k8s/ingress.yaml",
+						"k8s/hpa.yaml",
+						"k8s/configmap.yaml",
+						"k8s/secrets.yaml",
+						"k8s/kustomization.yaml",
+						"scripts/k8s-deploy.sh",
+						"scripts/k8s-undeploy.sh",
 					],
 					commands: [
-						'chmod +x scripts/k8s-*.sh',
-						'kubectl apply -f k8s/',
-						'kubectl get pods -n ' + (options.namespace || 'default')
+						"chmod +x scripts/k8s-*.sh",
+						"kubectl apply -f k8s/",
+						"kubectl get pods -n " + (options.namespace || "default"),
 					],
 					nextSteps: [
-						'Configure kubectl to connect to your cluster',
-						'Update image references in deployment manifests',
-						'Configure ingress hostname and TLS certificates',
-						'Set up monitoring and logging',
-						'Configure resource quotas and limits',
-						'Test the deployment in a staging environment'
-					]
+						"Configure kubectl to connect to your cluster",
+						"Update image references in deployment manifests",
+						"Configure ingress hostname and TLS certificates",
+						"Set up monitoring and logging",
+						"Configure resource quotas and limits",
+						"Test the deployment in a staging environment",
+					],
 				};
 
 			case "github-actions":
-				const ghGenerator = DevOpsGeneratorFactory.createGitHubActionsGenerator();
+				const ghGenerator =
+					DevOpsGeneratorFactory.createGitHubActionsGenerator();
 				await ghGenerator.generate({
 					projectName: name,
-					projectType: options.projectType || 'web',
-					runtime: options.runtime || 'node',
-					packageManager: options.packageManager || 'npm',
+					projectType: options.projectType || "web",
+					runtime: options.runtime || "node",
+					packageManager: options.packageManager || "npm",
 					enableCI: options.enableCI !== false,
 					enableCD: options.enableCD !== false,
 					enableTesting: options.enableTesting !== false,
@@ -652,9 +689,9 @@ async function executeDevOpsGenerator(
 					enableMatrix: options.enableMatrix || false,
 					environments: options.environments || [],
 					deploymentTargets: options.deploymentTargets || [],
-					testFrameworks: options.testFrameworks || ['unit'],
-					codeQualityTools: options.codeQualityTools || ['eslint'],
-					securityTools: options.securityTools || ['codeql'],
+					testFrameworks: options.testFrameworks || ["unit"],
+					codeQualityTools: options.codeQualityTools || ["eslint"],
+					securityTools: options.securityTools || ["codeql"],
 					registries: options.registries || [],
 					secrets: options.secrets || [],
 					variables: options.variables || [],
@@ -663,51 +700,52 @@ async function executeDevOpsGenerator(
 						pullRequest: true,
 						schedule: [],
 						workflow_dispatch: true,
-						release: false
+						release: false,
 					},
 					concurrency: options.concurrency || {
-						group: '${{ github.workflow }}-${{ github.ref }}',
-						cancel_in_progress: true
+						group: "${{ github.workflow }}-${{ github.ref }}",
+						cancel_in_progress: true,
 					},
 					timeouts: options.timeouts || {
 						job: 360,
-						step: 30
-					}
+						step: 30,
+					},
 				});
 
 				return {
 					success: true,
 					message: `GitHub Actions workflows for '${name}' generated successfully`,
 					files: [
-						'.github/workflows/main.yml',
-						'.github/workflows/ci.yml',
-						'.github/workflows/security.yml',
-						'.github/workflows/deploy-production.yml',
-						'.github/actions/setup/action.yml',
-						'.github/actions/build/action.yml'
+						".github/workflows/main.yml",
+						".github/workflows/ci.yml",
+						".github/workflows/security.yml",
+						".github/workflows/deploy-production.yml",
+						".github/actions/setup/action.yml",
+						".github/actions/build/action.yml",
 					],
 					commands: [
-						'git add .github/',
+						"git add .github/",
 						'git commit -m "Add GitHub Actions workflows"',
-						'git push origin main'
+						"git push origin main",
 					],
 					nextSteps: [
-						'Configure repository secrets for deployment',
-						'Set up deployment environments with protection rules',
-						'Configure branch protection rules',
-						'Add status checks to pull requests',
-						'Set up notifications for workflow failures',
-						'Test the workflows with a pull request'
-					]
+						"Configure repository secrets for deployment",
+						"Set up deployment environments with protection rules",
+						"Configure branch protection rules",
+						"Add status checks to pull requests",
+						"Set up notifications for workflow failures",
+						"Test the workflows with a pull request",
+					],
 				};
 
 			case "azure-devops":
-				const azureGenerator = DevOpsGeneratorFactory.createAzureDevOpsGenerator();
+				const azureGenerator =
+					DevOpsGeneratorFactory.createAzureDevOpsGenerator();
 				await azureGenerator.generate({
 					projectName: name,
-					projectType: options.projectType || 'web',
-					runtime: options.runtime || 'node',
-					packageManager: options.packageManager || 'npm',
+					projectType: options.projectType || "web",
+					runtime: options.runtime || "node",
+					packageManager: options.packageManager || "npm",
 					enableCI: options.enableCI !== false,
 					enableCD: options.enableCD !== false,
 					enableTesting: options.enableTesting !== false,
@@ -717,72 +755,73 @@ async function executeDevOpsGenerator(
 					enableApprovals: options.enableApprovals || false,
 					enableGates: options.enableGates || false,
 					enableMultiStage: options.enableMultiStage !== false,
-					poolName: options.poolName || '',
-					vmImage: options.vmImage || 'ubuntu-latest',
+					poolName: options.poolName || "",
+					vmImage: options.vmImage || "ubuntu-latest",
 					environments: options.environments || [],
 					serviceConnections: options.serviceConnections || [],
 					variableGroups: options.variableGroups || [],
-					buildConfiguration: options.buildConfiguration || 'Release',
-					artifactName: options.artifactName || 'drop',
-					testFrameworks: options.testFrameworks || ['unit'],
-					securityTools: options.securityTools || ['whitesource'],
+					buildConfiguration: options.buildConfiguration || "Release",
+					artifactName: options.artifactName || "drop",
+					testFrameworks: options.testFrameworks || ["unit"],
+					securityTools: options.securityTools || ["whitesource"],
 					deploymentSlots: options.deploymentSlots || [],
-					azureSubscription: options.azureSubscription || '',
-					resourceGroup: options.resourceGroup || '',
+					azureSubscription: options.azureSubscription || "",
+					resourceGroup: options.resourceGroup || "",
 					appServiceName: options.appServiceName || name,
-					containerRegistry: options.containerRegistry || '',
-					keyVault: options.keyVault || '',
-					applicationInsights: options.applicationInsights || '',
+					containerRegistry: options.containerRegistry || "",
+					keyVault: options.keyVault || "",
+					applicationInsights: options.applicationInsights || "",
 					triggers: options.triggers || {
 						ci: {
-							branches: ['main', 'develop'],
-							paths: ['src/**'],
-							excludePaths: ['docs/**']
+							branches: ["main", "develop"],
+							paths: ["src/**"],
+							excludePaths: ["docs/**"],
 						},
 						pr: {
-							branches: ['main'],
-							paths: ['src/**'],
-							drafts: false
+							branches: ["main"],
+							paths: ["src/**"],
+							drafts: false,
 						},
-						scheduled: []
+						scheduled: [],
 					},
-					stages: options.stages || []
+					stages: options.stages || [],
 				});
 
 				return {
 					success: true,
 					message: `Azure DevOps pipelines for '${name}' generated successfully`,
 					files: [
-						'azure-pipelines.yml',
-						'pipelines/ci-pipeline.yml',
-						'pipelines/cd-pipeline.yml',
-						'pipelines/security-pipeline.yml',
-						'pipelines/templates/variables-global.yml',
-						'pipelines/templates/job-build.yml',
-						'pipelines/templates/stage-ci.yml'
+						"azure-pipelines.yml",
+						"pipelines/ci-pipeline.yml",
+						"pipelines/cd-pipeline.yml",
+						"pipelines/security-pipeline.yml",
+						"pipelines/templates/variables-global.yml",
+						"pipelines/templates/job-build.yml",
+						"pipelines/templates/stage-ci.yml",
 					],
 					commands: [
-						'git add azure-pipelines.yml pipelines/',
+						"git add azure-pipelines.yml pipelines/",
 						'git commit -m "Add Azure DevOps pipelines"',
-						'git push origin main'
+						"git push origin main",
 					],
 					nextSteps: [
-						'Create service connections in Azure DevOps',
-						'Configure variable groups for environments',
-						'Set up approval workflows for production',
-						'Configure branch policies and build validation',
-						'Set up release dashboards and monitoring',
-						'Test the pipeline with a sample deployment'
-					]
+						"Create service connections in Azure DevOps",
+						"Configure variable groups for environments",
+						"Set up approval workflows for production",
+						"Configure branch policies and build validation",
+						"Set up release dashboards and monitoring",
+						"Test the pipeline with a sample deployment",
+					],
 				};
 
 			case "gitlab-ci":
-				const gitlabGenerator = DevOpsGeneratorFactory.createGitLabCIGenerator();
+				const gitlabGenerator =
+					DevOpsGeneratorFactory.createGitLabCIGenerator();
 				await gitlabGenerator.generate({
 					projectName: name,
-					projectType: options.projectType || 'web',
-					runtime: options.runtime || 'node',
-					packageManager: options.packageManager || 'npm',
+					projectType: options.projectType || "web",
+					runtime: options.runtime || "node",
+					packageManager: options.packageManager || "npm",
 					enableCI: options.enableCI !== false,
 					enableCD: options.enableCD !== false,
 					enableTesting: options.enableTesting !== false,
@@ -797,26 +836,26 @@ async function executeDevOpsGenerator(
 					enableReviews: options.enableReviews || false,
 					enablePages: options.enablePages || false,
 					enableAutoDevOps: options.enableAutoDevOps || false,
-					stages: options.stages || ['build', 'test', 'deploy'],
+					stages: options.stages || ["build", "test", "deploy"],
 					images: options.images || {
-						default: 'node:20-alpine'
+						default: "node:20-alpine",
 					},
 					services: options.services || [],
 					variables: options.variables || {},
 					beforeScript: options.beforeScript || [],
 					afterScript: options.afterScript || [],
 					cache: options.cache || {
-						key: '$CI_COMMIT_REF_SLUG',
-						paths: ['node_modules/'],
-						policy: 'pull-push',
-						when: 'on_success'
+						key: "$CI_COMMIT_REF_SLUG",
+						paths: ["node_modules/"],
+						policy: "pull-push",
+						when: "on_success",
 					},
 					artifacts: options.artifacts || {
-						name: '$CI_COMMIT_REF_SLUG',
-						paths: ['dist/'],
+						name: "$CI_COMMIT_REF_SLUG",
+						paths: ["dist/"],
 						reports: {},
-						expire_in: '1 week',
-						when: 'on_success'
+						expire_in: "1 week",
+						when: "on_success",
 					},
 					environments: options.environments || [],
 					rules: options.rules || [],
@@ -824,35 +863,35 @@ async function executeDevOpsGenerator(
 					tags: options.tags || [],
 					runners: options.runners || {
 						shared: true,
-						tags: []
-					}
+						tags: [],
+					},
 				});
 
 				return {
 					success: true,
 					message: `GitLab CI/CD configuration for '${name}' generated successfully`,
 					files: [
-						'.gitlab-ci.yml',
-						'.gitlab/ci/security.yml',
-						'.gitlab/ci/docker.yml',
-						'.gitlab/ci/pages.yml',
-						'.gitlab/ci/templates/build.yml',
-						'.gitlab/ci/templates/test.yml',
-						'.gitlab/ci/templates/deploy.yml'
+						".gitlab-ci.yml",
+						".gitlab/ci/security.yml",
+						".gitlab/ci/docker.yml",
+						".gitlab/ci/pages.yml",
+						".gitlab/ci/templates/build.yml",
+						".gitlab/ci/templates/test.yml",
+						".gitlab/ci/templates/deploy.yml",
 					],
 					commands: [
-						'git add .gitlab-ci.yml .gitlab/',
+						"git add .gitlab-ci.yml .gitlab/",
 						'git commit -m "Add GitLab CI/CD configuration"',
-						'git push origin main'
+						"git push origin main",
 					],
 					nextSteps: [
-						'Configure CI/CD variables in GitLab project settings',
-						'Set up deployment environments with protection rules',
-						'Enable GitLab Pages if using the pages job',
-						'Configure container registry authentication',
-						'Set up monitoring and alerting for pipeline failures',
-						'Test the pipeline by creating a merge request'
-					]
+						"Configure CI/CD variables in GitLab project settings",
+						"Set up deployment environments with protection rules",
+						"Enable GitLab Pages if using the pages job",
+						"Configure container registry authentication",
+						"Set up monitoring and alerting for pipeline failures",
+						"Test the pipeline by creating a merge request",
+					],
 				};
 
 			default:
@@ -862,7 +901,6 @@ async function executeDevOpsGenerator(
 					error: `DevOps generator type '${type}' is not supported`,
 				};
 		}
-
 	} catch (error) {
 		return {
 			success: false,
@@ -883,96 +921,103 @@ async function executeComplianceGenerator(
 	try {
 		switch (type) {
 			case "nsm-security":
-				const { generateNSMSecurity } = await import("./compliance/nsm-security.generator");
+				const { generateNSMSecurity } = await import(
+					"./compliance/nsm-security.generator"
+				);
 				await generateNSMSecurity({
 					projectName: name,
-					classification: options.classification || 'RESTRICTED',
-					dataTypes: options.dataTypes || ['personal-data'],
+					classification: options.classification || "RESTRICTED",
+					dataTypes: options.dataTypes || ["personal-data"],
 					retentionPeriod: options.retentionPeriod || 365,
-					userClearance: options.userClearance || 'RESTRICTED',
-					auditLevel: options.auditLevel || 'enhanced',
+					userClearance: options.userClearance || "RESTRICTED",
+					auditLevel: options.auditLevel || "enhanced",
 					enableWatermarks: options.enableWatermarks || true,
 					sessionTimeout: options.sessionTimeout || 240,
 					internationalTransfer: options.internationalTransfer || false,
-					outputDir: context.options.outputDir || process.cwd()
+					outputDir: context.options.outputDir || process.cwd(),
 				});
 
 				return {
 					success: true,
 					message: `NSM Security implementation for '${name}' generated successfully`,
 					files: [
-						'src/security/nsm/security-config.ts',
-						'src/security/nsm/classification-service.ts',
-						'src/security/audit/audit-logger.ts',
-						'src/components/security/ClassificationBanner.tsx',
-						'src/components/security/SecurityWatermark.tsx',
-						'src/types/security/nsm-types.ts',
-						'docs/security/NSM-Security-Guide.md'
+						"src/security/nsm/security-config.ts",
+						"src/security/nsm/classification-service.ts",
+						"src/security/audit/audit-logger.ts",
+						"src/components/security/ClassificationBanner.tsx",
+						"src/components/security/SecurityWatermark.tsx",
+						"src/types/security/nsm-types.ts",
+						"docs/security/NSM-Security-Guide.md",
 					],
 					commands: [
-						'npm install consola',
-						'npm run type-check',
-						'npm run security:validate'
+						"npm install consola",
+						"npm run type-check",
+						"npm run security:validate",
 					],
 					nextSteps: [
-						`Configure security classification level: ${options.classification || 'RESTRICTED'}`,
-						'Set up environment variables for encryption and audit logging',
-						'Review and customize security policies',
-						'Configure user clearance levels',
-						'Test security access controls',
-						'Set up monitoring and alerting for security events'
+						`Configure security classification level: ${options.classification || "RESTRICTED"}`,
+						"Set up environment variables for encryption and audit logging",
+						"Review and customize security policies",
+						"Configure user clearance levels",
+						"Test security access controls",
+						"Set up monitoring and alerting for security events",
 					],
 				};
 
 			case "gdpr-compliance":
-				const { generateGDPRCompliance } = await import("./compliance/gdpr.generator");
+				const { generateGDPRCompliance } = await import(
+					"./compliance/gdpr.generator"
+				);
 				await generateGDPRCompliance({
 					projectName: name,
-					dataCategories: options.dataCategories || ['personal-data'],
-					lawfulBasis: options.lawfulBasis || 'legitimate-interests',
-					consentTypes: options.consentTypes || ['informed', 'specific'],
+					dataCategories: options.dataCategories || ["personal-data"],
+					lawfulBasis: options.lawfulBasis || "legitimate-interests",
+					consentTypes: options.consentTypes || ["informed", "specific"],
 					dataRetentionPeriod: options.dataRetentionPeriod || 365,
 					enableRightToErasure: options.enableRightToErasure !== false,
 					enableDataPortability: options.enableDataPortability !== false,
-					enableRightToRectification: options.enableRightToRectification !== false,
-					appointDataProtectionOfficer: options.appointDataProtectionOfficer || false,
-					performDataProtectionImpactAssessment: options.performDataProtectionImpactAssessment || false,
+					enableRightToRectification:
+						options.enableRightToRectification !== false,
+					appointDataProtectionOfficer:
+						options.appointDataProtectionOfficer || false,
+					performDataProtectionImpactAssessment:
+						options.performDataProtectionImpactAssessment || false,
 					enablePrivacyByDesign: options.enablePrivacyByDesign !== false,
 					enableConsentManagement: options.enableConsentManagement !== false,
 					enableAuditLogging: options.enableAuditLogging !== false,
 					internationalTransfers: options.internationalTransfers || false,
 					adequacyCountries: options.adequacyCountries || [],
 					bindingCorporateRules: options.bindingCorporateRules || false,
-					outputDir: context.options.outputDir || process.cwd()
+					outputDir: context.options.outputDir || process.cwd(),
 				});
 
 				return {
 					success: true,
 					message: `GDPR Compliance implementation for '${name}' generated successfully`,
 					files: [
-						'src/gdpr/services/gdpr-service.ts',
-						'src/gdpr/consent/consent-manager.ts',
-						'src/gdpr/data-subject-rights/data-subject-rights-service.ts',
-						'src/gdpr/workflows/data-deletion-workflow.ts',
-						'src/components/consent/ConsentBanner.tsx',
-						'src/components/privacy/PrivacyDashboard.tsx',
-						'src/types/gdpr/gdpr-types.ts',
-						'docs/gdpr/GDPR-Compliance-Guide.md'
+						"src/gdpr/services/gdpr-service.ts",
+						"src/gdpr/consent/consent-manager.ts",
+						"src/gdpr/data-subject-rights/data-subject-rights-service.ts",
+						"src/gdpr/workflows/data-deletion-workflow.ts",
+						"src/components/consent/ConsentBanner.tsx",
+						"src/components/privacy/PrivacyDashboard.tsx",
+						"src/types/gdpr/gdpr-types.ts",
+						"docs/gdpr/GDPR-Compliance-Guide.md",
 					],
 					commands: [
-						'npm install consola',
-						'npm run type-check',
-						'npm run gdpr:validate'
+						"npm install consola",
+						"npm run type-check",
+						"npm run gdpr:validate",
 					],
 					nextSteps: [
-						`Configure lawful basis for processing: ${options.lawfulBasis || 'legitimate-interests'}`,
-						'Set up consent management system',
-						'Configure data retention policies',
-						'Implement data subject rights procedures',
-						'Set up audit logging and monitoring',
-						'Create privacy policy and cookie policy',
-						'Configure data deletion workflows',
-						'Test GDPR compliance implementation'
+						`Configure lawful basis for processing: ${options.lawfulBasis || "legitimate-interests"}`,
+						"Set up consent management system",
+						"Configure data retention policies",
+						"Implement data subject rights procedures",
+						"Set up audit logging and monitoring",
+						"Create privacy policy and cookie policy",
+						"Configure data deletion workflows",
+						"Test GDPR compliance implementation",
 					],
 				};
 
@@ -983,7 +1028,6 @@ async function executeComplianceGenerator(
 					error: `Compliance generator type '${type}' is not supported`,
 				};
 		}
-
 	} catch (error) {
 		return {
 			success: false,
@@ -1040,7 +1084,9 @@ export async function executeFullStackGenerator(
 				const infraGenerator = createInfrastructureGenerator(type as any);
 				return await infraGenerator.generate(process.cwd(), {
 					type: type as any,
-					platform: context.options.platform || (type === "terraform" ? "terraform" : "kubernetes"),
+					platform:
+						context.options.platform ||
+						(type === "terraform" ? "terraform" : "kubernetes"),
 					environment: context.options.environment || "development",
 					services: context.options.services || [],
 					monitoring: context.options.monitoring || false,
@@ -1141,13 +1187,18 @@ export function getGeneratorHelp(type: GeneratorType): string {
 		k8s: "Generate Kubernetes manifests with best practices",
 		ci: "Generate CI/CD pipeline configuration",
 		deployment: "Generate deployment scripts for cloud platforms",
-		terraform: "Generate Terraform infrastructure as code for AWS, Azure, and GCP",
+		terraform:
+			"Generate Terraform infrastructure as code for AWS, Azure, and GCP",
 
 		// DevOps
-		"github-actions": "Generate GitHub Actions workflows with security scanning and deployment",
-		"azure-devops": "Generate Azure DevOps pipelines with multi-stage deployments",
-		"gitlab-ci": "Generate GitLab CI/CD pipelines with security and compliance scanning",
-		kubernetes: "Generate comprehensive Kubernetes manifests with Helm charts and Istio service mesh",
+		"github-actions":
+			"Generate GitHub Actions workflows with security scanning and deployment",
+		"azure-devops":
+			"Generate Azure DevOps pipelines with multi-stage deployments",
+		"gitlab-ci":
+			"Generate GitLab CI/CD pipelines with security and compliance scanning",
+		kubernetes:
+			"Generate comprehensive Kubernetes manifests with Helm charts and Istio service mesh",
 
 		// Integration
 		webhook: "Generate webhook handler with validation",
@@ -1168,15 +1219,19 @@ export function getGeneratorHelp(type: GeneratorType): string {
 
 		// Patterns
 		ddd: "Generate Domain-Driven Design patterns (bounded contexts, aggregates, entities)",
-		"clean-architecture": "Generate Clean Architecture patterns (use cases, adapters, interfaces)",
+		"clean-architecture":
+			"Generate Clean Architecture patterns (use cases, adapters, interfaces)",
 		cqrs: "Generate CQRS patterns (commands, queries, events, projections)",
-		"event-sourcing": "Generate Event Sourcing patterns (event store, snapshots, replay)",
+		"event-sourcing":
+			"Generate Event Sourcing patterns (event store, snapshots, replay)",
 		di: "Generate Dependency Injection patterns (containers, services, adapters)",
 		adapter: "Generate Adapter patterns for external integrations",
 
 		// Compliance
-		"nsm-security": "Generate NSM-compliant security classifications and access controls",
-		"gdpr-compliance": "Generate GDPR-compliant data protection and privacy systems",
+		"nsm-security":
+			"Generate NSM-compliant security classifications and access controls",
+		"gdpr-compliance":
+			"Generate GDPR-compliant data protection and privacy systems",
 	};
 
 	return helpTexts[type] || `Generate ${type} with best practices`;
@@ -1194,4 +1249,4 @@ export {
 	isPatternGeneratorSupported,
 	getPatternHelp,
 	validatePatternOptions,
-} from './patterns/index.js';
+} from "./patterns/index.js";

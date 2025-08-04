@@ -1,120 +1,143 @@
-import { BaseGenerator } from '../base.generator';
-import { GeneratorOptions, FileOperation } from '../../types';
-import { join } from 'path';
+import { BaseGenerator } from "../base.generator";
+import { GeneratorOptions, FileOperation } from "../../types";
+import { join } from "path";
 
 interface CommunicationServiceGeneratorOptions extends GeneratorOptions {
-  readonly servicesToGenerate: readonly CommunicationService[];
-  readonly projectName: string;
-  readonly environment: 'development' | 'staging' | 'production';
-  readonly enableRetries: boolean;
-  readonly enableRateLimiting: boolean;
-  readonly enableWebhooks: boolean;
-  readonly enableAnalytics: boolean;
-  readonly enableErrorTracking: boolean;
-  readonly defaultFromEmail?: string;
-  readonly defaultFromName?: string;
-  readonly webhookSecret?: string;
-  readonly rateLimitConfig?: {
-    requestsPerMinute: number;
-    burstLimit: number;
-  };
+	readonly servicesToGenerate: readonly CommunicationService[];
+	readonly projectName: string;
+	readonly environment: "development" | "staging" | "production";
+	readonly enableRetries: boolean;
+	readonly enableRateLimiting: boolean;
+	readonly enableWebhooks: boolean;
+	readonly enableAnalytics: boolean;
+	readonly enableErrorTracking: boolean;
+	readonly defaultFromEmail?: string;
+	readonly defaultFromName?: string;
+	readonly webhookSecret?: string;
+	readonly rateLimitConfig?: {
+		requestsPerMinute: number;
+		burstLimit: number;
+	};
 }
 
-type CommunicationService = 
-  | 'sendgrid'
-  | 'mailgun'
-  | 'aws-ses'
-  | 'postmark'
-  | 'twilio-sms'
-  | 'twilio-whatsapp'
-  | 'slack-bot'
-  | 'discord-webhook'
-  | 'microsoft-teams';
+type CommunicationService =
+	| "sendgrid"
+	| "mailgun"
+	| "aws-ses"
+	| "postmark"
+	| "twilio-sms"
+	| "twilio-whatsapp"
+	| "slack-bot"
+	| "discord-webhook"
+	| "microsoft-teams";
 
 export class CommunicationServiceGenerator extends BaseGenerator {
-  readonly name = 'communication-services';
-  readonly description = 'Generate comprehensive communication service integrations with enterprise-grade patterns';
+	readonly name = "communication-services";
+	readonly description =
+		"Generate comprehensive communication service integrations with enterprise-grade patterns";
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async generate(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    try {
-      this.validateOptions(options);
-      
-      const operations: FileOperation[] = [];
-      
-      this.logger.info(`Generating communication services for project: ${options.projectName}`);
-      this.logger.info(`Selected services: ${options.servicesToGenerate.join(', ')}`);
-      
-      // Generate base communication configuration
-      operations.push(...await this.generateBaseConfiguration(options));
-      
-      // Generate selected services
-      for (const service of options.servicesToGenerate) {
-        this.logger.info(`Generating ${service} service configuration...`);
-        operations.push(...await this.generateService(service, options));
-      }
-      
-      // Generate common utilities
-      operations.push(...await this.generateCommonUtilities(options));
-      
-      // Generate error handling and retry logic
-      operations.push(...await this.generateErrorHandling(options));
-      
-      // Generate webhook handlers
-      if (options.enableWebhooks) {
-        operations.push(...await this.generateWebhookHandlers(options));
-      }
-      
-      // Generate testing utilities
-      operations.push(...await this.generateTestingUtilities(options));
-      
-      // Generate configuration files
-      operations.push(...await this.generateConfigurationFiles(options));
-      
-      this.logger.success(`Successfully generated ${operations.length} files for communication services`);
-      
-      return operations;
-    } catch (error) {
-      this.logger.error('Communication services generator failed', error);
-      throw new Error(`Communication services generator failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
+	async generate(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		try {
+			this.validateOptions(options);
 
-  private validateOptions(options: CommunicationServiceGeneratorOptions): void {
-    if (!options.servicesToGenerate || options.servicesToGenerate.length === 0) {
-      throw new Error('At least one communication service must be selected');
-    }
-    
-    if (!options.projectName) {
-      throw new Error('Project name is required');
-    }
-    
-    // Validate service-specific requirements
-    const emailServices = ['sendgrid', 'mailgun', 'aws-ses', 'postmark'];
-    const hasEmailService = options.servicesToGenerate.some(service => 
-      emailServices.includes(service)
-    );
-    
-    if (hasEmailService && !options.defaultFromEmail) {
-      this.logger.warn('Email services are selected but no defaultFromEmail is provided. Consider adding it for complete setup.');
-    }
-    
-    if (options.servicesToGenerate.includes('twilio-sms') || options.servicesToGenerate.includes('twilio-whatsapp')) {
-      this.logger.info('Twilio services selected. Ensure you have a Twilio account and phone number configured.');
-    }
-  }
+			const operations: FileOperation[] = [];
 
-  private async generateBaseConfiguration(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    // Main communication service configuration
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/config/communication.config.ts'),
-      content: `/**
+			this.logger.info(
+				`Generating communication services for project: ${options.projectName}`,
+			);
+			this.logger.info(
+				`Selected services: ${options.servicesToGenerate.join(", ")}`,
+			);
+
+			// Generate base communication configuration
+			operations.push(...(await this.generateBaseConfiguration(options)));
+
+			// Generate selected services
+			for (const service of options.servicesToGenerate) {
+				this.logger.info(`Generating ${service} service configuration...`);
+				operations.push(...(await this.generateService(service, options)));
+			}
+
+			// Generate common utilities
+			operations.push(...(await this.generateCommonUtilities(options)));
+
+			// Generate error handling and retry logic
+			operations.push(...(await this.generateErrorHandling(options)));
+
+			// Generate webhook handlers
+			if (options.enableWebhooks) {
+				operations.push(...(await this.generateWebhookHandlers(options)));
+			}
+
+			// Generate testing utilities
+			operations.push(...(await this.generateTestingUtilities(options)));
+
+			// Generate configuration files
+			operations.push(...(await this.generateConfigurationFiles(options)));
+
+			this.logger.success(
+				`Successfully generated ${operations.length} files for communication services`,
+			);
+
+			return operations;
+		} catch (error) {
+			this.logger.error("Communication services generator failed", error);
+			throw new Error(
+				`Communication services generator failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	}
+
+	private validateOptions(options: CommunicationServiceGeneratorOptions): void {
+		if (
+			!options.servicesToGenerate ||
+			options.servicesToGenerate.length === 0
+		) {
+			throw new Error("At least one communication service must be selected");
+		}
+
+		if (!options.projectName) {
+			throw new Error("Project name is required");
+		}
+
+		// Validate service-specific requirements
+		const emailServices = ["sendgrid", "mailgun", "aws-ses", "postmark"];
+		const hasEmailService = options.servicesToGenerate.some((service) =>
+			emailServices.includes(service),
+		);
+
+		if (hasEmailService && !options.defaultFromEmail) {
+			this.logger.warn(
+				"Email services are selected but no defaultFromEmail is provided. Consider adding it for complete setup.",
+			);
+		}
+
+		if (
+			options.servicesToGenerate.includes("twilio-sms") ||
+			options.servicesToGenerate.includes("twilio-whatsapp")
+		) {
+			this.logger.info(
+				"Twilio services selected. Ensure you have a Twilio account and phone number configured.",
+			);
+		}
+	}
+
+	private async generateBaseConfiguration(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		// Main communication service configuration
+		operations.push({
+			type: "create",
+			path: join(options.outputPath, "src/config/communication.config.ts"),
+			content: `/**
  * Communication Services Configuration
  * Centralized configuration for all communication service integrations
  */
@@ -140,9 +163,9 @@ export const communicationConfig: CommunicationConfig = {
   enableRateLimiting: ${options.enableRateLimiting},
   enableAnalytics: ${options.enableAnalytics},
   enableErrorTracking: ${options.enableErrorTracking},
-  defaultFromEmail: process.env.DEFAULT_FROM_EMAIL || '${options.defaultFromEmail || 'noreply@example.com'}',
+  defaultFromEmail: process.env.DEFAULT_FROM_EMAIL || '${options.defaultFromEmail || "noreply@example.com"}',
   defaultFromName: process.env.DEFAULT_FROM_NAME || '${options.defaultFromName || options.projectName}',
-  webhookSecret: process.env.WEBHOOK_SECRET || '${options.webhookSecret || 'your-webhook-secret'}',
+  webhookSecret: process.env.WEBHOOK_SECRET || '${options.webhookSecret || "your-webhook-secret"}',
   rateLimitConfig: {
     requestsPerMinute: ${options.rateLimitConfig?.requestsPerMinute || 60},
     burstLimit: ${options.rateLimitConfig?.burstLimit || 10},
@@ -195,30 +218,33 @@ export const serviceConfigs = {
     clientSecret: process.env.TEAMS_CLIENT_SECRET || '',
   },
 } as const;
-`
-    });
-    
-    // Communication service factory
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/communication-service.factory.ts'),
-      content: `/**
+`,
+		});
+
+		// Communication service factory
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/communication-service.factory.ts",
+			),
+			content: `/**
  * Communication Service Factory
  * Factory pattern for creating communication service instances
  */
 
 import { CommunicationService } from './types/communication.types';
-${options.servicesToGenerate.includes('sendgrid') ? "import { SendGridService } from './services/sendgrid.service';" : ''}
-${options.servicesToGenerate.includes('mailgun') ? "import { MailgunService } from './services/mailgun.service';" : ''}
-${options.servicesToGenerate.includes('aws-ses') ? "import { AwsSesService } from './services/aws-ses.service';" : ''}
-${options.servicesToGenerate.includes('postmark') ? "import { PostmarkService } from './services/postmark.service';" : ''}
-${options.servicesToGenerate.includes('twilio-sms') ? "import { TwilioSmsService } from './services/twilio-sms.service';" : ''}
-${options.servicesToGenerate.includes('twilio-whatsapp') ? "import { TwilioWhatsappService } from './services/twilio-whatsapp.service';" : ''}
-${options.servicesToGenerate.includes('slack-bot') ? "import { SlackBotService } from './services/slack-bot.service';" : ''}
-${options.servicesToGenerate.includes('discord-webhook') ? "import { DiscordWebhookService } from './services/discord-webhook.service';" : ''}
-${options.servicesToGenerate.includes('microsoft-teams') ? "import { MicrosoftTeamsService } from './services/microsoft-teams.service';" : ''}
+${options.servicesToGenerate.includes("sendgrid") ? "import { SendGridService } from './services/sendgrid.service';" : ""}
+${options.servicesToGenerate.includes("mailgun") ? "import { MailgunService } from './services/mailgun.service';" : ""}
+${options.servicesToGenerate.includes("aws-ses") ? "import { AwsSesService } from './services/aws-ses.service';" : ""}
+${options.servicesToGenerate.includes("postmark") ? "import { PostmarkService } from './services/postmark.service';" : ""}
+${options.servicesToGenerate.includes("twilio-sms") ? "import { TwilioSmsService } from './services/twilio-sms.service';" : ""}
+${options.servicesToGenerate.includes("twilio-whatsapp") ? "import { TwilioWhatsappService } from './services/twilio-whatsapp.service';" : ""}
+${options.servicesToGenerate.includes("slack-bot") ? "import { SlackBotService } from './services/slack-bot.service';" : ""}
+${options.servicesToGenerate.includes("discord-webhook") ? "import { DiscordWebhookService } from './services/discord-webhook.service';" : ""}
+${options.servicesToGenerate.includes("microsoft-teams") ? "import { MicrosoftTeamsService } from './services/microsoft-teams.service';" : ""}
 
-export type ServiceType = ${options.servicesToGenerate.map(s => `'${s}'`).join(' | ')};
+export type ServiceType = ${options.servicesToGenerate.map((s) => `'${s}'`).join(" | ")};
 
 export class CommunicationServiceFactory {
   private static instances = new Map<ServiceType, CommunicationService>();
@@ -231,15 +257,19 @@ export class CommunicationServiceFactory {
     let service: CommunicationService;
 
     switch (serviceType) {
-${options.servicesToGenerate.map(service => {
-  const className = service.split('-').map(part => 
-    part.charAt(0).toUpperCase() + part.slice(1)
-  ).join('') + 'Service';
-  
-  return `      case '${service}':
+${options.servicesToGenerate
+	.map((service) => {
+		const className =
+			service
+				.split("-")
+				.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+				.join("") + "Service";
+
+		return `      case '${service}':
         service = new ${className}();
         break;`;
-}).join('\n')}
+	})
+	.join("\n")}
       default:
         throw new Error(\`Unknown service type: \${serviceType}\`);
     }
@@ -249,21 +279,24 @@ ${options.servicesToGenerate.map(service => {
   }
 
   static getAvailableServices(): ServiceType[] {
-    return [${options.servicesToGenerate.map(s => `'${s}'`).join(', ')}];
+    return [${options.servicesToGenerate.map((s) => `'${s}'`).join(", ")}];
   }
 
   static clearInstances(): void {
     this.instances.clear();
   }
 }
-`
-    });
-    
-    // Base types
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/types/communication.types.ts'),
-      content: `/**
+`,
+		});
+
+		// Base types
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/types/communication.types.ts",
+			),
+			content: `/**
  * Communication Service Types
  * Shared types and interfaces for all communication services
  */
@@ -368,58 +401,66 @@ export interface CommunicationAnalytics {
     readonly end: Date;
   };
 }
-`
-    });
-    
-    return operations;
-  }
+`,
+		});
 
-  private async generateService(service: CommunicationService, options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    switch (service) {
-      case 'sendgrid':
-        operations.push(...await this.generateSendGridService(options));
-        break;
-      case 'mailgun':
-        operations.push(...await this.generateMailgunService(options));
-        break;
-      case 'aws-ses':
-        operations.push(...await this.generateAwsSesService(options));
-        break;
-      case 'postmark':
-        operations.push(...await this.generatePostmarkService(options));
-        break;
-      case 'twilio-sms':
-        operations.push(...await this.generateTwilioSmsService(options));
-        break;
-      case 'twilio-whatsapp':
-        operations.push(...await this.generateTwilioWhatsappService(options));
-        break;
-      case 'slack-bot':
-        operations.push(...await this.generateSlackBotService(options));
-        break;
-      case 'discord-webhook':
-        operations.push(...await this.generateDiscordWebhookService(options));
-        break;
-      case 'microsoft-teams':
-        operations.push(...await this.generateMicrosoftTeamsService(options));
-        break;
-      default:
-        this.logger.warn(`Service ${service} is not yet implemented`);
-        break;
-    }
-    
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateSendGridService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/sendgrid.service.ts'),
-      content: `/**
+	private async generateService(
+		service: CommunicationService,
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		switch (service) {
+			case "sendgrid":
+				operations.push(...(await this.generateSendGridService(options)));
+				break;
+			case "mailgun":
+				operations.push(...(await this.generateMailgunService(options)));
+				break;
+			case "aws-ses":
+				operations.push(...(await this.generateAwsSesService(options)));
+				break;
+			case "postmark":
+				operations.push(...(await this.generatePostmarkService(options)));
+				break;
+			case "twilio-sms":
+				operations.push(...(await this.generateTwilioSmsService(options)));
+				break;
+			case "twilio-whatsapp":
+				operations.push(...(await this.generateTwilioWhatsappService(options)));
+				break;
+			case "slack-bot":
+				operations.push(...(await this.generateSlackBotService(options)));
+				break;
+			case "discord-webhook":
+				operations.push(...(await this.generateDiscordWebhookService(options)));
+				break;
+			case "microsoft-teams":
+				operations.push(...(await this.generateMicrosoftTeamsService(options)));
+				break;
+			default:
+				this.logger.warn(`Service ${service} is not yet implemented`);
+				break;
+		}
+
+		return operations;
+	}
+
+	private async generateSendGridService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/sendgrid.service.ts",
+			),
+			content: `/**
  * SendGrid Email Service
  * Enterprise-grade SendGrid integration with templates, analytics, and error handling
  */
@@ -585,14 +626,17 @@ export class SendGridService implements CommunicationService {
     return sendGridMessage;
   }
 }
-`
-    });
+`,
+		});
 
-    // SendGrid webhook handler
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/webhooks/sendgrid.webhook.ts'),
-      content: `/**
+		// SendGrid webhook handler
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/webhooks/sendgrid.webhook.ts",
+			),
+			content: `/**
  * SendGrid Webhook Handler
  * Handles SendGrid webhook events for delivery tracking and analytics
  */
@@ -669,19 +713,24 @@ export class SendGridWebhookHandler {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateMailgunService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/mailgun.service.ts'),
-      content: `/**
+	private async generateMailgunService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/mailgun.service.ts",
+			),
+			content: `/**
  * Mailgun Email Service
  * Enterprise-grade Mailgun integration with tracking, analytics, and error handling
  */
@@ -841,14 +890,17 @@ export class MailgunService implements CommunicationService {
     return mailgunMessage;
   }
 }
-`
-    });
+`,
+		});
 
-    // Mailgun webhook handler
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/webhooks/mailgun.webhook.ts'),
-      content: `/**
+		// Mailgun webhook handler
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/webhooks/mailgun.webhook.ts",
+			),
+			content: `/**
  * Mailgun Webhook Handler
  * Handles Mailgun webhook events for delivery tracking and analytics
  */
@@ -926,19 +978,24 @@ export class MailgunWebhookHandler {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateAwsSesService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/aws-ses.service.ts'),
-      content: `/**
+	private async generateAwsSesService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/aws-ses.service.ts",
+			),
+			content: `/**
  * AWS SES Email Service
  * Enterprise-grade AWS SES integration with bounce handling and configuration sets
  */
@@ -1097,14 +1154,17 @@ export class AwsSesService implements CommunicationService {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    // AWS SES bounce handler
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/handlers/ses-bounce.handler.ts'),
-      content: `/**
+		// AWS SES bounce handler
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/handlers/ses-bounce.handler.ts",
+			),
+			content: `/**
  * AWS SES Bounce Handler
  * Handles SES bounce and complaint events for email deliverability
  */
@@ -1215,19 +1275,24 @@ export class SesBounceHandler {
     this.logger.logInfo('Added to suppression list', { emailAddress, reason });
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generatePostmarkService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/postmark.service.ts'),
-      content: `/**
+	private async generatePostmarkService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/postmark.service.ts",
+			),
+			content: `/**
  * Postmark Email Service
  * Enterprise-grade Postmark integration with templates and delivery tracking
  */
@@ -1391,19 +1456,24 @@ export class PostmarkService implements CommunicationService {
     return postmarkMessage;
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateTwilioSmsService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/twilio-sms.service.ts'),
-      content: `/**
+	private async generateTwilioSmsService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/twilio-sms.service.ts",
+			),
+			content: `/**
  * Twilio SMS Service
  * Enterprise-grade Twilio SMS integration with delivery tracking
  */
@@ -1543,19 +1613,24 @@ export class TwilioSmsService implements CommunicationService {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateTwilioWhatsappService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/twilio-whatsapp.service.ts'),
-      content: `/**
+	private async generateTwilioWhatsappService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/twilio-whatsapp.service.ts",
+			),
+			content: `/**
  * Twilio WhatsApp Service
  * Enterprise-grade Twilio WhatsApp Business API integration
  */
@@ -1731,19 +1806,24 @@ export class TwilioWhatsappService implements CommunicationService {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateSlackBotService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/slack-bot.service.ts'),
-      content: `/**
+	private async generateSlackBotService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/slack-bot.service.ts",
+			),
+			content: `/**
  * Slack Bot Service
  * Enterprise-grade Slack Bot integration with interactive messages and workflows
  */
@@ -1940,19 +2020,24 @@ export class SlackBotService implements CommunicationService {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateDiscordWebhookService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/discord-webhook.service.ts'),
-      content: `/**
+	private async generateDiscordWebhookService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/discord-webhook.service.ts",
+			),
+			content: `/**
  * Discord Webhook Service
  * Enterprise-grade Discord webhook integration with rich embeds and file uploads
  */
@@ -2139,19 +2224,24 @@ export class DiscordWebhookService implements CommunicationService {
     return discordMessage;
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateMicrosoftTeamsService(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
-    
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/services/microsoft-teams.service.ts'),
-      content: `/**
+	private async generateMicrosoftTeamsService(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
+
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/services/microsoft-teams.service.ts",
+			),
+			content: `/**
  * Microsoft Teams Service
  * Enterprise-grade Microsoft Teams integration with adaptive cards and notifications
  */
@@ -2355,20 +2445,25 @@ export class MicrosoftTeamsService implements CommunicationService {
     return teamsMessage;
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateCommonUtilities(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
+	private async generateCommonUtilities(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
 
-    // Retry Manager
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/utils/retry-manager.ts'),
-      content: `/**
+		// Retry Manager
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/utils/retry-manager.ts",
+			),
+			content: `/**
  * Retry Manager
  * Handles retries with exponential backoff for communication services
  */
@@ -2415,14 +2510,14 @@ export class RetryManager {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
-`
-    });
+`,
+		});
 
-    // Rate Limiter
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/utils/rate-limiter.ts'),
-      content: `/**
+		// Rate Limiter
+		operations.push({
+			type: "create",
+			path: join(options.outputPath, "src/communication/utils/rate-limiter.ts"),
+			content: `/**
  * Rate Limiter
  * Token bucket rate limiting for communication services
  */
@@ -2481,14 +2576,17 @@ export class RateLimiter {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    // Communication Logger
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/utils/communication-logger.ts'),
-      content: `/**
+		// Communication Logger
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/utils/communication-logger.ts",
+			),
+			content: `/**
  * Communication Logger
  * Structured logging for communication services
  */
@@ -2525,19 +2623,24 @@ export class CommunicationLogger {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateErrorHandling(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
+	private async generateErrorHandling(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
 
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/utils/error-handler.ts'),
-      content: `/**
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/utils/error-handler.ts",
+			),
+			content: `/**
  * Communication Error Handler
  * Centralized error handling for communication services
  */
@@ -2638,38 +2741,43 @@ export class CommunicationErrorHandler {
     }
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateWebhookHandlers(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
+	private async generateWebhookHandlers(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
 
-    // Main webhook router
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/communication/webhooks/webhook-router.ts'),
-      content: `/**
+		// Main webhook router
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/communication/webhooks/webhook-router.ts",
+			),
+			content: `/**
  * Webhook Router
  * Routes webhook events to appropriate handlers
  */
 
 import { WebhookEvent } from '../types/communication.types';
 import { CommunicationLogger } from '../utils/communication-logger';
-${options.servicesToGenerate.includes('sendgrid') ? "import { SendGridWebhookHandler } from './sendgrid.webhook';" : ''}
-${options.servicesToGenerate.includes('mailgun') ? "import { MailgunWebhookHandler } from './mailgun.webhook';" : ''}
+${options.servicesToGenerate.includes("sendgrid") ? "import { SendGridWebhookHandler } from './sendgrid.webhook';" : ""}
+${options.servicesToGenerate.includes("mailgun") ? "import { MailgunWebhookHandler } from './mailgun.webhook';" : ""}
 
 export class WebhookRouter {
   private readonly logger: CommunicationLogger;
-${options.servicesToGenerate.includes('sendgrid') ? '  private readonly sendgridHandler: SendGridWebhookHandler;' : ''}
-${options.servicesToGenerate.includes('mailgun') ? '  private readonly mailgunHandler: MailgunWebhookHandler;' : ''}
+${options.servicesToGenerate.includes("sendgrid") ? "  private readonly sendgridHandler: SendGridWebhookHandler;" : ""}
+${options.servicesToGenerate.includes("mailgun") ? "  private readonly mailgunHandler: MailgunWebhookHandler;" : ""}
 
   constructor() {
     this.logger = new CommunicationLogger('webhook-router');
-${options.servicesToGenerate.includes('sendgrid') ? '    this.sendgridHandler = new SendGridWebhookHandler();' : ''}
-${options.servicesToGenerate.includes('mailgun') ? '    this.mailgunHandler = new MailgunWebhookHandler();' : ''}
+${options.servicesToGenerate.includes("sendgrid") ? "    this.sendgridHandler = new SendGridWebhookHandler();" : ""}
+${options.servicesToGenerate.includes("mailgun") ? "    this.mailgunHandler = new MailgunWebhookHandler();" : ""}
   }
 
   async routeWebhook(
@@ -2681,20 +2789,28 @@ ${options.servicesToGenerate.includes('mailgun') ? '    this.mailgunHandler = ne
       this.logger.logInfo(\`Processing webhook for service: \${service}\`);
 
       switch (service.toLowerCase()) {
-${options.servicesToGenerate.includes('sendgrid') ? `        case 'sendgrid':
+${
+	options.servicesToGenerate.includes("sendgrid")
+		? `        case 'sendgrid':
           return await this.sendgridHandler.handleWebhook(
             JSON.stringify(payload),
             headers['x-twilio-email-event-webhook-signature'] || '',
             headers['x-twilio-email-event-webhook-timestamp'] || ''
-          );` : ''}
+          );`
+		: ""
+}
 
-${options.servicesToGenerate.includes('mailgun') ? `        case 'mailgun':
+${
+	options.servicesToGenerate.includes("mailgun")
+		? `        case 'mailgun':
           const signature = {
             timestamp: payload.signature?.timestamp || '',
             token: payload.signature?.token || '',
             signature: payload.signature?.signature || '',
           };
-          return [await this.mailgunHandler.handleWebhook(payload, signature)];` : ''}
+          return [await this.mailgunHandler.handleWebhook(payload, signature)];`
+		: ""
+}
 
         default:
           throw new Error(\`Unknown webhook service: \${service}\`);
@@ -2736,19 +2852,24 @@ ${options.servicesToGenerate.includes('mailgun') ? `        case 'mailgun':
     // await this.trackAnalyticsEvent(event);
   }
 }
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateTestingUtilities(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
+	private async generateTestingUtilities(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
 
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'src/tests/communication/communication.test.ts'),
-      content: `/**
+		operations.push({
+			type: "create",
+			path: join(
+				options.outputPath,
+				"src/tests/communication/communication.test.ts",
+			),
+			content: `/**
  * Communication Services Tests
  * Comprehensive test suite for all communication services
  */
@@ -2762,7 +2883,10 @@ describe('Communication Services', () => {
     CommunicationServiceFactory.clearInstances();
   });
 
-${options.servicesToGenerate.filter(s => ['sendgrid', 'mailgun', 'aws-ses', 'postmark'].includes(s)).map(service => `
+${options.servicesToGenerate
+	.filter((s) => ["sendgrid", "mailgun", "aws-ses", "postmark"].includes(s))
+	.map(
+		(service) => `
   describe('${service.toUpperCase()} Service', () => {
     it('should create service instance', () => {
       const service = CommunicationServiceFactory.create('${service}');
@@ -2790,9 +2914,14 @@ ${options.servicesToGenerate.filter(s => ['sendgrid', 'mailgun', 'aws-ses', 'pos
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('timestamp');
     });
-  });`).join('')}
+  });`,
+	)
+	.join("")}
 
-${options.servicesToGenerate.filter(s => ['twilio-sms', 'twilio-whatsapp'].includes(s)).map(service => `
+${options.servicesToGenerate
+	.filter((s) => ["twilio-sms", "twilio-whatsapp"].includes(s))
+	.map(
+		(service) => `
   describe('${service.toUpperCase()} Service', () => {
     it('should create service instance', () => {
       const service = CommunicationServiceFactory.create('${service}');
@@ -2811,9 +2940,16 @@ ${options.servicesToGenerate.filter(s => ['twilio-sms', 'twilio-whatsapp'].inclu
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('timestamp');
     });
-  });`).join('')}
+  });`,
+	)
+	.join("")}
 
-${options.servicesToGenerate.filter(s => ['slack-bot', 'discord-webhook', 'microsoft-teams'].includes(s)).map(service => `
+${options.servicesToGenerate
+	.filter((s) =>
+		["slack-bot", "discord-webhook", "microsoft-teams"].includes(s),
+	)
+	.map(
+		(service) => `
   describe('${service.toUpperCase()} Service', () => {
     it('should create service instance', () => {
       const service = CommunicationServiceFactory.create('${service}');
@@ -2832,13 +2968,15 @@ ${options.servicesToGenerate.filter(s => ['slack-bot', 'discord-webhook', 'micro
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('timestamp');
     });
-  });`).join('')}
+  });`,
+	)
+	.join("")}
 
   describe('Service Factory', () => {
     it('should return available services', () => {
       const services = CommunicationServiceFactory.getAvailableServices();
       expect(services).toHaveLength(${options.servicesToGenerate.length});
-      expect(services).toEqual([${options.servicesToGenerate.map(s => `'${s}'`).join(', ')}]);
+      expect(services).toEqual([${options.servicesToGenerate.map((s) => `'${s}'`).join(", ")}]);
     });
 
     it('should cache service instances', () => {
@@ -2855,107 +2993,158 @@ ${options.servicesToGenerate.filter(s => ['slack-bot', 'discord-webhook', 'micro
     });
   });
 });
-`
-    });
+`,
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  private async generateConfigurationFiles(options: CommunicationServiceGeneratorOptions): Promise<readonly FileOperation[]> {
-    const operations: FileOperation[] = [];
+	private async generateConfigurationFiles(
+		options: CommunicationServiceGeneratorOptions,
+	): Promise<readonly FileOperation[]> {
+		const operations: FileOperation[] = [];
 
-    // Environment variables template
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, '.env.communication.example'),
-      content: `# Communication Services Configuration
-DEFAULT_FROM_EMAIL=${options.defaultFromEmail || 'noreply@example.com'}
+		// Environment variables template
+		operations.push({
+			type: "create",
+			path: join(options.outputPath, ".env.communication.example"),
+			content: `# Communication Services Configuration
+DEFAULT_FROM_EMAIL=${options.defaultFromEmail || "noreply@example.com"}
 DEFAULT_FROM_NAME="${options.defaultFromName || options.projectName}"
-WEBHOOK_SECRET=${options.webhookSecret || 'your-webhook-secret-here'}
+WEBHOOK_SECRET=${options.webhookSecret || "your-webhook-secret-here"}
 
-${options.servicesToGenerate.includes('sendgrid') ? `# SendGrid Configuration
+${
+	options.servicesToGenerate.includes("sendgrid")
+		? `# SendGrid Configuration
 SENDGRID_API_KEY=your-sendgrid-api-key-here
-SENDGRID_WEBHOOK_VERIFICATION_KEY=your-webhook-verification-key-here` : ''}
+SENDGRID_WEBHOOK_VERIFICATION_KEY=your-webhook-verification-key-here`
+		: ""
+}
 
-${options.servicesToGenerate.includes('mailgun') ? `# Mailgun Configuration
+${
+	options.servicesToGenerate.includes("mailgun")
+		? `# Mailgun Configuration
 MAILGUN_API_KEY=your-mailgun-api-key-here
 MAILGUN_DOMAIN=your-mailgun-domain-here
-MAILGUN_WEBHOOK_SIGNING_KEY=your-webhook-signing-key-here` : ''}
+MAILGUN_WEBHOOK_SIGNING_KEY=your-webhook-signing-key-here`
+		: ""
+}
 
-${options.servicesToGenerate.includes('aws-ses') ? `# AWS SES Configuration
+${
+	options.servicesToGenerate.includes("aws-ses")
+		? `# AWS SES Configuration
 AWS_SES_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id-here
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key-here
-AWS_SES_CONFIGURATION_SET=your-configuration-set-name` : ''}
+AWS_SES_CONFIGURATION_SET=your-configuration-set-name`
+		: ""
+}
 
-${options.servicesToGenerate.includes('postmark') ? `# Postmark Configuration
+${
+	options.servicesToGenerate.includes("postmark")
+		? `# Postmark Configuration
 POSTMARK_SERVER_TOKEN=your-postmark-server-token-here
 POSTMARK_WEBHOOK_USERNAME=your-webhook-username-here
-POSTMARK_WEBHOOK_PASSWORD=your-webhook-password-here` : ''}
+POSTMARK_WEBHOOK_PASSWORD=your-webhook-password-here`
+		: ""
+}
 
-${(options.servicesToGenerate.includes('twilio-sms') || options.servicesToGenerate.includes('twilio-whatsapp')) ? `# Twilio Configuration
+${
+	options.servicesToGenerate.includes("twilio-sms") ||
+	options.servicesToGenerate.includes("twilio-whatsapp")
+		? `# Twilio Configuration
 TWILIO_ACCOUNT_SID=your-twilio-account-sid-here
 TWILIO_AUTH_TOKEN=your-twilio-auth-token-here
 TWILIO_PHONE_NUMBER=+1234567890
 TWILIO_WHATSAPP_NUMBER=+14155238886
-TWILIO_WEBHOOK_URL=https://your-app.com/webhooks/twilio` : ''}
+TWILIO_WEBHOOK_URL=https://your-app.com/webhooks/twilio`
+		: ""
+}
 
-${options.servicesToGenerate.includes('slack-bot') ? `# Slack Configuration
+${
+	options.servicesToGenerate.includes("slack-bot")
+		? `# Slack Configuration
 SLACK_BOT_TOKEN=xoxb-your-slack-bot-token-here
 SLACK_APP_TOKEN=xapp-your-slack-app-token-here
 SLACK_SIGNING_SECRET=your-slack-signing-secret-here
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/your/webhook/url` : ''}
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/your/webhook/url`
+		: ""
+}
 
-${options.servicesToGenerate.includes('discord-webhook') ? `# Discord Configuration
+${
+	options.servicesToGenerate.includes("discord-webhook")
+		? `# Discord Configuration
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your/webhook/url
-DISCORD_BOT_TOKEN=your-discord-bot-token-here` : ''}
+DISCORD_BOT_TOKEN=your-discord-bot-token-here`
+		: ""
+}
 
-${options.servicesToGenerate.includes('microsoft-teams') ? `# Microsoft Teams Configuration
+${
+	options.servicesToGenerate.includes("microsoft-teams")
+		? `# Microsoft Teams Configuration
 TEAMS_WEBHOOK_URL=https://your-tenant.webhook.office.com/your/webhook/url
 TEAMS_TENANT_ID=your-tenant-id-here
 TEAMS_CLIENT_ID=your-client-id-here
-TEAMS_CLIENT_SECRET=your-client-secret-here` : ''}
-`
-    });
+TEAMS_CLIENT_SECRET=your-client-secret-here`
+		: ""
+}
+`,
+		});
 
-    // Package.json dependencies
-    operations.push({
-      type: 'create',
-      path: join(options.outputPath, 'package.communication.json'),
-      content: JSON.stringify({
-        name: `${options.projectName}-communication-services`,
-        version: '1.0.0',
-        description: 'Communication services integration',
-        dependencies: {
-          axios: '^1.6.0',
-          'form-data': '^4.0.0',
-          ...(options.servicesToGenerate.includes('sendgrid') && { '@sendgrid/mail': '^8.1.0' }),
-          ...(options.servicesToGenerate.includes('mailgun') && { 'mailgun.js': '^9.4.0' }),
-          ...(options.servicesToGenerate.includes('aws-ses') && { 
-            '@aws-sdk/client-ses': '^3.450.0',
-          }),
-          ...(options.servicesToGenerate.includes('postmark') && { 'postmark': '^3.0.0' }),
-          ...((options.servicesToGenerate.includes('twilio-sms') || options.servicesToGenerate.includes('twilio-whatsapp')) && { 
-            'twilio': '^4.19.0' 
-          }),
-          ...(options.servicesToGenerate.includes('slack-bot') && { '@slack/web-api': '^6.10.0' }),
-        },
-        devDependencies: {
-          '@types/node': '^20.0.0',
-          typescript: '^5.0.0',
-          jest: '^29.0.0',
-          '@types/jest': '^29.0.0',
-        },
-      }, null, 2)
-    });
+		// Package.json dependencies
+		operations.push({
+			type: "create",
+			path: join(options.outputPath, "package.communication.json"),
+			content: JSON.stringify(
+				{
+					name: `${options.projectName}-communication-services`,
+					version: "1.0.0",
+					description: "Communication services integration",
+					dependencies: {
+						axios: "^1.6.0",
+						"form-data": "^4.0.0",
+						...(options.servicesToGenerate.includes("sendgrid") && {
+							"@sendgrid/mail": "^8.1.0",
+						}),
+						...(options.servicesToGenerate.includes("mailgun") && {
+							"mailgun.js": "^9.4.0",
+						}),
+						...(options.servicesToGenerate.includes("aws-ses") && {
+							"@aws-sdk/client-ses": "^3.450.0",
+						}),
+						...(options.servicesToGenerate.includes("postmark") && {
+							postmark: "^3.0.0",
+						}),
+						...((options.servicesToGenerate.includes("twilio-sms") ||
+							options.servicesToGenerate.includes("twilio-whatsapp")) && {
+							twilio: "^4.19.0",
+						}),
+						...(options.servicesToGenerate.includes("slack-bot") && {
+							"@slack/web-api": "^6.10.0",
+						}),
+					},
+					devDependencies: {
+						"@types/node": "^20.0.0",
+						typescript: "^5.0.0",
+						jest: "^29.0.0",
+						"@types/jest": "^29.0.0",
+					},
+				},
+				null,
+				2,
+			),
+		});
 
-    return operations;
-  }
+		return operations;
+	}
 
-  // Base generator method to render templates (placeholder implementation)
-  private async renderTemplate(templatePath: string, data: any): Promise<string> {
-    // This would be implemented to use the actual template engine
-    // For now, returning a placeholder implementation
-    return `// Template: ${templatePath}\n// Data: ${JSON.stringify(data, null, 2)}\n// TODO: Implement actual template rendering`;
-  }
+	// Base generator method to render templates (placeholder implementation)
+	private async renderTemplate(
+		templatePath: string,
+		data: any,
+	): Promise<string> {
+		// This would be implemented to use the actual template engine
+		// For now, returning a placeholder implementation
+		return `// Template: ${templatePath}\n// Data: ${JSON.stringify(data, null, 2)}\n// TODO: Implement actual template rendering`;
+	}
 }

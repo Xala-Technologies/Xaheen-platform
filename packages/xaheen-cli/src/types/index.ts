@@ -452,7 +452,14 @@ export interface XalaIntegrationOptions {
 	useTypeScript?: boolean;
 }
 
-export type XalaPlatform = "react" | "vue" | "angular" | "svelte" | "flutter" | "react-native" | "nextjs";
+export type XalaPlatform =
+	| "react"
+	| "vue"
+	| "angular"
+	| "svelte"
+	| "flutter"
+	| "react-native"
+	| "nextjs";
 
 export interface ServiceBundle {
 	name: string;
