@@ -5,6 +5,62 @@ All notable changes to the Xala UI System MCP Server will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.2.0] - 2025-08-05
+
+### 🚀 Major Features Added
+
+#### shadcn-ui Blocks Integration
+- **NEW**: `list_shadcn_blocks` - Browse available shadcn-ui blocks with filtering by category, framework, and tags
+- **NEW**: `get_shadcn_block` - Get detailed information about specific shadcn-ui blocks including source code
+- **NEW**: `generate_from_shadcn_block` - Generate customized components from shadcn-ui blocks with theme application
+- **NEW**: `convert_shadcn_block_to_platform` - Convert shadcn-ui blocks to different platforms (Vue, Angular, Svelte)
+
+#### Platform Recommendations System
+- **NEW**: `get_platform_recommendations` - Comprehensive platform-specific recommendations and best practices
+- Covers performance, accessibility, security, Norwegian compliance, styling, testing, and deployment
+- Includes detailed rules, examples, anti-patterns, and resources for each platform
+- Supports industry theme specialization (Enterprise, Finance, Healthcare, Education, E-commerce, Productivity)
+
+#### AST-Driven Code Transformer
+- **NEW**: `transform_with_xala_conventions` - Programmatic code transformation using Babel AST
+- Enforces Xala UI design tokens, accessibility standards, and Norwegian compliance
+- Automatic i18n integration with useTranslation hooks
+- Converts arbitrary styling to semantic design tokens
+- Adds proper TypeScript interfaces and enterprise conventions
+
+### 🎨 Design Token System
+- **6 Industry Themes**: Enterprise (slate), Finance (green), Healthcare (blue), Education (indigo), E-commerce (orange), Productivity (gray)
+- **Semantic token mapping**: Colors, spacing, typography, border radius, shadows
+- **Automatic token application** through AST transformation
+
+### 🌍 Enhanced Norwegian Compliance
+- **Automatic i18n integration** - Converts hardcoded text to translation calls
+- **NSM security classification** support in transformations
+- **GDPR compliance features** automatically added to components
+- **UU accessibility standards** enforcement through AST
+
+### 🛠 Developer Experience
+- **Rich MCP prompt system** with shadcn-ui block integration prompts
+- **Framework detection utilities** for automatic platform optimization
+- **Comprehensive examples and documentation** in `/examples/demo-usage.md`
+- **Multi-platform architecture** support across 7 frameworks
+
+### 🔧 Technical Improvements
+- Added Babel AST parsing and transformation capabilities
+- Enhanced type safety with strict TypeScript interfaces
+- Improved error handling and validation
+- Extended MCP tool registry with new capabilities
+
+### 📦 Dependencies Added
+- `@babel/generator`, `@babel/parser`, `@babel/traverse`, `@babel/types` for AST transformation
+- Enhanced development types for better TypeScript support
+
+### 🎯 Integration Benefits
+- **Reuses shadcn's rich block library** via MCP for 50+ production-ready components
+- **Applies design tokens and rules programmatically** through AST-driven transformation
+- **Enforces Xala UI conventions** at the syntax level with automatic compliance
+- **Seamless multi-platform support** with automatic code conversion capabilities
+
 ## [6.1.1] - 2024-01-04
 
 ### Added - Documentation & AI Agent Integration

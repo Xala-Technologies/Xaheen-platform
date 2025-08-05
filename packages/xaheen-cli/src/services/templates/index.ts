@@ -1,12 +1,15 @@
 /**
- * Advanced Template Architecture - EPIC 4 Implementation
+ * Advanced Template Architecture - EPIC 4 & EPIC 15 Implementation
  * 
- * Central exports for the complete template inheritance and composition system.
- * This represents the full implementation of EPIC 4: Advanced Template Architecture
- * including all Stories 2.1-2.3.
+ * Central exports for the complete template inheritance, composition, and collaboration system.
+ * This represents the full implementation of:
+ * - EPIC 4: Advanced Template Architecture (Stories 2.1-2.3)
+ * - EPIC 15: Shared Template Repositories with Versioning (Story 15.3)
  * 
  * @author CLI Template Generator Agent
  * @since 2025-01-03
+ * @version 2.0.0
+ * @compliance Norwegian NSM Standards, GDPR, Enterprise Security
  */
 
 // Core template inheritance system
@@ -67,8 +70,51 @@ export {
   type QualityCheckResult
 } from './template-orchestrator.js';
 
+// EPIC 15 Story 15.3 - Shared Template Repositories with Versioning
+export {
+  TemplateRepositoryService,
+  createTemplateRepositoryService,
+  type TemplateRepositoryConfig,
+  type TemplateMetadata,
+  type RepositoryOperation,
+  type RepositoryEvent,
+  RepositoryEventType,
+  TemplateRepositoryError,
+  GitOperationError,
+  AccessControlError
+} from './template-repository.service';
+
+export {
+  TemplateVersionManagerService,
+  createTemplateVersionManagerService,
+  type VersionConstraint,
+  type TemplateDependency,
+  type VersionHistory,
+  type VersionResolution,
+  type Migration,
+  type VersionEvent,
+  VersionEventType,
+  VersionManagerError,
+  DependencyError,
+  CompatibilityError
+} from './template-version-manager.service';
+
+export {
+  TemplateSyncService,
+  createTemplateSyncService,
+  type SyncConfig,
+  type SyncStatus,
+  type CacheEntry,
+  type SyncJob,
+  type SyncEvent,
+  SyncEventType,
+  TemplateSyncError,
+  ConflictResolutionError,
+  CacheError
+} from './template-sync.service';
+
 /**
- * EPIC 4 Implementation Summary
+ * EPIC 4 & EPIC 15 Implementation Summary
  * 
  * ✅ Story 2.1: Template Inheritance System
  * - Base template infrastructure with Container + Stack components
@@ -90,6 +136,15 @@ export {
  * - Storybook documentation templates
  * - Comprehensive CI/CD workflows
  * 
+ * ✅ Story 15.3: Shared Template Repositories with Versioning
+ * - Git-based template storage and versioning
+ * - Team synchronization and collaboration
+ * - Access control with NSM classification
+ * - Semantic versioning with dependency management
+ * - Automatic conflict resolution
+ * - Distributed caching for performance
+ * - Comprehensive audit trail
+ * 
  * Key Features:
  * - 🎭 Template inheritance with multiple levels
  * - 🧩 Flexible composition with slots and mixins
@@ -99,6 +154,10 @@ export {
  * - 📊 Template versioning and migrations
  * - 🤖 AI-optimized token usage
  * - 🚀 Enterprise-grade architecture
+ * - 🔄 Shared repositories with team collaboration
+ * - 🏷️ Semantic versioning with dependency resolution
+ * - ⚡ Automatic synchronization with conflict handling
+ * - 🔒 Enterprise security and access control
  */
 
 // Convenience function for complete template generation

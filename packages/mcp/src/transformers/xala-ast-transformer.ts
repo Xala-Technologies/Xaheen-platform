@@ -4,9 +4,13 @@
  */
 
 import { parse } from '@babel/parser';
-import traverse, { type NodePath } from '@babel/traverse';
-import generate from '@babel/generator';
+import traverseDefault, { type NodePath } from '@babel/traverse';
+import generateDefault from '@babel/generator';
 import * as t from '@babel/types';
+
+// Handle ES module / CommonJS interop
+const traverse = (traverseDefault as any).default || traverseDefault;
+const generate = (generateDefault as any).default || generateDefault;
 import { IndustryTheme, SupportedPlatform } from '../types/index.js';
 
 export interface XalaTransformationConfig {
@@ -406,27 +410,27 @@ export class XalaASTTransformer {
 			// Apply transformations
 			traverse(ast, {
 				// Transform imports
-				ImportDeclaration: (path) => {
+				ImportDeclaration: (path: NodePath<t.ImportDeclaration>) => {
 					this.transformImports(path);
 				},
 				// Transform component declarations
-				FunctionDeclaration: (path) => {
+				FunctionDeclaration: (path: NodePath<t.FunctionDeclaration>) => {
 					this.transformComponentDeclaration(path);
 				},
 				// Transform JSX elements
-				JSXElement: (path) => {
+				JSXElement: (path: NodePath<t.JSXElement>) => {
 					this.transformJSXElement(path);
 				},
 				// Transform JSX attributes (className, styles, etc.)
-				JSXAttribute: (path) => {
+				JSXAttribute: (path: NodePath<t.JSXAttribute>) => {
 					this.transformJSXAttribute(path);
 				},
 				// Transform string literals (for i18n)
-				StringLiteral: (path) => {
+				StringLiteral: (path: NodePath<t.StringLiteral>) => {
 					this.transformStringLiteral(path);
 				},
 				// Transform template literals
-				TemplateLiteral: (path) => {
+				TemplateLiteral: (path: NodePath<t.TemplateLiteral>) => {
 					this.transformTemplateLiteral(path);
 				}
 			});

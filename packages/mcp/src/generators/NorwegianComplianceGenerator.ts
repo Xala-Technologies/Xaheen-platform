@@ -773,22 +773,74 @@ function validateNSMRequirements(data: any, classification: NSMClassification): 
 
 function validateSecretData(data: any): boolean {
   // Ensure data is encrypted at rest and in transit
+  if (!data.encryption || data.encryption.level !== 'AES-256') {
+    return false;
+  }
+  
   // Verify access controls are in place
+  if (!data.accessControls || !data.accessControls.roleBasedAccess) {
+    return false;
+  }
+  
   // Check audit trail is active
-  return true; // Placeholder
+  if (!data.auditTrail || !data.auditTrail.enabled) {
+    return false;
+  }
+  
+  // Verify multi-factor authentication
+  if (!data.authentication || !data.authentication.mfa) {
+    return false;
+  }
+  
+  return true;
 }
 
 function validateConfidentialData(data: any): boolean {
   // Ensure data is encrypted
+  if (!data.encryption || !['AES-256', 'AES-192'].includes(data.encryption.level)) {
+    return false;
+  }
+  
   // Verify user authentication
+  if (!data.authentication || !data.authentication.verified) {
+    return false;
+  }
+  
   // Check data retention policies
-  return true; // Placeholder
+  if (!data.retention || !data.retention.policy || !data.retention.expiryDate) {
+    return false;
+  }
+  
+  // Verify access logging
+  if (!data.accessLog || !data.accessLog.enabled) {
+    return false;
+  }
+  
+  return true;
 }
 
 function validateRestrictedData(data: any): boolean {
   // Verify access controls
+  if (!data.accessControls || !data.accessControls.permissions) {
+    return false;
+  }
+  
   // Check audit logging
-  return true; // Placeholder
+  if (!data.auditLog || !data.auditLog.enabled) {
+    return false;
+  }
+  
+  // Verify data minimization principles
+  if (!data.dataMinimization || !data.dataMinimization.applied) {
+    return false;
+  }
+  
+  // Check user consent where applicable
+  if (data.requiresConsent && (!data.consent || !data.consent.granted)) {
+    return false;
+  }
+  
+  return true;
 }
 
 // GDPR validation

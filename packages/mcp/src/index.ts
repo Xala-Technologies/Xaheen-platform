@@ -249,7 +249,7 @@ class XalaUISystemMCPServer {
 		this.server = new Server(
 			{
 				name: "xala-ui-system-mcp",
-				version: "6.1.4",
+				version: "6.2.0",
 			},
 			{
 				capabilities: {
@@ -2294,7 +2294,7 @@ ${this.getPlatformBestPractices(platform)}
 	async run(): Promise<void> {
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);
-		console.error("Xala UI System MCP Server v6.1.2 running on stdio");
+		console.error("Xala UI System MCP Server v6.2.0 running on stdio");
 	}
 }
 
