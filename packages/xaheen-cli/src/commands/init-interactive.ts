@@ -4,14 +4,14 @@
  * Generated with Xaheen CLI - AI-Native Developer Productivity
  */
 
+import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
-import { logger } from "../utils/logger.js";
 // import { createProject } from '../services/project-creator.js'; // TODO: Implement project creator service
 import inquirer from "inquirer";
-import chalk from "chalk";
+import { join } from "path";
 import { z } from "zod";
+import { logger } from "../utils/logger.js";
 
 /**
  * Project configuration schema

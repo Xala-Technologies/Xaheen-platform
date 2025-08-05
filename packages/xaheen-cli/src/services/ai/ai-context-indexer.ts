@@ -369,7 +369,10 @@ export class AIContextIndexer {
 				uiFrameworks: this.categorizeUIFrameworks(production),
 				stateManagement: this.categorizeStateManagement(production),
 				testing: this.categorizeTesting({ ...production, ...development }),
-				performance: this.categorizePerformance({ ...production, ...development }),
+				performance: this.categorizePerformance({
+					...production,
+					...development,
+				}),
 				accessibility: this.categorizeAccessibility({
 					...production,
 					...development,
@@ -445,9 +448,7 @@ export class AIContextIndexer {
 		try {
 			const tsConfigPath = path.join(this.projectPath, "tsconfig.json");
 			if (await this.fileExists(tsConfigPath)) {
-				const tsConfig = JSON.parse(
-					await fs.readFile(tsConfigPath, "utf-8"),
-				);
+				const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, "utf-8"));
 				strict = tsConfig.compilerOptions?.strict === true;
 			}
 		} catch {
@@ -593,9 +594,7 @@ export class AIContextIndexer {
 	private extractProps(content: string): PropDefinition[] {
 		// Simplified prop extraction - would need more sophisticated parsing in real implementation
 		const props: PropDefinition[] = [];
-		const interfaceMatch = content.match(
-			/interface\s+\w+Props\s*{([^}]+)}/s,
-		);
+		const interfaceMatch = content.match(/interface\s+\w+Props\s*{([^}]+)}/s);
 		if (interfaceMatch) {
 			const propsContent = interfaceMatch[1];
 			const propLines = propsContent.split("\n").filter((line) => line.trim());
@@ -613,7 +612,9 @@ export class AIContextIndexer {
 		return props;
 	}
 
-	private calculateComplexity(content: string): "simple" | "medium" | "complex" {
+	private calculateComplexity(
+		content: string,
+	): "simple" | "medium" | "complex" {
 		const lines = content.split("\n").length;
 		const functions = (content.match(/function|=>/g) || []).length;
 		const conditions = (content.match(/if|switch|&&|\|\|/g) || []).length;
@@ -782,7 +783,9 @@ export class AIContextIndexer {
 			.filter(
 				(comp) =>
 					comp.type === componentType ||
-					comp.name.toLowerCase().includes(componentName.toLowerCase().slice(0, 3)),
+					comp.name
+						.toLowerCase()
+						.includes(componentName.toLowerCase().slice(0, 3)),
 			)
 			.slice(0, 5); // Return top 5 similar components
 	}
@@ -872,7 +875,9 @@ export class AIContextIndexer {
 		const considerations: string[] = [];
 
 		considerations.push("Optimize for Core Web Vitals");
-		considerations.push(`Target bundle size: ${performance.bundleSize.target} bytes`);
+		considerations.push(
+			`Target bundle size: ${performance.bundleSize.target} bytes`,
+		);
 
 		if (componentType === "component") {
 			considerations.push("Consider React.memo for re-render optimization");
@@ -894,21 +899,31 @@ export class AIContextIndexer {
 	}
 
 	private categorizeTesting(deps: Record<string, string>): string[] {
-		const testLibs = ["jest", "vitest", "cypress", "playwright", "@testing-library"];
-		return testLibs.filter((lib) => 
-			Object.keys(deps).some(key => key.includes(lib))
+		const testLibs = [
+			"jest",
+			"vitest",
+			"cypress",
+			"playwright",
+			"@testing-library",
+		];
+		return testLibs.filter((lib) =>
+			Object.keys(deps).some((key) => key.includes(lib)),
 		);
 	}
 
 	private categorizePerformance(deps: Record<string, string>): string[] {
-		const perfLibs = ["@next/bundle-analyzer", "webpack-bundle-analyzer", "lighthouse"];
+		const perfLibs = [
+			"@next/bundle-analyzer",
+			"webpack-bundle-analyzer",
+			"lighthouse",
+		];
 		return perfLibs.filter((lib) => deps[lib]);
 	}
 
 	private categorizeAccessibility(deps: Record<string, string>): string[] {
 		const a11yLibs = ["@axe-core", "react-aria", "focus-trap"];
-		return a11yLibs.filter((lib) => 
-			Object.keys(deps).some(key => key.includes(lib))
+		return a11yLibs.filter((lib) =>
+			Object.keys(deps).some((key) => key.includes(lib)),
 		);
 	}
 
@@ -995,10 +1010,12 @@ export class AIContextIndexer {
 		return tools;
 	}
 
-	private async detectNorwegianCompliance(): Promise<ComplianceIndex["norwegian"]> {
+	private async detectNorwegianCompliance(): Promise<
+		ComplianceIndex["norwegian"]
+	> {
 		// Check for Norwegian-specific configurations or patterns
 		const enabled = await this.hasPattern("src/compliance/norwegian");
-		
+
 		return {
 			enabled,
 			nsmClassification: "OPEN", // Default classification
@@ -1008,17 +1025,19 @@ export class AIContextIndexer {
 
 	private async detectGDPRCompliance(): Promise<ComplianceIndex["gdpr"]> {
 		const enabled = await this.hasPattern("src/compliance/gdpr", "src/privacy");
-		
+
 		return {
 			enabled,
-			features: enabled ? ["consent management", "data deletion", "privacy policy"] : [],
+			features: enabled
+				? ["consent management", "data deletion", "privacy policy"]
+				: [],
 		};
 	}
 
 	private async detectSecurityTools(): Promise<string[]> {
 		const tools: string[] = [];
 		const securityTools = ["eslint-plugin-security", "snyk", "audit"];
-		
+
 		for (const tool of securityTools) {
 			if (await this.hasPattern(`node_modules/${tool}`)) {
 				tools.push(tool);

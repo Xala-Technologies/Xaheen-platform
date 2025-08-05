@@ -39,7 +39,7 @@ export type CLIDomain =
 	| "mcp" // Model Context Protocol
 	| "docs" // Documentation generation
 	| "security" // Security audit and compliance
-	| "templates" // Template management  
+	| "templates" // Template management
 	| "help"; // Help system
 
 export type CLIAction =

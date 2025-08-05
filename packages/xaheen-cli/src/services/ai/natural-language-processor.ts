@@ -1,6 +1,6 @@
 /**
  * Natural Language Processor for AI Code Translation
- * 
+ *
  * Story 1.2 Implementation: Natural language to code translation
  * - Parses natural language descriptions
  * - Translates to TypeScript/React code
@@ -9,8 +9,12 @@
  */
 
 import { logger } from "../../utils/logger.js";
-import { AIService, type ComponentContext, type GenerationContext } from "./ai-service.js";
 import { mcpClient } from "../mcp/mcp-client.js";
+import {
+	AIService,
+	type ComponentContext,
+	type GenerationContext,
+} from "./ai-service.js";
 
 export interface NaturalLanguageInput {
 	description: string;
@@ -102,13 +106,18 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Parse natural language input and extract structured requirements
 	 */
-	async parseNaturalLanguage(input: NaturalLanguageInput): Promise<ParsedRequirements> {
+	async parseNaturalLanguage(
+		input: NaturalLanguageInput,
+	): Promise<ParsedRequirements> {
 		logger.debug("🧠 Parsing natural language requirements...");
 
 		const description = input.description.toLowerCase();
 
 		// Extract component type
-		const componentType = this.extractComponentType(description, input.componentType);
+		const componentType = this.extractComponentType(
+			description,
+			input.componentType,
+		);
 
 		// Extract requirements in parallel
 		const [
@@ -140,7 +149,9 @@ export class NaturalLanguageProcessor {
 			integrations,
 		};
 
-		logger.debug(`📋 Parsed requirements: ${componentType} with ${props.length} props, ${behaviors.length} behaviors`);
+		logger.debug(
+			`📋 Parsed requirements: ${componentType} with ${props.length} props, ${behaviors.length} behaviors`,
+		);
 
 		return requirements;
 	}
@@ -172,10 +183,16 @@ export class NaturalLanguageProcessor {
 
 		// Generate suggestions and alternatives
 		const suggestions = await this.generateSuggestions(requirements, context);
-		const alternatives = await this.generateAlternatives(enhancedCode, requirements);
+		const alternatives = await this.generateAlternatives(
+			enhancedCode,
+			requirements,
+		);
 
 		// Validate the generated code
-		const warnings = await this.validateGeneratedCode(enhancedCode, requirements);
+		const warnings = await this.validateGeneratedCode(
+			enhancedCode,
+			requirements,
+		);
 
 		return {
 			code: enhancedCode,
@@ -227,35 +244,78 @@ export class NaturalLanguageProcessor {
 		const propPatterns = [
 			{
 				pattern: /title|heading|label/,
-				prop: { name: "title", type: "string", required: true, description: "Component title or heading" },
+				prop: {
+					name: "title",
+					type: "string",
+					required: true,
+					description: "Component title or heading",
+				},
 			},
 			{
 				pattern: /description|content|text/,
-				prop: { name: "description", type: "string", required: false, description: "Component description or content" },
+				prop: {
+					name: "description",
+					type: "string",
+					required: false,
+					description: "Component description or content",
+				},
 			},
 			{
 				pattern: /onclick|click|action|handler/,
-				prop: { name: "onClick", type: "() => void", required: false, description: "Click event handler" },
+				prop: {
+					name: "onClick",
+					type: "() => void",
+					required: false,
+					description: "Click event handler",
+				},
 			},
 			{
 				pattern: /disabled|loading|pending/,
-				prop: { name: "disabled", type: "boolean", required: false, description: "Whether component is disabled", defaultValue: false },
+				prop: {
+					name: "disabled",
+					type: "boolean",
+					required: false,
+					description: "Whether component is disabled",
+					defaultValue: false,
+				},
 			},
 			{
 				pattern: /variant|type|style|theme/,
-				prop: { name: "variant", type: "'primary' | 'secondary' | 'danger'", required: false, description: "Component variant", defaultValue: "primary" },
+				prop: {
+					name: "variant",
+					type: "'primary' | 'secondary' | 'danger'",
+					required: false,
+					description: "Component variant",
+					defaultValue: "primary",
+				},
 			},
 			{
 				pattern: /size|small|large|medium/,
-				prop: { name: "size", type: "'sm' | 'md' | 'lg'", required: false, description: "Component size", defaultValue: "md" },
+				prop: {
+					name: "size",
+					type: "'sm' | 'md' | 'lg'",
+					required: false,
+					description: "Component size",
+					defaultValue: "md",
+				},
 			},
 			{
 				pattern: /icon|symbol/,
-				prop: { name: "icon", type: "React.ReactNode", required: false, description: "Optional icon element" },
+				prop: {
+					name: "icon",
+					type: "React.ReactNode",
+					required: false,
+					description: "Optional icon element",
+				},
 			},
 			{
 				pattern: /children|content/,
-				prop: { name: "children", type: "React.ReactNode", required: false, description: "Child elements" },
+				prop: {
+					name: "children",
+					type: "React.ReactNode",
+					required: false,
+					description: "Child elements",
+				},
 			},
 		];
 
@@ -312,13 +372,19 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract behaviors from natural language
 	 */
-	private async extractBehaviors(description: string): Promise<BehaviorRequirement[]> {
+	private async extractBehaviors(
+		description: string,
+	): Promise<BehaviorRequirement[]> {
 		const behaviors: BehaviorRequirement[] = [];
 
 		const behaviorPatterns = [
 			{
 				pattern: /when clicked|on click|click to/,
-				behavior: { trigger: "onClick", action: "handleClick", validation: "required" },
+				behavior: {
+					trigger: "onClick",
+					action: "handleClick",
+					validation: "required",
+				},
 			},
 			{
 				pattern: /when hover|on hover|hover to/,
@@ -326,7 +392,11 @@ export class NaturalLanguageProcessor {
 			},
 			{
 				pattern: /when submit|on submit|submit to/,
-				behavior: { trigger: "onSubmit", action: "handleSubmit", validation: "form validation" },
+				behavior: {
+					trigger: "onSubmit",
+					action: "handleSubmit",
+					validation: "form validation",
+				},
 			},
 			{
 				pattern: /when change|on change|change to/,
@@ -338,7 +408,11 @@ export class NaturalLanguageProcessor {
 			},
 			{
 				pattern: /validate|validation|check/,
-				behavior: { trigger: "onValidate", action: "validateInput", validation: "input validation" },
+				behavior: {
+					trigger: "onValidate",
+					action: "validateInput",
+					validation: "input validation",
+				},
 			},
 		];
 
@@ -354,22 +428,31 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract styling requirements
 	 */
-	private async extractStyling(description: string): Promise<StylingRequirement[]> {
+	private async extractStyling(
+		description: string,
+	): Promise<StylingRequirement[]> {
 		const styling: StylingRequirement[] = [];
 
 		// Detect styling preferences
-		const framework = description.includes("styled") ? "styled-components" :
-			description.includes("css modules") ? "css-modules" : "tailwind";
+		const framework = description.includes("styled")
+			? "styled-components"
+			: description.includes("css modules")
+				? "css-modules"
+				: "tailwind";
 
 		const responsive = /responsive|mobile|tablet|desktop/.test(description);
 		const theme = description.includes("dark") ? "dark" : "light";
 
 		// Extract customizations
 		const customizations: string[] = [];
-		if (/rounded|border-radius/.test(description)) customizations.push("rounded corners");
-		if (/shadow|elevation/.test(description)) customizations.push("shadow effects");
-		if (/gradient|background/.test(description)) customizations.push("background effects");
-		if (/animation|transition/.test(description)) customizations.push("animations");
+		if (/rounded|border-radius/.test(description))
+			customizations.push("rounded corners");
+		if (/shadow|elevation/.test(description))
+			customizations.push("shadow effects");
+		if (/gradient|background/.test(description))
+			customizations.push("background effects");
+		if (/animation|transition/.test(description))
+			customizations.push("animations");
 
 		styling.push({
 			framework,
@@ -384,20 +467,29 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract accessibility requirements
 	 */
-	private async extractAccessibility(description: string): Promise<AccessibilityRequirement[]> {
+	private async extractAccessibility(
+		description: string,
+	): Promise<AccessibilityRequirement[]> {
 		const accessibility: AccessibilityRequirement[] = [];
 
-		const level = description.includes("wcag aaa") ? "AAA" :
-			description.includes("wcag aa") ? "AA" : "AAA"; // Default to highest standard
+		const level = description.includes("wcag aaa")
+			? "AAA"
+			: description.includes("wcag aa")
+				? "AA"
+				: "AAA"; // Default to highest standard
 
 		const features: string[] = [];
-		if (/aria|accessible|screen reader/.test(description)) features.push("ARIA labels");
-		if (/keyboard|tab|focus/.test(description)) features.push("keyboard navigation");
+		if (/aria|accessible|screen reader/.test(description))
+			features.push("ARIA labels");
+		if (/keyboard|tab|focus/.test(description))
+			features.push("keyboard navigation");
 		if (/contrast|color/.test(description)) features.push("color contrast");
 		if (/semantic|html/.test(description)) features.push("semantic HTML");
 
 		const screenReader = /screen reader|aria|accessible/.test(description);
-		const keyboardNavigation = /keyboard|tab|focus|navigation/.test(description);
+		const keyboardNavigation = /keyboard|tab|focus|navigation/.test(
+			description,
+		);
 
 		accessibility.push({
 			level,
@@ -412,13 +504,17 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract performance requirements
 	 */
-	private async extractPerformance(description: string): Promise<PerformanceRequirement[]> {
+	private async extractPerformance(
+		description: string,
+	): Promise<PerformanceRequirement[]> {
 		const performance: PerformanceRequirement[] = [];
 
 		const optimization: string[] = [];
-		if (/fast|performance|optimized/.test(description)) optimization.push("React.memo");
+		if (/fast|performance|optimized/.test(description))
+			optimization.push("React.memo");
 		if (/callback|handler/.test(description)) optimization.push("useCallback");
-		if (/calculate|compute|expensive/.test(description)) optimization.push("useMemo");
+		if (/calculate|compute|expensive/.test(description))
+			optimization.push("useMemo");
 
 		const lazy = /lazy|dynamic|import/.test(description);
 		const memo = /memo|performance|rerender/.test(description);
@@ -437,7 +533,9 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract compliance requirements
 	 */
-	private async extractCompliance(description: string): Promise<ComplianceRequirement[]> {
+	private async extractCompliance(
+		description: string,
+	): Promise<ComplianceRequirement[]> {
 		const compliance: ComplianceRequirement[] = [];
 
 		const norwegian = /norwegian|norway|nsm|norge/.test(description);
@@ -446,8 +544,10 @@ export class NaturalLanguageProcessor {
 
 		let nsmClassification: ComplianceRequirement["nsmClassification"];
 		if (description.includes("secret")) nsmClassification = "SECRET";
-		else if (description.includes("confidential")) nsmClassification = "CONFIDENTIAL";
-		else if (description.includes("restricted")) nsmClassification = "RESTRICTED";
+		else if (description.includes("confidential"))
+			nsmClassification = "CONFIDENTIAL";
+		else if (description.includes("restricted"))
+			nsmClassification = "RESTRICTED";
 		else if (norwegian) nsmClassification = "OPEN";
 
 		compliance.push({
@@ -463,7 +563,9 @@ export class NaturalLanguageProcessor {
 	/**
 	 * Extract integration requirements
 	 */
-	private async extractIntegrations(description: string): Promise<IntegrationRequirement[]> {
+	private async extractIntegrations(
+		description: string,
+	): Promise<IntegrationRequirement[]> {
 		const integrations: IntegrationRequirement[] = [];
 
 		const apis: string[] = [];
@@ -477,7 +579,8 @@ export class NaturalLanguageProcessor {
 		if (/websocket|realtime/.test(description)) apis.push("WebSocket");
 
 		// Service patterns
-		if (/auth|login|authentication/.test(description)) services.push("authentication");
+		if (/auth|login|authentication/.test(description))
+			services.push("authentication");
 		if (/payment|stripe|checkout/.test(description)) services.push("payment");
 		if (/email|notification/.test(description)) services.push("notifications");
 
@@ -491,7 +594,12 @@ export class NaturalLanguageProcessor {
 		if (/stripe|payment/.test(description)) thirdParty.push("Stripe");
 		if (/twilio|sms/.test(description)) thirdParty.push("Twilio");
 
-		if (apis.length || services.length || databases.length || thirdParty.length) {
+		if (
+			apis.length ||
+			services.length ||
+			databases.length ||
+			thirdParty.length
+		) {
 			integrations.push({
 				apis,
 				services,
@@ -517,11 +625,11 @@ export class NaturalLanguageProcessor {
 
 PARSED REQUIREMENTS:
 - Component Type: ${requirements.componentType}
-- Props: ${requirements.props.map(p => `${p.name}: ${p.type}${p.required ? '' : '?'}`).join(', ')}
-- Behaviors: ${requirements.behaviors.map(b => `${b.trigger} -> ${b.action}`).join(', ')}
-- Styling: ${requirements.styling.map(s => s.framework).join(', ')}
-- Accessibility: ${requirements.accessibility.map(a => a.level).join(', ')}
-- Performance: ${requirements.performance.map(p => p.optimization.join(', ')).join(', ')}
+- Props: ${requirements.props.map((p) => `${p.name}: ${p.type}${p.required ? "" : "?"}`).join(", ")}
+- Behaviors: ${requirements.behaviors.map((b) => `${b.trigger} -> ${b.action}`).join(", ")}
+- Styling: ${requirements.styling.map((s) => s.framework).join(", ")}
+- Accessibility: ${requirements.accessibility.map((a) => a.level).join(", ")}
+- Performance: ${requirements.performance.map((p) => p.optimization.join(", ")).join(", ")}
 
 CONTEXT:
 - Framework: ${context.framework}
@@ -557,20 +665,23 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		enhancedCode = this.ensureImports(enhancedCode, requirements, context);
 
 		// Add error boundaries if needed
-		if (requirements.behaviors.some(b => b.errorHandling)) {
+		if (requirements.behaviors.some((b) => b.errorHandling)) {
 			enhancedCode = this.addErrorHandling(enhancedCode);
 		}
 
 		// Add performance optimizations
-		if (requirements.performance.some(p => p.memo)) {
+		if (requirements.performance.some((p) => p.memo)) {
 			enhancedCode = this.addMemoization(enhancedCode);
 		}
 
 		// Add accessibility attributes
-		enhancedCode = this.enhanceAccessibility(enhancedCode, requirements.accessibility);
+		enhancedCode = this.enhanceAccessibility(
+			enhancedCode,
+			requirements.accessibility,
+		);
 
 		// Add compliance features
-		if (requirements.compliance.some(c => c.norwegian)) {
+		if (requirements.compliance.some((c) => c.norwegian)) {
 			enhancedCode = this.addNorwegianCompliance(enhancedCode);
 		}
 
@@ -588,12 +699,16 @@ Generate a complete, production-ready component that fulfills all requirements.`
 
 		// Performance suggestions
 		if (requirements.performance.length === 0) {
-			suggestions.push("Consider adding performance optimizations like React.memo or useCallback");
+			suggestions.push(
+				"Consider adding performance optimizations like React.memo or useCallback",
+			);
 		}
 
 		// Accessibility suggestions
 		if (requirements.accessibility.length === 0) {
-			suggestions.push("Add accessibility features for better inclusive design");
+			suggestions.push(
+				"Add accessibility features for better inclusive design",
+			);
 		}
 
 		// Testing suggestions
@@ -602,7 +717,9 @@ Generate a complete, production-ready component that fulfills all requirements.`
 
 		// Integration suggestions
 		if (requirements.integrations.length > 0) {
-			suggestions.push("Consider implementing error handling for external integrations");
+			suggestions.push(
+				"Consider implementing error handling for external integrations",
+			);
 		}
 
 		return suggestions;
@@ -618,8 +735,10 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		const alternatives: string[] = [];
 
 		// Provide alternative styling approaches
-		if (requirements.styling.some(s => s.framework === "tailwind")) {
-			alternatives.push("Alternative: Use CSS Modules for better style encapsulation");
+		if (requirements.styling.some((s) => s.framework === "tailwind")) {
+			alternatives.push(
+				"Alternative: Use CSS Modules for better style encapsulation",
+			);
 		}
 
 		// Provide alternative state management
@@ -629,7 +748,9 @@ Generate a complete, production-ready component that fulfills all requirements.`
 
 		// Provide alternative prop patterns
 		if (requirements.props.length > 5) {
-			alternatives.push("Alternative: Group related props into configuration objects");
+			alternatives.push(
+				"Alternative: Group related props into configuration objects",
+			);
 		}
 
 		return alternatives;
@@ -645,20 +766,32 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		const warnings: string[] = [];
 
 		// Check for required props
-		for (const prop of requirements.props.filter(p => p.required)) {
+		for (const prop of requirements.props.filter((p) => p.required)) {
 			if (!code.includes(prop.name)) {
-				warnings.push(`Required prop '${prop.name}' is not used in the component`);
+				warnings.push(
+					`Required prop '${prop.name}' is not used in the component`,
+				);
 			}
 		}
 
 		// Check for accessibility attributes
-		if (requirements.accessibility.some(a => a.screenReader) && !code.includes("aria-")) {
-			warnings.push("Component should include ARIA attributes for screen reader support");
+		if (
+			requirements.accessibility.some((a) => a.screenReader) &&
+			!code.includes("aria-")
+		) {
+			warnings.push(
+				"Component should include ARIA attributes for screen reader support",
+			);
 		}
 
 		// Check for error handling
-		if (requirements.behaviors.some(b => b.errorHandling) && !code.includes("try")) {
-			warnings.push("Component should include error handling for user interactions");
+		if (
+			requirements.behaviors.some((b) => b.errorHandling) &&
+			!code.includes("try")
+		) {
+			warnings.push(
+				"Component should include error handling for user interactions",
+			);
 		}
 
 		return warnings;
@@ -671,7 +804,7 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		requirements: ParsedRequirements,
 		code: string,
 	): string {
-		const lines = code.split('\n').length;
+		const lines = code.split("\n").length;
 		const props = requirements.props.length;
 		const behaviors = requirements.behaviors.length;
 
@@ -691,12 +824,15 @@ Generate a complete, production-ready component that fulfills all requirements.`
 
 		// UI System imports based on requirements
 		if (requirements.componentType === "button") imports.add("Button");
-		if (requirements.componentType === "form") imports.add("Input, Label, Button");
-		if (requirements.componentType === "card") imports.add("Card, CardContent, CardHeader");
+		if (requirements.componentType === "form")
+			imports.add("Input, Label, Button");
+		if (requirements.componentType === "card")
+			imports.add("Card, CardContent, CardHeader");
 
 		// Add performance imports
-		if (requirements.performance.some(p => p.memo)) imports.add("React.memo");
-		if (requirements.behaviors.some(b => b.trigger === "onClick")) imports.add("useCallback");
+		if (requirements.performance.some((p) => p.memo)) imports.add("React.memo");
+		if (requirements.behaviors.some((b) => b.trigger === "onClick"))
+			imports.add("useCallback");
 
 		const importStatement = `import ${Array.from(imports).join(", ")} from "${context.uiSystem}";\n\n`;
 
@@ -730,10 +866,12 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		const match = code.match(memoPattern);
 		if (match) {
 			const componentName = match[1];
-			return code.replace(
-				`export const ${componentName} =`,
-				`export const ${componentName} = React.memo(`,
-			) + "\n);";
+			return (
+				code.replace(
+					`export const ${componentName} =`,
+					`export const ${componentName} = React.memo(`,
+				) + "\n);"
+			);
 		}
 
 		return code;
@@ -746,7 +884,7 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		let enhancedCode = code;
 
 		// Add ARIA labels if required
-		if (accessibility.some(a => a.screenReader)) {
+		if (accessibility.some((a) => a.screenReader)) {
 			enhancedCode = enhancedCode.replace(
 				/<button/g,
 				'<button aria-label="Button action"',
@@ -754,7 +892,7 @@ Generate a complete, production-ready component that fulfills all requirements.`
 		}
 
 		// Add keyboard navigation if required
-		if (accessibility.some(a => a.keyboardNavigation)) {
+		if (accessibility.some((a) => a.keyboardNavigation)) {
 			enhancedCode = enhancedCode.replace(
 				/<div/g,
 				'<div role="button" tabIndex={0}',

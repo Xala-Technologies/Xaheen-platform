@@ -15,34 +15,34 @@ import {
 	Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { EnhancedValidator } from "./utils/enhanced-validation.js";
 import { ComponentGenerator } from "./generators/ComponentGenerator.js";
 import { TemplateManager } from "./templates/TemplateManager.js";
+import {
+	cliStyleToolHandlers,
+	cliStyleTools,
+} from "./tools/cli-style-tools.js";
+import {
+	componentRetrievalToolHandlers,
+	componentRetrievalTools,
+} from "./tools/component-retrieval-tools.js";
+import {
+	generatorToolHandlers,
+	generatorTools,
+} from "./tools/generator-tools.js";
+import {
+	quickGenerateToolHandlers,
+	quickGenerateTools,
+} from "./tools/quick-generate-tools.js";
 import specificationTools, {
 	specificationToolHandlers,
 } from "./tools/specification-tools.js";
-import {
-	componentRetrievalTools,
-	componentRetrievalToolHandlers,
-} from "./tools/component-retrieval-tools.js";
-import {
-	quickGenerateTools,
-	quickGenerateToolHandlers,
-} from "./tools/quick-generate-tools.js";
-import {
-	cliStyleTools,
-	cliStyleToolHandlers,
-} from "./tools/cli-style-tools.js";
-import {
-	generatorTools,
-	generatorToolHandlers,
-} from "./tools/generator-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
+import { EnhancedValidator } from "./utils/enhanced-validation.js";
 
 // Export public API
-export { prompts, promptHandlers } from "./prompts.js";
-export { getFramework, getFrameworkConfig } from "./utils/framework.js";
+export { promptHandlers, prompts } from "./prompts.js";
 export type * from "./types/index.js";
+export { getFramework, getFrameworkConfig } from "./utils/framework.js";
 
 // Zod schemas for validation
 const ComponentConfigSchema = z.object({
@@ -644,11 +644,7 @@ class XalaUISystemMCPServer {
 
 			try {
 				// Handle unified generator tool first (highest priority)
-				if (
-					generatorToolHandlers[
-						name as keyof typeof generatorToolHandlers
-					]
-				) {
+				if (generatorToolHandlers[name as keyof typeof generatorToolHandlers]) {
 					const result =
 						await generatorToolHandlers[
 							name as keyof typeof generatorToolHandlers
@@ -689,11 +685,7 @@ class XalaUISystemMCPServer {
 				}
 
 				// Handle CLI-style tools
-				if (
-					cliStyleToolHandlers[
-						name as keyof typeof cliStyleToolHandlers
-					]
-				) {
+				if (cliStyleToolHandlers[name as keyof typeof cliStyleToolHandlers]) {
 					const result =
 						await cliStyleToolHandlers[
 							name as keyof typeof cliStyleToolHandlers
@@ -1313,11 +1305,13 @@ ${this.getPlatformBestPractices(platform)}
 
 	private async handleValidateConfig(args: any) {
 		// Use enhanced validation for better error messages
-		const validationResult = EnhancedValidator.validateComponentConfig(args.config);
-		
+		const validationResult = EnhancedValidator.validateComponentConfig(
+			args.config,
+		);
+
 		if (validationResult.success) {
 			let response = `✅ **Configuration is valid!**\n\n`;
-			
+
 			if (validationResult.warnings && validationResult.warnings.length > 0) {
 				response += `⚠️ **Warnings:**\n`;
 				validationResult.warnings.forEach((warning, index) => {
@@ -1325,18 +1319,20 @@ ${this.getPlatformBestPractices(platform)}
 					response += `   💡 Suggestion: ${warning.suggestion}\n\n`;
 				});
 			}
-			
+
 			response += `\`\`\`json\n${JSON.stringify(validationResult.data, null, 2)}\n\`\`\`\n\n`;
-			
+
 			// Add helpful suggestions
-			const suggestions = EnhancedValidator.getValidationSuggestions(args.config);
+			const suggestions = EnhancedValidator.getValidationSuggestions(
+				args.config,
+			);
 			if (suggestions.length > 0) {
 				response += `💡 **Additional Suggestions:**\n`;
 				suggestions.forEach((suggestion, index) => {
 					response += `${index + 1}. ${suggestion}\n`;
 				});
 			}
-			
+
 			return {
 				content: [
 					{
@@ -1346,7 +1342,8 @@ ${this.getPlatformBestPractices(platform)}
 				],
 			};
 		} else {
-			const errorMessage = EnhancedValidator.formatValidationError(validationResult);
+			const errorMessage =
+				EnhancedValidator.formatValidationError(validationResult);
 			return {
 				content: [
 					{

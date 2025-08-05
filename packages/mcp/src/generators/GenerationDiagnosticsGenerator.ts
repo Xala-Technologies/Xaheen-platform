@@ -4,13 +4,13 @@
  * Part of EPIC 8 Story 8.6: Enhanced Observability & Monitoring
  */
 
-import { performance } from 'perf_hooks';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from "fs";
+import * as path from "path";
+import { performance } from "perf_hooks";
 
 export interface DiagnosticsConfig {
 	readonly enabled: boolean;
-	readonly logLevel: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+	readonly logLevel: "error" | "warn" | "info" | "debug" | "trace";
 	readonly outputDir: string;
 	readonly maxLogFiles: number;
 	readonly maxLogSizeBytes: number;
@@ -18,7 +18,7 @@ export interface DiagnosticsConfig {
 	readonly enableTracing: boolean;
 	readonly enableProfiling: boolean;
 	readonly retentionDays: number;
-	readonly reportFormat: 'json' | 'yaml' | 'html' | 'all';
+	readonly reportFormat: "json" | "yaml" | "html" | "all";
 	readonly realTimeMonitoring: boolean;
 	readonly webhookUrl?: string;
 }
@@ -30,7 +30,7 @@ export interface GenerationSession {
 	readonly generator: string;
 	readonly template: string;
 	readonly config: any;
-	readonly status: 'running' | 'completed' | 'failed' | 'cancelled';
+	readonly status: "running" | "completed" | "failed" | "cancelled";
 	metrics: GenerationMetrics;
 	logs: LogEntry[];
 	errors: ErrorEntry[];
@@ -57,7 +57,7 @@ export interface GenerationMetrics {
 
 export interface LogEntry {
 	readonly timestamp: number;
-	readonly level: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+	readonly level: "error" | "warn" | "info" | "debug" | "trace";
 	readonly message: string;
 	readonly context?: Record<string, any>;
 	readonly source: string;
@@ -69,7 +69,7 @@ export interface ErrorEntry {
 	readonly error: Error;
 	readonly context: Record<string, any>;
 	readonly source: string;
-	readonly severity: 'critical' | 'high' | 'medium' | 'low';
+	readonly severity: "critical" | "high" | "medium" | "low";
 	readonly recoverable: boolean;
 	readonly resolution?: string;
 }
@@ -79,7 +79,7 @@ export interface WarningEntry {
 	readonly message: string;
 	readonly context: Record<string, any>;
 	readonly source: string;
-	readonly impact: 'high' | 'medium' | 'low';
+	readonly impact: "high" | "medium" | "low";
 	readonly recommendation: string;
 }
 
@@ -90,7 +90,7 @@ export interface TraceEntry {
 	readonly parentSpanId?: string;
 	readonly operation: string;
 	readonly duration: number;
-	readonly status: 'ok' | 'error' | 'timeout';
+	readonly status: "ok" | "error" | "timeout";
 	readonly attributes: Record<string, any>;
 }
 
@@ -164,13 +164,13 @@ export interface SessionSummary {
 	readonly filesGenerated: number;
 	readonly errorsCount: number;
 	readonly warningsCount: number;
-	readonly performanceGrade: 'A' | 'B' | 'C' | 'D' | 'F';
+	readonly performanceGrade: "A" | "B" | "C" | "D" | "F";
 	readonly resourceEfficiency: number;
 }
 
 export interface TimelineEvent {
 	readonly timestamp: number;
-	readonly type: 'start' | 'phase' | 'milestone' | 'warning' | 'error' | 'end';
+	readonly type: "start" | "phase" | "milestone" | "warning" | "error" | "end";
 	readonly name: string;
 	readonly description: string;
 	readonly duration?: number;
@@ -179,8 +179,8 @@ export interface TimelineEvent {
 
 export interface Issue {
 	readonly id: string;
-	readonly type: 'error' | 'warning' | 'performance' | 'resource';
-	readonly severity: 'critical' | 'high' | 'medium' | 'low';
+	readonly type: "error" | "warning" | "performance" | "resource";
+	readonly severity: "critical" | "high" | "medium" | "low";
 	readonly title: string;
 	readonly description: string;
 	readonly source: string;
@@ -192,13 +192,13 @@ export interface Issue {
 
 export interface Recommendation {
 	readonly id: string;
-	readonly category: 'performance' | 'quality' | 'security' | 'maintainability';
-	readonly priority: 'high' | 'medium' | 'low';
+	readonly category: "performance" | "quality" | "security" | "maintainability";
+	readonly priority: "high" | "medium" | "low";
 	readonly title: string;
 	readonly description: string;
 	readonly action: string;
 	readonly benefit: string;
-	readonly effort: 'low' | 'medium' | 'high';
+	readonly effort: "low" | "medium" | "high";
 }
 
 export interface ResourceAnalysis {
@@ -214,7 +214,7 @@ export interface SessionComparison {
 	readonly performanceChange: number;
 	readonly memoryChange: number;
 	readonly errorChange: number;
-	readonly trend: 'improving' | 'stable' | 'degrading';
+	readonly trend: "improving" | "stable" | "degrading";
 }
 
 export class GenerationDiagnosticsGenerator {
@@ -242,7 +242,7 @@ export class GenerationDiagnosticsGenerator {
 	public startSession(
 		generator: string,
 		template: string,
-		config: any
+		config: any,
 	): string {
 		const sessionId = this.generateSessionId();
 		const startTime = performance.now();
@@ -253,25 +253,25 @@ export class GenerationDiagnosticsGenerator {
 			generator,
 			template,
 			config: this.sanitizeConfig(config),
-			status: 'running',
+			status: "running",
 			metrics: this.initializeMetrics(),
 			logs: [],
 			errors: [],
 			warnings: [],
 			trace: [],
 			performance: this.initializePerformanceMetrics(),
-			resourceUsage: this.captureResourceUsage()
+			resourceUsage: this.captureResourceUsage(),
 		};
 
-		this.logger.info('Generation session started', {
+		this.logger.info("Generation session started", {
 			sessionId,
 			generator,
 			template,
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		});
 
 		if (this.config.enableTracing) {
-			this.tracer.startTrace(sessionId, 'generation_session');
+			this.tracer.startTrace(sessionId, "generation_session");
 		}
 
 		if (this.config.enableProfiling) {
@@ -284,9 +284,14 @@ export class GenerationDiagnosticsGenerator {
 	/**
 	 * End the current generation session
 	 */
-	public endSession(sessionId: string, status: 'completed' | 'failed' | 'cancelled'): void {
+	public endSession(
+		sessionId: string,
+		status: "completed" | "failed" | "cancelled",
+	): void {
 		if (!this.currentSession || this.currentSession.id !== sessionId) {
-			this.logger.warn('Attempted to end non-existent or different session', { sessionId });
+			this.logger.warn("Attempted to end non-existent or different session", {
+				sessionId,
+			});
 			return;
 		}
 
@@ -299,23 +304,23 @@ export class GenerationDiagnosticsGenerator {
 			status,
 			metrics: {
 				...this.currentSession.metrics,
-				executionTimeMs: duration
+				executionTimeMs: duration,
 			},
 			performance: {
 				...this.currentSession.performance,
-				executionTime: duration
+				executionTime: duration,
 			},
-			resourceUsage: this.captureResourceUsage()
+			resourceUsage: this.captureResourceUsage(),
 		};
 
 		this.sessionHistory.set(sessionId, finalSession);
 		this.currentSession = null;
 
-		this.logger.info('Generation session ended', {
+		this.logger.info("Generation session ended", {
 			sessionId,
 			status,
 			duration,
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		});
 
 		if (this.config.enableTracing) {
@@ -342,10 +347,10 @@ export class GenerationDiagnosticsGenerator {
 	 * Log an event during generation
 	 */
 	public log(
-		level: 'error' | 'warn' | 'info' | 'debug' | 'trace',
+		level: "error" | "warn" | "info" | "debug" | "trace",
 		message: string,
 		context?: Record<string, any>,
-		source?: string
+		source?: string,
 	): void {
 		if (!this.currentSession) return;
 
@@ -354,17 +359,17 @@ export class GenerationDiagnosticsGenerator {
 			level,
 			message,
 			context,
-			source: source || 'unknown',
-			stackTrace: level === 'error' ? new Error().stack : undefined
+			source: source || "unknown",
+			stackTrace: level === "error" ? new Error().stack : undefined,
 		};
 
 		this.currentSession.logs.push(logEntry);
 		this.logger.log(level, message, context);
 
 		// Update metrics
-		if (level === 'error') {
+		if (level === "error") {
 			this.currentSession.metrics.validationErrors++;
-		} else if (level === 'warn') {
+		} else if (level === "warn") {
 			this.currentSession.metrics.warningsCount++;
 		}
 	}
@@ -376,8 +381,8 @@ export class GenerationDiagnosticsGenerator {
 		error: Error,
 		context: Record<string, any>,
 		source: string,
-		severity: 'critical' | 'high' | 'medium' | 'low' = 'high',
-		recoverable: boolean = false
+		severity: "critical" | "high" | "medium" | "low" = "high",
+		recoverable: boolean = false,
 	): void {
 		if (!this.currentSession) return;
 
@@ -388,11 +393,16 @@ export class GenerationDiagnosticsGenerator {
 			source,
 			severity,
 			recoverable,
-			resolution: this.suggestErrorResolution(error, context)
+			resolution: this.suggestErrorResolution(error, context),
 		};
 
 		this.currentSession.errors.push(errorEntry);
-		this.log('error', error.message, { ...context, severity, recoverable }, source);
+		this.log(
+			"error",
+			error.message,
+			{ ...context, severity, recoverable },
+			source,
+		);
 	}
 
 	/**
@@ -402,7 +412,7 @@ export class GenerationDiagnosticsGenerator {
 		message: string,
 		context: Record<string, any>,
 		source: string,
-		impact: 'high' | 'medium' | 'low' = 'medium'
+		impact: "high" | "medium" | "low" = "medium",
 	): void {
 		if (!this.currentSession) return;
 
@@ -412,18 +422,21 @@ export class GenerationDiagnosticsGenerator {
 			context,
 			source,
 			impact,
-			recommendation: this.generateWarningRecommendation(message, context)
+			recommendation: this.generateWarningRecommendation(message, context),
 		};
 
 		this.currentSession.warnings.push(warningEntry);
-		this.log('warn', message, { ...context, impact }, source);
+		this.log("warn", message, { ...context, impact }, source);
 	}
 
 	/**
 	 * Start a traced operation
 	 */
-	public startTrace(operation: string, attributes?: Record<string, any>): string {
-		if (!this.currentSession || !this.config.enableTracing) return '';
+	public startTrace(
+		operation: string,
+		attributes?: Record<string, any>,
+	): string {
+		if (!this.currentSession || !this.config.enableTracing) return "";
 
 		return this.tracer.startSpan(this.currentSession.id, operation, attributes);
 	}
@@ -431,7 +444,10 @@ export class GenerationDiagnosticsGenerator {
 	/**
 	 * End a traced operation
 	 */
-	public endTrace(spanId: string, status: 'ok' | 'error' | 'timeout' = 'ok'): void {
+	public endTrace(
+		spanId: string,
+		status: "ok" | "error" | "timeout" = "ok",
+	): void {
 		if (!this.currentSession || !this.config.enableTracing) return;
 
 		this.tracer.endSpan(spanId, status);
@@ -445,7 +461,7 @@ export class GenerationDiagnosticsGenerator {
 
 		this.currentSession.metrics = {
 			...this.currentSession.metrics,
-			...updates
+			...updates,
 		};
 	}
 
@@ -453,7 +469,7 @@ export class GenerationDiagnosticsGenerator {
 	 * Start a performance phase
 	 */
 	public startPhase(name: string): string {
-		if (!this.currentSession) return '';
+		if (!this.currentSession) return "";
 
 		const phaseId = `${name}_${Date.now()}`;
 		const startTime = performance.now();
@@ -464,11 +480,11 @@ export class GenerationDiagnosticsGenerator {
 			endTime: 0,
 			duration: 0,
 			memoryDelta: 0,
-			operations: 0
+			operations: 0,
 		};
 
 		this.currentSession.performance.phases.push(phase);
-		
+
 		return phaseId;
 	}
 
@@ -508,7 +524,7 @@ export class GenerationDiagnosticsGenerator {
 			issues: this.analyzeIssues(session),
 			recommendations: this.generateRecommendations(session),
 			resourceAnalysis: this.analyzeResourceUsage(session),
-			comparisons: this.generateComparisons(session)
+			comparisons: this.generateComparisons(session),
 		};
 
 		this.saveReport(report);
@@ -527,7 +543,7 @@ export class GenerationDiagnosticsGenerator {
 			timeline: this.generateTimeline(this.currentSession),
 			metrics: this.currentSession.metrics,
 			performance: this.currentSession.performance,
-			issues: this.analyzeIssues(this.currentSession)
+			issues: this.analyzeIssues(this.currentSession),
 		};
 	}
 
@@ -541,7 +557,7 @@ export class GenerationDiagnosticsGenerator {
 		}
 
 		const report = this.generateDiagnosticReport(sessionId);
-		
+
 		return `# Troubleshooting Guide for Session ${sessionId}
 
 ## Session Summary
@@ -553,20 +569,28 @@ export class GenerationDiagnosticsGenerator {
 - **Performance Grade**: ${report.summary.performanceGrade}
 
 ## Issues Found
-${report.issues.map(issue => `### ${issue.title} (${issue.severity})
+${report.issues
+	.map(
+		(issue) => `### ${issue.title} (${issue.severity})
 **Description**: ${issue.description}
 **Source**: ${issue.source}
 **Suggestion**: ${issue.suggestion}
 **Impact**: ${issue.impact}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 ## Recommendations
-${report.recommendations.map(rec => `### ${rec.title} (${rec.priority} priority)
+${report.recommendations
+	.map(
+		(rec) => `### ${rec.title} (${rec.priority} priority)
 **Description**: ${rec.description}
 **Action**: ${rec.action}
 **Benefit**: ${rec.benefit}
 **Effort**: ${rec.effort}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 ## Performance Analysis
 - **Memory Efficiency**: ${(report.resourceAnalysis.memoryEfficiency * 100).toFixed(1)}%
@@ -574,23 +598,27 @@ ${report.recommendations.map(rec => `### ${rec.title} (${rec.priority} priority)
 - **I/O Efficiency**: ${(report.resourceAnalysis.ioEfficiency * 100).toFixed(1)}%
 
 ### Bottlenecks
-${report.resourceAnalysis.bottlenecks.map(bottleneck => `- ${bottleneck}`).join('\n')}
+${report.resourceAnalysis.bottlenecks.map((bottleneck) => `- ${bottleneck}`).join("\n")}
 
 ### Optimization Suggestions
-${report.resourceAnalysis.optimization.map(opt => `- ${opt}`).join('\n')}
+${report.resourceAnalysis.optimization.map((opt) => `- ${opt}`).join("\n")}
 
 ## Timeline Analysis
-${report.timeline.map(event => `**${new Date(event.timestamp).toISOString()}**: ${event.name} - ${event.description}`).join('\n')}
+${report.timeline.map((event) => `**${new Date(event.timestamp).toISOString()}**: ${event.name} - ${event.description}`).join("\n")}
 
 ## Error Details
-${session.errors.map(error => `### ${error.error.name}
+${session.errors
+	.map(
+		(error) => `### ${error.error.name}
 **Message**: ${error.error.message}
 **Source**: ${error.source}
 **Severity**: ${error.severity}
 **Recoverable**: ${error.recoverable}
-**Resolution**: ${error.resolution || 'No automatic resolution available'}
-${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` : ''}
-`).join('\n')}
+**Resolution**: ${error.resolution || "No automatic resolution available"}
+${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` : ""}
+`,
+	)
+	.join("\n")}
 
 ## Next Steps
 1. Review critical and high severity issues first
@@ -621,9 +649,9 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			this.metricsCollector.start();
 		}
 
-		this.logger.info('Diagnostics system initialized', {
+		this.logger.info("Diagnostics system initialized", {
 			config: this.config,
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		});
 	}
 
@@ -633,14 +661,18 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 
 	private sanitizeConfig(config: any): any {
 		// Remove sensitive information from config
-		const sensitiveKeys = ['password', 'secret', 'token', 'key', 'apiKey'];
+		const sensitiveKeys = ["password", "secret", "token", "key", "apiKey"];
 		const sanitized = JSON.parse(JSON.stringify(config));
-		
+
 		const sanitizeObj = (obj: any) => {
 			for (const key in obj) {
-				if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
-					obj[key] = '[REDACTED]';
-				} else if (typeof obj[key] === 'object' && obj[key] !== null) {
+				if (
+					sensitiveKeys.some((sensitive) =>
+						key.toLowerCase().includes(sensitive),
+					)
+				) {
+					obj[key] = "[REDACTED]";
+				} else if (typeof obj[key] === "object" && obj[key] !== null) {
 					sanitizeObj(obj[key]);
 				}
 			}
@@ -663,7 +695,7 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			peakMemoryBytes: 0,
 			cpuUsagePercent: 0,
 			diskIOBytes: 0,
-			networkRequestsCount: 0
+			networkRequestsCount: 0,
 		};
 	}
 
@@ -674,7 +706,7 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			fileIOTime: 0,
 			validationTime: 0,
 			dependencyResolutionTime: 0,
-			phases: []
+			phases: [],
 		};
 	}
 
@@ -688,24 +720,24 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 				heapTotal: memUsage.heapTotal,
 				external: memUsage.external,
 				rss: memUsage.rss,
-				peak: memUsage.heapTotal // This would be tracked over time
+				peak: memUsage.heapTotal, // This would be tracked over time
 			},
 			cpuUsage: {
 				user: cpuUsage.user,
 				system: cpuUsage.system,
 				total: cpuUsage.user + cpuUsage.system,
-				percentage: 0 // Would need to calculate based on elapsed time
+				percentage: 0, // Would need to calculate based on elapsed time
 			},
 			diskUsage: {
 				bytesRead: 0, // Would need to track via fs operations
 				bytesWritten: 0,
-				operations: 0
+				operations: 0,
 			},
 			networkUsage: {
 				requests: 0, // Would need to track via HTTP interceptors
 				bytesTransferred: 0,
-				averageLatency: 0
-			}
+				averageLatency: 0,
+			},
 		};
 	}
 
@@ -714,14 +746,32 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		return 0; // Placeholder implementation
 	}
 
-	private suggestErrorResolution(error: Error, context: Record<string, any>): string {
+	private suggestErrorResolution(
+		error: Error,
+		context: Record<string, any>,
+	): string {
 		// AI-powered error resolution suggestions would go here
 		const suggestions = new Map([
-			['ENOENT', 'Check if the file or directory exists and has proper permissions'],
-			['EACCES', 'Verify that the process has the necessary permissions to access the resource'],
-			['EMFILE', 'Too many open files. Consider increasing system limits or closing unused files'],
-			['Template compilation failed', 'Check template syntax and ensure all variables are properly defined'],
-			['Dependency resolution failed', 'Verify package.json dependencies and network connectivity'],
+			[
+				"ENOENT",
+				"Check if the file or directory exists and has proper permissions",
+			],
+			[
+				"EACCES",
+				"Verify that the process has the necessary permissions to access the resource",
+			],
+			[
+				"EMFILE",
+				"Too many open files. Consider increasing system limits or closing unused files",
+			],
+			[
+				"Template compilation failed",
+				"Check template syntax and ensure all variables are properly defined",
+			],
+			[
+				"Dependency resolution failed",
+				"Verify package.json dependencies and network connectivity",
+			],
 		]);
 
 		for (const [errorType, suggestion] of suggestions) {
@@ -730,16 +780,22 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			}
 		}
 
-		return 'Check logs for more details and ensure all prerequisites are met';
+		return "Check logs for more details and ensure all prerequisites are met";
 	}
 
-	private generateWarningRecommendation(message: string, context: Record<string, any>): string {
+	private generateWarningRecommendation(
+		message: string,
+		context: Record<string, any>,
+	): string {
 		// Generate contextual recommendations for warnings
 		const recommendations = new Map([
-			['deprecated', 'Consider updating to the latest version or alternative approach'],
-			['performance', 'Review the operation for optimization opportunities'],
-			['security', 'Apply security best practices and update dependencies'],
-			['compatibility', 'Test with target environments and consider polyfills'],
+			[
+				"deprecated",
+				"Consider updating to the latest version or alternative approach",
+			],
+			["performance", "Review the operation for optimization opportunities"],
+			["security", "Apply security best practices and update dependencies"],
+			["compatibility", "Test with target environments and consider polyfills"],
 		]);
 
 		for (const [warningType, recommendation] of recommendations) {
@@ -748,20 +804,24 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			}
 		}
 
-		return 'Review the warning context and consider the suggested improvements';
+		return "Review the warning context and consider the suggested improvements";
 	}
 
 	private generateSessionSummary(session: GenerationSession): SessionSummary {
-		const success = session.status === 'completed' && session.errors.length === 0;
-		const duration = session.endTime ? session.endTime - session.startTime : performance.now() - session.startTime;
-		
+		const success =
+			session.status === "completed" && session.errors.length === 0;
+		const duration = session.endTime
+			? session.endTime - session.startTime
+			: performance.now() - session.startTime;
+
 		// Calculate performance grade based on various factors
-		let grade: 'A' | 'B' | 'C' | 'D' | 'F' = 'C';
-		if (success && duration < 5000 && session.errors.length === 0) grade = 'A';
-		else if (success && duration < 10000 && session.errors.length <= 1) grade = 'B';
-		else if (success && session.errors.length <= 3) grade = 'C';
-		else if (session.errors.length <= 5) grade = 'D';
-		else grade = 'F';
+		let grade: "A" | "B" | "C" | "D" | "F" = "C";
+		if (success && duration < 5000 && session.errors.length === 0) grade = "A";
+		else if (success && duration < 10000 && session.errors.length <= 1)
+			grade = "B";
+		else if (success && session.errors.length <= 3) grade = "C";
+		else if (session.errors.length <= 5) grade = "D";
+		else grade = "F";
 
 		return {
 			success,
@@ -770,61 +830,74 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			errorsCount: session.errors.length,
 			warningsCount: session.warnings.length,
 			performanceGrade: grade,
-			resourceEfficiency: this.calculateResourceEfficiency(session)
+			resourceEfficiency: this.calculateResourceEfficiency(session),
 		};
 	}
 
 	private calculateResourceEfficiency(session: GenerationSession): number {
 		// Calculate overall resource efficiency (0-1 scale)
-		const memoryEfficiency = 1 - Math.min(session.resourceUsage.memoryUsage.heapUsed / (1024 * 1024 * 100), 1); // Assume 100MB is baseline
-		const timeEfficiency = Math.max(0, 1 - (session.metrics.executionTimeMs / 30000)); // 30s baseline
-		
+		const memoryEfficiency =
+			1 -
+			Math.min(
+				session.resourceUsage.memoryUsage.heapUsed / (1024 * 1024 * 100),
+				1,
+			); // Assume 100MB is baseline
+		const timeEfficiency = Math.max(
+			0,
+			1 - session.metrics.executionTimeMs / 30000,
+		); // 30s baseline
+
 		return (memoryEfficiency + timeEfficiency) / 2;
 	}
 
-	private generateTimeline(session: GenerationSession): readonly TimelineEvent[] {
+	private generateTimeline(
+		session: GenerationSession,
+	): readonly TimelineEvent[] {
 		const timeline: TimelineEvent[] = [];
-		
+
 		// Session start
 		timeline.push({
 			timestamp: session.startTime,
-			type: 'start',
-			name: 'Session Started',
+			type: "start",
+			name: "Session Started",
 			description: `Generation session started for ${session.generator}`,
-			metadata: { generator: session.generator, template: session.template }
+			metadata: { generator: session.generator, template: session.template },
 		});
 
 		// Phase events
-		session.performance.phases.forEach(phase => {
+		session.performance.phases.forEach((phase) => {
 			timeline.push({
 				timestamp: phase.startTime,
-				type: 'phase',
+				type: "phase",
 				name: `Phase: ${phase.name}`,
 				description: `Started ${phase.name} phase`,
 				duration: phase.duration,
-				metadata: { operations: phase.operations, memoryDelta: phase.memoryDelta }
+				metadata: {
+					operations: phase.operations,
+					memoryDelta: phase.memoryDelta,
+				},
 			});
 		});
 
 		// Error events
-		session.errors.forEach(error => {
+		session.errors.forEach((error) => {
 			timeline.push({
 				timestamp: error.timestamp,
-				type: 'error',
+				type: "error",
 				name: error.error.name,
 				description: error.error.message,
-				metadata: { severity: error.severity, source: error.source }
+				metadata: { severity: error.severity, source: error.source },
 			});
 		});
 
 		// Warning events
-		session.warnings.forEach(warning => {
+		session.warnings.forEach((warning) => {
 			timeline.push({
 				timestamp: warning.timestamp,
-				type: 'warning',
-				name: 'Warning',
+				type: "warning",
+				name: "Warning",
 				description: warning.message,
-				metadata: { impact: warning.impact, source: warning.source }
+				metadata: { impact: warning.impact, source: warning.source },
 			});
 		});
 
@@ -832,11 +905,14 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		if (session.endTime) {
 			timeline.push({
 				timestamp: session.endTime,
-				type: 'end',
-				name: 'Session Completed',
+				type: "end",
+				name: "Session Completed",
 				description: `Generation session ended with status: ${session.status}`,
 				duration: session.endTime - session.startTime,
-				metadata: { status: session.status, filesGenerated: session.metrics.filesGenerated }
+				metadata: {
+					status: session.status,
+					filesGenerated: session.metrics.filesGenerated,
+				},
 			});
 		}
 
@@ -850,41 +926,42 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		session.errors.forEach((error, index) => {
 			issues.push({
 				id: `error_${index}`,
-				type: 'error',
+				type: "error",
 				severity: error.severity,
 				title: error.error.name,
 				description: error.error.message,
 				source: error.source,
-				suggestion: error.resolution || 'Check error details and context',
-				impact: this.calculateErrorImpact(error)
+				suggestion: error.resolution || "Check error details and context",
+				impact: this.calculateErrorImpact(error),
 			});
 		});
 
 		// Analyze performance issues
 		if (session.metrics.executionTimeMs > 30000) {
 			issues.push({
-				id: 'perf_slow_execution',
-				type: 'performance',
-				severity: 'medium',
-				title: 'Slow Execution Time',
+				id: "perf_slow_execution",
+				type: "performance",
+				severity: "medium",
+				title: "Slow Execution Time",
 				description: `Generation took ${(session.metrics.executionTimeMs / 1000).toFixed(2)}s, which is longer than expected`,
-				source: 'performance_analyzer',
-				suggestion: 'Review template complexity and consider optimization',
-				impact: 'May affect user experience and CI/CD pipeline performance'
+				source: "performance_analyzer",
+				suggestion: "Review template complexity and consider optimization",
+				impact: "May affect user experience and CI/CD pipeline performance",
 			});
 		}
 
 		// Analyze resource issues
 		if (session.resourceUsage.memoryUsage.heapUsed > 500 * 1024 * 1024) {
 			issues.push({
-				id: 'resource_high_memory',
-				type: 'resource',
-				severity: 'medium',
-				title: 'High Memory Usage',
+				id: "resource_high_memory",
+				type: "resource",
+				severity: "medium",
+				title: "High Memory Usage",
 				description: `Memory usage exceeded 500MB during generation`,
-				source: 'resource_analyzer',
-				suggestion: 'Consider streaming templates or reducing batch sizes',
-				impact: 'May cause system instability in resource-constrained environments'
+				source: "resource_analyzer",
+				suggestion: "Consider streaming templates or reducing batch sizes",
+				impact:
+					"May cause system instability in resource-constrained environments",
 			});
 		}
 
@@ -892,59 +969,63 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 	}
 
 	private calculateErrorImpact(error: ErrorEntry): string {
-		if (error.severity === 'critical') {
-			return 'Generation completely failed, no output produced';
-		} else if (error.severity === 'high') {
-			return 'Significant functionality may be missing or broken';
-		} else if (error.severity === 'medium') {
-			return 'Some features may not work as expected';
+		if (error.severity === "critical") {
+			return "Generation completely failed, no output produced";
+		} else if (error.severity === "high") {
+			return "Significant functionality may be missing or broken";
+		} else if (error.severity === "medium") {
+			return "Some features may not work as expected";
 		} else {
-			return 'Minor issues that may not affect functionality';
+			return "Minor issues that may not affect functionality";
 		}
 	}
 
-	private generateRecommendations(session: GenerationSession): readonly Recommendation[] {
+	private generateRecommendations(
+		session: GenerationSession,
+	): readonly Recommendation[] {
 		const recommendations: Recommendation[] = [];
 
 		// Performance recommendations
 		if (session.metrics.executionTimeMs > 15000) {
 			recommendations.push({
-				id: 'perf_optimize_templates',
-				category: 'performance',
-				priority: 'high',
-				title: 'Optimize Template Processing',
-				description: 'Template processing is taking longer than expected',
-				action: 'Review template complexity, use partials, and consider caching',
-				benefit: 'Reduce generation time by up to 50%',
-				effort: 'medium'
+				id: "perf_optimize_templates",
+				category: "performance",
+				priority: "high",
+				title: "Optimize Template Processing",
+				description: "Template processing is taking longer than expected",
+				action:
+					"Review template complexity, use partials, and consider caching",
+				benefit: "Reduce generation time by up to 50%",
+				effort: "medium",
 			});
 		}
 
 		// Quality recommendations
 		if (session.warnings.length > 5) {
 			recommendations.push({
-				id: 'quality_reduce_warnings',
-				category: 'quality',
-				priority: 'medium',
-				title: 'Address Template Warnings',
-				description: 'Multiple warnings indicate potential template issues',
-				action: 'Review and fix template warnings systematically',
-				benefit: 'Improve generated code quality and reliability',
-				effort: 'low'
+				id: "quality_reduce_warnings",
+				category: "quality",
+				priority: "medium",
+				title: "Address Template Warnings",
+				description: "Multiple warnings indicate potential template issues",
+				action: "Review and fix template warnings systematically",
+				benefit: "Improve generated code quality and reliability",
+				effort: "low",
 			});
 		}
 
 		// Security recommendations
 		if (session.config && this.hasSecurityConcerns(session.config)) {
 			recommendations.push({
-				id: 'security_review_config',
-				category: 'security',
-				priority: 'high',
-				title: 'Review Security Configuration',
-				description: 'Configuration may contain security-sensitive settings',
-				action: 'Audit configuration for secrets and apply security best practices',
-				benefit: 'Reduce security risks in generated code',
-				effort: 'medium'
+				id: "security_review_config",
+				category: "security",
+				priority: "high",
+				title: "Review Security Configuration",
+				description: "Configuration may contain security-sensitive settings",
+				action:
+					"Audit configuration for secrets and apply security best practices",
+				benefit: "Reduce security risks in generated code",
+				effort: "medium",
 			});
 		}
 
@@ -953,10 +1034,16 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 
 	private hasSecurityConcerns(config: any): boolean {
 		// Check for potential security issues in configuration
-		const securityKeywords = ['password', 'secret', 'token', 'key', 'credential'];
+		const securityKeywords = [
+			"password",
+			"secret",
+			"token",
+			"key",
+			"credential",
+		];
 		const configStr = JSON.stringify(config).toLowerCase();
-		
-		return securityKeywords.some(keyword => configStr.includes(keyword));
+
+		return securityKeywords.some((keyword) => configStr.includes(keyword));
 	}
 
 	private analyzeResourceUsage(session: GenerationSession): ResourceAnalysis {
@@ -968,13 +1055,13 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		const optimization: string[] = [];
 
 		if (memoryEfficiency < 0.5) {
-			bottlenecks.push('High memory usage detected');
-			optimization.push('Consider streaming large templates');
+			bottlenecks.push("High memory usage detected");
+			optimization.push("Consider streaming large templates");
 		}
 
 		if (session.metrics.executionTimeMs > 20000) {
-			bottlenecks.push('Slow template processing');
-			optimization.push('Use template caching and optimize complex operations');
+			bottlenecks.push("Slow template processing");
+			optimization.push("Use template caching and optimize complex operations");
 		}
 
 		return {
@@ -982,27 +1069,38 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			cpuEfficiency,
 			ioEfficiency,
 			bottlenecks,
-			optimization
+			optimization,
 		};
 	}
 
-	private generateComparisons(session: GenerationSession): readonly SessionComparison[] {
+	private generateComparisons(
+		session: GenerationSession,
+	): readonly SessionComparison[] {
 		// Compare with recent sessions for trend analysis
 		const recentSessions = Array.from(this.sessionHistory.values())
-			.filter(s => s.generator === session.generator && s.id !== session.id)
+			.filter((s) => s.generator === session.generator && s.id !== session.id)
 			.sort((a, b) => b.startTime - a.startTime)
 			.slice(0, 5);
 
-		return recentSessions.map(baseline => {
-			const performanceChange = (session.metrics.executionTimeMs - baseline.metrics.executionTimeMs) / baseline.metrics.executionTimeMs;
-			const memoryChange = (session.resourceUsage.memoryUsage.heapUsed - baseline.resourceUsage.memoryUsage.heapUsed) / baseline.resourceUsage.memoryUsage.heapUsed;
+		return recentSessions.map((baseline) => {
+			const performanceChange =
+				(session.metrics.executionTimeMs - baseline.metrics.executionTimeMs) /
+				baseline.metrics.executionTimeMs;
+			const memoryChange =
+				(session.resourceUsage.memoryUsage.heapUsed -
+					baseline.resourceUsage.memoryUsage.heapUsed) /
+				baseline.resourceUsage.memoryUsage.heapUsed;
 			const errorChange = session.errors.length - baseline.errors.length;
 
-			let trend: 'improving' | 'stable' | 'degrading' = 'stable';
+			let trend: "improving" | "stable" | "degrading" = "stable";
 			if (performanceChange < -0.1 && memoryChange < -0.1 && errorChange <= 0) {
-				trend = 'improving';
-			} else if (performanceChange > 0.1 || memoryChange > 0.1 || errorChange > 0) {
-				trend = 'degrading';
+				trend = "improving";
+			} else if (
+				performanceChange > 0.1 ||
+				memoryChange > 0.1 ||
+				errorChange > 0
+			) {
+				trend = "degrading";
 			}
 
 			return {
@@ -1010,26 +1108,35 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 				performanceChange,
 				memoryChange,
 				errorChange,
-				trend
+				trend,
 			};
 		});
 	}
 
 	private saveReport(report: DiagnosticReport): void {
-		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 		const filename = `diagnostic-report-${report.sessionId}-${timestamp}`;
 
-		if (this.config.reportFormat === 'json' || this.config.reportFormat === 'all') {
+		if (
+			this.config.reportFormat === "json" ||
+			this.config.reportFormat === "all"
+		) {
 			const jsonPath = path.join(this.config.outputDir, `${filename}.json`);
 			fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));
 		}
 
-		if (this.config.reportFormat === 'html' || this.config.reportFormat === 'all') {
+		if (
+			this.config.reportFormat === "html" ||
+			this.config.reportFormat === "all"
+		) {
 			const htmlPath = path.join(this.config.outputDir, `${filename}.html`);
 			fs.writeFileSync(htmlPath, this.generateHTMLReport(report));
 		}
 
-		if (this.config.reportFormat === 'yaml' || this.config.reportFormat === 'all') {
+		if (
+			this.config.reportFormat === "yaml" ||
+			this.config.reportFormat === "all"
+		) {
 			const yamlPath = path.join(this.config.outputDir, `${filename}.yaml`);
 			// Would use a YAML library to serialize the report
 			// fs.writeFileSync(yamlPath, yaml.dump(report));
@@ -1062,7 +1169,7 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
     <div class="header">
         <h1>Diagnostic Report</h1>
         <p><strong>Session ID:</strong> ${report.sessionId}</p>
-        <p><strong>Status:</strong> <span class="${report.summary.success ? 'success' : 'error'}">${report.summary.success ? 'Success' : 'Failed'}</span></p>
+        <p><strong>Status:</strong> <span class="${report.summary.success ? "success" : "error"}">${report.summary.success ? "Success" : "Failed"}</span></p>
         <p><strong>Performance Grade:</strong> ${report.summary.performanceGrade}</p>
     </div>
 
@@ -1088,7 +1195,9 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
                 </tr>
             </thead>
             <tbody>
-                ${report.issues.map(issue => `
+                ${report.issues
+									.map(
+										(issue) => `
                 <tr>
                     <td>${issue.type}</td>
                     <td class="${issue.severity}">${issue.severity}</td>
@@ -1096,7 +1205,9 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
                     <td>${issue.description}</td>
                     <td>${issue.suggestion}</td>
                 </tr>
-                `).join('')}
+                `,
+									)
+									.join("")}
             </tbody>
         </table>
     </div>
@@ -1115,7 +1226,9 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
                 </tr>
             </thead>
             <tbody>
-                ${report.recommendations.map(rec => `
+                ${report.recommendations
+									.map(
+										(rec) => `
                 <tr>
                     <td>${rec.category}</td>
                     <td>${rec.priority}</td>
@@ -1124,7 +1237,9 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
                     <td>${rec.benefit}</td>
                     <td>${rec.effort}</td>
                 </tr>
-                `).join('')}
+                `,
+									)
+									.join("")}
             </tbody>
         </table>
     </div>
@@ -1132,13 +1247,17 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
     <div class="section">
         <h2>Timeline</h2>
         <div class="timeline">
-            ${report.timeline.map(event => `
+            ${report.timeline
+							.map(
+								(event) => `
             <div class="timeline-item">
                 <strong>${new Date(event.timestamp).toLocaleTimeString()}</strong> - 
                 <span class="${event.type}">${event.name}</span>: ${event.description}
-                ${event.duration ? ` (${(event.duration / 1000).toFixed(2)}s)` : ''}
+                ${event.duration ? ` (${(event.duration / 1000).toFixed(2)}s)` : ""}
             </div>
-            `).join('')}
+            `,
+							)
+							.join("")}
         </div>
     </div>
 
@@ -1150,12 +1269,12 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
         
         <h3>Bottlenecks</h3>
         <ul>
-            ${report.resourceAnalysis.bottlenecks.map(bottleneck => `<li>${bottleneck}</li>`).join('')}
+            ${report.resourceAnalysis.bottlenecks.map((bottleneck) => `<li>${bottleneck}</li>`).join("")}
         </ul>
         
         <h3>Optimization Suggestions</h3>
         <ul>
-            ${report.resourceAnalysis.optimization.map(opt => `<li>${opt}</li>`).join('')}
+            ${report.resourceAnalysis.optimization.map((opt) => `<li>${opt}</li>`).join("")}
         </ul>
     </div>
 </body>
@@ -1169,7 +1288,7 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			sessionId: session.id,
 			status: session.status,
 			summary: this.generateSessionSummary(session),
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		};
 
 		// Would send HTTP POST to webhook URL
@@ -1182,12 +1301,13 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 
 	private setupLogRotation(): void {
 		// Implement log rotation based on size and retention policies
-		const logFiles = fs.readdirSync(this.config.outputDir)
-			.filter(file => file.endsWith('.log'))
-			.map(file => ({
+		const logFiles = fs
+			.readdirSync(this.config.outputDir)
+			.filter((file) => file.endsWith(".log"))
+			.map((file) => ({
 				name: file,
 				path: path.join(this.config.outputDir, file),
-				stats: fs.statSync(path.join(this.config.outputDir, file))
+				stats: fs.statSync(path.join(this.config.outputDir, file)),
 			}));
 
 		// Remove old log files
@@ -1195,10 +1315,10 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);
 
 		logFiles
-			.filter(file => file.stats.mtime < cutoffDate)
-			.forEach(file => {
+			.filter((file) => file.stats.mtime < cutoffDate)
+			.forEach((file) => {
 				fs.unlinkSync(file.path);
-				this.logger.info('Removed old log file', { file: file.name });
+				this.logger.info("Removed old log file", { file: file.name });
 			});
 
 		// Remove excess log files
@@ -1206,16 +1326,17 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 			logFiles
 				.sort((a, b) => a.stats.mtime.getTime() - b.stats.mtime.getTime())
 				.slice(0, logFiles.length - this.config.maxLogFiles)
-				.forEach(file => {
+				.forEach((file) => {
 					fs.unlinkSync(file.path);
-					this.logger.info('Removed excess log file', { file: file.name });
+					this.logger.info("Removed excess log file", { file: file.name });
 				});
 		}
 	}
 
 	private cleanupOldSessions(): void {
-		const cutoffTime = Date.now() - (this.config.retentionDays * 24 * 60 * 60 * 1000);
-		
+		const cutoffTime =
+			Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000;
+
 		for (const [sessionId, session] of this.sessionHistory.entries()) {
 			if (session.startTime < cutoffTime) {
 				this.sessionHistory.delete(sessionId);
@@ -1233,35 +1354,35 @@ class MetricsCollector {
 
 class DiagnosticLogger {
 	constructor(private config: DiagnosticsConfig) {}
-	
+
 	log(level: string, message: string, context?: any): void {
 		if (this.shouldLog(level)) {
-			console.log(`[${level.toUpperCase()}] ${message}`, context || '');
+			console.log(`[${level.toUpperCase()}] ${message}`, context || "");
 		}
 	}
-	
+
 	info(message: string, context?: any): void {
-		this.log('info', message, context);
+		this.log("info", message, context);
 	}
-	
+
 	warn(message: string, context?: any): void {
-		this.log('warn', message, context);
+		this.log("warn", message, context);
 	}
-	
+
 	error(message: string, context?: any): void {
-		this.log('error', message, context);
+		this.log("error", message, context);
 	}
-	
+
 	debug(message: string, context?: any): void {
-		this.log('debug', message, context);
+		this.log("debug", message, context);
 	}
-	
+
 	trace(message: string, context?: any): void {
-		this.log('trace', message, context);
+		this.log("trace", message, context);
 	}
-	
+
 	private shouldLog(level: string): boolean {
-		const levels = ['error', 'warn', 'info', 'debug', 'trace'];
+		const levels = ["error", "warn", "info", "debug", "trace"];
 		const configLevel = levels.indexOf(this.config.logLevel);
 		const messageLevel = levels.indexOf(level);
 		return messageLevel <= configLevel;
@@ -1270,35 +1391,39 @@ class DiagnosticLogger {
 
 class DiagnosticTracer {
 	private spans: Map<string, any> = new Map();
-	
+
 	constructor(private config: DiagnosticsConfig) {}
-	
+
 	startTrace(sessionId: string, operation: string): void {
 		// Implementation for trace start
 	}
-	
+
 	endTrace(sessionId: string): void {
 		// Implementation for trace end
 	}
-	
-	startSpan(sessionId: string, operation: string, attributes?: Record<string, any>): string {
+
+	startSpan(
+		sessionId: string,
+		operation: string,
+		attributes?: Record<string, any>,
+	): string {
 		const spanId = `span_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 		// Implementation for span start
 		return spanId;
 	}
-	
-	endSpan(spanId: string, status: 'ok' | 'error' | 'timeout'): void {
+
+	endSpan(spanId: string, status: "ok" | "error" | "timeout"): void {
 		// Implementation for span end
 	}
 }
 
 class DiagnosticProfiler {
 	constructor(private config: DiagnosticsConfig) {}
-	
+
 	startProfiling(sessionId: string): void {
 		// Implementation for profiling start
 	}
-	
+
 	stopProfiling(sessionId: string): void {
 		// Implementation for profiling stop
 	}

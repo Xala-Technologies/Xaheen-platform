@@ -4,8 +4,10 @@
  * Generated with Xaheen CLI - AI-Native Developer Productivity
  */
 
+import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync } from "fs";
+import inquirer from "inquirer";
 import { join } from "path";
 import {
 	createRefactoringAssistant,
@@ -13,8 +15,6 @@ import {
 } from "../services/ai/refactoring-assistant.js";
 import { logger } from "../utils/logger.js";
 import { validateProject } from "../utils/project-validator.js";
-import inquirer from "inquirer";
-import chalk from "chalk";
 
 /**
  * Refactor command options interface

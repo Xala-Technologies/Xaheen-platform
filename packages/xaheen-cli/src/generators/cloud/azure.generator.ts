@@ -1,6 +1,6 @@
-import { BaseGenerator } from "../base.generator";
-import { GeneratorOptions, FileOperation } from "../../types";
 import { join } from "path";
+import { FileOperation, GeneratorOptions } from "../../types";
+import { BaseGenerator } from "../base.generator";
 
 interface AzureGeneratorOptions extends GeneratorOptions {
 	readonly servicesToGenerate: readonly AzureService[];

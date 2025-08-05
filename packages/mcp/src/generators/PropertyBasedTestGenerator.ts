@@ -65,7 +65,7 @@ export class PropertyBasedTestGenerator {
 	 * Generate comprehensive property-based tests using Fast-check
 	 */
 	public async generatePropertyBasedTests(
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): Promise<string> {
 		const { componentName, specification, framework, testTypes } = config;
 
@@ -120,7 +120,7 @@ describe('${componentName} - Accessibility Properties', () => {
 
 	private generateImports(
 		framework: string,
-		testTypes: readonly string[]
+		testTypes: readonly string[],
 	): string {
 		const baseImports = `
 import React from 'react';
@@ -235,7 +235,9 @@ const eventGenerator = fc.record({
   });`;
 	}
 
-	private generateDefaultPropertyTests(config: PropertyBasedTestConfig): string {
+	private generateDefaultPropertyTests(
+		config: PropertyBasedTestConfig,
+	): string {
 		return `
   describe('Property-Based Tests', () => {
     afterEach(() => {
@@ -287,11 +289,9 @@ const eventGenerator = fc.record({
 
 	private generatePropertyTest(
 		property: PropertyTestDefinition,
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): string {
-		const generators = property.generators
-			.map((gen) => gen.name)
-			.join(", ");
+		const generators = property.generators.map((gen) => gen.name).join(", ");
 		const preconditions = property.preconditions?.join(" && ") || "true";
 		const postconditions = property.postconditions?.join(" && ") || "true";
 
@@ -345,7 +345,7 @@ const eventGenerator = fc.record({
       ${modelChecking.actions
 				.map(
 					(action) => `
-      ${action.name}: ${action.generator}`
+      ${action.name}: ${action.generator}`,
 				)
 				.join(",")}
     };`;
@@ -529,7 +529,7 @@ const eventGenerator = fc.record({
 	}
 
 	private generateNorwegianComplianceTests(
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): string {
 		return `
   it('should handle Norwegian characters correctly', () => {
@@ -566,7 +566,7 @@ const eventGenerator = fc.record({
 	}
 
 	private generatePerformancePropertyTests(
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): string {
 		return `
   it('should maintain consistent performance across prop variations', () => {
@@ -602,7 +602,7 @@ const eventGenerator = fc.record({
 	}
 
 	private generateAccessibilityPropertyTests(
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): string {
 		return `
   it('should maintain accessibility with any valid prop combination', () => {
@@ -660,7 +660,7 @@ const eventGenerator = fc.record({
 	}
 
 	private generateComponentPropsGenerators(
-		config: PropertyBasedTestConfig
+		config: PropertyBasedTestConfig,
 	): string {
 		// Generate based on component specification
 		return `

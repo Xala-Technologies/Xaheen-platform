@@ -3,24 +3,23 @@
  * @description Loads and validates JSON configuration files for the project builder
  */
 
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { readFile } from "fs/promises";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 import {
-	ConfigurationData,
-	ProjectType,
-	QuickPreset,
-	TechCategory,
-	TechOption,
-	TechCompatibility,
-	StackConfiguration,
 	BuilderError,
+	ConfigurationData,
 	isProjectType,
 	isQuickPreset,
-	isValidStackConfiguration
-} from './builder-types.js';
+	isValidStackConfiguration,
+	ProjectType,
+	QuickPreset,
+	StackConfiguration,
+	TechCategory,
+	TechCompatibility,
+	TechOption,
+} from "./builder-types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,7 +30,8 @@ export class ConfigurationLoader {
 
 	constructor(configBasePath?: string) {
 		// Default to the web app's data directory
-		this.configBasePath = configBasePath || join(__dirname, '../../../web/src/data');
+		this.configBasePath =
+			configBasePath || join(__dirname, "../../../web/src/data");
 	}
 
 	/**
@@ -49,14 +49,14 @@ export class ConfigurationLoader {
 				techCategories,
 				techOptions,
 				techCompatibility,
-				defaultStack
+				defaultStack,
 			] = await Promise.all([
 				this.loadProjectTypes(),
 				this.loadQuickPresets(),
 				this.loadTechCategories(),
 				this.loadTechOptions(),
 				this.loadTechCompatibility(),
-				this.loadDefaultStack()
+				this.loadDefaultStack(),
 			]);
 
 			this.cachedConfig = {
@@ -65,14 +65,14 @@ export class ConfigurationLoader {
 				techCategories,
 				techOptions,
 				techCompatibility,
-				defaultStack
+				defaultStack,
 			};
 
 			return this.cachedConfig;
 		} catch (error) {
 			throw new BuilderError(
 				`Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`,
-				'CONFIG_LOAD_ERROR'
+				"CONFIG_LOAD_ERROR",
 			);
 		}
 	}
@@ -81,9 +81,9 @@ export class ConfigurationLoader {
 	 * Load project types configuration
 	 */
 	private async loadProjectTypes(): Promise<readonly ProjectType[]> {
-		const filePath = join(this.configBasePath, 'project-types.json');
+		const filePath = join(this.configBasePath, "project-types.json");
 		const content = await this.readJsonFile<ProjectType[]>(filePath);
-		
+
 		// Validate each project type
 		const validProjectTypes = content.filter((item, index) => {
 			if (!isProjectType(item)) {
@@ -101,9 +101,9 @@ export class ConfigurationLoader {
 	 * Load quick presets configuration
 	 */
 	private async loadQuickPresets(): Promise<readonly QuickPreset[]> {
-		const filePath = join(this.configBasePath, 'quick-presets.json');
+		const filePath = join(this.configBasePath, "quick-presets.json");
 		const content = await this.readJsonFile<QuickPreset[]>(filePath);
-		
+
 		// Validate each preset
 		const validPresets = content.filter((item, index) => {
 			if (!isQuickPreset(item)) {
@@ -111,7 +111,9 @@ export class ConfigurationLoader {
 				return false;
 			}
 			if (!isValidStackConfiguration(item.stack)) {
-				console.warn(`Invalid stack configuration for preset ${item.id}, skipping...`);
+				console.warn(
+					`Invalid stack configuration for preset ${item.id}, skipping...`,
+				);
 				return false;
 			}
 			return true;
@@ -125,12 +127,17 @@ export class ConfigurationLoader {
 	 * Load tech categories configuration
 	 */
 	private async loadTechCategories(): Promise<readonly TechCategory[]> {
-		const filePath = join(this.configBasePath, 'tech-categories.json');
-		const data = await this.readJsonFile<{ categories: TechCategory[] }>(filePath);
-		
+		const filePath = join(this.configBasePath, "tech-categories.json");
+		const data = await this.readJsonFile<{ categories: TechCategory[] }>(
+			filePath,
+		);
+
 		// Validate structure
 		if (!data.categories || !Array.isArray(data.categories)) {
-			throw new BuilderError('Invalid tech-categories.json structure', 'INVALID_CONFIG');
+			throw new BuilderError(
+				"Invalid tech-categories.json structure",
+				"INVALID_CONFIG",
+			);
 		}
 
 		// Sort by sort_order
@@ -140,13 +147,16 @@ export class ConfigurationLoader {
 	/**
 	 * Load tech options configuration
 	 */
-	private async loadTechOptions(): Promise<Record<string, readonly TechOption[]>> {
-		const filePath = join(this.configBasePath, 'tech-options.json');
-		const content = await this.readJsonFile<Record<string, TechOption[]>>(filePath);
-		
+	private async loadTechOptions(): Promise<
+		Record<string, readonly TechOption[]>
+	> {
+		const filePath = join(this.configBasePath, "tech-options.json");
+		const content =
+			await this.readJsonFile<Record<string, TechOption[]>>(filePath);
+
 		// Validate and sort each category's options
 		const processedOptions: Record<string, readonly TechOption[]> = {};
-		
+
 		for (const [category, options] of Object.entries(content)) {
 			if (!Array.isArray(options)) {
 				console.warn(`Invalid options for category ${category}, skipping...`);
@@ -156,19 +166,23 @@ export class ConfigurationLoader {
 			// Validate each option
 			const validOptions = options.filter((option, index) => {
 				if (
-					typeof option.id !== 'string' ||
-					typeof option.name !== 'string' ||
-					typeof option.description !== 'string' ||
-					typeof option.sort_order !== 'number'
+					typeof option.id !== "string" ||
+					typeof option.name !== "string" ||
+					typeof option.description !== "string" ||
+					typeof option.sort_order !== "number"
 				) {
-					console.warn(`Invalid option at index ${index} in category ${category}, skipping...`);
+					console.warn(
+						`Invalid option at index ${index} in category ${category}, skipping...`,
+					);
 					return false;
 				}
 				return true;
 			});
 
 			// Sort by sort_order
-			processedOptions[category] = validOptions.sort((a, b) => a.sort_order - b.sort_order);
+			processedOptions[category] = validOptions.sort(
+				(a, b) => a.sort_order - b.sort_order,
+			);
 		}
 
 		return processedOptions;
@@ -177,20 +191,27 @@ export class ConfigurationLoader {
 	/**
 	 * Load tech compatibility configuration
 	 */
-	private async loadTechCompatibility(): Promise<Record<string, Record<string, TechCompatibility>>> {
-		const filePath = join(this.configBasePath, 'tech-compatibility.json');
-		return await this.readJsonFile<Record<string, Record<string, TechCompatibility>>>(filePath);
+	private async loadTechCompatibility(): Promise<
+		Record<string, Record<string, TechCompatibility>>
+	> {
+		const filePath = join(this.configBasePath, "tech-compatibility.json");
+		return await this.readJsonFile<
+			Record<string, Record<string, TechCompatibility>>
+		>(filePath);
 	}
 
 	/**
 	 * Load default stack configuration
 	 */
 	private async loadDefaultStack(): Promise<StackConfiguration> {
-		const filePath = join(this.configBasePath, 'default-stack.json');
+		const filePath = join(this.configBasePath, "default-stack.json");
 		const content = await this.readJsonFile<StackConfiguration>(filePath);
-		
+
 		if (!isValidStackConfiguration(content)) {
-			throw new BuilderError('Invalid default-stack.json configuration', 'INVALID_DEFAULT_STACK');
+			throw new BuilderError(
+				"Invalid default-stack.json configuration",
+				"INVALID_DEFAULT_STACK",
+			);
 		}
 
 		return content;
@@ -201,7 +222,7 @@ export class ConfigurationLoader {
 	 */
 	async getProjectType(id: string): Promise<ProjectType | null> {
 		const config = await this.loadConfiguration();
-		return config.projectTypes.find(pt => pt.id === id) || null;
+		return config.projectTypes.find((pt) => pt.id === id) || null;
 	}
 
 	/**
@@ -209,7 +230,7 @@ export class ConfigurationLoader {
 	 */
 	async getQuickPreset(id: string): Promise<QuickPreset | null> {
 		const config = await this.loadConfiguration();
-		return config.quickPresets.find(qp => qp.id === id) || null;
+		return config.quickPresets.find((qp) => qp.id === id) || null;
 	}
 
 	/**
@@ -223,7 +244,10 @@ export class ConfigurationLoader {
 	/**
 	 * Get compatibility info for a tech option
 	 */
-	async getCompatibilityInfo(category: string, optionId: string): Promise<TechCompatibility | null> {
+	async getCompatibilityInfo(
+		category: string,
+		optionId: string,
+	): Promise<TechCompatibility | null> {
 		const config = await this.loadConfiguration();
 		return config.techCompatibility[category]?.[optionId] || null;
 	}
@@ -231,7 +255,9 @@ export class ConfigurationLoader {
 	/**
 	 * Get relevant categories for a project type
 	 */
-	async getRelevantCategories(projectTypeId: string): Promise<readonly string[]> {
+	async getRelevantCategories(
+		projectTypeId: string,
+	): Promise<readonly string[]> {
 		const projectType = await this.getProjectType(projectTypeId);
 		return projectType?.relevantCategories || [];
 	}
@@ -239,7 +265,9 @@ export class ConfigurationLoader {
 	/**
 	 * Get default selections for a project type
 	 */
-	async getDefaultSelections(projectTypeId: string): Promise<Record<string, string | readonly string[]>> {
+	async getDefaultSelections(
+		projectTypeId: string,
+	): Promise<Record<string, string | readonly string[]>> {
 		const projectType = await this.getProjectType(projectTypeId);
 		return projectType?.defaultSelections || {};
 	}
@@ -247,9 +275,13 @@ export class ConfigurationLoader {
 	/**
 	 * Get presets for a specific project type
 	 */
-	async getPresetsForProjectType(projectTypeId: string): Promise<readonly QuickPreset[]> {
+	async getPresetsForProjectType(
+		projectTypeId: string,
+	): Promise<readonly QuickPreset[]> {
 		const config = await this.loadConfiguration();
-		return config.quickPresets.filter(preset => preset.projectType === projectTypeId);
+		return config.quickPresets.filter(
+			(preset) => preset.projectType === projectTypeId,
+		);
 	}
 
 	/**
@@ -258,19 +290,23 @@ export class ConfigurationLoader {
 	async searchPresets(query: string): Promise<readonly QuickPreset[]> {
 		const config = await this.loadConfiguration();
 		const lowercaseQuery = query.toLowerCase();
-		
-		return config.quickPresets.filter(preset =>
-			preset.name.toLowerCase().includes(lowercaseQuery) ||
-			preset.description.toLowerCase().includes(lowercaseQuery)
+
+		return config.quickPresets.filter(
+			(preset) =>
+				preset.name.toLowerCase().includes(lowercaseQuery) ||
+				preset.description.toLowerCase().includes(lowercaseQuery),
 		);
 	}
 
 	/**
 	 * Get tech option display information
 	 */
-	async getTechOptionDetails(category: string, optionId: string): Promise<TechOption | null> {
+	async getTechOptionDetails(
+		category: string,
+		optionId: string,
+	): Promise<TechOption | null> {
 		const options = await this.getTechOptions(category);
-		return options.find(option => option.id === optionId) || null;
+		return options.find((option) => option.id === optionId) || null;
 	}
 
 	/**
@@ -285,45 +321,58 @@ export class ConfigurationLoader {
 	 */
 	async validateConfiguration(): Promise<readonly string[]> {
 		const errors: string[] = [];
-		
+
 		try {
 			const config = await this.loadConfiguration();
 
 			// Check that referenced project types in presets exist
 			for (const preset of config.quickPresets) {
-				const projectTypeExists = config.projectTypes.some(pt => pt.id === preset.projectType);
+				const projectTypeExists = config.projectTypes.some(
+					(pt) => pt.id === preset.projectType,
+				);
 				if (!projectTypeExists) {
-					errors.push(`Preset "${preset.id}" references non-existent project type "${preset.projectType}"`);
+					errors.push(
+						`Preset "${preset.id}" references non-existent project type "${preset.projectType}"`,
+					);
 				}
 			}
 
 			// Check that relevant categories in project types exist
-			const validCategories = new Set(config.techCategories.map(tc => tc.id));
+			const validCategories = new Set(config.techCategories.map((tc) => tc.id));
 			for (const projectType of config.projectTypes) {
 				for (const category of projectType.relevantCategories) {
 					if (!validCategories.has(category)) {
-						errors.push(`Project type "${projectType.id}" references non-existent category "${category}"`);
+						errors.push(
+							`Project type "${projectType.id}" references non-existent category "${category}"`,
+						);
 					}
 				}
 			}
 
 			// Check that default selections reference valid options
 			for (const projectType of config.projectTypes) {
-				for (const [category, selection] of Object.entries(projectType.defaultSelections)) {
+				for (const [category, selection] of Object.entries(
+					projectType.defaultSelections,
+				)) {
 					const availableOptions = config.techOptions[category] || [];
-					const optionIds = availableOptions.map(opt => opt.id);
-					
-					const selectionsToCheck = Array.isArray(selection) ? selection : [selection];
+					const optionIds = availableOptions.map((opt) => opt.id);
+
+					const selectionsToCheck = Array.isArray(selection)
+						? selection
+						: [selection];
 					for (const sel of selectionsToCheck) {
 						if (!optionIds.includes(sel)) {
-							errors.push(`Project type "${projectType.id}" has invalid default selection "${sel}" for category "${category}"`);
+							errors.push(
+								`Project type "${projectType.id}" has invalid default selection "${sel}" for category "${category}"`,
+							);
 						}
 					}
 				}
 			}
-
 		} catch (error) {
-			errors.push(`Configuration validation failed: ${error instanceof Error ? error.message : String(error)}`);
+			errors.push(
+				`Configuration validation failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
 		}
 
 		return errors;
@@ -334,12 +383,12 @@ export class ConfigurationLoader {
 	 */
 	private async readJsonFile<T>(filePath: string): Promise<T> {
 		try {
-			const content = await readFile(filePath, 'utf-8');
+			const content = await readFile(filePath, "utf-8");
 			return JSON.parse(content) as T;
 		} catch (error) {
 			throw new BuilderError(
 				`Failed to read JSON file ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
-				'JSON_READ_ERROR'
+				"JSON_READ_ERROR",
 			);
 		}
 	}

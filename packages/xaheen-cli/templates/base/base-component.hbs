@@ -1,0 +1,94 @@
+{{!-- Base Component Template - Foundation for all React components --}}
+import React, { useState, useCallback, useMemo, type JSX } from 'react';
+import { cn } from '@xala-ui/utils';
+import { Container, Stack } from '@xala-ui/components';
+{{#slot imports}}{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props {
+  readonly className?: string;
+  readonly children?: React.ReactNode;
+  readonly variant?: 'default' | 'primary' | 'secondary' | 'destructive';
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly disabled?: boolean;
+  readonly 'aria-label'?: string;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} Component
+ * 
+ * @description Base component with Xala UI System integration
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant
+ * @nsm-classification {{nsmClassification}}
+ */
+export const {{componentName}} = ({
+  className,
+  children,
+  variant = 'default',
+  size = 'md',
+  disabled = false,
+  'aria-label': ariaLabel,
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  // Component state
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Computed styles
+  const componentStyles = useMemo(() => cn(
+    'relative',
+    'transition-all duration-200',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    {
+      'opacity-50 cursor-not-allowed': disabled,
+      'text-sm px-3 py-2': size === 'sm',
+      'text-base px-4 py-3': size === 'md', 
+      'text-lg px-6 py-4': size === 'lg',
+      'bg-background text-foreground': variant === 'default',
+      'bg-primary text-primary-foreground': variant === 'primary',
+      'bg-secondary text-secondary-foreground': variant === 'secondary',
+      'bg-destructive text-destructive-foreground': variant === 'destructive',
+    },
+    className
+  ), [className, variant, size, disabled]);
+  
+  // Event handlers
+  const handleInteraction = useCallback((event: React.MouseEvent) => {
+    if (disabled) {
+      event.preventDefault();
+      return;
+    }
+    // Component-specific interaction logic
+  }, [disabled]);
+  
+  try {
+    return (
+      <Container className={componentStyles}>
+        <Stack spacing="md" align="center">
+          {{#slot content}}
+          {children}
+          {{/slot}}
+        </Stack>
+        {{>mixins}}
+      </Container>
+    );
+  } catch (error) {
+    console.error(`${componentName} render error:`, error);
+    return (
+      <div className="p-4 border border-destructive rounded-lg bg-destructive/10">
+        <p className="text-destructive text-sm font-medium">
+          Error rendering {{componentName}} component
+        </p>
+      </div>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Helper functions and utilities
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props };

@@ -2,288 +2,313 @@
 
 /**
  * Comprehensive Test Runner Script
- * 
+ *
  * Runs all test suites in the correct order with proper reporting
  * and performance tracking.
  */
 
-import { execa } from "execa";
 import chalk from "chalk";
+import { execa } from "execa";
 import fs from "fs-extra";
 import path from "path";
 import { performance } from "perf_hooks";
 
 interface TestSuite {
-  name: string;
-  command: string;
-  args: string[];
-  timeout: number;
-  critical: boolean;
-  description: string;
+	name: string;
+	command: string;
+	args: string[];
+	timeout: number;
+	critical: boolean;
+	description: string;
 }
 
 interface TestResult {
-  name: string;
-  success: boolean;
-  duration: number;
-  exitCode: number;
-  output: string;
-  error?: string;
+	name: string;
+	success: boolean;
+	duration: number;
+	exitCode: number;
+	output: string;
+	error?: string;
 }
 
 class TestRunner {
-  private results: TestResult[] = [];
-  private startTime: number = 0;
-  private outputDir: string;
+	private results: TestResult[] = [];
+	private startTime: number = 0;
+	private outputDir: string;
 
-  constructor() {
-    this.outputDir = path.resolve(__dirname, "../test-output");
-  }
+	constructor() {
+		this.outputDir = path.resolve(__dirname, "../test-output");
+	}
 
-  async run(): Promise<void> {
-    console.log(chalk.blue.bold("🧪 Xaheen CLI Comprehensive Test Suite"));
-    console.log(chalk.gray("=" .repeat(60)));
-    console.log();
+	async run(): Promise<void> {
+		console.log(chalk.blue.bold("🧪 Xaheen CLI Comprehensive Test Suite"));
+		console.log(chalk.gray("=".repeat(60)));
+		console.log();
 
-    this.startTime = performance.now();
+		this.startTime = performance.now();
 
-    // Ensure output directory exists
-    await fs.ensureDir(this.outputDir);
+		// Ensure output directory exists
+		await fs.ensureDir(this.outputDir);
 
-    // Define test suites in execution order
-    const testSuites: TestSuite[] = [
-      {
-        name: "Build",
-        command: "npm",
-        args: ["run", "build"],
-        timeout: 60000,
-        critical: true,
-        description: "Build the CLI for testing",
-      },
-      {
-        name: "Type Check",
-        command: "npm",
-        args: ["run", "type-check"],
-        timeout: 30000,
-        critical: true,
-        description: "TypeScript type checking",
-      },
-      {
-        name: "Lint",
-        command: "npm",
-        args: ["run", "lint"],
-        timeout: 30000,
-        critical: false,
-        description: "Code linting and formatting",
-      },
-      {
-        name: "Unit Tests",
-        command: "npm",
-        args: ["run", "test:unit"],
-        timeout: 120000,
-        critical: true,
-        description: "Fast unit tests with mocking",
-      },
-      {
-        name: "Integration Tests",
-        command: "npm",
-        args: ["run", "test:integration"],
-        timeout: 300000,
-        critical: true,
-        description: "File system and service integration tests",
-      },
-      {
-        name: "E2E Tests",
-        command: "npm",
-        args: ["run", "test:e2e"],
-        timeout: 600000,
-        critical: true,
-        description: "Complete CLI workflow tests",
-      },
-      {
-        name: "Performance Tests",
-        command: "npm",
-        args: ["run", "test:performance"],
-        timeout: 900000,
-        critical: false,
-        description: "Performance benchmarking and regression detection",
-      },
-      {
-        name: "Security Tests",
-        command: "npm",
-        args: ["run", "test:security"],
-        timeout: 300000,
-        critical: true,
-        description: "Security vulnerability and compliance testing",
-      },
-    ];
+		// Define test suites in execution order
+		const testSuites: TestSuite[] = [
+			{
+				name: "Build",
+				command: "npm",
+				args: ["run", "build"],
+				timeout: 60000,
+				critical: true,
+				description: "Build the CLI for testing",
+			},
+			{
+				name: "Type Check",
+				command: "npm",
+				args: ["run", "type-check"],
+				timeout: 30000,
+				critical: true,
+				description: "TypeScript type checking",
+			},
+			{
+				name: "Lint",
+				command: "npm",
+				args: ["run", "lint"],
+				timeout: 30000,
+				critical: false,
+				description: "Code linting and formatting",
+			},
+			{
+				name: "Unit Tests",
+				command: "npm",
+				args: ["run", "test:unit"],
+				timeout: 120000,
+				critical: true,
+				description: "Fast unit tests with mocking",
+			},
+			{
+				name: "Integration Tests",
+				command: "npm",
+				args: ["run", "test:integration"],
+				timeout: 300000,
+				critical: true,
+				description: "File system and service integration tests",
+			},
+			{
+				name: "E2E Tests",
+				command: "npm",
+				args: ["run", "test:e2e"],
+				timeout: 600000,
+				critical: true,
+				description: "Complete CLI workflow tests",
+			},
+			{
+				name: "Performance Tests",
+				command: "npm",
+				args: ["run", "test:performance"],
+				timeout: 900000,
+				critical: false,
+				description: "Performance benchmarking and regression detection",
+			},
+			{
+				name: "Security Tests",
+				command: "npm",
+				args: ["run", "test:security"],
+				timeout: 300000,
+				critical: true,
+				description: "Security vulnerability and compliance testing",
+			},
+		];
 
-    // Run test suites
-    for (const suite of testSuites) {
-      await this.runTestSuite(suite);
-    }
+		// Run test suites
+		for (const suite of testSuites) {
+			await this.runTestSuite(suite);
+		}
 
-    // Generate final report
-    await this.generateReport();
-    
-    // Exit with appropriate code
-    const hasFailures = this.results.some(r => !r.success);
-    const hasCriticalFailures = this.results.some(r => !r.success && 
-      testSuites.find(s => s.name === r.name)?.critical
-    );
+		// Generate final report
+		await this.generateReport();
 
-    if (hasCriticalFailures) {
-      console.log(chalk.red.bold("\n❌ Critical tests failed"));
-      process.exit(1);
-    } else if (hasFailures) {
-      console.log(chalk.yellow.bold("\n⚠️ Some non-critical tests failed"));
-      process.exit(0);
-    } else {
-      console.log(chalk.green.bold("\n✅ All tests passed"));
-      process.exit(0);
-    }
-  }
+		// Exit with appropriate code
+		const hasFailures = this.results.some((r) => !r.success);
+		const hasCriticalFailures = this.results.some(
+			(r) => !r.success && testSuites.find((s) => s.name === r.name)?.critical,
+		);
 
-  private async runTestSuite(suite: TestSuite): Promise<void> {
-    console.log(chalk.cyan(`\n🔄 Running ${suite.name}...`));
-    console.log(chalk.gray(`   ${suite.description}`));
+		if (hasCriticalFailures) {
+			console.log(chalk.red.bold("\n❌ Critical tests failed"));
+			process.exit(1);
+		} else if (hasFailures) {
+			console.log(chalk.yellow.bold("\n⚠️ Some non-critical tests failed"));
+			process.exit(0);
+		} else {
+			console.log(chalk.green.bold("\n✅ All tests passed"));
+			process.exit(0);
+		}
+	}
 
-    const startTime = performance.now();
-    let result: TestResult;
+	private async runTestSuite(suite: TestSuite): Promise<void> {
+		console.log(chalk.cyan(`\n🔄 Running ${suite.name}...`));
+		console.log(chalk.gray(`   ${suite.description}`));
 
-    try {
-      const process = execa(suite.command, suite.args, {
-        cwd: path.resolve(__dirname, ".."),
-        timeout: suite.timeout,
-        all: true,
-      });
+		const startTime = performance.now();
+		let result: TestResult;
 
-      // Show live output for long-running tests
-      if (suite.timeout > 60000) {
-        process.all?.on("data", (data) => {
-          const output = data.toString();
-          if (output.includes("PASS") || output.includes("FAIL") || output.includes("✓") || output.includes("✗")) {
-            process.stdout.write(chalk.gray(`   ${output}`));
-          }
-        });
-      }
+		try {
+			const process = execa(suite.command, suite.args, {
+				cwd: path.resolve(__dirname, ".."),
+				timeout: suite.timeout,
+				all: true,
+			});
 
-      const execResult = await process;
-      const duration = performance.now() - startTime;
+			// Show live output for long-running tests
+			if (suite.timeout > 60000) {
+				process.all?.on("data", (data) => {
+					const output = data.toString();
+					if (
+						output.includes("PASS") ||
+						output.includes("FAIL") ||
+						output.includes("✓") ||
+						output.includes("✗")
+					) {
+						process.stdout.write(chalk.gray(`   ${output}`));
+					}
+				});
+			}
 
-      result = {
-        name: suite.name,
-        success: true,
-        duration,
-        exitCode: execResult.exitCode || 0,
-        output: execResult.all || "",
-      };
+			const execResult = await process;
+			const duration = performance.now() - startTime;
 
-      console.log(chalk.green(`   ✅ ${suite.name} passed (${Math.round(duration)}ms)`));
+			result = {
+				name: suite.name,
+				success: true,
+				duration,
+				exitCode: execResult.exitCode || 0,
+				output: execResult.all || "",
+			};
 
-    } catch (error: any) {
-      const duration = performance.now() - startTime;
+			console.log(
+				chalk.green(`   ✅ ${suite.name} passed (${Math.round(duration)}ms)`),
+			);
+		} catch (error: any) {
+			const duration = performance.now() - startTime;
 
-      result = {
-        name: suite.name,
-        success: false,
-        duration,
-        exitCode: error.exitCode || 1,
-        output: error.all || "",
-        error: error.message,
-      };
+			result = {
+				name: suite.name,
+				success: false,
+				duration,
+				exitCode: error.exitCode || 1,
+				output: error.all || "",
+				error: error.message,
+			};
 
-      const status = suite.critical ? "❌" : "⚠️";
-      const color = suite.critical ? chalk.red : chalk.yellow;
-      console.log(color(`   ${status} ${suite.name} failed (${Math.round(duration)}ms)`));
-      
-      if (error.all) {
-        const lines = error.all.split("\n").slice(-10); // Last 10 lines
-        console.log(chalk.gray("   Last few lines of output:"));
-        lines.forEach((line: string) => {
-          if (line.trim()) {
-            console.log(chalk.gray(`   ${line}`));
-          }
-        });
-      }
-    }
+			const status = suite.critical ? "❌" : "⚠️";
+			const color = suite.critical ? chalk.red : chalk.yellow;
+			console.log(
+				color(`   ${status} ${suite.name} failed (${Math.round(duration)}ms)`),
+			);
 
-    this.results.push(result);
+			if (error.all) {
+				const lines = error.all.split("\n").slice(-10); // Last 10 lines
+				console.log(chalk.gray("   Last few lines of output:"));
+				lines.forEach((line: string) => {
+					if (line.trim()) {
+						console.log(chalk.gray(`   ${line}`));
+					}
+				});
+			}
+		}
 
-    // Save individual test result
-    const resultPath = path.join(this.outputDir, `${result.name.toLowerCase().replace(/\s+/g, "-")}-result.json`);
-    await fs.writeJson(resultPath, result, { spaces: 2 });
-  }
+		this.results.push(result);
 
-  private async generateReport(): Promise<void> {
-    const totalDuration = performance.now() - this.startTime;
-    
-    console.log(chalk.blue.bold("\n📊 Test Summary"));
-    console.log(chalk.gray("=" .repeat(60)));
+		// Save individual test result
+		const resultPath = path.join(
+			this.outputDir,
+			`${result.name.toLowerCase().replace(/\s+/g, "-")}-result.json`,
+		);
+		await fs.writeJson(resultPath, result, { spaces: 2 });
+	}
 
-    // Summary table
-    console.log(chalk.bold("\nResults:"));
-    this.results.forEach((result) => {
-      const status = result.success ? "✅ PASS" : "❌ FAIL";
-      const duration = `${Math.round(result.duration)}ms`;
-      const statusColor = result.success ? chalk.green : chalk.red;
-      
-      console.log(`  ${statusColor(status.padEnd(8))} ${result.name.padEnd(20)} ${duration.padStart(8)}`);
-    });
+	private async generateReport(): Promise<void> {
+		const totalDuration = performance.now() - this.startTime;
 
-    // Statistics
-    const passed = this.results.filter(r => r.success).length;
-    const failed = this.results.filter(r => !r.success).length;
-    const total = this.results.length;
+		console.log(chalk.blue.bold("\n📊 Test Summary"));
+		console.log(chalk.gray("=".repeat(60)));
 
-    console.log(chalk.bold("\nStatistics:"));
-    console.log(`  Total: ${total}`);
-    console.log(`  Passed: ${chalk.green(passed)}`);
-    console.log(`  Failed: ${chalk.red(failed)}`);
-    console.log(`  Success Rate: ${chalk.cyan(Math.round((passed / total) * 100))}%`);
-    console.log(`  Total Duration: ${chalk.cyan(Math.round(totalDuration))}ms`);
+		// Summary table
+		console.log(chalk.bold("\nResults:"));
+		this.results.forEach((result) => {
+			const status = result.success ? "✅ PASS" : "❌ FAIL";
+			const duration = `${Math.round(result.duration)}ms`;
+			const statusColor = result.success ? chalk.green : chalk.red;
 
-    // Performance summary
-    const performanceResult = this.results.find(r => r.name === "Performance Tests");
-    if (performanceResult?.success) {
-      console.log(chalk.bold("\nPerformance Summary:"));
-      console.log("  See detailed performance report in test-output/");
-    }
+			console.log(
+				`  ${statusColor(status.padEnd(8))} ${result.name.padEnd(20)} ${duration.padStart(8)}`,
+			);
+		});
 
-    // Security summary
-    const securityResult = this.results.find(r => r.name === "Security Tests");
-    if (securityResult) {
-      console.log(chalk.bold("\nSecurity Summary:"));
-      if (securityResult.success) {
-        console.log("  ✅ No critical security issues detected");
-      } else {
-        console.log("  ❌ Security vulnerabilities found - check logs");
-      }
-    }
+		// Statistics
+		const passed = this.results.filter((r) => r.success).length;
+		const failed = this.results.filter((r) => !r.success).length;
+		const total = this.results.length;
 
-    // Generate JSON report
-    const report = {
-      timestamp: new Date().toISOString(),
-      totalDuration: Math.round(totalDuration),
-      results: this.results,
-      summary: {
-        total,
-        passed,
-        failed,
-        successRate: Math.round((passed / total) * 100),
-      },
-    };
+		console.log(chalk.bold("\nStatistics:"));
+		console.log(`  Total: ${total}`);
+		console.log(`  Passed: ${chalk.green(passed)}`);
+		console.log(`  Failed: ${chalk.red(failed)}`);
+		console.log(
+			`  Success Rate: ${chalk.cyan(Math.round((passed / total) * 100))}%`,
+		);
+		console.log(`  Total Duration: ${chalk.cyan(Math.round(totalDuration))}ms`);
 
-    await fs.writeJson(path.join(this.outputDir, "comprehensive-test-report.json"), report, { spaces: 2 });
+		// Performance summary
+		const performanceResult = this.results.find(
+			(r) => r.name === "Performance Tests",
+		);
+		if (performanceResult?.success) {
+			console.log(chalk.bold("\nPerformance Summary:"));
+			console.log("  See detailed performance report in test-output/");
+		}
 
-    // Generate HTML report
-    await this.generateHtmlReport(report);
+		// Security summary
+		const securityResult = this.results.find(
+			(r) => r.name === "Security Tests",
+		);
+		if (securityResult) {
+			console.log(chalk.bold("\nSecurity Summary:"));
+			if (securityResult.success) {
+				console.log("  ✅ No critical security issues detected");
+			} else {
+				console.log("  ❌ Security vulnerabilities found - check logs");
+			}
+		}
 
-    console.log(chalk.gray(`\n📁 Detailed reports saved to: ${this.outputDir}`));
-  }
+		// Generate JSON report
+		const report = {
+			timestamp: new Date().toISOString(),
+			totalDuration: Math.round(totalDuration),
+			results: this.results,
+			summary: {
+				total,
+				passed,
+				failed,
+				successRate: Math.round((passed / total) * 100),
+			},
+		};
 
-  private async generateHtmlReport(report: any): Promise<void> {
-    const html = `
+		await fs.writeJson(
+			path.join(this.outputDir, "comprehensive-test-report.json"),
+			report,
+			{ spaces: 2 },
+		);
+
+		// Generate HTML report
+		await this.generateHtmlReport(report);
+
+		console.log(
+			chalk.gray(`\n📁 Detailed reports saved to: ${this.outputDir}`),
+		);
+	}
+
+	private async generateHtmlReport(report: any): Promise<void> {
+		const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -346,36 +371,40 @@ class TestRunner {
         </tr>
       </thead>
       <tbody>
-        ${report.results.map((result: TestResult) => `
+        ${report.results
+					.map(
+						(result: TestResult) => `
           <tr>
             <td>${result.name}</td>
-            <td class="${result.success ? 'status-pass' : 'status-fail'}">
-              ${result.success ? '✅ PASS' : '❌ FAIL'}
+            <td class="${result.success ? "status-pass" : "status-fail"}">
+              ${result.success ? "✅ PASS" : "❌ FAIL"}
             </td>
             <td class="duration">${Math.round(result.duration)}ms</td>
             <td>${result.exitCode}</td>
           </tr>
-        `).join('')}
+        `,
+					)
+					.join("")}
       </tbody>
     </table>
 
     <div class="footer">
-      <p>Xaheen CLI v${process.env.npm_package_version || '3.0.0'} • Node.js ${process.version}</p>
+      <p>Xaheen CLI v${process.env.npm_package_version || "3.0.0"} • Node.js ${process.version}</p>
     </div>
   </div>
 </body>
 </html>`;
 
-    await fs.writeFile(path.join(this.outputDir, "test-report.html"), html);
-  }
+		await fs.writeFile(path.join(this.outputDir, "test-report.html"), html);
+	}
 }
 
 // CLI interface
 async function main() {
-  const args = process.argv.slice(2);
-  
-  if (args.includes("--help") || args.includes("-h")) {
-    console.log(`
+	const args = process.argv.slice(2);
+
+	if (args.includes("--help") || args.includes("-h")) {
+		console.log(`
 Usage: npm run test:all [options]
 
 Options:
@@ -390,30 +419,30 @@ Examples:
   npm run test:all --verbose
   CI=true npm run test:all
 `);
-    process.exit(0);
-  }
+		process.exit(0);
+	}
 
-  const runner = new TestRunner();
-  await runner.run();
+	const runner = new TestRunner();
+	await runner.run();
 }
 
 // Handle graceful shutdown
 process.on("SIGINT", () => {
-  console.log(chalk.yellow("\n⏹️ Test run interrupted"));
-  process.exit(130);
+	console.log(chalk.yellow("\n⏹️ Test run interrupted"));
+	process.exit(130);
 });
 
 process.on("SIGTERM", () => {
-  console.log(chalk.yellow("\n⏹️ Test run terminated"));
-  process.exit(143);
+	console.log(chalk.yellow("\n⏹️ Test run terminated"));
+	process.exit(143);
 });
 
 // Run if called directly
 if (require.main === module) {
-  main().catch((error) => {
-    console.error(chalk.red("Test runner failed:"), error);
-    process.exit(1);
-  });
+	main().catch((error) => {
+		console.error(chalk.red("Test runner failed:"), error);
+		process.exit(1);
+	});
 }
 
 export { TestRunner };

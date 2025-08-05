@@ -1,8 +1,8 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import Handlebars from 'handlebars';
-import chalk from 'chalk';
-import { confirm, text, select, isCancel } from '@clack/prompts';
+import { confirm, isCancel, select, text } from "@clack/prompts";
+import chalk from "chalk";
+import { promises as fs } from "fs";
+import Handlebars from "handlebars";
+import path from "path";
 
 export interface BaseGeneratorOptions {
 	readonly name: string;
@@ -11,6 +11,9 @@ export interface BaseGeneratorOptions {
 	readonly typescript?: boolean;
 	readonly tests?: boolean;
 	readonly stories?: boolean;
+	readonly semanticUI?: boolean;
+	readonly i18n?: boolean;
+	readonly designTokens?: boolean;
 }
 
 export interface GeneratorResult {
@@ -30,7 +33,9 @@ export interface NamingConvention {
 	readonly snakeCase: string;
 }
 
-export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGeneratorOptions> {
+export abstract class BaseGenerator<
+	T extends BaseGeneratorOptions = BaseGeneratorOptions,
+> {
 	protected logger = {
 		info: (message: string, ...args: any[]) =>
 			console.log(`[INFO] ${message}`, ...args),
@@ -51,23 +56,26 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 	abstract getGeneratorType(): string;
 
 	// Rails-inspired convenience methods
-	protected async confirmOverwrite(filePath: string, force?: boolean): Promise<boolean> {
+	protected async confirmOverwrite(
+		filePath: string,
+		force?: boolean,
+	): Promise<boolean> {
 		if (force) return true;
-		
+
 		try {
 			await fs.access(filePath);
-			
+
 			const shouldOverwrite = await confirm({
 				message: `File ${chalk.yellow(filePath)} already exists. Overwrite?`,
 			});
-			
+
 			if (isCancel(shouldOverwrite)) {
-				throw new Error('Generation cancelled by user');
+				throw new Error("Generation cancelled by user");
 			}
-			
+
 			return shouldOverwrite as boolean;
 		} catch (error: any) {
-			if (error.code === 'ENOENT') {
+			if (error.code === "ENOENT") {
 				return true; // File doesn't exist, safe to create
 			}
 			throw error;
@@ -78,36 +86,51 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 		templatePath: string,
 		outputPath: string,
 		data: any,
-		options: { dryRun?: boolean; force?: boolean } = {}
+		options: { dryRun?: boolean; force?: boolean } = {},
 	): Promise<string> {
-		const template = await this.loadTemplate(templatePath);
-		const content = template(data);
+		try {
+			const template = await this.loadTemplate(templatePath);
+			const content = template(data);
 
-		if (options.dryRun) {
-			this.logger.info(`${chalk.yellow('[DRY RUN]')} Would generate: ${chalk.cyan(outputPath)}`);
+			if (options.dryRun) {
+				this.logger.info(
+					`${chalk.yellow("[DRY RUN]")} Would generate: ${chalk.cyan(outputPath)}`,
+				);
+				this.logger.info(`${chalk.gray("Content preview:")} ${content.substring(0, 200)}...`);
+				return outputPath;
+			}
+
+			const shouldProceed = await this.confirmOverwrite(
+				outputPath,
+				options.force,
+			);
+			if (!shouldProceed) {
+				this.logger.warn(`Skipped: ${chalk.yellow(outputPath)}`);
+				return outputPath;
+			}
+
+			await this.ensureDirectoryExists(path.dirname(outputPath));
+			await fs.writeFile(outputPath, content, "utf-8");
+			this.logger.success(`Generated: ${chalk.green(outputPath)}`);
+
 			return outputPath;
+		} catch (error) {
+			this.logger.error(`Failed to generate file ${outputPath}:`, error);
+			throw error;
 		}
-
-		const shouldProceed = await this.confirmOverwrite(outputPath, options.force);
-		if (!shouldProceed) {
-			this.logger.warn(`Skipped: ${chalk.yellow(outputPath)}`);
-			return outputPath;
-		}
-
-		await this.ensureDirectoryExists(path.dirname(outputPath));
-		await fs.writeFile(outputPath, content, 'utf-8');
-		this.logger.success(`Generated: ${chalk.green(outputPath)}`);
-		
-		return outputPath;
 	}
 
-	protected async loadTemplate(templatePath: string): Promise<HandlebarsTemplateDelegate> {
-		const templateFile = path.join(__dirname, '../templates', templatePath);
+	protected async loadTemplate(
+		templatePath: string,
+	): Promise<HandlebarsTemplateDelegate> {
+		const templateFile = path.join(__dirname, "../templates", templatePath);
 		try {
-			const templateContent = await fs.readFile(templateFile, 'utf-8');
+			const templateContent = await fs.readFile(templateFile, "utf-8");
 			return Handlebars.compile(templateContent);
 		} catch (error) {
-			throw new Error(`Failed to load template: ${templatePath}. Error: ${error}`);
+			throw new Error(
+				`Failed to load template: ${templatePath}. Error: ${error}`,
+			);
 		}
 	}
 
@@ -146,18 +169,18 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 
 	protected toKebabCase(str: string): string {
 		return str
-			.replace(/([A-Z])/g, '-$1')
-			.replace(/[-_\s]+/g, '-')
+			.replace(/([A-Z])/g, "-$1")
+			.replace(/[-_\s]+/g, "-")
 			.toLowerCase()
-			.replace(/^-/, '');
+			.replace(/^-/, "");
 	}
 
 	protected toSnakeCase(str: string): string {
 		return str
-			.replace(/([A-Z])/g, '_$1')
-			.replace(/[-\s]+/g, '_')
+			.replace(/([A-Z])/g, "_$1")
+			.replace(/[-\s]+/g, "_")
 			.toLowerCase()
-			.replace(/^_/, '');
+			.replace(/^_/, "");
 	}
 
 	protected toConstantCase(str: string): string {
@@ -166,7 +189,7 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 
 	// Project structure detection
 	protected async detectProjectStructure(): Promise<{
-		frameworkType: 'next' | 'react' | 'vue' | 'angular' | 'svelte' | 'unknown';
+		frameworkType: "next" | "react" | "vue" | "angular" | "svelte" | "unknown";
 		usesTypeScript: boolean;
 		usesStorybook: boolean;
 		usesJest: boolean;
@@ -174,47 +197,58 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 		pagesDir?: string;
 	}> {
 		try {
-			const packageJsonPath = path.join(process.cwd(), 'package.json');
-			const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-			const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+			const packageJsonPath = path.join(process.cwd(), "package.json");
+			const packageJson = JSON.parse(
+				await fs.readFile(packageJsonPath, "utf-8"),
+			);
+			const deps = {
+				...packageJson.dependencies,
+				...packageJson.devDependencies,
+			};
 
-			let frameworkType: 'next' | 'react' | 'vue' | 'angular' | 'svelte' | 'unknown' = 'unknown';
-			let componentsDir = 'src/components';
+			let frameworkType:
+				| "next"
+				| "react"
+				| "vue"
+				| "angular"
+				| "svelte"
+				| "unknown" = "unknown";
+			let componentsDir = "src/components";
 			let pagesDir: string | undefined;
 
-			if (deps['next']) {
-				frameworkType = 'next';
-				componentsDir = 'src/components';
-				pagesDir = 'src/app';
-			} else if (deps['@angular/core']) {
-				frameworkType = 'angular';
-				componentsDir = 'src/app/components';
-			} else if (deps['vue']) {
-				frameworkType = 'vue';
-				componentsDir = 'src/components';
-			} else if (deps['svelte']) {
-				frameworkType = 'svelte';
-				componentsDir = 'src/lib/components';
-			} else if (deps['react']) {
-				frameworkType = 'react';
-				componentsDir = 'src/components';
+			if (deps["next"]) {
+				frameworkType = "next";
+				componentsDir = "src/components";
+				pagesDir = "src/app";
+			} else if (deps["@angular/core"]) {
+				frameworkType = "angular";
+				componentsDir = "src/app/components";
+			} else if (deps["vue"]) {
+				frameworkType = "vue";
+				componentsDir = "src/components";
+			} else if (deps["svelte"]) {
+				frameworkType = "svelte";
+				componentsDir = "src/lib/components";
+			} else if (deps["react"]) {
+				frameworkType = "react";
+				componentsDir = "src/components";
 			}
 
 			return {
 				frameworkType,
-				usesTypeScript: !!(deps['typescript'] || deps['@types/node']),
-				usesStorybook: !!(deps['@storybook/react'] || deps['@storybook/vue']),
-				usesJest: !!(deps['jest'] || deps['@testing-library/react']),
+				usesTypeScript: !!(deps["typescript"] || deps["@types/node"]),
+				usesStorybook: !!(deps["@storybook/react"] || deps["@storybook/vue"]),
+				usesJest: !!(deps["jest"] || deps["@testing-library/react"]),
 				componentsDir,
 				pagesDir,
 			};
 		} catch {
 			return {
-				frameworkType: 'unknown',
+				frameworkType: "unknown",
 				usesTypeScript: true, // Default to TypeScript
 				usesStorybook: false,
 				usesJest: false,
-				componentsDir: 'src/components',
+				componentsDir: "src/components",
 			};
 		}
 	}
@@ -228,16 +262,16 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 				message: `Enter ${this.getGeneratorType()} name:`,
 				placeholder: `My${this.getGeneratorType().charAt(0).toUpperCase()}${this.getGeneratorType().slice(1)}`,
 				validate: (value) => {
-					if (!value) return 'Name is required';
+					if (!value) return "Name is required";
 					if (!/^[A-Za-z][A-Za-z0-9]*$/.test(value)) {
-						return 'Name must be alphanumeric and start with a letter';
+						return "Name must be alphanumeric and start with a letter";
 					}
 					return undefined;
 				},
 			});
 
 			if (isCancel(name)) {
-				throw new Error('Name input cancelled');
+				throw new Error("Name input cancelled");
 			}
 
 			result.name = name as string;
@@ -252,38 +286,43 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 		}
 
 		if (!/^[A-Za-z][A-Za-z0-9]*$/.test(options.name)) {
-			throw new Error(`${this.getGeneratorType()} name must be alphanumeric and start with a letter`);
+			throw new Error(
+				`${this.getGeneratorType()} name must be alphanumeric and start with a letter`,
+			);
 		}
 	}
 
 	// File placement conventions per UI System
-	protected getFilePlacement(type: string, name: string): {
+	protected getFilePlacement(
+		type: string,
+		name: string,
+	): {
 		filePath: string;
 		testPath?: string;
 		storyPath?: string;
 	} {
 		const naming = this.getNamingConvention(name);
-		const extension = 'tsx'; // Default to TypeScript
+		const extension = "tsx"; // Default to TypeScript
 
 		switch (type) {
-			case 'component':
+			case "component":
 				return {
 					filePath: `src/components/${naming.className}.${extension}`,
 					testPath: `src/components/__tests__/${naming.className}.test.${extension}`,
 					storyPath: `src/components/${naming.className}.stories.${extension}`,
 				};
-			case 'page':
+			case "page":
 				return {
 					filePath: `src/pages/${naming.kebabCase}/page.${extension}`,
 					testPath: `src/pages/${naming.kebabCase}/__tests__/page.test.${extension}`,
 				};
-			case 'layout':
+			case "layout":
 				return {
 					filePath: `src/components/layouts/${naming.className}.${extension}`,
 					testPath: `src/components/layouts/__tests__/${naming.className}.test.${extension}`,
 					storyPath: `src/components/layouts/${naming.className}.stories.${extension}`,
 				};
-			case 'model':
+			case "model":
 				return {
 					filePath: `src/types/${naming.kebabCase}.types.ts`,
 					testPath: `src/types/__tests__/${naming.kebabCase}.test.ts`,
@@ -293,5 +332,43 @@ export abstract class BaseGenerator<T extends BaseGeneratorOptions = BaseGenerat
 					filePath: `src/${type}s/${naming.kebabCase}.${extension}`,
 				};
 		}
+	}
+
+	// Semantic UI and Design Token helpers
+	protected getSemanticImports(): string {
+		return `import { Container, Stack, Text, Button, Card } from '@xala/ui-system';
+import { designTokens } from '@xala/design-tokens';
+import { useTranslation } from '@xala/i18n';`;
+	}
+
+	protected getDesignTokenImports(): string {
+		return `import { 
+  spacing, 
+  colors, 
+  typography, 
+  shadows, 
+  borders 
+} from '@xala/design-tokens';`;
+	}
+
+	protected getI18nHelpers(): string {
+		return `import { useTranslation, Trans } from '@xala/i18n';
+import { formatMessage } from '@xala/i18n/utils';`;
+	}
+
+	protected enhanceTemplateData(
+		baseData: any,
+		options: BaseGeneratorOptions,
+	): any {
+		return {
+			...baseData,
+			useSemanticUI: options.semanticUI !== false,
+			useI18n: options.i18n !== false,
+			useDesignTokens: options.designTokens !== false,
+			semanticImports: this.getSemanticImports(),
+			designTokenImports: this.getDesignTokenImports(),
+			i18nHelpers: this.getI18nHelpers(),
+			timestamp: new Date().toISOString(),
+		};
 	}
 }

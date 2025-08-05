@@ -21,14 +21,15 @@ import {
 import chalk from "chalk";
 import { Command } from "commander";
 import consola from "consola";
+import { ComponentGenerator } from "../generators/component.generator.js";
+import { ControllerGenerator } from "../generators/controller.generator.js";
 import {
 	executeFullStackGenerator,
 	getGeneratorHelp,
 } from "../generators/index.js";
 import { ModelGenerator } from "../generators/model.generator.js";
-import { ControllerGenerator } from "../generators/controller.generator.js";
 import { ServiceGenerator } from "../generators/service.generator.js";
-import { ComponentGenerator } from "../generators/component.generator.js";
+import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator.js";
 import type {
 	GeneratorOptions,
 	GeneratorResult,
@@ -100,15 +101,27 @@ export const generateCommand = new Command("generate")
 		"--actions <actions>",
 		"Controller actions (e.g., 'index,show,create,update,destroy')",
 	)
-	.option("--methods <methods>", "Service methods (e.g., 'findById,create,update')")
+	.option(
+		"--methods <methods>",
+		"Service methods (e.g., 'findById,create,update')",
+	)
 	.option("--model <model>", "Associated model name")
 	.option("--service <service>", "Associated service name")
 	.option("--repository <repository>", "Associated repository name")
 	.option("--middleware <middleware>", "Middleware to apply (comma-separated)")
-	.option("--props <props>", "Component props (e.g., 'title:string,onClick:function')")
+	.option(
+		"--props <props>",
+		"Component props (e.g., 'title:string,onClick:function')",
+	)
 	.option("--type <type>", "Component type (functional|class)")
-	.option("--framework <framework>", "Frontend framework (react|vue|angular|svelte)")
-	.option("--styling <styling>", "Styling approach (tailwind|styled-components|css-modules)")
+	.option(
+		"--framework <framework>",
+		"Frontend framework (react|vue|angular|svelte)",
+	)
+	.option(
+		"--styling <styling>",
+		"Styling approach (tailwind|styled-components|css-modules)",
+	)
 	.option("--hooks", "Enable React hooks (default: true)")
 	.option("--no-hooks", "Disable React hooks")
 	.option("--stories", "Generate Storybook stories (default: true)")
@@ -133,16 +146,22 @@ export const generateCommand = new Command("generate")
 	.option("--javascript", "Generate JavaScript files")
 	.action(async (type: string, name: string, options: GeneratorOptions) => {
 		try {
-			intro(chalk.cyan("🎨 Xaheen Generator (Rails-inspired)"));
+			intro(chalk.cyan("🎨 Xaheen Generator (Rails-inspired with MCP Intelligence)"));
+
+			// Initialize MCP orchestrator for intelligent generation
+			const s = spinner();
+			s.start("Initializing MCP Intelligence...");
+			await mcpGenerationOrchestrator.initialize();
+			s.stop();
 
 			// Validate project context
 			const projectPath = process.cwd();
 			// TODO: Import and initialize ProjectAnalyzer
 			const projectInfo = {
-				name: 'current-project',
-				framework: 'next',
-				backend: 'express',
-				database: 'postgresql',
+				name: "current-project",
+				framework: "next",
+				backend: "express",
+				database: "postgresql",
 			};
 
 			if (!projectInfo) {
@@ -221,19 +240,19 @@ export const generateCommand = new Command("generate")
 					);
 					break;
 				case "service":
-					result = await generateService(
+					// Use MCP orchestrator for intelligent service generation
+					result = await generateServiceWithMCP(
 						name,
 						options,
 						projectContext,
-						registry,
 					);
 					break;
 				case "component":
-					result = await generateComponent(
+					// Use MCP orchestrator for intelligent component generation
+					result = await generateComponentWithMCP(
 						name,
 						options,
 						projectContext,
-						xalaService,
 					);
 					break;
 				case "page":
@@ -254,11 +273,7 @@ export const generateCommand = new Command("generate")
 					);
 					break;
 				case "security-audit":
-					result = await generateSecurityAudit(
-						name,
-						options,
-						projectContext,
-					);
+					result = await generateSecurityAudit(name, options, projectContext);
 					break;
 				case "compliance-report":
 					result = await generateComplianceReport(
@@ -268,25 +283,13 @@ export const generateCommand = new Command("generate")
 					);
 					break;
 				case "nsm-security":
-					result = await generateNSMSecurity(
-						name,
-						options,
-						projectContext,
-					);
+					result = await generateNSMSecurity(name, options, projectContext);
 					break;
 				case "gdpr-compliance":
-					result = await generateGDPRCompliance(
-						name,
-						options,
-						projectContext,
-					);
+					result = await generateGDPRCompliance(name, options, projectContext);
 					break;
 				case "docs":
-					result = await generateDocumentation(
-						name,
-						options,
-						projectContext,
-					);
+					result = await generateDocumentation(name, options, projectContext);
 					break;
 				default:
 					throw new Error(`Generator type '${type}' not implemented yet`);
@@ -343,9 +346,11 @@ function getGeneratorDescription(type: string): string {
 		seed: "Database seed data",
 		test: "Test files for existing code",
 		scaffold: "Complete CRUD feature (model + controller + views)",
-		"security-audit": "Comprehensive security audit with vulnerability scanning",
+		"security-audit":
+			"Comprehensive security audit with vulnerability scanning",
 		"compliance-report": "Compliance dashboard and regulatory reports",
-		"nsm-security": "Norwegian Security Authority (NSM) security implementation",
+		"nsm-security":
+			"Norwegian Security Authority (NSM) security implementation",
 		"gdpr-compliance": "GDPR compliance implementation with privacy controls",
 		docs: "Comprehensive documentation with intelligent portals and onboarding",
 	};
@@ -362,7 +367,7 @@ async function generateModel(
 		const modelGenerator = new ModelGenerator();
 		await modelGenerator.generate({
 			name,
-			fields: options.fields?.split(','),
+			fields: options.fields?.split(","),
 			timestamps: true,
 			softDeletes: false,
 			validation: options.validation !== false,
@@ -399,13 +404,13 @@ async function generateController(
 		const controllerGenerator = new ControllerGenerator();
 		await controllerGenerator.generate({
 			name,
-			actions: options.actions?.split(','),
+			actions: options.actions?.split(","),
 			model: options.model || name,
 			service: options.service,
-			middleware: options.middleware?.split(','),
+			middleware: options.middleware?.split(","),
 			validation: options.validation !== false,
 			swagger: true,
-			framework: context.backend as 'express' | 'nestjs' | 'fastify',
+			framework: context.backend as "express" | "nestjs" | "fastify",
 			dryRun: options.dryRun,
 			force: options.force,
 			typescript: options.typescript !== false,
@@ -419,7 +424,10 @@ async function generateController(
 				`src/routes/${name}.routes.ts`,
 				`src/controllers/__tests__/${name}.controller.test.ts`,
 			],
-			nextSteps: ["Add routes to router", "Implement business logic in service"],
+			nextSteps: [
+				"Add routes to router",
+				"Implement business logic in service",
+			],
 		};
 	} catch (error) {
 		return {
@@ -441,13 +449,13 @@ async function generateService(
 			name,
 			model: options.model || name,
 			repository: options.repository,
-			methods: options.methods?.split(','),
+			methods: options.methods?.split(","),
 			caching: options.caching || false,
 			events: options.events || false,
 			logging: true,
 			validation: options.validation !== false,
-			injection: 'constructor',
-			framework: context.backend as 'express' | 'nestjs' | 'fastify',
+			injection: "constructor",
+			framework: context.backend as "express" | "nestjs" | "fastify",
 			dryRun: options.dryRun,
 			force: options.force,
 			typescript: options.typescript !== false,
@@ -481,10 +489,13 @@ async function generateComponent(
 		const componentGenerator = new ComponentGenerator();
 		await componentGenerator.generate({
 			name,
-			type: options.type as 'functional' | 'class',
-			framework: options.framework as 'react' | 'vue' | 'angular' | 'svelte',
-			styling: options.styling as 'tailwind' | 'styled-components' | 'css-modules',
-			props: options.props?.split(','),
+			type: options.type as "functional" | "class",
+			framework: options.framework as "react" | "vue" | "angular" | "svelte",
+			styling: options.styling as
+				| "tailwind"
+				| "styled-components"
+				| "css-modules",
+			props: options.props?.split(","),
 			hooks: options.hooks !== false,
 			stories: options.stories !== false,
 			tests: options.tests !== false,
@@ -502,7 +513,10 @@ async function generateComponent(
 				`src/components/${name}.stories.tsx`,
 				`src/components/__tests__/${name}.test.tsx`,
 			],
-			nextSteps: ["Import component in your page", "Add component to Storybook"],
+			nextSteps: [
+				"Import component in your page",
+				"Add component to Storybook",
+			],
 		};
 	} catch (error) {
 		return {
@@ -705,7 +719,7 @@ async function generateDocumentation(
 	files.push("docs/api/openapi.yaml");
 	files.push("docs/api/reference.md");
 
-	// Generate architecture documentation  
+	// Generate architecture documentation
 	files.push("docs/architecture/system-overview.md");
 	files.push("docs/architecture/diagrams/architecture.mermaid");
 
@@ -725,4 +739,131 @@ async function generateDocumentation(
 			"Add team collaboration features if needed",
 		],
 	};
+}
+
+/**
+ * Generate component with MCP intelligence
+ */
+async function generateComponentWithMCP(
+	name: string,
+	options: GeneratorOptions,
+	context: ProjectContext,
+): Promise<GeneratorResult> {
+	try {
+		// Create MCP generation request
+		const mcpRequest = {
+			type: "component" as const,
+			name,
+			description: options.ai || `Generate ${name} component`,
+			options: {
+				framework: options.framework || context.framework,
+				styling: options.styling || "tailwind",
+				props: options.props?.split(",") || [],
+				hooks: options.hooks !== false,
+				stories: options.stories !== false,
+				tests: options.tests !== false,
+				typescript: options.typescript !== false,
+			},
+			platform: (options.framework as any) || "react",
+			aiEnhancement: !!options.ai,
+		};
+
+		// Use MCP orchestrator for intelligent generation
+		const mcpResult = await mcpGenerationOrchestrator.generateComponent(mcpRequest);
+
+		// Convert MCP result to GeneratorResult format
+		return {
+			success: mcpResult.success,
+			message: mcpResult.message,
+			files: mcpResult.files,
+			commands: [],
+			nextSteps: mcpResult.nextSteps,
+		};
+	} catch (error) {
+		// Fallback to traditional generator
+		consola.warn("MCP generation failed, falling back to traditional generator:", error);
+		return await generateComponent(name, options, context, {} as any);
+	}
+}
+
+/**
+ * Generate service with MCP intelligence
+ */
+async function generateServiceWithMCP(
+	name: string,
+	options: GeneratorOptions,
+	context: ProjectContext,
+): Promise<GeneratorResult> {
+	try {
+		// Create MCP generation request
+		const mcpRequest = {
+			type: "service" as const,
+			name,
+			description: options.ai || `Generate ${name} service with business logic`,
+			options: {
+				framework: context.backend || "express",
+				methods: options.methods?.split(",") || ["findById", "create", "update", "delete"],
+				caching: options.caching || false,
+				events: options.events || false,
+				validation: options.validation !== false,
+				typescript: options.typescript !== false,
+				features: ["dependency-injection", "error-handling", "logging"],
+			},
+			platform: "react", // Use react as default for service generation
+			aiEnhancement: !!options.ai,
+		};
+
+		// Use MCP orchestrator for intelligent generation
+		const mcpResult = await mcpGenerationOrchestrator.generateService(mcpRequest);
+
+		// Convert MCP result to GeneratorResult format
+		return {
+			success: mcpResult.success,
+			message: mcpResult.message,
+			files: mcpResult.files,
+			commands: [],
+			nextSteps: mcpResult.nextSteps,
+		};
+	} catch (error) {
+		// Fallback to traditional generator
+		consola.warn("MCP service generation failed, falling back to traditional generator:", error);
+		return await generateService(name, options, context, {} as any);
+	}
+}
+
+/**
+ * Enhance generated code with AI (accessible via --ai flag)
+ */
+async function enhanceCodeWithMCP(
+	generatedCode: string,
+	enhancementRequest: string,
+	codeType: "component" | "service" | "other" = "other"
+): Promise<string> {
+	try {
+		return await mcpGenerationOrchestrator.enhanceCode(
+			generatedCode,
+			enhancementRequest,
+			codeType
+		);
+	} catch (error) {
+		consola.warn("AI code enhancement failed:", error);
+		return generatedCode;
+	}
+}
+
+// Types for the additional imports needed
+interface ProjectContext {
+	name: string;
+	framework: string;
+	backend: string;
+	database: string;
+	path: string;
+}
+
+interface ServiceRegistry {
+	// Placeholder for service registry interface
+}
+
+interface XalaIntegrationService {
+	// Placeholder for Xala integration service interface
 }

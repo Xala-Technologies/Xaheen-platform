@@ -12,11 +12,11 @@
 import { consola } from "consola";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import type { GeneratorOptions } from "../types";
 import {
-	nsmClassifier,
 	type NSMClassification,
+	nsmClassifier,
 } from "../../services/compliance/nsm-classifier";
+import type { GeneratorOptions } from "../types";
 
 export interface NSMSecurityOptions extends GeneratorOptions {
 	readonly classification: NSMClassification;

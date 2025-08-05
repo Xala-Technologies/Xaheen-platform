@@ -454,29 +454,42 @@ export interface GenerationContext {
 // MCP-specific types for prompt handling
 export interface MCPPromptDefinition {
 	readonly description: string;
-	readonly args: Record<string, {
-		type: string;
-		required: boolean;
-		description: string;
-	}>;
+	readonly args: Record<
+		string,
+		{
+			type: string;
+			required: boolean;
+			description: string;
+		}
+	>;
 }
 
 export type MCPPromptMap = Record<string, MCPPromptDefinition>;
 
 export interface MCPMessage {
-	readonly role: 'user' | 'assistant' | 'system';
+	readonly role: "user" | "assistant" | "system";
 	readonly content: {
-		readonly type: 'text';
+		readonly type: "text";
 		readonly text: string;
 	};
 }
 
 export type MCPArguments<T extends MCPPromptDefinition> = {
-	[K in keyof T['args']]: T['args'][K]['required'] extends true 
-		? (T['args'][K]['type'] extends 'string' ? string : 
-		   T['args'][K]['type'] extends 'boolean' ? boolean : 
-		   T['args'][K]['type'] extends 'number' ? number : any)
-		: (T['args'][K]['type'] extends 'string' ? string : 
-		   T['args'][K]['type'] extends 'boolean' ? boolean : 
-		   T['args'][K]['type'] extends 'number' ? number : any) | undefined;
+	[K in keyof T["args"]]: T["args"][K]["required"] extends true
+		? T["args"][K]["type"] extends "string"
+			? string
+			: T["args"][K]["type"] extends "boolean"
+				? boolean
+				: T["args"][K]["type"] extends "number"
+					? number
+					: any
+		:
+				| (T["args"][K]["type"] extends "string"
+						? string
+						: T["args"][K]["type"] extends "boolean"
+							? boolean
+							: T["args"][K]["type"] extends "number"
+								? number
+								: any)
+				| undefined;
 };

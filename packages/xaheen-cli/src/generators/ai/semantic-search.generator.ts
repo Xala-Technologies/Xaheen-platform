@@ -1,7 +1,7 @@
-import { BaseGenerator } from '../base.generator.js';
-import type { SemanticSearchOptions } from './types.js';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { BaseGenerator } from '../base.generator.js';
+import type { SemanticSearchOptions } from './types.js';
 
 export class SemanticSearchGenerator extends BaseGenerator<SemanticSearchOptions> {
   async generate(options: SemanticSearchOptions): Promise<void> {

@@ -60,19 +60,23 @@ export class MutationTestGenerator {
 	/**
 	 * Generate Stryker mutation testing configuration
 	 */
-	public async generateStrykerConfig(config: MutationTestConfig): Promise<string> {
+	public async generateStrykerConfig(
+		config: MutationTestConfig,
+	): Promise<string> {
 		const strykerConfig = {
-			$schema: "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+			$schema:
+				"./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
 			_comment: `Generated Stryker configuration for ${config.projectName}`,
 			packageManager: "npm",
-			reporters: config.reporting.reporters.map(r => r.name),
+			reporters: config.reporting.reporters.map((r) => r.name),
 			testRunner: config.testRunner,
 			testRunnerNodeArgs: ["--max_old_space_size=4096"],
 			coverageAnalysis: "perTest",
 			mutate: config.sourceFiles,
 			tempDirName: config.tempDirName || "stryker-tmp",
 			concurrency: config.concurrency || 4,
-			concurrency_comment: "Recommended to use about half of your available cores",
+			concurrency_comment:
+				"Recommended to use about half of your available cores",
 			timeoutMS: config.timeoutMS || 60000,
 			timeoutFactor: config.timeoutFactor || 1.5,
 			dryRunTimeoutMinutes: config.dryRunTimeoutMinutes || 5,
@@ -80,8 +84,10 @@ export class MutationTestGenerator {
 
 			// Mutator configuration
 			mutator: {
-				plugins: config.mutators.filter(m => m.enabled).map(m => m.name),
-				excludedMutations: config.mutators.filter(m => !m.enabled).map(m => m.name)
+				plugins: config.mutators.filter((m) => m.enabled).map((m) => m.name),
+				excludedMutations: config.mutators
+					.filter((m) => !m.enabled)
+					.map((m) => m.name),
 			},
 
 			// Test framework specific config
@@ -89,14 +95,14 @@ export class MutationTestGenerator {
 				jest: {
 					projectType: "custom",
 					configFile: "jest.config.js",
-					enableFindRelatedTests: true
-				}
+					enableFindRelatedTests: true,
+				},
 			}),
 
 			...(config.framework === "vitest" && {
 				vitest: {
-					configFile: "vitest.config.ts"
-				}
+					configFile: "vitest.config.ts",
+				},
 			}),
 
 			// Thresholds
@@ -116,7 +122,7 @@ export class MutationTestGenerator {
 				"**/coverage/**",
 				"**/stryker-tmp/**",
 				"**/__tests__/**",
-				"**/*.d.ts"
+				"**/*.d.ts",
 			],
 
 			// Plugin configuration
@@ -124,7 +130,7 @@ export class MutationTestGenerator {
 				"@stryker-mutator/core",
 				`@stryker-mutator/${config.testRunner}-runner`,
 				"@stryker-mutator/typescript-checker",
-				...config.plugins
+				...config.plugins,
 			],
 
 			// TypeScript configuration
@@ -139,35 +145,35 @@ export class MutationTestGenerator {
 			allowConsoleColors: config.reporting.allowConsoleColors ?? true,
 
 			// Dashboard reporter (optional)
-			...(config.reporting.reporters.some(r => r.name === "dashboard") && {
+			...(config.reporting.reporters.some((r) => r.name === "dashboard") && {
 				dashboard: {
 					project: `github.com/${config.projectName}`,
 					version: "main",
-					module: config.projectName
-				}
+					module: config.projectName,
+				},
 			}),
 
 			// HTML reporter configuration
 			htmlReporter: {
-				baseDir: `${config.reporting.outputDir}/html`
+				baseDir: `${config.reporting.outputDir}/html`,
 			},
 
 			// JSON reporter configuration
 			jsonReporter: {
-				fileName: `${config.reporting.outputDir}/mutation-report.json`
+				fileName: `${config.reporting.outputDir}/mutation-report.json`,
 			},
 
 			// Clear text reporter configuration
 			clearTextReporter: {
 				allowColor: true,
 				allowEmojis: true,
-				maxReportedSchemaErrors: 3
+				maxReportedSchemaErrors: 3,
 			},
 
 			// Progress reporter configuration
 			progressReporter: {
-				allowColor: true
-			}
+				allowColor: true,
+			},
 		};
 
 		return `// Stryker Mutation Testing Configuration
@@ -183,14 +189,18 @@ module.exports = ${JSON.stringify(strykerConfig, null, 2)};`;
 	/**
 	 * Generate mutation testing npm scripts
 	 */
-	public generateMutationScripts(config: MutationTestConfig): Record<string, string> {
+	public generateMutationScripts(
+		config: MutationTestConfig,
+	): Record<string, string> {
 		const baseScripts = {
 			"test:mutation": "stryker run",
 			"test:mutation:ci": "stryker run --concurrency 2 --timeoutMS 120000",
-			"test:mutation:fast": "stryker run --mutate src/**/*.ts --ignore src/**/*.spec.ts --concurrency 8",
+			"test:mutation:fast":
+				"stryker run --mutate src/**/*.ts --ignore src/**/*.spec.ts --concurrency 8",
 			"test:mutation:incremental": "stryker run --incremental",
 			"test:mutation:dry-run": "stryker run --dryRun",
-			"test:mutation:debug": "stryker run --logLevel trace --fileLogLevel trace"
+			"test:mutation:debug":
+				"stryker run --logLevel trace --fileLogLevel trace",
 		};
 
 		// Add framework-specific scripts
@@ -198,7 +208,8 @@ module.exports = ${JSON.stringify(strykerConfig, null, 2)};`;
 			return {
 				...baseScripts,
 				"test:mutation:unit": "stryker run --mutate src/components/**/*.ts",
-				"test:mutation:integration": "stryker run --mutate src/services/**/*.ts"
+				"test:mutation:integration":
+					"stryker run --mutate src/services/**/*.ts",
 			};
 		}
 
@@ -206,7 +217,7 @@ module.exports = ${JSON.stringify(strykerConfig, null, 2)};`;
 			return {
 				...baseScripts,
 				"test:mutation:watch": "stryker run --watch",
-				"test:mutation:ui": "stryker run --reporter html,dashboard"
+				"test:mutation:ui": "stryker run --reporter html,dashboard",
 			};
 		}
 

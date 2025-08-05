@@ -7,9 +7,9 @@
  * @since 2025-01-03
  */
 
-import { vi, beforeEach, afterEach } from "vitest";
-import fs from "fs-extra";
 import path from "node:path";
+import fs from "fs-extra";
+import { afterEach, beforeEach, vi } from "vitest";
 
 // Mock consola to prevent log pollution during tests
 vi.mock("consola", async () => {
@@ -85,11 +85,11 @@ vi.stubGlobal("process", {
 beforeEach(async () => {
 	// Clear all mocks before each test
 	vi.clearAllMocks();
-	
+
 	// Ensure test output directory exists
 	const testOutputDir = path.resolve(__dirname, "../../test-output");
 	await fs.ensureDir(testOutputDir);
-	
+
 	// Reset mock implementations
 	mockExit.mockReset();
 });

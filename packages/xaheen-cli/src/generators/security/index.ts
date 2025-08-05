@@ -14,50 +14,49 @@
  * @since 2025-01-04
  */
 
-// Security Audit Generator
-export {
-	SecurityAuditGenerator,
-	createSecurityAuditGenerator,
-	generateSecurityAudit,
-	type SecurityAuditOptions,
-	type SecurityAuditResult,
-	type SecuritySummary,
-	type Vulnerability,
-	type CodeSecurityIssue,
-	type DependencyIssue,
-	type ConfigurationIssue,
-	type ComplianceResult as SecurityComplianceResult,
-	type ComplianceRequirement as SecurityComplianceRequirement,
-	type SecurityRecommendation,
-	type SecurityScore,
-	type SecurityFix,
-} from "./security-audit.generator";
-
 // Compliance Report Generator
 export {
+	type ActionMilestone,
+	type AuditEvent,
+	type ComplianceAlert,
+	type ComplianceDashboardData,
+	type ComplianceEvidence,
+	type ComplianceGap,
+	type ComplianceMetrics,
+	type ComplianceRecommendation,
 	ComplianceReportGenerator,
-	createComplianceReportGenerator,
-	generateComplianceReport,
 	type ComplianceReportOptions,
 	type ComplianceReportResult,
 	type ComplianceStandard,
-	type GDPRLawfulBasis,
-	type StandardComplianceResult,
 	type ControlResult,
-	type ComplianceGap,
-	type RemediationAction,
-	type ActionMilestone,
-	type ComplianceMetrics,
-	type TrendDataPoint,
-	type ComplianceRecommendation,
-	type AuditEvent,
-	type ComplianceEvidence,
-	type ComplianceDashboardData,
-	type DashboardSummary,
+	createComplianceReportGenerator,
 	type DashboardChart,
+	type DashboardSummary,
 	type DashboardWidget,
-	type ComplianceAlert,
+	type GDPRLawfulBasis,
+	generateComplianceReport,
+	type RemediationAction,
+	type StandardComplianceResult,
+	type TrendDataPoint,
 } from "./compliance-report.generator";
+// Security Audit Generator
+export {
+	type CodeSecurityIssue,
+	type ComplianceRequirement as SecurityComplianceRequirement,
+	type ComplianceResult as SecurityComplianceResult,
+	type ConfigurationIssue,
+	createSecurityAuditGenerator,
+	type DependencyIssue,
+	generateSecurityAudit,
+	SecurityAuditGenerator,
+	type SecurityAuditOptions,
+	type SecurityAuditResult,
+	type SecurityFix,
+	type SecurityRecommendation,
+	type SecurityScore,
+	type SecuritySummary,
+	type Vulnerability,
+} from "./security-audit.generator";
 
 /**
  * Security and Compliance generator registry
@@ -65,7 +64,8 @@ export {
 export const SECURITY_GENERATORS = {
 	"security-audit": {
 		name: "Security Audit",
-		description: "Generate comprehensive security audit reports with vulnerability scanning",
+		description:
+			"Generate comprehensive security audit reports with vulnerability scanning",
 		generator: "security-audit.generator",
 		features: [
 			"Static security analysis (ESLint Security, SonarQube, Snyk)",
@@ -82,7 +82,8 @@ export const SECURITY_GENERATORS = {
 	},
 	"compliance-report": {
 		name: "Compliance Report",
-		description: "Generate compliance dashboards and reports for regulatory standards",
+		description:
+			"Generate compliance dashboards and reports for regulatory standards",
 		generator: "compliance-report.generator",
 		features: [
 			"Multi-standard compliance assessment",
@@ -129,7 +130,8 @@ export const COMPLIANCE_STANDARDS = [
 		version: "2023",
 		region: "Norway",
 		category: "security",
-		description: "Norwegian government security classifications and requirements",
+		description:
+			"Norwegian government security classifications and requirements",
 		controls: 156,
 		maturityLevels: 5,
 		classifications: ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"],
@@ -150,10 +152,17 @@ export const COMPLIANCE_STANDARDS = [
 		version: "2017",
 		region: "US",
 		category: "service",
-		description: "Security, availability, and confidentiality controls for service organizations",
+		description:
+			"Security, availability, and confidentiality controls for service organizations",
 		controls: 64,
 		maturityLevels: 3,
-		trustServices: ["security", "availability", "processing-integrity", "confidentiality", "privacy"],
+		trustServices: [
+			"security",
+			"availability",
+			"processing-integrity",
+			"confidentiality",
+			"privacy",
+		],
 	},
 	{
 		id: "iso27001",
@@ -184,7 +193,14 @@ export const COMPLIANCE_STANDARDS = [
 		description: "US cybersecurity framework for critical infrastructure",
 		controls: 108,
 		maturityLevels: 4,
-		functions: ["identify", "protect", "detect", "respond", "recover", "govern"],
+		functions: [
+			"identify",
+			"protect",
+			"detect",
+			"respond",
+			"recover",
+			"govern",
+		],
 	},
 	{
 		id: "owasp",
@@ -227,7 +243,8 @@ export const SECURITY_TOOLS = {
 	sonarqube: {
 		name: "SonarQube",
 		type: "static-analysis",
-		description: "Static code analysis for security vulnerabilities and code quality",
+		description:
+			"Static code analysis for security vulnerabilities and code quality",
 		command: "sonar-scanner",
 		installCommand: "npm install -g sonarqube-scanner",
 		configFile: "sonar-project.properties",
@@ -261,7 +278,7 @@ export const SECURITY_TOOLS = {
 		outputFormats: ["json", "sarif", "junit"],
 		rulesets: ["owasp-top-10", "cwe-top-25", "security-audit"],
 	},
-	"bandit": {
+	bandit: {
 		name: "Bandit",
 		type: "static-analysis",
 		description: "Security linter for Python code",
@@ -281,11 +298,15 @@ export async function generateSecurity(
 ): Promise<any> {
 	switch (type) {
 		case "security-audit":
-			const { generateSecurityAudit } = await import("./security-audit.generator");
+			const { generateSecurityAudit } = await import(
+				"./security-audit.generator"
+			);
 			return generateSecurityAudit(options);
 
 		case "compliance-report":
-			const { generateComplianceReport } = await import("./compliance-report.generator");
+			const { generateComplianceReport } = await import(
+				"./compliance-report.generator"
+			);
 			return generateComplianceReport(options);
 
 		default:
@@ -316,7 +337,7 @@ export function listSecurityGenerators() {
  * Get compliance standard information
  */
 export function getComplianceStandard(id: string) {
-	return COMPLIANCE_STANDARDS.find(standard => standard.id === id);
+	return COMPLIANCE_STANDARDS.find((standard) => standard.id === id);
 }
 
 /**
@@ -369,11 +390,15 @@ export async function validateSecurityTools(tools: readonly string[]): Promise<{
 				available.push(tool);
 			} else {
 				missing.push(tool);
-				recommendations.push(`Install ${toolConfig.name}: ${toolConfig.installCommand}`);
+				recommendations.push(
+					`Install ${toolConfig.name}: ${toolConfig.installCommand}`,
+				);
 			}
 		} catch (error) {
 			missing.push(tool);
-			recommendations.push(`Install ${toolConfig.name}: ${toolConfig.installCommand}`);
+			recommendations.push(
+				`Install ${toolConfig.name}: ${toolConfig.installCommand}`,
+			);
 		}
 	}
 
@@ -387,9 +412,11 @@ export async function validateSecurityTools(tools: readonly string[]): Promise<{
 /**
  * Get recommended security tools for project type
  */
-export function getRecommendedSecurityTools(projectType: "web" | "api" | "mobile" | "desktop"): readonly string[] {
+export function getRecommendedSecurityTools(
+	projectType: "web" | "api" | "mobile" | "desktop",
+): readonly string[] {
 	const commonTools = ["npm-audit", "eslint-security"];
-	
+
 	switch (projectType) {
 		case "web":
 			return [...commonTools, "snyk", "sonarqube"];

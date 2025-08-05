@@ -1,12 +1,17 @@
-import { BaseGenerator } from "../base.generator";
-import { TemplateManager } from "../../services/templates/template-loader";
 import { ProjectAnalyzer } from "../../services/analysis/project-analyzer";
+import { TemplateManager } from "../../services/templates/template-loader";
+import { BaseGenerator } from "../base.generator";
 
 export interface DistributedTracingGeneratorOptions {
 	readonly projectName: string;
 	readonly namespace: string;
 	readonly environment: "development" | "staging" | "production";
-	readonly tracingBackend: "jaeger" | "zipkin" | "tempo" | "aws-xray" | "azure-app-insights";
+	readonly tracingBackend:
+		| "jaeger"
+		| "zipkin"
+		| "tempo"
+		| "aws-xray"
+		| "azure-app-insights";
 	readonly enableOpenTelemetry: boolean;
 	readonly enableJaegerOperator: boolean;
 	readonly enableServiceMesh: boolean;
@@ -54,7 +59,14 @@ export interface TracedApplication {
 	readonly namespace: string;
 	readonly serviceName: string;
 	readonly version: string;
-	readonly language: "node" | "python" | "java" | "go" | "dotnet" | "php" | "rust";
+	readonly language:
+		| "node"
+		| "python"
+		| "java"
+		| "go"
+		| "dotnet"
+		| "php"
+		| "rust";
 	readonly framework?: string;
 	readonly instrumentations: readonly string[];
 	readonly samplingRules: readonly SamplingRule[];
@@ -147,14 +159,21 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 			// Generate documentation
 			await this.generateDocumentation(options);
 
-			this.logger.success("Distributed tracing configuration generated successfully");
+			this.logger.success(
+				"Distributed tracing configuration generated successfully",
+			);
 		} catch (error) {
-			this.logger.error("Failed to generate distributed tracing configuration", error);
+			this.logger.error(
+				"Failed to generate distributed tracing configuration",
+				error,
+			);
 			throw error;
 		}
 	}
 
-	private async validateOptions(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async validateOptions(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		if (!options.projectName) {
 			throw new Error("Project name is required");
 		}
@@ -168,57 +187,61 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 		}
 
 		if (options.applications.length === 0) {
-			throw new Error("At least one application must be configured for tracing");
+			throw new Error(
+				"At least one application must be configured for tracing",
+			);
 		}
 	}
 
-	private async generateOpenTelemetryConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateOpenTelemetryConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		const otelConfig = {
 			receivers: {
 				otlp: {
 					protocols: {
 						grpc: {
-							endpoint: "0.0.0.0:4317"
+							endpoint: "0.0.0.0:4317",
 						},
 						http: {
-							endpoint: "0.0.0.0:4318"
-						}
-					}
+							endpoint: "0.0.0.0:4318",
+						},
+					},
 				},
 				jaeger: {
 					protocols: {
 						grpc: {
-							endpoint: "0.0.0.0:14250"
+							endpoint: "0.0.0.0:14250",
 						},
 						thrift_http: {
-							endpoint: "0.0.0.0:14268"
-						}
-					}
-				}
+							endpoint: "0.0.0.0:14268",
+						},
+					},
+				},
 			},
 			processors: {
 				batch: {
 					timeout: "1s",
 					send_batch_size: 1024,
-					send_batch_max_size: 2048
+					send_batch_max_size: 2048,
 				},
 				memory_limiter: {
-					limit_mib: 512
+					limit_mib: 512,
 				},
 				resource: {
 					attributes: [
 						{
 							key: "environment",
 							value: options.environment,
-							action: "upsert"
+							action: "upsert",
 						},
 						{
 							key: "project",
 							value: options.projectName,
-							action: "upsert"
-						}
-					]
-				}
+							action: "upsert",
+						},
+					],
+				},
 			},
 			exporters: this.getExporterConfig(options),
 			service: {
@@ -226,20 +249,22 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 					traces: {
 						receivers: ["otlp", "jaeger"],
 						processors: ["memory_limiter", "resource", "batch"],
-						exporters: [options.tracingBackend]
-					}
-				}
-			}
+						exporters: [options.tracingBackend],
+					},
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/otel-collector-config.yaml.hbs",
 			"tracing/otel-collector-config.yaml",
-			otelConfig
+			otelConfig,
 		);
 	}
 
-	private async generateTracingBackend(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateTracingBackend(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		switch (options.tracingBackend) {
 			case "jaeger":
 				await this.generateJaegerConfig(options);
@@ -259,7 +284,9 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 		}
 	}
 
-	private async generateJaegerConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateJaegerConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		const jaegerConfig = {
 			apiVersion: "jaegertracing.io/v1",
 			kind: "Jaeger",
@@ -269,144 +296,155 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 				labels: {
 					app: "jaeger",
 					project: options.projectName,
-					environment: options.environment
-				}
+					environment: options.environment,
+				},
 			},
 			spec: {
-				strategy: options.environment === "production" ? "production" : "allInOne",
+				strategy:
+					options.environment === "production" ? "production" : "allInOne",
 				storage: this.getJaegerStorageConfig(options),
 				query: {
 					options: {
-						"query.max-clock-skew-adjustment": "1s"
+						"query.max-clock-skew-adjustment": "1s",
 					},
-					resources: options.resources.query
+					resources: options.resources.query,
 				},
 				collector: {
 					options: {
 						"collector.num-workers": "50",
-						"collector.queue-size": "2000"
+						"collector.queue-size": "2000",
 					},
-					resources: options.resources.collector
+					resources: options.resources.collector,
 				},
 				agent: {
 					strategy: "sidecar",
-					resources: options.resources.agent
+					resources: options.resources.agent,
 				},
 				sampling: {
 					options: {
-						"sampling.strategies-file": "/etc/jaeger/sampling_strategies.json"
-					}
+						"sampling.strategies-file": "/etc/jaeger/sampling_strategies.json",
+					},
 				},
 				ui: {
 					options: {
-						"query.ui-config": "/etc/jaeger/ui-config.json"
-					}
-				}
-			}
+						"query.ui-config": "/etc/jaeger/ui-config.json",
+					},
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/jaeger-operator.yaml.hbs",
 			"tracing/jaeger.yaml",
-			jaegerConfig
+			jaegerConfig,
 		);
 
 		// Generate sampling strategies
 		const samplingStrategies = {
 			default_strategy: {
 				type: "probabilistic",
-				param: options.samplingRate
+				param: options.samplingRate,
 			},
-			per_service_strategies: options.applications.map(app => ({
+			per_service_strategies: options.applications.map((app) => ({
 				service: app.serviceName,
 				type: "probabilistic",
 				param: app.samplingRules[0]?.rate || options.samplingRate,
-				max_traces_per_second: app.samplingRules[0]?.maxTracesPerSecond || 100
-			}))
+				max_traces_per_second: app.samplingRules[0]?.maxTracesPerSecond || 100,
+			})),
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/jaeger-sampling-strategies.json.hbs",
 			"tracing/jaeger-sampling-strategies.json",
-			samplingStrategies
+			samplingStrategies,
 		);
 	}
 
-	private async generateTempoConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateTempoConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		const tempoConfig = {
 			server: {
 				http_listen_port: 3200,
-				grpc_listen_port: 9095
+				grpc_listen_port: 9095,
 			},
 			distributor: {
 				receivers: {
 					jaeger: {
 						protocols: {
 							thrift_http: {
-								endpoint: "0.0.0.0:14268"
+								endpoint: "0.0.0.0:14268",
 							},
 							grpc: {
-								endpoint: "0.0.0.0:14250"
-							}
-						}
+								endpoint: "0.0.0.0:14250",
+							},
+						},
 					},
 					otlp: {
 						protocols: {
 							http: {
-								endpoint: "0.0.0.0:4318"
+								endpoint: "0.0.0.0:4318",
 							},
 							grpc: {
-								endpoint: "0.0.0.0:4317"
-							}
-						}
-					}
-				}
+								endpoint: "0.0.0.0:4317",
+							},
+						},
+					},
+				},
 			},
 			ingester: {
 				lifecycler: {
 					address: "127.0.0.1",
 					ring: {
 						kvstore: {
-							store: "inmemory"
+							store: "inmemory",
 						},
-						replication_factor: 1
-					}
-				}
+						replication_factor: 1,
+					},
+				},
 			},
 			storage: {
 				trace: {
 					backend: options.storage.backend,
-					local: options.storage.backend === "memory" ? {
-						path: "/tmp/tempo/traces"
-					} : undefined,
-					s3: options.storage.backend === "s3" ? {
-						bucket: "${TEMPO_S3_BUCKET}",
-						endpoint: "${TEMPO_S3_ENDPOINT}",
-						access_key: "${TEMPO_S3_ACCESS_KEY}",
-						secret_key: "${TEMPO_S3_SECRET_KEY}"
-					} : undefined
-				}
+					local:
+						options.storage.backend === "memory"
+							? {
+									path: "/tmp/tempo/traces",
+								}
+							: undefined,
+					s3:
+						options.storage.backend === "s3"
+							? {
+									bucket: "${TEMPO_S3_BUCKET}",
+									endpoint: "${TEMPO_S3_ENDPOINT}",
+									access_key: "${TEMPO_S3_ACCESS_KEY}",
+									secret_key: "${TEMPO_S3_SECRET_KEY}",
+								}
+							: undefined,
+				},
 			},
 			compactor: {
 				compaction: {
-					compacted_block_retention: options.retention.traces
-				}
+					compacted_block_retention: options.retention.traces,
+				},
 			},
 			querier: {
 				frontend_worker: {
-					frontend_address: "127.0.0.1:9095"
-				}
-			}
+					frontend_address: "127.0.0.1:9095",
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/tempo-config.yaml.hbs",
 			"tracing/tempo-config.yaml",
-			tempoConfig
+			tempoConfig,
 		);
 	}
 
-	private async generateApplicationInstrumentation(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateApplicationInstrumentation(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		for (const app of options.applications) {
 			await this.generateLanguageSpecificInstrumentation(app, options);
 		}
@@ -414,7 +452,7 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 
 	private async generateLanguageSpecificInstrumentation(
 		app: TracedApplication,
-		options: DistributedTracingGeneratorOptions
+		options: DistributedTracingGeneratorOptions,
 	): Promise<void> {
 		const instrumentationConfig = {
 			serviceName: app.serviceName,
@@ -425,7 +463,7 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 			instrumentations: app.instrumentations,
 			customTags: app.customTags,
 			exporterEndpoint: this.getExporterEndpoint(options.tracingBackend),
-			spanProcessors: app.spanProcessors
+			spanProcessors: app.spanProcessors,
 		};
 
 		const templatePath = `devops/tracing/instrumentation/${app.language}-instrumentation.hbs`;
@@ -434,7 +472,7 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 		await this.templateManager.renderTemplate(
 			templatePath,
 			outputPath,
-			instrumentationConfig
+			instrumentationConfig,
 		);
 
 		// Generate language-specific configuration files
@@ -443,7 +481,7 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 
 	private async generateLanguageConfig(
 		app: TracedApplication,
-		options: DistributedTracingGeneratorOptions
+		options: DistributedTracingGeneratorOptions,
 	): Promise<void> {
 		switch (app.language) {
 			case "node":
@@ -466,7 +504,7 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 
 	private async generateNodeConfig(
 		app: TracedApplication,
-		options: DistributedTracingGeneratorOptions
+		options: DistributedTracingGeneratorOptions,
 	): Promise<void> {
 		const nodeConfig = {
 			dependencies: [
@@ -476,70 +514,74 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 				"@opentelemetry/exporter-jaeger",
 				"@opentelemetry/exporter-otlp-http",
 				"@opentelemetry/instrumentation-http",
-				"@opentelemetry/instrumentation-express"
+				"@opentelemetry/instrumentation-express",
 			],
 			environment: {
 				OTEL_SERVICE_NAME: app.serviceName,
 				OTEL_SERVICE_VERSION: app.version,
 				OTEL_RESOURCE_ATTRIBUTES: `service.name=${app.serviceName},service.version=${app.version},environment=${options.environment}`,
-				OTEL_EXPORTER_OTLP_ENDPOINT: this.getExporterEndpoint(options.tracingBackend),
+				OTEL_EXPORTER_OTLP_ENDPOINT: this.getExporterEndpoint(
+					options.tracingBackend,
+				),
 				OTEL_TRACES_SAMPLER: "traceidratio",
-				OTEL_TRACES_SAMPLER_ARG: options.samplingRate.toString()
-			}
+				OTEL_TRACES_SAMPLER_ARG: options.samplingRate.toString(),
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/node/package-additions.json.hbs",
 			`tracing/${app.name}/package-additions.json`,
-			nodeConfig
+			nodeConfig,
 		);
 	}
 
-	private async generateServiceMeshConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateServiceMeshConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Generate Istio configuration for distributed tracing
 		const istioTracingConfig = {
 			apiVersion: "install.istio.io/v1alpha1",
 			kind: "IstioOperator",
 			metadata: {
 				name: "tracing-config",
-				namespace: options.namespace
+				namespace: options.namespace,
 			},
 			spec: {
 				meshConfig: {
 					defaultProviders: {
-						tracing: [options.tracingBackend]
+						tracing: [options.tracingBackend],
 					},
 					extensionProviders: [
 						{
 							name: options.tracingBackend,
 							envoyOtelAls: {
 								service: `${options.projectName}-otel-collector.${options.namespace}.svc.cluster.local`,
-								port: 4317
-							}
-						}
-					]
+								port: 4317,
+							},
+						},
+					],
 				},
 				values: {
 					pilot: {
-						traceSampling: options.samplingRate * 100
+						traceSampling: options.samplingRate * 100,
 					},
 					telemetry: {
 						v2: {
 							prometheus: {
 								configOverride: {
-									disable_host_header_fallback: true
-								}
-							}
-						}
-					}
-				}
-			}
+									disable_host_header_fallback: true,
+								},
+							},
+						},
+					},
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/istio/istio-tracing.yaml.hbs",
 			"tracing/istio-tracing.yaml",
-			istioTracingConfig
+			istioTracingConfig,
 		);
 
 		// Generate Telemetry v2 configuration
@@ -548,37 +590,44 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 			kind: "Telemetry",
 			metadata: {
 				name: "tracing-config",
-				namespace: options.namespace
+				namespace: options.namespace,
 			},
 			spec: {
 				tracing: [
 					{
 						providers: [
 							{
-								name: options.tracingBackend
-							}
+								name: options.tracingBackend,
+							},
 						],
-						customTags: Object.entries(options.applications[0]?.customTags || {}).reduce((acc, [key, value]) => {
-							acc[key] = {
-								literal: {
-									value: value
-								}
-							};
-							return acc;
-						}, {} as Record<string, any>)
-					}
-				]
-			}
+						customTags: Object.entries(
+							options.applications[0]?.customTags || {},
+						).reduce(
+							(acc, [key, value]) => {
+								acc[key] = {
+									literal: {
+										value: value,
+									},
+								};
+								return acc;
+							},
+							{} as Record<string, any>,
+						),
+					},
+				],
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/istio/telemetry-config.yaml.hbs",
 			"tracing/telemetry-config.yaml",
-			telemetryConfig
+			telemetryConfig,
 		);
 	}
 
-	private async generateKubernetesManifests(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateKubernetesManifests(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Generate OpenTelemetry Collector deployment
 		const otelCollectorDeployment = {
 			apiVersion: "apps/v1",
@@ -589,24 +638,24 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 				labels: {
 					app: "otel-collector",
 					project: options.projectName,
-					component: "tracing"
-				}
+					component: "tracing",
+				},
 			},
 			spec: {
 				replicas: options.environment === "production" ? 3 : 1,
 				selector: {
 					matchLabels: {
 						app: "otel-collector",
-						project: options.projectName
-					}
+						project: options.projectName,
+					},
 				},
 				template: {
 					metadata: {
 						labels: {
 							app: "otel-collector",
 							project: options.projectName,
-							component: "tracing"
-						}
+							component: "tracing",
+						},
 					},
 					spec: {
 						containers: [
@@ -619,51 +668,51 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 									{ containerPort: 4318, name: "otlp-http" },
 									{ containerPort: 14268, name: "jaeger-http" },
 									{ containerPort: 14250, name: "jaeger-grpc" },
-									{ containerPort: 8888, name: "metrics" }
+									{ containerPort: 8888, name: "metrics" },
 								],
 								volumeMounts: [
 									{
 										name: "config",
 										mountPath: "/etc/otel-collector-config.yaml",
-										subPath: "otel-collector-config.yaml"
-									}
+										subPath: "otel-collector-config.yaml",
+									},
 								],
 								resources: options.resources.collector,
 								livenessProbe: {
 									httpGet: {
 										path: "/",
-										port: 8888
+										port: 8888,
 									},
 									initialDelaySeconds: 30,
-									periodSeconds: 30
+									periodSeconds: 30,
 								},
 								readinessProbe: {
 									httpGet: {
 										path: "/",
-										port: 8888
+										port: 8888,
 									},
 									initialDelaySeconds: 5,
-									periodSeconds: 10
-								}
-							}
+									periodSeconds: 10,
+								},
+							},
 						],
 						volumes: [
 							{
 								name: "config",
 								configMap: {
-									name: `${options.projectName}-otel-collector-config`
-								}
-							}
-						]
-					}
-				}
-			}
+									name: `${options.projectName}-otel-collector-config`,
+								},
+							},
+						],
+					},
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/k8s/otel-collector-deployment.yaml.hbs",
 			"tracing/k8s/otel-collector-deployment.yaml",
-			otelCollectorDeployment
+			otelCollectorDeployment,
 		);
 
 		// Generate service
@@ -675,33 +724,35 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 				namespace: options.namespace,
 				labels: {
 					app: "otel-collector",
-					project: options.projectName
-				}
+					project: options.projectName,
+				},
 			},
 			spec: {
 				selector: {
 					app: "otel-collector",
-					project: options.projectName
+					project: options.projectName,
 				},
 				ports: [
 					{ port: 4317, targetPort: 4317, name: "otlp-grpc" },
 					{ port: 4318, targetPort: 4318, name: "otlp-http" },
 					{ port: 14268, targetPort: 14268, name: "jaeger-http" },
 					{ port: 14250, targetPort: 14250, name: "jaeger-grpc" },
-					{ port: 8888, targetPort: 8888, name: "metrics" }
+					{ port: 8888, targetPort: 8888, name: "metrics" },
 				],
-				type: "ClusterIP"
-			}
+				type: "ClusterIP",
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/k8s/otel-collector-service.yaml.hbs",
 			"tracing/k8s/otel-collector-service.yaml",
-			otelCollectorService
+			otelCollectorService,
 		);
 	}
 
-	private async generateTracingMonitoring(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateTracingMonitoring(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Generate ServiceMonitor for Prometheus
 		const serviceMonitor = {
 			apiVersion: "monitoring.coreos.com/v1",
@@ -711,30 +762,30 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 				namespace: options.namespace,
 				labels: {
 					app: "tracing",
-					project: options.projectName
-				}
+					project: options.projectName,
+				},
 			},
 			spec: {
 				selector: {
 					matchLabels: {
 						app: "otel-collector",
-						project: options.projectName
-					}
+						project: options.projectName,
+					},
 				},
 				endpoints: [
 					{
 						port: "metrics",
 						interval: "30s",
-						path: "/metrics"
-					}
-				]
-			}
+						path: "/metrics",
+					},
+				],
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/monitoring/service-monitor.yaml.hbs",
 			"tracing/monitoring/service-monitor.yaml",
-			serviceMonitor
+			serviceMonitor,
 		);
 
 		// Generate Grafana dashboard
@@ -752,14 +803,14 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 						targets: [
 							{
 								expr: `sum(rate(traces_received_total{service=~"${options.projectName}.*"}[5m])) by (service)`,
-								legendFormat: "{{service}}"
-							}
+								legendFormat: "{{service}}",
+							},
 						],
 						yAxes: [
 							{
-								label: "Requests/sec"
-							}
-						]
+								label: "Requests/sec",
+							},
+						],
 					},
 					{
 						id: 2,
@@ -768,16 +819,16 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 						targets: [
 							{
 								expr: `sum(rate(traces_received_total{service=~"${options.projectName}.*",status_code!~"2.."}[5m])) by (service) / sum(rate(traces_received_total{service=~"${options.projectName}.*"}[5m])) by (service)`,
-								legendFormat: "{{service}}"
-							}
+								legendFormat: "{{service}}",
+							},
 						],
 						yAxes: [
 							{
 								label: "Error Rate",
 								max: 1,
-								min: 0
-							}
-						]
+								min: 0,
+							},
+						],
 					},
 					{
 						id: 3,
@@ -786,33 +837,38 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 						targets: [
 							{
 								expr: `histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=~"${options.projectName}.*"}[5m])) by (service, le))`,
-								legendFormat: "{{service}}"
-							}
+								legendFormat: "{{service}}",
+							},
 						],
 						yAxes: [
 							{
-								label: "Response Time (s)"
-							}
-						]
-					}
+								label: "Response Time (s)",
+							},
+						],
+					},
 				],
 				time: {
 					from: "now-1h",
-					to: "now"
+					to: "now",
 				},
-				refresh: "5s"
-			}
+				refresh: "5s",
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/monitoring/grafana-dashboard.json.hbs",
 			"tracing/monitoring/grafana-dashboard.json",
-			grafanaDashboard
+			grafanaDashboard,
 		);
 	}
 
-	private async generateComplianceConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
-		if (!options.compliance.gdprCompliant && !options.compliance.norwegianCompliant) {
+	private async generateComplianceConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
+		if (
+			!options.compliance.gdprCompliant &&
+			!options.compliance.norwegianCompliant
+		) {
 			return;
 		}
 
@@ -820,19 +876,19 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 			dataRetention: options.compliance.dataRetention,
 			encryption: {
 				atRest: options.compliance.encryptionAtRest,
-				inTransit: options.compliance.encryptionInTransit
+				inTransit: options.compliance.encryptionInTransit,
 			},
 			dataProcessing: {
 				anonymization: {
 					enabled: true,
 					fields: ["user_id", "email", "ip_address"],
-					method: "hash"
+					method: "hash",
 				},
 				retention: {
 					traces: options.compliance.dataRetention,
 					logs: options.compliance.dataRetention,
-					metrics: "1y"
-				}
+					metrics: "1y",
+				},
 			},
 			access: {
 				rbac: {
@@ -840,29 +896,31 @@ export class DistributedTracingGenerator extends BaseGenerator<DistributedTracin
 					roles: [
 						{
 							name: "tracing-viewer",
-							permissions: ["read:traces", "read:spans"]
+							permissions: ["read:traces", "read:spans"],
 						},
 						{
 							name: "tracing-admin",
-							permissions: ["*"]
-						}
-					]
+							permissions: ["*"],
+						},
+					],
 				},
 				audit: {
 					enabled: true,
-					events: ["access", "query", "export", "delete"]
-				}
-			}
+					events: ["access", "query", "export", "delete"],
+				},
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/compliance/compliance-config.yaml.hbs",
 			"tracing/compliance-config.yaml",
-			complianceConfig
+			complianceConfig,
 		);
 	}
 
-	private async generateDeploymentScripts(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateDeploymentScripts(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		const deployScript = `#!/bin/bash
 set -e
 
@@ -900,11 +958,13 @@ echo "  Tempo: http://tempo.\$NAMESPACE.svc.cluster.local:3200"
 		await this.templateManager.renderTemplate(
 			"devops/tracing/scripts/deploy.sh.hbs",
 			"scripts/deploy-tracing.sh",
-			{ script: deployScript, executable: true }
+			{ script: deployScript, executable: true },
 		);
 	}
 
-	private async generateDocumentation(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateDocumentation(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		const documentation = {
 			title: `${options.projectName} - Distributed Tracing Setup`,
 			tracingBackend: options.tracingBackend,
@@ -913,47 +973,52 @@ echo "  Tempo: http://tempo.\$NAMESPACE.svc.cluster.local:3200"
 			configuration: {
 				samplingRate: options.samplingRate,
 				retention: options.retention,
-				storage: options.storage
+				storage: options.storage,
 			},
 			monitoring: {
-				dashboards: ["Grafana Dashboard: /tracing/monitoring/grafana-dashboard.json"],
-				alerts: ["Service Monitor: /tracing/monitoring/service-monitor.yaml"]
+				dashboards: [
+					"Grafana Dashboard: /tracing/monitoring/grafana-dashboard.json",
+				],
+				alerts: ["Service Monitor: /tracing/monitoring/service-monitor.yaml"],
 			},
 			compliance: options.compliance,
 			deployment: {
 				commands: [
 					"./scripts/deploy-tracing.sh",
-					"kubectl port-forward svc/jaeger-query 16686:16686 -n " + options.namespace
-				]
-			}
+					"kubectl port-forward svc/jaeger-query 16686:16686 -n " +
+						options.namespace,
+				],
+			},
 		};
 
 		await this.templateManager.renderTemplate(
 			"devops/tracing/docs/README.md.hbs",
 			"tracing/README.md",
-			documentation
+			documentation,
 		);
 	}
 
 	// Helper methods
-	private getExporterConfig(options: DistributedTracingGeneratorOptions): Record<string, any> {
+	private getExporterConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Record<string, any> {
 		const exporters: Record<string, any> = {};
 
 		switch (options.tracingBackend) {
 			case "jaeger":
 				exporters.jaeger = {
-					endpoint: "http://jaeger-collector:14268/api/traces"
+					endpoint: "http://jaeger-collector:14268/api/traces",
 				};
 				break;
 			case "tempo":
 				exporters.otlp = {
 					endpoint: "http://tempo:4317",
-					tls: { insecure: true }
+					tls: { insecure: true },
 				};
 				break;
 			case "zipkin":
 				exporters.zipkin = {
-					endpoint: "http://zipkin:9411/api/v2/spans"
+					endpoint: "http://zipkin:9411/api/v2/spans",
 				};
 				break;
 		}
@@ -967,67 +1032,87 @@ echo "  Tempo: http://tempo.\$NAMESPACE.svc.cluster.local:3200"
 			tempo: "http://tempo:4317",
 			zipkin: "http://zipkin:9411/api/v2/spans",
 			"aws-xray": "https://xray.us-east-1.amazonaws.com",
-			"azure-app-insights": "https://dc.services.visualstudio.com/v2/track"
+			"azure-app-insights": "https://dc.services.visualstudio.com/v2/track",
 		};
 
 		return endpoints[backend] || "http://localhost:4317";
 	}
 
-	private getJaegerStorageConfig(options: DistributedTracingGeneratorOptions): any {
+	private getJaegerStorageConfig(
+		options: DistributedTracingGeneratorOptions,
+	): any {
 		switch (options.storage.backend) {
 			case "elasticsearch":
 				return {
 					type: "elasticsearch",
 					elasticsearch: {
 						serverUrls: ["http://elasticsearch:9200"],
-						indexPrefix: options.projectName
-					}
+						indexPrefix: options.projectName,
+					},
 				};
 			case "cassandra":
 				return {
 					type: "cassandra",
 					cassandra: {
 						servers: ["cassandra:9042"],
-						keyspace: options.projectName
-					}
+						keyspace: options.projectName,
+					},
 				};
 			default:
 				return {
 					type: "memory",
 					options: {
 						memory: {
-							"memory.max-traces": 10000
-						}
-					}
+							"memory.max-traces": 10000,
+						},
+					},
 				};
 		}
 	}
 
-	private async generatePythonConfig(app: TracedApplication, options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generatePythonConfig(
+		app: TracedApplication,
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for Python tracing configuration
 	}
 
-	private async generateJavaConfig(app: TracedApplication, options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateJavaConfig(
+		app: TracedApplication,
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for Java tracing configuration
 	}
 
-	private async generateGoConfig(app: TracedApplication, options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateGoConfig(
+		app: TracedApplication,
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for Go tracing configuration
 	}
 
-	private async generateDotNetConfig(app: TracedApplication, options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateDotNetConfig(
+		app: TracedApplication,
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for .NET tracing configuration
 	}
 
-	private async generateZipkinConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateZipkinConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for Zipkin configuration
 	}
 
-	private async generateXRayConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateXRayConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for AWS X-Ray configuration
 	}
 
-	private async generateAppInsightsConfig(options: DistributedTracingGeneratorOptions): Promise<void> {
+	private async generateAppInsightsConfig(
+		options: DistributedTracingGeneratorOptions,
+	): Promise<void> {
 		// Implementation for Azure App Insights configuration
 	}
 }

@@ -1,7 +1,7 @@
-import { BaseGenerator } from "../base.generator.js";
-import type { OpenAIOptions } from "./types.js";
 import { promises as fs } from "fs";
 import { join } from "path";
+import { BaseGenerator } from "../base.generator.js";
+import type { OpenAIOptions } from "./types.js";
 
 export class OpenAIGenerator extends BaseGenerator<OpenAIOptions> {
 	async generate(options: OpenAIOptions): Promise<void> {

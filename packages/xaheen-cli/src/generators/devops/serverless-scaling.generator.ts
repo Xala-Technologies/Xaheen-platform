@@ -1,19 +1,37 @@
-import { BaseGenerator } from "../base.generator";
-import { z } from "zod";
+import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import chalk from "chalk";
+import { z } from "zod";
+import { BaseGenerator } from "../base.generator";
 
 // Serverless scaling configuration schema
 const ServerlessScalingOptionsSchema = z.object({
 	projectName: z.string(),
 	projectPath: z.string(),
-	provider: z.enum(["aws-lambda", "azure-functions", "gcp-functions", "vercel", "netlify", "cloudflare"]).default("aws-lambda"),
+	provider: z
+		.enum([
+			"aws-lambda",
+			"azure-functions",
+			"gcp-functions",
+			"vercel",
+			"netlify",
+			"cloudflare",
+		])
+		.default("aws-lambda"),
 	functions: z.array(
 		z.object({
 			name: z.string(),
 			type: z.enum(["api", "webhook", "scheduled", "stream", "queue"]),
-			runtime: z.enum(["nodejs18", "nodejs20", "python3.11", "go1.21", "java17", "dotnet6"]).default("nodejs18"),
+			runtime: z
+				.enum([
+					"nodejs18",
+					"nodejs20",
+					"python3.11",
+					"go1.21",
+					"java17",
+					"dotnet6",
+				])
+				.default("nodejs18"),
 			memory: z.number().min(128).max(10240).default(1024),
 			timeout: z.number().min(1).max(900).default(30),
 			environment: z.record(z.string()).optional(),
@@ -22,7 +40,9 @@ const ServerlessScalingOptionsSchema = z.object({
 					z.object({
 						type: z.literal("http"),
 						path: z.string(),
-						methods: z.array(z.enum(["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])),
+						methods: z.array(
+							z.enum(["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]),
+						),
 						cors: z.boolean().default(true),
 					}),
 					z.object({
@@ -37,14 +57,16 @@ const ServerlessScalingOptionsSchema = z.object({
 					z.object({
 						type: z.literal("stream"),
 						streamArn: z.string(),
-						startingPosition: z.enum(["TRIM_HORIZON", "LATEST"]).default("LATEST"),
+						startingPosition: z
+							.enum(["TRIM_HORIZON", "LATEST"])
+							.default("LATEST"),
 					}),
 					z.object({
 						type: z.literal("storage"),
 						bucket: z.string(),
 						events: z.array(z.string()),
 					}),
-				])
+				]),
 			),
 			scaling: z
 				.object({
@@ -62,7 +84,7 @@ const ServerlessScalingOptionsSchema = z.object({
 					keepWarmCount: z.number().min(0).default(0),
 				})
 				.optional(),
-		})
+		}),
 	),
 	edgeLocations: z
 		.array(
@@ -74,13 +96,15 @@ const ServerlessScalingOptionsSchema = z.object({
 				"ap-southeast-1",
 				"ap-northeast-1",
 				"global",
-			])
+			]),
 		)
 		.optional(),
 	monitoring: z
 		.object({
 			enabled: z.boolean().default(true),
-			provider: z.enum(["cloudwatch", "datadog", "newrelic", "stackdriver"]).optional(),
+			provider: z
+				.enum(["cloudwatch", "datadog", "newrelic", "stackdriver"])
+				.optional(),
 			customMetrics: z.boolean().default(false),
 			tracing: z.boolean().default(true),
 			profiling: z.boolean().default(false),
@@ -88,7 +112,9 @@ const ServerlessScalingOptionsSchema = z.object({
 		.optional(),
 	deployment: z
 		.object({
-			strategy: z.enum(["all-at-once", "canary", "linear", "blue-green"]).default("canary"),
+			strategy: z
+				.enum(["all-at-once", "canary", "linear", "blue-green"])
+				.default("canary"),
 			canarySettings: z
 				.object({
 					percentage: z.number().min(1).max(50).default(10),
@@ -108,7 +134,9 @@ const ServerlessScalingOptionsSchema = z.object({
 		.optional(),
 });
 
-export type ServerlessScalingOptions = z.infer<typeof ServerlessScalingOptionsSchema>;
+export type ServerlessScalingOptions = z.infer<
+	typeof ServerlessScalingOptionsSchema
+>;
 
 interface ServerlessConfig {
 	name: string;
@@ -122,7 +150,9 @@ export class ServerlessScalingGenerator extends BaseGenerator {
 			// Validate options
 			const validatedOptions = ServerlessScalingOptionsSchema.parse(options);
 
-			console.log(chalk.blue("⚡ Generating Serverless Scaling Configuration..."));
+			console.log(
+				chalk.blue("⚡ Generating Serverless Scaling Configuration..."),
+			);
 
 			// Generate configurations based on provider
 			const configs = await this.generateConfigurations(validatedOptions);
@@ -144,19 +174,21 @@ export class ServerlessScalingGenerator extends BaseGenerator {
 			}
 
 			console.log(
-				chalk.green("✅ Serverless scaling configuration generated successfully!")
+				chalk.green(
+					"✅ Serverless scaling configuration generated successfully!",
+				),
 			);
 		} catch (error) {
 			console.error(
 				chalk.red("❌ Error generating serverless scaling configuration:"),
-				error
+				error,
 			);
 			throw error;
 		}
 	}
 
 	private async generateConfigurations(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -188,7 +220,7 @@ export class ServerlessScalingGenerator extends BaseGenerator {
 	}
 
 	private async generateAWSLambdaConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -249,8 +281,8 @@ export class ServerlessScalingGenerator extends BaseGenerator {
           Properties:
             Path: ${trigger.path}
             Method: ${trigger.methods?.[0] || "ANY"}${
-									trigger.cors
-										? `
+							trigger.cors
+								? `
             CorsConfiguration:
               AllowOrigins:
                 - "*"
@@ -258,8 +290,8 @@ export class ServerlessScalingGenerator extends BaseGenerator {
                 - "*"
               AllowHeaders:
                 - "*"`
-										: ""
-								}`;
+								: ""
+						}`;
 							case "schedule":
 								return `        Schedule:
           Type: Schedule
@@ -300,30 +332,32 @@ export class ServerlessScalingGenerator extends BaseGenerator {
       Runtime: ${func.runtime}.x
       MemorySize: ${func.memory}
       Timeout: ${func.timeout}${
-					func.scaling?.reservedConcurrency
-						? `
+				func.scaling?.reservedConcurrency
+					? `
       ReservedConcurrentExecutions: ${func.scaling.reservedConcurrency}`
-						: ""
-				}${
-					func.scaling?.provisionedConcurrency
-						? `
+					: ""
+			}${
+				func.scaling?.provisionedConcurrency
+					? `
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: ${func.scaling.provisionedConcurrency}`
-						: ""
-				}${
-					func.environment && Object.keys(func.environment).length > 0
-						? `
+					: ""
+			}${
+				func.environment && Object.keys(func.environment).length > 0
+					? `
       Environment:
         Variables:${Object.entries(func.environment)
-					.map(([key, value]) => `
-          ${key}: ${value}`)
+					.map(
+						([key, value]) => `
+          ${key}: ${value}`,
+					)
 					.join("")}`
-						: ""
-				}
+					: ""
+			}
       Events:
 ${triggers}${
-					options.deployment?.strategy === "canary"
-						? `
+	options.deployment?.strategy === "canary"
+		? `
       AutoPublishAlias: live
       DeploymentPreference:
         Type: Canary10Percent5Minutes
@@ -338,8 +372,8 @@ ${triggers}${
               - DeploymentRollback
             TriggerName: ${func.name}DeploymentTrigger
             TriggerTargetArn: !Ref DeploymentNotificationTopic`
-						: ""
-				}
+		: ""
+}
 
   ${func.name}ErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -392,52 +426,56 @@ Outputs:
 `;
 	}
 
-	private generateServerlessFrameworkConfig(options: ServerlessScalingOptions): string {
+	private generateServerlessFrameworkConfig(
+		options: ServerlessScalingOptions,
+	): string {
 		const functions: Record<string, any> = {};
 
 		options.functions.forEach((func) => {
-			const events = func.triggers.map((trigger) => {
-				switch (trigger.type) {
-					case "http":
-						return {
-							httpApi: {
-								path: trigger.path,
-								method: trigger.methods?.[0] || "ANY",
-								cors: trigger.cors,
-							},
-						};
-					case "schedule":
-						return {
-							schedule: {
-								rate: trigger.expression,
-								enabled: true,
-							},
-						};
-					case "queue":
-						return {
-							sqs: {
-								arn: `\${cf:${options.projectName}-resources.${trigger.queueName}QueueArn}`,
-								batchSize: trigger.batchSize,
-							},
-						};
-					case "stream":
-						return {
-							stream: {
-								arn: trigger.streamArn,
-								startingPosition: trigger.startingPosition,
-							},
-						};
-					case "storage":
-						return {
-							s3: {
-								bucket: trigger.bucket,
-								events: trigger.events,
-							},
-						};
-					default:
-						return null;
-				}
-			}).filter(Boolean);
+			const events = func.triggers
+				.map((trigger) => {
+					switch (trigger.type) {
+						case "http":
+							return {
+								httpApi: {
+									path: trigger.path,
+									method: trigger.methods?.[0] || "ANY",
+									cors: trigger.cors,
+								},
+							};
+						case "schedule":
+							return {
+								schedule: {
+									rate: trigger.expression,
+									enabled: true,
+								},
+							};
+						case "queue":
+							return {
+								sqs: {
+									arn: `\${cf:${options.projectName}-resources.${trigger.queueName}QueueArn}`,
+									batchSize: trigger.batchSize,
+								},
+							};
+						case "stream":
+							return {
+								stream: {
+									arn: trigger.streamArn,
+									startingPosition: trigger.startingPosition,
+								},
+							};
+						case "storage":
+							return {
+								s3: {
+									bucket: trigger.bucket,
+									events: trigger.events,
+								},
+							};
+						default:
+							return null;
+					}
+				})
+				.filter(Boolean);
 
 			functions[func.name] = {
 				handler: `src/handlers/${func.name}.handler`,
@@ -520,8 +558,10 @@ plugins:
   - serverless-plugin-canary-deployments
   - serverless-prune-plugin
   - serverless-plugin-aws-alerts${
-		options.functions.some((f) => f.coldStart?.optimization) ? `
-  - serverless-plugin-warmup` : ""
+		options.functions.some((f) => f.coldStart?.optimization)
+			? `
+  - serverless-plugin-warmup`
+			: ""
 	}
 
 custom:
@@ -553,8 +593,8 @@ custom:
     rollbackOnFailure: ${options.deployment.rollbackOnFailure}`
 					: ""
 			}${
-			options.functions.some((f) => f.coldStart?.optimization)
-				? `
+				options.functions.some((f) => f.coldStart?.optimization)
+					? `
   
   warmup:
     default:
@@ -567,8 +607,8 @@ custom:
       timeout: 20
       prewarm: true
       concurrency: ${Math.max(...options.functions.map((f) => f.coldStart?.keepWarmCount || 0))}`
-				: ""
-		}
+					: ""
+			}
 
 functions:
 ${Object.entries(functions)
@@ -591,19 +631,27 @@ ${Object.entries(functions)
 			config.environment && Object.keys(config.environment).length > 0
 				? `
     environment:${Object.entries(config.environment)
-						.map(([key, value]) => `
-      ${key}: ${value}`)
-						.join("")}`
+			.map(
+				([key, value]) => `
+      ${key}: ${value}`,
+			)
+			.join("")}`
 				: ""
 		}
     events:${config.events
-			.map((event: any) => `
-      - ${Object.keys(event)[0]}:${JSON.stringify(Object.values(event)[0], null, 10)
+			.map(
+				(event: any) => `
+      - ${Object.keys(event)[0]}:${JSON.stringify(
+				Object.values(event)[0],
+				null,
+				10,
+			)
 				.split("\n")
 				.map((line, i) => (i === 0 ? line : `          ${line}`))
 				.join("\n")
-				.slice(0, -1)}`)
-			.join("")}`
+				.slice(0, -1)}`,
+			)
+			.join("")}`,
 	)
 	.join("\n")}
 
@@ -674,7 +722,7 @@ ${options.functions
       provisionedConcurrentExecutions: ${func.scaling?.provisionedConcurrency || "undefined"},
       triggers: ${JSON.stringify(func.triggers)},
     }, props);
-`
+`,
 	)
 	.join("\n")}
 
@@ -837,7 +885,9 @@ ${options.functions
 				{
 					name: `${options.projectName}-common`,
 					description: "Common dependencies and utilities",
-					compatibleRuntimes: Array.from(new Set(options.functions.map((f) => f.runtime))),
+					compatibleRuntimes: Array.from(
+						new Set(options.functions.map((f) => f.runtime)),
+					),
 					content: {
 						dependencies: {
 							"aws-sdk": "latest",
@@ -850,13 +900,15 @@ ${options.functions
 				{
 					name: `${options.projectName}-monitoring`,
 					description: "Monitoring and observability tools",
-					compatibleRuntimes: Array.from(new Set(options.functions.map((f) => f.runtime))),
+					compatibleRuntimes: Array.from(
+						new Set(options.functions.map((f) => f.runtime)),
+					),
 					content: {
 						dependencies: {
 							"@opentelemetry/api": "latest",
 							"@opentelemetry/sdk-node": "latest",
-							"winston": "latest",
-							"pino": "latest",
+							winston: "latest",
+							pino: "latest",
 						},
 					},
 				},
@@ -865,7 +917,7 @@ ${options.functions
 	}
 
 	private async generateAzureFunctionsConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -942,48 +994,52 @@ ${options.functions
 				},
 			},
 			null,
-			2
+			2,
 		);
 	}
 
-	private generateAzureFunctionJson(func: ServerlessScalingOptions["functions"][0]): string {
-		const bindings = func.triggers.map((trigger) => {
-			switch (trigger.type) {
-				case "http":
-					return {
-						type: "httpTrigger",
-						direction: "in",
-						name: "req",
-						methods: trigger.methods?.map((m) => m.toLowerCase()),
-						route: trigger.path.replace(/^\//, ""),
-					};
-				case "schedule":
-					return {
-						type: "timerTrigger",
-						direction: "in",
-						name: "timer",
-						schedule: trigger.expression,
-					};
-				case "queue":
-					return {
-						type: "queueTrigger",
-						direction: "in",
-						name: "queueItem",
-						queueName: trigger.queueName,
-						connection: "AzureWebJobsStorage",
-					};
-				case "storage":
-					return {
-						type: "blobTrigger",
-						direction: "in",
-						name: "blob",
-						path: `${trigger.bucket}/{name}`,
-						connection: "AzureWebJobsStorage",
-					};
-				default:
-					return null;
-			}
-		}).filter(Boolean);
+	private generateAzureFunctionJson(
+		func: ServerlessScalingOptions["functions"][0],
+	): string {
+		const bindings = func.triggers
+			.map((trigger) => {
+				switch (trigger.type) {
+					case "http":
+						return {
+							type: "httpTrigger",
+							direction: "in",
+							name: "req",
+							methods: trigger.methods?.map((m) => m.toLowerCase()),
+							route: trigger.path.replace(/^\//, ""),
+						};
+					case "schedule":
+						return {
+							type: "timerTrigger",
+							direction: "in",
+							name: "timer",
+							schedule: trigger.expression,
+						};
+					case "queue":
+						return {
+							type: "queueTrigger",
+							direction: "in",
+							name: "queueItem",
+							queueName: trigger.queueName,
+							connection: "AzureWebJobsStorage",
+						};
+					case "storage":
+						return {
+							type: "blobTrigger",
+							direction: "in",
+							name: "blob",
+							path: `${trigger.bucket}/{name}`,
+							connection: "AzureWebJobsStorage",
+						};
+					default:
+						return null;
+				}
+			})
+			.filter(Boolean);
 
 		// Add output binding for HTTP functions
 		if (func.triggers.some((t) => t.type === "http")) {
@@ -1001,14 +1057,15 @@ ${options.functions
 				entryPoint: "handler",
 			},
 			null,
-			2
+			2,
 		);
 	}
 
 	private generateAzureARMTemplate(options: ServerlessScalingOptions): string {
 		return JSON.stringify(
 			{
-				"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+				$schema:
+					"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 				contentVersion: "1.0.0.0",
 				parameters: {
 					functionAppName: {
@@ -1032,7 +1089,8 @@ ${options.functions
 				variables: {
 					functionAppName: "[parameters('functionAppName')]",
 					hostingPlanName: "[concat(parameters('functionAppName'), '-plan')]",
-					applicationInsightsName: "[concat(parameters('functionAppName'), '-insights')]",
+					applicationInsightsName:
+						"[concat(parameters('functionAppName'), '-insights')]",
 					storageAccountName: "[parameters('storageAccountName')]",
 				},
 				resources: [
@@ -1081,12 +1139,14 @@ ${options.functions
 							"[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
 						],
 						properties: {
-							serverFarmId: "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+							serverFarmId:
+								"[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
 							siteConfig: {
 								appSettings: [
 									{
 										name: "AzureWebJobsStorage",
-										value: "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2021-04-01').keys[0].value)]",
+										value:
+											"[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2021-04-01').keys[0].value)]",
 									},
 									{
 										name: "FUNCTIONS_EXTENSION_VERSION",
@@ -1098,7 +1158,8 @@ ${options.functions
 									},
 									{
 										name: "APPINSIGHTS_INSTRUMENTATIONKEY",
-										value: "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))).InstrumentationKey]",
+										value:
+											"[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))).InstrumentationKey]",
 									},
 								],
 								cors: {
@@ -1115,17 +1176,18 @@ ${options.functions
 				outputs: {
 					functionAppUrl: {
 						type: "string",
-						value: "[concat('https://', variables('functionAppName'), '.azurewebsites.net')]",
+						value:
+							"[concat('https://', variables('functionAppName'), '.azurewebsites.net')]",
 					},
 				},
 			},
 			null,
-			2
+			2,
 		);
 	}
 
 	private async generateGCPFunctionsConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -1146,7 +1208,9 @@ ${options.functions
 		return configs;
 	}
 
-	private generateGCPCloudFunctionsYaml(options: ServerlessScalingOptions): string {
+	private generateGCPCloudFunctionsYaml(
+		options: ServerlessScalingOptions,
+	): string {
 		return `# Google Cloud Functions Configuration
 project: ${options.projectName}
 region: us-central1
@@ -1166,8 +1230,10 @@ ${options.functions
     environment_variables:${
 			func.environment && Object.keys(func.environment).length > 0
 				? Object.entries(func.environment)
-						.map(([key, value]) => `
-      ${key}: "${value}"`)
+						.map(
+							([key, value]) => `
+      ${key}: "${value}"`,
+						)
 						.join("")
 				: `
       PROJECT_NAME: ${options.projectName}`
@@ -1199,7 +1265,7 @@ ${options.functions
     labels:
       service: ${func.name}
       type: ${func.type}
-      managed-by: xaheen-cli`
+      managed-by: xaheen-cli`,
 	)
 	.join("\n")}
 
@@ -1252,13 +1318,15 @@ resource "google_cloudfunctions2_function" "${func.name}_function" {
     environment_variables = {
       PROJECT_NAME = "${options.projectName}"
       FUNCTION_NAME = "${func.name}"${
-					func.environment && Object.keys(func.environment).length > 0
-						? Object.entries(func.environment)
-								.map(([key, value]) => `
-      ${key} = "${value}"`)
-								.join("")
-						: ""
-				}
+				func.environment && Object.keys(func.environment).length > 0
+					? Object.entries(func.environment)
+							.map(
+								([key, value]) => `
+      ${key} = "${value}"`,
+							)
+							.join("")
+					: ""
+			}
     }
   }
 
@@ -1312,7 +1380,7 @@ data "archive_file" "${func.name}_source" {
   type        = "zip"
   source_dir  = "\${path.module}/functions/${func.name}"
   output_path = "\${path.module}/tmp/${func.name}.zip"
-}`
+}`,
 			)
 			.join("\n");
 
@@ -1363,7 +1431,10 @@ ${functions}
 output "function_urls" {
   value = {
 ${options.functions
-	.map((func) => `    ${func.name} = google_cloudfunctions2_function.${func.name}_function.service_config[0].uri`)
+	.map(
+		(func) =>
+			`    ${func.name} = google_cloudfunctions2_function.${func.name}_function.service_config[0].uri`,
+	)
 	.join("\n")}
   }
 }
@@ -1371,7 +1442,7 @@ ${options.functions
 	}
 
 	private async generateVercelConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -1384,7 +1455,7 @@ ${options.functions
 
 		// Generate API routes
 		for (const func of options.functions.filter((f) =>
-			f.triggers.some((t) => t.type === "http")
+			f.triggers.some((t) => t.type === "http"),
 		)) {
 			configs.push({
 				name: `${func.name}.ts`,
@@ -1406,7 +1477,7 @@ ${options.functions
 						src: trigger.path,
 						dest: `/api/${func.name}`,
 						methods: trigger.methods,
-					}))
+					})),
 			);
 
 		return JSON.stringify(
@@ -1423,7 +1494,7 @@ ${options.functions
 								memory: func.memory,
 								runtime: this.getVercelRuntime(func.runtime),
 							},
-						])
+						]),
 				),
 				routes,
 				env: {
@@ -1440,11 +1511,13 @@ ${options.functions
 				},
 			},
 			null,
-			2
+			2,
 		);
 	}
 
-	private generateVercelFunction(func: ServerlessScalingOptions["functions"][0]): string {
+	private generateVercelFunction(
+		func: ServerlessScalingOptions["functions"][0],
+	): string {
 		return `import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export const config = {
@@ -1489,7 +1562,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	}
 
 	private async generateNetlifyConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -1527,7 +1600,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const scheduledFunctions = options.functions
 			.filter((f) => f.triggers.some((t) => t.type === "schedule"))
 			.map((func) => {
-				const scheduleTrigger = func.triggers.find((t) => t.type === "schedule");
+				const scheduleTrigger = func.triggers.find(
+					(t) => t.type === "schedule",
+				);
 				return `[[functions]]
   name = "${func.name}"
   schedule = "${scheduleTrigger?.expression}"`;
@@ -1569,7 +1644,9 @@ ${scheduledFunctions}
 `;
 	}
 
-	private generateNetlifyFunction(func: ServerlessScalingOptions["functions"][0]): string {
+	private generateNetlifyFunction(
+		func: ServerlessScalingOptions["functions"][0],
+	): string {
 		return `import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 
 const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
@@ -1617,7 +1694,7 @@ export { handler };
 	}
 
 	private async generateCloudflareConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -1669,7 +1746,9 @@ database_id = "your-database-id"
 crons = [${options.functions
 			.filter((f) => f.triggers.some((t) => t.type === "schedule"))
 			.map((func) => {
-				const scheduleTrigger = func.triggers.find((t) => t.type === "schedule");
+				const scheduleTrigger = func.triggers.find(
+					(t) => t.type === "schedule",
+				);
 				return `"${scheduleTrigger?.expression}"`;
 			})
 			.join(", ")}]
@@ -1728,7 +1807,8 @@ export async function scheduled(
   ${options.functions
 		.filter((f) => f.triggers.some((t) => t.type === "schedule"))
 		.map(
-			(func) => `await handleScheduledFunction('${func.name}', controller, env, ctx);`
+			(func) =>
+				`await handleScheduledFunction('${func.name}', controller, env, ctx);`,
 		)
 		.join("\n  ")}
 }
@@ -1810,7 +1890,7 @@ async function handleScheduledFunction(
 	}
 
 	private async generateCommonConfigs(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<ServerlessConfig[]> {
 		const configs: ServerlessConfig[] = [];
 
@@ -1845,7 +1925,7 @@ async function handleScheduledFunction(
 			test: "jest",
 			"test:integration": "jest --testPathPattern=integration",
 			lint: "eslint src --ext .ts",
-			"format": "prettier --write 'src/**/*.ts'",
+			format: "prettier --write 'src/**/*.ts'",
 		};
 
 		// Add provider-specific scripts
@@ -1939,7 +2019,7 @@ async function handleScheduledFunction(
 				},
 			},
 			null,
-			2
+			2,
 		);
 	}
 
@@ -1956,7 +2036,7 @@ async function handleScheduledFunction(
 				envVars.push(
 					"AWS_REGION=us-east-1",
 					"AWS_ACCESS_KEY_ID=your-access-key",
-					"AWS_SECRET_ACCESS_KEY=your-secret-key"
+					"AWS_SECRET_ACCESS_KEY=your-secret-key",
 				);
 				break;
 			case "azure-functions":
@@ -1964,29 +2044,32 @@ async function handleScheduledFunction(
 					"AZURE_SUBSCRIPTION_ID=your-subscription-id",
 					"AZURE_TENANT_ID=your-tenant-id",
 					"AZURE_CLIENT_ID=your-client-id",
-					"AZURE_CLIENT_SECRET=your-client-secret"
+					"AZURE_CLIENT_SECRET=your-client-secret",
 				);
 				break;
 			case "gcp-functions":
 				envVars.push(
 					"GCP_PROJECT_ID=your-project-id",
 					"GCP_REGION=us-central1",
-					"GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json"
+					"GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json",
 				);
 				break;
 			case "vercel":
-				envVars.push("VERCEL_TOKEN=your-vercel-token", "VERCEL_ORG_ID=your-org-id");
+				envVars.push(
+					"VERCEL_TOKEN=your-vercel-token",
+					"VERCEL_ORG_ID=your-org-id",
+				);
 				break;
 			case "netlify":
 				envVars.push(
 					"NETLIFY_AUTH_TOKEN=your-netlify-token",
-					"NETLIFY_SITE_ID=your-site-id"
+					"NETLIFY_SITE_ID=your-site-id",
 				);
 				break;
 			case "cloudflare":
 				envVars.push(
 					"CLOUDFLARE_API_TOKEN=your-api-token",
-					"CLOUDFLARE_ACCOUNT_ID=your-account-id"
+					"CLOUDFLARE_ACCOUNT_ID=your-account-id",
 				);
 				break;
 		}
@@ -1996,7 +2079,10 @@ async function handleScheduledFunction(
 			envVars.push("", "# Monitoring Configuration");
 			switch (options.monitoring.provider) {
 				case "datadog":
-					envVars.push("DD_API_KEY=your-datadog-api-key", "DD_SITE=datadoghq.com");
+					envVars.push(
+						"DD_API_KEY=your-datadog-api-key",
+						"DD_SITE=datadoghq.com",
+					);
 					break;
 				case "newrelic":
 					envVars.push("NEW_RELIC_LICENSE_KEY=your-license-key");
@@ -2021,7 +2107,9 @@ async function handleScheduledFunction(
 		return envVars.join("\n");
 	}
 
-	private generateGitHubActionsWorkflow(options: ServerlessScalingOptions): string {
+	private generateGitHubActionsWorkflow(
+		options: ServerlessScalingOptions,
+	): string {
 		const deploySteps: string[] = [];
 
 		switch (options.provider) {
@@ -2035,7 +2123,7 @@ async function handleScheduledFunction(
           aws-region: us-east-1
 
       - name: Deploy with Serverless Framework
-        run: npx serverless deploy --stage \${{ matrix.stage }}`
+        run: npx serverless deploy --stage \${{ matrix.stage }}`,
 				);
 				break;
 			case "azure-functions":
@@ -2049,7 +2137,7 @@ async function handleScheduledFunction(
         uses: Azure/functions-action@v1
         with:
           app-name: ${options.projectName}
-          package: .`
+          package: .`,
 				);
 				break;
 			case "gcp-functions":
@@ -2064,7 +2152,7 @@ async function handleScheduledFunction(
         with:
           name: ${options.projectName}
           runtime: ${options.functions[0]?.runtime || "nodejs18"}
-          region: us-central1`
+          region: us-central1`,
 				);
 				break;
 			case "vercel":
@@ -2075,7 +2163,7 @@ async function handleScheduledFunction(
           vercel-token: \${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: \${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: \${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: \${{ matrix.stage == 'production' && '--prod' || '' }}`
+          vercel-args: \${{ matrix.stage == 'production' && '--prod' || '' }}`,
 				);
 				break;
 			case "netlify":
@@ -2089,7 +2177,7 @@ async function handleScheduledFunction(
           deploy-message: 'Deploy from GitHub Actions'
         env:
           NETLIFY_AUTH_TOKEN: \${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: \${{ secrets.NETLIFY_SITE_ID }}`
+          NETLIFY_SITE_ID: \${{ secrets.NETLIFY_SITE_ID }}`,
 				);
 				break;
 			case "cloudflare":
@@ -2098,7 +2186,7 @@ async function handleScheduledFunction(
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          environment: \${{ matrix.stage }}`
+          environment: \${{ matrix.stage }}`,
 				);
 				break;
 		}
@@ -2185,7 +2273,9 @@ ${deploySteps.join("\n")}
 `;
 	}
 
-	private async generateMonitoringConfig(options: ServerlessScalingOptions): Promise<void> {
+	private async generateMonitoringConfig(
+		options: ServerlessScalingOptions,
+	): Promise<void> {
 		const monitoringPath = path.join(options.projectPath, "monitoring");
 		await fs.mkdir(monitoringPath, { recursive: true });
 
@@ -2273,7 +2363,7 @@ ${deploySteps.join("\n")}
 
 		await fs.writeFile(
 			path.join(monitoringPath, "monitoring-config.json"),
-			JSON.stringify(monitoringConfig, null, 2)
+			JSON.stringify(monitoringConfig, null, 2),
 		);
 
 		// Generate observability instrumentation
@@ -2318,11 +2408,13 @@ export function captureError(error: Error, context?: Record<string, any>): void 
 
 		await fs.writeFile(
 			path.join(monitoringPath, "instrumentation.ts"),
-			instrumentationCode
+			instrumentationCode,
 		);
 	}
 
-	private async generateDeploymentScripts(options: ServerlessScalingOptions): Promise<void> {
+	private async generateDeploymentScripts(
+		options: ServerlessScalingOptions,
+	): Promise<void> {
 		const scriptsPath = path.join(options.projectPath, "scripts");
 		await fs.mkdir(scriptsPath, { recursive: true });
 
@@ -2454,7 +2546,7 @@ echo "✅ Rollback complete!"
 	}
 
 	private async generateCostOptimizationConfig(
-		options: ServerlessScalingOptions
+		options: ServerlessScalingOptions,
 	): Promise<void> {
 		const costPath = path.join(options.projectPath, "cost-optimization");
 		await fs.mkdir(costPath, { recursive: true });
@@ -2464,7 +2556,8 @@ echo "✅ Rollback complete!"
 			optimization: {
 				enabled: options.costOptimization?.enabled ?? true,
 				spotPricing: options.costOptimization?.spotPricing ?? false,
-				computeSavingsPlan: options.costOptimization?.computeSavingsPlan ?? false,
+				computeSavingsPlan:
+					options.costOptimization?.computeSavingsPlan ?? false,
 				idleTimeout: options.costOptimization?.idleTimeout ?? 300,
 			},
 			functions: options.functions.map((func) => ({
@@ -2491,7 +2584,7 @@ echo "✅ Rollback complete!"
 			})),
 			totalEstimatedCost: options.functions.reduce(
 				(acc, func) => acc + this.calculateFunctionCost(func, 100000),
-				0
+				0,
 			),
 			recommendations: [
 				"Consider using provisioned concurrency for predictable traffic patterns",
@@ -2503,7 +2596,7 @@ echo "✅ Rollback complete!"
 
 		await fs.writeFile(
 			path.join(costPath, "cost-analysis.json"),
-			JSON.stringify(costConfig, null, 2)
+			JSON.stringify(costConfig, null, 2),
 		);
 
 		// Generate cost monitoring dashboard configuration
@@ -2551,12 +2644,15 @@ alerts:
     notification: slack
 `;
 
-		await fs.writeFile(path.join(costPath, "cost-dashboard.yaml"), costDashboard);
+		await fs.writeFile(
+			path.join(costPath, "cost-dashboard.yaml"),
+			costDashboard,
+		);
 	}
 
 	private async writeConfigurations(
 		configs: ServerlessConfig[],
-		projectPath: string
+		projectPath: string,
 	): Promise<void> {
 		for (const config of configs) {
 			const filePath = path.join(projectPath, config.path);
@@ -2593,7 +2689,7 @@ alerts:
 
 	private calculateFunctionCost(
 		func: ServerlessScalingOptions["functions"][0],
-		invocations: number
+		invocations: number,
 	): number {
 		// AWS Lambda pricing model (simplified)
 		const pricePerGBSecond = 0.0000166667;
@@ -2605,10 +2701,14 @@ alerts:
 		const billableGBSeconds = Math.max(0, gbSeconds - freeGBSeconds);
 		const billableRequests = Math.max(0, invocations - freeRequests);
 
-		return billableGBSeconds * pricePerGBSecond + billableRequests * pricePerRequest;
+		return (
+			billableGBSeconds * pricePerGBSecond + billableRequests * pricePerRequest
+		);
 	}
 
-	private recommendOptimalMemory(func: ServerlessScalingOptions["functions"][0]): number {
+	private recommendOptimalMemory(
+		func: ServerlessScalingOptions["functions"][0],
+	): number {
 		// Simple heuristic for memory optimization
 		if (func.type === "api") {
 			return 512; // APIs typically need less memory

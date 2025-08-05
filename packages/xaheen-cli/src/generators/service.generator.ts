@@ -7,19 +7,23 @@
  * @since 2025-08-04
  */
 
-import { BaseGenerator } from './base.generator.js';
-import { promises as fs } from 'fs';
-import path from 'path';
-import Handlebars from 'handlebars';
+import { promises as fs } from "fs";
+import Handlebars from "handlebars";
+import path from "path";
+import { BaseGenerator } from "./base.generator.js";
 
 // Register Handlebars helpers
-Handlebars.registerHelper('eq', (a, b) => a === b);
-Handlebars.registerHelper('camelCase', (str: string) => {
-	return str.charAt(0).toLowerCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+Handlebars.registerHelper("eq", (a, b) => a === b);
+Handlebars.registerHelper("camelCase", (str: string) => {
+	return (
+		str.charAt(0).toLowerCase() +
+		str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase())
+	);
 });
-Handlebars.registerHelper('generatedAt', () => new Date().toISOString());
-import chalk from 'chalk';
-import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
+Handlebars.registerHelper("generatedAt", () => new Date().toISOString());
+
+import { confirm, isCancel, multiselect, select, text } from "@clack/prompts";
+import chalk from "chalk";
 
 export interface ServiceGeneratorOptions {
 	readonly name: string;
@@ -30,8 +34,8 @@ export interface ServiceGeneratorOptions {
 	readonly events?: boolean;
 	readonly logging?: boolean;
 	readonly validation?: boolean;
-	readonly injection?: 'constructor' | 'property';
-	readonly framework?: 'express' | 'nestjs' | 'fastify';
+	readonly injection?: "constructor" | "property";
+	readonly framework?: "express" | "nestjs" | "fastify";
 	readonly dryRun?: boolean;
 	readonly force?: boolean;
 	readonly typescript?: boolean;
@@ -53,45 +57,39 @@ export interface ServiceParameter {
 export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 	private readonly defaultMethods: ServiceMethod[] = [
 		{
-			name: 'findMany',
-			description: 'Find multiple items with pagination and filtering',
-			returnType: 'Promise<PaginatedResult<T>>',
+			name: "findMany",
+			description: "Find multiple items with pagination and filtering",
+			returnType: "Promise<PaginatedResult<T>>",
 			parameters: [
-				{ name: 'options', type: 'FindManyOptions', optional: true },
+				{ name: "options", type: "FindManyOptions", optional: true },
 			],
 		},
 		{
-			name: 'findById',
-			description: 'Find item by ID',
-			returnType: 'Promise<T | null>',
+			name: "findById",
+			description: "Find item by ID",
+			returnType: "Promise<T | null>",
+			parameters: [{ name: "id", type: "string", optional: false }],
+		},
+		{
+			name: "create",
+			description: "Create new item",
+			returnType: "Promise<T>",
+			parameters: [{ name: "input", type: "CreateInput<T>", optional: false }],
+		},
+		{
+			name: "update",
+			description: "Update existing item",
+			returnType: "Promise<T | null>",
 			parameters: [
-				{ name: 'id', type: 'string', optional: false },
+				{ name: "id", type: "string", optional: false },
+				{ name: "input", type: "UpdateInput<T>", optional: false },
 			],
 		},
 		{
-			name: 'create',
-			description: 'Create new item',
-			returnType: 'Promise<T>',
-			parameters: [
-				{ name: 'input', type: 'CreateInput<T>', optional: false },
-			],
-		},
-		{
-			name: 'update',
-			description: 'Update existing item',
-			returnType: 'Promise<T | null>',
-			parameters: [
-				{ name: 'id', type: 'string', optional: false },
-				{ name: 'input', type: 'UpdateInput<T>', optional: false },
-			],
-		},
-		{
-			name: 'delete',
-			description: 'Delete item by ID',
-			returnType: 'Promise<boolean>',
-			parameters: [
-				{ name: 'id', type: 'string', optional: false },
-			],
+			name: "delete",
+			description: "Delete item by ID",
+			returnType: "Promise<boolean>",
+			parameters: [{ name: "id", type: "string", optional: false }],
 		},
 	];
 
@@ -101,7 +99,7 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 		this.logger.info(`Generating service: ${chalk.cyan(options.name)}`);
 
 		// Detect framework if not specified
-		const framework = options.framework || await this.detectFramework();
+		const framework = options.framework || (await this.detectFramework());
 
 		// Parse methods from string format or use defaults
 		const methods = await this.parseMethods(options.methods || []);
@@ -109,15 +107,16 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 		// Generate service data
 		const serviceData = {
 			name: options.name,
-			className: this.toPascalCase(options.name) + 'Service',
+			className: this.toPascalCase(options.name) + "Service",
 			modelName: options.model || this.toPascalCase(options.name),
-			repositoryName: options.repository || this.toPascalCase(options.name) + 'Repository',
+			repositoryName:
+				options.repository || this.toPascalCase(options.name) + "Repository",
 			methods,
 			caching: options.caching || false,
 			events: options.events || false,
 			logging: options.logging !== false,
 			validation: options.validation !== false,
-			injection: options.injection || 'constructor',
+			injection: options.injection || "constructor",
 			framework,
 			typescript: options.typescript !== false,
 		};
@@ -132,40 +131,59 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 		await this.generateServiceTests(serviceData, options);
 
 		// Generate module/provider registration (if NestJS)
-		if (framework === 'nestjs') {
+		if (framework === "nestjs") {
 			await this.generateNestJSModule(serviceData, options);
 		}
 
-		this.logger.success(`Service ${chalk.green(options.name)} generated successfully!`);
+		this.logger.success(
+			`Service ${chalk.green(options.name)} generated successfully!`,
+		);
 	}
 
-	private async detectFramework(): Promise<'express' | 'nestjs' | 'fastify'> {
+	private async detectFramework(): Promise<"express" | "nestjs" | "fastify"> {
 		try {
-			const packageJsonPath = path.join(process.cwd(), 'package.json');
-			const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-			const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+			const packageJsonPath = path.join(process.cwd(), "package.json");
+			const packageJson = JSON.parse(
+				await fs.readFile(packageJsonPath, "utf-8"),
+			);
+			const dependencies = {
+				...packageJson.dependencies,
+				...packageJson.devDependencies,
+			};
 
-			if (dependencies['@nestjs/core']) return 'nestjs';
-			if (dependencies['fastify']) return 'fastify';
-			if (dependencies['express']) return 'express';
+			if (dependencies["@nestjs/core"]) return "nestjs";
+			if (dependencies["fastify"]) return "fastify";
+			if (dependencies["express"]) return "express";
 
 			// Interactive selection if no framework detected
 			const selectedFramework = await select({
-				message: 'Which framework are you using?',
+				message: "Which framework are you using?",
 				options: [
-					{ value: 'nestjs', label: 'NestJS', hint: 'Progressive Node.js framework with DI' },
-					{ value: 'express', label: 'Express.js', hint: 'Fast, unopinionated web framework' },
-					{ value: 'fastify', label: 'Fastify', hint: 'Fast and low overhead web framework' },
+					{
+						value: "nestjs",
+						label: "NestJS",
+						hint: "Progressive Node.js framework with DI",
+					},
+					{
+						value: "express",
+						label: "Express.js",
+						hint: "Fast, unopinionated web framework",
+					},
+					{
+						value: "fastify",
+						label: "Fastify",
+						hint: "Fast and low overhead web framework",
+					},
 				],
 			});
 
 			if (isCancel(selectedFramework)) {
-				throw new Error('Framework selection cancelled');
+				throw new Error("Framework selection cancelled");
 			}
 
-			return selectedFramework as 'express' | 'nestjs' | 'fastify';
+			return selectedFramework as "express" | "nestjs" | "fastify";
 		} catch {
-			return 'express'; // Default fallback
+			return "express"; // Default fallback
 		}
 	}
 
@@ -173,11 +191,12 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 		if (methodsInput.length === 0) {
 			// Use default CRUD methods
 			const useDefaults = await confirm({
-				message: 'Use default CRUD service methods (findMany, findById, create, update, delete)?',
+				message:
+					"Use default CRUD service methods (findMany, findById, create, update, delete)?",
 			});
 
 			if (isCancel(useDefaults)) {
-				throw new Error('Method selection cancelled');
+				throw new Error("Method selection cancelled");
 			}
 
 			if (useDefaults) {
@@ -186,8 +205,8 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 
 			// Interactive method selection
 			const selectedMethods = await multiselect({
-				message: 'Select service methods:',
-				options: this.defaultMethods.map(method => ({
+				message: "Select service methods:",
+				options: this.defaultMethods.map((method) => ({
 					value: method.name,
 					label: method.name,
 					hint: method.description,
@@ -195,33 +214,40 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 			});
 
 			if (isCancel(selectedMethods)) {
-				throw new Error('Method selection cancelled');
+				throw new Error("Method selection cancelled");
 			}
 
-			return this.defaultMethods.filter(method => 
-				(selectedMethods as string[]).includes(method.name)
+			return this.defaultMethods.filter((method) =>
+				(selectedMethods as string[]).includes(method.name),
 			);
 		}
 
 		// Parse from command line format
-		return methodsInput.map(methodName => {
-			const defaultMethod = this.defaultMethods.find(m => m.name === methodName);
-			return defaultMethod || {
-				name: methodName,
-				description: `${methodName} method`,
-				returnType: 'Promise<any>',
-				parameters: [],
-			};
+		return methodsInput.map((methodName) => {
+			const defaultMethod = this.defaultMethods.find(
+				(m) => m.name === methodName,
+			);
+			return (
+				defaultMethod || {
+					name: methodName,
+					description: `${methodName} method`,
+					returnType: "Promise<any>",
+					parameters: [],
+				}
+			);
 		});
 	}
 
-	private async generateService(serviceData: any, options: ServiceGeneratorOptions): Promise<void> {
+	private async generateService(
+		serviceData: any,
+		options: ServiceGeneratorOptions,
+	): Promise<void> {
 		const templateName = `service/${serviceData.framework}-service.hbs`;
 		const template = await this.loadTemplate(templateName);
 		const content = template(serviceData);
 
 		const fileName = `${serviceData.name}.service.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'services', fileName);
+		const filePath = path.join(process.cwd(), "src", "services", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
@@ -232,57 +258,80 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 		}
 	}
 
-	private async generateServiceInterface(serviceData: any, options: ServiceGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('service/service-interface.hbs');
+	private async generateServiceInterface(
+		serviceData: any,
+		options: ServiceGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate("service/service-interface.hbs");
 		const content = template(serviceData);
 
 		const fileName = `${serviceData.name}.service.interface.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'interfaces', fileName);
+		const filePath = path.join(process.cwd(), "src", "interfaces", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
 			await fs.writeFile(filePath, content);
 			this.logger.info(`Generated service interface: ${chalk.green(filePath)}`);
 		} else {
-			this.logger.info(`Would generate service interface: ${chalk.yellow(filePath)}`);
+			this.logger.info(
+				`Would generate service interface: ${chalk.yellow(filePath)}`,
+			);
 		}
 	}
 
-	private async generateServiceTests(serviceData: any, options: ServiceGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('service/service-test.hbs');
+	private async generateServiceTests(
+		serviceData: any,
+		options: ServiceGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate("service/service-test.hbs");
 		const content = template(serviceData);
 
 		const fileName = `${serviceData.name}.service.test.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'services', '__tests__', fileName);
+		const filePath = path.join(
+			process.cwd(),
+			"src",
+			"services",
+			"__tests__",
+			fileName,
+		);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
 			await fs.writeFile(filePath, content);
 			this.logger.info(`Generated service tests: ${chalk.green(filePath)}`);
 		} else {
-			this.logger.info(`Would generate service tests: ${chalk.yellow(filePath)}`);
+			this.logger.info(
+				`Would generate service tests: ${chalk.yellow(filePath)}`,
+			);
 		}
 	}
 
-	private async generateNestJSModule(serviceData: any, options: ServiceGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('service/nestjs-module.hbs');
+	private async generateNestJSModule(
+		serviceData: any,
+		options: ServiceGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate("service/nestjs-module.hbs");
 		const content = template(serviceData);
 
 		const fileName = `${serviceData.name}.module.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'modules', fileName);
+		const filePath = path.join(process.cwd(), "src", "modules", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
 			await fs.writeFile(filePath, content);
 			this.logger.info(`Generated NestJS module: ${chalk.green(filePath)}`);
 		} else {
-			this.logger.info(`Would generate NestJS module: ${chalk.yellow(filePath)}`);
+			this.logger.info(
+				`Would generate NestJS module: ${chalk.yellow(filePath)}`,
+			);
 		}
 	}
 
-	private async loadTemplate(templatePath: string): Promise<HandlebarsTemplateDelegate> {
-		const templateFile = path.join(__dirname, '../templates', templatePath);
-		const templateContent = await fs.readFile(templateFile, 'utf-8');
+	private async loadTemplate(
+		templatePath: string,
+	): Promise<HandlebarsTemplateDelegate> {
+		const templateFile = path.join(__dirname, "../templates", templatePath);
+		const templateContent = await fs.readFile(templateFile, "utf-8");
 		return Handlebars.compile(templateContent);
 	}
 
@@ -295,16 +344,23 @@ export class ServiceGenerator extends BaseGenerator<ServiceGeneratorOptions> {
 	}
 
 	private toPascalCase(str: string): string {
-		return str.charAt(0).toUpperCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+		return (
+			str.charAt(0).toUpperCase() +
+			str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase())
+		);
 	}
 
-	protected async validateOptions(options: ServiceGeneratorOptions): Promise<void> {
+	protected async validateOptions(
+		options: ServiceGeneratorOptions,
+	): Promise<void> {
 		if (!options.name) {
-			throw new Error('Service name is required');
+			throw new Error("Service name is required");
 		}
 
 		if (!/^[A-Za-z][A-Za-z0-9]*$/.test(options.name)) {
-			throw new Error('Service name must be alphanumeric and start with a letter');
+			throw new Error(
+				"Service name must be alphanumeric and start with a letter",
+			);
 		}
 	}
 }

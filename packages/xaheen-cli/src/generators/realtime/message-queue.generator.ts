@@ -1,5 +1,5 @@
-import { BaseGenerator } from "../base.generator";
 import { GeneratedFile } from "../../types/generator.types";
+import { BaseGenerator } from "../base.generator";
 
 export interface MessageQueueOptions {
 	projectName: string;

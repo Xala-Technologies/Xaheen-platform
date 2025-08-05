@@ -1,0 +1,225 @@
+{{!-- Dashboard Layout Template - Base for dashboard layouts with navigation --}}
+{{>parent}}
+
+{{#slot imports}}
+import { Sidebar } from '@xala-ui/sidebar';
+import { Header } from '@xala-ui/header';
+import { Footer } from '@xala-ui/footer';
+import { ScrollArea } from '@xala-ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from '@xala-ui/sheet';
+import { Button } from '@xala-ui/button';
+import { Menu, X } from 'lucide-react';
+{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props {
+  readonly className?: string;
+  readonly children?: React.ReactNode;
+  readonly title?: string;
+  readonly showSidebar?: boolean;
+  readonly sidebarCollapsed?: boolean;
+  readonly onSidebarToggle?: () => void;
+  readonly headerActions?: React.ReactNode;
+  readonly navigation?: Array<{
+    label: string;
+    href: string;
+    icon?: React.ReactNode;
+    active?: boolean;
+  }>;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} Dashboard Layout
+ * 
+ * @description Responsive dashboard layout with navigation
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant
+ * @nsm-classification {{nsmClassification}}
+ */
+export const {{componentName}} = ({
+  className,
+  children,
+  title = 'Dashboard',
+  showSidebar = true,
+  sidebarCollapsed = false,
+  onSidebarToggle,
+  headerActions,
+  navigation = [],
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  // Mobile sidebar state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Layout calculations
+  const sidebarWidth = useMemo(() => {
+    if (!showSidebar) return 0;
+    return sidebarCollapsed ? 64 : 280;
+  }, [showSidebar, sidebarCollapsed]);
+
+  // Toggle mobile menu
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
+  }, []);
+
+  // Close mobile menu
+  const closeMobileMenu = useCallback(() => {
+    setMobileMenuOpen(false);
+  }, []);
+
+  try {
+    return (
+      <div 
+        className={cn(
+          'min-h-screen bg-background',
+          'flex flex-col lg:flex-row',
+          className
+        )}
+        {...props}
+      >
+        {/* Desktop Sidebar */}
+        {showSidebar && (
+          <aside
+            className={cn(
+              'hidden lg:flex lg:flex-col',
+              'bg-card border-r border-border',
+              'transition-all duration-300 ease-in-out',
+              sidebarCollapsed ? 'lg:w-16' : 'lg:w-70'
+            )}
+            style={{ width: sidebarWidth }}
+            aria-label="Main navigation"
+          >
+            {{#slot sidebar}}
+            <Sidebar 
+              collapsed={sidebarCollapsed}
+              navigation={navigation}
+              onToggle={onSidebarToggle}
+            />
+            {{/slot}}
+          </aside>
+        )}
+
+        {/* Mobile Sidebar */}
+        {showSidebar && (
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetContent side="left" className="w-70 p-0">
+              <Sidebar 
+                navigation={navigation}
+                onNavigate={closeMobileMenu}
+              />
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <header 
+            className={cn(
+              'sticky top-0 z-40',
+              'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
+              'border-b border-border'
+            )}
+          >
+            {{#slot header}}
+            <Header
+              title={title}
+              showMenuButton={showSidebar}
+              onMenuClick={toggleMobileMenu}
+              actions={headerActions}
+            />
+            {{/slot}}
+          </header>
+
+          {/* Main Content */}
+          <main 
+            className="flex-1 overflow-hidden"
+            role="main"
+            aria-label="Main content area"
+          >
+            <ScrollArea className="h-full">
+              <div className="container mx-auto p-6 pb-16">
+                {{#slot main-content}}
+                {children}
+                {{/slot}}
+              </div>
+            </ScrollArea>
+          </main>
+
+          {/* Footer */}
+          <footer 
+            className={cn(
+              'mt-auto border-t border-border',
+              'bg-muted/50'
+            )}
+          >
+            {{#slot footer}}
+            <Footer />
+            {{/slot}}
+          </footer>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error(`${componentName} layout error:`, error);
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">
+            Layout Error
+          </h1>
+          <p className="text-muted-foreground">
+            There was an error rendering the dashboard layout.
+          </p>
+          <Button 
+            onClick={() => window.location.reload()}
+            variant="outline"
+          >
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Layout helper functions
+export const calculateContentWidth = (sidebarWidth: number, padding: number = 48) => {
+  return `calc(100vw - ${sidebarWidth + padding}px)`;
+};
+
+// Navigation helper
+export const createNavItem = (
+  label: string, 
+  href: string, 
+  icon?: React.ReactNode,
+  active?: boolean
+) => ({
+  label,
+  href,
+  icon,
+  active
+});
+
+// Responsive breakpoint helper
+export const useResponsiveLayout = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return { isMobile };
+};
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props };

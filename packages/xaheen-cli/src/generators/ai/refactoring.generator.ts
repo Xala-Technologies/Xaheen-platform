@@ -1,11 +1,24 @@
-import { BaseGenerator } from "../base.generator.js";
 import { promises as fs } from "fs";
 import { join } from "path";
+import { BaseGenerator } from "../base.generator.js";
 
 export interface AIRefactoringOptions {
 	readonly name: string;
-	readonly framework: "react" | "vue" | "angular" | "nestjs" | "express" | "fastify" | "next" | "generic";
-	readonly aiProviders: readonly ("openai" | "anthropic" | "claude" | "local-llm")[];
+	readonly framework:
+		| "react"
+		| "vue"
+		| "angular"
+		| "nestjs"
+		| "express"
+		| "fastify"
+		| "next"
+		| "generic";
+	readonly aiProviders: readonly (
+		| "openai"
+		| "anthropic"
+		| "claude"
+		| "local-llm"
+	)[];
 	readonly outputPath: string;
 	readonly features: readonly RefactoringFeature[];
 	readonly includeInteractiveUI?: boolean;
@@ -18,7 +31,7 @@ export interface AIRefactoringOptions {
 
 export type RefactoringFeature =
 	| "extract-function"
-	| "rename-variable"  
+	| "rename-variable"
 	| "simplify-condition"
 	| "remove-duplication"
 	| "optimize-imports"
@@ -87,7 +100,9 @@ export class AIRefactoringGenerator extends BaseGenerator<AIRefactoringOptions> 
 		}
 	}
 
-	protected async validateOptions(options: AIRefactoringOptions): Promise<void> {
+	protected async validateOptions(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		if (!options.name || !options.outputPath) {
 			throw new Error("Name and output path are required");
 		}
@@ -101,7 +116,9 @@ export class AIRefactoringGenerator extends BaseGenerator<AIRefactoringOptions> 
 		}
 	}
 
-	private async generateRefactoringService(options: AIRefactoringOptions): Promise<void> {
+	private async generateRefactoringService(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const serviceContent = `import type {
   RefactoringSuggestion,
   RefactoringResult,
@@ -111,9 +128,12 @@ export class AIRefactoringGenerator extends BaseGenerator<AIRefactoringOptions> 
   AnalysisContext
 } from './types.js';
 import { ${this.getFrameworkAnalyzer(options.framework)} } from './analyzers/${options.framework}-analyzer.js';
-${options.aiProviders.map(provider => 
-  `import { ${this.getProviderClass(provider)} } from './providers/${provider}-provider.js';`
-).join('\n')}
+${options.aiProviders
+	.map(
+		(provider) =>
+			`import { ${this.getProviderClass(provider)} } from './providers/${provider}-provider.js';`,
+	)
+	.join("\n")}
 import { RefactoringEngine } from './engine/refactoring-engine.js';
 import { FeedbackManager } from './feedback/feedback-manager.js';
 ${options.includeGitIntegration ? "import { GitIntegration } from './git/git-integration.js';" : ""}
@@ -123,8 +143,8 @@ import { join } from 'path';
 /**
  * AI-Powered Code Refactoring Assistant
  * Framework: ${options.framework}
- * AI Providers: ${options.aiProviders.join(', ')}
- * Features: ${options.features.join(', ')}
+ * AI Providers: ${options.aiProviders.join(", ")}
+ * Features: ${options.features.join(", ")}
  */
 export class ${options.name}RefactoringAssistant {
   private readonly analyzer: ${this.getFrameworkAnalyzer(options.framework)};
@@ -143,8 +163,12 @@ export class ${options.name}RefactoringAssistant {
     ${options.includeGitIntegration ? "this.gitIntegration = new GitIntegration(projectPath);" : ""}
 
     // Initialize AI providers
-    ${options.aiProviders.map(provider => `
-    this.aiProviders.set('${provider}', new ${this.getProviderClass(provider)}(config.${provider}Config));`).join('')}
+    ${options.aiProviders
+			.map(
+				(provider) => `
+    this.aiProviders.set('${provider}', new ${this.getProviderClass(provider)}(config.${provider}Config));`,
+			)
+			.join("")}
   }
 
   /**
@@ -281,7 +305,9 @@ export class ${options.name}RefactoringAssistant {
       ? result.appliedSuggestions.reduce((sum, s) => sum + s.confidence, 0) / result.appliedSuggestions.length
       : 0;
 
-    ${options.includeGitIntegration ? `
+    ${
+			options.includeGitIntegration
+				? `
     // Commit changes to Git if any refactorings were applied
     if (result.appliedSuggestions.length > 0) {
       try {
@@ -291,7 +317,9 @@ export class ${options.name}RefactoringAssistant {
       } catch (error) {
         result.errors.push(\`Failed to commit changes: \${error}\`);
       }
-    }` : ""}
+    }`
+				: ""
+		}
 
     return result;
   }
@@ -390,12 +418,17 @@ export default ${options.name}RefactoringAssistant;`;
 
 		await this.ensureDirectoryExists(options.outputPath);
 		await fs.writeFile(
-			join(options.outputPath, `${options.name.toLowerCase()}-refactoring.service.ts`),
-			serviceContent
+			join(
+				options.outputPath,
+				`${options.name.toLowerCase()}-refactoring.service.ts`,
+			),
+			serviceContent,
 		);
 	}
 
-	private async generateRefactoringStrategies(options: AIRefactoringOptions): Promise<void> {
+	private async generateRefactoringStrategies(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const engineDir = join(options.outputPath, "engine");
 		await this.ensureDirectoryExists(engineDir);
 
@@ -501,10 +534,11 @@ ${this.generateRefactoringStrategies(options)}`;
 	}
 
 	private generateRefactoringStrategies(options: AIRefactoringOptions): string {
-		return options.features.map(feature => {
-			switch (feature) {
-				case "extract-function":
-					return `
+		return options.features
+			.map((feature) => {
+				switch (feature) {
+					case "extract-function":
+						return `
 class ExtractFunctionStrategy implements RefactoringStrategy {
   async apply(suggestion: RefactoringSuggestion): Promise<void> {
     // Extract function refactoring logic
@@ -540,8 +574,8 @@ class ExtractFunctionStrategy implements RefactoringStrategy {
   }
 }`;
 
-				case "rename-variable":
-					return `
+					case "rename-variable":
+						return `
 class RenameVariableStrategy implements RefactoringStrategy {
   async apply(suggestion: RefactoringSuggestion): Promise<void> {
     const filePath = suggestion.filePath;
@@ -562,8 +596,8 @@ class RenameVariableStrategy implements RefactoringStrategy {
   }
 }`;
 
-				case "simplify-condition":
-					return `
+					case "simplify-condition":
+						return `
 class SimplifyConditionStrategy implements RefactoringStrategy {
   async apply(suggestion: RefactoringSuggestion): Promise<void> {
     const filePath = suggestion.filePath;
@@ -591,8 +625,8 @@ class SimplifyConditionStrategy implements RefactoringStrategy {
   }
 }`;
 
-				case "optimize-imports":
-					return `
+					case "optimize-imports":
+						return `
 class OptimizeImportsStrategy implements RefactoringStrategy {
   async apply(suggestion: RefactoringSuggestion): Promise<void> {
     const filePath = suggestion.filePath;
@@ -631,8 +665,8 @@ class OptimizeImportsStrategy implements RefactoringStrategy {
   }
 }`;
 
-				default:
-					return `
+					default:
+						return `
 class ${this.getStrategyClassName(feature)} implements RefactoringStrategy {
   async apply(suggestion: RefactoringSuggestion): Promise<void> {
     // Default implementation
@@ -653,17 +687,23 @@ class ${this.getStrategyClassName(feature)} implements RefactoringStrategy {
     return suggestion.suggestedCode.length > 0;
   }
 }`;
-			}
-		}).join('\n');
+				}
+			})
+			.join("\n");
 	}
 
 	private getStrategyClassName(feature: string): string {
-		return feature.split('-').map(word => 
-			word.charAt(0).toUpperCase() + word.slice(1)
-		).join('') + 'Strategy';
+		return (
+			feature
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("") + "Strategy"
+		);
 	}
 
-	private async generateInteractiveUI(options: AIRefactoringOptions): Promise<void> {
+	private async generateInteractiveUI(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const uiDir = join(options.outputPath, "ui");
 		await this.ensureDirectoryExists(uiDir);
 
@@ -787,10 +827,14 @@ export class InteractiveUI {
     console.log(chalk.blue(\`\\nProcessing time: \${result.metrics.processingTimeMs}ms\`));
     console.log(chalk.blue(\`Average confidence: \${(result.metrics.confidenceScore * 100).toFixed(1)}%\`));
 
-    ${options.includeGitIntegration ? `
+    ${
+			options.includeGitIntegration
+				? `
     if (result.gitCommitHash) {
       console.log(chalk.green(\`Git commit: \${result.gitCommitHash}\`));
-    }` : ""}
+    }`
+				: ""
+		}
   }
 
   async promptForFileSelection(files: string[]): Promise<string[]> {
@@ -872,7 +916,9 @@ export class InteractiveUI {
 		await fs.writeFile(join(uiDir, "interactive-ui.ts"), interactiveUIContent);
 	}
 
-	private async generateCLIInterface(options: AIRefactoringOptions): Promise<void> {
+	private async generateCLIInterface(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const cliDir = join(options.outputPath, "cli");
 		await this.ensureDirectoryExists(cliDir);
 
@@ -958,7 +1004,7 @@ program
 
       console.log(chalk.blue('🤖 ${options.name} AI Refactoring Assistant'));
       console.log(chalk.gray('Framework: ${options.framework}'));
-      console.log(chalk.gray('AI Providers: ${options.aiProviders.join(', ')}\\n'));
+      console.log(chalk.gray('AI Providers: ${options.aiProviders.join(", ")}\\n'));
 
       // Find files
       const allFiles = await assistant.analyzer.findFiles([options.pattern]);
@@ -976,7 +1022,7 @@ program
 
       // Let user select features
       const selectedFeatures = await ui.promptForFeatureSelection([
-        ${options.features.map(f => `'${f}'`).join(', ')}
+        ${options.features.map((f) => `'${f}'`).join(", ")}
       ]);
 
       // Get configuration
@@ -1013,16 +1059,20 @@ program
   .option('-o, --output <path>', 'Output path for config file', './${options.name.toLowerCase()}-refactor.config.js')
   .action(async (options) => {
     const configTemplate = \`export default {
-  aiProviders: [${options.aiProviders.map(p => `'${p}'`).join(', ')}],
-  defaultFeatures: [${options.features.map(f => `'${f}'`).join(', ')}],
+  aiProviders: [${options.aiProviders.map((p) => `'${p}'`).join(", ")}],
+  defaultFeatures: [${options.features.map((f) => `'${f}'`).join(", ")}],
   confidenceThreshold: 0.7,
   maxSuggestionsPerFile: 10,
   framework: '${options.framework}',
-  ${options.aiProviders.map(provider => `
+  ${options.aiProviders
+		.map(
+			(provider) => `
   ${provider}Config: {
     apiKey: process.env.${provider.toUpperCase()}_API_KEY,
     model: 'default-model'
-  },`).join('')}
+  },`,
+		)
+		.join("")}
   analysisOptions: {
     includeComments: true,
     analyzeTestFiles: false,
@@ -1071,11 +1121,13 @@ export { program };`;
 		// Generate package.json bin entry helper
 		const binContent = `#!/usr/bin/env node
 import('./cli.js');`;
-		
+
 		await fs.writeFile(join(cliDir, "bin.js"), binContent);
 	}
 
-	private async generateGitIntegration(options: AIRefactoringOptions): Promise<void> {
+	private async generateGitIntegration(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const gitDir = join(options.outputPath, "git");
 		await this.ensureDirectoryExists(gitDir);
 
@@ -1246,10 +1298,15 @@ export class GitIntegration {
   }
 }`;
 
-		await fs.writeFile(join(gitDir, "git-integration.ts"), gitIntegrationContent);
+		await fs.writeFile(
+			join(gitDir, "git-integration.ts"),
+			gitIntegrationContent,
+		);
 	}
 
-	private async generateConfiguration(options: AIRefactoringOptions): Promise<void> {
+	private async generateConfiguration(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const configDir = join(options.outputPath, "config");
 		await this.ensureDirectoryExists(configDir);
 
@@ -1260,16 +1317,20 @@ import { existsSync } from 'fs';
 
 export async function loadConfig(configPath?: string): Promise<${options.name}Config> {
   const defaultConfig: ${options.name}Config = {
-    aiProviders: [${options.aiProviders.map(p => `'${p}'`).join(', ')}],
-    defaultFeatures: [${options.features.map(f => `'${f}'`).join(', ')}],
+    aiProviders: [${options.aiProviders.map((p) => `'${p}'`).join(", ")}],
+    defaultFeatures: [${options.features.map((f) => `'${f}'`).join(", ")}],
     confidenceThreshold: ${options.confidenceThreshold || 0.7},
     maxSuggestionsPerFile: ${options.maxSuggestionsPerFile || 10},
     framework: '${options.framework}',
-    ${options.aiProviders.map(provider => `
+    ${options.aiProviders
+			.map(
+				(provider) => `
     ${provider}Config: {
       apiKey: process.env.${provider.toUpperCase()}_API_KEY || '',
       ${this.getProviderDefaults(provider)}
-    },`).join('')}
+    },`,
+			)
+			.join("")}
     analysisOptions: {
       includeComments: true,
       analyzeTestFiles: false,
@@ -1386,11 +1447,11 @@ export function validateConfig(config: ${options.name}Config): void {
 
 export const defaultConfigTemplate = \`export default {
   // AI providers to use for analysis
-  aiProviders: [${options.aiProviders.map(p => `'${p}'`).join(', ')}],
+  aiProviders: [${options.aiProviders.map((p) => `'${p}'`).join(", ")}],
 
   // Default refactoring features to apply
   defaultFeatures: [
-    ${options.features.map(f => `'${f}'`).join(',\n    ')}
+    ${options.features.map((f) => `'${f}'`).join(",\n    ")}
   ],
 
   // Minimum confidence threshold for suggestions (0-1)
@@ -1403,11 +1464,15 @@ export const defaultConfigTemplate = \`export default {
   framework: '${options.framework}',
 
   // AI Provider Configurations
-  ${options.aiProviders.map(provider => `
+  ${options.aiProviders
+		.map(
+			(provider) => `
   ${provider}Config: {
     apiKey: process.env.${provider.toUpperCase()}_API_KEY,
     ${this.getProviderConfigTemplate(provider)}
-  },`).join('')}
+  },`,
+		)
+		.join("")}
 
   // Analysis options
   analysisOptions: {
@@ -1485,7 +1550,9 @@ export const defaultConfigTemplate = \`export default {
 		}
 	}
 
-	private async generateUtilities(options: AIRefactoringOptions): Promise<void> {
+	private async generateUtilities(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const utilsDir = join(options.outputPath, "utils");
 		await this.ensureDirectoryExists(utilsDir);
 
@@ -1628,7 +1695,10 @@ Generated: \${new Date().toISOString()}
   }
 }`;
 
-		await fs.writeFile(join(utilsDir, "feedback-manager.ts"), feedbackManagerContent);
+		await fs.writeFile(
+			join(utilsDir, "feedback-manager.ts"),
+			feedbackManagerContent,
+		);
 	}
 
 	private async generateTypes(options: AIRefactoringOptions): Promise<void> {
@@ -1657,7 +1727,7 @@ export interface RefactoringSuggestion {
   readonly tags?: string[];
 }
 
-export type RefactoringType = ${options.features.map(f => `'${f}'`).join(' | ')};
+export type RefactoringType = ${options.features.map((f) => `'${f}'`).join(" | ")};
 
 export interface RefactoringResult {
   readonly success: boolean;
@@ -1691,13 +1761,13 @@ export interface ${options.name}Config {
   readonly confidenceThreshold: number;
   readonly maxSuggestionsPerFile: number;
   readonly framework: '${options.framework}';
-  ${options.aiProviders.map(provider => `readonly ${provider}Config?: ${this.getProviderConfigType(provider)};`).join('\n  ')}
+  ${options.aiProviders.map((provider) => `readonly ${provider}Config?: ${this.getProviderConfigType(provider)};`).join("\n  ")}
   readonly analysisOptions?: AnalysisOptions;
   readonly outputOptions?: OutputOptions;
   readonly integrationOptions?: IntegrationOptions;
 }
 
-${options.aiProviders.map(provider => this.generateProviderConfigType(provider)).join('\n\n')}
+${options.aiProviders.map((provider) => this.generateProviderConfigType(provider)).join("\n\n")}
 
 export interface AnalysisOptions {
   readonly includeComments?: boolean;
@@ -1762,7 +1832,7 @@ export interface RefactoringOptions {
 ${this.generateFrameworkSpecificTypes(options.framework)}
 
 // Provider-specific types
-${options.aiProviders.map(provider => this.generateProviderTypes(provider)).join('\n\n')}
+${options.aiProviders.map((provider) => this.generateProviderTypes(provider)).join("\n\n")}
 
 export interface RefactoringEngine {
   applyRefactoring(suggestion: RefactoringSuggestion): Promise<void>;
@@ -1792,18 +1862,24 @@ export interface FeedbackManager {
   generateReport(): Promise<string>;
 }
 
-${options.includeGitIntegration ? `
+${
+	options.includeGitIntegration
+		? `
 export interface GitIntegration {
   commitRefactorings(suggestions: RefactoringSuggestion[]): Promise<string>;
   createBranch(name: string): Promise<void>;
   generateCommitMessage(suggestions: RefactoringSuggestion[]): string;
   checkWorkingDirectory(): Promise<boolean>;
-}` : ""}`;
+}`
+		: ""
+}`;
 
 		await fs.writeFile(join(options.outputPath, "types.ts"), typesContent);
 	}
 
-	private async generateAIProviders(options: AIRefactoringOptions): Promise<void> {
+	private async generateAIProviders(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const providersDir = join(options.outputPath, "providers");
 		await this.ensureDirectoryExists(providersDir);
 
@@ -1815,16 +1891,19 @@ export interface GitIntegration {
 	private async generateAIProvider(
 		provider: string,
 		options: AIRefactoringOptions,
-		providersDir: string
+		providersDir: string,
 	): Promise<void> {
 		const providerContent = this.getProviderImplementation(provider, options);
 		await fs.writeFile(
 			join(providersDir, `${provider}-provider.ts`),
-			providerContent
+			providerContent,
 		);
 	}
 
-	private getProviderImplementation(provider: string, options: AIRefactoringOptions): string {
+	private getProviderImplementation(
+		provider: string,
+		options: AIRefactoringOptions,
+	): string {
 		switch (provider) {
 			case "openai":
 				return this.generateOpenAIProvider(options);
@@ -2279,7 +2358,10 @@ Provide suggestions in JSON format:
 }`;
 	}
 
-	private generateGenericProvider(provider: string, options: AIRefactoringOptions): string {
+	private generateGenericProvider(
+		provider: string,
+		options: AIRefactoringOptions,
+	): string {
 		return `import type { AIProvider, AnalysisContext, RefactoringSuggestion } from '../types.js';
 
 export class ${this.getProviderClass(provider)} implements AIProvider {
@@ -2305,18 +2387,26 @@ export class ${this.getProviderClass(provider)} implements AIProvider {
 }`;
 	}
 
-	private async generateFrameworkAnalyzers(options: AIRefactoringOptions): Promise<void> {
+	private async generateFrameworkAnalyzers(
+		options: AIRefactoringOptions,
+	): Promise<void> {
 		const analyzersDir = join(options.outputPath, "analyzers");
 		await this.ensureDirectoryExists(analyzersDir);
 
-		const analyzerContent = this.getFrameworkAnalyzerImplementation(options.framework, options);
+		const analyzerContent = this.getFrameworkAnalyzerImplementation(
+			options.framework,
+			options,
+		);
 		await fs.writeFile(
 			join(analyzersDir, `${options.framework}-analyzer.ts`),
-			analyzerContent
+			analyzerContent,
 		);
 	}
 
-	private getFrameworkAnalyzerImplementation(framework: string, options: AIRefactoringOptions): string {
+	private getFrameworkAnalyzerImplementation(
+		framework: string,
+		options: AIRefactoringOptions,
+	): string {
 		const commonMethods = `
   async findFiles(patterns: string[]): Promise<string[]> {
     const { glob } = await import('glob');
@@ -2793,16 +2883,23 @@ describe('${options.name}RefactoringAssistant', () => {
     testProjectPath = join(process.cwd(), 'test-project');
     
     mockConfig = {
-      aiProviders: [${options.aiProviders.map(p => `'${p}'`).join(', ')}],
-      defaultFeatures: [${options.features.slice(0, 3).map(f => `'${f}'`).join(', ')}],
+      aiProviders: [${options.aiProviders.map((p) => `'${p}'`).join(", ")}],
+      defaultFeatures: [${options.features
+				.slice(0, 3)
+				.map((f) => `'${f}'`)
+				.join(", ")}],
       confidenceThreshold: 0.7,
       maxSuggestionsPerFile: 5,
       framework: '${options.framework}',
-      ${options.aiProviders.map(provider => `
+      ${options.aiProviders
+				.map(
+					(provider) => `
       ${provider}Config: {
         apiKey: 'test-key',
         model: 'test-model'
-      },`).join('')}
+      },`,
+				)
+				.join("")}
       analysisOptions: {
         includeComments: true,
         analyzeTestFiles: false,
@@ -2976,20 +3073,28 @@ describe('${options.name}RefactoringAssistant', () => {
     });
   });
 
-  ${options.includeGitIntegration ? `
+  ${
+		options.includeGitIntegration
+			? `
   describe('Git Integration', () => {
     it('should commit refactoring changes', async () => {
       // This test would require a git repository setup
       // For now, we'll just test the basic functionality
       expect(assistant.gitIntegration).toBeDefined();
     });
-  });` : ""}
+  });`
+			: ""
+	}
 
   describe('AI Provider Integration', () => {
-    ${options.aiProviders.map(provider => `
+    ${options.aiProviders
+			.map(
+				(provider) => `
     it('should have ${provider} provider configured', () => {
       expect(assistant.aiProviders.has('${provider}')).toBe(true);
-    });`).join('')}
+    });`,
+			)
+			.join("")}
   });
 });
 
@@ -3007,7 +3112,10 @@ describe('${this.getFrameworkAnalyzer(options.framework)}', () => {
       filePath: 'test.${this.getFileExtension(options.framework)}',
       code: testCode,
       framework: '${options.framework}',
-      features: [${options.features.slice(0, 3).map(f => `'${f}'`).join(', ')}],
+      features: [${options.features
+				.slice(0, 3)
+				.map((f) => `'${f}'`)
+				.join(", ")}],
       confidenceThreshold: 0.7,
       maxSuggestions: 10
     });
@@ -3018,7 +3126,7 @@ describe('${this.getFrameworkAnalyzer(options.framework)}', () => {
 
 		await fs.writeFile(
 			join(testsDir, `${options.name.toLowerCase()}-refactoring.test.ts`),
-			testContent
+			testContent,
 		);
 	}
 
@@ -3147,13 +3255,13 @@ function f4() {
 	private getFrameworkAnalyzer(framework: string): string {
 		const mapping: Record<string, string> = {
 			react: "ReactAnalyzer",
-			vue: "VueAnalyzer", 
+			vue: "VueAnalyzer",
 			angular: "AngularAnalyzer",
 			nestjs: "NestJSAnalyzer",
 			express: "ExpressAnalyzer",
 			fastify: "FastifyAnalyzer",
 			next: "NextAnalyzer",
-			generic: "GenericAnalyzer"
+			generic: "GenericAnalyzer",
 		};
 		return mapping[framework] || "GenericAnalyzer";
 	}
@@ -3163,19 +3271,25 @@ function f4() {
 			openai: "OpenAIProvider",
 			anthropic: "AnthropicProvider",
 			claude: "AnthropicProvider",
-			"local-llm": "LocalLLMProvider"
+			"local-llm": "LocalLLMProvider",
 		};
-		return mapping[provider] || `${provider.charAt(0).toUpperCase() + provider.slice(1)}Provider`;
+		return (
+			mapping[provider] ||
+			`${provider.charAt(0).toUpperCase() + provider.slice(1)}Provider`
+		);
 	}
 
 	private getProviderConfigType(provider: string): string {
 		const mapping: Record<string, string> = {
 			openai: "OpenAIProviderConfig",
-			anthropic: "AnthropicProviderConfig", 
+			anthropic: "AnthropicProviderConfig",
 			claude: "AnthropicProviderConfig",
-			"local-llm": "LocalLLMProviderConfig"
+			"local-llm": "LocalLLMProviderConfig",
 		};
-		return mapping[provider] || `${provider.charAt(0).toUpperCase() + provider.slice(1)}ProviderConfig`;
+		return (
+			mapping[provider] ||
+			`${provider.charAt(0).toUpperCase() + provider.slice(1)}ProviderConfig`
+		);
 	}
 
 	private generateProviderConfigType(provider: string): string {

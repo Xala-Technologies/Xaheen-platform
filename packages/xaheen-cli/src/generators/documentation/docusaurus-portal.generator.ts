@@ -5,509 +5,556 @@
  * @version 1.0.0
  */
 
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
+import { dirname, join, resolve } from "path";
 import { BaseGenerator } from "../base.generator";
-import { existsSync, mkdirSync, writeFileSync, copyFileSync } from "fs";
-import { join, resolve, dirname } from "path";
 import type {
-  DocumentationPortalOptions,
-  DocumentationPortalResult,
-  SidebarItem,
-  NavbarItem,
-  ColorScheme,
+	ColorScheme,
+	DocumentationPortalOptions,
+	DocumentationPortalResult,
+	NavbarItem,
+	SidebarItem,
 } from "./portal-types";
 
 export interface DocusaurusConfig {
-  readonly title: string;
-  readonly tagline: string;
-  readonly url: string;
-  readonly baseUrl: string;
-  readonly favicon: string;
-  readonly organizationName: string;
-  readonly projectName: string;
-  readonly themeConfig: DocusaurusThemeConfig;
-  readonly presets: readonly any[];
-  readonly plugins: readonly any[];
-  readonly themes: readonly any[];
-  readonly customFields: Record<string, any>;
+	readonly title: string;
+	readonly tagline: string;
+	readonly url: string;
+	readonly baseUrl: string;
+	readonly favicon: string;
+	readonly organizationName: string;
+	readonly projectName: string;
+	readonly themeConfig: DocusaurusThemeConfig;
+	readonly presets: readonly any[];
+	readonly plugins: readonly any[];
+	readonly themes: readonly any[];
+	readonly customFields: Record<string, any>;
 }
 
 export interface DocusaurusThemeConfig {
-  readonly navbar: DocusaurusNavbar;
-  readonly footer: DocusaurusFooter;
-  readonly prism: DocusaurusPrism;
-  readonly colorMode: DocusaurusColorMode;
-  readonly docs: DocusaurusDocsConfig;
-  readonly algolia?: DocusaurusAlgolia;
+	readonly navbar: DocusaurusNavbar;
+	readonly footer: DocusaurusFooter;
+	readonly prism: DocusaurusPrism;
+	readonly colorMode: DocusaurusColorMode;
+	readonly docs: DocusaurusDocsConfig;
+	readonly algolia?: DocusaurusAlgolia;
 }
 
 export interface DocusaurusNavbar {
-  readonly title: string;
-  readonly logo?: {
-    readonly alt: string;
-    readonly src: string;
-    readonly href?: string;
-  };
-  readonly items: readonly any[];
-  readonly hideOnScroll: boolean;
+	readonly title: string;
+	readonly logo?: {
+		readonly alt: string;
+		readonly src: string;
+		readonly href?: string;
+	};
+	readonly items: readonly any[];
+	readonly hideOnScroll: boolean;
 }
 
 export interface DocusaurusFooter {
-  readonly style: 'dark' | 'light';
-  readonly links: readonly any[];
-  readonly copyright: string;
+	readonly style: "dark" | "light";
+	readonly links: readonly any[];
+	readonly copyright: string;
 }
 
 export interface DocusaurusPrism {
-  readonly theme: any;
-  readonly darkTheme: any;
-  readonly additionalLanguages: readonly string[];
+	readonly theme: any;
+	readonly darkTheme: any;
+	readonly additionalLanguages: readonly string[];
 }
 
 export interface DocusaurusColorMode {
-  readonly defaultMode: 'light' | 'dark';
-  readonly disableSwitch: boolean;
-  readonly respectPrefersColorScheme: boolean;
+	readonly defaultMode: "light" | "dark";
+	readonly disableSwitch: boolean;
+	readonly respectPrefersColorScheme: boolean;
 }
 
 export interface DocusaurusDocsConfig {
-  readonly sidebarPath: string;
-  readonly editUrl?: string;
-  readonly showLastUpdateAuthor: boolean;
-  readonly showLastUpdateTime: boolean;
-  readonly breadcrumbs: boolean;
+	readonly sidebarPath: string;
+	readonly editUrl?: string;
+	readonly showLastUpdateAuthor: boolean;
+	readonly showLastUpdateTime: boolean;
+	readonly breadcrumbs: boolean;
 }
 
 export interface DocusaurusAlgolia {
-  readonly appId: string;
-  readonly apiKey: string;
-  readonly indexName: string;
-  readonly contextualSearch: boolean;
+	readonly appId: string;
+	readonly apiKey: string;
+	readonly indexName: string;
+	readonly contextualSearch: boolean;
 }
 
 export class DocusaurusPortalGenerator extends BaseGenerator<DocumentationPortalOptions> {
-  async generate(options: DocumentationPortalOptions): Promise<DocumentationPortalResult> {
-    try {
-      this.logger.info(`Generating Docusaurus documentation portal for ${options.projectName}`);
-      
-      await this.validateOptions(options);
-      
-      const portalDir = join(options.outputDir, 'docs-portal');
-      const staticDir = join(portalDir, 'static');
-      const docsDir = join(portalDir, 'docs');
-      const srcDir = join(portalDir, 'src');
-      
-      // Create directory structure
-      this.createDirectoryStructure(portalDir);
-      
-      // Generate configuration files
-      const configFiles = await this.generateConfigurationFiles(options, portalDir);
-      
-      // Generate content structure
-      const contentFiles = await this.generateContentStructure(options, docsDir);
-      
-      // Generate custom components and pages
-      const componentFiles = await this.generateComponents(options, srcDir);
-      
-      // Generate assets and static files
-      const assetFiles = await this.generateAssets(options, staticDir);
-      
-      // Generate package.json and dependencies
-      const packageFile = await this.generatePackageJson(options, portalDir);
-      
-      // Generate deployment configuration
-      const deploymentFiles = await this.generateDeploymentConfig(options, portalDir);
-      
-      // Generate custom CSS and styling
-      const styleFiles = await this.generateStyling(options, srcDir);
-      
-      // Generate search configuration
-      const searchConfig = await this.generateSearchConfig(options, portalDir);
-      
-      const allFiles = [
-        ...configFiles,
-        ...contentFiles,
-        ...componentFiles,
-        ...assetFiles,
-        packageFile,
-        ...deploymentFiles,
-        ...styleFiles,
-        ...searchConfig,
-      ];
-      
-      const portalUrl = this.generatePortalUrl(options);
-      
-      this.logger.success(`Docusaurus portal generated successfully at ${portalDir}`);
-      
-      return {
-        success: true,
-        message: `Docusaurus documentation portal created successfully for ${options.projectName}`,
-        files: allFiles,
-        configFiles,
-        assetFiles,
-        generatedPages: contentFiles,
-        portalUrl,
-        commands: [
-          'cd docs-portal',
-          'npm install',
-          'npm start # Start development server',
-          'npm run build # Build for production',
-          'npm run serve # Serve production build locally',
-        ],
-        nextSteps: [
-          'Customize the theme colors and branding in docusaurus.config.js',
-          'Add your documentation content to the docs/ directory',
-          'Configure search with Algolia or enable local search',
-          'Set up continuous deployment with your preferred platform',
-          'Enable analytics and feedback collection',
-          'Configure automated documentation synchronization',
-        ],
-      };
-    } catch (error) {
-      this.logger.error('Failed to generate Docusaurus portal', error);
-      return {
-        success: false,
-        message: `Failed to generate Docusaurus portal: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        files: [],
-        configFiles: [],
-        assetFiles: [],
-        generatedPages: [],
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
+	async generate(
+		options: DocumentationPortalOptions,
+	): Promise<DocumentationPortalResult> {
+		try {
+			this.logger.info(
+				`Generating Docusaurus documentation portal for ${options.projectName}`,
+			);
 
-  private createDirectoryStructure(portalDir: string): void {
-    const dirs = [
-      portalDir,
-      join(portalDir, 'docs'),
-      join(portalDir, 'docs', 'api'),
-      join(portalDir, 'docs', 'guides'),
-      join(portalDir, 'docs', 'tutorials'),
-      join(portalDir, 'docs', 'reference'),
-      join(portalDir, 'blog'),
-      join(portalDir, 'src'),
-      join(portalDir, 'src', 'components'),
-      join(portalDir, 'src', 'pages'),
-      join(portalDir, 'src', 'css'),
-      join(portalDir, 'static'),
-      join(portalDir, 'static', 'img'),
-      join(portalDir, 'static', 'icons'),
-      join(portalDir, '.github'),
-      join(portalDir, '.github', 'workflows'),
-    ];
+			await this.validateOptions(options);
 
-    dirs.forEach(dir => {
-      if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-      }
-    });
-  }
+			const portalDir = join(options.outputDir, "docs-portal");
+			const staticDir = join(portalDir, "static");
+			const docsDir = join(portalDir, "docs");
+			const srcDir = join(portalDir, "src");
 
-  private async generateConfigurationFiles(
-    options: DocumentationPortalOptions,
-    portalDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+			// Create directory structure
+			this.createDirectoryStructure(portalDir);
 
-    // Generate main Docusaurus config
-    const docusaurusConfig = this.generateDocusaurusConfig(options);
-    const configPath = join(portalDir, 'docusaurus.config.js');
-    writeFileSync(configPath, this.formatDocusaurusConfig(docusaurusConfig));
-    files.push(configPath);
+			// Generate configuration files
+			const configFiles = await this.generateConfigurationFiles(
+				options,
+				portalDir,
+			);
 
-    // Generate sidebar configuration
-    const sidebarPath = join(portalDir, 'sidebars.js');
-    writeFileSync(sidebarPath, this.generateSidebarConfig(options));
-    files.push(sidebarPath);
+			// Generate content structure
+			const contentFiles = await this.generateContentStructure(
+				options,
+				docsDir,
+			);
 
-    // Generate TypeScript config
-    const tsconfigPath = join(portalDir, 'tsconfig.json');
-    writeFileSync(tsconfigPath, this.generateTSConfig());
-    files.push(tsconfigPath);
+			// Generate custom components and pages
+			const componentFiles = await this.generateComponents(options, srcDir);
 
-    // Generate Babel config
-    const babelPath = join(portalDir, 'babel.config.js');
-    writeFileSync(babelPath, this.generateBabelConfig());
-    files.push(babelPath);
+			// Generate assets and static files
+			const assetFiles = await this.generateAssets(options, staticDir);
 
-    return files;
-  }
+			// Generate package.json and dependencies
+			const packageFile = await this.generatePackageJson(options, portalDir);
 
-  private generateDocusaurusConfig(options: DocumentationPortalOptions): DocusaurusConfig {
-    const { branding, features, search, analytics, deployment } = options;
+			// Generate deployment configuration
+			const deploymentFiles = await this.generateDeploymentConfig(
+				options,
+				portalDir,
+			);
 
-    return {
-      title: branding.siteName,
-      tagline: branding.tagline || `Documentation for ${options.projectName}`,
-      url: deployment.customDomain || 'https://your-docusaurus-test-site.com',
-      baseUrl: deployment.basePath || '/',
-      favicon: branding.favicon || 'img/favicon.ico',
-      organizationName: options.author || 'your-org',
-      projectName: options.projectName,
-      
-      themeConfig: {
-        navbar: {
-          title: branding.siteName,
-          logo: branding.logo ? {
-            alt: branding.logo.alt,
-            src: branding.logo.src,
-            href: branding.logo.href,
-          } : undefined,
-          items: this.generateNavbarItems(options.navigation.navbar),
-          hideOnScroll: false,
-        },
-        
-        footer: {
-          style: 'dark',
-          links: branding.footerLinks?.map(link => ({
-            title: link.title,
-            items: link.items,
-          })) || [],
-          copyright: `Copyright © ${new Date().getFullYear()} ${options.author || 'Your Organization'}. Built with Docusaurus.`,
-        },
-        
-        prism: {
-          theme: require('prism-react-renderer/themes/github'),
-          darkTheme: require('prism-react-renderer/themes/dracula'),
-          additionalLanguages: ['bash', 'json', 'yaml', 'typescript', 'javascript'],
-        },
-        
-        colorMode: {
-          defaultMode: 'light',
-          disableSwitch: !features.enableDarkMode,
-          respectPrefersColorScheme: features.enableDarkMode,
-        },
-        
-        docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: features.enableEditOnGitHub && options.repository ? 
-            `${options.repository}/tree/main/docs/` : undefined,
-          showLastUpdateAuthor: features.enableContributors,
-          showLastUpdateTime: features.enableLastUpdated,
-          breadcrumbs: options.navigation.breadcrumbs,
-        },
-        
-        algolia: search.provider === 'algolia' ? {
-          appId: search.appId!,
-          apiKey: search.apiKey!,
-          indexName: search.indexName!,
-          contextualSearch: search.contextualSearch || true,
-        } : undefined,
-      },
-      
-      presets: [
-        [
-          'classic',
-          {
-            docs: {
-              sidebarPath: require.resolve('./sidebars.js'),
-              editUrl: features.enableEditOnGitHub && options.repository ? 
-                `${options.repository}/tree/main/docs/` : undefined,
-            },
-            blog: {
-              showReadingTime: true,
-              editUrl: features.enableEditOnGitHub && options.repository ? 
-                `${options.repository}/tree/main/blog/` : undefined,
-            },
-            theme: {
-              customCss: require.resolve('./src/css/custom.css'),
-            },
-            gtag: analytics.provider === 'google' ? {
-              trackingID: analytics.trackingId!,
-            } : undefined,
-          },
-        ],
-      ],
-      
-      plugins: this.generatePlugins(options),
-      themes: [],
-      customFields: {
-        projectType: options.projectType,
-        runtime: options.runtime,
-        framework: options.framework,
-        version: options.version,
-      },
-    };
-  }
+			// Generate custom CSS and styling
+			const styleFiles = await this.generateStyling(options, srcDir);
 
-  private generatePlugins(options: DocumentationPortalOptions): any[] {
-    const plugins: any[] = [];
+			// Generate search configuration
+			const searchConfig = await this.generateSearchConfig(options, portalDir);
 
-    // Add search plugin if using local search
-    if (options.search.provider === 'local') {
-      plugins.push([
-        require.resolve('@docusaurus/plugin-content-docs'),
-        {
-          id: 'search',
-          path: './search',
-          routeBasePath: 'search',
-        },
-      ]);
-    }
+			const allFiles = [
+				...configFiles,
+				...contentFiles,
+				...componentFiles,
+				...assetFiles,
+				packageFile,
+				...deploymentFiles,
+				...styleFiles,
+				...searchConfig,
+			];
 
-    // Add PWA plugin if enabled
-    if (options.features.enablePrintView) {
-      plugins.push([
-        '@docusaurus/plugin-pwa',
-        {
-          debug: true,
-          offlineModeActivationStrategies: [
-            'appInstalled',
-            'standalone',
-            'queryString',
-          ],
-          pwaHead: [
-            {
-              tagName: 'link',
-              rel: 'icon',
-              href: '/img/docusaurus.png',
-            },
-            {
-              tagName: 'link',
-              rel: 'manifest',
-              href: '/manifest.json',
-            },
-            {
-              tagName: 'meta',
-              name: 'theme-color',
-              content: 'rgb(37, 194, 160)',
-            },
-          ],
-        },
-      ]);
-    }
+			const portalUrl = this.generatePortalUrl(options);
 
-    return plugins;
-  }
+			this.logger.success(
+				`Docusaurus portal generated successfully at ${portalDir}`,
+			);
 
-  private generateNavbarItems(navbarItems: readonly NavbarItem[]): any[] {
-    return navbarItems.map(item => ({
-      type: item.type,
-      label: item.label,
-      position: item.position,
-      to: item.to,
-      href: item.href,
-      items: item.items?.map(subItem => ({
-        type: subItem.type,
-        label: subItem.label,
-        to: subItem.to,
-        href: subItem.href,
-      })),
-    }));
-  }
+			return {
+				success: true,
+				message: `Docusaurus documentation portal created successfully for ${options.projectName}`,
+				files: allFiles,
+				configFiles,
+				assetFiles,
+				generatedPages: contentFiles,
+				portalUrl,
+				commands: [
+					"cd docs-portal",
+					"npm install",
+					"npm start # Start development server",
+					"npm run build # Build for production",
+					"npm run serve # Serve production build locally",
+				],
+				nextSteps: [
+					"Customize the theme colors and branding in docusaurus.config.js",
+					"Add your documentation content to the docs/ directory",
+					"Configure search with Algolia or enable local search",
+					"Set up continuous deployment with your preferred platform",
+					"Enable analytics and feedback collection",
+					"Configure automated documentation synchronization",
+				],
+			};
+		} catch (error) {
+			this.logger.error("Failed to generate Docusaurus portal", error);
+			return {
+				success: false,
+				message: `Failed to generate Docusaurus portal: ${error instanceof Error ? error.message : "Unknown error"}`,
+				files: [],
+				configFiles: [],
+				assetFiles: [],
+				generatedPages: [],
+				error: error instanceof Error ? error.message : "Unknown error",
+			};
+		}
+	}
 
-  private generateSidebarConfig(options: DocumentationPortalOptions): string {
-    const sidebarItems = options.navigation.sidebar;
-    
-    const generateSidebarJS = (items: readonly SidebarItem[]): string => {
-      const formatItem = (item: SidebarItem): string => {
-        if (item.type === 'category') {
-          return `{
+	private createDirectoryStructure(portalDir: string): void {
+		const dirs = [
+			portalDir,
+			join(portalDir, "docs"),
+			join(portalDir, "docs", "api"),
+			join(portalDir, "docs", "guides"),
+			join(portalDir, "docs", "tutorials"),
+			join(portalDir, "docs", "reference"),
+			join(portalDir, "blog"),
+			join(portalDir, "src"),
+			join(portalDir, "src", "components"),
+			join(portalDir, "src", "pages"),
+			join(portalDir, "src", "css"),
+			join(portalDir, "static"),
+			join(portalDir, "static", "img"),
+			join(portalDir, "static", "icons"),
+			join(portalDir, ".github"),
+			join(portalDir, ".github", "workflows"),
+		];
+
+		dirs.forEach((dir) => {
+			if (!existsSync(dir)) {
+				mkdirSync(dir, { recursive: true });
+			}
+		});
+	}
+
+	private async generateConfigurationFiles(
+		options: DocumentationPortalOptions,
+		portalDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
+
+		// Generate main Docusaurus config
+		const docusaurusConfig = this.generateDocusaurusConfig(options);
+		const configPath = join(portalDir, "docusaurus.config.js");
+		writeFileSync(configPath, this.formatDocusaurusConfig(docusaurusConfig));
+		files.push(configPath);
+
+		// Generate sidebar configuration
+		const sidebarPath = join(portalDir, "sidebars.js");
+		writeFileSync(sidebarPath, this.generateSidebarConfig(options));
+		files.push(sidebarPath);
+
+		// Generate TypeScript config
+		const tsconfigPath = join(portalDir, "tsconfig.json");
+		writeFileSync(tsconfigPath, this.generateTSConfig());
+		files.push(tsconfigPath);
+
+		// Generate Babel config
+		const babelPath = join(portalDir, "babel.config.js");
+		writeFileSync(babelPath, this.generateBabelConfig());
+		files.push(babelPath);
+
+		return files;
+	}
+
+	private generateDocusaurusConfig(
+		options: DocumentationPortalOptions,
+	): DocusaurusConfig {
+		const { branding, features, search, analytics, deployment } = options;
+
+		return {
+			title: branding.siteName,
+			tagline: branding.tagline || `Documentation for ${options.projectName}`,
+			url: deployment.customDomain || "https://your-docusaurus-test-site.com",
+			baseUrl: deployment.basePath || "/",
+			favicon: branding.favicon || "img/favicon.ico",
+			organizationName: options.author || "your-org",
+			projectName: options.projectName,
+
+			themeConfig: {
+				navbar: {
+					title: branding.siteName,
+					logo: branding.logo
+						? {
+								alt: branding.logo.alt,
+								src: branding.logo.src,
+								href: branding.logo.href,
+							}
+						: undefined,
+					items: this.generateNavbarItems(options.navigation.navbar),
+					hideOnScroll: false,
+				},
+
+				footer: {
+					style: "dark",
+					links:
+						branding.footerLinks?.map((link) => ({
+							title: link.title,
+							items: link.items,
+						})) || [],
+					copyright: `Copyright © ${new Date().getFullYear()} ${options.author || "Your Organization"}. Built with Docusaurus.`,
+				},
+
+				prism: {
+					theme: require("prism-react-renderer/themes/github"),
+					darkTheme: require("prism-react-renderer/themes/dracula"),
+					additionalLanguages: [
+						"bash",
+						"json",
+						"yaml",
+						"typescript",
+						"javascript",
+					],
+				},
+
+				colorMode: {
+					defaultMode: "light",
+					disableSwitch: !features.enableDarkMode,
+					respectPrefersColorScheme: features.enableDarkMode,
+				},
+
+				docs: {
+					sidebarPath: require.resolve("./sidebars.js"),
+					editUrl:
+						features.enableEditOnGitHub && options.repository
+							? `${options.repository}/tree/main/docs/`
+							: undefined,
+					showLastUpdateAuthor: features.enableContributors,
+					showLastUpdateTime: features.enableLastUpdated,
+					breadcrumbs: options.navigation.breadcrumbs,
+				},
+
+				algolia:
+					search.provider === "algolia"
+						? {
+								appId: search.appId!,
+								apiKey: search.apiKey!,
+								indexName: search.indexName!,
+								contextualSearch: search.contextualSearch || true,
+							}
+						: undefined,
+			},
+
+			presets: [
+				[
+					"classic",
+					{
+						docs: {
+							sidebarPath: require.resolve("./sidebars.js"),
+							editUrl:
+								features.enableEditOnGitHub && options.repository
+									? `${options.repository}/tree/main/docs/`
+									: undefined,
+						},
+						blog: {
+							showReadingTime: true,
+							editUrl:
+								features.enableEditOnGitHub && options.repository
+									? `${options.repository}/tree/main/blog/`
+									: undefined,
+						},
+						theme: {
+							customCss: require.resolve("./src/css/custom.css"),
+						},
+						gtag:
+							analytics.provider === "google"
+								? {
+										trackingID: analytics.trackingId!,
+									}
+								: undefined,
+					},
+				],
+			],
+
+			plugins: this.generatePlugins(options),
+			themes: [],
+			customFields: {
+				projectType: options.projectType,
+				runtime: options.runtime,
+				framework: options.framework,
+				version: options.version,
+			},
+		};
+	}
+
+	private generatePlugins(options: DocumentationPortalOptions): any[] {
+		const plugins: any[] = [];
+
+		// Add search plugin if using local search
+		if (options.search.provider === "local") {
+			plugins.push([
+				require.resolve("@docusaurus/plugin-content-docs"),
+				{
+					id: "search",
+					path: "./search",
+					routeBasePath: "search",
+				},
+			]);
+		}
+
+		// Add PWA plugin if enabled
+		if (options.features.enablePrintView) {
+			plugins.push([
+				"@docusaurus/plugin-pwa",
+				{
+					debug: true,
+					offlineModeActivationStrategies: [
+						"appInstalled",
+						"standalone",
+						"queryString",
+					],
+					pwaHead: [
+						{
+							tagName: "link",
+							rel: "icon",
+							href: "/img/docusaurus.png",
+						},
+						{
+							tagName: "link",
+							rel: "manifest",
+							href: "/manifest.json",
+						},
+						{
+							tagName: "meta",
+							name: "theme-color",
+							content: "rgb(37, 194, 160)",
+						},
+					],
+				},
+			]);
+		}
+
+		return plugins;
+	}
+
+	private generateNavbarItems(navbarItems: readonly NavbarItem[]): any[] {
+		return navbarItems.map((item) => ({
+			type: item.type,
+			label: item.label,
+			position: item.position,
+			to: item.to,
+			href: item.href,
+			items: item.items?.map((subItem) => ({
+				type: subItem.type,
+				label: subItem.label,
+				to: subItem.to,
+				href: subItem.href,
+			})),
+		}));
+	}
+
+	private generateSidebarConfig(options: DocumentationPortalOptions): string {
+		const sidebarItems = options.navigation.sidebar;
+
+		const generateSidebarJS = (items: readonly SidebarItem[]): string => {
+			const formatItem = (item: SidebarItem): string => {
+				if (item.type === "category") {
+					return `{
             type: 'category',
             label: '${item.label}',
             collapsed: ${item.collapsed || false},
-            items: [${item.items?.map(formatItem).join(',\n      ') || ''}],
+            items: [${item.items?.map(formatItem).join(",\n      ") || ""}],
           }`;
-        } else if (item.type === 'doc') {
-          return `{
+				} else if (item.type === "doc") {
+					return `{
             type: 'doc',
             id: '${item.id}',
             label: '${item.label}',
           }`;
-        } else if (item.type === 'link') {
-          return `{
+				} else if (item.type === "link") {
+					return `{
             type: 'link',
             label: '${item.label}',
             href: '${item.href}',
           }`;
-        } else if (item.type === 'generated') {
-          return `{
+				} else if (item.type === "generated") {
+					return `{
             type: 'autogenerated',
             dirName: '${item.id}',
           }`;
-        }
-        return `'${item.id}'`;
-      };
+				}
+				return `'${item.id}'`;
+			};
 
-      return `module.exports = {
+			return `module.exports = {
   tutorialSidebar: [
-    ${items.map(formatItem).join(',\n    ')}
+    ${items.map(formatItem).join(",\n    ")}
   ],
 };`;
-    };
+		};
 
-    return generateSidebarJS(sidebarItems);
-  }
+		return generateSidebarJS(sidebarItems);
+	}
 
-  private generateTSConfig(): string {
-    return JSON.stringify({
-      extends: '@docusaurus/tsconfig',
-      compilerOptions: {
-        baseUrl: '.',
-        paths: {
-          '@site/*': ['./src/*'],
-          '@generated/*': ['./.docusaurus/*'],
-        },
-      },
-      include: [
-        'src/**/*',
-        'docs/**/*',
-        'blog/**/*',
-      ],
-    }, null, 2);
-  }
+	private generateTSConfig(): string {
+		return JSON.stringify(
+			{
+				extends: "@docusaurus/tsconfig",
+				compilerOptions: {
+					baseUrl: ".",
+					paths: {
+						"@site/*": ["./src/*"],
+						"@generated/*": ["./.docusaurus/*"],
+					},
+				},
+				include: ["src/**/*", "docs/**/*", "blog/**/*"],
+			},
+			null,
+			2,
+		);
+	}
 
-  private generateBabelConfig(): string {
-    return `module.exports = {
+	private generateBabelConfig(): string {
+		return `module.exports = {
   presets: [require.resolve('@docusaurus/core/lib/babel/preset')],
 };`;
-  }
+	}
 
-  private async generateContentStructure(
-    options: DocumentationPortalOptions,
-    docsDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+	private async generateContentStructure(
+		options: DocumentationPortalOptions,
+		docsDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Generate main intro page
-    const introPath = join(docsDir, 'intro.md');
-    writeFileSync(introPath, this.generateIntroContent(options));
-    files.push(introPath);
+		// Generate main intro page
+		const introPath = join(docsDir, "intro.md");
+		writeFileSync(introPath, this.generateIntroContent(options));
+		files.push(introPath);
 
-    // Generate getting started guide
-    const gettingStartedPath = join(docsDir, 'getting-started.md');
-    writeFileSync(gettingStartedPath, this.generateGettingStartedContent(options));
-    files.push(gettingStartedPath);
+		// Generate getting started guide
+		const gettingStartedPath = join(docsDir, "getting-started.md");
+		writeFileSync(
+			gettingStartedPath,
+			this.generateGettingStartedContent(options),
+		);
+		files.push(gettingStartedPath);
 
-    // Generate API documentation structure
-    const apiDir = join(docsDir, 'api');
-    const apiIndexPath = join(apiDir, 'index.md');
-    writeFileSync(apiIndexPath, this.generateAPIIndexContent(options));
-    files.push(apiIndexPath);
+		// Generate API documentation structure
+		const apiDir = join(docsDir, "api");
+		const apiIndexPath = join(apiDir, "index.md");
+		writeFileSync(apiIndexPath, this.generateAPIIndexContent(options));
+		files.push(apiIndexPath);
 
-    // Generate guides structure
-    const guidesDir = join(docsDir, 'guides');
-    const guidesIndexPath = join(guidesDir, 'index.md');
-    writeFileSync(guidesIndexPath, this.generateGuidesIndexContent(options));
-    files.push(guidesIndexPath);
+		// Generate guides structure
+		const guidesDir = join(docsDir, "guides");
+		const guidesIndexPath = join(guidesDir, "index.md");
+		writeFileSync(guidesIndexPath, this.generateGuidesIndexContent(options));
+		files.push(guidesIndexPath);
 
-    // Generate tutorials structure
-    const tutorialsDir = join(docsDir, 'tutorials');
-    const tutorialsIndexPath = join(tutorialsDir, 'index.md');
-    writeFileSync(tutorialsIndexPath, this.generateTutorialsIndexContent(options));
-    files.push(tutorialsIndexPath);
+		// Generate tutorials structure
+		const tutorialsDir = join(docsDir, "tutorials");
+		const tutorialsIndexPath = join(tutorialsDir, "index.md");
+		writeFileSync(
+			tutorialsIndexPath,
+			this.generateTutorialsIndexContent(options),
+		);
+		files.push(tutorialsIndexPath);
 
-    // Generate reference documentation
-    const referenceDir = join(docsDir, 'reference');
-    const referenceIndexPath = join(referenceDir, 'index.md');
-    writeFileSync(referenceIndexPath, this.generateReferenceIndexContent(options));
-    files.push(referenceIndexPath);
+		// Generate reference documentation
+		const referenceDir = join(docsDir, "reference");
+		const referenceIndexPath = join(referenceDir, "index.md");
+		writeFileSync(
+			referenceIndexPath,
+			this.generateReferenceIndexContent(options),
+		);
+		files.push(referenceIndexPath);
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateIntroContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateIntroContent(options: DocumentationPortalOptions): string {
+		return `---
 sidebar_position: 1
 title: Introduction
 description: Welcome to ${options.projectName} documentation
@@ -549,18 +596,20 @@ Additional reference materials and resources.
 
 ## Need Help?
 
-- 🐛 [Report Issues](${options.repository || '#'}/issues)
-- 💬 [Discussions](${options.repository || '#'}/discussions)
+- 🐛 [Report Issues](${options.repository || "#"}/issues)
+- 💬 [Discussions](${options.repository || "#"}/discussions)
 - 📧 [Contact Support](mailto:support@example.com)
 
 ---
 
 *This documentation is automatically generated and synchronized with the codebase.*
 `;
-  }
+	}
 
-  private generateGettingStartedContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateGettingStartedContent(
+		options: DocumentationPortalOptions,
+	): string {
+		return `---
 sidebar_position: 2
 title: Getting Started
 description: Quick start guide for ${options.projectName}
@@ -575,19 +624,19 @@ This guide will help you get ${options.projectName} up and running in your envir
 Before you begin, ensure you have the following installed:
 
 - **${options.runtime}** (version ${this.getRecommendedVersion(options.runtime)})
-${options.runtime === 'node' ? '- **npm** or **yarn** package manager' : ''}
-${options.databases.length > 0 ? `- **Database**: ${options.databases.join(' or ')}\n` : ''}
+${options.runtime === "node" ? "- **npm** or **yarn** package manager" : ""}
+${options.databases.length > 0 ? `- **Database**: ${options.databases.join(" or ")}\n` : ""}
 
 ## Installation
 
-### Option 1: Using Package Manager ${options.runtime === 'node' ? '(Recommended)' : ''}
+### Option 1: Using Package Manager ${options.runtime === "node" ? "(Recommended)" : ""}
 
 ${this.generateInstallationInstructions(options)}
 
 ### Option 2: From Source
 
 \`\`\`bash
-git clone ${options.repository || 'https://github.com/your-org/your-repo.git'}
+git clone ${options.repository || "https://github.com/your-org/your-repo.git"}
 cd ${options.projectName}
 ${this.getInstallCommand(options.runtime)}
 ${this.getBuildCommand(options.runtime)}
@@ -661,17 +710,17 @@ sudo ${this.getInstallCommand(options.runtime)}
 If you encounter issues:
 
 1. Check our [Troubleshooting Guide](./reference/troubleshooting.md)
-2. Search [existing issues](${options.repository || '#'}/issues)
-3. [Create a new issue](${options.repository || '#'}/issues/new)
+2. Search [existing issues](${options.repository || "#"}/issues)
+3. [Create a new issue](${options.repository || "#"}/issues/new)
 
 ---
 
 *Need more help? Join our community discussions or contact support.*
 `;
-  }
+	}
 
-  private generateAPIIndexContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateAPIIndexContent(options: DocumentationPortalOptions): string {
+		return `---
 title: API Documentation
 description: Complete API reference for ${options.projectName}
 ---
@@ -730,7 +779,7 @@ All responses follow this structure:
 
 ### Integration APIs
 
-${options.integrations.map(integration => `- [${integration}](./integrations/${integration.toLowerCase()}.md) - ${integration} integration`).join('\n')}
+${options.integrations.map((integration) => `- [${integration}](./integrations/${integration.toLowerCase()}.md) - ${integration} integration`).join("\n")}
 
 ### Utility APIs
 
@@ -774,17 +823,19 @@ The API uses standard HTTP status codes:
 ## Support
 
 - 📧 API Support: api-support@example.com
-- 🐛 Report Issues: [GitHub Issues](${options.repository || '#'}/issues)
-- 💬 Community: [Discussions](${options.repository || '#'}/discussions)
+- 🐛 Report Issues: [GitHub Issues](${options.repository || "#"}/issues)
+- 💬 Community: [Discussions](${options.repository || "#"}/discussions)
 
 ---
 
 *This documentation is automatically generated from OpenAPI specifications.*
 `;
-  }
+	}
 
-  private generateGuidesIndexContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateGuidesIndexContent(
+		options: DocumentationPortalOptions,
+	): string {
+		return `---
 title: Guides
 description: Comprehensive guides for ${options.projectName}
 ---
@@ -823,7 +874,7 @@ Continuous integration and deployment setup.
 
 ## Integration Guides
 
-${options.integrations.map(integration => `### 🔌 [${integration} Integration](./integrations/${integration.toLowerCase()}.md)\nHow to integrate with ${integration}.`).join('\n\n')}
+${options.integrations.map((integration) => `### 🔌 [${integration} Integration](./integrations/${integration.toLowerCase()}.md)\nHow to integrate with ${integration}.`).join("\n\n")}
 
 ## Advanced Topics
 
@@ -841,13 +892,21 @@ Implementing analytics and metrics collection.
 
 ## Framework-Specific Guides
 
-${options.framework ? `### ${options.framework} Integration
-Specific guides for ${options.framework} framework integration.` : ''}
+${
+	options.framework
+		? `### ${options.framework} Integration
+Specific guides for ${options.framework} framework integration.`
+		: ""
+}
 
 ## Database Guides
 
-${options.databases.map(db => `### ${db} Setup
-Configuration and optimization for ${db}.`).join('\n\n')}
+${options.databases
+	.map(
+		(db) => `### ${db} Setup
+Configuration and optimization for ${db}.`,
+	)
+	.join("\n\n")}
 
 ## Best Practices
 
@@ -876,12 +935,14 @@ Complete error code reference.
 
 ---
 
-*Can't find what you're looking for? [Suggest a new guide](${options.repository || '#'}/issues/new) or check our [FAQ](../reference/faq.md).*
+*Can't find what you're looking for? [Suggest a new guide](${options.repository || "#"}/issues/new) or check our [FAQ](../reference/faq.md).*
 `;
-  }
+	}
 
-  private generateTutorialsIndexContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateTutorialsIndexContent(
+		options: DocumentationPortalOptions,
+	): string {
+		return `---
 title: Tutorials
 description: Step-by-step tutorials for ${options.projectName}
 ---
@@ -948,7 +1009,7 @@ Create a comprehensive analytics dashboard.
 
 ## Integration Tutorials
 
-${options.integrations.map(integration => `### 🔌 [${integration} Integration Tutorial](./integrations/${integration.toLowerCase()}-tutorial.md)\nStep-by-step ${integration} integration guide.`).join('\n\n')}
+${options.integrations.map((integration) => `### 🔌 [${integration} Integration Tutorial](./integrations/${integration.toLowerCase()}-tutorial.md)\nStep-by-step ${integration} integration guide.`).join("\n\n")}
 
 ## Video Tutorials
 
@@ -984,22 +1045,24 @@ Real-world use cases and implementation examples.
 
 ### Before You Start
 - Basic knowledge of ${options.runtime}
-- Familiarity with ${options.framework || 'web development'}
+- Familiarity with ${options.framework || "web development"}
 - Development environment set up
 
 ### Getting Help
-- 💬 [Community Discussions](${options.repository || '#'}/discussions)
-- 🐛 [Report Issues](${options.repository || '#'}/issues)
+- 💬 [Community Discussions](${options.repository || "#"}/discussions)
+- 🐛 [Report Issues](${options.repository || "#"}/issues)
 - 📧 [Tutorial Feedback](mailto:tutorials@example.com)
 
 ---
 
 *All tutorials are regularly updated and tested with the latest version of ${options.projectName}.*
 `;
-  }
+	}
 
-  private generateReferenceIndexContent(options: DocumentationPortalOptions): string {
-    return `---
+	private generateReferenceIndexContent(
+		options: DocumentationPortalOptions,
+	): string {
+		return `---
 title: Reference
 description: Reference materials for ${options.projectName}
 ---
@@ -1078,7 +1141,7 @@ Performance optimization recommendations.
 
 ## Integration Reference
 
-${options.integrations.map(integration => `### 🔌 [${integration} Reference](./integrations/${integration.toLowerCase()}-reference.md)\nComplete ${integration} integration reference.`).join('\n\n')}
+${options.integrations.map((integration) => `### 🔌 [${integration} Reference](./integrations/${integration.toLowerCase()}-reference.md)\nComplete ${integration} integration reference.`).join("\n\n")}
 
 ## Deployment Reference
 
@@ -1144,42 +1207,42 @@ Guides for migrating between versions.
 
 *Reference documentation is automatically updated with each release.*
 `;
-  }
+	}
 
-  private async generateComponents(
-    options: DocumentationPortalOptions,
-    srcDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+	private async generateComponents(
+		options: DocumentationPortalOptions,
+		srcDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Generate custom homepage
-    const homepagePath = join(srcDir, 'pages', 'index.tsx');
-    writeFileSync(homepagePath, this.generateHomepage(options));
-    files.push(homepagePath);
+		// Generate custom homepage
+		const homepagePath = join(srcDir, "pages", "index.tsx");
+		writeFileSync(homepagePath, this.generateHomepage(options));
+		files.push(homepagePath);
 
-    // Generate custom components
-    const componentsDir = join(srcDir, 'components');
-    
-    // Feature showcase component
-    const featureShowcasePath = join(componentsDir, 'FeatureShowcase.tsx');
-    writeFileSync(featureShowcasePath, this.generateFeatureShowcase(options));
-    files.push(featureShowcasePath);
+		// Generate custom components
+		const componentsDir = join(srcDir, "components");
 
-    // API explorer component
-    const apiExplorerPath = join(componentsDir, 'APIExplorer.tsx');
-    writeFileSync(apiExplorerPath, this.generateAPIExplorer(options));
-    files.push(apiExplorerPath);
+		// Feature showcase component
+		const featureShowcasePath = join(componentsDir, "FeatureShowcase.tsx");
+		writeFileSync(featureShowcasePath, this.generateFeatureShowcase(options));
+		files.push(featureShowcasePath);
 
-    // Interactive demo component
-    const interactiveDemoPath = join(componentsDir, 'InteractiveDemo.tsx');
-    writeFileSync(interactiveDemoPath, this.generateInteractiveDemo(options));
-    files.push(interactiveDemoPath);
+		// API explorer component
+		const apiExplorerPath = join(componentsDir, "APIExplorer.tsx");
+		writeFileSync(apiExplorerPath, this.generateAPIExplorer(options));
+		files.push(apiExplorerPath);
 
-    return files;
-  }
+		// Interactive demo component
+		const interactiveDemoPath = join(componentsDir, "InteractiveDemo.tsx");
+		writeFileSync(interactiveDemoPath, this.generateInteractiveDemo(options));
+		files.push(interactiveDemoPath);
 
-  private generateHomepage(options: DocumentationPortalOptions): string {
-    return `import React from 'react';
+		return files;
+	}
+
+	private generateHomepage(options: DocumentationPortalOptions): string {
+		return `import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -1246,10 +1309,10 @@ export default function Home(): JSX.Element {
     </Layout>
   );
 }`;
-  }
+	}
 
-  private generateFeatureShowcase(options: DocumentationPortalOptions): string {
-    return `import React from 'react';
+	private generateFeatureShowcase(options: DocumentationPortalOptions): string {
+		return `import React from 'react';
 import clsx from 'clsx';
 import styles from './FeatureShowcase.module.css';
 
@@ -1319,10 +1382,10 @@ export default function FeatureShowcase(): JSX.Element {
     </section>
   );
 }`;
-  }
+	}
 
-  private generateAPIExplorer(options: DocumentationPortalOptions): string {
-    return `import React, { useState } from 'react';
+	private generateAPIExplorer(options: DocumentationPortalOptions): string {
+		return `import React, { useState } from 'react';
 import styles from './APIExplorer.module.css';
 
 interface APIEndpoint {
@@ -1389,10 +1452,10 @@ export default function APIExplorer(): JSX.Element {
     </div>
   );
 }`;
-  }
+	}
 
-  private generateInteractiveDemo(options: DocumentationPortalOptions): string {
-    return `import React, { useState } from 'react';
+	private generateInteractiveDemo(options: DocumentationPortalOptions): string {
+		return `import React, { useState } from 'react';
 import styles from './InteractiveDemo.module.css';
 
 export default function InteractiveDemo(): JSX.Element {
@@ -1455,176 +1518,188 @@ export default function InteractiveDemo(): JSX.Element {
     </div>
   );
 }`;
-  }
+	}
 
-  private async generateAssets(
-    options: DocumentationPortalOptions,
-    staticDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+	private async generateAssets(
+		options: DocumentationPortalOptions,
+		staticDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Generate favicon
-    const faviconPath = join(staticDir, 'img', 'favicon.ico');
-    // Note: In a real implementation, you'd generate or copy actual favicon
-    writeFileSync(faviconPath, ''); // Placeholder
-    files.push(faviconPath);
+		// Generate favicon
+		const faviconPath = join(staticDir, "img", "favicon.ico");
+		// Note: In a real implementation, you'd generate or copy actual favicon
+		writeFileSync(faviconPath, ""); // Placeholder
+		files.push(faviconPath);
 
-    // Generate logo
-    const logoPath = join(staticDir, 'img', 'logo.svg');
-    writeFileSync(logoPath, this.generateLogo(options));
-    files.push(logoPath);
+		// Generate logo
+		const logoPath = join(staticDir, "img", "logo.svg");
+		writeFileSync(logoPath, this.generateLogo(options));
+		files.push(logoPath);
 
-    // Generate manifest.json for PWA
-    const manifestPath = join(staticDir, 'manifest.json');
-    writeFileSync(manifestPath, this.generateManifest(options));
-    files.push(manifestPath);
+		// Generate manifest.json for PWA
+		const manifestPath = join(staticDir, "manifest.json");
+		writeFileSync(manifestPath, this.generateManifest(options));
+		files.push(manifestPath);
 
-    // Generate robots.txt
-    const robotsPath = join(staticDir, 'robots.txt');
-    writeFileSync(robotsPath, this.generateRobotsTxt(options));
-    files.push(robotsPath);
+		// Generate robots.txt
+		const robotsPath = join(staticDir, "robots.txt");
+		writeFileSync(robotsPath, this.generateRobotsTxt(options));
+		files.push(robotsPath);
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateLogo(options: DocumentationPortalOptions): string {
-    return `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+	private generateLogo(options: DocumentationPortalOptions): string {
+		return `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="45" fill="${options.branding.colors.primary}" />
   <text x="50" y="55" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle">
     ${options.projectName.charAt(0).toUpperCase()}
   </text>
 </svg>`;
-  }
+	}
 
-  private generateManifest(options: DocumentationPortalOptions): string {
-    return JSON.stringify({
-      name: `${options.projectName} Documentation`,
-      short_name: options.projectName,
-      description: options.description || `Documentation for ${options.projectName}`,
-      start_url: '/',
-      display: 'standalone',
-      theme_color: options.branding.colors.primary,
-      background_color: options.branding.colors.background,
-      icons: [
-        {
-          src: '/img/logo.svg',
-          sizes: '192x192',
-          type: 'image/svg+xml',
-        },
-      ],
-    }, null, 2);
-  }
+	private generateManifest(options: DocumentationPortalOptions): string {
+		return JSON.stringify(
+			{
+				name: `${options.projectName} Documentation`,
+				short_name: options.projectName,
+				description:
+					options.description || `Documentation for ${options.projectName}`,
+				start_url: "/",
+				display: "standalone",
+				theme_color: options.branding.colors.primary,
+				background_color: options.branding.colors.background,
+				icons: [
+					{
+						src: "/img/logo.svg",
+						sizes: "192x192",
+						type: "image/svg+xml",
+					},
+				],
+			},
+			null,
+			2,
+		);
+	}
 
-  private generateRobotsTxt(options: DocumentationPortalOptions): string {
-    return `User-agent: *
+	private generateRobotsTxt(options: DocumentationPortalOptions): string {
+		return `User-agent: *
 Allow: /
 
-Sitemap: ${options.deployment.customDomain || 'https://your-site.com'}/sitemap.xml`;
-  }
+Sitemap: ${options.deployment.customDomain || "https://your-site.com"}/sitemap.xml`;
+	}
 
-  private async generatePackageJson(
-    options: DocumentationPortalOptions,
-    portalDir: string
-  ): Promise<string> {
-    const packagePath = join(portalDir, 'package.json');
-    
-    const packageJson = {
-      name: `${options.projectName}-docs`,
-      version: '0.0.0',
-      private: true,
-      scripts: {
-        docusaurus: 'docusaurus',
-        start: 'docusaurus start',
-        build: 'docusaurus build',
-        swizzle: 'docusaurus swizzle',
-        deploy: 'docusaurus deploy',
-        clear: 'docusaurus clear',
-        serve: 'docusaurus serve',
-        'write-translations': 'docusaurus write-translations',
-        'write-heading-ids': 'docusaurus write-heading-ids',
-        typecheck: 'tsc',
-      },
-      dependencies: {
-        '@docusaurus/core': '^3.0.0',
-        '@docusaurus/preset-classic': '^3.0.0',
-        '@docusaurus/theme-mermaid': '^3.0.0',
-        '@mdx-js/react': '^3.0.0',
-        clsx: '^2.0.0',
-        'prism-react-renderer': '^2.1.0',
-        react: '^18.0.0',
-        'react-dom': '^18.0.0',
-        ...(options.search.provider === 'algolia' && {
-          '@docusaurus/theme-search-algolia': '^3.0.0',
-        }),
-        ...(options.features.enableMermaidDiagrams && {
-          '@docusaurus/theme-mermaid': '^3.0.0',
-          mermaid: '^10.0.0',
-        }),
-      },
-      devDependencies: {
-        '@docusaurus/module-type-aliases': '^3.0.0',
-        '@docusaurus/tsconfig': '^3.0.0',
-        '@docusaurus/types': '^3.0.0',
-        typescript: '^5.0.0',
-      },
-      browserslist: {
-        production: ['>0.5%', 'not dead', 'not op_mini all'],
-        development: [
-          'last 1 chrome version',
-          'last 1 firefox version',
-          'last 1 safari version',
-        ],
-      },
-      engines: {
-        node: '>=18.0',
-      },
-    };
+	private async generatePackageJson(
+		options: DocumentationPortalOptions,
+		portalDir: string,
+	): Promise<string> {
+		const packagePath = join(portalDir, "package.json");
 
-    writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
-    return packagePath;
-  }
+		const packageJson = {
+			name: `${options.projectName}-docs`,
+			version: "0.0.0",
+			private: true,
+			scripts: {
+				docusaurus: "docusaurus",
+				start: "docusaurus start",
+				build: "docusaurus build",
+				swizzle: "docusaurus swizzle",
+				deploy: "docusaurus deploy",
+				clear: "docusaurus clear",
+				serve: "docusaurus serve",
+				"write-translations": "docusaurus write-translations",
+				"write-heading-ids": "docusaurus write-heading-ids",
+				typecheck: "tsc",
+			},
+			dependencies: {
+				"@docusaurus/core": "^3.0.0",
+				"@docusaurus/preset-classic": "^3.0.0",
+				"@docusaurus/theme-mermaid": "^3.0.0",
+				"@mdx-js/react": "^3.0.0",
+				clsx: "^2.0.0",
+				"prism-react-renderer": "^2.1.0",
+				react: "^18.0.0",
+				"react-dom": "^18.0.0",
+				...(options.search.provider === "algolia" && {
+					"@docusaurus/theme-search-algolia": "^3.0.0",
+				}),
+				...(options.features.enableMermaidDiagrams && {
+					"@docusaurus/theme-mermaid": "^3.0.0",
+					mermaid: "^10.0.0",
+				}),
+			},
+			devDependencies: {
+				"@docusaurus/module-type-aliases": "^3.0.0",
+				"@docusaurus/tsconfig": "^3.0.0",
+				"@docusaurus/types": "^3.0.0",
+				typescript: "^5.0.0",
+			},
+			browserslist: {
+				production: [">0.5%", "not dead", "not op_mini all"],
+				development: [
+					"last 1 chrome version",
+					"last 1 firefox version",
+					"last 1 safari version",
+				],
+			},
+			engines: {
+				node: ">=18.0",
+			},
+		};
 
-  private async generateDeploymentConfig(
-    options: DocumentationPortalOptions,
-    portalDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+		writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
+		return packagePath;
+	}
 
-    // Generate GitHub Actions workflow
-    if (options.deployment.provider === 'github-pages') {
-      const workflowPath = join(portalDir, '.github', 'workflows', 'deploy.yml');
-      writeFileSync(workflowPath, this.generateGitHubActionsWorkflow(options));
-      files.push(workflowPath);
-    }
+	private async generateDeploymentConfig(
+		options: DocumentationPortalOptions,
+		portalDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Generate Netlify config
-    if (options.deployment.provider === 'netlify') {
-      const netlifyPath = join(portalDir, 'netlify.toml');
-      writeFileSync(netlifyPath, this.generateNetlifyConfig(options));
-      files.push(netlifyPath);
-    }
+		// Generate GitHub Actions workflow
+		if (options.deployment.provider === "github-pages") {
+			const workflowPath = join(
+				portalDir,
+				".github",
+				"workflows",
+				"deploy.yml",
+			);
+			writeFileSync(workflowPath, this.generateGitHubActionsWorkflow(options));
+			files.push(workflowPath);
+		}
 
-    // Generate Vercel config
-    if (options.deployment.provider === 'vercel') {
-      const vercelPath = join(portalDir, 'vercel.json');
-      writeFileSync(vercelPath, this.generateVercelConfig(options));
-      files.push(vercelPath);
-    }
+		// Generate Netlify config
+		if (options.deployment.provider === "netlify") {
+			const netlifyPath = join(portalDir, "netlify.toml");
+			writeFileSync(netlifyPath, this.generateNetlifyConfig(options));
+			files.push(netlifyPath);
+		}
 
-    // Generate Docker files
-    const dockerfilePath = join(portalDir, 'Dockerfile');
-    writeFileSync(dockerfilePath, this.generateDockerfile(options));
-    files.push(dockerfilePath);
+		// Generate Vercel config
+		if (options.deployment.provider === "vercel") {
+			const vercelPath = join(portalDir, "vercel.json");
+			writeFileSync(vercelPath, this.generateVercelConfig(options));
+			files.push(vercelPath);
+		}
 
-    const dockerComposePath = join(portalDir, 'docker-compose.yml');
-    writeFileSync(dockerComposePath, this.generateDockerCompose(options));
-    files.push(dockerComposePath);
+		// Generate Docker files
+		const dockerfilePath = join(portalDir, "Dockerfile");
+		writeFileSync(dockerfilePath, this.generateDockerfile(options));
+		files.push(dockerfilePath);
 
-    return files;
-  }
+		const dockerComposePath = join(portalDir, "docker-compose.yml");
+		writeFileSync(dockerComposePath, this.generateDockerCompose(options));
+		files.push(dockerComposePath);
 
-  private generateGitHubActionsWorkflow(options: DocumentationPortalOptions): string {
-    return `name: Deploy to GitHub Pages
+		return files;
+	}
+
+	private generateGitHubActionsWorkflow(
+		options: DocumentationPortalOptions,
+	): string {
+		return `name: Deploy to GitHub Pages
 
 on:
   push:
@@ -1679,10 +1754,10 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4`;
-  }
+	}
 
-  private generateNetlifyConfig(options: DocumentationPortalOptions): string {
-    return `[build]
+	private generateNetlifyConfig(options: DocumentationPortalOptions): string {
+		return `[build]
   base = "docs-portal"
   publish = "build/"
   command = "npm run build"
@@ -1703,40 +1778,44 @@ jobs:
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"`;
-  }
+	}
 
-  private generateVercelConfig(options: DocumentationPortalOptions): string {
-    return JSON.stringify({
-      buildCommand: 'cd docs-portal && npm run build',
-      outputDirectory: 'docs-portal/build',
-      installCommand: 'cd docs-portal && npm install',
-      framework: 'docusaurus',
-      routes: [
-        {
-          src: '/(.*)',
-          dest: '/$1',
-        },
-      ],
-      headers: [
-        {
-          source: '/(.*)',
-          headers: [
-            {
-              key: 'X-Frame-Options',
-              value: 'DENY',
-            },
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff',
-            },
-          ],
-        },
-      ],
-    }, null, 2);
-  }
+	private generateVercelConfig(options: DocumentationPortalOptions): string {
+		return JSON.stringify(
+			{
+				buildCommand: "cd docs-portal && npm run build",
+				outputDirectory: "docs-portal/build",
+				installCommand: "cd docs-portal && npm install",
+				framework: "docusaurus",
+				routes: [
+					{
+						src: "/(.*)",
+						dest: "/$1",
+					},
+				],
+				headers: [
+					{
+						source: "/(.*)",
+						headers: [
+							{
+								key: "X-Frame-Options",
+								value: "DENY",
+							},
+							{
+								key: "X-Content-Type-Options",
+								value: "nosniff",
+							},
+						],
+					},
+				],
+			},
+			null,
+			2,
+		);
+	}
 
-  private generateDockerfile(options: DocumentationPortalOptions): string {
-    return `FROM node:18-alpine as builder
+	private generateDockerfile(options: DocumentationPortalOptions): string {
+		return `FROM node:18-alpine as builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -1753,10 +1832,10 @@ COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]`;
-  }
+	}
 
-  private generateDockerCompose(options: DocumentationPortalOptions): string {
-    return `version: '3.8'
+	private generateDockerCompose(options: DocumentationPortalOptions): string {
+		return `version: '3.8'
 
 services:
   docs:
@@ -1781,39 +1860,39 @@ services:
       - NODE_ENV=development
     profiles:
       - dev`;
-  }
+	}
 
-  private async generateStyling(
-    options: DocumentationPortalOptions,
-    srcDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+	private async generateStyling(
+		options: DocumentationPortalOptions,
+		srcDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Generate custom CSS
-    const customCSSPath = join(srcDir, 'css', 'custom.css');
-    writeFileSync(customCSSPath, this.generateCustomCSS(options));
-    files.push(customCSSPath);
+		// Generate custom CSS
+		const customCSSPath = join(srcDir, "css", "custom.css");
+		writeFileSync(customCSSPath, this.generateCustomCSS(options));
+		files.push(customCSSPath);
 
-    // Generate component-specific CSS modules
-    const componentStyles = [
-      'FeatureShowcase.module.css',
-      'APIExplorer.module.css',
-      'InteractiveDemo.module.css',
-    ];
+		// Generate component-specific CSS modules
+		const componentStyles = [
+			"FeatureShowcase.module.css",
+			"APIExplorer.module.css",
+			"InteractiveDemo.module.css",
+		];
 
-    componentStyles.forEach(styleName => {
-      const stylePath = join(srcDir, 'components', styleName);
-      writeFileSync(stylePath, this.generateComponentCSS(styleName, options));
-      files.push(stylePath);
-    });
+		componentStyles.forEach((styleName) => {
+			const stylePath = join(srcDir, "components", styleName);
+			writeFileSync(stylePath, this.generateComponentCSS(styleName, options));
+			files.push(stylePath);
+		});
 
-    return files;
-  }
+		return files;
+	}
 
-  private generateCustomCSS(options: DocumentationPortalOptions): string {
-    const { colors } = options.branding;
-    
-    return `/**
+	private generateCustomCSS(options: DocumentationPortalOptions): string {
+		const { colors } = options.branding;
+
+		return `/**
  * ${options.projectName} Documentation Custom Styles
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -1913,14 +1992,17 @@ services:
   transform: translateY(-2px);
   box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
 }`;
-  }
+	}
 
-  private generateComponentCSS(componentName: string, options: DocumentationPortalOptions): string {
-    const { colors } = options.branding;
+	private generateComponentCSS(
+		componentName: string,
+		options: DocumentationPortalOptions,
+	): string {
+		const { colors } = options.branding;
 
-    switch (componentName) {
-      case 'FeatureShowcase.module.css':
-        return `.features {
+		switch (componentName) {
+			case "FeatureShowcase.module.css":
+				return `.features {
   padding: 2rem 0;
   width: 100%;
 }
@@ -1940,8 +2022,8 @@ services:
   }
 }`;
 
-      case 'APIExplorer.module.css':
-        return `.apiExplorer {
+			case "APIExplorer.module.css":
+				return `.apiExplorer {
   padding: 2rem;
   background: ${colors.surface};
   border-radius: 8px;
@@ -2029,8 +2111,8 @@ services:
   }
 }`;
 
-      case 'InteractiveDemo.module.css':
-        return `.interactiveDemo {
+			case "InteractiveDemo.module.css":
+				return `.interactiveDemo {
   background: ${colors.surface};
   border-radius: 8px;
   padding: 2rem;
@@ -2128,232 +2210,241 @@ services:
   }
 }`;
 
-      default:
-        return '';
-    }
-  }
+			default:
+				return "";
+		}
+	}
 
-  private async generateSearchConfig(
-    options: DocumentationPortalOptions,
-    portalDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+	private async generateSearchConfig(
+		options: DocumentationPortalOptions,
+		portalDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    if (options.search.provider === 'algolia') {
-      // Generate Algolia configuration
-      const algoliaConfigPath = join(portalDir, 'algolia.config.json');
-      writeFileSync(algoliaConfigPath, JSON.stringify({
-        appId: options.search.appId,
-        apiKey: options.search.apiKey,
-        indexName: options.search.indexName,
-        contextualSearch: options.search.contextualSearch,
-        searchParameters: {
-          facetFilters: ['language:en'],
-        },
-      }, null, 2));
-      files.push(algoliaConfigPath);
-    }
+		if (options.search.provider === "algolia") {
+			// Generate Algolia configuration
+			const algoliaConfigPath = join(portalDir, "algolia.config.json");
+			writeFileSync(
+				algoliaConfigPath,
+				JSON.stringify(
+					{
+						appId: options.search.appId,
+						apiKey: options.search.apiKey,
+						indexName: options.search.indexName,
+						contextualSearch: options.search.contextualSearch,
+						searchParameters: {
+							facetFilters: ["language:en"],
+						},
+					},
+					null,
+					2,
+				),
+			);
+			files.push(algoliaConfigPath);
+		}
 
-    return files;
-  }
+		return files;
+	}
 
-  private formatDocusaurusConfig(config: DocusaurusConfig): string {
-    return `// @ts-check
+	private formatDocusaurusConfig(config: DocusaurusConfig): string {
+		return `// @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
-const config = ${JSON.stringify(config, null, 2).replace(/"require\(([^)]+)\)"/g, 'require($1)')};
+const config = ${JSON.stringify(config, null, 2).replace(/"require\(([^)]+)\)"/g, "require($1)")};
 
 module.exports = config;`;
-  }
+	}
 
-  private generatePortalUrl(options: DocumentationPortalOptions): string {
-    if (options.deployment.customDomain) {
-      return options.deployment.customDomain;
-    }
-    
-    switch (options.deployment.provider) {
-      case 'github-pages':
-        return `https://${options.author || 'your-org'}.github.io/${options.projectName}`;
-      case 'netlify':
-        return `https://${options.projectName.toLowerCase()}.netlify.app`;
-      case 'vercel':
-        return `https://${options.projectName.toLowerCase()}.vercel.app`;
-      default:
-        return 'http://localhost:3000';
-    }
-  }
+	private generatePortalUrl(options: DocumentationPortalOptions): string {
+		if (options.deployment.customDomain) {
+			return options.deployment.customDomain;
+		}
 
-  // Helper methods for configuration generation
-  private getRecommendedVersion(runtime: string): string {
-    const versions: Record<string, string> = {
-      node: '18+',
-      python: '3.9+',
-      go: '1.19+',
-      java: '11+',
-      dotnet: '6.0+',
-      php: '8.0+',
-      rust: '1.65+',
-    };
-    return versions[runtime] || 'latest';
-  }
+		switch (options.deployment.provider) {
+			case "github-pages":
+				return `https://${options.author || "your-org"}.github.io/${options.projectName}`;
+			case "netlify":
+				return `https://${options.projectName.toLowerCase()}.netlify.app`;
+			case "vercel":
+				return `https://${options.projectName.toLowerCase()}.vercel.app`;
+			default:
+				return "http://localhost:3000";
+		}
+	}
 
-  private generateInstallationInstructions(options: DocumentationPortalOptions): string {
-    switch (options.runtime) {
-      case 'node':
-        return `\`\`\`bash
+	// Helper methods for configuration generation
+	private getRecommendedVersion(runtime: string): string {
+		const versions: Record<string, string> = {
+			node: "18+",
+			python: "3.9+",
+			go: "1.19+",
+			java: "11+",
+			dotnet: "6.0+",
+			php: "8.0+",
+			rust: "1.65+",
+		};
+		return versions[runtime] || "latest";
+	}
+
+	private generateInstallationInstructions(
+		options: DocumentationPortalOptions,
+	): string {
+		switch (options.runtime) {
+			case "node":
+				return `\`\`\`bash
 npm install ${options.projectName}
 # or
 yarn add ${options.projectName}
 \`\`\``;
-      case 'python':
-        return `\`\`\`bash
+			case "python":
+				return `\`\`\`bash
 pip install ${options.projectName}
 \`\`\``;
-      case 'go':
-        return `\`\`\`bash
+			case "go":
+				return `\`\`\`bash
 go get github.com/your-org/${options.projectName}
 \`\`\``;
-      default:
-        return `\`\`\`bash
+			default:
+				return `\`\`\`bash
 # Installation instructions for ${options.runtime}
 \`\`\``;
-    }
-  }
+		}
+	}
 
-  private getInstallCommand(runtime: string): string {
-    const commands: Record<string, string> = {
-      node: 'npm install',
-      python: 'pip install -r requirements.txt',
-      go: 'go mod download',
-      java: 'mvn install',
-      dotnet: 'dotnet restore',
-      php: 'composer install',
-      rust: 'cargo build',
-    };
-    return commands[runtime] || 'make install';
-  }
+	private getInstallCommand(runtime: string): string {
+		const commands: Record<string, string> = {
+			node: "npm install",
+			python: "pip install -r requirements.txt",
+			go: "go mod download",
+			java: "mvn install",
+			dotnet: "dotnet restore",
+			php: "composer install",
+			rust: "cargo build",
+		};
+		return commands[runtime] || "make install";
+	}
 
-  private getBuildCommand(runtime: string): string {
-    const commands: Record<string, string> = {
-      node: 'npm run build',
-      python: 'python setup.py build',
-      go: 'go build',
-      java: 'mvn compile',
-      dotnet: 'dotnet build',
-      php: 'composer build',
-      rust: 'cargo build --release',
-    };
-    return commands[runtime] || 'make build';
-  }
+	private getBuildCommand(runtime: string): string {
+		const commands: Record<string, string> = {
+			node: "npm run build",
+			python: "python setup.py build",
+			go: "go build",
+			java: "mvn compile",
+			dotnet: "dotnet build",
+			php: "composer build",
+			rust: "cargo build --release",
+		};
+		return commands[runtime] || "make build";
+	}
 
-  private getDevCommand(options: DocumentationPortalOptions): string {
-    const commands: Record<string, string> = {
-      node: 'npm run dev',
-      python: 'python main.py',
-      go: 'go run main.go',
-      java: 'mvn spring-boot:run',
-      dotnet: 'dotnet run',
-      php: 'php -S localhost:8000',
-      rust: 'cargo run',
-    };
-    return commands[options.runtime] || './start-dev.sh';
-  }
+	private getDevCommand(options: DocumentationPortalOptions): string {
+		const commands: Record<string, string> = {
+			node: "npm run dev",
+			python: "python main.py",
+			go: "go run main.go",
+			java: "mvn spring-boot:run",
+			dotnet: "dotnet run",
+			php: "php -S localhost:8000",
+			rust: "cargo run",
+		};
+		return commands[options.runtime] || "./start-dev.sh";
+	}
 
-  private getProdCommand(options: DocumentationPortalOptions): string {
-    const commands: Record<string, string> = {
-      node: 'npm start',
-      python: 'python main.py --env production',
-      go: './main',
-      java: 'java -jar target/app.jar',
-      dotnet: 'dotnet run --environment Production',
-      php: 'php -S 0.0.0.0:8000',
-      rust: './target/release/main',
-    };
-    return commands[options.runtime] || './start.sh';
-  }
+	private getProdCommand(options: DocumentationPortalOptions): string {
+		const commands: Record<string, string> = {
+			node: "npm start",
+			python: "python main.py --env production",
+			go: "./main",
+			java: "java -jar target/app.jar",
+			dotnet: "dotnet run --environment Production",
+			php: "php -S 0.0.0.0:8000",
+			rust: "./target/release/main",
+		};
+		return commands[options.runtime] || "./start.sh";
+	}
 
-  private getHealthCheckCommand(options: DocumentationPortalOptions): string {
-    return `curl http://localhost:${this.getDefaultPort(options)}/health`;
-  }
+	private getHealthCheckCommand(options: DocumentationPortalOptions): string {
+		return `curl http://localhost:${this.getDefaultPort(options)}/health`;
+	}
 
-  private getDefaultPort(options: DocumentationPortalOptions): number {
-    const ports: Record<string, number> = {
-      node: 3000,
-      python: 8000,
-      go: 8080,
-      java: 8080,
-      dotnet: 5000,
-      php: 8000,
-      rust: 8080,
-    };
-    return ports[options.runtime] || 8080;
-  }
+	private getDefaultPort(options: DocumentationPortalOptions): number {
+		const ports: Record<string, number> = {
+			node: 3000,
+			python: 8000,
+			go: 8080,
+			java: 8080,
+			dotnet: 5000,
+			php: 8000,
+			rust: 8080,
+		};
+		return ports[options.runtime] || 8080;
+	}
 
-  private getPortCheckCommand(options: DocumentationPortalOptions): string {
-    const port = this.getDefaultPort(options);
-    return `lsof -ti:${port} | xargs kill -9`;
-  }
+	private getPortCheckCommand(options: DocumentationPortalOptions): string {
+		const port = this.getDefaultPort(options);
+		return `lsof -ti:${port} | xargs kill -9`;
+	}
 
-  private getConfigFileExtension(options: DocumentationPortalOptions): string {
-    switch (options.runtime) {
-      case 'node':
-        return 'json';
-      case 'python':
-        return 'yaml';
-      case 'go':
-        return 'yaml';
-      default:
-        return 'yaml';
-    }
-  }
+	private getConfigFileExtension(options: DocumentationPortalOptions): string {
+		switch (options.runtime) {
+			case "node":
+				return "json";
+			case "python":
+				return "yaml";
+			case "go":
+				return "yaml";
+			default:
+				return "yaml";
+		}
+	}
 
-  private generateSampleConfig(options: DocumentationPortalOptions): string {
-    const config = {
-      name: options.projectName,
-      version: options.version,
-      port: this.getDefaultPort(options),
-      database: options.databases[0] || 'postgresql',
-      environment: 'development',
-    };
+	private generateSampleConfig(options: DocumentationPortalOptions): string {
+		const config = {
+			name: options.projectName,
+			version: options.version,
+			port: this.getDefaultPort(options),
+			database: options.databases[0] || "postgresql",
+			environment: "development",
+		};
 
-    switch (this.getConfigFileExtension(options)) {
-      case 'json':
-        return JSON.stringify(config, null, 2);
-      case 'yaml':
-        return Object.entries(config)
-          .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-          .join('\n');
-      default:
-        return JSON.stringify(config, null, 2);
-    }
-  }
+		switch (this.getConfigFileExtension(options)) {
+			case "json":
+				return JSON.stringify(config, null, 2);
+			case "yaml":
+				return Object.entries(config)
+					.map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+					.join("\n");
+			default:
+				return JSON.stringify(config, null, 2);
+		}
+	}
 
-  private getQuickStartCode(options: DocumentationPortalOptions): string {
-    switch (options.runtime) {
-      case 'node':
-        return `npm install ${options.projectName}
+	private getQuickStartCode(options: DocumentationPortalOptions): string {
+		switch (options.runtime) {
+			case "node":
+				return `npm install ${options.projectName}
 node -e "console.log('${options.projectName} is running!')"`;
-      case 'python':
-        return `pip install ${options.projectName}
+			case "python":
+				return `pip install ${options.projectName}
 python -c "print('${options.projectName} is running!')"`;
-      default:
-        return `# Quick start for ${options.projectName}
+			default:
+				return `# Quick start for ${options.projectName}
 echo "${options.projectName} is running!"`;
-    }
-  }
+		}
+	}
 
-  // Color utility methods
-  private lightenColor(color: string, amount: number = 0.1): string {
-    // Simple color lightening - in production, use a proper color library
-    return color; // Placeholder
-  }
+	// Color utility methods
+	private lightenColor(color: string, amount: number = 0.1): string {
+		// Simple color lightening - in production, use a proper color library
+		return color; // Placeholder
+	}
 
-  private darkenColor(color: string, amount: number = 0.1): string {
-    // Simple color darkening - in production, use a proper color library
-    return color; // Placeholder
-  }
+	private darkenColor(color: string, amount: number = 0.1): string {
+		// Simple color darkening - in production, use a proper color library
+		return color; // Placeholder
+	}
 }

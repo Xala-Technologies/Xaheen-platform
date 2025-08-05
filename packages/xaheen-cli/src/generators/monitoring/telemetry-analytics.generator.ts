@@ -1,9 +1,9 @@
-import { BaseGenerator } from "../base.generator";
-import { z } from "zod";
-import * as fs from "fs/promises";
-import * as path from "path";
 import chalk from "chalk";
 import * as crypto from "crypto";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { z } from "zod";
+import { BaseGenerator } from "../base.generator";
 
 // Telemetry and analytics configuration schema
 const TelemetryAnalyticsOptionsSchema = z.object({

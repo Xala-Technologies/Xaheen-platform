@@ -1,7 +1,7 @@
-import { BaseGenerator } from "../base.generator";
-import { MockFactoryOptions, TestTemplate } from "./types";
 import { promises as fs } from "fs";
 import * as path from "path";
+import { BaseGenerator } from "../base.generator";
+import { MockFactoryOptions, TestTemplate } from "./types";
 
 export class MockFactoryGenerator extends BaseGenerator<MockFactoryOptions> {
 	async generate(options: MockFactoryOptions): Promise<void> {

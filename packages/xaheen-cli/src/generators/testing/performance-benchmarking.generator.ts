@@ -1,8 +1,8 @@
-import { BaseGenerator } from "../base.generator";
-import { z } from "zod";
+import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import chalk from "chalk";
+import { z } from "zod";
+import { BaseGenerator } from "../base.generator";
 
 // Performance benchmarking configuration schema
 const PerformanceBenchmarkingOptionsSchema = z.object({

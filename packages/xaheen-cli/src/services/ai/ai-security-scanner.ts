@@ -19,7 +19,16 @@ export interface SecurityVulnerability {
 	id: string;
 	title: string;
 	severity: "critical" | "high" | "medium" | "low" | "info";
-	category: "injection" | "authentication" | "sensitive-data" | "configuration" | "dependency" | "cryptography" | "authorization" | "logging" | "other";
+	category:
+		| "injection"
+		| "authentication"
+		| "sensitive-data"
+		| "configuration"
+		| "dependency"
+		| "cryptography"
+		| "authorization"
+		| "logging"
+		| "other";
 	cweId?: string;
 	owaspId?: string;
 	description: string;
@@ -34,7 +43,13 @@ export interface SecurityVulnerability {
 }
 
 export interface SecurityScanOptions {
-	readonly scanTypes: ("code" | "dependencies" | "secrets" | "configuration" | "compliance")[];
+	readonly scanTypes: (
+		| "code"
+		| "dependencies"
+		| "secrets"
+		| "configuration"
+		| "compliance"
+	)[];
 	readonly severity: ("critical" | "high" | "medium" | "low" | "info")[];
 	readonly aiEnhanced: boolean;
 	readonly includeCompliance: ("owasp" | "nsm" | "gdpr" | "wcag")[];
@@ -142,7 +157,9 @@ export class AISecurityScanner {
 		const scanId = this.generateScanId();
 		const startTime = performance.now();
 
-		consola.info(`Starting security scan ${scanId} for project: ${projectPath}`);
+		consola.info(
+			`Starting security scan ${scanId} for project: ${projectPath}`,
+		);
 
 		try {
 			// Initialize scan result
@@ -179,13 +196,19 @@ export class AISecurityScanner {
 
 			if (options.scanTypes.includes("code")) {
 				consola.debug("Scanning code for vulnerabilities...");
-				const codeVulns = await this.scanCodeVulnerabilities(projectPath, options);
+				const codeVulns = await this.scanCodeVulnerabilities(
+					projectPath,
+					options,
+				);
 				vulnerabilities.push(...codeVulns);
 			}
 
 			if (options.scanTypes.includes("dependencies")) {
 				consola.debug("Scanning dependencies for vulnerabilities...");
-				const depVulns = await this.scanDependencyVulnerabilities(projectPath, options);
+				const depVulns = await this.scanDependencyVulnerabilities(
+					projectPath,
+					options,
+				);
 				vulnerabilities.push(...depVulns);
 			}
 
@@ -202,8 +225,8 @@ export class AISecurityScanner {
 			}
 
 			// Filter by severity
-			const filteredVulnerabilities = vulnerabilities.filter(vuln =>
-				options.severity.includes(vuln.severity)
+			const filteredVulnerabilities = vulnerabilities.filter((vuln) =>
+				options.severity.includes(vuln.severity),
 			);
 
 			result.vulnerabilities = filteredVulnerabilities;
@@ -218,7 +241,9 @@ export class AISecurityScanner {
 					filteredVulnerabilities,
 					options.includeCompliance,
 				);
-				result.summary.complianceScore = this.calculateOverallComplianceScore(result.compliance);
+				result.summary.complianceScore = this.calculateOverallComplianceScore(
+					result.compliance,
+				);
 			}
 
 			// AI-enhanced analysis
@@ -241,9 +266,10 @@ export class AISecurityScanner {
 			// Cache result
 			this.scanCache.set(scanId, result);
 
-			consola.success(`Security scan completed: ${result.summary.totalVulnerabilities} vulnerabilities found`);
+			consola.success(
+				`Security scan completed: ${result.summary.totalVulnerabilities} vulnerabilities found`,
+			);
 			return result;
-
 		} catch (error) {
 			consola.error(`Security scan failed for ${projectPath}:`, error);
 			throw error;
@@ -309,10 +335,10 @@ export class AISecurityScanner {
 		for (const [category, regexPatterns] of patterns) {
 			for (const pattern of regexPatterns) {
 				const matches = code.matchAll(new RegExp(pattern.source, "gi"));
-				
+
 				for (const match of matches) {
 					const lineNumber = this.getLineNumber(code, match.index || 0);
-					
+
 					vulnerabilities.push({
 						id: this.generateVulnerabilityId(),
 						title: `Potential ${category} vulnerability`,
@@ -332,7 +358,10 @@ export class AISecurityScanner {
 
 		// AI-enhanced validation if enabled
 		if (options.aiEnhanced) {
-			const aiVulnerabilities = await this.performAICodeAnalysis(code, filename);
+			const aiVulnerabilities = await this.performAICodeAnalysis(
+				code,
+				filename,
+			);
 			vulnerabilities.push(...aiVulnerabilities);
 		}
 
@@ -384,11 +413,11 @@ export class AISecurityScanner {
 
 			// Check against known vulnerable packages
 			const knownVulnerable = await this.getKnownVulnerablePackages();
-			
+
 			for (const [pkgName, version] of Object.entries(dependencies)) {
 				if (typeof version === "string" && knownVulnerable.has(pkgName)) {
 					const vulnInfo = knownVulnerable.get(pkgName)!;
-					
+
 					vulnerabilities.push({
 						id: this.generateVulnerabilityId(),
 						title: `Vulnerable dependency: ${pkgName}`,
@@ -404,7 +433,6 @@ export class AISecurityScanner {
 					});
 				}
 			}
-
 		} catch (error) {
 			consola.debug("Failed to scan dependencies:", error);
 		}
@@ -428,10 +456,10 @@ export class AISecurityScanner {
 
 				for (const [secretType, pattern] of secretPatterns) {
 					const matches = content.matchAll(new RegExp(pattern.source, "gi"));
-					
+
 					for (const match of matches) {
 						const lineNumber = this.getLineNumber(content, match.index || 0);
-						
+
 						vulnerabilities.push({
 							id: this.generateVulnerabilityId(),
 							title: `Exposed ${secretType}`,
@@ -478,7 +506,10 @@ export class AISecurityScanner {
 		for (const configFile of configFiles) {
 			const configPath = path.join(projectPath, configFile);
 			if (await fs.pathExists(configPath)) {
-				const configVulns = await this.scanConfigurationFile(configPath, projectPath);
+				const configVulns = await this.scanConfigurationFile(
+					configPath,
+					projectPath,
+				);
 				vulnerabilities.push(...configVulns);
 			}
 		}
@@ -511,7 +542,8 @@ export class AISecurityScanner {
 					cweId: "CWE-95",
 				},
 				{
-					pattern: /process\.env\.NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*['"]0['"]/gi,
+					pattern:
+						/process\.env\.NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*['"]0['"]/gi,
 					title: "TLS certificate validation disabled",
 					severity: "high" as const,
 					cweId: "CWE-295",
@@ -520,10 +552,10 @@ export class AISecurityScanner {
 
 			for (const { pattern, title, severity, cweId } of insecurePatterns) {
 				const matches = content.matchAll(pattern);
-				
+
 				for (const match of matches) {
 					const lineNumber = this.getLineNumber(content, match.index || 0);
-					
+
 					vulnerabilities.push({
 						id: this.generateVulnerabilityId(),
 						title,
@@ -540,7 +572,6 @@ export class AISecurityScanner {
 					});
 				}
 			}
-
 		} catch (error) {
 			consola.debug(`Failed to scan configuration file ${configPath}:`, error);
 		}
@@ -561,15 +592,24 @@ export class AISecurityScanner {
 		}
 
 		if (complianceTypes.includes("nsm")) {
-			compliance.nsm = await this.checkNSMCompliance(projectPath, vulnerabilities);
+			compliance.nsm = await this.checkNSMCompliance(
+				projectPath,
+				vulnerabilities,
+			);
 		}
 
 		if (complianceTypes.includes("gdpr")) {
-			compliance.gdpr = await this.checkGDPRCompliance(projectPath, vulnerabilities);
+			compliance.gdpr = await this.checkGDPRCompliance(
+				projectPath,
+				vulnerabilities,
+			);
 		}
 
 		if (complianceTypes.includes("wcag")) {
-			compliance.wcag = await this.checkWCAGCompliance(projectPath, vulnerabilities);
+			compliance.wcag = await this.checkWCAGCompliance(
+				projectPath,
+				vulnerabilities,
+			);
 		}
 
 		return compliance;
@@ -580,33 +620,53 @@ export class AISecurityScanner {
 	): Promise<OWASPComplianceResult> {
 		// OWASP Top 10 2021 categories
 		const owaspTop10 = [
-			{ rank: 1, category: "Broken Access Control", cwe: ["CWE-200", "CWE-862"] },
-			{ rank: 2, category: "Cryptographic Failures", cwe: ["CWE-327", "CWE-328"] },
+			{
+				rank: 1,
+				category: "Broken Access Control",
+				cwe: ["CWE-200", "CWE-862"],
+			},
+			{
+				rank: 2,
+				category: "Cryptographic Failures",
+				cwe: ["CWE-327", "CWE-328"],
+			},
 			{ rank: 3, category: "Injection", cwe: ["CWE-79", "CWE-89", "CWE-95"] },
 			{ rank: 4, category: "Insecure Design", cwe: ["CWE-209", "CWE-256"] },
-			{ rank: 5, category: "Security Misconfiguration", cwe: ["CWE-16", "CWE-611"] },
+			{
+				rank: 5,
+				category: "Security Misconfiguration",
+				cwe: ["CWE-16", "CWE-611"],
+			},
 			{ rank: 6, category: "Vulnerable Components", cwe: ["CWE-1104"] },
-			{ rank: 7, category: "Authentication Failures", cwe: ["CWE-287", "CWE-384"] },
-			{ rank: 8, category: "Data Integrity Failures", cwe: ["CWE-352", "CWE-502"] },
+			{
+				rank: 7,
+				category: "Authentication Failures",
+				cwe: ["CWE-287", "CWE-384"],
+			},
+			{
+				rank: 8,
+				category: "Data Integrity Failures",
+				cwe: ["CWE-352", "CWE-502"],
+			},
 			{ rank: 9, category: "Logging Failures", cwe: ["CWE-117", "CWE-532"] },
 			{ rank: 10, category: "Server-Side Request Forgery", cwe: ["CWE-918"] },
 		];
 
 		const topTenCompliance = owaspTop10.map(({ rank, category, cwe }) => {
-			const relatedVulns = vulnerabilities.filter(v => 
-				v.cweId && cwe.includes(v.cweId)
+			const relatedVulns = vulnerabilities.filter(
+				(v) => v.cweId && cwe.includes(v.cweId),
 			);
 
 			return {
 				rank,
 				category,
 				compliant: relatedVulns.length === 0,
-				issues: relatedVulns.map(v => v.title),
-				recommendations: relatedVulns.map(v => v.recommendation),
+				issues: relatedVulns.map((v) => v.title),
+				recommendations: relatedVulns.map((v) => v.recommendation),
 			};
 		});
 
-		const compliantCount = topTenCompliance.filter(c => c.compliant).length;
+		const compliantCount = topTenCompliance.filter((c) => c.compliant).length;
 		const score = (compliantCount / owaspTop10.length) * 100;
 
 		return {
@@ -648,10 +708,10 @@ export class AISecurityScanner {
 					evidence: result.evidence,
 					gaps: result.gaps,
 				};
-			})
+			}),
 		);
 
-		const compliantCount = requirements.filter(r => r.compliant).length;
+		const compliantCount = requirements.filter((r) => r.compliant).length;
 		const score = (compliantCount / requirements.length) * 100;
 
 		// Determine classification based on vulnerabilities and compliance
@@ -696,10 +756,10 @@ export class AISecurityScanner {
 					implementation: result.implementation,
 					gaps: result.gaps,
 				};
-			})
+			}),
 		);
 
-		const compliantCount = principles.filter(p => p.compliant).length;
+		const compliantCount = principles.filter((p) => p.compliant).length;
 		const score = (compliantCount / principles.length) * 100;
 
 		return {
@@ -733,10 +793,10 @@ export class AISecurityScanner {
 					techniques: result.techniques,
 					failures: result.failures,
 				};
-			})
+			}),
 		);
 
-		const compliantCount = guidelines.filter(g => g.compliant).length;
+		const compliantCount = guidelines.filter((g) => g.compliant).length;
 		const score = (compliantCount / guidelines.length) * 100;
 
 		let level: "A" | "AA" | "AAA" = "A";
@@ -767,7 +827,10 @@ export class AISecurityScanner {
 		);
 
 		const keyRisks = this.identifyKeyRisks(vulnerabilities);
-		const recommendations = this.generateRecommendations(vulnerabilities, compliance);
+		const recommendations = this.generateRecommendations(
+			vulnerabilities,
+			compliance,
+		);
 		const improvementPriority = this.prioritizeImprovements(vulnerabilities);
 
 		return {
@@ -794,12 +857,14 @@ export class AISecurityScanner {
 				severity: "high",
 				category: "injection",
 				cweId: "CWE-79",
-				description: "AI detected potential XSS vulnerability in user data handling",
+				description:
+					"AI detected potential XSS vulnerability in user data handling",
 				file: filename,
 				evidence: "User input used with innerHTML",
 				impact: "Cross-site scripting attack possible",
 				recommendation: "Use textContent or sanitize user input",
-				aiAnalysis: "AI analysis suggests high confidence XSS risk based on data flow patterns",
+				aiAnalysis:
+					"AI analysis suggests high confidence XSS risk based on data flow patterns",
 				confidence: 0.85,
 			});
 		}
@@ -842,12 +907,15 @@ export class AISecurityScanner {
 	private async getKnownVulnerablePackages(): Promise<Map<string, any>> {
 		// In real implementation, this would fetch from vulnerability database
 		return new Map([
-			["event-stream", {
-				severity: "critical" as const,
-				cweId: "CWE-506",
-				impact: "Malicious code execution",
-				recommendation: "Remove package immediately",
-			}],
+			[
+				"event-stream",
+				{
+					severity: "critical" as const,
+					cweId: "CWE-506",
+					impact: "Malicious code execution",
+					recommendation: "Remove package immediately",
+				},
+			],
 		]);
 	}
 
@@ -859,7 +927,9 @@ export class AISecurityScanner {
 		return `vuln_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 	}
 
-	private generateSummary(vulnerabilities: SecurityVulnerability[]): SecurityScanResult["summary"] {
+	private generateSummary(
+		vulnerabilities: SecurityVulnerability[],
+	): SecurityScanResult["summary"] {
 		const bySeverity: Record<string, number> = {};
 		const byCategory: Record<string, number> = {};
 
@@ -895,35 +965,49 @@ export class AISecurityScanner {
 		return maxPossible > 0 ? Math.round((totalWeight / maxPossible) * 100) : 0;
 	}
 
-	private calculateOverallComplianceScore(compliance: SecurityScanResult["compliance"]): number {
+	private calculateOverallComplianceScore(
+		compliance: SecurityScanResult["compliance"],
+	): number {
 		const scores = [];
-		
+
 		if (compliance.owasp) scores.push(compliance.owasp.score);
 		if (compliance.nsm) scores.push(compliance.nsm.score);
 		if (compliance.gdpr) scores.push(compliance.gdpr.score);
 		if (compliance.wcag) scores.push(compliance.wcag.score);
 
-		return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+		return scores.length > 0
+			? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+			: 0;
 	}
 
-	private async getCodeFiles(projectPath: string, excludePatterns?: string[]): Promise<string[]> {
+	private async getCodeFiles(
+		projectPath: string,
+		excludePatterns?: string[],
+	): Promise<string[]> {
 		const extensions = [".ts", ".tsx", ".js", ".jsx", ".vue", ".svelte"];
 		return this.getFilesByExtensions(projectPath, extensions, excludePatterns);
 	}
 
-	private async getAllFiles(projectPath: string, excludePatterns?: string[]): Promise<string[]> {
+	private async getAllFiles(
+		projectPath: string,
+		excludePatterns?: string[],
+	): Promise<string[]> {
 		const files: string[] = [];
 		const entries = await fs.readdir(projectPath, { withFileTypes: true });
 
 		for (const entry of entries) {
 			const fullPath = path.join(projectPath, entry.name);
-			
-			if (excludePatterns?.some(pattern => fullPath.includes(pattern))) {
+
+			if (excludePatterns?.some((pattern) => fullPath.includes(pattern))) {
 				continue;
 			}
 
-			if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-				files.push(...await this.getAllFiles(fullPath, excludePatterns));
+			if (
+				entry.isDirectory() &&
+				!entry.name.startsWith(".") &&
+				entry.name !== "node_modules"
+			) {
+				files.push(...(await this.getAllFiles(fullPath, excludePatterns)));
 			} else if (entry.isFile()) {
 				files.push(fullPath);
 			}
@@ -935,22 +1019,30 @@ export class AISecurityScanner {
 	private async getFilesByExtensions(
 		projectPath: string,
 		extensions: string[],
-		excludePatterns?: string[]
+		excludePatterns?: string[],
 	): Promise<string[]> {
 		const allFiles = await this.getAllFiles(projectPath, excludePatterns);
-		return allFiles.filter(file => extensions.some(ext => file.endsWith(ext)));
+		return allFiles.filter((file) =>
+			extensions.some((ext) => file.endsWith(ext)),
+		);
 	}
 
 	private getLineNumber(content: string, index: number): number {
-		return content.substring(0, index).split('\n').length;
+		return content.substring(0, index).split("\n").length;
 	}
 
 	private maskSecret(secret: string): string {
-		if (secret.length <= 8) return '*'.repeat(secret.length);
-		return secret.substring(0, 4) + '*'.repeat(secret.length - 8) + secret.substring(secret.length - 4);
+		if (secret.length <= 8) return "*".repeat(secret.length);
+		return (
+			secret.substring(0, 4) +
+			"*".repeat(secret.length - 8) +
+			secret.substring(secret.length - 4)
+		);
 	}
 
-	private getSeverityForPattern(category: string): SecurityVulnerability["severity"] {
+	private getSeverityForPattern(
+		category: string,
+	): SecurityVulnerability["severity"] {
 		const severityMap: Record<string, SecurityVulnerability["severity"]> = {
 			injection: "high",
 			"sensitive-data": "high",
@@ -978,7 +1070,8 @@ export class AISecurityScanner {
 			"sensitive-data": "Move secrets to environment variables",
 			authentication: "Implement proper authentication mechanisms",
 			configuration: "Review and secure configuration settings",
-			cryptography: "Use strong encryption algorithms and proper key management",
+			cryptography:
+				"Use strong encryption algorithms and proper key management",
 		};
 		return recommendationMap[category] || "Review and fix security issue";
 	}
@@ -1000,7 +1093,7 @@ export class AISecurityScanner {
 			for (const file of files) {
 				try {
 					const content = await fs.readFile(file, "utf-8");
-					totalLines += content.split('\n').length;
+					totalLines += content.split("\n").length;
 				} catch {
 					// Skip files that can't be read
 				}
@@ -1034,10 +1127,13 @@ export class AISecurityScanner {
 			const packageJsonPath = path.join(projectPath, "package.json");
 			if (await fs.pathExists(packageJsonPath)) {
 				const packageJson = await fs.readJson(packageJsonPath);
-				const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+				const deps = {
+					...packageJson.dependencies,
+					...packageJson.devDependencies,
+				};
 
 				const encryptionLibs = ["bcrypt", "argon2", "crypto-js", "node-forge"];
-				const foundLibs = encryptionLibs.filter(lib => deps[lib]);
+				const foundLibs = encryptionLibs.filter((lib) => deps[lib]);
 
 				if (foundLibs.length > 0) {
 					evidence.push(`Encryption libraries found: ${foundLibs.join(", ")}`);
@@ -1067,11 +1163,21 @@ export class AISecurityScanner {
 		// Check for HTTPS configuration
 		const configFiles = await this.getAllFiles(projectPath);
 		for (const file of configFiles) {
-			if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.json')) {
+			if (
+				file.endsWith(".js") ||
+				file.endsWith(".ts") ||
+				file.endsWith(".json")
+			) {
 				try {
-					const content = await fs.readFile(file, 'utf-8');
-					if (content.includes('https://') || content.includes('ssl:') || content.includes('tls:')) {
-						evidence.push(`HTTPS/TLS configuration found in ${path.basename(file)}`);
+					const content = await fs.readFile(file, "utf-8");
+					if (
+						content.includes("https://") ||
+						content.includes("ssl:") ||
+						content.includes("tls:")
+					) {
+						evidence.push(
+							`HTTPS/TLS configuration found in ${path.basename(file)}`,
+						);
 					}
 				} catch {
 					// Skip files that can't be read
@@ -1098,8 +1204,8 @@ export class AISecurityScanner {
 		const evidence: string[] = [];
 		const gaps: string[] = [];
 
-		const accessControlVulns = vulnerabilities.filter(v => 
-			v.category === "authorization" || v.cweId === "CWE-862"
+		const accessControlVulns = vulnerabilities.filter(
+			(v) => v.category === "authorization" || v.cweId === "CWE-862",
 		);
 
 		if (accessControlVulns.length === 0) {
@@ -1127,10 +1233,13 @@ export class AISecurityScanner {
 			const packageJsonPath = path.join(projectPath, "package.json");
 			if (await fs.pathExists(packageJsonPath)) {
 				const packageJson = await fs.readJson(packageJsonPath);
-				const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+				const deps = {
+					...packageJson.dependencies,
+					...packageJson.devDependencies,
+				};
 
 				const loggingLibs = ["winston", "pino", "bunyan", "consola"];
-				const foundLibs = loggingLibs.filter(lib => deps[lib]);
+				const foundLibs = loggingLibs.filter((lib) => deps[lib]);
 
 				if (foundLibs.length > 0) {
 					evidence.push(`Logging libraries found: ${foundLibs.join(", ")}`);
@@ -1197,8 +1306,8 @@ export class AISecurityScanner {
 		const files = await this.getCodeFiles(projectPath);
 		for (const file of files) {
 			try {
-				const content = await fs.readFile(file, 'utf-8');
-				if (content.includes('onKeyDown') || content.includes('tabIndex')) {
+				const content = await fs.readFile(file, "utf-8");
+				if (content.includes("onKeyDown") || content.includes("tabIndex")) {
 					techniques.push(`Keyboard handling found in ${path.basename(file)}`);
 				}
 			} catch {
@@ -1229,8 +1338,8 @@ export class AISecurityScanner {
 		const files = await this.getCodeFiles(projectPath);
 		for (const file of files) {
 			try {
-				const content = await fs.readFile(file, 'utf-8');
-				if (content.includes('aria-') || content.includes('role=')) {
+				const content = await fs.readFile(file, "utf-8");
+				if (content.includes("aria-") || content.includes("role=")) {
 					techniques.push(`ARIA attributes found in ${path.basename(file)}`);
 				}
 			} catch {
@@ -1250,7 +1359,9 @@ export class AISecurityScanner {
 	}
 
 	// AI insights helper methods
-	private getSeverityDistribution(vulnerabilities: SecurityVulnerability[]): Record<string, number> {
+	private getSeverityDistribution(
+		vulnerabilities: SecurityVulnerability[],
+	): Record<string, number> {
 		const distribution: Record<string, number> = {};
 		for (const vuln of vulnerabilities) {
 			distribution[vuln.severity] = (distribution[vuln.severity] || 0) + 1;
@@ -1258,7 +1369,9 @@ export class AISecurityScanner {
 		return distribution;
 	}
 
-	private getCategoryDistribution(vulnerabilities: SecurityVulnerability[]): Record<string, number> {
+	private getCategoryDistribution(
+		vulnerabilities: SecurityVulnerability[],
+	): Record<string, number> {
 		const distribution: Record<string, number> = {};
 		for (const vuln of vulnerabilities) {
 			distribution[vuln.category] = (distribution[vuln.category] || 0) + 1;
@@ -1271,7 +1384,10 @@ export class AISecurityScanner {
 		categoryDistribution: Record<string, number>,
 		compliance: SecurityScanResult["compliance"],
 	): string {
-		const totalVulns = Object.values(severityDistribution).reduce((a, b) => a + b, 0);
+		const totalVulns = Object.values(severityDistribution).reduce(
+			(a, b) => a + b,
+			0,
+		);
 		const criticalCount = severityDistribution.critical || 0;
 		const highCount = severityDistribution.high || 0;
 
@@ -1304,7 +1420,9 @@ export class AISecurityScanner {
 			}
 		}
 
-		const criticalVulns = vulnerabilities.filter(v => v.severity === "critical");
+		const criticalVulns = vulnerabilities.filter(
+			(v) => v.severity === "critical",
+		);
 		for (const vuln of criticalVulns) {
 			risks.push(`Critical: ${vuln.title}`);
 		}
@@ -1319,54 +1437,82 @@ export class AISecurityScanner {
 		const recommendations: string[] = [];
 
 		// Priority-based recommendations
-		const criticalVulns = vulnerabilities.filter(v => v.severity === "critical");
+		const criticalVulns = vulnerabilities.filter(
+			(v) => v.severity === "critical",
+		);
 		if (criticalVulns.length > 0) {
-			recommendations.push("Immediately address all critical vulnerabilities before deployment");
+			recommendations.push(
+				"Immediately address all critical vulnerabilities before deployment",
+			);
 		}
 
-		const injectionVulns = vulnerabilities.filter(v => v.category === "injection");
+		const injectionVulns = vulnerabilities.filter(
+			(v) => v.category === "injection",
+		);
 		if (injectionVulns.length > 0) {
-			recommendations.push("Implement input validation and sanitization for all user inputs");
+			recommendations.push(
+				"Implement input validation and sanitization for all user inputs",
+			);
 		}
 
-		const secretVulns = vulnerabilities.filter(v => v.category === "sensitive-data");
+		const secretVulns = vulnerabilities.filter(
+			(v) => v.category === "sensitive-data",
+		);
 		if (secretVulns.length > 0) {
-			recommendations.push("Move all secrets and credentials to environment variables");
+			recommendations.push(
+				"Move all secrets and credentials to environment variables",
+			);
 		}
 
 		// Compliance-based recommendations
 		if (compliance.owasp && compliance.owasp.score < 80) {
-			recommendations.push("Improve OWASP Top 10 compliance by addressing identified security gaps");
+			recommendations.push(
+				"Improve OWASP Top 10 compliance by addressing identified security gaps",
+			);
 		}
 
 		if (compliance.wcag && compliance.wcag.score < 90) {
-			recommendations.push("Enhance accessibility compliance by adding ARIA attributes and keyboard navigation");
+			recommendations.push(
+				"Enhance accessibility compliance by adding ARIA attributes and keyboard navigation",
+			);
 		}
 
 		return recommendations.slice(0, 5); // Top 5 recommendations
 	}
 
-	private prioritizeImprovements(vulnerabilities: SecurityVulnerability[]): string[] {
+	private prioritizeImprovements(
+		vulnerabilities: SecurityVulnerability[],
+	): string[] {
 		const priorities: string[] = [];
 
 		// Sort by severity and confidence
-		const sortedVulns = vulnerabilities
-			.sort((a, b) => {
-				const severityOrder = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
-				const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
-				if (severityDiff !== 0) return severityDiff;
-				return b.confidence - a.confidence;
-			});
+		const sortedVulns = vulnerabilities.sort((a, b) => {
+			const severityOrder = {
+				critical: 4,
+				high: 3,
+				medium: 2,
+				low: 1,
+				info: 0,
+			};
+			const severityDiff =
+				severityOrder[b.severity] - severityOrder[a.severity];
+			if (severityDiff !== 0) return severityDiff;
+			return b.confidence - a.confidence;
+		});
 
 		for (const vuln of sortedVulns.slice(0, 5)) {
-			priorities.push(`${vuln.severity.toUpperCase()}: ${vuln.title} (${vuln.file})`);
+			priorities.push(
+				`${vuln.severity.toUpperCase()}: ${vuln.title} (${vuln.file})`,
+			);
 		}
 
 		return priorities;
 	}
 
 	// Report generation methods
-	private async generateHTMLReport(scanResult: SecurityScanResult): Promise<string> {
+	private async generateHTMLReport(
+		scanResult: SecurityScanResult,
+	): Promise<string> {
 		return `
 <!DOCTYPE html>
 <html lang="en">
@@ -1427,20 +1573,24 @@ export class AISecurityScanner {
         </div>
 
         <h2>Vulnerabilities</h2>
-        ${scanResult.vulnerabilities.map(vuln => `
+        ${scanResult.vulnerabilities
+					.map(
+						(vuln) => `
             <div class="vulnerability vuln-${vuln.severity}">
                 <h3>${vuln.title} <span class="severity-${vuln.severity}">[${vuln.severity.toUpperCase()}]</span></h3>
-                <p><strong>File:</strong> ${vuln.file}${vuln.line ? ` (Line ${vuln.line})` : ''}</p>
+                <p><strong>File:</strong> ${vuln.file}${vuln.line ? ` (Line ${vuln.line})` : ""}</p>
                 <p><strong>Description:</strong> ${vuln.description}</p>
                 <p><strong>Evidence:</strong> <code>${vuln.evidence}</code></p>
                 <p><strong>Recommendation:</strong> ${vuln.recommendation}</p>
-                ${vuln.aiAnalysis ? `<p><strong>AI Analysis:</strong> ${vuln.aiAnalysis}</p>` : ''}
+                ${vuln.aiAnalysis ? `<p><strong>AI Analysis:</strong> ${vuln.aiAnalysis}</p>` : ""}
             </div>
-        `).join('')}
+        `,
+					)
+					.join("")}
 
         <h2>Key Recommendations</h2>
         <ul>
-            ${scanResult.aiInsights.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+            ${scanResult.aiInsights.recommendations.map((rec) => `<li>${rec}</li>`).join("")}
         </ul>
 
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280;">
@@ -1451,7 +1601,9 @@ export class AISecurityScanner {
 </html>`;
 	}
 
-	private async generateMarkdownReport(scanResult: SecurityScanResult): Promise<string> {
+	private async generateMarkdownReport(
+		scanResult: SecurityScanResult,
+	): Promise<string> {
 		return `# Security Scan Report
 
 **Scan ID:** ${scanResult.scanId}  
@@ -1471,76 +1623,91 @@ export class AISecurityScanner {
 
 ## Vulnerabilities
 
-${scanResult.vulnerabilities.map(vuln => `
+${scanResult.vulnerabilities
+	.map(
+		(vuln) => `
 ### ${vuln.title} [${vuln.severity.toUpperCase()}]
 
-- **File:** ${vuln.file}${vuln.line ? ` (Line ${vuln.line})` : ''}
+- **File:** ${vuln.file}${vuln.line ? ` (Line ${vuln.line})` : ""}
 - **Category:** ${vuln.category}
 - **Description:** ${vuln.description}
 - **Evidence:** \`${vuln.evidence}\`
 - **Impact:** ${vuln.impact}
 - **Recommendation:** ${vuln.recommendation}
-${vuln.aiAnalysis ? `- **AI Analysis:** ${vuln.aiAnalysis}` : ''}
+${vuln.aiAnalysis ? `- **AI Analysis:** ${vuln.aiAnalysis}` : ""}
 
-`).join('')}
+`,
+	)
+	.join("")}
 
 ## Key Recommendations
 
-${scanResult.aiInsights.recommendations.map(rec => `- ${rec}`).join('\n')}
+${scanResult.aiInsights.recommendations.map((rec) => `- ${rec}`).join("\n")}
 
 ## Improvement Priority
 
-${scanResult.aiInsights.improvementPriority.map((item, index) => `${index + 1}. ${item}`).join('\n')}
+${scanResult.aiInsights.improvementPriority.map((item, index) => `${index + 1}. ${item}`).join("\n")}
 
 ---
 *Generated by Xaheen CLI Security Scanner*`;
 	}
 
-	private async generateSARIFReport(scanResult: SecurityScanResult): Promise<string> {
+	private async generateSARIFReport(
+		scanResult: SecurityScanResult,
+	): Promise<string> {
 		const sarif = {
-			$schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+			$schema:
+				"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
 			version: "2.1.0",
-			runs: [{
-				tool: {
-					driver: {
-						name: "Xaheen Security Scanner",
-						version: "1.0.0",
-						informationUri: "https://xaheen.dev",
-					}
-				},
-				results: scanResult.vulnerabilities.map(vuln => ({
-					ruleId: vuln.id,
-					message: {
-						text: vuln.description
+			runs: [
+				{
+					tool: {
+						driver: {
+							name: "Xaheen Security Scanner",
+							version: "1.0.0",
+							informationUri: "https://xaheen.dev",
+						},
 					},
-					level: this.mapSeverityToSARIF(vuln.severity),
-					locations: [{
-						physicalLocation: {
-							artifactLocation: {
-								uri: vuln.file
+					results: scanResult.vulnerabilities.map((vuln) => ({
+						ruleId: vuln.id,
+						message: {
+							text: vuln.description,
+						},
+						level: this.mapSeverityToSARIF(vuln.severity),
+						locations: [
+							{
+								physicalLocation: {
+									artifactLocation: {
+										uri: vuln.file,
+									},
+									region: vuln.line
+										? {
+												startLine: vuln.line,
+												startColumn: vuln.column || 1,
+											}
+										: undefined,
+								},
 							},
-							region: vuln.line ? {
-								startLine: vuln.line,
-								startColumn: vuln.column || 1
-							} : undefined
-						}
-					}],
-					properties: {
-						category: vuln.category,
-						confidence: vuln.confidence,
-						impact: vuln.impact,
-						recommendation: vuln.recommendation,
-						...(vuln.cweId && { cweId: vuln.cweId }),
-						...(vuln.owaspId && { owaspId: vuln.owaspId }),
-					}
-				}))
-			}]
+						],
+						properties: {
+							category: vuln.category,
+							confidence: vuln.confidence,
+							impact: vuln.impact,
+							recommendation: vuln.recommendation,
+							...(vuln.cweId && { cweId: vuln.cweId }),
+							...(vuln.owaspId && { owaspId: vuln.owaspId }),
+						},
+					})),
+				},
+			],
 		};
 
 		return JSON.stringify(sarif, null, 2);
 	}
 
-	private mapSeverityToSARIF(severity: SecurityVulnerability["severity"]): string {
+	private mapSeverityToSARIF(
+		severity: SecurityVulnerability["severity"],
+	): string {
 		const mapping = {
 			critical: "error",
 			high: "error",

@@ -140,7 +140,7 @@ export interface GeneratorConfig {
 
 export interface PropertyConstraint {
 	readonly field: string;
-	readonly rule: 'range' | 'length' | 'pattern' | 'custom';
+	readonly rule: "range" | "length" | "pattern" | "custom";
 	readonly value: any;
 	readonly description: string;
 }
@@ -153,7 +153,7 @@ export interface GeneratorParameter {
 }
 
 export interface GeneratorConstraint {
-	readonly type: 'min' | 'max' | 'pattern' | 'custom';
+	readonly type: "min" | "max" | "pattern" | "custom";
 	readonly value: any;
 }
 
@@ -161,7 +161,7 @@ export interface MutationTestOptions extends TestingOptions {
 	readonly mutators: MutatorConfig[];
 	readonly thresholds: MutationThresholds;
 	readonly excludePatterns: string[];
-	readonly reportFormat: ('html' | 'json' | 'text' | 'dashboard')[];
+	readonly reportFormat: ("html" | "json" | "text" | "dashboard")[];
 	readonly incrementalEnabled: boolean;
 	readonly parallelJobs: number;
 }

@@ -470,9 +470,7 @@ export class MCPClient {
 	 * Analyze project structure for AI generation context
 	 * Story 1.2: Implement project structure analysis
 	 */
-	async analyzeProjectStructure(
-		projectPath: string,
-	): Promise<{
+	async analyzeProjectStructure(projectPath: string): Promise<{
 		architecture: string;
 		patterns: string[];
 		components: string[];
@@ -601,10 +599,7 @@ export class MCPClient {
 		);
 
 		// Define quality metrics
-		const qualityMetrics = this.buildQualityMetrics(
-			projectAnalysis,
-			spec,
-		);
+		const qualityMetrics = this.buildQualityMetrics(projectAnalysis, spec);
 
 		return {
 			optimizedPrompt,
@@ -728,8 +723,16 @@ export class MCPClient {
 	private async detectArchitecture(projectPath: string): Promise<string> {
 		const patterns = {
 			"Clean Architecture": ["src/entities", "src/use-cases", "src/adapters"],
-			"Hexagonal Architecture": ["src/domain", "src/infrastructure", "src/application"],
-			"Layered Architecture": ["src/controllers", "src/services", "src/repositories"],
+			"Hexagonal Architecture": [
+				"src/domain",
+				"src/infrastructure",
+				"src/application",
+			],
+			"Layered Architecture": [
+				"src/controllers",
+				"src/services",
+				"src/repositories",
+			],
 			"Component-Based": ["src/components", "src/hooks"],
 			"Feature-Based": ["src/features", "src/modules"],
 		};
@@ -759,7 +762,10 @@ export class MCPClient {
 		];
 
 		for (const check of patternChecks) {
-			if (check.path && (await this.directoryExists(path.join(projectPath, check.path)))) {
+			if (
+				check.path &&
+				(await this.directoryExists(path.join(projectPath, check.path)))
+			) {
 				patterns.push(check.pattern);
 			}
 		}

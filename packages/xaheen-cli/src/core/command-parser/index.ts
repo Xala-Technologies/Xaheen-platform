@@ -423,7 +423,7 @@ export class CommandParser {
 				handler: this.handleAIIndex.bind(this),
 			},
 
-			// Documentation domain routes  
+			// Documentation domain routes
 			{
 				pattern: "docs generate [type]",
 				domain: "docs",
@@ -689,62 +689,159 @@ export class CommandParser {
 			// Add Template Modernization-specific options
 			if (route.domain === "templates") {
 				command
-					.option('-t, --target <pattern>', 'Target template files (glob pattern)', '**/*.hbs')
-					.option('-o, --output <directory>', 'Output directory for modernized templates', './modernized-templates')
-					.option('-w, --wcag-level <level>', 'WCAG compliance level (A, AA, AAA)', 'AAA')
-					.option('-n, --nsm-classification <level>', 'NSM security classification', 'OPEN')
-					.option('--auto-fix', 'Automatically fix issues where possible', true)
-					.option('--dry-run', 'Preview changes without writing files', false)
-					.option('--examples', 'Generate modernization examples', false)
-					.option('--analyze', 'Only analyze templates without modernizing', false)
-					.option('--report', 'Generate comprehensive report', true)
-					.option('--verbose', 'Verbose output', false);
+					.option(
+						"-t, --target <pattern>",
+						"Target template files (glob pattern)",
+						"**/*.hbs",
+					)
+					.option(
+						"-o, --output <directory>",
+						"Output directory for modernized templates",
+						"./modernized-templates",
+					)
+					.option(
+						"-w, --wcag-level <level>",
+						"WCAG compliance level (A, AA, AAA)",
+						"AAA",
+					)
+					.option(
+						"-n, --nsm-classification <level>",
+						"NSM security classification",
+						"OPEN",
+					)
+					.option("--auto-fix", "Automatically fix issues where possible", true)
+					.option("--dry-run", "Preview changes without writing files", false)
+					.option("--examples", "Generate modernization examples", false)
+					.option(
+						"--analyze",
+						"Only analyze templates without modernizing",
+						false,
+					)
+					.option("--report", "Generate comprehensive report", true)
+					.option("--verbose", "Verbose output", false);
 			}
 
 			// Add Security-specific options
 			if (route.domain === "security") {
 				if (route.action === "audit") {
 					command
-						.option("--tools <tools>", "Security tools to use (comma-separated)", "npm-audit,eslint-security")
-						.option("--standards <standards>", "Compliance standards to check (comma-separated)", "owasp")
-						.option("--classification <level>", "NSM security classification level", "OPEN")
-						.option("--format <format>", "Output format (json|html|markdown|all)", "html")
-						.option("--severity <level>", "Minimum severity level (low|medium|high|critical|all)", "medium")
+						.option(
+							"--tools <tools>",
+							"Security tools to use (comma-separated)",
+							"npm-audit,eslint-security",
+						)
+						.option(
+							"--standards <standards>",
+							"Compliance standards to check (comma-separated)",
+							"owasp",
+						)
+						.option(
+							"--classification <level>",
+							"NSM security classification level",
+							"OPEN",
+						)
+						.option(
+							"--format <format>",
+							"Output format (json|html|markdown|all)",
+							"html",
+						)
+						.option(
+							"--severity <level>",
+							"Minimum severity level (low|medium|high|critical|all)",
+							"medium",
+						)
 						.option("--output <dir>", "Output directory for reports")
 						.option("--scan-code", "Scan source code for vulnerabilities", true)
-						.option("--scan-deps", "Scan dependencies for vulnerabilities", true)
+						.option(
+							"--scan-deps",
+							"Scan dependencies for vulnerabilities",
+							true,
+						)
 						.option("--scan-config", "Scan configuration files", true)
 						.option("--include-snyk", "Include Snyk vulnerability scanning")
 						.option("--include-sonarqube", "Include SonarQube analysis")
-						.option("--include-eslint", "Include ESLint security analysis", true)
+						.option(
+							"--include-eslint",
+							"Include ESLint security analysis",
+							true,
+						)
 						.option("--include-custom", "Include custom security rules", true)
 						.option("--interactive", "Interactive mode with guided prompts");
 				} else if (route.action === "compliance") {
 					command
-						.option("--standards <standards>", "Compliance standards to assess (comma-separated)", "gdpr,owasp")
-						.option("--type <type>", "Report type (executive|detailed|technical|audit)", "detailed")
-						.option("--format <format>", "Output format (json|html|pdf|all)", "html")
-						.option("--classification <level>", "NSM security classification level")
-						.option("--lawful-basis <basis>", "GDPR lawful basis (comma-separated)")
+						.option(
+							"--standards <standards>",
+							"Compliance standards to assess (comma-separated)",
+							"gdpr,owasp",
+						)
+						.option(
+							"--type <type>",
+							"Report type (executive|detailed|technical|audit)",
+							"detailed",
+						)
+						.option(
+							"--format <format>",
+							"Output format (json|html|pdf|all)",
+							"html",
+						)
+						.option(
+							"--classification <level>",
+							"NSM security classification level",
+						)
+						.option(
+							"--lawful-basis <basis>",
+							"GDPR lawful basis (comma-separated)",
+						)
 						.option("--output <dir>", "Output directory for reports")
 						.option("--gaps", "Include gap analysis", true)
 						.option("--remediation", "Include remediation planning", true)
 						.option("--dashboard", "Generate interactive dashboard", true)
 						.option("--metrics", "Include compliance metrics", true)
 						.option("--action-plan", "Generate detailed action plan")
-						.option("--timeframe <timeframe>", "Report timeframe (current|historical|projected)", "current")
+						.option(
+							"--timeframe <timeframe>",
+							"Report timeframe (current|historical|projected)",
+							"current",
+						)
 						.option("--interactive", "Interactive mode with guided prompts");
 				} else if (route.action === "scan") {
 					command
-						.option("-t, --types <types>", "Scan types: code,dependencies,secrets,configuration,compliance", "code,dependencies,secrets")
-						.option("-s, --severity <levels>", "Severity levels to include: critical,high,medium,low,info", "critical,high,medium")
-						.option("-c, --compliance <standards>", "Compliance standards to check: owasp,nsm,gdpr,wcag", "owasp")
-						.option("--ai-enhanced", "Enable AI-powered security analysis", true)
+						.option(
+							"-t, --types <types>",
+							"Scan types: code,dependencies,secrets,configuration,compliance",
+							"code,dependencies,secrets",
+						)
+						.option(
+							"-s, --severity <levels>",
+							"Severity levels to include: critical,high,medium,low,info",
+							"critical,high,medium",
+						)
+						.option(
+							"-c, --compliance <standards>",
+							"Compliance standards to check: owasp,nsm,gdpr,wcag",
+							"owasp",
+						)
+						.option(
+							"--ai-enhanced",
+							"Enable AI-powered security analysis",
+							true,
+						)
 						.option("--no-ai-enhanced", "Disable AI-powered analysis")
-						.option("-f, --format <format>", "Report format: json,html,markdown,sarif", "json")
+						.option(
+							"-f, --format <format>",
+							"Report format: json,html,markdown,sarif",
+							"json",
+						)
 						.option("-o, --output <path>", "Output file path for the report")
-						.option("--exclude <patterns>", "Comma-separated patterns to exclude")
-						.option("--max-file-size <size>", "Maximum file size to scan (KB)", "1024")
+						.option(
+							"--exclude <patterns>",
+							"Comma-separated patterns to exclude",
+						)
+						.option(
+							"--max-file-size <size>",
+							"Maximum file size to scan (KB)",
+							"1024",
+						)
 						.option("--timeout <ms>", "Scan timeout in milliseconds", "300000")
 						.option("--verbose", "Enable verbose logging");
 				}
@@ -1064,13 +1161,13 @@ export class CommandParser {
 	// AI Command Handlers (Codebuff integration)
 	private async handleAICode(command: CLICommand): Promise<void> {
 		const { codebuffCommand } = await import("../../commands/ai.js");
-		const prompt = command.target || '';
+		const prompt = command.target || "";
 		await codebuffCommand(prompt, {
 			model: command.options.model,
 			dryRun: command.options.dryRun,
 			autoCommit: !command.options.noAutoCommit,
 			interactive: !command.options.noInteractive,
-			index: command.options.index
+			index: command.options.index,
 		});
 	}
 
@@ -1080,19 +1177,19 @@ export class CommandParser {
 			model: command.options.model,
 			dryRun: command.options.dryRun,
 			autoCommit: !command.options.noAutoCommit,
-			interactive: !command.options.noInteractive
+			interactive: !command.options.noInteractive,
 		});
 	}
 
 	private async handleAINorwegian(command: CLICommand): Promise<void> {
 		const { norwegianComplianceCommand } = await import("../../commands/ai.js");
-		const prompt = command.target || '';
+		const prompt = command.target || "";
 		await norwegianComplianceCommand(prompt, {
 			model: command.options.model,
 			dryRun: command.options.dryRun,
 			autoCommit: !command.options.noAutoCommit,
 			interactive: !command.options.noInteractive,
-			index: command.options.index
+			index: command.options.index,
 		});
 	}
 
@@ -1102,10 +1199,12 @@ export class CommandParser {
 	}
 
 	private async handleSecurityAudit(command: CLICommand): Promise<void> {
-		const { securityAuditCommand } = await import("../../commands/security-audit.js");
+		const { securityAuditCommand } = await import(
+			"../../commands/security-audit.js"
+		);
 		// Create a mock argv array for the security audit command
-		const argv = ['node', 'xaheen', 'security-audit'];
-		
+		const argv = ["node", "xaheen", "security-audit"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1122,10 +1221,12 @@ export class CommandParser {
 	}
 
 	private async handleComplianceReport(command: CLICommand): Promise<void> {
-		const { complianceReportCommand } = await import("../../commands/compliance-report.js");
+		const { complianceReportCommand } = await import(
+			"../../commands/compliance-report.js"
+		);
 		// Create a mock argv array for the compliance report command
-		const argv = ['node', 'xaheen', 'compliance-report'];
-		
+		const argv = ["node", "xaheen", "compliance-report"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1142,15 +1243,17 @@ export class CommandParser {
 	}
 
 	private async handleSecurityScan(command: CLICommand): Promise<void> {
-		const { securityScanCommand } = await import("../../commands/security-scan.command.js");
+		const { securityScanCommand } = await import(
+			"../../commands/security-scan.command.js"
+		);
 		// Create a mock argv array for the security scan command
-		const argv = ['node', 'xaheen', 'security-scan'];
-		
+		const argv = ["node", "xaheen", "security-scan"];
+
 		// Add project path argument if provided
 		if (command.args && command.args.length > 0) {
 			argv.push(command.args[0]);
 		}
-		
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1161,22 +1264,24 @@ export class CommandParser {
 				}
 			}
 		});
-		
+
 		// Parse and execute the security scan command
 		await securityScanCommand.parseAsync(argv.slice(2));
 	}
 
 	// Template Modernization handler
 	private async handleTemplateModernize(command: CLICommand): Promise<void> {
-		const { modernizeTemplatesCommand } = await import("../../commands/modernize-templates.js");
+		const { modernizeTemplatesCommand } = await import(
+			"../../commands/modernize-templates.js"
+		);
 		// Create a mock argv array for the modernize templates command
-		const argv = ['node', 'xaheen', 'modernize'];
-		
+		const argv = ["node", "xaheen", "modernize"];
+
 		// Add target pattern if provided
 		if (command.target) {
-			argv.push('--target', command.target);
+			argv.push("--target", command.target);
 		}
-		
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1196,13 +1301,13 @@ export class CommandParser {
 	private async handleDocsGenerate(command: CLICommand): Promise<void> {
 		const { docsCommand } = await import("../../commands/docs.js");
 		// Create a mock argv array for the docs generate command
-		const argv = ['node', 'xaheen', 'docs'];
-		
+		const argv = ["node", "xaheen", "docs"];
+
 		// Add type if specified
 		if (command.arguments.type) {
-			argv.push('--type', command.arguments.type);
+			argv.push("--type", command.arguments.type);
 		}
-		
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1221,8 +1326,8 @@ export class CommandParser {
 	private async handleDocsPortal(command: CLICommand): Promise<void> {
 		const { docsCommand } = await import("../../commands/docs.js");
 		// Create a mock argv array for the docs portal command
-		const argv = ['node', 'xaheen', 'docs', '--portal'];
-		
+		const argv = ["node", "xaheen", "docs", "--portal"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1241,8 +1346,8 @@ export class CommandParser {
 	private async handleDocsOnboarding(command: CLICommand): Promise<void> {
 		const { docsCommand } = await import("../../commands/docs.js");
 		// Create a mock argv array for the docs onboarding command
-		const argv = ['node', 'xaheen', 'docs', '--onboarding'];
-		
+		const argv = ["node", "xaheen", "docs", "--onboarding"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1261,8 +1366,8 @@ export class CommandParser {
 	private async handleDocsSync(command: CLICommand): Promise<void> {
 		const { docsCommand } = await import("../../commands/docs.js");
 		// Create a mock argv array for the docs sync command
-		const argv = ['node', 'xaheen', 'docs', '--sync'];
-		
+		const argv = ["node", "xaheen", "docs", "--sync"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {
@@ -1281,8 +1386,8 @@ export class CommandParser {
 	private async handleDocsWatch(command: CLICommand): Promise<void> {
 		const { docsCommand } = await import("../../commands/docs.js");
 		// Create a mock argv array for the docs watch command
-		const argv = ['node', 'xaheen', 'docs', '--watch'];
-		
+		const argv = ["node", "xaheen", "docs", "--watch"];
+
 		// Add command options
 		Object.entries(command.options).forEach(([key, value]) => {
 			if (value !== undefined && value !== false) {

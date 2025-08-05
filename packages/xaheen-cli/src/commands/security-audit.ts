@@ -30,21 +30,37 @@ import { Command } from "commander";
 import consola from "consola";
 import {
 	generateSecurityAudit,
-	listSecurityTools,
-	validateSecurityTools,
 	getRecommendedSecurityTools,
-	type SecurityAuditOptions,
+	listSecurityTools,
 	type NSMClassification,
+	type SecurityAuditOptions,
+	validateSecurityTools,
 } from "../generators/security/index.js";
 
 export const securityAuditCommand = new Command("security-audit")
 	.alias("audit")
 	.description("Generate comprehensive security audit reports")
-	.option("--tools <tools>", "Security tools to use (comma-separated)", "npm-audit,eslint-security")
-	.option("--standards <standards>", "Compliance standards to check (comma-separated)", "owasp")
-	.option("--classification <level>", "NSM security classification level", "OPEN")
+	.option(
+		"--tools <tools>",
+		"Security tools to use (comma-separated)",
+		"npm-audit,eslint-security",
+	)
+	.option(
+		"--standards <standards>",
+		"Compliance standards to check (comma-separated)",
+		"owasp",
+	)
+	.option(
+		"--classification <level>",
+		"NSM security classification level",
+		"OPEN",
+	)
 	.option("--format <format>", "Output format (json|html|markdown|all)", "html")
-	.option("--severity <level>", "Minimum severity level (low|medium|high|critical|all)", "medium")
+	.option(
+		"--severity <level>",
+		"Minimum severity level (low|medium|high|critical|all)",
+		"medium",
+	)
 	.option("--output <dir>", "Output directory for reports")
 	.option("--scan-code", "Scan source code for vulnerabilities", true)
 	.option("--scan-deps", "Scan dependencies for vulnerabilities", true)
@@ -97,12 +113,33 @@ async function runInteractiveSecurityAudit(options: any): Promise<void> {
 	const complianceStandards = await multiselect({
 		message: "Select compliance standards to check:",
 		options: [
-			{ value: "owasp", label: "OWASP Top 10", hint: "Web application security risks", selected: true },
-			{ value: "gdpr", label: "GDPR", hint: "European data protection regulation" },
-			{ value: "nsm", label: "NSM", hint: "Norwegian security classifications" },
-			{ value: "pci-dss", label: "PCI DSS", hint: "Payment card security standard" },
+			{
+				value: "owasp",
+				label: "OWASP Top 10",
+				hint: "Web application security risks",
+				selected: true,
+			},
+			{
+				value: "gdpr",
+				label: "GDPR",
+				hint: "European data protection regulation",
+			},
+			{
+				value: "nsm",
+				label: "NSM",
+				hint: "Norwegian security classifications",
+			},
+			{
+				value: "pci-dss",
+				label: "PCI DSS",
+				hint: "Payment card security standard",
+			},
 			{ value: "soc2", label: "SOC 2", hint: "Service organization controls" },
-			{ value: "iso27001", label: "ISO 27001", hint: "Information security management" },
+			{
+				value: "iso27001",
+				label: "ISO 27001",
+				hint: "Information security management",
+			},
 		],
 	});
 
@@ -118,8 +155,16 @@ async function runInteractiveSecurityAudit(options: any): Promise<void> {
 			message: "Select NSM security classification level:",
 			options: [
 				{ value: "OPEN", label: "OPEN", hint: "Public information" },
-				{ value: "RESTRICTED", label: "RESTRICTED", hint: "Limited distribution" },
-				{ value: "CONFIDENTIAL", label: "CONFIDENTIAL", hint: "Sensitive information" },
+				{
+					value: "RESTRICTED",
+					label: "RESTRICTED",
+					hint: "Limited distribution",
+				},
+				{
+					value: "CONFIDENTIAL",
+					label: "CONFIDENTIAL",
+					hint: "Sensitive information",
+				},
 				{ value: "SECRET", label: "SECRET", hint: "Highly classified" },
 			],
 		});
@@ -223,7 +268,7 @@ async function runInteractiveSecurityAudit(options: any): Promise<void> {
 		consola.info(`Scan code: ${scanCode ? "Yes" : "No"}`);
 		consola.info(`Scan dependencies: ${scanDeps ? "Yes" : "No"}`);
 		consola.info(`Scan configuration: ${scanConfig ? "Yes" : "No"}`);
-		
+
 		const proceed = await confirm({
 			message: "Proceed with security audit?",
 		});
@@ -245,26 +290,35 @@ async function runSecurityAudit(options: any): Promise<void> {
 	intro(chalk.cyan("🔒 Xaheen Security Audit"));
 
 	// Parse tools
-	const tools = options.tools ? options.tools.split(",").map((t: string) => t.trim()) : ["npm-audit"];
-	
+	const tools = options.tools
+		? options.tools.split(",").map((t: string) => t.trim())
+		: ["npm-audit"];
+
 	// Parse compliance standards
-	const standards = options.standards ? options.standards.split(",").map((s: string) => s.trim()) : ["owasp"];
+	const standards = options.standards
+		? options.standards.split(",").map((s: string) => s.trim())
+		: ["owasp"];
 
 	// Validate tools availability
 	const toolValidation = await validateSecurityTools(tools);
 	if (toolValidation.missing.length > 0) {
-		consola.warn(`Missing security tools: ${toolValidation.missing.join(", ")}`);
+		consola.warn(
+			`Missing security tools: ${toolValidation.missing.join(", ")}`,
+		);
 		if (toolValidation.recommendations.length > 0) {
 			consola.info("Installation commands:");
-			toolValidation.recommendations.forEach(rec => consola.info(`  ${rec}`));
+			toolValidation.recommendations.forEach((rec) => consola.info(`  ${rec}`));
 		}
 	}
 
 	// Build audit options
 	const auditOptions: SecurityAuditOptions = {
 		projectPath: process.cwd(),
-		includeSnyk: tools.includes("snyk") && toolValidation.available.includes("snyk"),
-		includeSonarQube: tools.includes("sonarqube") && toolValidation.available.includes("sonarqube"),
+		includeSnyk:
+			tools.includes("snyk") && toolValidation.available.includes("snyk"),
+		includeSonarQube:
+			tools.includes("sonarqube") &&
+			toolValidation.available.includes("sonarqube"),
 		includeESLintSecurity: options.includeEslint !== false,
 		includeCustomRules: options.includeCustom !== false,
 		outputFormat: options.format || "html",
@@ -296,7 +350,9 @@ async function runSecurityAudit(options: any): Promise<void> {
 /**
  * Execute the security audit
  */
-async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void> {
+async function executeSecurityAudit(
+	options: SecurityAuditOptions,
+): Promise<void> {
 	const s = spinner();
 	s.start("Running security audit...");
 
@@ -307,7 +363,7 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 
 		// Display results summary
 		consola.success(chalk.green("🔒 Security audit completed!"));
-		
+
 		consola.info("");
 		consola.info(chalk.cyan("📊 Security Summary:"));
 		consola.info(`Overall Risk Score: ${result.summary.riskScore}/100`);
@@ -319,10 +375,18 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 
 		consola.info("");
 		consola.info(chalk.cyan("🎯 Security Scores:"));
-		consola.info(`Code Security: ${getScoreColor(result.score.code)}${result.score.code}/100${chalk.reset()}`);
-		consola.info(`Dependencies: ${getScoreColor(result.score.dependencies)}${result.score.dependencies}/100${chalk.reset()}`);
-		consola.info(`Configuration: ${getScoreColor(result.score.configuration)}${result.score.configuration}/100${chalk.reset()}`);
-		consola.info(`Compliance: ${getScoreColor(result.score.compliance)}${result.score.compliance}/100${chalk.reset()}`);
+		consola.info(
+			`Code Security: ${getScoreColor(result.score.code)}${result.score.code}/100${chalk.reset()}`,
+		);
+		consola.info(
+			`Dependencies: ${getScoreColor(result.score.dependencies)}${result.score.dependencies}/100${chalk.reset()}`,
+		);
+		consola.info(
+			`Configuration: ${getScoreColor(result.score.configuration)}${result.score.configuration}/100${chalk.reset()}`,
+		);
+		consola.info(
+			`Compliance: ${getScoreColor(result.score.compliance)}${result.score.compliance}/100${chalk.reset()}`,
+		);
 
 		// Show top vulnerabilities
 		if (result.vulnerabilities.length > 0) {
@@ -330,8 +394,12 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 			consola.info(chalk.cyan("🚨 Top Vulnerabilities:"));
 			result.vulnerabilities.slice(0, 5).forEach((vuln, index) => {
 				const severityColor = getSeverityColor(vuln.severity);
-				consola.info(`${index + 1}. ${severityColor}[${vuln.severity.toUpperCase()}]${chalk.reset()} ${vuln.title}`);
-				consola.info(`   ${chalk.gray(vuln.file)}${vuln.line ? `:${vuln.line}` : ''}`);
+				consola.info(
+					`${index + 1}. ${severityColor}[${vuln.severity.toUpperCase()}]${chalk.reset()} ${vuln.title}`,
+				);
+				consola.info(
+					`   ${chalk.gray(vuln.file)}${vuln.line ? `:${vuln.line}` : ""}`,
+				);
 			});
 		}
 
@@ -341,7 +409,9 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 			consola.info(chalk.cyan("✅ Compliance Status:"));
 			result.complianceResults.forEach((comp) => {
 				const statusColor = getComplianceColor(comp.status);
-				consola.info(`${comp.standard}: ${statusColor}${comp.status.toUpperCase()}${chalk.reset()} (${comp.score}%)`);
+				consola.info(
+					`${comp.standard}: ${statusColor}${comp.status.toUpperCase()}${chalk.reset()} (${comp.score}%)`,
+				);
 			});
 		}
 
@@ -351,7 +421,9 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 			consola.info(chalk.cyan("💡 Top Recommendations:"));
 			result.recommendations.slice(0, 3).forEach((rec, index) => {
 				const priorityColor = getSeverityColor(rec.priority);
-				consola.info(`${index + 1}. ${priorityColor}[${rec.priority.toUpperCase()}]${chalk.reset()} ${rec.title}`);
+				consola.info(
+					`${index + 1}. ${priorityColor}[${rec.priority.toUpperCase()}]${chalk.reset()} ${rec.title}`,
+				);
 				consola.info(`   ${chalk.gray(rec.description)}`);
 			});
 		}
@@ -361,29 +433,38 @@ async function executeSecurityAudit(options: SecurityAuditOptions): Promise<void
 		consola.info("");
 		consola.info(chalk.cyan("📁 Generated Reports:"));
 		if (options.outputFormat === "all" || options.outputFormat === "html") {
-			consola.info(`  HTML Report: ${chalk.green(`${outputDir}/reports/security-audit.html`)}`);
+			consola.info(
+				`  HTML Report: ${chalk.green(`${outputDir}/reports/security-audit.html`)}`,
+			);
 		}
 		if (options.outputFormat === "all" || options.outputFormat === "json") {
-			consola.info(`  JSON Data: ${chalk.green(`${outputDir}/reports/security-audit.json`)}`);
+			consola.info(
+				`  JSON Data: ${chalk.green(`${outputDir}/reports/security-audit.json`)}`,
+			);
 		}
 		if (options.outputFormat === "all" || options.outputFormat === "markdown") {
-			consola.info(`  Markdown Report: ${chalk.green(`${outputDir}/reports/security-audit.md`)}`);
+			consola.info(
+				`  Markdown Report: ${chalk.green(`${outputDir}/reports/security-audit.md`)}`,
+			);
 		}
 
 		// Next steps
 		consola.info("");
 		consola.info(chalk.cyan("🔧 Next Steps:"));
 		if (result.summary.criticalIssues > 0) {
-			consola.info(`  1. Address ${result.summary.criticalIssues} critical security issues immediately`);
+			consola.info(
+				`  1. Address ${result.summary.criticalIssues} critical security issues immediately`,
+			);
 		}
 		if (result.summary.highIssues > 0) {
-			consola.info(`  2. Review and fix ${result.summary.highIssues} high-priority vulnerabilities`);
+			consola.info(
+				`  2. Review and fix ${result.summary.highIssues} high-priority vulnerabilities`,
+			);
 		}
 		consola.info("  3. Integrate security scanning into your CI/CD pipeline");
 		consola.info("  4. Schedule regular security audits");
 
 		outro(chalk.green("Security audit completed successfully! 🔒"));
-
 	} catch (error) {
 		s.stop();
 		throw error;

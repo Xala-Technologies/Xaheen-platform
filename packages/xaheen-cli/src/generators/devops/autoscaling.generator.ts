@@ -1,8 +1,8 @@
-import { BaseGenerator } from "../base.generator";
-import { z } from "zod";
+import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import chalk from "chalk";
+import { z } from "zod";
+import { BaseGenerator } from "../base.generator";
 
 // Auto-scaling configuration schema
 const AutoScalingOptionsSchema = z.object({
@@ -22,19 +22,21 @@ const AutoScalingOptionsSchema = z.object({
 			targetRequestsPerSecond: z.number().optional(),
 			scaleDownDelay: z.string().default("5m"),
 			scaleUpDelay: z.string().default("30s"),
-		})
+		}),
 	),
 	metrics: z
 		.object({
 			enabled: z.boolean().default(true),
-			provider: z.enum(["prometheus", "cloudwatch", "stackdriver", "azure-monitor"]).optional(),
+			provider: z
+				.enum(["prometheus", "cloudwatch", "stackdriver", "azure-monitor"])
+				.optional(),
 			customMetrics: z
 				.array(
 					z.object({
 						name: z.string(),
 						query: z.string(),
 						threshold: z.number(),
-					})
+					}),
 				)
 				.optional(),
 		})
@@ -50,7 +52,7 @@ const AutoScalingOptionsSchema = z.object({
 						schedule: z.string(), // Cron expression
 						minReplicas: z.number(),
 						maxReplicas: z.number(),
-					})
+					}),
 				)
 				.optional(),
 		})
@@ -109,16 +111,19 @@ export class AutoScalingGenerator extends BaseGenerator {
 			}
 
 			console.log(
-				chalk.green("✅ Auto-scaling infrastructure generated successfully!")
+				chalk.green("✅ Auto-scaling infrastructure generated successfully!"),
 			);
 		} catch (error) {
-			console.error(chalk.red("❌ Error generating auto-scaling infrastructure:"), error);
+			console.error(
+				chalk.red("❌ Error generating auto-scaling infrastructure:"),
+				error,
+			);
 			throw error;
 		}
 	}
 
 	private async generateManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -144,7 +149,7 @@ export class AutoScalingGenerator extends BaseGenerator {
 	}
 
 	private async generateKubernetesManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -197,7 +202,7 @@ export class AutoScalingGenerator extends BaseGenerator {
 
 	private generateKubernetesHPA(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -222,18 +227,18 @@ spec:
       target:
         type: Utilization
         averageUtilization: ${service.targetCPU}${
-			service.targetMemory
-				? `
+					service.targetMemory
+						? `
   - type: Resource
     resource:
       name: memory
       target:
         type: Utilization
         averageUtilization: ${service.targetMemory}`
-				: ""
-		}${
-			service.targetRequestsPerSecond
-				? `
+						: ""
+				}${
+					service.targetRequestsPerSecond
+						? `
   - type: Pods
     pods:
       metric:
@@ -241,8 +246,8 @@ spec:
       target:
         type: AverageValue
         averageValue: "${service.targetRequestsPerSecond}"`
-				: ""
-		}
+						: ""
+				}
   behavior:
     scaleDown:
       stabilizationWindowSeconds: ${this.parseTimeToSeconds(service.scaleDownDelay)}
@@ -269,7 +274,7 @@ spec:
 
 	private generateKubernetesVPA(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -302,7 +307,7 @@ spec:
 
 	private generatePodDisruptionBudget(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		const minAvailable = Math.max(1, Math.floor(service.minReplicas * 0.5));
 		return `apiVersion: policy/v1
@@ -454,7 +459,7 @@ spec:
       metricName: ${metric.name}
       query: ${metric.query}
       threshold: '${metric.threshold}'
-`
+`,
 					)
 					.join("---\n");
 			})
@@ -465,7 +470,7 @@ spec:
 	}
 
 	private async generateAWSManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -499,7 +504,7 @@ spec:
 
 	private generateAWSAutoScalingGroup(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `resource "aws_autoscaling_group" "${service.name}_asg" {
   name                = "${options.projectName}-${service.name}-asg"
@@ -619,7 +624,7 @@ resource "aws_launch_template" "${service.name}_lt" {
 
 	private generateAWSApplicationAutoScaling(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `resource "aws_appautoscaling_target" "${service.name}_ecs_target" {
   service_namespace  = "ecs"
@@ -735,7 +740,7 @@ resource "aws_cloudwatch_metric_alarm" "${service.name}_low_cpu" {
     ServiceName = "${service.name}-service"
     ClusterName = "${options.projectName}-cluster"
   }
-}`
+}`,
 			)
 			.join("\n");
 
@@ -766,7 +771,7 @@ resource "aws_cloudwatch_dashboard" "autoscaling" {
 								(service) => `
             ["AWS/ECS", "CPUUtilization", { stat = "Average", label = "${service.name} CPU" }],
             [".", "MemoryUtilization", { stat = "Average", label = "${service.name} Memory" }],
-            ["AWS/ApplicationELB", "RequestCountPerTarget", { stat = "Sum", label = "${service.name} Requests" }]`
+            ["AWS/ApplicationELB", "RequestCountPerTarget", { stat = "Sum", label = "${service.name} Requests" }]`,
 							)
 							.join(",")}
           ]
@@ -783,7 +788,7 @@ resource "aws_cloudwatch_dashboard" "autoscaling" {
 	}
 
 	private async generateAzureManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -808,7 +813,7 @@ resource "aws_cloudwatch_dashboard" "autoscaling" {
 
 	private generateAzureAutoScale(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `param location string = resourceGroup().location
 param projectName string = '${options.projectName}'
@@ -956,7 +961,7 @@ resource metricAlert${service.name} 'Microsoft.Insights/metricAlerts@2018-03-01'
     }
     actions: []
   }
-}`
+}`,
 	)
 	.join("\n")}
 
@@ -967,7 +972,7 @@ output appInsightsInstrumentationKey string = appInsights.properties.Instrumenta
 	}
 
 	private async generateGCPManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -985,7 +990,7 @@ output appInsightsInstrumentationKey string = appInsights.properties.Instrumenta
 
 	private generateGCPAutoScale(
 		service: AutoScalingOptions["services"][0],
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): string {
 		return `resource "google_compute_autoscaler" "${service.name}_autoscaler" {
   name   = "${options.projectName}-${service.name}-autoscaler"
@@ -1086,7 +1091,7 @@ resource "google_compute_health_check" "${service.name}_health" {
 	}
 
 	private async generateServerlessManifests(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<AutoScalingManifest[]> {
 		const manifests: AutoScalingManifest[] = [];
 
@@ -1146,7 +1151,7 @@ resource "google_compute_health_check" "${service.name}_health" {
       subnetIds:
         - \${self:custom.subnetId1}
         - \${self:custom.subnetId2}
-`
+`,
 			)
 			.join("\n");
 
@@ -1283,7 +1288,7 @@ resources:
       Dimensions:
         - Name: FunctionName
           Value: !Ref ${service.name}Function
-`
+`,
 			)
 			.join("\n\n");
 
@@ -1376,7 +1381,7 @@ Outputs:
     service: ${service.name}
     type: ${service.type}
     managed-by: xaheen-cli
-`
+`,
 			)
 			.join("\n");
 
@@ -1498,12 +1503,17 @@ monitoring:
 }`;
 	}
 
-	private async generateMonitoringConfig(options: AutoScalingOptions): Promise<void> {
+	private async generateMonitoringConfig(
+		options: AutoScalingOptions,
+	): Promise<void> {
 		const monitoringPath = path.join(options.projectPath, "monitoring");
 		await fs.mkdir(monitoringPath, { recursive: true });
 
 		// Generate Prometheus configuration for metrics
-		if (options.metrics?.provider === "prometheus" || !options.metrics?.provider) {
+		if (
+			options.metrics?.provider === "prometheus" ||
+			!options.metrics?.provider
+		) {
 			const prometheusConfig = `global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -1529,14 +1539,14 @@ ${options.services
         replacement: ${service.name}
       - source_labels: [__address__]
         target_label: type
-        replacement: ${service.type}`
+        replacement: ${service.type}`,
 	)
 	.join("\n")}
 `;
 
 			await fs.writeFile(
 				path.join(monitoringPath, "prometheus.yml"),
-				prometheusConfig
+				prometheusConfig,
 			);
 
 			// Generate auto-scaling rules
@@ -1565,8 +1575,8 @@ ${options.services
         annotations:
           summary: "Low CPU usage for ${service.name}"
           description: "CPU usage is below ${Math.max(10, service.targetCPU - 30)}% for ${service.name}, consider scaling down"${
-			service.targetMemory
-				? `
+						service.targetMemory
+							? `
       
       - alert: ${service.name}_high_memory
         expr: container_memory_usage_bytes{service="${service.name}"} / container_spec_memory_limit_bytes * 100 > ${service.targetMemory}
@@ -1577,15 +1587,15 @@ ${options.services
         annotations:
           summary: "High memory usage for ${service.name}"
           description: "Memory usage is above ${service.targetMemory}% for ${service.name}"`
-				: ""
-		}`
+							: ""
+					}`,
 	)
 	.join("\n")}
 `;
 
 			await fs.writeFile(
 				path.join(monitoringPath, "autoscaling_rules.yml"),
-				autoscalingRules
+				autoscalingRules,
 			);
 		}
 
@@ -1609,13 +1619,13 @@ ${options.services
 
 			await fs.writeFile(
 				path.join(monitoringPath, "custom-metrics.json"),
-				JSON.stringify(customMetricsConfig, null, 2)
+				JSON.stringify(customMetricsConfig, null, 2),
 			);
 		}
 	}
 
 	private async generateCostOptimizationConfig(
-		options: AutoScalingOptions
+		options: AutoScalingOptions,
 	): Promise<void> {
 		const costPath = path.join(options.projectPath, "cost-optimization");
 		await fs.mkdir(costPath, { recursive: true });
@@ -1626,7 +1636,9 @@ ${options.services
 				enabled: true,
 				strategy: "lowest-price",
 				instance_pools: 3,
-				on_demand_base_capacity: Math.min(...options.services.map((s) => s.minReplicas)),
+				on_demand_base_capacity: Math.min(
+					...options.services.map((s) => s.minReplicas),
+				),
 				on_demand_percentage_above_base: 25,
 				spot_allocation_strategy: "capacity-optimized",
 				spot_instance_interruption_behavior: "terminate",
@@ -1639,26 +1651,28 @@ ${options.services
 
 			await fs.writeFile(
 				path.join(costPath, "spot-instances.json"),
-				JSON.stringify(spotConfig, null, 2)
+				JSON.stringify(spotConfig, null, 2),
 			);
 		}
 
 		// Generate scheduled scaling configuration
 		if (options.costOptimization?.scheduledScaling) {
 			const scheduledScalingConfig = {
-				schedules: options.costOptimization.scheduledScaling.map((schedule) => ({
-					name: schedule.name,
-					cron: schedule.schedule,
-					min_replicas: schedule.minReplicas,
-					max_replicas: schedule.maxReplicas,
-					timezone: "UTC",
-					services: options.services.map((s) => s.name),
-				})),
+				schedules: options.costOptimization.scheduledScaling.map(
+					(schedule) => ({
+						name: schedule.name,
+						cron: schedule.schedule,
+						min_replicas: schedule.minReplicas,
+						max_replicas: schedule.maxReplicas,
+						timezone: "UTC",
+						services: options.services.map((s) => s.name),
+					}),
+				),
 			};
 
 			await fs.writeFile(
 				path.join(costPath, "scheduled-scaling.json"),
-				JSON.stringify(scheduledScalingConfig, null, 2)
+				JSON.stringify(scheduledScalingConfig, null, 2),
 			);
 
 			// Generate cron job manifest for Kubernetes
@@ -1686,17 +1700,18 @@ spec:
             - |
               ${options.services
 								.map(
-									(service) => `kubectl patch hpa ${service.name}-hpa -n ${options.projectName} --patch '{"spec":{"minReplicas":${schedule.minReplicas},"maxReplicas":${schedule.maxReplicas}}}'`
+									(service) =>
+										`kubectl patch hpa ${service.name}-hpa -n ${options.projectName} --patch '{"spec":{"minReplicas":${schedule.minReplicas},"maxReplicas":${schedule.maxReplicas}}}'`,
 								)
 								.join("\n              ")}
           restartPolicy: OnFailure
-`
+`,
 					)
 					.join("---\n");
 
 				await fs.writeFile(
 					path.join(costPath, "scheduled-scaling-cronjobs.yaml"),
-					cronJobManifest
+					cronJobManifest,
 				);
 			}
 		}
@@ -1735,13 +1750,13 @@ spec:
 
 		await fs.writeFile(
 			path.join(costPath, "cost-dashboard.json"),
-			JSON.stringify(costDashboard, null, 2)
+			JSON.stringify(costDashboard, null, 2),
 		);
 	}
 
 	private async writeManifests(
 		manifests: AutoScalingManifest[],
-		projectPath: string
+		projectPath: string,
 	): Promise<void> {
 		for (const manifest of manifests) {
 			const filePath = path.join(projectPath, manifest.path);

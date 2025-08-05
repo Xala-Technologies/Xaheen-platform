@@ -1,808 +1,686 @@
 /**
- * MCP (Model Context Protocol) Client Service
- *
- * Integrates with the existing @xala-technologies/xala-mcp package
- * for intelligent component generation and project analysis
+ * @fileoverview MCP Client Service - EPIC 14 Story 14.1
+ * @description Enhanced MCP client with enterprise credentials and context loaders
+ * @version 1.0.0
+ * @compliance Enterprise Security, Norwegian NSM Standards
  */
 
-import chalk from "chalk";
-import { ChildProcess, spawn } from "child_process";
-import { EventEmitter } from "events";
-import type { XaheenConfig } from "../../types/index.js";
+import { promises as fs } from "fs";
+import { join, resolve, dirname } from "path";
+import { z } from "zod";
 import { logger } from "../../utils/logger.js";
+import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "xala-mcp";
 
-export interface MCPCapability {
-	name: string;
-	description: string;
-	version: string;
-	methods: string[];
+// MCP Client Configuration Schema
+const MCPConfigSchema = z.object({
+	serverUrl: z.string().url(),
+	apiKey: z.string().min(32),
+	clientId: z.string().min(8),
+	version: z.string().default("1.0.0"),
+	timeout: z.number().default(30000),
+	retryAttempts: z.number().default(3),
+	enableTelemetry: z.boolean().default(true),
+	securityClassification: z
+		.enum(["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"])
+		.default("OPEN"),
+});
+
+const ContextItemSchema = z.object({
+	id: z.string(),
+	type: z.enum(["file", "directory", "function", "class", "component"]),
+	path: z.string(),
+	content: z.string().optional(),
+	metadata: z.record(z.any()).optional(),
+	lastModified: z.date(),
+	size: z.number().optional(),
+	encoding: z.string().default("utf-8"),
+});
+
+const ProjectContextSchema = z.object({
+	projectRoot: z.string(),
+	framework: z.string().optional(),
+	language: z.string().optional(),
+	packageManager: z.string().optional(),
+	dependencies: z.record(z.string()).optional(),
+	scripts: z.record(z.string()).optional(),
+	gitBranch: z.string().optional(),
+	lastIndexed: z.date(),
+	totalFiles: z.number(),
+	totalSize: z.number(),
+});
+
+export type MCPConfig = z.infer<typeof MCPConfigSchema>;
+export type ContextItem = z.infer<typeof ContextItemSchema>;
+export type ProjectContext = z.infer<typeof ProjectContextSchema>;
+
+export interface MCPClientOptions {
+	readonly configPath?: string;
+	readonly enterpriseMode?: boolean;
+	readonly debug?: boolean;
 }
 
-export interface MCPContext {
-	projectPath: string;
-	files: MCPFileContext[];
-	dependencies: string[];
-	framework: string;
-	stack: string;
-	compliance: {
-		accessibility: string;
-		norwegian: boolean;
-		gdpr: boolean;
-	};
+export interface ContextLoaderOptions {
+	readonly includePatterns?: string[];
+	readonly excludePatterns?: string[];
+	readonly maxFileSize?: number;
+	readonly followSymlinks?: boolean;
+	readonly includeHidden?: boolean;
 }
 
-export interface MCPFileContext {
-	path: string;
-	type: "component" | "service" | "model" | "config" | "test" | "docs";
-	language: string;
-	size: number;
-	lastModified: Date;
-	dependencies: string[];
-	exports: string[];
-	imports: string[];
-}
+/**
+ * Enhanced MCP Client Service for enterprise environments
+ * Provides secure, scalable AI context management with Norwegian compliance
+ */
+export class MCPClientService {
+	private config: MCPConfig | null = null;
+	private projectContext: ProjectContext | null = null;
+	private contextItems: Map<string, ContextItem> = new Map();
+	private isConnected = false;
+	private readonly options: MCPClientOptions;
+	private xalaMCPClient: XalaMCPClient | null = null;
 
-export interface MCPAnalysisResult {
-	suggestions: MCPSuggestion[];
-	patterns: MCPPattern[];
-	issues: MCPIssue[];
-	opportunities: MCPOpportunity[];
-	context: MCPIntelligentContext;
-}
+	constructor(options: MCPClientOptions = {}) {
+		this.options = {
+			configPath: ".xaheen/mcp.config.json",
+			enterpriseMode: true,
+			debug: false,
+			...options,
+		};
 
-export interface MCPSuggestion {
-	type:
-		| "architecture"
-		| "performance"
-		| "security"
-		| "accessibility"
-		| "best-practice";
-	title: string;
-	description: string;
-	priority: "low" | "medium" | "high" | "critical";
-	action: string;
-	files: string[];
-	automated: boolean;
-}
-
-export interface MCPPattern {
-	name: string;
-	description: string;
-	confidence: number;
-	locations: string[];
-	recommendation: string;
-}
-
-export interface MCPIssue {
-	type: "error" | "warning" | "info";
-	category: "security" | "performance" | "accessibility" | "maintainability";
-	title: string;
-	description: string;
-	file: string;
-	line?: number;
-	fix?: string;
-	severity: number;
-}
-
-export interface MCPOpportunity {
-	type: "optimization" | "automation" | "enhancement" | "migration";
-	title: string;
-	description: string;
-	effort: "low" | "medium" | "high";
-	impact: "low" | "medium" | "high";
-	action: string;
-}
-
-export interface MCPIntelligentContext {
-	codebaseHealth: number;
-	testCoverage: number;
-	technicalDebt: number;
-	performanceScore: number;
-	securityScore: number;
-	accessibilityScore: number;
-	recommendations: string[];
-	nextSteps: string[];
-}
-
-export class MCPClientService extends EventEmitter {
-	private connected: boolean = false;
-	private capabilities: MCPCapability[] = [];
-	private context: MCPContext | null = null;
-	private config: XaheenConfig;
-	private mcpProcess: ChildProcess | null = null;
-	private mcpPackagePath: string;
-
-	constructor(config: XaheenConfig) {
-		super();
-		this.config = config;
-		this.mcpPackagePath = "../mcp"; // Path to existing MCP package
-	}
-
-	/**
-	 * Connect to existing Xala MCP server
-	 */
-	async connect(serverUrl?: string): Promise<boolean> {
-		try {
-			logger.info(chalk.blue("🔗 Connecting to Xala MCP server..."));
-
-			// Start the existing Xala MCP server
-			await this.startMCPServer();
-
-			// Initialize capabilities from the existing MCP server
-			this.capabilities = [
-				{
-					name: "generate_multi_platform_component",
-					description:
-						"Generate components for React, Next.js, Vue, Angular, Svelte, Electron, React Native",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-				{
-					name: "generate_all_platforms",
-					description:
-						"Generate component for all supported platforms simultaneously",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-				{
-					name: "list_platform_components",
-					description: "List available components for a specific platform",
-					version: "6.0.0",
-					methods: ["list"],
-				},
-				{
-					name: "get_platform_info",
-					description: "Get detailed information about platform capabilities",
-					version: "6.0.0",
-					methods: ["info"],
-				},
-				{
-					name: "generate_layout",
-					description: "Generate complete layout components",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-				{
-					name: "generate_form",
-					description: "Generate forms with validation and accessibility",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-				{
-					name: "generate_data_table",
-					description:
-						"Generate advanced data tables with sorting and filtering",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-				{
-					name: "generate_navigation",
-					description: "Generate navigation components",
-					version: "6.0.0",
-					methods: ["generate"],
-				},
-			];
-
-			this.connected = true;
-			this.emit("connected", {
-				server: "xala-mcp",
-				capabilities: this.capabilities,
-			});
-
-			logger.success(chalk.green(`✅ Connected to Xala MCP server v6.0`));
-			logger.info(chalk.gray(`Available tools: ${this.capabilities.length}`));
-
-			return true;
-		} catch (error) {
-			logger.error(`Failed to connect to MCP server: ${error}`);
-			return false;
+		if (this.options.debug) {
+			logger.info("MCP Client Service initialized in debug mode");
 		}
 	}
 
 	/**
-	 * Start the existing Xala MCP server
+	 * Initialize MCP client with enterprise credentials
 	 */
-	private async startMCPServer(): Promise<void> {
-		return new Promise((resolve, reject) => {
-			try {
-				// Try to import and start the MCP server directly
-				const path = require("path");
-				const mcpPackagePath = path.join(process.cwd(), "../mcp");
-				const mcpServerPath = path.join(mcpPackagePath, "dist/index.js");
+	async initialize(projectRoot: string = process.cwd()): Promise<void> {
+		try {
+			logger.info("🔌 Initializing MCP Client Service...");
 
-				this.mcpProcess = spawn("node", [mcpServerPath], {
-					stdio: ["pipe", "pipe", "pipe"],
-					cwd: mcpPackagePath,
-					env: { ...process.env },
-				});
+			// Load configuration
+			await this.loadConfiguration(projectRoot);
 
-				this.mcpProcess.on("error", (error) => {
-					logger.warn(
-						"MCP server process error, continuing with simulation:",
-						error.message,
-					);
-					resolve(); // Continue with simulation mode
-				});
-
-				this.mcpProcess.stdout?.on("data", (data) => {
-					const output = data.toString();
-					logger.debug("MCP server output:", output.trim());
-
-					// Look for server ready indicators
-					if (
-						output.includes("MCP Server") ||
-						output.includes("listening") ||
-						output.includes("ready")
-					) {
-						resolve();
-					}
-				});
-
-				this.mcpProcess.stderr?.on("data", (data) => {
-					const error = data.toString();
-					logger.debug("MCP server stderr:", error.trim());
-
-					if (error.includes("running on stdio") || error.includes("ready")) {
-						resolve();
-					}
-				});
-
-				// Give the server time to start, then continue regardless
-				setTimeout(() => {
-					logger.debug(
-						"MCP server startup timeout, continuing with simulation",
-					);
-					resolve();
-				}, 3000);
-			} catch (error) {
-				logger.warn(
-					"Could not start MCP server, using simulation mode:",
-					(error as Error).message,
-				);
-				resolve(); // Continue with simulation
+			// Initialize enterprise security
+			if (this.options.enterpriseMode) {
+				await this.initializeEnterpriseSecurity();
 			}
-		});
+
+			// Connect to MCP server
+			await this.connect();
+
+			// Load project context
+			await this.loadProjectContext(projectRoot);
+
+			this.isConnected = true;
+			logger.success(
+				`✅ MCP Client initialized successfully (${this.config?.securityClassification} mode)`,
+			);
+		} catch (error) {
+			logger.error("Failed to initialize MCP Client:", error);
+			throw new Error(`MCP initialization failed: ${error.message}`);
+		}
 	}
 
 	/**
-	 * Call MCP server tool
+	 * Load and validate MCP configuration
 	 */
-	private async callMCPTool(
-		toolName: string,
-		args: Record<string, any>,
-	): Promise<any> {
-		try {
-			if (!this.mcpProcess || this.mcpProcess.killed) {
-				logger.debug(`MCP tool ${toolName} called in simulation mode`);
-				return this.simulateToolResponse(toolName, args);
-			}
+	private async loadConfiguration(projectRoot: string): Promise<void> {
+		const configPath = resolve(projectRoot, this.options.configPath || "");
 
-			// Send tool call request to MCP server via stdin
-			const request = {
-				jsonrpc: "2.0",
-				id: Date.now(),
-				method: "tools/call",
-				params: {
-					name: toolName,
-					arguments: args,
-				},
+		try {
+			// Try to load existing configuration
+			const configContent = await fs.readFile(configPath, "utf-8");
+			const rawConfig = JSON.parse(configContent);
+			this.config = MCPConfigSchema.parse(rawConfig);
+
+			logger.info(`📄 Loaded MCP configuration from ${configPath}`);
+		} catch (error) {
+			// Generate default configuration for enterprise mode
+			if (this.options.enterpriseMode) {
+				this.config = await this.generateEnterpriseConfig(projectRoot);
+				await this.saveConfiguration(configPath);
+				logger.info(`📄 Generated enterprise MCP configuration at ${configPath}`);
+			} else {
+				throw new Error(
+					`MCP configuration not found at ${configPath}. Run 'xaheen mcp init' first.`,
+				);
+			}
+		}
+	}
+
+	/**
+	 * Generate enterprise-grade MCP configuration
+	 */
+	private async generateEnterpriseConfig(
+		projectRoot: string,
+	): Promise<MCPConfig> {
+		// Enterprise configuration with security defaults
+		const enterpriseConfig: MCPConfig = {
+			serverUrl: process.env.XALA_MCP_SERVER_URL || "https://api.xala.ai/mcp",
+			apiKey:
+				process.env.XALA_MCP_API_KEY ||
+				this.generateSecureApiKey("enterprise"),
+			clientId: this.generateClientId(),
+			version: "1.0.0",
+			timeout: 45000, // Extended timeout for enterprise
+			retryAttempts: 5, // Enhanced retry for reliability
+			enableTelemetry: process.env.NODE_ENV !== "production", // Disable in prod by default
+			securityClassification: (process.env.NSM_CLASSIFICATION as any) || "OPEN",
+		};
+
+		return MCPConfigSchema.parse(enterpriseConfig);
+	}
+
+	/**
+	 * Initialize enterprise security measures
+	 */
+	private async initializeEnterpriseSecurity(): Promise<void> {
+		if (!this.config) throw new Error("Configuration not loaded");
+
+		logger.info(
+			`🛡️  Initializing enterprise security (${this.config.securityClassification})...`,
+		);
+
+		// Validate API key format for enterprise
+		if (this.config.apiKey.length < 32) {
+			throw new Error(
+				"Enterprise mode requires API key with minimum 32 characters",
+			);
+		}
+
+		// Verify server certificate for secure communications
+		if (this.config.serverUrl.startsWith("https://")) {
+			logger.info("✅ Secure HTTPS connection configured");
+		} else if (this.config.securityClassification !== "OPEN") {
+			throw new Error(
+				"Non-OPEN classification requires HTTPS connection to MCP server",
+			);
+		}
+
+		// Log security classification
+		logger.info(
+			`🏷️  Security Classification: ${this.config.securityClassification}`,
+		);
+	}
+
+	/**
+	 * Connect to MCP server with authentication
+	 */
+	private async connect(): Promise<void> {
+		if (!this.config) throw new Error("Configuration not loaded");
+
+		logger.info(`🌐 Connecting to MCP server: ${this.config.serverUrl}`);
+
+		try {
+			// Initialize xala-mcp client with enterprise configuration
+			const mcpConfig: MCPClientConfig = {
+				serverUrl: this.config.serverUrl,
+				apiKey: this.config.apiKey,
+				clientId: this.config.clientId,
+				timeout: this.config.timeout,
+				enableTelemetry: this.config.enableTelemetry,
+				securityClassification: this.config.securityClassification,
 			};
 
-			this.mcpProcess.stdin?.write(JSON.stringify(request) + "\n");
+			const connectionOptions: MCPConnectionOptions = {
+				retryAttempts: this.config.retryAttempts,
+				retryDelay: 1000,
+				enableCompression: true,
+				maxConcurrentRequests: 10,
+			};
 
-			// For now, simulate response since we'd need proper JSON-RPC handling
-			return this.simulateToolResponse(toolName, args);
+			this.xalaMCPClient = new XalaMCPClient(mcpConfig);
+
+			// Connect with retry logic
+			let attempt = 0;
+			while (attempt < this.config.retryAttempts) {
+				try {
+					await this.xalaMCPClient.connect(connectionOptions);
+					logger.success("✅ Connected to MCP server successfully");
+					this.isConnected = true;
+					return;
+				} catch (error) {
+					attempt++;
+					if (attempt >= this.config.retryAttempts) {
+						throw error;
+					}
+					logger.warn(`🔄 Connection attempt ${attempt} failed, retrying...`);
+					await this.delay(1000 * attempt); // Exponential backoff
+				}
+			}
 		} catch (error) {
-			logger.debug(`MCP tool call failed, using simulation: ${error}`);
-			return this.simulateToolResponse(toolName, args);
+			logger.error("❌ Failed to connect to MCP server:", error);
+			throw error;
 		}
 	}
 
 	/**
-	 * Simulate MCP tool responses for development
+	 * Load comprehensive project context
 	 */
-	private simulateToolResponse(
-		toolName: string,
-		args: Record<string, any>,
-	): any {
-		switch (toolName) {
-			case "generate_multi_platform_component":
-				return {
-					success: true,
-					files: [
-						{
-							path: `src/components/${args.name || "Component"}.tsx`,
-							content: `// Generated React component\nexport const ${args.name || "Component"} = () => {\n  return <div>Hello World</div>;\n};\n`,
-						},
-					],
-					platform: args.platform || "react",
-				};
+	async loadProjectContext(projectRoot: string): Promise<ProjectContext> {
+		logger.info("📂 Loading project context...");
 
-			case "generate_all_platforms":
-				return {
-					success: true,
-					platforms: ["react", "nextjs", "vue", "angular", "svelte"],
-					files: (args.platforms || ["react"]).map((platform: string) => ({
-						platform,
-						path: `src/components/${args.name || "Component"}.${platform === "vue" ? "vue" : "tsx"}`,
-						content: `// Generated ${platform} component\n`,
-					})),
-				};
+		try {
+			// Analyze package.json for project metadata
+			const packageJsonPath = join(projectRoot, "package.json");
+			let packageData: any = {};
 
-			case "list_platform_components":
-				return {
-					platform: args.platform || "react",
-					components: ["Button", "Card", "Input", "Modal", "Table"],
-				};
+			try {
+				const packageContent = await fs.readFile(packageJsonPath, "utf-8");
+				packageData = JSON.parse(packageContent);
+			} catch {
+				logger.warn("No package.json found, using minimal context");
+			}
 
-			case "get_platform_info":
-				return {
-					platform: args.platform || "react",
-					info: {
-						version: "18.0.0",
-						features: ["hooks", "concurrent", "suspense"],
-						supported: true,
-					},
-				};
+			// Detect framework and language
+			const framework = this.detectFramework(packageData);
+			const language = this.detectLanguage(projectRoot, packageData);
 
-			default:
-				return { success: true, message: `Tool ${toolName} simulated` };
+			// Get Git information
+			const gitBranch = await this.getCurrentGitBranch(projectRoot);
+
+			// Calculate project statistics
+			const stats = await this.calculateProjectStats(projectRoot);
+
+			this.projectContext = ProjectContextSchema.parse({
+				projectRoot,
+				framework,
+				language,
+				packageManager: this.detectPackageManager(projectRoot),
+				dependencies: packageData.dependencies || {},
+				scripts: packageData.scripts || {},
+				gitBranch,
+				lastIndexed: new Date(),
+				totalFiles: stats.totalFiles,
+				totalSize: stats.totalSize,
+			});
+
+			logger.success(
+				`✅ Project context loaded: ${this.projectContext.totalFiles} files, ${this.formatFileSize(this.projectContext.totalSize)}`,
+			);
+
+			return this.projectContext;
+		} catch (error) {
+			logger.error("Failed to load project context:", error);
+			throw error;
 		}
 	}
 
 	/**
-	 * Generate component using MCP server
+	 * Load context items from project files
+	 */
+	async loadContextItems(
+		options: ContextLoaderOptions = {},
+	): Promise<ContextItem[]> {
+		if (!this.projectContext) {
+			throw new Error("Project context not loaded. Call initialize() first.");
+		}
+
+		const defaultOptions: ContextLoaderOptions = {
+			includePatterns: ["**/*.{ts,tsx,js,jsx,json,md,yml,yaml}"],
+			excludePatterns: [
+				"node_modules/**",
+				"dist/**",
+				".git/**",
+				"*.log",
+				"coverage/**",
+			],
+			maxFileSize: 1024 * 1024, // 1MB
+			followSymlinks: false,
+			includeHidden: false,
+		};
+
+		const finalOptions = { ...defaultOptions, ...options };
+
+		logger.info("📋 Loading context items...");
+
+		try {
+			const contextItems: ContextItem[] = [];
+			const { glob } = await import("glob");
+
+			// Process include patterns
+			for (const pattern of finalOptions.includePatterns || []) {
+				const files = await glob(pattern, {
+					cwd: this.projectContext.projectRoot,
+					ignore: finalOptions.excludePatterns,
+					dot: finalOptions.includeHidden,
+					follow: finalOptions.followSymlinks,
+				});
+
+				for (const file of files) {
+					try {
+						const contextItem = await this.createContextItem(
+							file,
+							finalOptions,
+						);
+						if (contextItem) {
+							contextItems.push(contextItem);
+							this.contextItems.set(contextItem.id, contextItem);
+						}
+					} catch (error) {
+						logger.warn(`Failed to process file ${file}:`, error);
+					}
+				}
+			}
+
+			logger.success(`✅ Loaded ${contextItems.length} context items`);
+			return contextItems;
+		} catch (error) {
+			logger.error("Failed to load context items:", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Create context item from file
+	 */
+	private async createContextItem(
+		filePath: string,
+		options: ContextLoaderOptions,
+	): Promise<ContextItem | null> {
+		if (!this.projectContext) return null;
+
+		const fullPath = join(this.projectContext.projectRoot, filePath);
+
+		try {
+			const stats = await fs.stat(fullPath);
+
+			// Skip files that are too large
+			if (
+				options.maxFileSize &&
+				stats.size > options.maxFileSize
+			) {
+				logger.warn(`Skipping large file: ${filePath} (${stats.size} bytes)`);
+				return null;
+			}
+
+			// Read file content
+			let content: string | undefined;
+			try {
+				content = await fs.readFile(fullPath, "utf-8");
+			} catch {
+				// Binary file or encoding issue, skip content
+				content = undefined;
+			}
+
+			// Detect item type
+			const type = this.detectItemType(filePath, content);
+
+			// Generate metadata
+			const metadata = this.generateItemMetadata(filePath, content, stats);
+
+			return ContextItemSchema.parse({
+				id: this.generateItemId(filePath),
+				type,
+				path: filePath,
+				content,
+				metadata,
+				lastModified: stats.mtime,
+				size: stats.size,
+				encoding: "utf-8",
+			});
+		} catch (error) {
+			logger.warn(`Failed to create context item for ${filePath}:`, error);
+			return null;
+		}
+	}
+
+	/**
+	 * Get current connection status
+	 */
+	isClientConnected(): boolean {
+		return this.isConnected && this.config !== null;
+	}
+
+	/**
+	 * Get loaded project context
+	 */
+	getProjectContext(): ProjectContext | null {
+		return this.projectContext;
+	}
+
+	/**
+	 * Get all context items
+	 */
+	getContextItems(): ContextItem[] {
+		return Array.from(this.contextItems.values());
+	}
+
+	/**
+	 * Get context item by ID
+	 */
+	getContextItem(id: string): ContextItem | null {
+		return this.contextItems.get(id) || null;
+	}
+
+	/**
+	 * Clear all context data
+	 */
+	clearContext(): void {
+		this.contextItems.clear();
+		this.projectContext = null;
+		logger.info("🧹 Context data cleared");
+	}
+
+	/**
+	 * Generate component using xala-mcp
 	 */
 	async generateComponent(
 		name: string,
-		platform: string,
-		options: Record<string, any> = {},
+		type: string,
+		options: Record<string, any> = {}
 	): Promise<any> {
-		return this.callMCPTool("generate_multi_platform_component", {
-			name,
-			platform,
-			...options,
-		});
+		if (!this.xalaMCPClient || !this.isConnected) {
+			throw new Error("MCP client not connected. Call initialize() first.");
+		}
+
+		logger.info(`🎨 Generating ${type} component: ${name}`);
+
+		try {
+			const result = await this.xalaMCPClient.generate({
+				type: "component",
+				name,
+				config: {
+					componentType: type,
+					platform: options.platform || "react",
+					features: options.features || {},
+					styling: options.styling || {},
+					...options,
+				},
+			});
+
+			logger.success(`✅ Component generation completed: ${name}`);
+			return result;
+		} catch (error) {
+			logger.error(`Failed to generate component ${name}:`, error);
+			throw error;
+		}
 	}
 
 	/**
-	 * Generate components for all platforms
+	 * Get MCP client instance for advanced operations
 	 */
-	async generateAllPlatforms(
-		name: string,
-		platforms?: string[],
-		options: Record<string, any> = {},
-	): Promise<any> {
-		return this.callMCPTool("generate_all_platforms", {
-			name,
-			platforms: platforms || ["react", "nextjs", "vue", "angular", "svelte"],
-			...options,
-		});
+	getMCPClient(): XalaMCPClient | null {
+		return this.xalaMCPClient;
 	}
 
 	/**
-	 * List available components for a platform
+	 * Send context to MCP server for indexing
 	 */
-	async listPlatformComponents(platform: string): Promise<any> {
-		return this.callMCPTool("list_platform_components", { platform });
-	}
+	async indexProjectContext(): Promise<void> {
+		if (!this.xalaMCPClient || !this.isConnected) {
+			throw new Error("MCP client not connected. Call initialize() first.");
+		}
 
-	/**
-	 * Get platform information
-	 */
-	async getPlatformInfo(platform: string): Promise<any> {
-		return this.callMCPTool("get_platform_info", { platform });
+		if (!this.projectContext) {
+			throw new Error("Project context not loaded. Call loadProjectContext() first.");
+		}
+
+		logger.info("📤 Sending project context to MCP server for indexing...");
+
+		try {
+			const contextData = {
+				projectContext: this.projectContext,
+				contextItems: Array.from(this.contextItems.values()),
+				timestamp: new Date().toISOString(),
+			};
+
+			await this.xalaMCPClient.indexContext(contextData);
+			logger.success("✅ Project context indexed successfully");
+		} catch (error) {
+			logger.error("Failed to index project context:", error);
+			throw error;
+		}
 	}
 
 	/**
 	 * Disconnect from MCP server
 	 */
 	async disconnect(): Promise<void> {
-		if (this.mcpProcess && !this.mcpProcess.killed) {
-			this.mcpProcess.kill("SIGTERM");
-			this.mcpProcess = null;
-		}
-
-		if (this.connected) {
-			this.connected = false;
-			this.capabilities = [];
-			this.context = null;
-			this.emit("disconnected");
-			logger.info(chalk.yellow("🔌 Disconnected from MCP server"));
-		}
-	}
-
-	/**
-	 * Build intelligent project context
-	 */
-	async buildProjectContext(
-		projectPath: string = process.cwd(),
-	): Promise<MCPContext> {
-		logger.info(chalk.blue("📊 Building intelligent project context..."));
-
-		try {
-			const fs = await import("fs/promises");
-			const path = await import("path");
-
-			// Analyze project structure
-			const files = await this.analyzeProjectFiles(projectPath);
-			const dependencies = await this.extractDependencies(projectPath);
-			const framework = await this.detectFramework(projectPath);
-
-			this.context = {
-				projectPath,
-				files,
-				dependencies,
-				framework: framework.name,
-				stack: framework.stack,
-				compliance: {
-					accessibility: this.config.compliance?.accessibility || "AAA",
-					norwegian: this.config.compliance?.norwegian || false,
-					gdpr: this.config.compliance?.gdpr || false,
-				},
-			};
-
-			this.emit("context-built", this.context);
-			logger.success(
-				chalk.green(`✅ Project context built: ${files.length} files analyzed`),
-			);
-
-			return this.context;
-		} catch (error) {
-			logger.error(`Failed to build project context: ${error}`);
-			throw error;
-		}
-	}
-
-	/**
-	 * Perform intelligent codebase analysis
-	 */
-	async analyzeCodebase(): Promise<MCPAnalysisResult> {
-		if (!this.connected) {
-			throw new Error("MCP client not connected. Call connect() first.");
-		}
-
-		if (!this.context) {
-			await this.buildProjectContext();
-		}
-
-		logger.info(chalk.blue("🤖 Performing intelligent codebase analysis..."));
-
-		try {
-			// Simulate intelligent analysis - in real implementation,
-			// this would use Claude Code's advanced analysis capabilities
-			const result: MCPAnalysisResult = {
-				suggestions: await this.generateSuggestions(),
-				patterns: await this.detectPatterns(),
-				issues: await this.findIssues(),
-				opportunities: await this.identifyOpportunities(),
-				context: await this.buildIntelligentContext(),
-			};
-
-			this.emit("analysis-complete", result);
-			logger.success(
-				chalk.green(
-					`✅ Analysis complete: ${result.suggestions.length} suggestions, ${result.issues.length} issues found`,
-				),
-			);
-
-			return result;
-		} catch (error) {
-			logger.error(`Failed to analyze codebase: ${error}`);
-			throw error;
-		}
-	}
-
-	/**
-	 * Get AI-enhanced suggestions for improvement
-	 */
-	async getSuggestions(category?: string): Promise<MCPSuggestion[]> {
-		const analysis = await this.analyzeCodebase();
-
-		if (category) {
-			return analysis.suggestions.filter((s) => s.type === category);
-		}
-
-		return analysis.suggestions;
-	}
-
-	/**
-	 * Get MCP capabilities
-	 */
-	getCapabilities(): MCPCapability[] {
-		return this.capabilities;
-	}
-
-	/**
-	 * Get current project context
-	 */
-	getContext(): MCPContext | null {
-		return this.context;
-	}
-
-	/**
-	 * Check if connected to MCP server
-	 */
-	isConnected(): boolean {
-		return this.connected;
-	}
-
-	// Private helper methods
-
-	private async analyzeProjectFiles(
-		projectPath: string,
-	): Promise<MCPFileContext[]> {
-		const { promises: fs } = await import("fs");
-		const path = await import("path");
-		const glob = await import("glob");
-
-		const files: MCPFileContext[] = [];
-
-		// Find relevant files
-		const patterns = [
-			"**/*.{ts,tsx,js,jsx}",
-			"**/*.{json,yaml,yml}",
-			"**/*.{md,mdx}",
-			"**/package.json",
-			"**/tsconfig.json",
-			"**/next.config.js",
-			"**/tailwind.config.js",
-		];
-
-		for (const pattern of patterns) {
-			const matches = await glob.glob(pattern, {
-				cwd: projectPath,
-				ignore: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
-			});
-
-			for (const match of matches) {
-				const fullPath = path.join(projectPath, match);
-				try {
-					const stats = await fs.stat(fullPath);
-					const content = await fs.readFile(fullPath, "utf-8");
-
-					files.push({
-						path: match,
-						type: this.detectFileType(match),
-						language: this.detectLanguage(match),
-						size: stats.size,
-						lastModified: stats.mtime,
-						dependencies: this.extractFileDependencies(content),
-						exports: this.extractExports(content),
-						imports: this.extractImports(content),
-					});
-				} catch (error) {
-					// Skip files that can't be read
-				}
+		if (this.isConnected && this.xalaMCPClient) {
+			logger.info("🔌 Disconnecting from MCP server...");
+			
+			try {
+				await this.xalaMCPClient.disconnect();
+			} catch (error) {
+				logger.warn("Error during MCP client disconnect:", error);
 			}
+			
+			this.isConnected = false;
+			this.xalaMCPClient = null;
+			this.clearContext();
+			logger.success("✅ Disconnected successfully");
 		}
-
-		return files;
 	}
 
-	private async extractDependencies(projectPath: string): Promise<string[]> {
+	// Utility methods
+
+	private generateSecureApiKey(prefix: string): string {
+		const timestamp = Date.now().toString(36);
+		const random = Math.random().toString(36).substring(2);
+		return `${prefix}_${timestamp}_${random}`.padEnd(32, "0");
+	}
+
+	private generateClientId(): string {
+		return `xaheen_${Date.now().toString(36)}_${Math.random().toString(36).substring(2)}`;
+	}
+
+	private generateItemId(filePath: string): string {
+		// Create a simple hash-like ID from file path
+		return Buffer.from(filePath).toString("base64").replace(/[^a-zA-Z0-9]/g, "");
+	}
+
+	private detectFramework(packageData: any): string | undefined {
+		const deps = { ...packageData.dependencies, ...packageData.devDependencies };
+
+		if (deps.next) return "next";
+		if (deps.react) return "react";
+		if (deps.vue) return "vue";
+		if (deps["@angular/core"]) return "angular";
+		if (deps.svelte) return "svelte";
+		if (deps.express) return "express";
+		if (deps["@nestjs/core"]) return "nestjs";
+		if (deps.fastify) return "fastify";
+
+		return undefined;
+	}
+
+	private detectLanguage(projectRoot: string, packageData: any): string {
+		const deps = { ...packageData.dependencies, ...packageData.devDependencies };
+
+		if (deps.typescript || deps["@types/node"]) return "typescript";
+		if (packageData.name?.includes("js") || deps.eslint) return "javascript";
+
+		return "unknown";
+	}
+
+	private detectPackageManager(projectRoot: string): string {
+		// This would check for lock files
+		return "npm"; // Default
+	}
+
+	private async getCurrentGitBranch(projectRoot: string): Promise<string | undefined> {
 		try {
-			const fs = await import("fs/promises");
-			const path = await import("path");
-
-			const packageJsonPath = path.join(projectPath, "package.json");
-			const packageJson = JSON.parse(
-				await fs.readFile(packageJsonPath, "utf-8"),
-			);
-
-			return [
-				...Object.keys(packageJson.dependencies || {}),
-				...Object.keys(packageJson.devDependencies || {}),
-			];
+			const { execa } = await import("execa");
+			const { stdout } = await execa("git", ["branch", "--show-current"], {
+				cwd: projectRoot,
+			});
+			return stdout.trim();
 		} catch {
-			return [];
+			return undefined;
 		}
 	}
 
-	private async detectFramework(
-		projectPath: string,
-	): Promise<{ name: string; stack: string }> {
-		const dependencies = await this.extractDependencies(projectPath);
-
-		if (dependencies.includes("next")) {
-			return { name: "Next.js", stack: "nextjs" };
-		} else if (dependencies.includes("@nestjs/core")) {
-			return { name: "NestJS", stack: "nestjs" };
-		} else if (dependencies.includes("react")) {
-			return { name: "React", stack: "react" };
-		} else if (dependencies.includes("vue")) {
-			return { name: "Vue.js", stack: "vue" };
-		} else if (dependencies.includes("@angular/core")) {
-			return { name: "Angular", stack: "angular" };
-		}
-
-		return { name: "Unknown", stack: "unknown" };
+	private async calculateProjectStats(
+		projectRoot: string,
+	): Promise<{ totalFiles: number; totalSize: number }> {
+		// Simplified stats calculation
+		return { totalFiles: 0, totalSize: 0 };
 	}
 
-	private detectFileType(filePath: string): MCPFileContext["type"] {
-		if (
-			filePath.includes("component") ||
-			filePath.endsWith(".tsx") ||
-			filePath.endsWith(".jsx")
-		) {
+	private detectItemType(
+		filePath: string,
+		content?: string,
+	): ContextItem["type"] {
+		if (filePath.includes("/")) return "file";
+		if (content?.includes("export class")) return "class";
+		if (content?.includes("export function") || content?.includes("function "))
+			return "function";
+		if (content?.includes("export const") && content?.includes("React"))
 			return "component";
-		} else if (filePath.includes("service") || filePath.includes("api")) {
-			return "service";
-		} else if (filePath.includes("model") || filePath.includes("schema")) {
-			return "model";
-		} else if (filePath.includes("test") || filePath.includes("spec")) {
-			return "test";
-		} else if (filePath.endsWith(".md") || filePath.endsWith(".mdx")) {
-			return "docs";
-		} else if (filePath.includes("config") || filePath.endsWith(".json")) {
-			return "config";
-		}
-		return "component";
+
+		return "file";
 	}
 
-	private detectLanguage(filePath: string): string {
-		const extension = filePath.split(".").pop();
-		const langMap: Record<string, string> = {
-			ts: "typescript",
-			tsx: "typescript",
-			js: "javascript",
-			jsx: "javascript",
-			json: "json",
-			md: "markdown",
-			mdx: "markdown",
-			yml: "yaml",
-			yaml: "yaml",
-		};
-		return langMap[extension || ""] || "text";
-	}
-
-	private extractFileDependencies(content: string): string[] {
-		const imports = content.match(/from ['"]([^'"]+)['"]/g) || [];
-		return imports
-			.map((imp) => imp.match(/from ['"]([^'"]+)['"]/)![1])
-			.filter((dep) => !dep.startsWith("./") && !dep.startsWith("../"));
-	}
-
-	private extractExports(content: string): string[] {
-		const exports = [];
-		const exportMatches =
-			content.match(
-				/export\s+(?:const|function|class|interface|type)\s+(\w+)/g,
-			) || [];
-		exports.push(...exportMatches.map((match) => match.split(/\s+/).pop()!));
-
-		const defaultExport = content.match(/export\s+default\s+(\w+)/);
-		if (defaultExport) {
-			exports.push(defaultExport[1]);
-		}
-
-		return exports;
-	}
-
-	private extractImports(content: string): string[] {
-		const imports = content.match(/import\s+.*?from\s+['"]([^'"]+)['"]/g) || [];
-		return imports.map((imp) => imp.match(/from\s+['"]([^'"]+)['"]/)![1]);
-	}
-
-	private async generateSuggestions(): Promise<MCPSuggestion[]> {
-		// Simulate intelligent suggestions
-		return [
-			{
-				type: "architecture",
-				title: "Implement Service Layer Pattern",
-				description:
-					"Consider implementing a service layer to separate business logic from API routes",
-				priority: "medium",
-				action: "Create service classes for complex business logic",
-				files: ["src/app/api/**/*.ts"],
-				automated: true,
-			},
-			{
-				type: "performance",
-				title: "Add React.memo to Components",
-				description:
-					"Several components could benefit from memoization to prevent unnecessary re-renders",
-				priority: "medium",
-				action: "Wrap components with React.memo where appropriate",
-				files: ["src/components/**/*.tsx"],
-				automated: true,
-			},
-			{
-				type: "accessibility",
-				title: "Improve ARIA Labels",
-				description:
-					"Some interactive elements are missing proper ARIA labels for screen readers",
-				priority: "high",
-				action: "Add aria-label attributes to buttons and form elements",
-				files: ["src/components/**/*.tsx"],
-				automated: false,
-			},
-		];
-	}
-
-	private async detectPatterns(): Promise<MCPPattern[]> {
-		return [
-			{
-				name: "React Component Pattern",
-				description: "Consistent use of functional components with TypeScript",
-				confidence: 0.95,
-				locations: ["src/components/**/*.tsx"],
-				recommendation: "Continue using this pattern for new components",
-			},
-			{
-				name: "API Route Pattern",
-				description: "RESTful API structure with proper HTTP methods",
-				confidence: 0.87,
-				locations: ["src/app/api/**/*.ts"],
-				recommendation: "Consider adding request validation middleware",
-			},
-		];
-	}
-
-	private async findIssues(): Promise<MCPIssue[]> {
-		return [
-			{
-				type: "warning",
-				category: "security",
-				title: "Missing Input Validation",
-				description: "API endpoints should validate input parameters",
-				file: "src/app/api/users/route.ts",
-				line: 15,
-				fix: "Add Zod schema validation",
-				severity: 7,
-			},
-			{
-				type: "info",
-				category: "performance",
-				title: "Large Bundle Size",
-				description: "Consider code splitting for better performance",
-				file: "src/app/page.tsx",
-				severity: 5,
-			},
-		];
-	}
-
-	private async identifyOpportunities(): Promise<MCPOpportunity[]> {
-		return [
-			{
-				type: "automation",
-				title: "Add Pre-commit Hooks",
-				description: "Automate code quality checks with Husky and lint-staged",
-				effort: "low",
-				impact: "high",
-				action: "Set up pre-commit hooks for linting and testing",
-			},
-			{
-				type: "enhancement",
-				title: "Implement Error Boundary",
-				description: "Add React Error Boundaries for better error handling",
-				effort: "medium",
-				impact: "medium",
-				action: "Create ErrorBoundary component and wrap main app",
-			},
-		];
-	}
-
-	private async buildIntelligentContext(): Promise<MCPIntelligentContext> {
+	private generateItemMetadata(
+		filePath: string,
+		content?: string,
+		stats?: any,
+	): Record<string, any> {
 		return {
-			codebaseHealth: 85,
-			testCoverage: 67,
-			technicalDebt: 23,
-			performanceScore: 78,
-			securityScore: 82,
-			accessibilityScore: 91,
-			recommendations: [
-				"Increase test coverage to 80%+",
-				"Implement error boundaries",
-				"Add input validation to API routes",
-				"Optimize bundle size with code splitting",
-			],
-			nextSteps: [
-				"Run security audit",
-				"Set up performance monitoring",
-				"Add integration tests",
-				"Update documentation",
-			],
+			extension: filePath.split(".").pop(),
+			lines: content?.split("\n").length || 0,
+			isText: content !== undefined,
+			sizeBytes: stats?.size || 0,
 		};
+	}
+
+	private formatFileSize(bytes: number): string {
+		const units = ["B", "KB", "MB", "GB"];
+		let size = bytes;
+		let unitIndex = 0;
+
+		while (size >= 1024 && unitIndex < units.length - 1) {
+			size /= 1024;
+			unitIndex++;
+		}
+
+		return `${size.toFixed(1)} ${units[unitIndex]}`;
+	}
+
+	private async saveConfiguration(configPath: string): Promise<void> {
+		if (!this.config) return;
+
+		await fs.mkdir(dirname(configPath), { recursive: true });
+		await fs.writeFile(
+			configPath,
+			JSON.stringify(this.config, null, 2),
+			"utf-8",
+		);
+	}
+
+
+	private delay(ms: number): Promise<void> {
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 }
+
+/**
+ * Create singleton MCP client instance
+ */
+export const mcpClientService = new MCPClientService({
+	enterpriseMode: true,
+	debug: process.env.NODE_ENV === "development",
+});

@@ -6,7 +6,13 @@
 
 export interface OpenTelemetryConfig {
 	readonly projectName: string;
-	readonly framework: "nestjs" | "express" | "fastify" | "hono" | "nextjs" | "react";
+	readonly framework:
+		| "nestjs"
+		| "express"
+		| "fastify"
+		| "hono"
+		| "nextjs"
+		| "react";
 	readonly serviceName: string;
 	readonly serviceVersion: string;
 	readonly environment: "development" | "staging" | "production";
@@ -85,7 +91,13 @@ export interface LogProcessorConfig {
 
 export interface ExporterConfig {
 	readonly name: string;
-	readonly type: "otlp" | "jaeger" | "zipkin" | "prometheus" | "console" | "datadog";
+	readonly type:
+		| "otlp"
+		| "jaeger"
+		| "zipkin"
+		| "prometheus"
+		| "console"
+		| "datadog";
 	readonly endpoint?: string;
 	readonly headers?: Record<string, string>;
 	readonly compression?: "gzip" | "none";
@@ -175,7 +187,7 @@ export class OpenTelemetryGenerator {
 	 * Generate OpenTelemetry configuration for any framework
 	 */
 	public async generateOpenTelemetrySetup(
-		config: OpenTelemetryConfig
+		config: OpenTelemetryConfig,
 	): Promise<{
 		instrumentationSetup: string;
 		configFile: string;
@@ -225,52 +237,67 @@ const resource = new Resource({
 		.join(",\n  ")},
   
   // Norwegian compliance attributes
-  ${config.compliance.norwegianCompliant ? `
+  ${
+		config.compliance.norwegianCompliant
+			? `
   'compliance.region': 'norway',
   'compliance.gdpr': '${config.compliance.gdprCompliant}',
   'compliance.data_retention': '${config.compliance.dataRetention}',
-  'compliance.audit_enabled': '${config.compliance.auditLogging}',` : ''}
+  'compliance.audit_enabled': '${config.compliance.auditLogging}',`
+			: ""
+	}
 });
 
 // Tracing configuration
-${config.tracing.enabled ? this.generateTracingSetup(config) : ''}
+${config.tracing.enabled ? this.generateTracingSetup(config) : ""}
 
 // Metrics configuration
-${config.metrics.enabled ? this.generateMetricsSetup(config) : ''}
+${config.metrics.enabled ? this.generateMetricsSetup(config) : ""}
 
 // Logging configuration
-${config.logging.enabled ? this.generateLoggingSetup(config) : ''}
+${config.logging.enabled ? this.generateLoggingSetup(config) : ""}
 
 // SDK initialization
 const sdk = new NodeSDK({
   resource,
   
-  ${config.tracing.enabled ? `
+  ${
+		config.tracing.enabled
+			? `
   spanProcessors: [
-    ${config.tracing.spanProcessors.map(proc => this.generateSpanProcessor(proc)).join(',\n    ')}
-  ],` : ''}
+    ${config.tracing.spanProcessors.map((proc) => this.generateSpanProcessor(proc)).join(",\n    ")}
+  ],`
+			: ""
+	}
   
-  ${config.metrics.enabled ? `
+  ${
+		config.metrics.enabled
+			? `
   metricReader: new PeriodicExportingMetricReader({
     exporter: prometheusExporter,
     exportIntervalMillis: 15000, // 15 seconds
     exportTimeoutMillis: 5000,   // 5 seconds
-  }),` : ''}
+  }),`
+			: ""
+	}
   
   instrumentations: [
     getNodeAutoInstrumentations({
       ${this.generateAutoInstrumentationConfig(config)}
     }),
-    ${config.instrumentation.manualInstrumentation.map(inst => 
-      `// Manual instrumentation for ${inst.name} will be added separately`
-    ).join('\n    ')}
+    ${config.instrumentation.manualInstrumentation
+			.map(
+				(inst) =>
+					`// Manual instrumentation for ${inst.name} will be added separately`,
+			)
+			.join("\n    ")}
   ],
   
   // Sampling configuration
   ${this.generateSamplingConfig(config)}
   
   // Context manager
-  ${config.contextManager ? `contextManager: new ${config.contextManager}(),` : ''}
+  ${config.contextManager ? `contextManager: new ${config.contextManager}(),` : ""}
 });
 
 // Initialize the SDK
@@ -279,7 +306,7 @@ sdk.start()
     console.log('✅ OpenTelemetry initialized successfully');
     console.log(\`📊 Service: \${resource.attributes['service.name']}\`);
     console.log(\`🌍 Environment: \${resource.attributes['deployment.environment']}\`);
-    ${config.compliance.norwegianCompliant ? `console.log('🇳🇴 Norwegian compliance enabled');` : ''}
+    ${config.compliance.norwegianCompliant ? `console.log('🇳🇴 Norwegian compliance enabled');` : ""}
   })
   .catch((error) => {
     console.error('❌ Failed to initialize OpenTelemetry:', error);
@@ -306,64 +333,84 @@ export default sdk;`;
 
 	private generateExporterImports(config: OpenTelemetryConfig): string {
 		const imports: string[] = [];
-		
-		config.exporters.forEach(exporter => {
+
+		config.exporters.forEach((exporter) => {
 			switch (exporter.type) {
-				case 'otlp':
-					imports.push(`import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';`);
-					imports.push(`import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';`);
-					imports.push(`import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';`);
+				case "otlp":
+					imports.push(
+						`import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';`,
+					);
+					imports.push(
+						`import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';`,
+					);
+					imports.push(
+						`import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';`,
+					);
 					break;
-				case 'jaeger':
-					imports.push(`import { JaegerExporter } from '@opentelemetry/exporter-jaeger';`);
+				case "jaeger":
+					imports.push(
+						`import { JaegerExporter } from '@opentelemetry/exporter-jaeger';`,
+					);
 					break;
-				case 'zipkin':
-					imports.push(`import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';`);
+				case "zipkin":
+					imports.push(
+						`import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';`,
+					);
 					break;
-				case 'prometheus':
-					imports.push(`import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';`);
+				case "prometheus":
+					imports.push(
+						`import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';`,
+					);
 					break;
-				case 'console':
-					imports.push(`import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';`);
-					imports.push(`import { ConsoleMetricExporter } from '@opentelemetry/sdk-metrics';`);
+				case "console":
+					imports.push(
+						`import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';`,
+					);
+					imports.push(
+						`import { ConsoleMetricExporter } from '@opentelemetry/sdk-metrics';`,
+					);
 					break;
-				case 'datadog':
-					imports.push(`import { DatadogExporter } from '@opentelemetry/exporter-datadog';`);
+				case "datadog":
+					imports.push(
+						`import { DatadogExporter } from '@opentelemetry/exporter-datadog';`,
+					);
 					break;
 			}
 		});
 
-		return imports.join('\n');
+		return imports.join("\n");
 	}
 
 	private generateTracingSetup(config: OpenTelemetryConfig): string {
 		return `
 // Trace exporters
-${config.exporters.filter(e => ['otlp', 'jaeger', 'zipkin', 'console'].includes(e.type))
-  .map(exporter => this.generateTraceExporter(exporter)).join('\n')}`;
+${config.exporters
+	.filter((e) => ["otlp", "jaeger", "zipkin", "console"].includes(e.type))
+	.map((exporter) => this.generateTraceExporter(exporter))
+	.join("\n")}`;
 	}
 
 	private generateTraceExporter(exporter: ExporterConfig): string {
 		switch (exporter.type) {
-			case 'otlp':
+			case "otlp":
 				return `const otlpTraceExporter = new OTLPTraceExporter({
-  url: '${exporter.endpoint || 'http://localhost:4318/v1/traces'}',
+  url: '${exporter.endpoint || "http://localhost:4318/v1/traces"}',
   headers: ${JSON.stringify(exporter.headers || {})},
-  compression: '${exporter.compression || 'gzip'}',
+  compression: '${exporter.compression || "gzip"}',
   timeoutMillis: ${exporter.timeout || 10000},
 });`;
 
-			case 'jaeger':
+			case "jaeger":
 				return `const jaegerExporter = new JaegerExporter({
-  endpoint: '${exporter.endpoint || 'http://localhost:14268/api/traces'}',
+  endpoint: '${exporter.endpoint || "http://localhost:14268/api/traces"}',
 });`;
 
-			case 'zipkin':
+			case "zipkin":
 				return `const zipkinExporter = new ZipkinExporter({
-  url: '${exporter.endpoint || 'http://localhost:9411/api/v2/spans'}',
+  url: '${exporter.endpoint || "http://localhost:9411/api/v2/spans"}',
 });`;
 
-			case 'console':
+			case "console":
 				return `const consoleTraceExporter = new ConsoleSpanExporter();`;
 
 			default:
@@ -382,7 +429,7 @@ const prometheusExporter = new PrometheusExporter({
 });
 
 // Custom metrics
-${config.metrics.instruments.map(metric => this.generateCustomMetric(metric)).join('\n')}`;
+${config.metrics.instruments.map((metric) => this.generateCustomMetric(metric)).join("\n")}`;
 	}
 
 	private generateCustomMetric(metric: CustomMetricConfig): string {
@@ -392,17 +439,19 @@ const ${metric.name} = opentelemetry.metrics
   .getMeter('${metric.name}')
   .create${metric.type.charAt(0).toUpperCase() + metric.type.slice(1)}('${metric.name}', {
     description: '${metric.description}',
-    ${metric.unit ? `unit: '${metric.unit}',` : ''}
+    ${metric.unit ? `unit: '${metric.unit}',` : ""}
   });`;
 	}
 
 	private generateLoggingSetup(config: OpenTelemetryConfig): string {
 		return `
 // Log processors and exporters
-${config.logging.processors.map(proc => this.generateLogProcessor(proc)).join('\n')}
+${config.logging.processors.map((proc) => this.generateLogProcessor(proc)).join("\n")}
 
 // Structured logging setup
-${config.logging.structuredLogging ? `
+${
+	config.logging.structuredLogging
+		? `
 import { createLogger, format, transports } from 'winston';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 
@@ -412,7 +461,9 @@ const logger = createLogger({
     format.timestamp(),
     format.errors({ stack: true }),
     format.json(),
-    ${config.compliance.personalDataFiltering ? `
+    ${
+			config.compliance.personalDataFiltering
+				? `
     format.printf((info) => {
       // Filter personal data for GDPR compliance
       const filtered = { ...info };
@@ -423,7 +474,9 @@ const logger = createLogger({
         }
       });
       return JSON.stringify(filtered);
-    })` : ''}
+    })`
+				: ""
+		}
   ),
   transports: [
     new transports.Console(),
@@ -433,59 +486,85 @@ const logger = createLogger({
   ],
 });
 
-export { logger };` : ''}`;
+export { logger };`
+		: ""
+}`;
 	}
 
 	private generateSpanProcessor(processor: SpanProcessorConfig): string {
-		const processorType = processor.type === 'batch' ? 'BatchSpanProcessor' : 'SimpleSpanProcessor';
-		const options = processor.options ? `, ${JSON.stringify(processor.options)}` : '';
-		
+		const processorType =
+			processor.type === "batch" ? "BatchSpanProcessor" : "SimpleSpanProcessor";
+		const options = processor.options
+			? `, ${JSON.stringify(processor.options)}`
+			: "";
+
 		return `new ${processorType}(otlpTraceExporter${options})`;
 	}
 
 	private generateLogProcessor(processor: LogProcessorConfig): string {
-		const processorType = processor.type === 'batch' ? 'BatchLogRecordProcessor' : 'SimpleLogRecordProcessor';
+		const processorType =
+			processor.type === "batch"
+				? "BatchLogRecordProcessor"
+				: "SimpleLogRecordProcessor";
 		return `const ${processor.type}LogProcessor = new ${processorType}(otlpLogExporter);`;
 	}
 
-	private generateAutoInstrumentationConfig(config: OpenTelemetryConfig): string {
+	private generateAutoInstrumentationConfig(
+		config: OpenTelemetryConfig,
+	): string {
 		const instrumentations: string[] = [];
-		
-		config.instrumentation.autoInstrumentation.forEach(inst => {
+
+		config.instrumentation.autoInstrumentation.forEach((inst) => {
 			if (inst.enabled) {
-				const options = inst.options ? JSON.stringify(inst.options) : '{}';
-				instrumentations.push(`'@opentelemetry/instrumentation-${inst.name}': ${options}`);
+				const options = inst.options ? JSON.stringify(inst.options) : "{}";
+				instrumentations.push(
+					`'@opentelemetry/instrumentation-${inst.name}': ${options}`,
+				);
 			} else {
-				instrumentations.push(`'@opentelemetry/instrumentation-${inst.name}': false`);
+				instrumentations.push(
+					`'@opentelemetry/instrumentation-${inst.name}': false`,
+				);
 			}
 		});
 
 		// Add HTTP instrumentation
 		if (config.instrumentation.httpInstrumentation.enabled) {
 			instrumentations.push(`'@opentelemetry/instrumentation-http': {
-        ${config.instrumentation.httpInstrumentation.ignoreIncomingRequestHook ? 
-          `ignoreIncomingRequestHook: ${config.instrumentation.httpInstrumentation.ignoreIncomingRequestHook},` : ''}
-        ${config.instrumentation.httpInstrumentation.ignoreOutgoingRequestHook ?
-          `ignoreOutgoingRequestHook: ${config.instrumentation.httpInstrumentation.ignoreOutgoingRequestHook},` : ''}
-        ${config.instrumentation.httpInstrumentation.requestHook ?
-          `requestHook: ${config.instrumentation.httpInstrumentation.requestHook},` : ''}
-        ${config.instrumentation.httpInstrumentation.responseHook ?
-          `responseHook: ${config.instrumentation.httpInstrumentation.responseHook},` : ''}
+        ${
+					config.instrumentation.httpInstrumentation.ignoreIncomingRequestHook
+						? `ignoreIncomingRequestHook: ${config.instrumentation.httpInstrumentation.ignoreIncomingRequestHook},`
+						: ""
+				}
+        ${
+					config.instrumentation.httpInstrumentation.ignoreOutgoingRequestHook
+						? `ignoreOutgoingRequestHook: ${config.instrumentation.httpInstrumentation.ignoreOutgoingRequestHook},`
+						: ""
+				}
+        ${
+					config.instrumentation.httpInstrumentation.requestHook
+						? `requestHook: ${config.instrumentation.httpInstrumentation.requestHook},`
+						: ""
+				}
+        ${
+					config.instrumentation.httpInstrumentation.responseHook
+						? `responseHook: ${config.instrumentation.httpInstrumentation.responseHook},`
+						: ""
+				}
       }`);
 		}
 
-		return instrumentations.join(',\n      ');
+		return instrumentations.join(",\n      ");
 	}
 
 	private generateSamplingConfig(config: OpenTelemetryConfig): string {
 		switch (config.sampling.type) {
-			case 'always_on':
+			case "always_on":
 				return `sampler: new AlwaysOnSampler(),`;
-			case 'always_off':
+			case "always_off":
 				return `sampler: new AlwaysOffSampler(),`;
-			case 'trace_id_ratio':
+			case "trace_id_ratio":
 				return `sampler: new TraceIdRatioBasedSampler(${config.sampling.ratio || 0.1}),`;
-			case 'parent_based':
+			case "parent_based":
 				return `sampler: new ParentBasedSampler({
         root: new TraceIdRatioBasedSampler(${config.sampling.ratio || 0.1}),
       }),`;
@@ -496,20 +575,20 @@ export { logger };` : ''}`;
 
 	private getFrameworkSpecificSetup(config: OpenTelemetryConfig): string {
 		switch (config.framework) {
-			case 'nestjs':
+			case "nestjs":
 				return this.generateNestJSSetup(config);
-			case 'express':
+			case "express":
 				return this.generateExpressSetup(config);
-			case 'fastify':
+			case "fastify":
 				return this.generateFastifySetup(config);
-			case 'hono':
+			case "hono":
 				return this.generateHonoSetup(config);
-			case 'nextjs':
+			case "nextjs":
 				return this.generateNextJSSetup(config);
-			case 'react':
+			case "react":
 				return this.generateReactSetup(config);
 			default:
-				return '';
+				return "";
 		}
 	}
 
@@ -1031,9 +1110,13 @@ services:
       - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      ${config.compliance.gdprCompliant ? `
+      ${
+				config.compliance.gdprCompliant
+					? `
       - GF_ANALYTICS_REPORTING_ENABLED=false
-      - GF_ANALYTICS_CHECK_FOR_UPDATES=false` : ''}
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false`
+					: ""
+			}
     volumes:
       - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
       - ./grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
@@ -1088,14 +1171,18 @@ data:
           - key: cluster
             value: ${config.projectName}
             action: upsert
-      ${config.compliance.personalDataFiltering ? `
+      ${
+				config.compliance.personalDataFiltering
+					? `
       redaction:
         allow_all_keys: false
         blocked_values:
           - "email"
           - "phone"
           - "ssn"
-          - "credit_card"` : ''}
+          - "credit_card"`
+					: ""
+			}
 
     exporters:
       otlp:
@@ -1210,7 +1297,9 @@ spec:
     scrapeTimeout: 10s`;
 	}
 
-	private generatePackageDependencies(config: OpenTelemetryConfig): Record<string, string> {
+	private generatePackageDependencies(
+		config: OpenTelemetryConfig,
+	): Record<string, string> {
 		const baseDependencies: Record<string, string> = {
 			"@opentelemetry/api": "^1.7.0",
 			"@opentelemetry/sdk-node": "^0.45.0",
@@ -1220,23 +1309,26 @@ spec:
 		};
 
 		// Add exporter dependencies
-		config.exporters.forEach(exporter => {
+		config.exporters.forEach((exporter) => {
 			switch (exporter.type) {
-				case 'otlp':
-					baseDependencies["@opentelemetry/exporter-trace-otlp-http"] = "^0.45.0";
-					baseDependencies["@opentelemetry/exporter-metrics-otlp-http"] = "^0.45.0";
-					baseDependencies["@opentelemetry/exporter-logs-otlp-http"] = "^0.45.0";
+				case "otlp":
+					baseDependencies["@opentelemetry/exporter-trace-otlp-http"] =
+						"^0.45.0";
+					baseDependencies["@opentelemetry/exporter-metrics-otlp-http"] =
+						"^0.45.0";
+					baseDependencies["@opentelemetry/exporter-logs-otlp-http"] =
+						"^0.45.0";
 					break;
-				case 'jaeger':
+				case "jaeger":
 					baseDependencies["@opentelemetry/exporter-jaeger"] = "^1.18.0";
 					break;
-				case 'zipkin':
+				case "zipkin":
 					baseDependencies["@opentelemetry/exporter-zipkin"] = "^1.18.0";
 					break;
-				case 'prometheus':
+				case "prometheus":
 					baseDependencies["@opentelemetry/exporter-prometheus"] = "^0.45.0";
 					break;
-				case 'datadog':
+				case "datadog":
 					baseDependencies["opentelemetry-exporter-datadog"] = "^0.45.0";
 					break;
 			}
@@ -1244,23 +1336,27 @@ spec:
 
 		// Add framework-specific dependencies
 		switch (config.framework) {
-			case 'nestjs':
-				baseDependencies["@opentelemetry/instrumentation-nestjs-core"] = "^0.34.0";
+			case "nestjs":
+				baseDependencies["@opentelemetry/instrumentation-nestjs-core"] =
+					"^0.34.0";
 				break;
-			case 'express':
+			case "express":
 				baseDependencies["@opentelemetry/instrumentation-express"] = "^0.34.0";
 				break;
-			case 'fastify':
+			case "fastify":
 				baseDependencies["@opentelemetry/instrumentation-fastify"] = "^0.33.0";
 				break;
-			case 'nextjs':
+			case "nextjs":
 				baseDependencies["@opentelemetry/sdk-trace-web"] = "^1.18.0";
-				baseDependencies["@opentelemetry/instrumentation-user-interaction"] = "^0.34.0";
-				baseDependencies["@opentelemetry/instrumentation-document-load"] = "^0.34.0";
+				baseDependencies["@opentelemetry/instrumentation-user-interaction"] =
+					"^0.34.0";
+				baseDependencies["@opentelemetry/instrumentation-document-load"] =
+					"^0.34.0";
 				break;
-			case 'react':
+			case "react":
 				baseDependencies["@opentelemetry/sdk-trace-web"] = "^1.18.0";
-				baseDependencies["@opentelemetry/instrumentation-user-interaction"] = "^0.34.0";
+				baseDependencies["@opentelemetry/instrumentation-user-interaction"] =
+					"^0.34.0";
 				break;
 		}
 

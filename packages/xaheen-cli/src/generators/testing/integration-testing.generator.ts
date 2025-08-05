@@ -1,7 +1,7 @@
-import { BaseGenerator } from "../base.generator";
-import { IntegrationTestOptions, TestTemplate } from "./types";
 import { promises as fs } from "fs";
 import * as path from "path";
+import { BaseGenerator } from "../base.generator";
+import { IntegrationTestOptions, TestTemplate } from "./types";
 
 export class IntegrationTestingGenerator extends BaseGenerator<IntegrationTestOptions> {
 	async generate(options: IntegrationTestOptions): Promise<void> {

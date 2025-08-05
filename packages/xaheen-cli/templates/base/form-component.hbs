@@ -1,0 +1,154 @@
+{{!-- Form Component Template - Base for form components with validation --}}
+{{>parent}}
+
+{{#slot imports}}
+import { useForm, type FieldValues, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@xala-ui/form';
+import { Button } from '@xala-ui/button';
+{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'> {
+  readonly className?: string;
+  readonly onSubmit?: SubmitHandler<any>;
+  readonly defaultValues?: Record<string, any>;
+  readonly validationSchema?: z.ZodSchema<any>;
+  readonly isLoading?: boolean;
+  readonly disabled?: boolean;
+  readonly 'aria-label'?: string;
+}
+
+interface FormData extends FieldValues {
+  [key: string]: any;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} Form Component
+ * 
+ * @description Form component with validation and accessibility
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant
+ * @nsm-classification {{nsmClassification}}
+ */
+export const {{componentName}} = ({
+  className,
+  onSubmit,
+  defaultValues = {},
+  validationSchema,
+  isLoading = false,
+  disabled = false,
+  'aria-label': ariaLabel,
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  // Form setup with validation
+  const form = useForm<FormData>({
+    resolver: validationSchema ? zodResolver(validationSchema) : undefined,
+    defaultValues,
+    mode: 'onBlur'
+  });
+
+  // Form submission handler
+  const handleSubmit = useCallback<SubmitHandler<FormData>>((data) => {
+    if (onSubmit) {
+      onSubmit(data);
+    }
+  }, [onSubmit]);
+
+  // Form reset handler
+  const handleReset = useCallback(() => {
+    form.reset();
+  }, [form]);
+
+  {{#slot validation}}
+  // Default validation schema if none provided
+  const defaultSchema = z.object({
+    // Add default fields here
+  });
+  {{/slot}}
+
+  try {
+    return (
+      <Form {...form}>
+        <form 
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className={cn(
+            'space-y-6 p-6 bg-card rounded-xl shadow-lg',
+            'border border-border',
+            className
+          )}
+          aria-label={ariaLabel || `${componentName} form`}
+          role="form"
+          {...props}
+        >
+          {{#slot form-fields}}
+          {/* Form fields will be injected here */}
+          {{/slot}}
+
+          {{#slot actions}}
+          <div className="flex gap-4 pt-4">
+            <Button 
+              type="submit" 
+              variant="primary" 
+              disabled={disabled || isLoading}
+              className="min-w-[120px]"
+              aria-label="Submit form"
+            >
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </Button>
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={handleReset}
+              disabled={disabled || isLoading}
+              aria-label="Reset form"
+            >
+              Reset
+            </Button>
+          </div>
+          {{/slot}}
+        </form>
+      </Form>
+    );
+  } catch (error) {
+    console.error(`${componentName} form error:`, error);
+    return (
+      <div className="p-6 border border-destructive rounded-xl bg-destructive/10">
+        <p className="text-destructive font-medium">
+          Error rendering form. Please try again.
+        </p>
+      </div>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Form validation helpers
+export const createFormSchema = (fields: Record<string, any>) => {
+  return z.object(fields);
+};
+
+// Form field generator helper
+export const generateFormField = (name: string, type: string, validation?: any) => {
+  return {
+    name,
+    type,
+    validation,
+    render: ({ field }: { field: any }) => (
+      <FormItem>
+        <FormLabel>{name}</FormLabel>
+        <FormControl>
+          {/* Field component based on type */}
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )
+  };
+};
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props, FormData };

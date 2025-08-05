@@ -1,12 +1,12 @@
-import { BaseGenerator } from "../base.generator";
-import { TemplateLoader } from "../../services/templates/template-loader";
 import { ProjectAnalyzer } from "../../services/analysis/project-analyzer";
+import { TemplateLoader } from "../../services/templates/template-loader";
+import { BaseGenerator } from "../base.generator";
 import type {
-	DocumentationGeneratorOptions,
-	DocumentationResult,
 	APIEndpoint,
 	APIParameter,
 	APISchema,
+	DocumentationGeneratorOptions,
+	DocumentationResult,
 } from "./index";
 
 export interface APIReferenceGeneratorOptions

@@ -4,11 +4,12 @@
  * Generated with Xaheen CLI - AI-Native Developer Productivity
  */
 
-import { readFile, stat } from "fs/promises";
-import { existsSync } from "fs";
-import { join, dirname, relative } from "path";
-import { logger } from "../../utils/logger.js";
 import chalk from "chalk";
+import { existsSync } from "fs";
+import { readFile, stat } from "fs/promises";
+import { dirname, join, relative } from "path";
+import { logger } from "../../utils/logger.js";
+
 // import { diffLines } from 'diff'; // TODO: Add diff package or implement simple diff
 
 /**

@@ -6,7 +6,13 @@
 
 export interface DashboardGeneratorConfig {
 	readonly projectName: string;
-	readonly framework: "nestjs" | "express" | "fastify" | "hono" | "nextjs" | "react";
+	readonly framework:
+		| "nestjs"
+		| "express"
+		| "fastify"
+		| "hono"
+		| "nextjs"
+		| "react";
 	readonly environment: "development" | "staging" | "production";
 	readonly services: readonly ServiceConfig[];
 	readonly dashboards: readonly DashboardConfig[];
@@ -59,7 +65,17 @@ export interface DashboardConfig {
 export interface PanelConfig {
 	readonly id: number;
 	readonly title: string;
-	readonly type: "graph" | "stat" | "gauge" | "table" | "heatmap" | "logs" | "traces" | "worldmap" | "piechart" | "bargauge";
+	readonly type:
+		| "graph"
+		| "stat"
+		| "gauge"
+		| "table"
+		| "heatmap"
+		| "logs"
+		| "traces"
+		| "worldmap"
+		| "piechart"
+		| "bargauge";
 	readonly datasource: string;
 	readonly targets: readonly QueryConfig[];
 	readonly gridPos: GridPosition;
@@ -81,7 +97,13 @@ export interface QueryConfig {
 
 export interface VariableConfig {
 	readonly name: string;
-	readonly type: "query" | "constant" | "datasource" | "interval" | "custom" | "textbox";
+	readonly type:
+		| "query"
+		| "constant"
+		| "datasource"
+		| "interval"
+		| "custom"
+		| "textbox";
 	readonly query?: string;
 	readonly datasource?: string;
 	readonly options?: readonly string[];
@@ -169,7 +191,17 @@ export interface AlertConfig {
 export interface AlertCondition {
 	readonly query: QueryConfig;
 	readonly reducer: {
-		readonly type: "avg" | "min" | "max" | "sum" | "count" | "last" | "median" | "diff" | "percent_diff" | "count_non_null";
+		readonly type:
+			| "avg"
+			| "min"
+			| "max"
+			| "sum"
+			| "count"
+			| "last"
+			| "median"
+			| "diff"
+			| "percent_diff"
+			| "count_non_null";
 		readonly params?: readonly any[];
 	};
 	readonly evaluator: {
@@ -195,7 +227,13 @@ export interface TransformationConfig {
 
 export interface DatasourceConfig {
 	readonly name: string;
-	readonly type: "prometheus" | "loki" | "tempo" | "jaeger" | "elasticsearch" | "influxdb";
+	readonly type:
+		| "prometheus"
+		| "loki"
+		| "tempo"
+		| "jaeger"
+		| "elasticsearch"
+		| "influxdb";
 	readonly url: string;
 	readonly access: "proxy" | "direct";
 	readonly basicAuth?: boolean;
@@ -249,7 +287,7 @@ export class ObservabilityDashboardGenerator {
 	 * Generate complete observability stack with dashboards, alerts, and SLOs
 	 */
 	public async generateObservabilityStack(
-		config: DashboardGeneratorConfig
+		config: DashboardGeneratorConfig,
 	): Promise<{
 		dashboards: Record<string, string>;
 		alerts: string;
@@ -259,16 +297,19 @@ export class ObservabilityDashboardGenerator {
 		grafanaConfig: string;
 	}> {
 		const dashboards: Record<string, string> = {};
-		
+
 		// Generate default dashboards
 		const defaultDashboards = this.generateDefaultDashboards(config);
 		for (const [name, dashboard] of Object.entries(defaultDashboards)) {
 			dashboards[name] = dashboard;
 		}
-		
+
 		// Generate custom dashboards
 		for (const dashboardConfig of config.dashboards) {
-			dashboards[dashboardConfig.name] = this.generateDashboard(dashboardConfig, config);
+			dashboards[dashboardConfig.name] = this.generateDashboard(
+				dashboardConfig,
+				config,
+			);
 		}
 
 		return {
@@ -281,21 +322,24 @@ export class ObservabilityDashboardGenerator {
 		};
 	}
 
-	private generateDefaultDashboards(config: DashboardGeneratorConfig): Record<string, string> {
+	private generateDefaultDashboards(
+		config: DashboardGeneratorConfig,
+	): Record<string, string> {
 		const dashboards: Record<string, string> = {};
 
 		// Application Overview Dashboard
-		dashboards["application-overview"] = this.generateApplicationOverviewDashboard(config);
-		
+		dashboards["application-overview"] =
+			this.generateApplicationOverviewDashboard(config);
+
 		// Infrastructure Dashboard
 		dashboards["infrastructure"] = this.generateInfrastructureDashboard(config);
-		
+
 		// SLO Dashboard
 		dashboards["slo-overview"] = this.generateSLODashboard(config);
-		
+
 		// Error Tracking Dashboard
 		dashboards["error-tracking"] = this.generateErrorTrackingDashboard(config);
-		
+
 		// Performance Dashboard
 		dashboards["performance"] = this.generatePerformanceDashboard(config);
 
@@ -305,10 +349,12 @@ export class ObservabilityDashboardGenerator {
 				dashboards["nestjs-monitoring"] = this.generateNestJSDashboard(config);
 				break;
 			case "express":
-				dashboards["express-monitoring"] = this.generateExpressDashboard(config);
+				dashboards["express-monitoring"] =
+					this.generateExpressDashboard(config);
 				break;
 			case "fastify":
-				dashboards["fastify-monitoring"] = this.generateFastifyDashboard(config);
+				dashboards["fastify-monitoring"] =
+					this.generateFastifyDashboard(config);
 				break;
 			case "hono":
 				dashboards["hono-monitoring"] = this.generateHonoDashboard(config);
@@ -324,7 +370,9 @@ export class ObservabilityDashboardGenerator {
 		return dashboards;
 	}
 
-	private generateApplicationOverviewDashboard(config: DashboardGeneratorConfig): string {
+	private generateApplicationOverviewDashboard(
+		config: DashboardGeneratorConfig,
+	): string {
 		const dashboard = {
 			id: null,
 			title: `${config.projectName} - Application Overview`,
@@ -334,7 +382,7 @@ export class ObservabilityDashboardGenerator {
 			refresh: "30s",
 			time: {
 				from: "now-1h",
-				to: "now"
+				to: "now",
 			},
 			templating: {
 				list: [
@@ -345,7 +393,7 @@ export class ObservabilityDashboardGenerator {
 						refresh: 1,
 						includeAll: true,
 						multi: true,
-						datasource: "Prometheus"
+						datasource: "Prometheus",
 					},
 					{
 						name: "environment",
@@ -357,10 +405,10 @@ export class ObservabilityDashboardGenerator {
 						datasource: "Prometheus",
 						current: {
 							value: config.environment,
-							text: config.environment
-						}
-					}
-				]
+							text: config.environment,
+						},
+					},
+				],
 			},
 			panels: [
 				// Service Health Overview
@@ -368,21 +416,29 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Service Health",
 					type: "stat",
-					targets: [{
-						expr: `up{job=~"$service"}`,
-						legendFormat: "{{job}}",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `up{job=~"$service"}`,
+							legendFormat: "{{job}}",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 0, y: 0, w: 6, h: 4 },
 					fieldConfig: {
 						defaults: {
 							mappings: [
-								{ type: "value", options: { "0": { text: "Down", color: "red" } } },
-								{ type: "value", options: { "1": { text: "Up", color: "green" } } }
+								{
+									type: "value",
+									options: { "0": { text: "Down", color: "red" } },
+								},
+								{
+									type: "value",
+									options: { "1": { text: "Up", color: "green" } },
+								},
 							],
-							noValue: "No data"
-						}
-					}
+							noValue: "No data",
+						},
+					},
 				},
 
 				// Request Rate
@@ -390,15 +446,19 @@ export class ObservabilityDashboardGenerator {
 					id: 2,
 					title: "Request Rate (req/s)",
 					type: "graph",
-					targets: [{
-						expr: `sum(rate(http_requests_total{job=~"$service", environment="$environment"}[5m]))`,
-						legendFormat: "Total Requests/s",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `sum(rate(http_requests_total{job=~"$service", environment="$environment"}[5m]))`,
+							legendFormat: "Total Requests/s",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 6, y: 0, w: 6, h: 4 },
-					yAxes: [{
-						unit: "reqps"
-					}]
+					yAxes: [
+						{
+							unit: "reqps",
+						},
+					],
 				},
 
 				// Response Time
@@ -406,19 +466,24 @@ export class ObservabilityDashboardGenerator {
 					id: 3,
 					title: "Response Time (95th percentile)",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~"$service", environment="$environment"}[5m])) by (le))`,
-						legendFormat: "95th percentile",
-						refId: "A"
-					}, {
-						expr: `histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=~"$service", environment="$environment"}[5m])) by (le))`,
-						legendFormat: "50th percentile",
-						refId: "B"
-					}],
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~"$service", environment="$environment"}[5m])) by (le))`,
+							legendFormat: "95th percentile",
+							refId: "A",
+						},
+						{
+							expr: `histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=~"$service", environment="$environment"}[5m])) by (le))`,
+							legendFormat: "50th percentile",
+							refId: "B",
+						},
+					],
 					gridPos: { x: 12, y: 0, w: 6, h: 4 },
-					yAxes: [{
-						unit: "s"
-					}]
+					yAxes: [
+						{
+							unit: "s",
+						},
+					],
 				},
 
 				// Error Rate
@@ -426,30 +491,36 @@ export class ObservabilityDashboardGenerator {
 					id: 4,
 					title: "Error Rate (%)",
 					type: "graph",
-					targets: [{
-						expr: `(sum(rate(http_requests_total{job=~"$service", environment="$environment", status_code=~"5.."}[5m])) / sum(rate(http_requests_total{job=~"$service", environment="$environment"}[5m]))) * 100`,
-						legendFormat: "Error Rate %",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `(sum(rate(http_requests_total{job=~"$service", environment="$environment", status_code=~"5.."}[5m])) / sum(rate(http_requests_total{job=~"$service", environment="$environment"}[5m]))) * 100`,
+							legendFormat: "Error Rate %",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 18, y: 0, w: 6, h: 4 },
-					yAxes: [{
-						unit: "percent",
-						max: 100,
-						min: 0
-					}],
+					yAxes: [
+						{
+							unit: "percent",
+							max: 100,
+							min: 0,
+						},
+					],
 					alert: {
 						name: "High Error Rate",
 						message: "Error rate is above 5% for more than 5 minutes",
 						frequency: "1m",
-						conditions: [{
-							query: { refId: "A" },
-							reducer: { type: "last" },
-							evaluator: { params: [5], type: "gt" }
-						}],
+						conditions: [
+							{
+								query: { refId: "A" },
+								reducer: { type: "last" },
+								evaluator: { params: [5], type: "gt" },
+							},
+						],
 						executionErrorState: "alerting",
 						noDataState: "no_data",
-						for: "5m"
-					}
+						for: "5m",
+					},
 				},
 
 				// Top Endpoints by Request Count
@@ -457,23 +528,27 @@ export class ObservabilityDashboardGenerator {
 					id: 5,
 					title: "Top Endpoints by Request Count",
 					type: "table",
-					targets: [{
-						expr: `topk(10, sum by (method, handler) (rate(http_requests_total{job=~"$service", environment="$environment"}[5m])))`,
-						format: "table",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `topk(10, sum by (method, handler) (rate(http_requests_total{job=~"$service", environment="$environment"}[5m])))`,
+							format: "table",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 0, y: 4, w: 12, h: 8 },
-					transformations: [{
-						id: "organize",
-						options: {
-							excludeByName: { Time: true },
-							renameByName: {
-								method: "Method",
-								handler: "Endpoint",
-								Value: "Requests/s"
-							}
-						}
-					}]
+					transformations: [
+						{
+							id: "organize",
+							options: {
+								excludeByName: { Time: true },
+								renameByName: {
+									method: "Method",
+									handler: "Endpoint",
+									Value: "Requests/s",
+								},
+							},
+						},
+					],
 				},
 
 				// Memory Usage
@@ -481,15 +556,19 @@ export class ObservabilityDashboardGenerator {
 					id: 6,
 					title: "Memory Usage",
 					type: "graph",
-					targets: [{
-						expr: `process_resident_memory_bytes{job=~"$service", environment="$environment"}`,
-						legendFormat: "{{job}}",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `process_resident_memory_bytes{job=~"$service", environment="$environment"}`,
+							legendFormat: "{{job}}",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 12, y: 4, w: 6, h: 4 },
-					yAxes: [{
-						unit: "bytes"
-					}]
+					yAxes: [
+						{
+							unit: "bytes",
+						},
+					],
 				},
 
 				// CPU Usage
@@ -497,17 +576,21 @@ export class ObservabilityDashboardGenerator {
 					id: 7,
 					title: "CPU Usage",
 					type: "graph",
-					targets: [{
-						expr: `rate(process_cpu_seconds_total{job=~"$service", environment="$environment"}[5m]) * 100`,
-						legendFormat: "{{job}}",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `rate(process_cpu_seconds_total{job=~"$service", environment="$environment"}[5m]) * 100`,
+							legendFormat: "{{job}}",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 18, y: 4, w: 6, h: 4 },
-					yAxes: [{
-						unit: "percent",
-						max: 100,
-						min: 0
-					}]
+					yAxes: [
+						{
+							unit: "percent",
+							max: 100,
+							min: 0,
+						},
+					],
 				},
 
 				// Active Database Connections
@@ -515,10 +598,12 @@ export class ObservabilityDashboardGenerator {
 					id: 8,
 					title: "Active Database Connections",
 					type: "stat",
-					targets: [{
-						expr: `sum(database_connections_active{job=~"$service", environment="$environment"})`,
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `sum(database_connections_active{job=~"$service", environment="$environment"})`,
+							refId: "A",
+						},
+					],
 					gridPos: { x: 12, y: 8, w: 6, h: 4 },
 					fieldConfig: {
 						defaults: {
@@ -528,11 +613,11 @@ export class ObservabilityDashboardGenerator {
 								steps: [
 									{ color: "green", value: null },
 									{ color: "yellow", value: 50 },
-									{ color: "red", value: 80 }
-								]
-							}
-						}
-					}
+									{ color: "red", value: 80 },
+								],
+							},
+						},
+					},
 				},
 
 				// Recent Logs (if Loki is available)
@@ -540,10 +625,12 @@ export class ObservabilityDashboardGenerator {
 					id: 9,
 					title: "Recent Error Logs",
 					type: "logs",
-					targets: [{
-						expr: `{job=~"$service", environment="$environment"} |= "ERROR"`,
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `{job=~"$service", environment="$environment"} |= "ERROR"`,
+							refId: "A",
+						},
+					],
 					datasource: "Loki",
 					gridPos: { x: 0, y: 12, w: 24, h: 8 },
 					options: {
@@ -551,9 +638,9 @@ export class ObservabilityDashboardGenerator {
 						showLabels: true,
 						showCommonLabels: false,
 						wrapLogMessage: true,
-						sortOrder: "Descending"
-					}
-				}
+						sortOrder: "Descending",
+					},
+				},
 			],
 			annotations: {
 				list: [
@@ -563,10 +650,10 @@ export class ObservabilityDashboardGenerator {
 						enable: true,
 						query: `changes(process_start_time_seconds{job=~"$service", environment="$environment"}[1h])`,
 						textFormat: "Deployment: {{job}}",
-						tagsFormat: "deployment"
-					}
-				]
-			}
+						tagsFormat: "deployment",
+					},
+				],
+			},
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -580,22 +667,24 @@ export class ObservabilityDashboardGenerator {
 			refresh: "1m",
 			time: {
 				from: "now-7d",
-				to: "now"
+				to: "now",
 			},
 			panels: config.slo.map((slo, index) => ({
 				id: index + 1,
 				title: `SLO: ${slo.name}`,
 				type: "stat",
-				targets: [{
-					expr: `(${slo.sli}) * 100`,
-					legendFormat: slo.name,
-					refId: "A"
-				}],
+				targets: [
+					{
+						expr: `(${slo.sli}) * 100`,
+						legendFormat: slo.name,
+						refId: "A",
+					},
+				],
 				gridPos: {
 					x: (index % 4) * 6,
 					y: Math.floor(index / 4) * 4,
 					w: 6,
-					h: 4
+					h: 4,
 				},
 				fieldConfig: {
 					defaults: {
@@ -607,12 +696,12 @@ export class ObservabilityDashboardGenerator {
 							steps: [
 								{ color: "red", value: null },
 								{ color: "yellow", value: slo.target * 0.9 },
-								{ color: "green", value: slo.target }
-							]
-						}
-					}
-				}
-			}))
+								{ color: "green", value: slo.target },
+							],
+						},
+					},
+				},
+			})),
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -629,36 +718,42 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "HTTP Requests by Controller",
 					type: "graph",
-					targets: [{
-						expr: `sum by (controller, method) (rate(nestjs_http_requests_total{job=~"${config.projectName}.*"}[5m]))`,
-						legendFormat: "{{controller}}.{{method}}",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `sum by (controller, method) (rate(nestjs_http_requests_total{job=~"${config.projectName}.*"}[5m]))`,
+							legendFormat: "{{controller}}.{{method}}",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "Guard Execution Time",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(nestjs_guard_duration_seconds_bucket[5m])) by (le, guard))`,
-						legendFormat: "{{guard}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(nestjs_guard_duration_seconds_bucket[5m])) by (le, guard))`,
+							legendFormat: "{{guard}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 3,
 					title: "Interceptor Metrics",
 					type: "table",
-					targets: [{
-						expr: `sum by (interceptor) (rate(nestjs_interceptor_duration_seconds_sum[5m])) / sum by (interceptor) (rate(nestjs_interceptor_duration_seconds_count[5m]))`,
-						format: "table",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 8, w: 24, h: 8 }
-				}
-			]
+					targets: [
+						{
+							expr: `sum by (interceptor) (rate(nestjs_interceptor_duration_seconds_sum[5m])) / sum by (interceptor) (rate(nestjs_interceptor_duration_seconds_count[5m]))`,
+							format: "table",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 8, w: 24, h: 8 },
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -675,25 +770,29 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Express Route Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(express_http_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
-						legendFormat: "{{route}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(express_http_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
+							legendFormat: "{{route}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "Middleware Execution Time",
 					type: "graph",
-					targets: [{
-						expr: `sum by (middleware) (rate(express_middleware_duration_seconds_sum[5m])) / sum by (middleware) (rate(express_middleware_duration_seconds_count[5m]))`,
-						legendFormat: "{{middleware}}",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
-				}
-			]
+					targets: [
+						{
+							expr: `sum by (middleware) (rate(express_middleware_duration_seconds_sum[5m])) / sum by (middleware) (rate(express_middleware_duration_seconds_count[5m]))`,
+							legendFormat: "{{middleware}}",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -710,25 +809,29 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Fastify Route Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(fastify_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
-						legendFormat: "{{route}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(fastify_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
+							legendFormat: "{{route}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "Plugin Performance",
 					type: "graph",
-					targets: [{
-						expr: `sum by (plugin) (rate(fastify_plugin_duration_seconds_sum[5m])) / sum by (plugin) (rate(fastify_plugin_duration_seconds_count[5m]))`,
-						legendFormat: "{{plugin}}",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
-				}
-			]
+					targets: [
+						{
+							expr: `sum by (plugin) (rate(fastify_plugin_duration_seconds_sum[5m])) / sum by (plugin) (rate(fastify_plugin_duration_seconds_count[5m]))`,
+							legendFormat: "{{plugin}}",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -745,25 +848,29 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Hono Route Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(hono_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, path))`,
-						legendFormat: "{{path}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(hono_request_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, path))`,
+							legendFormat: "{{path}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "Edge Runtime Metrics",
 					type: "graph",
-					targets: [{
-						expr: `sum by (runtime) (rate(hono_runtime_invocations_total[5m]))`,
-						legendFormat: "{{runtime}}",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
-				}
-			]
+					targets: [
+						{
+							expr: `sum by (runtime) (rate(hono_runtime_invocations_total[5m]))`,
+							legendFormat: "{{runtime}}",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -780,36 +887,42 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Page Load Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(nextjs_page_load_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, page))`,
-						legendFormat: "{{page}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(nextjs_page_load_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, page))`,
+							legendFormat: "{{page}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "API Route Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(nextjs_api_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
-						legendFormat: "{{route}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(nextjs_api_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, route))`,
+							legendFormat: "{{route}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 3,
 					title: "SSR vs Client-side Rendering",
 					type: "stat",
-					targets: [{
-						expr: `sum(rate(nextjs_render_type_total{type="ssr"}[5m])) / sum(rate(nextjs_render_type_total[5m])) * 100`,
-						legendFormat: "SSR %",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 8, w: 6, h: 4 }
-				}
-			]
+					targets: [
+						{
+							expr: `sum(rate(nextjs_render_type_total{type="ssr"}[5m])) / sum(rate(nextjs_render_type_total[5m])) * 100`,
+							legendFormat: "SSR %",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 8, w: 6, h: 4 },
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -826,77 +939,104 @@ export class ObservabilityDashboardGenerator {
 					id: 1,
 					title: "Component Render Performance",
 					type: "graph",
-					targets: [{
-						expr: `histogram_quantile(0.95, sum(rate(react_component_render_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, component))`,
-						legendFormat: "{{component}} (95th)",
-						refId: "A"
-					}],
-					gridPos: { x: 0, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `histogram_quantile(0.95, sum(rate(react_component_render_duration_seconds_bucket{job=~"${config.projectName}.*"}[5m])) by (le, component))`,
+							legendFormat: "{{component}} (95th)",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 0, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 2,
 					title: "User Interactions",
 					type: "graph",
-					targets: [{
-						expr: `sum by (interaction_type) (rate(react_user_interactions_total[5m]))`,
-						legendFormat: "{{interaction_type}}",
-						refId: "A"
-					}],
-					gridPos: { x: 12, y: 0, w: 12, h: 8 }
+					targets: [
+						{
+							expr: `sum by (interaction_type) (rate(react_user_interactions_total[5m]))`,
+							legendFormat: "{{interaction_type}}",
+							refId: "A",
+						},
+					],
+					gridPos: { x: 12, y: 0, w: 12, h: 8 },
 				},
 				{
 					id: 3,
 					title: "Bundle Size Impact",
 					type: "stat",
-					targets: [{
-						expr: `react_bundle_size_bytes{job=~"${config.projectName}.*"}`,
-						legendFormat: "Bundle Size",
-						refId: "A"
-					}],
+					targets: [
+						{
+							expr: `react_bundle_size_bytes{job=~"${config.projectName}.*"}`,
+							legendFormat: "Bundle Size",
+							refId: "A",
+						},
+					],
 					gridPos: { x: 0, y: 8, w: 6, h: 4 },
 					fieldConfig: {
 						defaults: {
-							unit: "bytes"
-						}
-					}
-				}
-			]
+							unit: "bytes",
+						},
+					},
+				},
+			],
 		};
 
 		return JSON.stringify(dashboard, null, 2);
 	}
 
-	private generateInfrastructureDashboard(config: DashboardGeneratorConfig): string {
+	private generateInfrastructureDashboard(
+		config: DashboardGeneratorConfig,
+	): string {
 		// Infrastructure dashboard implementation
-		return JSON.stringify({
-			id: null,
-			title: `${config.projectName} - Infrastructure`,
-			tags: ["infrastructure", "kubernetes", "docker"],
-			// ... implementation
-		}, null, 2);
+		return JSON.stringify(
+			{
+				id: null,
+				title: `${config.projectName} - Infrastructure`,
+				tags: ["infrastructure", "kubernetes", "docker"],
+				// ... implementation
+			},
+			null,
+			2,
+		);
 	}
 
-	private generateErrorTrackingDashboard(config: DashboardGeneratorConfig): string {
+	private generateErrorTrackingDashboard(
+		config: DashboardGeneratorConfig,
+	): string {
 		// Error tracking dashboard implementation
-		return JSON.stringify({
-			id: null,
-			title: `${config.projectName} - Error Tracking`,
-			tags: ["errors", "exceptions", "debugging"],
-			// ... implementation
-		}, null, 2);
+		return JSON.stringify(
+			{
+				id: null,
+				title: `${config.projectName} - Error Tracking`,
+				tags: ["errors", "exceptions", "debugging"],
+				// ... implementation
+			},
+			null,
+			2,
+		);
 	}
 
-	private generatePerformanceDashboard(config: DashboardGeneratorConfig): string {
+	private generatePerformanceDashboard(
+		config: DashboardGeneratorConfig,
+	): string {
 		// Performance dashboard implementation
-		return JSON.stringify({
-			id: null,
-			title: `${config.projectName} - Performance`,
-			tags: ["performance", "optimization", "metrics"],
-			// ... implementation
-		}, null, 2);
+		return JSON.stringify(
+			{
+				id: null,
+				title: `${config.projectName} - Performance`,
+				tags: ["performance", "optimization", "metrics"],
+				// ... implementation
+			},
+			null,
+			2,
+		);
 	}
 
-	private generateDashboard(dashboardConfig: DashboardConfig, config: DashboardGeneratorConfig): string {
+	private generateDashboard(
+		dashboardConfig: DashboardConfig,
+		config: DashboardGeneratorConfig,
+	): string {
 		const dashboard = {
 			id: null,
 			title: dashboardConfig.title,
@@ -905,7 +1045,7 @@ export class ObservabilityDashboardGenerator {
 			refresh: dashboardConfig.refresh,
 			time: dashboardConfig.timeRange,
 			templating: {
-				list: dashboardConfig.variables.map(variable => ({
+				list: dashboardConfig.variables.map((variable) => ({
 					name: variable.name,
 					type: variable.type,
 					query: variable.query,
@@ -913,10 +1053,12 @@ export class ObservabilityDashboardGenerator {
 					refresh: variable.refresh,
 					includeAll: variable.includeAll,
 					multi: variable.multi,
-					current: variable.current ? { value: variable.current, text: variable.current } : undefined
-				}))
+					current: variable.current
+						? { value: variable.current, text: variable.current }
+						: undefined,
+				})),
 			},
-			panels: dashboardConfig.panels.map(panel => ({
+			panels: dashboardConfig.panels.map((panel) => ({
 				id: panel.id,
 				title: panel.title,
 				type: panel.type,
@@ -926,18 +1068,19 @@ export class ObservabilityDashboardGenerator {
 				options: panel.options,
 				fieldConfig: panel.fieldConfig,
 				alert: panel.alert,
-				transformations: panel.transformations
+				transformations: panel.transformations,
 			})),
 			annotations: {
-				list: dashboardConfig.annotations?.map(annotation => ({
-					name: annotation.name,
-					datasource: annotation.datasource,
-					enable: annotation.enable,
-					query: annotation.query,
-					textFormat: annotation.textFormat,
-					tagsFormat: annotation.tagsFormat
-				})) || []
-			}
+				list:
+					dashboardConfig.annotations?.map((annotation) => ({
+						name: annotation.name,
+						datasource: annotation.datasource,
+						enable: annotation.enable,
+						query: annotation.query,
+						textFormat: annotation.textFormat,
+						tagsFormat: annotation.tagsFormat,
+					})) || [],
+			},
 		};
 
 		return JSON.stringify(dashboard, null, 2);
@@ -945,23 +1088,25 @@ export class ObservabilityDashboardGenerator {
 
 	private generateAlertRules(config: DashboardGeneratorConfig): string {
 		const alertRules = {
-			groups: config.alerts.map(alert => ({
+			groups: config.alerts.map((alert) => ({
 				name: `${config.projectName}.${alert.name}`,
-				rules: [{
-					alert: alert.name,
-					expr: alert.conditions[0]?.query.expr || "",
-					for: alert.for,
-					labels: {
-						severity: "warning",
-						service: config.projectName,
-						environment: config.environment
+				rules: [
+					{
+						alert: alert.name,
+						expr: alert.conditions[0]?.query.expr || "",
+						for: alert.for,
+						labels: {
+							severity: "warning",
+							service: config.projectName,
+							environment: config.environment,
+						},
+						annotations: {
+							summary: alert.name,
+							description: alert.message,
+						},
 					},
-					annotations: {
-						summary: alert.name,
-						description: alert.message
-					}
-				}]
-			}))
+				],
+			})),
 		};
 
 		return `# Prometheus Alert Rules for ${config.projectName}
@@ -971,7 +1116,7 @@ ${JSON.stringify(alertRules, null, 2)}`;
 	private generateDatasources(config: DashboardGeneratorConfig): string {
 		const datasources = {
 			apiVersion: 1,
-			datasources: config.datasources.map(ds => ({
+			datasources: config.datasources.map((ds) => ({
 				name: ds.name,
 				type: ds.type,
 				url: ds.url,
@@ -984,11 +1129,11 @@ ${JSON.stringify(alertRules, null, 2)}`;
 					...ds.jsonData,
 					...(config.compliance.norwegianCompliant && {
 						customQueryParameters: "region=norway",
-						timeInterval: "15s"
-					})
+						timeInterval: "15s",
+					}),
 				},
-				secureJsonData: ds.secureJsonData
-			}))
+				secureJsonData: ds.secureJsonData,
+			})),
 		};
 
 		return JSON.stringify(datasources, null, 2);
@@ -1000,24 +1145,34 @@ groups:
   - name: ${config.projectName}.sli
     interval: 30s
     rules:
-${config.sli.map(sli => `      - record: sli:${sli.name}
+${config.sli
+	.map(
+		(sli) => `      - record: sli:${sli.name}
         expr: ${sli.query}
         labels:
           service: ${config.projectName}
-          sli_name: ${sli.name}`).join('\n')}
+          sli_name: ${sli.name}`,
+	)
+	.join("\n")}
 
   - name: ${config.projectName}.slo
     interval: 1m
     rules:
-${config.slo.map(slo => `      - record: slo:${slo.name}:error_budget
+${config.slo
+	.map(
+		(slo) => `      - record: slo:${slo.name}:error_budget
         expr: (1 - ${slo.target}/100) * ${slo.timeWindow}
         labels:
           service: ${config.projectName}
-          slo_name: ${slo.name}`).join('\n')}
+          slo_name: ${slo.name}`,
+	)
+	.join("\n")}
 
   - name: ${config.projectName}.alerts
     rules:
-${config.alerts.map(alert => `      - alert: ${alert.name}
+${config.alerts
+	.map(
+		(alert) => `      - alert: ${alert.name}
         expr: ${alert.conditions[0]?.query.expr || ""}
         for: ${alert.for}
         labels:
@@ -1025,13 +1180,17 @@ ${config.alerts.map(alert => `      - alert: ${alert.name}
           service: ${config.projectName}
         annotations:
           summary: ${alert.name}
-          description: ${alert.message}`).join('\n')}`;
+          description: ${alert.message}`,
+	)
+	.join("\n")}`;
 	}
 
 	private generateSLOConfiguration(config: DashboardGeneratorConfig): string {
 		return `# SLO Configuration for ${config.projectName}
 slos:
-${config.slo.map(slo => `  - name: ${slo.name}
+${config.slo
+	.map(
+		(slo) => `  - name: ${slo.name}
     description: ${slo.description}
     service: ${config.projectName}
     sli:
@@ -1042,7 +1201,9 @@ ${config.slo.map(slo => `  - name: ${slo.name}
     alerting:
       burn_rate: ${slo.alerting.burnRate}
       short_window: ${slo.alerting.shortWindow}
-      long_window: ${slo.alerting.longWindow}`).join('\n')}
+      long_window: ${slo.alerting.longWindow}`,
+	)
+	.join("\n")}
 
 error_budget:
   enabled: ${config.errorBudget.enabled}
@@ -1051,7 +1212,9 @@ error_budget:
   alert_threshold: ${config.errorBudget.alertThreshold}`;
 	}
 
-	private generateGrafanaConfiguration(config: DashboardGeneratorConfig): string {
+	private generateGrafanaConfiguration(
+		config: DashboardGeneratorConfig,
+	): string {
 		return `# Grafana Configuration for ${config.projectName}
 [server]
 domain = ${config.projectName}.grafana.local
@@ -1061,10 +1224,14 @@ serve_from_sub_path = true
 [security]
 admin_user = admin
 admin_password = \${GRAFANA_ADMIN_PASSWORD}
-${config.compliance.gdprCompliant ? `
+${
+	config.compliance.gdprCompliant
+		? `
 disable_gravatar = true
 cookie_secure = true
-cookie_samesite = strict` : ''}
+cookie_samesite = strict`
+		: ""
+}
 
 [analytics]
 reporting_enabled = ${!config.compliance.gdprCompliant}
@@ -1103,7 +1270,9 @@ enabled = true
 [feature_toggles]
 enable = ngalert prometheusAzureOverrideAudience
 
-${config.compliance.norwegianCompliant ? `
+${
+	config.compliance.norwegianCompliant
+		? `
 [date_formats]
 default_timezone = Europe/Oslo
 full_date = DD.MM.YYYY HH:mm:ss
@@ -1112,6 +1281,8 @@ interval_minute = HH:mm
 interval_hour = DD.MM HH:mm
 interval_day = DD.MM
 interval_month = MM-YYYY
-interval_year = YYYY` : ''}`;
+interval_year = YYYY`
+		: ""
+}`;
 	}
 }

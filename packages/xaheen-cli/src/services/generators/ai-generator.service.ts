@@ -22,14 +22,17 @@ import {
 import type { Field, GeneratedFile, XaheenConfig } from "../../types/index.js";
 import { logger } from "../../utils/logger.js";
 import {
+	aiSecurityScanner,
+	type SecurityScanOptions,
+} from "../ai/ai-security-scanner.js";
+import {
 	AIService,
 	ComponentContext,
 	GenerationContext,
 	ServiceContext,
 } from "../ai/ai-service.js";
-import { mcpClient, type ComponentSpecification } from "../mcp/mcp-client.js";
 import { ProjectAnalyzer } from "../analysis/project-analyzer.js";
-import { aiSecurityScanner, type SecurityScanOptions } from "../ai/ai-security-scanner.js";
+import { type ComponentSpecification, mcpClient } from "../mcp/mcp-client.js";
 
 interface AIGenerationOptions {
 	description?: string;
@@ -372,7 +375,9 @@ export class AIGeneratorService {
 	private async buildCodebaseContext(): Promise<void> {
 		if (this.codebaseContext) return;
 
-		logger.info(chalk.gray("📊 Building codebase context for AI generation..."));
+		logger.info(
+			chalk.gray("📊 Building codebase context for AI generation..."),
+		);
 
 		const projectPath = process.cwd();
 		const projectInfo = await this.projectAnalyzer.analyzeProject(projectPath);
@@ -390,9 +395,8 @@ export class AIGeneratorService {
 			architecturalStyle: projectInfo?.architecture || "layered",
 			codingStandards: await this.detectCodingStandards(projectPath),
 			norwegianCompliance: projectInfo?.compliance?.norwegian || false,
-			performanceRequirements: await this.analyzePerformanceRequirements(
-				projectPath,
-			),
+			performanceRequirements:
+				await this.analyzePerformanceRequirements(projectPath),
 		};
 
 		logger.success(chalk.green("✅ Codebase context built successfully"));
@@ -541,10 +545,7 @@ export class AIGeneratorService {
 
 			// Apply performance optimizations
 			if (options.optimizeForPerformance) {
-				content = await this.applyPerformanceOptimizations(
-					content,
-					context,
-				);
+				content = await this.applyPerformanceOptimizations(content, context);
 			}
 
 			// Apply AI hints from MCP specification
@@ -625,18 +626,12 @@ Context: ${context.framework} component with ${context.styling} styling`;
 		// Apply project-specific patterns
 		let optimizedContent = content;
 		for (const pattern of codebaseContext.projectPatterns) {
-			optimizedContent = this.applyProjectPattern(
-				optimizedContent,
-				pattern,
-			);
+			optimizedContent = this.applyProjectPattern(optimizedContent, pattern);
 		}
 
 		// Apply coding standards
 		for (const standard of codebaseContext.codingStandards) {
-			optimizedContent = this.applyCodingStandard(
-				optimizedContent,
-				standard,
-			);
+			optimizedContent = this.applyCodingStandard(optimizedContent, standard);
 		}
 
 		// Apply Norwegian compliance if required
@@ -1161,10 +1156,15 @@ export const validateQuery = (data: unknown) => {
 		];
 	}
 
-	private async writeFiles(files: GeneratedFile[], options: AIGenerationOptions = {}): Promise<void> {
+	private async writeFiles(
+		files: GeneratedFile[],
+		options: AIGenerationOptions = {},
+	): Promise<void> {
 		// Perform security scanning if enabled
 		if (options.securityScan) {
-			logger.info(chalk.cyan("🔒 Performing security scan on generated code..."));
+			logger.info(
+				chalk.cyan("🔒 Performing security scan on generated code..."),
+			);
 			await this.performSecurityValidation(files, options);
 		}
 
@@ -1218,7 +1218,9 @@ export const validateQuery = (data: unknown) => {
 							),
 						);
 						logger.warn(chalk.gray(`    ${vuln.description}`));
-						logger.warn(chalk.gray(`    Recommendation: ${vuln.recommendation}`));
+						logger.warn(
+							chalk.gray(`    Recommendation: ${vuln.recommendation}`),
+						);
 					}
 				}
 			} catch (error) {
@@ -1235,8 +1237,8 @@ export const validateQuery = (data: unknown) => {
 				0,
 			);
 			const criticalIssues = securityIssues
-				.flatMap(item => item.issues)
-				.filter(issue => issue.severity === "critical").length;
+				.flatMap((item) => item.issues)
+				.filter((issue) => issue.severity === "critical").length;
 
 			if (criticalIssues > 0) {
 				logger.error(
@@ -1269,13 +1271,18 @@ export const validateQuery = (data: unknown) => {
 	): Promise<void> {
 		logger.info(chalk.cyan("💡 Security improvement suggestions:"));
 
-		const allIssues = securityIssues.flatMap(item => item.issues);
-		const categories = [...new Set(allIssues.map(issue => issue.category))];
+		const allIssues = securityIssues.flatMap((item) => item.issues);
+		const categories = [...new Set(allIssues.map((issue) => issue.category))];
 
 		for (const category of categories) {
-			const categoryIssues = allIssues.filter(issue => issue.category === category);
-			const suggestion = this.getSecuritySuggestionForCategory(category, categoryIssues.length);
-			
+			const categoryIssues = allIssues.filter(
+				(issue) => issue.category === category,
+			);
+			const suggestion = this.getSecuritySuggestionForCategory(
+				category,
+				categoryIssues.length,
+			);
+
 			logger.info(chalk.gray(`  • ${suggestion}`));
 		}
 
@@ -1285,20 +1292,31 @@ export const validateQuery = (data: unknown) => {
 		}
 
 		if (options.securityCompliance?.includes("gdpr")) {
-			logger.info(chalk.gray("  • Implement data privacy controls for GDPR compliance"));
+			logger.info(
+				chalk.gray("  • Implement data privacy controls for GDPR compliance"),
+			);
 		}
 
 		if (options.securityCompliance?.includes("wcag")) {
-			logger.info(chalk.gray("  • Add accessibility attributes for WCAG compliance"));
+			logger.info(
+				chalk.gray("  • Add accessibility attributes for WCAG compliance"),
+			);
 		}
 
-		logger.info(chalk.gray("\n🔗 Run full security scan: xaheen security-scan --ai-enhanced"));
+		logger.info(
+			chalk.gray(
+				"\n🔗 Run full security scan: xaheen security-scan --ai-enhanced",
+			),
+		);
 	}
 
 	/**
 	 * Get security suggestion for specific vulnerability category
 	 */
-	private getSecuritySuggestionForCategory(category: string, count: number): string {
+	private getSecuritySuggestionForCategory(
+		category: string,
+		count: number,
+	): string {
 		const suggestions: Record<string, string> = {
 			injection: `Address ${count} injection vulnerabilities by implementing input validation and sanitization`,
 			"sensitive-data": `Secure ${count} exposed secrets by moving them to environment variables`,
@@ -1309,7 +1327,10 @@ export const validateQuery = (data: unknown) => {
 			logging: `Improve ${count} logging issues by implementing secure audit logging`,
 		};
 
-		return suggestions[category] || `Review and fix ${count} ${category} security issues`;
+		return (
+			suggestions[category] ||
+			`Review and fix ${count} ${category} security issues`
+		);
 	}
 
 	/**
@@ -1361,7 +1382,9 @@ export const validateQuery = (data: unknown) => {
 	/**
 	 * Index existing components in the project for AI context
 	 */
-	private async indexExistingComponents(projectPath: string): Promise<string[]> {
+	private async indexExistingComponents(
+		projectPath: string,
+	): Promise<string[]> {
 		const components: string[] = [];
 
 		try {
@@ -1600,9 +1623,7 @@ export const validateQuery = (data: unknown) => {
 			// Stop if quality is high enough or no changes were made
 			if (qualityScore >= 90 && complianceScore >= 90 && changes.length === 0) {
 				logger.success(
-					chalk.green(
-						`✅ Refinement complete after ${iteration} iterations`,
-					),
+					chalk.green(`✅ Refinement complete after ${iteration} iterations`),
 				);
 				break;
 			}
@@ -1678,11 +1699,7 @@ export const validateQuery = (data: unknown) => {
 					componentName,
 				);
 				if (!validation.valid) {
-					logger.warn(
-						chalk.yellow(
-							`⚠️ MCP compliance issues in ${file.path}`,
-						),
-					);
+					logger.warn(chalk.yellow(`⚠️ MCP compliance issues in ${file.path}`));
 					validation.issues.forEach((issue) => {
 						logger.warn(`  - ${issue.message}`);
 						if (issue.suggestion) {
@@ -1699,7 +1716,11 @@ export const validateQuery = (data: unknown) => {
 	 */
 	private showAIInsights(
 		name: string,
-		complexity: { complexity: string; estimatedTokens: number; priority: string },
+		complexity: {
+			complexity: string;
+			estimatedTokens: number;
+			priority: string;
+		},
 		aiHints: string[],
 	): void {
 		logger.info(chalk.blue("\n🧠 AI Generation Insights:"));
@@ -1717,9 +1738,12 @@ export const validateQuery = (data: unknown) => {
 	}
 
 	// Utility methods for AI enhancements
-	private mergeAIEnhancedContent(original: string, aiGenerated: string): string {
+	private mergeAIEnhancedContent(
+		original: string,
+		aiGenerated: string,
+	): string {
 		// Smart merge of AI-generated content with original template
-		return original.includes("// TODO:") 
+		return original.includes("// TODO:")
 			? original.replace("// TODO:", aiGenerated)
 			: `${original}\n\n${aiGenerated}`;
 	}
@@ -1773,7 +1797,10 @@ export const validateQuery = (data: unknown) => {
 			: `${content}\n// Norwegian compliance: NSM classification applied`;
 	}
 
-	private mergePerformanceOptimizations(original: string, optimized: string): string {
+	private mergePerformanceOptimizations(
+		original: string,
+		optimized: string,
+	): string {
 		// Merge performance optimizations
 		return optimized || original;
 	}

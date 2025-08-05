@@ -1,62 +1,73 @@
 /**
  * Integration Tests for Code Generation
- * 
+ *
  * Tests the complete code generation workflow including AI integration,
  * template processing, and file system operations.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import fs from "fs-extra";
 import path from "node:path";
-import { testUtils } from "../test-helpers.js";
+import fs from "fs-extra";
 import tmp from "tmp";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { testUtils } from "../test-helpers.js";
 
 describe("Code Generation Integration", () => {
-  let testDir: string;
-  let originalCwd: string;
-  let cleanup: () => void;
+	let testDir: string;
+	let originalCwd: string;
+	let cleanup: () => void;
 
-  beforeEach(async () => {
-    originalCwd = process.cwd();
-    
-    // Create temporary test directory
-    const result = tmp.dirSync({ prefix: "xaheen-codegen-test-", unsafeCleanup: true });
-    testDir = result.name;
-    cleanup = result.removeCallback;
-    
-    // Change to test directory
-    process.chdir(testDir);
-  });
+	beforeEach(async () => {
+		originalCwd = process.cwd();
 
-  afterEach(async () => {
-    // Restore original working directory
-    process.chdir(originalCwd);
-    
-    // Clean up temporary directory
-    if (cleanup) {
-      cleanup();
-    }
-  });
+		// Create temporary test directory
+		const result = tmp.dirSync({
+			prefix: "xaheen-codegen-test-",
+			unsafeCleanup: true,
+		});
+		testDir = result.name;
+		cleanup = result.removeCallback;
 
-  describe("Component Generation", () => {
-    it("should generate a complete React component with all files", async () => {
-      const projectName = "test-component-gen";
-      const projectPath = path.join(testDir, projectName);
-      
-      // Create base Next.js project
-      await testUtils.fixtures.createFixtureProject("nextjs-project", projectPath);
-      process.chdir(projectPath);
-      
-      const componentName = "UserCard";
-      const componentDir = path.join(projectPath, "src", "components", componentName);
-      
-      // Generate component with all associated files
-      await fs.ensureDir(componentDir);
-      
-      // Main component file
-      await fs.writeFile(
-        path.join(componentDir, "index.tsx"),
-        `import React from 'react';
+		// Change to test directory
+		process.chdir(testDir);
+	});
+
+	afterEach(async () => {
+		// Restore original working directory
+		process.chdir(originalCwd);
+
+		// Clean up temporary directory
+		if (cleanup) {
+			cleanup();
+		}
+	});
+
+	describe("Component Generation", () => {
+		it("should generate a complete React component with all files", async () => {
+			const projectName = "test-component-gen";
+			const projectPath = path.join(testDir, projectName);
+
+			// Create base Next.js project
+			await testUtils.fixtures.createFixtureProject(
+				"nextjs-project",
+				projectPath,
+			);
+			process.chdir(projectPath);
+
+			const componentName = "UserCard";
+			const componentDir = path.join(
+				projectPath,
+				"src",
+				"components",
+				componentName,
+			);
+
+			// Generate component with all associated files
+			await fs.ensureDir(componentDir);
+
+			// Main component file
+			await fs.writeFile(
+				path.join(componentDir, "index.tsx"),
+				`import React from 'react';
 import { UserCardProps } from './types';
 import { useUserCard } from './hooks';
 import './styles.css';
@@ -135,13 +146,13 @@ export const UserCard = ({
 
 export { UserCardProps } from './types';
 export { useUserCard } from './hooks';
-`
-      );
-      
-      // Types file
-      await fs.writeFile(
-        path.join(componentDir, "types.ts"),
-        `export interface User {
+`,
+			);
+
+			// Types file
+			await fs.writeFile(
+				path.join(componentDir, "types.ts"),
+				`export interface User {
   readonly id: string;
   readonly name: string;
   readonly email: string;
@@ -169,13 +180,13 @@ export interface UseUserCardReturn {
   readonly handleEdit: () => void;
   readonly handleDelete: () => void;
 }
-`
-      );
-      
-      // Custom hook
-      await fs.writeFile(
-        path.join(componentDir, "hooks.ts"),
-        `import { useState, useCallback } from 'react';
+`,
+			);
+
+			// Custom hook
+			await fs.writeFile(
+				path.join(componentDir, "hooks.ts"),
+				`import { useState, useCallback } from 'react';
 import type { UseUserCardProps, UseUserCardReturn } from './types';
 
 export const useUserCard = ({
@@ -223,13 +234,13 @@ export const useUserCard = ({
     handleDelete
   };
 };
-`
-      );
-      
-      // CSS styles
-      await fs.writeFile(
-        path.join(componentDir, "styles.css"),
-        `.user-card {
+`,
+			);
+
+			// CSS styles
+			await fs.writeFile(
+				path.join(componentDir, "styles.css"),
+				`.user-card {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
@@ -430,14 +441,14 @@ export const useUserCard = ({
     animation: none;
   }
 }
-`
-      );
-      
-      // Test file
-      await fs.ensureDir(path.join(componentDir, "__tests__"));
-      await fs.writeFile(
-        path.join(componentDir, "__tests__", "UserCard.test.tsx"),
-        `import React from 'react';
+`,
+			);
+
+			// Test file
+			await fs.ensureDir(path.join(componentDir, "__tests__"));
+			await fs.writeFile(
+				path.join(componentDir, "__tests__", "UserCard.test.tsx"),
+				`import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UserCard } from '../index';
 import type { User } from '../types';
@@ -587,14 +598,14 @@ describe('UserCard', () => {
     expect(deleteButton).toHaveFocus();
   });
 });
-`
-      );
-      
-      // Storybook story
-      await fs.ensureDir(path.join(projectPath, "src", "stories"));
-      await fs.writeFile(
-        path.join(projectPath, "src", "stories", "UserCard.stories.tsx"),
-        `import type { Meta, StoryObj } from '@storybook/react';
+`,
+			);
+
+			// Storybook story
+			await fs.ensureDir(path.join(projectPath, "src", "stories"));
+			await fs.writeFile(
+				path.join(projectPath, "src", "stories", "UserCard.stories.tsx"),
+				`import type { Meta, StoryObj } from '@storybook/react';
 import { UserCard } from '../components/UserCard';
 import type { User } from '../components/UserCard/types';
 
@@ -693,63 +704,78 @@ export const Interactive: Story = {
     },
   },
 };
-`
-      );
-      
-      // Verify all files were generated
-      await testUtils.assert.assertFileExists(path.join(componentDir, "index.tsx"));
-      await testUtils.assert.assertFileExists(path.join(componentDir, "types.ts"));
-      await testUtils.assert.assertFileExists(path.join(componentDir, "hooks.ts"));
-      await testUtils.assert.assertFileExists(path.join(componentDir, "styles.css"));
-      await testUtils.assert.assertFileExists(path.join(componentDir, "__tests__", "UserCard.test.tsx"));
-      await testUtils.assert.assertFileExists(path.join(projectPath, "src", "stories", "UserCard.stories.tsx"));
-      
-      // Verify TypeScript interfaces are properly defined
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "types.ts"),
-        "export interface UserCardProps"
-      );
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "types.ts"),
-        "readonly user: User"
-      );
-      
-      // Verify accessibility attributes
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "index.tsx"),
-        "aria-label"
-      );
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "index.tsx"),
-        "role=\"article\""
-      );
-      
-      // Verify comprehensive testing
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "__tests__", "UserCard.test.tsx"),
-        "accessibility attributes"
-      );
-      await testUtils.assert.assertFileContains(
-        path.join(componentDir, "__tests__", "UserCard.test.tsx"),
-        "keyboard navigation"
-      );
-    });
+`,
+			);
 
-    it("should generate API routes with proper validation", async () => {
-      const projectName = "test-api-gen";
-      const projectPath = path.join(testDir, projectName);
-      
-      // Create base Next.js project
-      await testUtils.fixtures.createFixtureProject("nextjs-project", projectPath);
-      process.chdir(projectPath);
-      
-      const apiDir = path.join(projectPath, "src", "app", "api", "users");
-      await fs.ensureDir(apiDir);
-      
-      // Generate API route with validation
-      await fs.writeFile(
-        path.join(apiDir, "route.ts"),
-        `import { NextRequest, NextResponse } from 'next/server';
+			// Verify all files were generated
+			await testUtils.assert.assertFileExists(
+				path.join(componentDir, "index.tsx"),
+			);
+			await testUtils.assert.assertFileExists(
+				path.join(componentDir, "types.ts"),
+			);
+			await testUtils.assert.assertFileExists(
+				path.join(componentDir, "hooks.ts"),
+			);
+			await testUtils.assert.assertFileExists(
+				path.join(componentDir, "styles.css"),
+			);
+			await testUtils.assert.assertFileExists(
+				path.join(componentDir, "__tests__", "UserCard.test.tsx"),
+			);
+			await testUtils.assert.assertFileExists(
+				path.join(projectPath, "src", "stories", "UserCard.stories.tsx"),
+			);
+
+			// Verify TypeScript interfaces are properly defined
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "types.ts"),
+				"export interface UserCardProps",
+			);
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "types.ts"),
+				"readonly user: User",
+			);
+
+			// Verify accessibility attributes
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "index.tsx"),
+				"aria-label",
+			);
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "index.tsx"),
+				'role="article"',
+			);
+
+			// Verify comprehensive testing
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "__tests__", "UserCard.test.tsx"),
+				"accessibility attributes",
+			);
+			await testUtils.assert.assertFileContains(
+				path.join(componentDir, "__tests__", "UserCard.test.tsx"),
+				"keyboard navigation",
+			);
+		});
+
+		it("should generate API routes with proper validation", async () => {
+			const projectName = "test-api-gen";
+			const projectPath = path.join(testDir, projectName);
+
+			// Create base Next.js project
+			await testUtils.fixtures.createFixtureProject(
+				"nextjs-project",
+				projectPath,
+			);
+			process.chdir(projectPath);
+
+			const apiDir = path.join(projectPath, "src", "app", "api", "users");
+			await fs.ensureDir(apiDir);
+
+			// Generate API route with validation
+			await fs.writeFile(
+				path.join(apiDir, "route.ts"),
+				`import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 // Validation schemas
@@ -863,16 +889,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 }
-`
-      );
-      
-      // Generate dynamic route for individual users
-      const userIdDir = path.join(apiDir, "[id]");
-      await fs.ensureDir(userIdDir);
-      
-      await fs.writeFile(
-        path.join(userIdDir, "route.ts"),
-        `import { NextRequest, NextResponse } from 'next/server';
+`,
+			);
+
+			// Generate dynamic route for individual users
+			const userIdDir = path.join(apiDir, "[id]");
+			await fs.ensureDir(userIdDir);
+
+			await fs.writeFile(
+				path.join(userIdDir, "route.ts"),
+				`import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const userIdSchema = z.string().uuid('Invalid user ID');
@@ -1029,14 +1055,14 @@ export async function DELETE(
     );
   }
 }
-`
-      );
-      
-      // Generate API tests
-      await fs.ensureDir(path.join(projectPath, "src", "__tests__", "api"));
-      await fs.writeFile(
-        path.join(projectPath, "src", "__tests__", "api", "users.test.ts"),
-        `import { createMocks } from 'node-mocks-http';
+`,
+			);
+
+			// Generate API tests
+			await fs.ensureDir(path.join(projectPath, "src", "__tests__", "api"));
+			await fs.writeFile(
+				path.join(projectPath, "src", "__tests__", "api", "users.test.ts"),
+				`import { createMocks } from 'node-mocks-http';
 import { GET, POST } from '../../app/api/users/route';
 
 describe('/api/users', () => {
@@ -1138,50 +1164,54 @@ describe('/api/users', () => {
     });
   });
 });
-`
-      );
-      
-      // Verify API route generation
-      await testUtils.assert.assertFileExists(path.join(apiDir, "route.ts"));
-      await testUtils.assert.assertFileExists(path.join(userIdDir, "route.ts"));
-      await testUtils.assert.assertFileExists(
-        path.join(projectPath, "src", "__tests__", "api", "users.test.ts")
-      );
-      
-      // Verify proper validation schemas
-      await testUtils.assert.assertFileContains(
-        path.join(apiDir, "route.ts"),
-        "createUserSchema"
-      );
-      await testUtils.assert.assertFileContains(
-        path.join(apiDir, "route.ts"),
-        "z.string().email"
-      );
-      
-      // Verify error handling
-      await testUtils.assert.assertFileContains(
-        path.join(apiDir, "route.ts"),
-        "Internal server error"
-      );
-      await testUtils.assert.assertFileContains(
-        path.join(userIdDir, "route.ts"),
-        "User not found"
-      );
-    });
-  });
+`,
+			);
 
-  describe("AI-Powered Generation", () => {
-    it("should integrate with AI services for intelligent code generation", async () => {
-      const projectName = "test-ai-integration";
-      const projectPath = path.join(testDir, projectName);
-      
-      // Create base project
-      await testUtils.fixtures.createFixtureProject("nextjs-project", projectPath);
-      process.chdir(projectPath);
-      
-      // Mock AI-generated component based on natural language prompt
-      const prompt = "Create a responsive data table with sorting, filtering, and pagination";
-      const aiGeneratedCode = `import React, { useState, useMemo } from 'react';
+			// Verify API route generation
+			await testUtils.assert.assertFileExists(path.join(apiDir, "route.ts"));
+			await testUtils.assert.assertFileExists(path.join(userIdDir, "route.ts"));
+			await testUtils.assert.assertFileExists(
+				path.join(projectPath, "src", "__tests__", "api", "users.test.ts"),
+			);
+
+			// Verify proper validation schemas
+			await testUtils.assert.assertFileContains(
+				path.join(apiDir, "route.ts"),
+				"createUserSchema",
+			);
+			await testUtils.assert.assertFileContains(
+				path.join(apiDir, "route.ts"),
+				"z.string().email",
+			);
+
+			// Verify error handling
+			await testUtils.assert.assertFileContains(
+				path.join(apiDir, "route.ts"),
+				"Internal server error",
+			);
+			await testUtils.assert.assertFileContains(
+				path.join(userIdDir, "route.ts"),
+				"User not found",
+			);
+		});
+	});
+
+	describe("AI-Powered Generation", () => {
+		it("should integrate with AI services for intelligent code generation", async () => {
+			const projectName = "test-ai-integration";
+			const projectPath = path.join(testDir, projectName);
+
+			// Create base project
+			await testUtils.fixtures.createFixtureProject(
+				"nextjs-project",
+				projectPath,
+			);
+			process.chdir(projectPath);
+
+			// Mock AI-generated component based on natural language prompt
+			const prompt =
+				"Create a responsive data table with sorting, filtering, and pagination";
+			const aiGeneratedCode = `import React, { useState, useMemo } from 'react';
 
 interface DataTableProps<T> {
   readonly data: T[];
@@ -1350,24 +1380,35 @@ export const DataTable = <T extends Record<string, any>>({
     </div>
   );
 };`;
-      
-      // Save AI-generated component
-      const componentPath = path.join(projectPath, "src", "components", "DataTable.tsx");
-      await fs.ensureDir(path.dirname(componentPath));
-      await fs.writeFile(componentPath, aiGeneratedCode);
-      
-      // Verify AI-generated component has expected features
-      await testUtils.assert.assertFileExists(componentPath);
-      await testUtils.assert.assertFileContains(componentPath, "DataTableProps");
-      await testUtils.assert.assertFileContains(componentPath, "searchable");
-      await testUtils.assert.assertFileContains(componentPath, "sortable");
-      await testUtils.assert.assertFileContains(componentPath, "pagination");
-      await testUtils.assert.assertFileContains(componentPath, "aria-label");
-      await testUtils.assert.assertFileContains(componentPath, "role=\"table\"");
-      
-      // Verify TypeScript generics are used correctly
-      await testUtils.assert.assertFileContains(componentPath, "<T extends Record<string, any>>");
-      await testUtils.assert.assertFileContains(componentPath, "Column<T>");
-    });
-  });
+
+			// Save AI-generated component
+			const componentPath = path.join(
+				projectPath,
+				"src",
+				"components",
+				"DataTable.tsx",
+			);
+			await fs.ensureDir(path.dirname(componentPath));
+			await fs.writeFile(componentPath, aiGeneratedCode);
+
+			// Verify AI-generated component has expected features
+			await testUtils.assert.assertFileExists(componentPath);
+			await testUtils.assert.assertFileContains(
+				componentPath,
+				"DataTableProps",
+			);
+			await testUtils.assert.assertFileContains(componentPath, "searchable");
+			await testUtils.assert.assertFileContains(componentPath, "sortable");
+			await testUtils.assert.assertFileContains(componentPath, "pagination");
+			await testUtils.assert.assertFileContains(componentPath, "aria-label");
+			await testUtils.assert.assertFileContains(componentPath, 'role="table"');
+
+			// Verify TypeScript generics are used correctly
+			await testUtils.assert.assertFileContains(
+				componentPath,
+				"<T extends Record<string, any>>",
+			);
+			await testUtils.assert.assertFileContains(componentPath, "Column<T>");
+		});
+	});
 });

@@ -158,7 +158,8 @@ export class AliasManagerService {
 				domain: "component",
 				action: "generate",
 				description: "Generate UI component with props and stories",
-				example: "xaheen g:component Button --props title:string,onClick:function",
+				example:
+					"xaheen g:component Button --props title:string,onClick:function",
 			},
 			{
 				alias: "g:page",

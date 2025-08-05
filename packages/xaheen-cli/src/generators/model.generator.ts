@@ -7,10 +7,10 @@
  * @since 2025-08-04
  */
 
-import { BaseGenerator, BaseGeneratorOptions, GeneratorResult } from './base.generator.js';
-import Handlebars from 'handlebars';
+import { confirm, isCancel, multiselect, select, text } from '@clack/prompts';
 import chalk from 'chalk';
-import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
+import Handlebars from 'handlebars';
+import { BaseGenerator, BaseGeneratorOptions, GeneratorResult } from './base.generator.js';
 
 // Register Handlebars helpers
 Handlebars.registerHelper('eq', (a, b) => a === b);

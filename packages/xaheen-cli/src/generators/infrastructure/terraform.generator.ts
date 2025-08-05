@@ -5,10 +5,10 @@
  */
 
 import {
+	GeneratedInfrastructureFile,
 	InfrastructureGenerator,
 	InfrastructureGeneratorOptions,
 	InfrastructureGeneratorResult,
-	GeneratedInfrastructureFile,
 } from "./index.js";
 
 export interface TerraformOptions extends InfrastructureGeneratorOptions {

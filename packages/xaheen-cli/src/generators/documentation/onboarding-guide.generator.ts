@@ -5,415 +5,502 @@
  * @version 1.0.0
  */
 
-import { BaseGenerator } from "../base.generator";
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
+import { BaseGenerator } from "../base.generator";
 import type {
-  OnboardingGuideOptions,
-  OnboardingGuideResult,
-  LearningStep,
-  Prerequisite,
-  CodeExample,
-  InteractiveDemo,
-  StepValidation,
-  UserPreference,
+	CodeExample,
+	InteractiveDemo,
+	LearningStep,
+	OnboardingGuideOptions,
+	OnboardingGuideResult,
+	Prerequisite,
+	StepValidation,
+	UserPreference,
 } from "./portal-types";
 
 export interface OnboardingTemplate {
-  readonly id: string;
-  readonly name: string;
-  readonly description: string;
-  readonly targetAudience: readonly string[];
-  readonly steps: readonly LearningStep[];
-  readonly estimatedTime: number;
+	readonly id: string;
+	readonly name: string;
+	readonly description: string;
+	readonly targetAudience: readonly string[];
+	readonly steps: readonly LearningStep[];
+	readonly estimatedTime: number;
 }
 
 export interface PersonalizationData {
-  readonly experience: 'beginner' | 'intermediate' | 'advanced';
-  readonly role: 'developer' | 'user' | 'contributor' | 'admin';
-  readonly interests: readonly string[];
-  readonly preferredLanguage: string;
-  readonly timeAvailable: number; // minutes
-  readonly learningStyle: 'visual' | 'hands-on' | 'reading' | 'mixed';
+	readonly experience: "beginner" | "intermediate" | "advanced";
+	readonly role: "developer" | "user" | "contributor" | "admin";
+	readonly interests: readonly string[];
+	readonly preferredLanguage: string;
+	readonly timeAvailable: number; // minutes
+	readonly learningStyle: "visual" | "hands-on" | "reading" | "mixed";
 }
 
 export class OnboardingGuideGenerator extends BaseGenerator<OnboardingGuideOptions> {
-  private readonly templates: Map<string, OnboardingTemplate> = new Map();
+	private readonly templates: Map<string, OnboardingTemplate> = new Map();
 
-  constructor() {
-    super();
-    this.initializeTemplates();
-  }
+	constructor() {
+		super();
+		this.initializeTemplates();
+	}
 
-  async generate(options: OnboardingGuideOptions): Promise<OnboardingGuideResult> {
-    try {
-      this.logger.info(`Generating dynamic onboarding guide for ${options.projectName}`);
-      
-      await this.validateOptions(options);
-      
-      const outputDir = join(options.outputDir, 'onboarding');
-      this.createDirectoryStructure(outputDir);
-      
-      // Analyze project to personalize content
-      const projectAnalysis = await this.analyzeProject(options);
-      
-      // Generate personalized learning path
-      const learningPath = await this.generateLearningPath(options, projectAnalysis);
-      
-      // Create onboarding guide files
-      const guideFiles = await this.createOnboardingFiles(options, learningPath, outputDir);
-      
-      // Generate interactive elements
-      const interactiveFiles = await this.generateInteractiveElements(options, outputDir);
-      
-      // Create progress tracking system
-      const trackingFiles = await this.generateProgressTracking(options, outputDir);
-      
-      // Generate personalization system
-      const personalizationFiles = await this.generatePersonalizationSystem(options, outputDir);
-      
-      // Create assessment and validation
-      const assessmentFiles = await this.generateAssessments(options, learningPath, outputDir);
-      
-      const allFiles = [
-        ...guideFiles,
-        ...interactiveFiles,
-        ...trackingFiles,
-        ...personalizationFiles,
-        ...assessmentFiles,
-      ];
-      
-      const totalSteps = learningPath.length;
-      const totalTime = learningPath.reduce((sum, step) => sum + step.estimatedTime, 0);
-      const prerequisites = this.extractPrerequisites(options);
-      
-      this.logger.success(`Dynamic onboarding guide generated with ${totalSteps} steps`);
-      
-      return {
-        success: true,
-        message: `Dynamic onboarding guide created successfully for ${options.projectName}`,
-        files: allFiles,
-        guideUrl: this.generateGuideUrl(options),
-        stepsGenerated: totalSteps,
-        interactiveElements: this.countInteractiveElements(learningPath),
-        estimatedCompletionTime: totalTime,
-        prerequisites,
-        commands: [
-          'cd onboarding',
-          'npm install # Install interactive demo dependencies',
-          'npm start # Start interactive onboarding server',
-          'npm run build # Build static onboarding guide',
-        ],
-        nextSteps: [
-          'Customize the onboarding steps for your specific use case',
-          'Add project-specific code examples and demos',
-          'Configure progress tracking and analytics',
-          'Set up user authentication for personalized experiences',
-          'Enable feedback collection and guide improvement',
-          'Integrate with your main documentation portal',
-        ],
-      };
-    } catch (error) {
-      this.logger.error('Failed to generate onboarding guide', error);
-      return {
-        success: false,
-        message: `Failed to generate onboarding guide: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        files: [],
-        stepsGenerated: 0,
-        interactiveElements: 0,
-        estimatedCompletionTime: 0,
-        prerequisites: [],
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
+	async generate(
+		options: OnboardingGuideOptions,
+	): Promise<OnboardingGuideResult> {
+		try {
+			this.logger.info(
+				`Generating dynamic onboarding guide for ${options.projectName}`,
+			);
 
-  private initializeTemplates(): void {
-    // Developer onboarding template
-    this.templates.set('developer', {
-      id: 'developer',
-      name: 'Developer Onboarding',
-      description: 'Complete onboarding for developers joining the project',
-      targetAudience: ['developer', 'contributed'],
-      estimatedTime: 120,
-      steps: [
-        {
-          id: 'dev-setup',
-          title: 'Development Environment Setup',
-          description: 'Set up your local development environment',
-          type: 'tutorial',
-          estimatedTime: 30,
-          difficulty: 'beginner',
-          content: {
-            markdown: '# Development Environment Setup\n\nLet\'s get your development environment ready.',
-          },
-        },
-        {
-          id: 'first-contribution',
-          title: 'Your First Contribution',
-          description: 'Make your first code contribution to the project',
-          type: 'exercise',
-          estimatedTime: 45,
-          difficulty: 'intermediate',
-          prerequisites: ['dev-setup'],
-          content: {
-            markdown: '# Your First Contribution\n\nTime to make your first code change!',
-          },
-        },
-      ],
-    });
+			await this.validateOptions(options);
 
-    // User onboarding template
-    this.templates.set('user', {
-      id: 'user',
-      name: 'User Onboarding',
-      description: 'Getting started guide for end users',
-      targetAudience: ['user'],
-      estimatedTime: 45,
-      steps: [
-        {
-          id: 'user-setup',
-          title: 'Getting Started',
-          description: 'Learn the basics of using the application',
-          type: 'tutorial',
-          estimatedTime: 15,
-          difficulty: 'beginner',
-          content: {
-            markdown: '# Getting Started\n\nWelcome! Let\'s learn how to use the application.',
-          },
-        },
-        {
-          id: 'first-task',
-          title: 'Complete Your First Task',
-          description: 'Walk through completing a common task',
-          type: 'exercise',
-          estimatedTime: 30,
-          difficulty: 'beginner',
-          prerequisites: ['user-setup'],
-          content: {
-            markdown: '# Your First Task\n\nLet\'s complete a typical workflow.',
-          },
-        },
-      ],
-    });
-  }
+			const outputDir = join(options.outputDir, "onboarding");
+			this.createDirectoryStructure(outputDir);
 
-  private createDirectoryStructure(outputDir: string): void {
-    const dirs = [
-      outputDir,
-      join(outputDir, 'guides'),
-      join(outputDir, 'interactive'),
-      join(outputDir, 'assessments'),
-      join(outputDir, 'assets'),
-      join(outputDir, 'src'),
-      join(outputDir, 'src', 'components'),
-      join(outputDir, 'src', 'utils'),
-      join(outputDir, 'public'),
-    ];
+			// Analyze project to personalize content
+			const projectAnalysis = await this.analyzeProject(options);
 
-    dirs.forEach(dir => {
-      if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-      }
-    });
-  }
+			// Generate personalized learning path
+			const learningPath = await this.generateLearningPath(
+				options,
+				projectAnalysis,
+			);
 
-  private async analyzeProject(options: OnboardingGuideOptions): Promise<ProjectAnalysis> {
-    return {
-      complexity: this.assessComplexity(options),
-      technologies: this.extractTechnologies(options),
-      patterns: this.identifyPatterns(options),
-      integrations: options.integrations,
-      userTypes: this.identifyUserTypes(options),
-      commonTasks: this.identifyCommonTasks(options),
-    };
-  }
+			// Create onboarding guide files
+			const guideFiles = await this.createOnboardingFiles(
+				options,
+				learningPath,
+				outputDir,
+			);
 
-  private async generateLearningPath(
-    options: OnboardingGuideOptions,
-    analysis: ProjectAnalysis
-  ): Promise<readonly LearningStep[]> {
-    const baseTemplate = this.templates.get(options.guideType) || this.templates.get('developer')!;
-    const steps: LearningStep[] = [...baseTemplate.steps];
+			// Generate interactive elements
+			const interactiveFiles = await this.generateInteractiveElements(
+				options,
+				outputDir,
+			);
 
-    // Customize based on project analysis
-    if (analysis.complexity === 'high') {
-      steps.push(this.createAdvancedStep(options));
-    }
+			// Create progress tracking system
+			const trackingFiles = await this.generateProgressTracking(
+				options,
+				outputDir,
+			);
 
-    // Add technology-specific steps
-    for (const tech of analysis.technologies) {
-      const techStep = this.createTechnologyStep(tech, options);
-      if (techStep) {
-        steps.push(techStep);
-      }
-    }
+			// Generate personalization system
+			const personalizationFiles = await this.generatePersonalizationSystem(
+				options,
+				outputDir,
+			);
 
-    // Add integration steps
-    for (const integration of options.integrations) {
-      steps.push(this.createIntegrationStep(integration, options));
-    }
+			// Create assessment and validation
+			const assessmentFiles = await this.generateAssessments(
+				options,
+				learningPath,
+				outputDir,
+			);
 
-    // Personalize based on user preferences
-    if (options.customization.allowPersonalization) {
-      return this.personalizeSteps(steps, options);
-    }
+			const allFiles = [
+				...guideFiles,
+				...interactiveFiles,
+				...trackingFiles,
+				...personalizationFiles,
+				...assessmentFiles,
+			];
 
-    return steps;
-  }
+			const totalSteps = learningPath.length;
+			const totalTime = learningPath.reduce(
+				(sum, step) => sum + step.estimatedTime,
+				0,
+			);
+			const prerequisites = this.extractPrerequisites(options);
 
-  private async createOnboardingFiles(
-    options: OnboardingGuideOptions,
-    learningPath: readonly LearningStep[],
-    outputDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+			this.logger.success(
+				`Dynamic onboarding guide generated with ${totalSteps} steps`,
+			);
 
-    // Create main guide index
-    const indexPath = join(outputDir, 'index.md');
-    writeFileSync(indexPath, this.generateGuideIndex(options, learningPath));
-    files.push(indexPath);
+			return {
+				success: true,
+				message: `Dynamic onboarding guide created successfully for ${options.projectName}`,
+				files: allFiles,
+				guideUrl: this.generateGuideUrl(options),
+				stepsGenerated: totalSteps,
+				interactiveElements: this.countInteractiveElements(learningPath),
+				estimatedCompletionTime: totalTime,
+				prerequisites,
+				commands: [
+					"cd onboarding",
+					"npm install # Install interactive demo dependencies",
+					"npm start # Start interactive onboarding server",
+					"npm run build # Build static onboarding guide",
+				],
+				nextSteps: [
+					"Customize the onboarding steps for your specific use case",
+					"Add project-specific code examples and demos",
+					"Configure progress tracking and analytics",
+					"Set up user authentication for personalized experiences",
+					"Enable feedback collection and guide improvement",
+					"Integrate with your main documentation portal",
+				],
+			};
+		} catch (error) {
+			this.logger.error("Failed to generate onboarding guide", error);
+			return {
+				success: false,
+				message: `Failed to generate onboarding guide: ${error instanceof Error ? error.message : "Unknown error"}`,
+				files: [],
+				stepsGenerated: 0,
+				interactiveElements: 0,
+				estimatedCompletionTime: 0,
+				prerequisites: [],
+				error: error instanceof Error ? error.message : "Unknown error",
+			};
+		}
+	}
 
-    // Create individual step files
-    for (const step of learningPath) {
-      const stepPath = join(outputDir, 'guides', `${step.id}.md`);
-      writeFileSync(stepPath, this.generateStepContent(step, options));
-      files.push(stepPath);
-    }
+	private initializeTemplates(): void {
+		// Developer onboarding template
+		this.templates.set("developer", {
+			id: "developer",
+			name: "Developer Onboarding",
+			description: "Complete onboarding for developers joining the project",
+			targetAudience: ["developer", "contributed"],
+			estimatedTime: 120,
+			steps: [
+				{
+					id: "dev-setup",
+					title: "Development Environment Setup",
+					description: "Set up your local development environment",
+					type: "tutorial",
+					estimatedTime: 30,
+					difficulty: "beginner",
+					content: {
+						markdown:
+							"# Development Environment Setup\n\nLet's get your development environment ready.",
+					},
+				},
+				{
+					id: "first-contribution",
+					title: "Your First Contribution",
+					description: "Make your first code contribution to the project",
+					type: "exercise",
+					estimatedTime: 45,
+					difficulty: "intermediate",
+					prerequisites: ["dev-setup"],
+					content: {
+						markdown:
+							"# Your First Contribution\n\nTime to make your first code change!",
+					},
+				},
+			],
+		});
 
-    // Create learning path configuration
-    const configPath = join(outputDir, 'learning-path.json');
-    writeFileSync(configPath, JSON.stringify({
-      projectName: options.projectName,
-      guideType: options.guideType,
-      steps: learningPath.map(step => ({
-        id: step.id,
-        title: step.title,
-        estimatedTime: step.estimatedTime,
-        difficulty: step.difficulty,
-        prerequisites: step.prerequisites || [],
-      })),
-      totalTime: learningPath.reduce((sum, step) => sum + step.estimatedTime, 0),
-    }, null, 2));
-    files.push(configPath);
+		// User onboarding template
+		this.templates.set("user", {
+			id: "user",
+			name: "User Onboarding",
+			description: "Getting started guide for end users",
+			targetAudience: ["user"],
+			estimatedTime: 45,
+			steps: [
+				{
+					id: "user-setup",
+					title: "Getting Started",
+					description: "Learn the basics of using the application",
+					type: "tutorial",
+					estimatedTime: 15,
+					difficulty: "beginner",
+					content: {
+						markdown:
+							"# Getting Started\n\nWelcome! Let's learn how to use the application.",
+					},
+				},
+				{
+					id: "first-task",
+					title: "Complete Your First Task",
+					description: "Walk through completing a common task",
+					type: "exercise",
+					estimatedTime: 30,
+					difficulty: "beginner",
+					prerequisites: ["user-setup"],
+					content: {
+						markdown: "# Your First Task\n\nLet's complete a typical workflow.",
+					},
+				},
+			],
+		});
+	}
 
-    return files;
-  }
+	private createDirectoryStructure(outputDir: string): void {
+		const dirs = [
+			outputDir,
+			join(outputDir, "guides"),
+			join(outputDir, "interactive"),
+			join(outputDir, "assessments"),
+			join(outputDir, "assets"),
+			join(outputDir, "src"),
+			join(outputDir, "src", "components"),
+			join(outputDir, "src", "utils"),
+			join(outputDir, "public"),
+		];
 
-  private async generateInteractiveElements(
-    options: OnboardingGuideOptions,
-    outputDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+		dirs.forEach((dir) => {
+			if (!existsSync(dir)) {
+				mkdirSync(dir, { recursive: true });
+			}
+		});
+	}
 
-    if (options.interactiveElements.enableCodePlayground) {
-      const playgroundPath = join(outputDir, 'interactive', 'code-playground.html');
-      writeFileSync(playgroundPath, this.generateCodePlayground(options));
-      files.push(playgroundPath);
-    }
+	private async analyzeProject(
+		options: OnboardingGuideOptions,
+	): Promise<ProjectAnalysis> {
+		return {
+			complexity: this.assessComplexity(options),
+			technologies: this.extractTechnologies(options),
+			patterns: this.identifyPatterns(options),
+			integrations: options.integrations,
+			userTypes: this.identifyUserTypes(options),
+			commonTasks: this.identifyCommonTasks(options),
+		};
+	}
 
-    if (options.interactiveElements.enableProgressBar) {
-      const progressPath = join(outputDir, 'src', 'components', 'ProgressBar.tsx');
-      writeFileSync(progressPath, this.generateProgressBarComponent(options));
-      files.push(progressPath);
-    }
+	private async generateLearningPath(
+		options: OnboardingGuideOptions,
+		analysis: ProjectAnalysis,
+	): Promise<readonly LearningStep[]> {
+		const baseTemplate =
+			this.templates.get(options.guideType) || this.templates.get("developer")!;
+		const steps: LearningStep[] = [...baseTemplate.steps];
 
-    if (options.interactiveElements.enableQuizzes) {
-      const quizPath = join(outputDir, 'src', 'components', 'Quiz.tsx');
-      writeFileSync(quizPath, this.generateQuizComponent(options));
-      files.push(quizPath);
-    }
+		// Customize based on project analysis
+		if (analysis.complexity === "high") {
+			steps.push(this.createAdvancedStep(options));
+		}
 
-    if (options.interactiveElements.enableFeedback) {
-      const feedbackPath = join(outputDir, 'src', 'components', 'Feedback.tsx');
-      writeFileSync(feedbackPath, this.generateFeedbackComponent(options));
-      files.push(feedbackPath);
-    }
+		// Add technology-specific steps
+		for (const tech of analysis.technologies) {
+			const techStep = this.createTechnologyStep(tech, options);
+			if (techStep) {
+				steps.push(techStep);
+			}
+		}
 
-    return files;
-  }
+		// Add integration steps
+		for (const integration of options.integrations) {
+			steps.push(this.createIntegrationStep(integration, options));
+		}
 
-  private async generateProgressTracking(
-    options: OnboardingGuideOptions,
-    outputDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+		// Personalize based on user preferences
+		if (options.customization.allowPersonalization) {
+			return this.personalizeSteps(steps, options);
+		}
 
-    if (!options.progressTracking.enabled) return files;
+		return steps;
+	}
 
-    // Progress tracking utility
-    const progressUtilPath = join(outputDir, 'src', 'utils', 'progress.ts');
-    writeFileSync(progressUtilPath, this.generateProgressTrackingUtil(options));
-    files.push(progressUtilPath);
+	private async createOnboardingFiles(
+		options: OnboardingGuideOptions,
+		learningPath: readonly LearningStep[],
+		outputDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Progress dashboard component
-    const dashboardPath = join(outputDir, 'src', 'components', 'ProgressDashboard.tsx');
-    writeFileSync(dashboardPath, this.generateProgressDashboard(options));
-    files.push(dashboardPath);
+		// Create main guide index
+		const indexPath = join(outputDir, "index.md");
+		writeFileSync(indexPath, this.generateGuideIndex(options, learningPath));
+		files.push(indexPath);
 
-    // Achievement system
-    if (options.progressTracking.enableBadges) {
-      const badgesPath = join(outputDir, 'src', 'components', 'BadgeSystem.tsx');
-      writeFileSync(badgesPath, this.generateBadgeSystem(options));
-      files.push(badgesPath);
-    }
+		// Create individual step files
+		for (const step of learningPath) {
+			const stepPath = join(outputDir, "guides", `${step.id}.md`);
+			writeFileSync(stepPath, this.generateStepContent(step, options));
+			files.push(stepPath);
+		}
 
-    return files;
-  }
+		// Create learning path configuration
+		const configPath = join(outputDir, "learning-path.json");
+		writeFileSync(
+			configPath,
+			JSON.stringify(
+				{
+					projectName: options.projectName,
+					guideType: options.guideType,
+					steps: learningPath.map((step) => ({
+						id: step.id,
+						title: step.title,
+						estimatedTime: step.estimatedTime,
+						difficulty: step.difficulty,
+						prerequisites: step.prerequisites || [],
+					})),
+					totalTime: learningPath.reduce(
+						(sum, step) => sum + step.estimatedTime,
+						0,
+					),
+				},
+				null,
+				2,
+			),
+		);
+		files.push(configPath);
 
-  private async generatePersonalizationSystem(
-    options: OnboardingGuideOptions,
-    outputDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+		return files;
+	}
 
-    if (!options.customization.allowPersonalization) return files;
+	private async generateInteractiveElements(
+		options: OnboardingGuideOptions,
+		outputDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    // Personalization component
-    const personalizationPath = join(outputDir, 'src', 'components', 'Personalization.tsx');
-    writeFileSync(personalizationPath, this.generatePersonalizationComponent(options));
-    files.push(personalizationPath);
+		if (options.interactiveElements.enableCodePlayground) {
+			const playgroundPath = join(
+				outputDir,
+				"interactive",
+				"code-playground.html",
+			);
+			writeFileSync(playgroundPath, this.generateCodePlayground(options));
+			files.push(playgroundPath);
+		}
 
-    // User preferences handler
-    const preferencesPath = join(outputDir, 'src', 'utils', 'preferences.ts');
-    writeFileSync(preferencesPath, this.generatePreferencesUtil(options));
-    files.push(preferencesPath);
+		if (options.interactiveElements.enableProgressBar) {
+			const progressPath = join(
+				outputDir,
+				"src",
+				"components",
+				"ProgressBar.tsx",
+			);
+			writeFileSync(progressPath, this.generateProgressBarComponent(options));
+			files.push(progressPath);
+		}
 
-    return files;
-  }
+		if (options.interactiveElements.enableQuizzes) {
+			const quizPath = join(outputDir, "src", "components", "Quiz.tsx");
+			writeFileSync(quizPath, this.generateQuizComponent(options));
+			files.push(quizPath);
+		}
 
-  private async generateAssessments(
-    options: OnboardingGuideOptions,
-    learningPath: readonly LearningStep[],
-    outputDir: string
-  ): Promise<string[]> {
-    const files: string[] = [];
+		if (options.interactiveElements.enableFeedback) {
+			const feedbackPath = join(outputDir, "src", "components", "Feedback.tsx");
+			writeFileSync(feedbackPath, this.generateFeedbackComponent(options));
+			files.push(feedbackPath);
+		}
 
-    // Generate assessments for steps that have validation
-    for (const step of learningPath) {
-      if (step.validation) {
-        const assessmentPath = join(outputDir, 'assessments', `${step.id}-assessment.json`);
-        writeFileSync(assessmentPath, this.generateStepAssessment(step, options));
-        files.push(assessmentPath);
-      }
-    }
+		return files;
+	}
 
-    // Create assessment runner component
-    const runnerPath = join(outputDir, 'src', 'components', 'AssessmentRunner.tsx');
-    writeFileSync(runnerPath, this.generateAssessmentRunner(options));
-    files.push(runnerPath);
+	private async generateProgressTracking(
+		options: OnboardingGuideOptions,
+		outputDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
 
-    return files;
-  }
+		if (!options.progressTracking.enabled) return files;
 
-  private generateGuideIndex(
-    options: OnboardingGuideOptions,
-    learningPath: readonly LearningStep[]
-  ): string {
-    const totalTime = learningPath.reduce((sum, step) => sum + step.estimatedTime, 0);
-    const prerequisites = this.extractPrerequisites(options);
+		// Progress tracking utility
+		const progressUtilPath = join(outputDir, "src", "utils", "progress.ts");
+		writeFileSync(progressUtilPath, this.generateProgressTrackingUtil(options));
+		files.push(progressUtilPath);
 
-    return `---
+		// Progress dashboard component
+		const dashboardPath = join(
+			outputDir,
+			"src",
+			"components",
+			"ProgressDashboard.tsx",
+		);
+		writeFileSync(dashboardPath, this.generateProgressDashboard(options));
+		files.push(dashboardPath);
+
+		// Achievement system
+		if (options.progressTracking.enableBadges) {
+			const badgesPath = join(
+				outputDir,
+				"src",
+				"components",
+				"BadgeSystem.tsx",
+			);
+			writeFileSync(badgesPath, this.generateBadgeSystem(options));
+			files.push(badgesPath);
+		}
+
+		return files;
+	}
+
+	private async generatePersonalizationSystem(
+		options: OnboardingGuideOptions,
+		outputDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
+
+		if (!options.customization.allowPersonalization) return files;
+
+		// Personalization component
+		const personalizationPath = join(
+			outputDir,
+			"src",
+			"components",
+			"Personalization.tsx",
+		);
+		writeFileSync(
+			personalizationPath,
+			this.generatePersonalizationComponent(options),
+		);
+		files.push(personalizationPath);
+
+		// User preferences handler
+		const preferencesPath = join(outputDir, "src", "utils", "preferences.ts");
+		writeFileSync(preferencesPath, this.generatePreferencesUtil(options));
+		files.push(preferencesPath);
+
+		return files;
+	}
+
+	private async generateAssessments(
+		options: OnboardingGuideOptions,
+		learningPath: readonly LearningStep[],
+		outputDir: string,
+	): Promise<string[]> {
+		const files: string[] = [];
+
+		// Generate assessments for steps that have validation
+		for (const step of learningPath) {
+			if (step.validation) {
+				const assessmentPath = join(
+					outputDir,
+					"assessments",
+					`${step.id}-assessment.json`,
+				);
+				writeFileSync(
+					assessmentPath,
+					this.generateStepAssessment(step, options),
+				);
+				files.push(assessmentPath);
+			}
+		}
+
+		// Create assessment runner component
+		const runnerPath = join(
+			outputDir,
+			"src",
+			"components",
+			"AssessmentRunner.tsx",
+		);
+		writeFileSync(runnerPath, this.generateAssessmentRunner(options));
+		files.push(runnerPath);
+
+		return files;
+	}
+
+	private generateGuideIndex(
+		options: OnboardingGuideOptions,
+		learningPath: readonly LearningStep[],
+	): string {
+		const totalTime = learningPath.reduce(
+			(sum, step) => sum + step.estimatedTime,
+			0,
+		);
+		const prerequisites = this.extractPrerequisites(options);
+
+		return `---
 title: ${options.projectName} Onboarding Guide
 description: ${options.guideType} onboarding for ${options.projectName}
 estimatedTime: ${totalTime} minutes
@@ -425,11 +512,11 @@ Welcome to the ${options.projectName} ${options.guideType} onboarding guide! Thi
 
 ## What You'll Learn
 
-${learningPath.map((step, index) => `${index + 1}. **${step.title}** (${step.estimatedTime} min) - ${step.description}`).join('\n')}
+${learningPath.map((step, index) => `${index + 1}. **${step.title}** (${step.estimatedTime} min) - ${step.description}`).join("\n")}
 
 ## Prerequisites
 
-${prerequisites.length > 0 ? prerequisites.map(req => `- **${req.name}**: ${req.description}${req.required ? ' (Required)' : ' (Optional)'}`).join('\n') : 'No prerequisites required!'}
+${prerequisites.length > 0 ? prerequisites.map((req) => `- **${req.name}**: ${req.description}${req.required ? " (Required)" : " (Optional)"}`).join("\n") : "No prerequisites required!"}
 
 ## Estimated Time
 
@@ -437,7 +524,9 @@ ${prerequisites.length > 0 ? prerequisites.map(req => `- **${req.name}**: ${req.
 
 ## Learning Path
 
-${learningPath.map((step, index) => `
+${learningPath
+	.map(
+		(step, index) => `
 ### Step ${index + 1}: [${step.title}](./guides/${step.id}.md)
 
 ${step.description}
@@ -445,8 +534,10 @@ ${step.description}
 - **Difficulty**: ${step.difficulty}
 - **Time**: ${step.estimatedTime} minutes
 - **Type**: ${step.type}
-${step.prerequisites ? `- **Prerequisites**: ${step.prerequisites.join(', ')}` : ''}
-`).join('\n')}
+${step.prerequisites ? `- **Prerequisites**: ${step.prerequisites.join(", ")}` : ""}
+`,
+	)
+	.join("\n")}
 
 ## Getting Started
 
@@ -457,34 +548,41 @@ ${step.prerequisites ? `- **Prerequisites**: ${step.prerequisites.join(', ')}` :
 
 ## Interactive Features
 
-${options.interactiveElements.enableCodePlayground ? '- 🖥️ **Code Playground**: Try code examples directly in your browser' : ''}
-${options.interactiveElements.enableProgressBar ? '- 📊 **Progress Tracking**: See your progress through the guide' : ''}
-${options.interactiveElements.enableQuizzes ? '- 🧠 **Knowledge Checks**: Test your understanding with quizzes' : ''}
-${options.interactiveElements.enableFeedback ? '- 💬 **Feedback**: Help us improve this guide with your feedback' : ''}
+${options.interactiveElements.enableCodePlayground ? "- 🖥️ **Code Playground**: Try code examples directly in your browser" : ""}
+${options.interactiveElements.enableProgressBar ? "- 📊 **Progress Tracking**: See your progress through the guide" : ""}
+${options.interactiveElements.enableQuizzes ? "- 🧠 **Knowledge Checks**: Test your understanding with quizzes" : ""}
+${options.interactiveElements.enableFeedback ? "- 💬 **Feedback**: Help us improve this guide with your feedback" : ""}
 
 ## Support
 
-- 💬 [Community Discussions](${options.repository || '#'}/discussions)
-- 🐛 [Report Issues](${options.repository || '#'}/issues)
+- 💬 [Community Discussions](${options.repository || "#"}/discussions)
+- 🐛 [Report Issues](${options.repository || "#"}/issues)
 - 📧 [Contact Support](mailto:support@example.com)
 
 ---
 
 Ready to begin? Start with [Step 1: ${learningPath[0]?.title}](./guides/${learningPath[0]?.id}.md)!
 `;
-  }
+	}
 
-  private generateStepContent(step: LearningStep, options: OnboardingGuideOptions): string {
-    const nextStep = step.nextSteps?.[0] ? `[Next: ${step.nextSteps[0]}](${step.nextSteps[0]}.md)` : '';
-    const prerequisites = step.prerequisites ? step.prerequisites.map(id => `[${id}](${id}.md)`).join(', ') : 'None';
+	private generateStepContent(
+		step: LearningStep,
+		options: OnboardingGuideOptions,
+	): string {
+		const nextStep = step.nextSteps?.[0]
+			? `[Next: ${step.nextSteps[0]}](${step.nextSteps[0]}.md)`
+			: "";
+		const prerequisites = step.prerequisites
+			? step.prerequisites.map((id) => `[${id}](${id}.md)`).join(", ")
+			: "None";
 
-    return `---
+		return `---
 title: ${step.title}
 description: ${step.description}
 type: ${step.type}
 difficulty: ${step.difficulty}
 estimatedTime: ${step.estimatedTime}
-prerequisites: [${step.prerequisites?.join(', ') || ''}]
+prerequisites: [${step.prerequisites?.join(", ") || ""}]
 ---
 
 # ${step.title}
@@ -495,51 +593,57 @@ ${step.description}
 
 **Type**: ${step.type} | **Difficulty**: ${step.difficulty} | **Time**: ${step.estimatedTime} minutes
 
-${step.prerequisites ? `**Prerequisites**: ${prerequisites}` : ''}
+${step.prerequisites ? `**Prerequisites**: ${prerequisites}` : ""}
 
 ## Content
 
-${step.content.markdown || ''}
+${step.content.markdown || ""}
 
-${step.content.codeExamples ? this.generateCodeExamplesSection(step.content.codeExamples) : ''}
+${step.content.codeExamples ? this.generateCodeExamplesSection(step.content.codeExamples) : ""}
 
-${step.content.interactiveDemo ? this.generateInteractiveDemoSection(step.content.interactiveDemo) : ''}
+${step.content.interactiveDemo ? this.generateInteractiveDemoSection(step.content.interactiveDemo) : ""}
 
-${step.content.externalLinks ? this.generateExternalLinksSection(step.content.externalLinks) : ''}
+${step.content.externalLinks ? this.generateExternalLinksSection(step.content.externalLinks) : ""}
 
-${step.validation ? this.generateValidationSection(step.validation) : ''}
+${step.validation ? this.generateValidationSection(step.validation) : ""}
 
 ## What's Next?
 
-${nextStep || 'Congratulations! You\'ve completed this step.'}
+${nextStep || "Congratulations! You've completed this step."}
 
 ---
 
-${options.interactiveElements.enableFeedback ? '**Feedback**: How was this step? [Rate it here](#feedback)' : ''}
+${options.interactiveElements.enableFeedback ? "**Feedback**: How was this step? [Rate it here](#feedback)" : ""}
 `;
-  }
+	}
 
-  private generateCodeExamplesSection(examples: readonly CodeExample[]): string {
-    return `
+	private generateCodeExamplesSection(
+		examples: readonly CodeExample[],
+	): string {
+		return `
 ## Code Examples
 
-${examples.map((example, index) => `
+${examples
+	.map(
+		(example, index) => `
 ### ${example.title || `Example ${index + 1}`}
 
-${example.description || ''}
+${example.description || ""}
 
 \`\`\`${example.language}
 ${example.code}
 \`\`\`
 
-${example.explanation || ''}
+${example.explanation || ""}
 
-${example.runnable ? '> 💡 **Try it yourself**: This example is runnable in the code playground!' : ''}
-`).join('\n')}`;
-  }
+${example.runnable ? "> 💡 **Try it yourself**: This example is runnable in the code playground!" : ""}
+`,
+	)
+	.join("\n")}`;
+	}
 
-  private generateInteractiveDemoSection(demo: InteractiveDemo): string {
-    return `
+	private generateInteractiveDemoSection(demo: InteractiveDemo): string {
+		return `
 ## Interactive Demo
 
 <div class="interactive-demo" data-type="${demo.type}">
@@ -552,51 +656,63 @@ ${example.runnable ? '> 💡 **Try it yourself**: This example is runnable in th
   window.demoConfig = ${JSON.stringify(demo.config)};
 </script>
 `;
-  }
+	}
 
-  private generateExternalLinksSection(links: readonly any[]): string {
-    return `
+	private generateExternalLinksSection(links: readonly any[]): string {
+		return `
 ## Additional Resources
 
-${links.map(link => `- [${link.title}](${link.url}) - ${link.description}`).join('\n')}
+${links.map((link) => `- [${link.title}](${link.url}) - ${link.description}`).join("\n")}
 `;
-  }
+	}
 
-  private generateValidationSection(validation: StepValidation): string {
-    return `
+	private generateValidationSection(validation: StepValidation): string {
+		return `
 ## Validation
 
 Let's check if you've completed this step successfully.
 
 **Validation Type**: ${validation.type}
 
-${validation.type === 'command' ? `
+${
+	validation.type === "command"
+		? `
 Run this command to validate:
 \`\`\`bash
 # Validation command will be shown here
 \`\`\`
-` : ''}
+`
+		: ""
+}
 
-${validation.type === 'quiz' ? `
+${
+	validation.type === "quiz"
+		? `
 **Quick Check**: Answer these questions to validate your understanding.
 
 <div class="validation-quiz">
   <!-- Quiz questions will be loaded here -->
 </div>
-` : ''}
+`
+		: ""
+}
 
 **Success**: ${validation.successMessage}
 **Need Help?**: ${validation.failureMessage}
 
-${validation.hints ? `
+${
+	validation.hints
+		? `
 ### Hints
-${validation.hints.map(hint => `- ${hint}`).join('\n')}
-` : ''}
+${validation.hints.map((hint) => `- ${hint}`).join("\n")}
+`
+		: ""
+}
 `;
-  }
+	}
 
-  private generateCodePlayground(options: OnboardingGuideOptions): string {
-    return `<!DOCTYPE html>
+	private generateCodePlayground(options: OnboardingGuideOptions): string {
+		return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -723,10 +839,12 @@ console.log('Hello, ${options.projectName}!');
     </script>
 </body>
 </html>`;
-  }
+	}
 
-  private generateProgressBarComponent(options: OnboardingGuideOptions): string {
-    return `import React from 'react';
+	private generateProgressBarComponent(
+		options: OnboardingGuideOptions,
+	): string {
+		return `import React from 'react';
 
 interface ProgressBarProps {
   readonly current: number;
@@ -789,10 +907,10 @@ export const ProgressBar = ({ current, total, stepTitle }: ProgressBarProps): JS
     </div>
   );
 };`;
-  }
+	}
 
-  private generateQuizComponent(options: OnboardingGuideOptions): string {
-    return `import React, { useState } from 'react';
+	private generateQuizComponent(options: OnboardingGuideOptions): string {
+		return `import React, { useState } from 'react';
 
 interface QuizQuestion {
   readonly question: string;
@@ -948,10 +1066,10 @@ export const Quiz = ({ questions, onComplete }: QuizProps): JSX.Element => {
     </div>
   );
 };`;
-  }
+	}
 
-  private generateFeedbackComponent(options: OnboardingGuideOptions): string {
-    return `import React, { useState } from 'react';
+	private generateFeedbackComponent(options: OnboardingGuideOptions): string {
+		return `import React, { useState } from 'react';
 
 interface FeedbackProps {
   readonly stepId: string;
@@ -1104,10 +1222,12 @@ export const Feedback = ({ stepId, onSubmit }: FeedbackProps): JSX.Element => {
     </div>
   );
 };`;
-  }
+	}
 
-  private generateProgressTrackingUtil(options: OnboardingGuideOptions): string {
-    return `/**
+	private generateProgressTrackingUtil(
+		options: OnboardingGuideOptions,
+	): string {
+		return `/**
  * Progress Tracking Utility
  * Handles user progress through the onboarding guide
  */
@@ -1252,10 +1372,11 @@ class ProgressTracker {
    * Reset progress
    */
   resetProgress(): void {
-    ${options.progressTracking.persistenceMethod === 'localStorage' 
-      ? 'localStorage.removeItem(this.storageKey);'
-      : 'sessionStorage.removeItem(this.storageKey);'
-    }
+    ${
+			options.progressTracking.persistenceMethod === "localStorage"
+				? "localStorage.removeItem(this.storageKey);"
+				: "sessionStorage.removeItem(this.storageKey);"
+		}
     this.sessionId = this.generateSessionId();
   }
 
@@ -1269,10 +1390,11 @@ class ProgressTracker {
 
   private loadProgress(): UserProgress | null {
     try {
-      const stored = ${options.progressTracking.persistenceMethod === 'localStorage' 
-        ? 'localStorage.getItem(this.storageKey)'
-        : 'sessionStorage.getItem(this.storageKey)'
-      };
+      const stored = ${
+				options.progressTracking.persistenceMethod === "localStorage"
+					? "localStorage.getItem(this.storageKey)"
+					: "sessionStorage.getItem(this.storageKey)"
+			};
       
       if (stored) {
         const progress = JSON.parse(stored);
@@ -1296,10 +1418,11 @@ class ProgressTracker {
 
   private saveProgress(progress: UserProgress): void {
     try {
-      ${options.progressTracking.persistenceMethod === 'localStorage' 
-        ? 'localStorage.setItem(this.storageKey, JSON.stringify(progress));'
-        : 'sessionStorage.setItem(this.storageKey, JSON.stringify(progress));'
-      }
+      ${
+				options.progressTracking.persistenceMethod === "localStorage"
+					? "localStorage.setItem(this.storageKey, JSON.stringify(progress));"
+					: "sessionStorage.setItem(this.storageKey, JSON.stringify(progress));"
+			}
     } catch (error) {
       console.warn('Failed to save progress:', error);
     }
@@ -1324,10 +1447,10 @@ class ProgressTracker {
 }
 
 export const progressTracker = new ProgressTracker();`;
-  }
+	}
 
-  private generateProgressDashboard(options: OnboardingGuideOptions): string {
-    return `import React, { useEffect, useState } from 'react';
+	private generateProgressDashboard(options: OnboardingGuideOptions): string {
+		return `import React, { useEffect, useState } from 'react';
 import { progressTracker, UserProgress } from '../utils/progress';
 
 export const ProgressDashboard = (): JSX.Element => {
@@ -1510,10 +1633,10 @@ export const ProgressDashboard = (): JSX.Element => {
     </div>
   );
 };`;
-  }
+	}
 
-  private generateBadgeSystem(options: OnboardingGuideOptions): string {
-    return `import React, { useEffect, useState } from 'react';
+	private generateBadgeSystem(options: OnboardingGuideOptions): string {
+		return `import React, { useEffect, useState } from 'react';
 import { progressTracker } from '../utils/progress';
 
 interface Badge {
@@ -1766,10 +1889,12 @@ export const BadgeSystem = (): JSX.Element => {
     </div>
   );
 };`;
-  }
+	}
 
-  private generatePersonalizationComponent(options: OnboardingGuideOptions): string {
-    return `import React, { useState, useEffect } from 'react';
+	private generatePersonalizationComponent(
+		options: OnboardingGuideOptions,
+	): string {
+		return `import React, { useState, useEffect } from 'react';
 
 interface PersonalizationData {
   readonly experience: 'beginner' | 'intermediate' | 'advanced';
@@ -2139,10 +2264,10 @@ export const Personalization = ({ onComplete }: PersonalizationProps): JSX.Eleme
     </div>
   );
 };`;
-  }
+	}
 
-  private generatePreferencesUtil(options: OnboardingGuideOptions): string {
-    return `/**
+	private generatePreferencesUtil(options: OnboardingGuideOptions): string {
+		return `/**
  * User Preferences Utility
  * Manages user preferences and personalization data
  */
@@ -2361,10 +2486,10 @@ class PreferencesManager {
 }
 
 export const preferencesManager = new PreferencesManager();`;
-  }
+	}
 
-  private generateAssessmentRunner(options: OnboardingGuideOptions): string {
-    return `import React, { useState } from 'react';
+	private generateAssessmentRunner(options: OnboardingGuideOptions): string {
+		return `import React, { useState } from 'react';
 
 interface Assessment {
   readonly stepId: string;
@@ -2783,203 +2908,225 @@ export const AssessmentRunner = ({ assessment, onComplete, onSkip }: AssessmentR
     </div>
   );
 };`;
-  }
+	}
 
-  private generateStepAssessment(step: LearningStep, options: OnboardingGuideOptions): string {
-    // Generate a sample assessment based on step type and content
-    const assessment = {
-      stepId: step.id,
-      type: step.validation?.type || 'quiz',
-      title: `${step.title} Assessment`,
-      instructions: step.validation?.successMessage || `Verify that you've completed: ${step.title}`,
-    };
+	private generateStepAssessment(
+		step: LearningStep,
+		options: OnboardingGuideOptions,
+	): string {
+		// Generate a sample assessment based on step type and content
+		const assessment = {
+			stepId: step.id,
+			type: step.validation?.type || "quiz",
+			title: `${step.title} Assessment`,
+			instructions:
+				step.validation?.successMessage ||
+				`Verify that you've completed: ${step.title}`,
+		};
 
-    if (step.validation?.type === 'quiz') {
-      // Generate sample quiz questions based on step content
-      assessment.questions = [
-        {
-          question: `What is the main objective of the "${step.title}" step?`,
-          type: 'multiple-choice',
-          options: [
-            step.description,
-            'Learn advanced concepts',
-            'Complete the entire course',
-            'Set up development tools'
-          ],
-          correctAnswer: 0,
-          hint: 'Review the step description for the answer.'
-        }
-      ];
-    }
+		if (step.validation?.type === "quiz") {
+			// Generate sample quiz questions based on step content
+			assessment.questions = [
+				{
+					question: `What is the main objective of the "${step.title}" step?`,
+					type: "multiple-choice",
+					options: [
+						step.description,
+						"Learn advanced concepts",
+						"Complete the entire course",
+						"Set up development tools",
+					],
+					correctAnswer: 0,
+					hint: "Review the step description for the answer.",
+				},
+			];
+		}
 
-    return JSON.stringify(assessment, null, 2);
-  }
+		return JSON.stringify(assessment, null, 2);
+	}
 
-  // Helper methods for analysis and generation
-  private assessComplexity(options: OnboardingGuideOptions): 'low' | 'medium' | 'high' {
-    let complexity = 0;
-    
-    if (options.integrations.length > 3) complexity++;
-    if (options.databases.length > 1) complexity++;
-    if (options.framework) complexity++;
-    if (['microservice', 'fullstack'].includes(options.projectType)) complexity++;
-    
-    if (complexity <= 1) return 'low';
-    if (complexity <= 3) return 'medium';
-    return 'high';
-  }
+	// Helper methods for analysis and generation
+	private assessComplexity(
+		options: OnboardingGuideOptions,
+	): "low" | "medium" | "high" {
+		let complexity = 0;
 
-  private extractTechnologies(options: OnboardingGuideOptions): string[] {
-    const technologies = [options.runtime];
-    
-    if (options.framework) technologies.push(options.framework);
-    technologies.push(...options.databases);
-    technologies.push(...options.integrations);
-    
-    return [...new Set(technologies)];
-  }
+		if (options.integrations.length > 3) complexity++;
+		if (options.databases.length > 1) complexity++;
+		if (options.framework) complexity++;
+		if (["microservice", "fullstack"].includes(options.projectType))
+			complexity++;
 
-  private identifyPatterns(options: OnboardingGuideOptions): string[] {
-    const patterns = [];
-    
-    if (options.projectType === 'microservice') patterns.push('microservices');
-    if (options.integrations.length > 0) patterns.push('integration');
-    if (options.databases.length > 0) patterns.push('data-persistence');
-    
-    return patterns;
-  }
+		if (complexity <= 1) return "low";
+		if (complexity <= 3) return "medium";
+		return "high";
+	}
 
-  private identifyUserTypes(options: OnboardingGuideOptions): string[] {
-    const userTypes = [options.guideType];
-    
-    if (options.targetAudience.length > 0) {
-      userTypes.push(...options.targetAudience);
-    }
-    
-    return [...new Set(userTypes)];
-  }
+	private extractTechnologies(options: OnboardingGuideOptions): string[] {
+		const technologies = [options.runtime];
 
-  private identifyCommonTasks(options: OnboardingGuideOptions): string[] {
-    const tasks = ['setup', 'configuration'];
-    
-    if (options.projectType === 'api') tasks.push('api-testing');
-    if (options.databases.length > 0) tasks.push('database-setup');
-    if (options.integrations.length > 0) tasks.push('integration-setup');
-    
-    return tasks;
-  }
+		if (options.framework) technologies.push(options.framework);
+		technologies.push(...options.databases);
+		technologies.push(...options.integrations);
 
-  private createAdvancedStep(options: OnboardingGuideOptions): LearningStep {
-    return {
-      id: 'advanced-concepts',
-      title: 'Advanced Concepts',
-      description: 'Explore advanced features and best practices',
-      type: 'concept',
-      estimatedTime: 45,
-      difficulty: 'advanced',
-      content: {
-        markdown: `# Advanced ${options.projectName} Concepts\n\nNow that you've mastered the basics, let's explore advanced features.`,
-      },
-    };
-  }
+		return [...new Set(technologies)];
+	}
 
-  private createTechnologyStep(tech: string, options: OnboardingGuideOptions): LearningStep | null {
-    const techSteps: Record<string, Partial<LearningStep>> = {
-      docker: {
-        title: 'Docker Integration',
-        description: 'Learn how to containerize your application',
-        type: 'tutorial',
-        estimatedTime: 30,
-      },
-      kubernetes: {
-        title: 'Kubernetes Deployment',
-        description: 'Deploy your application to Kubernetes',
-        type: 'tutorial',
-        estimatedTime: 45,
-      },
-      redis: {
-        title: 'Redis Caching',
-        description: 'Implement caching with Redis',
-        type: 'tutorial',
-        estimatedTime: 25,
-      },
-    };
+	private identifyPatterns(options: OnboardingGuideOptions): string[] {
+		const patterns = [];
 
-    const stepTemplate = techSteps[tech.toLowerCase()];
-    if (!stepTemplate) return null;
+		if (options.projectType === "microservice") patterns.push("microservices");
+		if (options.integrations.length > 0) patterns.push("integration");
+		if (options.databases.length > 0) patterns.push("data-persistence");
 
-    return {
-      id: `${tech.toLowerCase()}-integration`,
-      difficulty: 'intermediate',
-      content: {
-        markdown: `# ${stepTemplate.title}\n\n${stepTemplate.description}`,
-      },
-      ...stepTemplate,
-    } as LearningStep;
-  }
+		return patterns;
+	}
 
-  private createIntegrationStep(integration: string, options: OnboardingGuideOptions): LearningStep {
-    return {
-      id: `${integration.toLowerCase()}-integration`,
-      title: `${integration} Integration`,
-      description: `Learn how to integrate with ${integration}`,
-      type: 'tutorial',
-      estimatedTime: 35,
-      difficulty: 'intermediate',
-      content: {
-        markdown: `# ${integration} Integration\n\nIntegrate your ${options.projectName} application with ${integration}.`,
-      },
-    };
-  }
+	private identifyUserTypes(options: OnboardingGuideOptions): string[] {
+		const userTypes = [options.guideType];
 
-  private personalizeSteps(steps: LearningStep[], options: OnboardingGuideOptions): LearningStep[] {
-    // This would implement actual personalization logic
-    // For now, return steps as-is
-    return steps;
-  }
+		if (options.targetAudience.length > 0) {
+			userTypes.push(...options.targetAudience);
+		}
 
-  private extractPrerequisites(options: OnboardingGuideOptions): readonly string[] {
-    const prerequisites: Prerequisite[] = [];
-    
-    prerequisites.push({
-      name: options.runtime,
-      description: `${options.runtime} runtime environment`,
-      type: 'tool',
-      required: true,
-    });
+		return [...new Set(userTypes)];
+	}
 
-    if (options.databases.length > 0) {
-      prerequisites.push({
-        name: 'Database',
-        description: `${options.databases[0]} database`,
-        type: 'tool',
-        required: true,
-      });
-    }
+	private identifyCommonTasks(options: OnboardingGuideOptions): string[] {
+		const tasks = ["setup", "configuration"];
 
-    return prerequisites.map(p => p.name);
-  }
+		if (options.projectType === "api") tasks.push("api-testing");
+		if (options.databases.length > 0) tasks.push("database-setup");
+		if (options.integrations.length > 0) tasks.push("integration-setup");
 
-  private countInteractiveElements(learningPath: readonly LearningStep[]): number {
-    return learningPath.reduce((count, step) => {
-      let elementCount = 0;
-      if (step.content.codeExamples?.length) elementCount += step.content.codeExamples.length;
-      if (step.content.interactiveDemo) elementCount += 1;
-      if (step.validation) elementCount += 1;
-      return count + elementCount;
-    }, 0);
-  }
+		return tasks;
+	}
 
-  private generateGuideUrl(options: OnboardingGuideOptions): string {
-    return `${options.outputDir}/onboarding/index.html`;
-  }
+	private createAdvancedStep(options: OnboardingGuideOptions): LearningStep {
+		return {
+			id: "advanced-concepts",
+			title: "Advanced Concepts",
+			description: "Explore advanced features and best practices",
+			type: "concept",
+			estimatedTime: 45,
+			difficulty: "advanced",
+			content: {
+				markdown: `# Advanced ${options.projectName} Concepts\n\nNow that you've mastered the basics, let's explore advanced features.`,
+			},
+		};
+	}
+
+	private createTechnologyStep(
+		tech: string,
+		options: OnboardingGuideOptions,
+	): LearningStep | null {
+		const techSteps: Record<string, Partial<LearningStep>> = {
+			docker: {
+				title: "Docker Integration",
+				description: "Learn how to containerize your application",
+				type: "tutorial",
+				estimatedTime: 30,
+			},
+			kubernetes: {
+				title: "Kubernetes Deployment",
+				description: "Deploy your application to Kubernetes",
+				type: "tutorial",
+				estimatedTime: 45,
+			},
+			redis: {
+				title: "Redis Caching",
+				description: "Implement caching with Redis",
+				type: "tutorial",
+				estimatedTime: 25,
+			},
+		};
+
+		const stepTemplate = techSteps[tech.toLowerCase()];
+		if (!stepTemplate) return null;
+
+		return {
+			id: `${tech.toLowerCase()}-integration`,
+			difficulty: "intermediate",
+			content: {
+				markdown: `# ${stepTemplate.title}\n\n${stepTemplate.description}`,
+			},
+			...stepTemplate,
+		} as LearningStep;
+	}
+
+	private createIntegrationStep(
+		integration: string,
+		options: OnboardingGuideOptions,
+	): LearningStep {
+		return {
+			id: `${integration.toLowerCase()}-integration`,
+			title: `${integration} Integration`,
+			description: `Learn how to integrate with ${integration}`,
+			type: "tutorial",
+			estimatedTime: 35,
+			difficulty: "intermediate",
+			content: {
+				markdown: `# ${integration} Integration\n\nIntegrate your ${options.projectName} application with ${integration}.`,
+			},
+		};
+	}
+
+	private personalizeSteps(
+		steps: LearningStep[],
+		options: OnboardingGuideOptions,
+	): LearningStep[] {
+		// This would implement actual personalization logic
+		// For now, return steps as-is
+		return steps;
+	}
+
+	private extractPrerequisites(
+		options: OnboardingGuideOptions,
+	): readonly string[] {
+		const prerequisites: Prerequisite[] = [];
+
+		prerequisites.push({
+			name: options.runtime,
+			description: `${options.runtime} runtime environment`,
+			type: "tool",
+			required: true,
+		});
+
+		if (options.databases.length > 0) {
+			prerequisites.push({
+				name: "Database",
+				description: `${options.databases[0]} database`,
+				type: "tool",
+				required: true,
+			});
+		}
+
+		return prerequisites.map((p) => p.name);
+	}
+
+	private countInteractiveElements(
+		learningPath: readonly LearningStep[],
+	): number {
+		return learningPath.reduce((count, step) => {
+			let elementCount = 0;
+			if (step.content.codeExamples?.length)
+				elementCount += step.content.codeExamples.length;
+			if (step.content.interactiveDemo) elementCount += 1;
+			if (step.validation) elementCount += 1;
+			return count + elementCount;
+		}, 0);
+	}
+
+	private generateGuideUrl(options: OnboardingGuideOptions): string {
+		return `${options.outputDir}/onboarding/index.html`;
+	}
 }
 
 interface ProjectAnalysis {
-  readonly complexity: 'low' | 'medium' | 'high';
-  readonly technologies: readonly string[];
-  readonly patterns: readonly string[];
-  readonly integrations: readonly string[];
-  readonly userTypes: readonly string[];
-  readonly commonTasks: readonly string[];
+	readonly complexity: "low" | "medium" | "high";
+	readonly technologies: readonly string[];
+	readonly patterns: readonly string[];
+	readonly integrations: readonly string[];
+	readonly userTypes: readonly string[];
+	readonly commonTasks: readonly string[];
 }

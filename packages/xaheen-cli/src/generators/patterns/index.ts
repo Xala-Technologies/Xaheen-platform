@@ -5,55 +5,52 @@
  * @version 2.0.0
  */
 
-// Domain-Driven Design Patterns
-export { DDDPatternGenerator } from "./ddd.generator.js";
 export type {
-	DDDGeneratorOptions,
-	DDDPatternType,
-	DomainField,
-	DomainRelationship,
-	BusinessRule,
-	DomainEventSpec,
-} from "./ddd.generator.js";
-
-// Clean Architecture Patterns
-export { CleanArchitectureGenerator } from "./clean-architecture.generator.js";
-export type {
+	AdapterSpec,
+	CleanArchitectureField,
 	CleanArchitectureGeneratorOptions,
 	CleanArchitectureLayerType,
 	CleanArchitecturePatternType,
-	CleanArchitectureField,
-	UseCaseSpec,
 	InterfaceSpec,
-	AdapterSpec,
+	UseCaseSpec,
 } from "./clean-architecture.generator.js";
-
-// CQRS and Event Sourcing Patterns
-export { CQRSEventSourcingGenerator } from "./cqrs-event-sourcing.generator.js";
+// Clean Architecture Patterns
+export { CleanArchitectureGenerator } from "./clean-architecture.generator.js";
 export type {
+	CommandSpec,
 	CQRSGeneratorOptions,
 	CQRSPatternType,
 	EventSourcingPatternType,
-	CommandSpec,
-	QuerySpec,
 	EventSpec,
 	ProjectionSpec,
+	QuerySpec,
 	SagaSpec,
 } from "./cqrs-event-sourcing.generator.js";
-
-// Dependency Injection and Adapter Patterns
-export { DependencyInjectionGenerator } from "./dependency-injection.generator.js";
+// CQRS and Event Sourcing Patterns
+export { CQRSEventSourcingGenerator } from "./cqrs-event-sourcing.generator.js";
 export type {
+	BusinessRule,
+	DDDGeneratorOptions,
+	DDDPatternType,
+	DomainEventSpec,
+	DomainField,
+	DomainRelationship,
+} from "./ddd.generator.js";
+// Domain-Driven Design Patterns
+export { DDDPatternGenerator } from "./ddd.generator.js";
+export type {
+	AdapterDefinition,
+	AdapterPatternType,
+	DecoratorDefinition,
 	DIGeneratorOptions,
 	DIPatternType,
-	AdapterPatternType,
-	ServiceDefinition,
-	AdapterDefinition,
-	ProviderDefinition,
-	DecoratorDefinition,
 	InterceptorDefinition,
 	MiddlewareDefinition,
+	ProviderDefinition,
+	ServiceDefinition,
 } from "./dependency-injection.generator.js";
+// Dependency Injection and Adapter Patterns
+export { DependencyInjectionGenerator } from "./dependency-injection.generator.js";
 
 /**
  * Pattern Generator Registry

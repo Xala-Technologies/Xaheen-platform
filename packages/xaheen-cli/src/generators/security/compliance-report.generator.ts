@@ -20,11 +20,11 @@
 import { consola } from "consola";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
-import type { GeneratorOptions } from "../types";
 import {
-	nsmClassifier,
 	type NSMClassification,
+	nsmClassifier,
 } from "../../services/compliance/nsm-classifier";
+import type { GeneratorOptions } from "../types";
 
 export interface ComplianceReportOptions extends GeneratorOptions {
 	readonly projectPath?: string;
@@ -41,22 +41,22 @@ export interface ComplianceReportOptions extends GeneratorOptions {
 	readonly generateActionPlan?: boolean;
 }
 
-export type ComplianceStandard = 
-	| "gdpr" 
-	| "nsm" 
-	| "pci-dss" 
-	| "soc2" 
-	| "iso27001" 
-	| "hipaa" 
-	| "nist" 
+export type ComplianceStandard =
+	| "gdpr"
+	| "nsm"
+	| "pci-dss"
+	| "soc2"
+	| "iso27001"
+	| "hipaa"
+	| "nist"
 	| "owasp";
 
-export type GDPRLawfulBasis = 
-	| "consent" 
-	| "contract" 
-	| "legal-obligation" 
-	| "vital-interests" 
-	| "public-task" 
+export type GDPRLawfulBasis =
+	| "consent"
+	| "contract"
+	| "legal-obligation"
+	| "vital-interests"
+	| "public-task"
 	| "legitimate-interests";
 
 export interface ComplianceReportResult {
@@ -90,7 +90,11 @@ export interface ControlResult {
 	readonly controlId: string;
 	readonly name: string;
 	readonly description: string;
-	readonly status: "implemented" | "partial" | "not-implemented" | "not-applicable";
+	readonly status:
+		| "implemented"
+		| "partial"
+		| "not-implemented"
+		| "not-applicable";
 	readonly maturityLevel: 1 | 2 | 3 | 4 | 5;
 	readonly implementation: string;
 	readonly evidence: readonly string[];
@@ -166,7 +170,12 @@ export interface ComplianceRecommendation {
 	readonly id: string;
 	readonly title: string;
 	readonly description: string;
-	readonly category: "governance" | "technical" | "process" | "training" | "documentation";
+	readonly category:
+		| "governance"
+		| "technical"
+		| "process"
+		| "training"
+		| "documentation";
 	readonly priority: "low" | "medium" | "high" | "critical";
 	readonly impact: string;
 	readonly effort: "low" | "medium" | "high";
@@ -187,7 +196,12 @@ export interface AuditEvent {
 export interface ComplianceEvidence {
 	readonly id: string;
 	readonly controlId: string;
-	readonly type: "document" | "screenshot" | "configuration" | "log" | "certificate";
+	readonly type:
+		| "document"
+		| "screenshot"
+		| "configuration"
+		| "log"
+		| "certificate";
 	readonly name: string;
 	readonly description: string;
 	readonly filePath?: string;
@@ -248,7 +262,8 @@ export class ComplianceReportGenerator {
 	constructor(options: ComplianceReportOptions) {
 		this.options = options;
 		this.projectPath = options.projectPath || process.cwd();
-		this.outputPath = options.outputDir || join(this.projectPath, "compliance-reports");
+		this.outputPath =
+			options.outputDir || join(this.projectPath, "compliance-reports");
 	}
 
 	/**
@@ -289,8 +304,10 @@ export class ComplianceReportGenerator {
 
 			// Assess compliance for each standard
 			const standards = this.options.standards || ["gdpr", "nsm", "owasp"];
-			consola.info(`📋 Assessing compliance for ${standards.length} standards...`);
-			
+			consola.info(
+				`📋 Assessing compliance for ${standards.length} standards...`,
+			);
+
 			for (const standard of standards) {
 				const standardResult = await this.assessStandardCompliance(standard);
 				reportResult.standardsResults.push(standardResult);
@@ -299,26 +316,37 @@ export class ComplianceReportGenerator {
 			// Perform gap analysis
 			if (this.options.includeGaps !== false) {
 				consola.info("🔍 Performing gap analysis...");
-				reportResult.gapAnalysis = await this.performGapAnalysis(reportResult.standardsResults);
+				reportResult.gapAnalysis = await this.performGapAnalysis(
+					reportResult.standardsResults,
+				);
 			}
 
 			// Generate remediation plan
 			if (this.options.includeRemediation !== false) {
 				consola.info("🛠️  Generating remediation plan...");
-				reportResult.remediationPlan = await this.generateRemediationPlan(reportResult.gapAnalysis);
+				reportResult.remediationPlan = await this.generateRemediationPlan(
+					reportResult.gapAnalysis,
+				);
 			}
 
 			// Calculate metrics
 			if (this.options.includeMetrics !== false) {
-				reportResult.metrics = this.calculateComplianceMetrics(reportResult.standardsResults);
+				reportResult.metrics = this.calculateComplianceMetrics(
+					reportResult.standardsResults,
+				);
 			}
 
 			// Generate recommendations
-			reportResult.recommendations = this.generateComplianceRecommendations(reportResult);
+			reportResult.recommendations =
+				this.generateComplianceRecommendations(reportResult);
 
 			// Calculate overall score and status
-			reportResult.overallScore = this.calculateOverallScore(reportResult.standardsResults);
-			reportResult.complianceStatus = this.determineComplianceStatus(reportResult.overallScore);
+			reportResult.overallScore = this.calculateOverallScore(
+				reportResult.standardsResults,
+			);
+			reportResult.complianceStatus = this.determineComplianceStatus(
+				reportResult.overallScore,
+			);
 
 			// Generate audit trail
 			reportResult.auditTrail = this.generateAuditTrail();
@@ -326,7 +354,8 @@ export class ComplianceReportGenerator {
 			// Generate dashboard data
 			if (this.options.includeDashboard !== false) {
 				consola.info("📈 Generating compliance dashboard...");
-				reportResult.dashboardData = await this.generateDashboardData(reportResult);
+				reportResult.dashboardData =
+					await this.generateDashboardData(reportResult);
 			}
 
 			// Generate reports in requested formats
@@ -393,20 +422,31 @@ export class ComplianceReportGenerator {
 
 		const controlsResults = await this.assessControls(standard);
 		const evidence = await this.collectEvidence(standard);
-		
+
 		const totalControls = controlsResults.length;
-		const implementedControls = controlsResults.filter(c => c.status === "implemented").length;
-		const partialControls = controlsResults.filter(c => c.status === "partial").length;
-		
+		const implementedControls = controlsResults.filter(
+			(c) => c.status === "implemented",
+		).length;
+		const partialControls = controlsResults.filter(
+			(c) => c.status === "partial",
+		).length;
+
 		const score = Math.round(
-			((implementedControls * 1.0 + partialControls * 0.5) / totalControls) * 100
+			((implementedControls * 1.0 + partialControls * 0.5) / totalControls) *
+				100,
 		);
 
-		const status: "compliant" | "non-compliant" | "partial" = 
+		const status: "compliant" | "non-compliant" | "partial" =
 			score >= 90 ? "compliant" : score >= 70 ? "partial" : "non-compliant";
 
-		const riskLevel: "low" | "medium" | "high" | "critical" = 
-			score >= 80 ? "low" : score >= 60 ? "medium" : score >= 40 ? "high" : "critical";
+		const riskLevel: "low" | "medium" | "high" | "critical" =
+			score >= 80
+				? "low"
+				: score >= 60
+					? "medium"
+					: score >= 40
+						? "high"
+						: "critical";
 
 		return {
 			standard,
@@ -424,27 +464,29 @@ export class ComplianceReportGenerator {
 	/**
 	 * Assess controls for a specific standard
 	 */
-	private async assessControls(standard: ComplianceStandard): Promise<readonly ControlResult[]> {
+	private async assessControls(
+		standard: ComplianceStandard,
+	): Promise<readonly ControlResult[]> {
 		const controls: ControlResult[] = [];
 
 		switch (standard) {
 			case "gdpr":
-				controls.push(...await this.assessGDPRControls());
+				controls.push(...(await this.assessGDPRControls()));
 				break;
 			case "nsm":
-				controls.push(...await this.assessNSMControls());
+				controls.push(...(await this.assessNSMControls()));
 				break;
 			case "owasp":
-				controls.push(...await this.assessOWASPControls());
+				controls.push(...(await this.assessOWASPControls()));
 				break;
 			case "pci-dss":
-				controls.push(...await this.assessPCIDSSControls());
+				controls.push(...(await this.assessPCIDSSControls()));
 				break;
 			case "soc2":
-				controls.push(...await this.assessSOC2Controls());
+				controls.push(...(await this.assessSOC2Controls()));
 				break;
 			case "iso27001":
-				controls.push(...await this.assessISO27001Controls());
+				controls.push(...(await this.assessISO27001Controls()));
 				break;
 			default:
 				consola.warn(`Assessment not implemented for standard: ${standard}`);
@@ -464,12 +506,18 @@ export class ComplianceReportGenerator {
 			controlId: "GDPR-7.1",
 			name: "Consent Management",
 			description: "Implement valid consent collection and management system",
-			status: await this.checkGDPRConsent() ? "implemented" : "not-implemented",
+			status: (await this.checkGDPRConsent())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: 3,
 			implementation: "Consent management system with clear opt-in/opt-out",
 			evidence: ["consent-forms.html", "privacy-policy.pdf"],
-			gaps: await this.checkGDPRConsent() ? [] : ["No consent management system found"],
-			recommendedActions: await this.checkGDPRConsent() ? [] : ["Implement consent management UI components"],
+			gaps: (await this.checkGDPRConsent())
+				? []
+				: ["No consent management system found"],
+			recommendedActions: (await this.checkGDPRConsent())
+				? []
+				: ["Implement consent management UI components"],
 			priority: "high",
 			effort: "medium",
 			timeline: "4-6 weeks",
@@ -480,12 +528,18 @@ export class ComplianceReportGenerator {
 			controlId: "GDPR-17",
 			name: "Right to Erasure",
 			description: "Implement data deletion capabilities for data subjects",
-			status: await this.checkDataDeletion() ? "implemented" : "not-implemented",
+			status: (await this.checkDataDeletion())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: 2,
 			implementation: "API endpoints for data deletion with cascading rules",
 			evidence: ["api-documentation.md"],
-			gaps: await this.checkDataDeletion() ? [] : ["No data deletion API found"],
-			recommendedActions: await this.checkDataDeletion() ? [] : ["Create data deletion API endpoints"],
+			gaps: (await this.checkDataDeletion())
+				? []
+				: ["No data deletion API found"],
+			recommendedActions: (await this.checkDataDeletion())
+				? []
+				: ["Create data deletion API endpoints"],
 			priority: "high",
 			effort: "high",
 			timeline: "6-8 weeks",
@@ -496,12 +550,20 @@ export class ComplianceReportGenerator {
 			controlId: "GDPR-25",
 			name: "Privacy by Design",
 			description: "Implement privacy by design and default principles",
-			status: await this.checkPrivacyByDesign() ? "partial" : "not-implemented",
+			status: (await this.checkPrivacyByDesign())
+				? "partial"
+				: "not-implemented",
 			maturityLevel: 2,
 			implementation: "Some privacy controls, needs comprehensive review",
 			evidence: ["architecture-docs.md"],
-			gaps: ["Missing privacy impact assessments", "No data minimization controls"],
-			recommendedActions: ["Conduct privacy impact assessment", "Implement data minimization"],
+			gaps: [
+				"Missing privacy impact assessments",
+				"No data minimization controls",
+			],
+			recommendedActions: [
+				"Conduct privacy impact assessment",
+				"Implement data minimization",
+			],
 			priority: "medium",
 			effort: "high",
 			timeline: "8-12 weeks",
@@ -511,8 +573,9 @@ export class ComplianceReportGenerator {
 		controls.push({
 			controlId: "GDPR-32",
 			name: "Security of Processing",
-			description: "Implement appropriate technical and organizational measures",
-			status: await this.checkSecurityMeasures() ? "implemented" : "partial",
+			description:
+				"Implement appropriate technical and organizational measures",
+			status: (await this.checkSecurityMeasures()) ? "implemented" : "partial",
 			maturityLevel: 4,
 			implementation: "Encryption, access controls, and security monitoring",
 			evidence: ["security-config.json", "audit-logs/"],
@@ -548,12 +611,19 @@ export class ComplianceReportGenerator {
 			controlId: "NSM-CL1",
 			name: "Classification Marking",
 			description: `Implement ${classification} classification marking`,
-			status: await this.checkClassificationMarking() ? "implemented" : "not-implemented",
+			status: (await this.checkClassificationMarking())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: metadata.maturityLevel || 3,
-			implementation: "UI components with classification banners and watermarks",
+			implementation:
+				"UI components with classification banners and watermarks",
 			evidence: ["classification-components/"],
-			gaps: await this.checkClassificationMarking() ? [] : ["No classification marking found"],
-			recommendedActions: await this.checkClassificationMarking() ? [] : ["Generate NSM classification components"],
+			gaps: (await this.checkClassificationMarking())
+				? []
+				: ["No classification marking found"],
+			recommendedActions: (await this.checkClassificationMarking())
+				? []
+				: ["Generate NSM classification components"],
 			priority: "critical",
 			effort: "medium",
 			timeline: "2-3 weeks",
@@ -564,12 +634,18 @@ export class ComplianceReportGenerator {
 			controlId: "NSM-AC1",
 			name: "Access Control",
 			description: "Implement clearance-based access control",
-			status: await this.checkAccessControl() ? "implemented" : "not-implemented",
+			status: (await this.checkAccessControl())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: metadata.maturityLevel || 3,
 			implementation: "Role-based access control with clearance validation",
 			evidence: ["access-control-config.json"],
-			gaps: await this.checkAccessControl() ? [] : ["No clearance-based access control"],
-			recommendedActions: await this.checkAccessControl() ? [] : ["Implement NSM access control system"],
+			gaps: (await this.checkAccessControl())
+				? []
+				: ["No clearance-based access control"],
+			recommendedActions: (await this.checkAccessControl())
+				? []
+				: ["Implement NSM access control system"],
 			priority: "critical",
 			effort: "high",
 			timeline: "4-6 weeks",
@@ -580,12 +656,17 @@ export class ComplianceReportGenerator {
 			controlId: "NSM-AU1",
 			name: "Audit Logging",
 			description: "Implement comprehensive audit logging",
-			status: await this.checkAuditLogging() ? "implemented" : "not-implemented",
+			status: (await this.checkAuditLogging())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: metadata.maturityLevel || 3,
-			implementation: "Detailed audit trails for all data access and modifications",
+			implementation:
+				"Detailed audit trails for all data access and modifications",
 			evidence: ["audit-logs/", "audit-config.json"],
-			gaps: await this.checkAuditLogging() ? [] : ["No audit logging system"],
-			recommendedActions: await this.checkAuditLogging() ? [] : ["Implement NSM audit logging"],
+			gaps: (await this.checkAuditLogging()) ? [] : ["No audit logging system"],
+			recommendedActions: (await this.checkAuditLogging())
+				? []
+				: ["Implement NSM audit logging"],
 			priority: "high",
 			effort: "medium",
 			timeline: "3-4 weeks",
@@ -605,12 +686,16 @@ export class ComplianceReportGenerator {
 			controlId: "OWASP-A01",
 			name: "Access Control",
 			description: "Prevent broken access control vulnerabilities",
-			status: await this.checkAccessControl() ? "implemented" : "partial",
+			status: (await this.checkAccessControl()) ? "implemented" : "partial",
 			maturityLevel: 3,
-			implementation: "Role-based access control with proper authorization checks",
+			implementation:
+				"Role-based access control with proper authorization checks",
 			evidence: ["auth-middleware.ts", "access-control-tests.js"],
 			gaps: ["Need to review all API endpoints for authorization"],
-			recommendedActions: ["Audit all API endpoints", "Implement centralized authorization"],
+			recommendedActions: [
+				"Audit all API endpoints",
+				"Implement centralized authorization",
+			],
 			priority: "high",
 			effort: "medium",
 			timeline: "4-5 weeks",
@@ -621,12 +706,18 @@ export class ComplianceReportGenerator {
 			controlId: "OWASP-A02",
 			name: "Cryptographic Security",
 			description: "Implement proper cryptographic controls",
-			status: await this.checkCryptography() ? "implemented" : "not-implemented",
+			status: (await this.checkCryptography())
+				? "implemented"
+				: "not-implemented",
 			maturityLevel: 4,
 			implementation: "Strong encryption for data at rest and in transit",
 			evidence: ["encryption-config.json", "tls-config.js"],
-			gaps: await this.checkCryptography() ? [] : ["No encryption implementation found"],
-			recommendedActions: await this.checkCryptography() ? [] : ["Implement encryption for sensitive data"],
+			gaps: (await this.checkCryptography())
+				? []
+				: ["No encryption implementation found"],
+			recommendedActions: (await this.checkCryptography())
+				? []
+				: ["Implement encryption for sensitive data"],
 			priority: "high",
 			effort: "high",
 			timeline: "6-8 weeks",
@@ -637,12 +728,17 @@ export class ComplianceReportGenerator {
 			controlId: "OWASP-A03",
 			name: "Injection Prevention",
 			description: "Prevent injection attacks (SQL, NoSQL, XSS, etc.)",
-			status: await this.checkInjectionPrevention() ? "implemented" : "partial",
+			status: (await this.checkInjectionPrevention())
+				? "implemented"
+				: "partial",
 			maturityLevel: 3,
 			implementation: "Input validation and parameterized queries",
 			evidence: ["validation-middleware.ts", "sanitization-utils.js"],
 			gaps: ["Need comprehensive input validation review"],
-			recommendedActions: ["Review all user inputs", "Implement comprehensive sanitization"],
+			recommendedActions: [
+				"Review all user inputs",
+				"Implement comprehensive sanitization",
+			],
 			priority: "high",
 			effort: "medium",
 			timeline: "3-4 weeks",
@@ -678,7 +774,9 @@ export class ComplianceReportGenerator {
 	/**
 	 * Collect evidence for compliance standard
 	 */
-	private async collectEvidence(standard: ComplianceStandard): Promise<readonly ComplianceEvidence[]> {
+	private async collectEvidence(
+		standard: ComplianceStandard,
+	): Promise<readonly ComplianceEvidence[]> {
 		const evidence: ComplianceEvidence[] = [];
 
 		// Collect common evidence files
@@ -721,7 +819,10 @@ export class ComplianceReportGenerator {
 
 		for (const standardResult of standardsResults) {
 			for (const control of standardResult.controlsResults) {
-				if (control.status === "not-implemented" || control.status === "partial") {
+				if (
+					control.status === "not-implemented" ||
+					control.status === "partial"
+				) {
 					const gap: ComplianceGap = {
 						id: `gap-${gaps.length + 1}`,
 						standard: standardResult.standard,
@@ -766,7 +867,9 @@ export class ComplianceReportGenerator {
 				status: "not-started",
 				dependencies: gap.dependencies,
 				milestones: this.generateMilestones(gap),
-				acceptanceCriteria: [`Control ${gap.controlId} is fully implemented and tested`],
+				acceptanceCriteria: [
+					`Control ${gap.controlId} is fully implemented and tested`,
+				],
 			};
 
 			actions.push(action);
@@ -798,21 +901,27 @@ export class ComplianceReportGenerator {
 					{
 						id: "milestone-1",
 						name: "Design and Planning",
-						dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 7 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
 						deliverables: ["Technical design", "Implementation plan"],
 					},
 					{
 						id: "milestone-2",
 						name: "Implementation",
-						dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 21 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
 						deliverables: ["Code implementation", "Unit tests"],
 					},
 					{
 						id: "milestone-3",
 						name: "Validation and Documentation",
-						dueDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 28 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
 						deliverables: ["Integration testing", "Documentation", "Review"],
 					},
@@ -824,30 +933,50 @@ export class ComplianceReportGenerator {
 					{
 						id: "milestone-1",
 						name: "Architecture and Design",
-						dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 14 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
-						deliverables: ["Architecture review", "Detailed design", "Resource planning"],
+						deliverables: [
+							"Architecture review",
+							"Detailed design",
+							"Resource planning",
+						],
 					},
 					{
 						id: "milestone-2",
 						name: "Core Implementation",
-						dueDate: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 35 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
 						deliverables: ["Core functionality", "Unit tests", "Code review"],
 					},
 					{
 						id: "milestone-3",
 						name: "Integration and Testing",
-						dueDate: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 49 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
-						deliverables: ["Integration testing", "Security testing", "Performance testing"],
+						deliverables: [
+							"Integration testing",
+							"Security testing",
+							"Performance testing",
+						],
 					},
 					{
 						id: "milestone-4",
 						name: "Deployment and Validation",
-						dueDate: new Date(Date.now() + 56 * 24 * 60 * 60 * 1000).toISOString(),
+						dueDate: new Date(
+							Date.now() + 56 * 24 * 60 * 60 * 1000,
+						).toISOString(),
 						status: "not-started",
-						deliverables: ["Deployment", "User acceptance testing", "Final documentation"],
+						deliverables: [
+							"Deployment",
+							"User acceptance testing",
+							"Final documentation",
+						],
 					},
 				);
 				break;
@@ -862,47 +991,60 @@ export class ComplianceReportGenerator {
 	private calculateComplianceMetrics(
 		standardsResults: readonly StandardComplianceResult[],
 	): ComplianceMetrics {
-		const allControls = standardsResults.flatMap(s => s.controlsResults);
-		
+		const allControls = standardsResults.flatMap((s) => s.controlsResults);
+
 		const totalControls = allControls.length;
-		const implementedControls = allControls.filter(c => c.status === "implemented").length;
-		const partialControls = allControls.filter(c => c.status === "partial").length;
-		const notImplementedControls = allControls.filter(c => c.status === "not-implemented").length;
-		
-		const compliancePercentage = totalControls > 0 
-			? Math.round(((implementedControls + partialControls * 0.5) / totalControls) * 100)
-			: 100;
+		const implementedControls = allControls.filter(
+			(c) => c.status === "implemented",
+		).length;
+		const partialControls = allControls.filter(
+			(c) => c.status === "partial",
+		).length;
+		const notImplementedControls = allControls.filter(
+			(c) => c.status === "not-implemented",
+		).length;
+
+		const compliancePercentage =
+			totalControls > 0
+				? Math.round(
+						((implementedControls + partialControls * 0.5) / totalControls) *
+							100,
+					)
+				: 100;
 
 		const riskScore = allControls.reduce((sum, control) => {
 			const riskWeight = {
-				"critical": 4,
-				"high": 3,
-				"medium": 2,
-				"low": 1,
+				critical: 4,
+				high: 3,
+				medium: 2,
+				low: 1,
 			}[control.priority];
 
 			const implementationScore = {
-				"implemented": 0,
-				"partial": 0.5,
+				implemented: 0,
+				partial: 0.5,
 				"not-implemented": 1,
 				"not-applicable": 0,
 			}[control.status];
 
-			return sum + (riskWeight * implementationScore);
+			return sum + riskWeight * implementationScore;
 		}, 0);
 
-		const gapCount = allControls.filter(c => 
-			c.status === "not-implemented" || c.status === "partial"
+		const gapCount = allControls.filter(
+			(c) => c.status === "not-implemented" || c.status === "partial",
 		).length;
 
-		const highRiskGaps = allControls.filter(c => 
-			(c.status === "not-implemented" || c.status === "partial") && 
-			(c.priority === "high" || c.priority === "critical")
+		const highRiskGaps = allControls.filter(
+			(c) =>
+				(c.status === "not-implemented" || c.status === "partial") &&
+				(c.priority === "high" || c.priority === "critical"),
 		).length;
 
-		const averageMaturityLevel = totalControls > 0
-			? allControls.reduce((sum, c) => sum + c.maturityLevel, 0) / totalControls
-			: 0;
+		const averageMaturityLevel =
+			totalControls > 0
+				? allControls.reduce((sum, c) => sum + c.maturityLevel, 0) /
+					totalControls
+				: 0;
 
 		// Generate trend data (placeholder - would come from historical data)
 		const trendsData: TrendDataPoint[] = [
@@ -949,8 +1091,8 @@ export class ComplianceReportGenerator {
 		const recommendations: ComplianceRecommendation[] = [];
 
 		// High-priority gaps recommendation
-		const highPriorityGaps = reportResult.gapAnalysis.filter(g => 
-			g.impact === "high" || g.impact === "critical"
+		const highPriorityGaps = reportResult.gapAnalysis.filter(
+			(g) => g.impact === "high" || g.impact === "critical",
 		);
 
 		if (highPriorityGaps.length > 0) {
@@ -960,18 +1102,19 @@ export class ComplianceReportGenerator {
 				description: `${highPriorityGaps.length} high or critical priority gaps require immediate attention`,
 				category: "governance",
 				priority: "critical",
-				impact: "Reduces regulatory risk and improves overall compliance posture",
+				impact:
+					"Reduces regulatory risk and improves overall compliance posture",
 				effort: "high",
 				timeline: "1-3 months",
 				expectedBenefit: "Significant reduction in compliance risk",
-				standards: [...new Set(highPriorityGaps.map(g => g.standard))],
+				standards: [...new Set(highPriorityGaps.map((g) => g.standard))],
 			});
 		}
 
 		// Low maturity controls recommendation
 		const lowMaturityControls = reportResult.standardsResults
-			.flatMap(s => s.controlsResults)
-			.filter(c => c.maturityLevel <= 2);
+			.flatMap((s) => s.controlsResults)
+			.filter((c) => c.maturityLevel <= 2);
 
 		if (lowMaturityControls.length > 0) {
 			recommendations.push({
@@ -984,14 +1127,16 @@ export class ComplianceReportGenerator {
 				effort: "medium",
 				timeline: "3-6 months",
 				expectedBenefit: "More robust and reliable compliance controls",
-				standards: [...new Set(reportResult.standardsResults.map(s => s.standard))],
+				standards: [
+					...new Set(reportResult.standardsResults.map((s) => s.standard)),
+				],
 			});
 		}
 
 		// Documentation recommendation
 		const controlsWithoutEvidence = reportResult.standardsResults
-			.flatMap(s => s.controlsResults)
-			.filter(c => c.evidence.length === 0);
+			.flatMap((s) => s.controlsResults)
+			.filter((c) => c.evidence.length === 0);
 
 		if (controlsWithoutEvidence.length > 0) {
 			recommendations.push({
@@ -1004,7 +1149,9 @@ export class ComplianceReportGenerator {
 				effort: "low",
 				timeline: "1-2 months",
 				expectedBenefit: "Improved audit outcomes and compliance demonstration",
-				standards: [...new Set(reportResult.standardsResults.map(s => s.standard))],
+				standards: [
+					...new Set(reportResult.standardsResults.map((s) => s.standard)),
+				],
 			});
 		}
 
@@ -1013,14 +1160,18 @@ export class ComplianceReportGenerator {
 			recommendations.push({
 				id: "rec-4",
 				title: "Implement Compliance Automation",
-				description: "Automate compliance monitoring and reporting to improve efficiency",
+				description:
+					"Automate compliance monitoring and reporting to improve efficiency",
 				category: "technical",
 				priority: "medium",
 				impact: "Reduces manual effort and improves compliance consistency",
 				effort: "high",
 				timeline: "3-6 months",
-				expectedBenefit: "Continuous compliance monitoring and reduced manual overhead",
-				standards: [...new Set(reportResult.standardsResults.map(s => s.standard))],
+				expectedBenefit:
+					"Continuous compliance monitoring and reduced manual overhead",
+				standards: [
+					...new Set(reportResult.standardsResults.map((s) => s.standard)),
+				],
 			});
 		}
 
@@ -1037,17 +1188,22 @@ export class ComplianceReportGenerator {
 			overallScore: reportResult.overallScore,
 			complianceStatus: reportResult.complianceStatus,
 			totalStandards: reportResult.standardsResults.length,
-			compliantStandards: reportResult.standardsResults.filter(s => s.status === "compliant").length,
-			totalGaps: reportResult.gapAnalysis.length,
-			highPriorityGaps: reportResult.gapAnalysis.filter(g => 
-				g.impact === "high" || g.impact === "critical"
+			compliantStandards: reportResult.standardsResults.filter(
+				(s) => s.status === "compliant",
 			).length,
-			overdueActions: reportResult.remediationPlan.filter(a => 
-				new Date(a.timeline) < new Date()
+			totalGaps: reportResult.gapAnalysis.length,
+			highPriorityGaps: reportResult.gapAnalysis.filter(
+				(g) => g.impact === "high" || g.impact === "critical",
+			).length,
+			overdueActions: reportResult.remediationPlan.filter(
+				(a) => new Date(a.timeline) < new Date(),
 			).length,
 			nextDeadline: reportResult.remediationPlan
-				.filter(a => new Date(a.timeline) > new Date())
-				.sort((a, b) => new Date(a.timeline).getTime() - new Date(b.timeline).getTime())[0]?.timeline,
+				.filter((a) => new Date(a.timeline) > new Date())
+				.sort(
+					(a, b) =>
+						new Date(a.timeline).getTime() - new Date(b.timeline).getTime(),
+				)[0]?.timeline,
 		};
 
 		const charts: DashboardChart[] = [
@@ -1069,8 +1225,10 @@ export class ComplianceReportGenerator {
 				title: "Standards Compliance",
 				type: "bar",
 				data: {
-					labels: reportResult.standardsResults.map(s => s.standard.toUpperCase()),
-					values: reportResult.standardsResults.map(s => s.score),
+					labels: reportResult.standardsResults.map((s) =>
+						s.standard.toUpperCase(),
+					),
+					values: reportResult.standardsResults.map((s) => s.score),
 				},
 				config: {
 					color: "#3b82f6",
@@ -1083,10 +1241,12 @@ export class ComplianceReportGenerator {
 				data: {
 					labels: ["Critical", "High", "Medium", "Low"],
 					values: [
-						reportResult.gapAnalysis.filter(g => g.impact === "critical").length,
-						reportResult.gapAnalysis.filter(g => g.impact === "high").length,
-						reportResult.gapAnalysis.filter(g => g.impact === "medium").length,
-						reportResult.gapAnalysis.filter(g => g.impact === "low").length,
+						reportResult.gapAnalysis.filter((g) => g.impact === "critical")
+							.length,
+						reportResult.gapAnalysis.filter((g) => g.impact === "high").length,
+						reportResult.gapAnalysis.filter((g) => g.impact === "medium")
+							.length,
+						reportResult.gapAnalysis.filter((g) => g.impact === "low").length,
 					],
 				},
 				config: {
@@ -1098,16 +1258,20 @@ export class ComplianceReportGenerator {
 				title: "Compliance Trends",
 				type: "line",
 				data: {
-					labels: reportResult.metrics.trendsData.map(t => new Date(t.date).toLocaleDateString()),
+					labels: reportResult.metrics.trendsData.map((t) =>
+						new Date(t.date).toLocaleDateString(),
+					),
 					datasets: [
 						{
 							label: "Compliance Score",
-							data: reportResult.metrics.trendsData.map(t => t.complianceScore),
+							data: reportResult.metrics.trendsData.map(
+								(t) => t.complianceScore,
+							),
 							color: "#10b981",
 						},
 						{
 							label: "Gap Count",
-							data: reportResult.metrics.trendsData.map(t => t.gapCount),
+							data: reportResult.metrics.trendsData.map((t) => t.gapCount),
 							color: "#ef4444",
 						},
 					],
@@ -1134,9 +1298,9 @@ export class ComplianceReportGenerator {
 				type: "list",
 				data: {
 					items: reportResult.gapAnalysis
-						.filter(g => g.impact === "high" || g.impact === "critical")
+						.filter((g) => g.impact === "high" || g.impact === "critical")
 						.slice(0, 5)
-						.map(g => ({
+						.map((g) => ({
 							title: g.title,
 							subtitle: g.standard.toUpperCase(),
 							status: g.impact,
@@ -1149,7 +1313,9 @@ export class ComplianceReportGenerator {
 				title: "Remediation Progress",
 				type: "progress",
 				data: {
-					completed: reportResult.remediationPlan.filter(a => a.status === "completed").length,
+					completed: reportResult.remediationPlan.filter(
+						(a) => a.status === "completed",
+					).length,
 					total: reportResult.remediationPlan.length,
 				},
 				size: "small",
@@ -1159,7 +1325,9 @@ export class ComplianceReportGenerator {
 		const alerts: ComplianceAlert[] = [];
 
 		// Generate alerts for high-priority issues
-		const criticalGaps = reportResult.gapAnalysis.filter(g => g.impact === "critical");
+		const criticalGaps = reportResult.gapAnalysis.filter(
+			(g) => g.impact === "critical",
+		);
 		if (criticalGaps.length > 0) {
 			alerts.push({
 				id: "alert-critical-gaps",
@@ -1172,8 +1340,8 @@ export class ComplianceReportGenerator {
 		}
 
 		// Generate alerts for overdue actions
-		const overdueActions = reportResult.remediationPlan.filter(a => 
-			new Date(a.timeline) < new Date()
+		const overdueActions = reportResult.remediationPlan.filter(
+			(a) => new Date(a.timeline) < new Date(),
 		);
 		if (overdueActions.length > 0) {
 			alerts.push({
@@ -1197,10 +1365,13 @@ export class ComplianceReportGenerator {
 	/**
 	 * Generate reports in various formats
 	 */
-	private async generateReports(reportResult: ComplianceReportResult): Promise<void> {
-		const formats = this.options.outputFormat === "all" 
-			? ["json", "html", "pdf"] 
-			: [this.options.outputFormat || "json"];
+	private async generateReports(
+		reportResult: ComplianceReportResult,
+	): Promise<void> {
+		const formats =
+			this.options.outputFormat === "all"
+				? ["json", "html", "pdf"]
+				: [this.options.outputFormat || "json"];
 
 		for (const format of formats) {
 			switch (format) {
@@ -1227,24 +1398,38 @@ export class ComplianceReportGenerator {
 	/**
 	 * Generate JSON report
 	 */
-	private async generateJSONReport(reportResult: ComplianceReportResult): Promise<void> {
-		const reportPath = join(this.outputPath, "reports", "compliance-report.json");
+	private async generateJSONReport(
+		reportResult: ComplianceReportResult,
+	): Promise<void> {
+		const reportPath = join(
+			this.outputPath,
+			"reports",
+			"compliance-report.json",
+		);
 		writeFileSync(reportPath, JSON.stringify(reportResult, null, 2));
 	}
 
 	/**
 	 * Generate HTML report
 	 */
-	private async generateHTMLReport(reportResult: ComplianceReportResult): Promise<void> {
+	private async generateHTMLReport(
+		reportResult: ComplianceReportResult,
+	): Promise<void> {
 		const htmlContent = this.generateHTMLContent(reportResult);
-		const reportPath = join(this.outputPath, "reports", "compliance-report.html");
+		const reportPath = join(
+			this.outputPath,
+			"reports",
+			"compliance-report.html",
+		);
 		writeFileSync(reportPath, htmlContent);
 	}
 
 	/**
 	 * Generate PDF report (placeholder)
 	 */
-	private async generatePDFReport(reportResult: ComplianceReportResult): Promise<void> {
+	private async generatePDFReport(
+		reportResult: ComplianceReportResult,
+	): Promise<void> {
 		// Implementation would use a PDF generation library
 		consola.info("PDF report generation not implemented yet");
 	}
@@ -1252,10 +1437,16 @@ export class ComplianceReportGenerator {
 	/**
 	 * Generate dashboard files
 	 */
-	private async generateDashboard(dashboardData: ComplianceDashboardData): Promise<void> {
+	private async generateDashboard(
+		dashboardData: ComplianceDashboardData,
+	): Promise<void> {
 		// Generate React dashboard component
 		const dashboardComponent = this.generateDashboardComponent(dashboardData);
-		const dashboardPath = join(this.outputPath, "dashboard", "ComplianceDashboard.tsx");
+		const dashboardPath = join(
+			this.outputPath,
+			"dashboard",
+			"ComplianceDashboard.tsx",
+		);
 		writeFileSync(dashboardPath, dashboardComponent);
 
 		// Generate dashboard data file
@@ -1266,7 +1457,9 @@ export class ComplianceReportGenerator {
 	/**
 	 * Generate action plan
 	 */
-	private async generateActionPlan(reportResult: ComplianceReportResult): Promise<void> {
+	private async generateActionPlan(
+		reportResult: ComplianceReportResult,
+	): Promise<void> {
 		const actionPlan = this.generateActionPlanContent(reportResult);
 		const planPath = join(this.outputPath, "reports", "action-plan.md");
 		writeFileSync(planPath, actionPlan);
@@ -1321,34 +1514,41 @@ export class ComplianceReportGenerator {
         </div>
 
         <div class="score-section">
-            <div class="score-circle score-${reportResult.complianceStatus.replace('-', '-')}">
+            <div class="score-circle score-${reportResult.complianceStatus.replace("-", "-")}">
                 ${reportResult.overallScore}%
             </div>
             <h2>Overall Compliance Score</h2>
-            <p>Status: <strong class="status-${reportResult.complianceStatus.replace('-', '-')}">${reportResult.complianceStatus.toUpperCase()}</strong></p>
+            <p>Status: <strong class="status-${reportResult.complianceStatus.replace("-", "-")}">${reportResult.complianceStatus.toUpperCase()}</strong></p>
         </div>
 
         <div class="section">
             <h2 class="section-title">Standards Compliance</h2>
             <div class="standards-grid">
-                ${reportResult.standardsResults.map(standard => `
+                ${reportResult.standardsResults
+									.map(
+										(standard) => `
                     <div class="standard-card">
                         <div class="standard-header">
                             <span class="standard-name">${standard.standard.toUpperCase()}</span>
-                            <span class="standard-score status-${standard.status.replace('-', '-')}">${standard.score}%</span>
+                            <span class="standard-score status-${standard.status.replace("-", "-")}">${standard.score}%</span>
                         </div>
                         <p><strong>Status:</strong> ${standard.status}</p>
                         <p><strong>Risk Level:</strong> ${standard.riskLevel}</p>
                         <p><strong>Controls:</strong> ${standard.controlsResults.length}</p>
-                        <p><strong>Implemented:</strong> ${standard.controlsResults.filter(c => c.status === "implemented").length}</p>
+                        <p><strong>Implemented:</strong> ${standard.controlsResults.filter((c) => c.status === "implemented").length}</p>
                     </div>
-                `).join('')}
+                `,
+									)
+									.join("")}
             </div>
         </div>
 
         <div class="section">
             <h2 class="section-title">Top Compliance Gaps</h2>
-            ${reportResult.gapAnalysis.slice(0, 10).map(gap => `
+            ${reportResult.gapAnalysis
+							.slice(0, 10)
+							.map(
+								(gap) => `
                 <div class="gap-item">
                     <div class="gap-header">
                         <span class="gap-title">${gap.title}</span>
@@ -1357,12 +1557,17 @@ export class ComplianceReportGenerator {
                     <p>${gap.description}</p>
                     <p><strong>Standard:</strong> ${gap.standard.toUpperCase()} • <strong>Timeline:</strong> ${gap.timeline}</p>
                 </div>
-            `).join('')}
+            `,
+							)
+							.join("")}
         </div>
 
         <div class="section">
             <h2 class="section-title">Key Recommendations</h2>
-            ${reportResult.recommendations.slice(0, 5).map(rec => `
+            ${reportResult.recommendations
+							.slice(0, 5)
+							.map(
+								(rec) => `
                 <div class="gap-item">
                     <div class="gap-header">
                         <span class="gap-title">${rec.title}</span>
@@ -1371,7 +1576,9 @@ export class ComplianceReportGenerator {
                     <p>${rec.description}</p>
                     <p><strong>Category:</strong> ${rec.category} • <strong>Timeline:</strong> ${rec.timeline}</p>
                 </div>
-            `).join('')}
+            `,
+							)
+							.join("")}
         </div>
     </div>
 </body>
@@ -1381,7 +1588,9 @@ export class ComplianceReportGenerator {
 	/**
 	 * Generate React dashboard component
 	 */
-	private generateDashboardComponent(dashboardData: ComplianceDashboardData): string {
+	private generateDashboardComponent(
+		dashboardData: ComplianceDashboardData,
+	): string {
 		return `import React from 'react';
 
 interface ComplianceDashboardProps {
@@ -1485,7 +1694,9 @@ export default ComplianceDashboard;`;
 	/**
 	 * Generate action plan content
 	 */
-	private generateActionPlanContent(reportResult: ComplianceReportResult): string {
+	private generateActionPlanContent(
+		reportResult: ComplianceReportResult,
+	): string {
 		return `# Compliance Action Plan
 
 **Project:** ${reportResult.projectName}  
@@ -1497,14 +1708,16 @@ export default ComplianceDashboard;`;
 This action plan addresses ${reportResult.gapAnalysis.length} compliance gaps across ${reportResult.standardsResults.length} standards with ${reportResult.remediationPlan.length} remediation actions.
 
 **Priority Breakdown:**
-- Critical: ${reportResult.gapAnalysis.filter(g => g.impact === "critical").length} gaps
-- High: ${reportResult.gapAnalysis.filter(g => g.impact === "high").length} gaps  
-- Medium: ${reportResult.gapAnalysis.filter(g => g.impact === "medium").length} gaps
-- Low: ${reportResult.gapAnalysis.filter(g => g.impact === "low").length} gaps
+- Critical: ${reportResult.gapAnalysis.filter((g) => g.impact === "critical").length} gaps
+- High: ${reportResult.gapAnalysis.filter((g) => g.impact === "high").length} gaps  
+- Medium: ${reportResult.gapAnalysis.filter((g) => g.impact === "medium").length} gaps
+- Low: ${reportResult.gapAnalysis.filter((g) => g.impact === "low").length} gaps
 
 ## Action Items
 
-${reportResult.remediationPlan.map((action, index) => `
+${reportResult.remediationPlan
+	.map(
+		(action, index) => `
 ### ${index + 1}. ${action.title}
 
 **Priority:** ${action.priority.toUpperCase()}  
@@ -1515,30 +1728,39 @@ ${reportResult.remediationPlan.map((action, index) => `
 **Description:** ${action.description}
 
 **Milestones:**
-${action.milestones.map(m => `
+${action.milestones
+	.map(
+		(m) => `
 - **${m.name}** (Due: ${new Date(m.dueDate).toLocaleDateString()})
   - Status: ${m.status}
   - Deliverables: ${m.deliverables.join(", ")}
-`).join('')}
+`,
+	)
+	.join("")}
 
 **Acceptance Criteria:**
-${action.acceptanceCriteria.map(criteria => `- ${criteria}`).join('\n')}
+${action.acceptanceCriteria.map((criteria) => `- ${criteria}`).join("\n")}
 
 ---
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 ## Implementation Timeline
 
 | Phase | Actions | Timeline | Priority |
 |-------|---------|----------|----------|
 ${reportResult.remediationPlan
-  .sort((a, b) => {
-    const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-    return priorityOrder[b.priority] - priorityOrder[a.priority];
-  })
-  .slice(0, 10)
-  .map(action => `| Phase ${reportResult.remediationPlan.indexOf(action) + 1} | ${action.title} | ${action.timeline} | ${action.priority.toUpperCase()} |`)
-  .join('\n')}
+	.sort((a, b) => {
+		const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+		return priorityOrder[b.priority] - priorityOrder[a.priority];
+	})
+	.slice(0, 10)
+	.map(
+		(action) =>
+			`| Phase ${reportResult.remediationPlan.indexOf(action) + 1} | ${action.title} | ${action.timeline} | ${action.priority.toUpperCase()} |`,
+	)
+	.join("\n")}
 
 ## Success Metrics
 
@@ -1578,18 +1800,27 @@ ${reportResult.remediationPlan
 	private calculateRiskScore(impact: string, likelihood: string): number {
 		const impactScore = { critical: 4, high: 3, medium: 2, low: 1 };
 		const likelihoodScore = { high: 3, medium: 2, low: 1 };
-		return (impactScore[impact as keyof typeof impactScore] || 1) * 
-		       (likelihoodScore[likelihood as keyof typeof likelihoodScore] || 1);
+		return (
+			(impactScore[impact as keyof typeof impactScore] || 1) *
+			(likelihoodScore[likelihood as keyof typeof likelihoodScore] || 1)
+		);
 	}
 
-	private calculateOverallScore(standardsResults: readonly StandardComplianceResult[]): number {
+	private calculateOverallScore(
+		standardsResults: readonly StandardComplianceResult[],
+	): number {
 		if (standardsResults.length === 0) return 100;
-		
-		const totalScore = standardsResults.reduce((sum, result) => sum + result.score, 0);
+
+		const totalScore = standardsResults.reduce(
+			(sum, result) => sum + result.score,
+			0,
+		);
 		return Math.round(totalScore / standardsResults.length);
 	}
 
-	private determineComplianceStatus(score: number): "compliant" | "non-compliant" | "partial" {
+	private determineComplianceStatus(
+		score: number,
+	): "compliant" | "non-compliant" | "partial" {
 		if (score >= 90) return "compliant";
 		if (score >= 70) return "partial";
 		return "non-compliant";

@@ -5,13 +5,13 @@
  * @version 2.0.0
  */
 
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 import type {
 	GeneratorOptions,
 	GeneratorResult,
 	ProjectInfo,
 } from "../../types/index.js";
-import { join } from "path";
-import { existsSync, mkdirSync } from "fs";
 
 /**
  * DDD Pattern Types

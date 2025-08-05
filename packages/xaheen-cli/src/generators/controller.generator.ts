@@ -7,21 +7,25 @@
  * @since 2025-08-04
  */
 
-import { BaseGenerator } from './base.generator.js';
-import { promises as fs } from 'fs';
-import path from 'path';
-import Handlebars from 'handlebars';
+import { promises as fs } from "fs";
+import Handlebars from "handlebars";
+import path from "path";
+import { BaseGenerator } from "./base.generator.js";
 
 // Register Handlebars helpers
-Handlebars.registerHelper('eq', (a, b) => a === b);
-Handlebars.registerHelper('camelCase', (str: string) => {
-	return str.charAt(0).toLowerCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+Handlebars.registerHelper("eq", (a, b) => a === b);
+Handlebars.registerHelper("camelCase", (str: string) => {
+	return (
+		str.charAt(0).toLowerCase() +
+		str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase())
+	);
 });
-Handlebars.registerHelper('toLowerCase', (str: string) => str.toLowerCase());
-Handlebars.registerHelper('toUpperCase', (str: string) => str.toUpperCase());
-Handlebars.registerHelper('generatedAt', () => new Date().toISOString());
-import chalk from 'chalk';
-import { select, text, confirm, multiselect, isCancel } from '@clack/prompts';
+Handlebars.registerHelper("toLowerCase", (str: string) => str.toLowerCase());
+Handlebars.registerHelper("toUpperCase", (str: string) => str.toUpperCase());
+Handlebars.registerHelper("generatedAt", () => new Date().toISOString());
+
+import { confirm, isCancel, multiselect, select, text } from "@clack/prompts";
+import chalk from "chalk";
 
 export interface ControllerGeneratorOptions {
 	readonly name: string;
@@ -31,7 +35,7 @@ export interface ControllerGeneratorOptions {
 	readonly middleware?: string[];
 	readonly validation?: boolean;
 	readonly swagger?: boolean;
-	readonly framework?: 'express' | 'nestjs' | 'fastify';
+	readonly framework?: "express" | "nestjs" | "fastify";
 	readonly dryRun?: boolean;
 	readonly force?: boolean;
 	readonly typescript?: boolean;
@@ -39,24 +43,56 @@ export interface ControllerGeneratorOptions {
 
 export interface ControllerAction {
 	readonly name: string;
-	readonly method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+	readonly method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 	readonly path: string;
 	readonly description: string;
 }
 
 export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOptions> {
 	private readonly defaultActions: ControllerAction[] = [
-		{ name: 'index', method: 'GET', path: '', description: 'Get all items' },
-		{ name: 'show', method: 'GET', path: '/:id', description: 'Get item by ID' },
-		{ name: 'create', method: 'POST', path: '', description: 'Create new item' },
-		{ name: 'update', method: 'PUT', path: '/:id', description: 'Update item by ID' },
-		{ name: 'destroy', method: 'DELETE', path: '/:id', description: 'Delete item by ID' },
+		{ name: "index", method: "GET", path: "", description: "Get all items" },
+		{
+			name: "show",
+			method: "GET",
+			path: "/:id",
+			description: "Get item by ID",
+		},
+		{
+			name: "create",
+			method: "POST",
+			path: "",
+			description: "Create new item",
+		},
+		{
+			name: "update",
+			method: "PUT",
+			path: "/:id",
+			description: "Update item by ID",
+		},
+		{
+			name: "destroy",
+			method: "DELETE",
+			path: "/:id",
+			description: "Delete item by ID",
+		},
 	];
 
 	private readonly frameworks = [
-		{ value: 'express', label: 'Express.js', description: 'Fast, unopinionated web framework' },
-		{ value: 'nestjs', label: 'NestJS', description: 'Progressive Node.js framework' },
-		{ value: 'fastify', label: 'Fastify', description: 'Fast and low overhead web framework' },
+		{
+			value: "express",
+			label: "Express.js",
+			description: "Fast, unopinionated web framework",
+		},
+		{
+			value: "nestjs",
+			label: "NestJS",
+			description: "Progressive Node.js framework",
+		},
+		{
+			value: "fastify",
+			label: "Fastify",
+			description: "Fast and low overhead web framework",
+		},
 	] as const;
 
 	async generate(options: ControllerGeneratorOptions): Promise<void> {
@@ -65,7 +101,7 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		this.logger.info(`Generating controller: ${chalk.cyan(options.name)}`);
 
 		// Detect framework if not specified
-		const framework = options.framework || await this.detectFramework();
+		const framework = options.framework || (await this.detectFramework());
 
 		// Parse actions from string format or use defaults
 		const actions = await this.parseActions(options.actions || []);
@@ -73,8 +109,9 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		// Generate controller data
 		const controllerData = {
 			name: options.name,
-			className: this.toPascalCase(options.name) + 'Controller',
-			serviceName: options.service || this.toPascalCase(options.name) + 'Service',
+			className: this.toPascalCase(options.name) + "Controller",
+			serviceName:
+				options.service || this.toPascalCase(options.name) + "Service",
 			modelName: options.model || this.toPascalCase(options.name),
 			actions,
 			middleware: options.middleware || [],
@@ -88,7 +125,7 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		await this.generateController(controllerData, options);
 
 		// Generate routes file if needed
-		if (framework === 'express') {
+		if (framework === "express") {
 			await this.generateExpressRoutes(controllerData, options);
 		}
 
@@ -100,44 +137,54 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 			await this.generateApiDocumentation(controllerData, options);
 		}
 
-		this.logger.success(`Controller ${chalk.green(options.name)} generated successfully!`);
+		this.logger.success(
+			`Controller ${chalk.green(options.name)} generated successfully!`,
+		);
 	}
 
-	private async detectFramework(): Promise<'express' | 'nestjs' | 'fastify'> {
+	private async detectFramework(): Promise<"express" | "nestjs" | "fastify"> {
 		try {
-			const packageJsonPath = path.join(process.cwd(), 'package.json');
-			const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-			const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+			const packageJsonPath = path.join(process.cwd(), "package.json");
+			const packageJson = JSON.parse(
+				await fs.readFile(packageJsonPath, "utf-8"),
+			);
+			const dependencies = {
+				...packageJson.dependencies,
+				...packageJson.devDependencies,
+			};
 
-			if (dependencies['@nestjs/core']) return 'nestjs';
-			if (dependencies['fastify']) return 'fastify';
-			if (dependencies['express']) return 'express';
+			if (dependencies["@nestjs/core"]) return "nestjs";
+			if (dependencies["fastify"]) return "fastify";
+			if (dependencies["express"]) return "express";
 
 			// Interactive selection if no framework detected
 			const selectedFramework = await select({
-				message: 'Which framework are you using?',
+				message: "Which framework are you using?",
 				options: this.frameworks,
 			});
 
 			if (isCancel(selectedFramework)) {
-				throw new Error('Framework selection cancelled');
+				throw new Error("Framework selection cancelled");
 			}
 
-			return selectedFramework as 'express' | 'nestjs' | 'fastify';
+			return selectedFramework as "express" | "nestjs" | "fastify";
 		} catch {
-			return 'express'; // Default fallback
+			return "express"; // Default fallback
 		}
 	}
 
-	private async parseActions(actionsInput: string[]): Promise<ControllerAction[]> {
+	private async parseActions(
+		actionsInput: string[],
+	): Promise<ControllerAction[]> {
 		if (actionsInput.length === 0) {
 			// Use default CRUD actions
 			const useDefaults = await confirm({
-				message: 'Use default CRUD actions (index, show, create, update, destroy)?',
+				message:
+					"Use default CRUD actions (index, show, create, update, destroy)?",
 			});
 
 			if (isCancel(useDefaults)) {
-				throw new Error('Action selection cancelled');
+				throw new Error("Action selection cancelled");
 			}
 
 			if (useDefaults) {
@@ -146,8 +193,8 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 
 			// Interactive action selection
 			const selectedActions = await multiselect({
-				message: 'Select controller actions:',
-				options: this.defaultActions.map(action => ({
+				message: "Select controller actions:",
+				options: this.defaultActions.map((action) => ({
 					value: action.name,
 					label: `${action.name} (${action.method} ${action.path})`,
 					hint: action.description,
@@ -155,33 +202,40 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 			});
 
 			if (isCancel(selectedActions)) {
-				throw new Error('Action selection cancelled');
+				throw new Error("Action selection cancelled");
 			}
 
-			return this.defaultActions.filter(action => 
-				(selectedActions as string[]).includes(action.name)
+			return this.defaultActions.filter((action) =>
+				(selectedActions as string[]).includes(action.name),
 			);
 		}
 
 		// Parse from command line format
-		return actionsInput.map(actionName => {
-			const defaultAction = this.defaultActions.find(a => a.name === actionName);
-			return defaultAction || {
-				name: actionName,
-				method: 'GET' as const,
-				path: `/${actionName}`,
-				description: `${actionName} action`,
-			};
+		return actionsInput.map((actionName) => {
+			const defaultAction = this.defaultActions.find(
+				(a) => a.name === actionName,
+			);
+			return (
+				defaultAction || {
+					name: actionName,
+					method: "GET" as const,
+					path: `/${actionName}`,
+					description: `${actionName} action`,
+				}
+			);
 		});
 	}
 
-	private async generateController(controllerData: any, options: ControllerGeneratorOptions): Promise<void> {
+	private async generateController(
+		controllerData: any,
+		options: ControllerGeneratorOptions,
+	): Promise<void> {
 		const templateName = `controller/${controllerData.framework}-controller.hbs`;
 		const template = await this.loadTemplate(templateName);
 		const content = template(controllerData);
 
 		const fileName = `${controllerData.name}.controller.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'controllers', fileName);
+		const filePath = path.join(process.cwd(), "src", "controllers", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
@@ -192,12 +246,15 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		}
 	}
 
-	private async generateExpressRoutes(controllerData: any, options: ControllerGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('controller/express-routes.hbs');
+	private async generateExpressRoutes(
+		controllerData: any,
+		options: ControllerGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate("controller/express-routes.hbs");
 		const content = template(controllerData);
 
 		const fileName = `${controllerData.name}.routes.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'routes', fileName);
+		const filePath = path.join(process.cwd(), "src", "routes", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
@@ -208,12 +265,21 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		}
 	}
 
-	private async generateControllerTests(controllerData: any, options: ControllerGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('controller/controller-test.hbs');
+	private async generateControllerTests(
+		controllerData: any,
+		options: ControllerGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate("controller/controller-test.hbs");
 		const content = template(controllerData);
 
 		const fileName = `${controllerData.name}.controller.test.ts`;
-		const filePath = path.join(process.cwd(), 'src', 'controllers', '__tests__', fileName);
+		const filePath = path.join(
+			process.cwd(),
+			"src",
+			"controllers",
+			"__tests__",
+			fileName,
+		);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
@@ -224,12 +290,17 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		}
 	}
 
-	private async generateApiDocumentation(controllerData: any, options: ControllerGeneratorOptions): Promise<void> {
-		const template = await this.loadTemplate('controller/api-documentation.hbs');
+	private async generateApiDocumentation(
+		controllerData: any,
+		options: ControllerGeneratorOptions,
+	): Promise<void> {
+		const template = await this.loadTemplate(
+			"controller/api-documentation.hbs",
+		);
 		const content = template(controllerData);
 
 		const fileName = `${controllerData.name}.api.yml`;
-		const filePath = path.join(process.cwd(), 'docs', 'api', fileName);
+		const filePath = path.join(process.cwd(), "docs", "api", fileName);
 
 		if (!options.dryRun) {
 			await this.ensureDirectoryExists(path.dirname(filePath));
@@ -240,9 +311,11 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 		}
 	}
 
-	private async loadTemplate(templatePath: string): Promise<HandlebarsTemplateDelegate> {
-		const templateFile = path.join(__dirname, '../templates', templatePath);
-		const templateContent = await fs.readFile(templateFile, 'utf-8');
+	private async loadTemplate(
+		templatePath: string,
+	): Promise<HandlebarsTemplateDelegate> {
+		const templateFile = path.join(__dirname, "../templates", templatePath);
+		const templateContent = await fs.readFile(templateFile, "utf-8");
 		return Handlebars.compile(templateContent);
 	}
 
@@ -255,16 +328,23 @@ export class ControllerGenerator extends BaseGenerator<ControllerGeneratorOption
 	}
 
 	private toPascalCase(str: string): string {
-		return str.charAt(0).toUpperCase() + str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+		return (
+			str.charAt(0).toUpperCase() +
+			str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase())
+		);
 	}
 
-	protected async validateOptions(options: ControllerGeneratorOptions): Promise<void> {
+	protected async validateOptions(
+		options: ControllerGeneratorOptions,
+	): Promise<void> {
 		if (!options.name) {
-			throw new Error('Controller name is required');
+			throw new Error("Controller name is required");
 		}
 
 		if (!/^[A-Za-z][A-Za-z0-9]*$/.test(options.name)) {
-			throw new Error('Controller name must be alphanumeric and start with a letter');
+			throw new Error(
+				"Controller name must be alphanumeric and start with a letter",
+			);
 		}
 	}
 }

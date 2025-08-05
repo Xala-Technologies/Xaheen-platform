@@ -1,7 +1,7 @@
-import { BaseGenerator } from '../base.generator.js';
-import type { VectorDatabaseOptions } from './types.js';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { BaseGenerator } from '../base.generator.js';
+import type { VectorDatabaseOptions } from './types.js';
 
 export class VectorDatabaseGenerator extends BaseGenerator<VectorDatabaseOptions> {
   async generate(options: VectorDatabaseOptions): Promise<void> {

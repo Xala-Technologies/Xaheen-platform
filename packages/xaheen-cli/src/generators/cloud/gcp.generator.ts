@@ -4,7 +4,7 @@
  * Supports Cloud Functions, Firestore, Cloud Storage, Firebase Auth, Pub/Sub, and more
  */
 
-import { InfrastructureGenerator, InfrastructureGeneratorOptions, InfrastructureGeneratorResult, GeneratedInfrastructureFile } from "../infrastructure/index.js";
+import { GeneratedInfrastructureFile, InfrastructureGenerator, InfrastructureGeneratorOptions, InfrastructureGeneratorResult } from "../infrastructure/index.js";
 
 export interface GCPCloudOptions extends InfrastructureGeneratorOptions {
 	readonly projectId: string;

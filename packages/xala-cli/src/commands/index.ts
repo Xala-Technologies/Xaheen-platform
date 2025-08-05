@@ -92,7 +92,7 @@ export async function registerCommands(program: Command): Promise<void> {
 		await loadCommand("./validate.js", "validateCommand");
 
 		// Interactive builder commands
-		console.log('Loading builder command...');
+		console.log("Loading builder command...");
 		await loadCommand("./builder.js", "register");
 
 		// Hybrid scaffolding commands
@@ -168,7 +168,10 @@ async function loadCommand(
 				command.register(registerCommand);
 			} else if (typeof command === "object" && command.name) {
 				// For standard command metadata
-				console.log(`Registering command metadata for ${modulePath}:`, command.name);
+				console.log(
+					`Registering command metadata for ${modulePath}:`,
+					command.name,
+				);
 				registerCommand(command);
 			}
 		}

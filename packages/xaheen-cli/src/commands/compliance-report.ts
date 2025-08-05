@@ -29,20 +29,28 @@ import chalk from "chalk";
 import { Command } from "commander";
 import consola from "consola";
 import {
-	generateComplianceReport,
-	listComplianceStandards,
-	getComplianceStandard,
 	type ComplianceReportOptions,
 	type ComplianceStandard,
 	type GDPRLawfulBasis,
+	generateComplianceReport,
+	getComplianceStandard,
+	listComplianceStandards,
 	type NSMClassification,
 } from "../generators/security/index.js";
 
 export const complianceReportCommand = new Command("compliance-report")
 	.alias("compliance")
 	.description("Generate compliance dashboards and reports")
-	.option("--standards <standards>", "Compliance standards to assess (comma-separated)", "gdpr,owasp")
-	.option("--type <type>", "Report type (executive|detailed|technical|audit)", "detailed")
+	.option(
+		"--standards <standards>",
+		"Compliance standards to assess (comma-separated)",
+		"gdpr,owasp",
+	)
+	.option(
+		"--type <type>",
+		"Report type (executive|detailed|technical|audit)",
+		"detailed",
+	)
 	.option("--format <format>", "Output format (json|html|pdf|all)", "html")
 	.option("--classification <level>", "NSM security classification level")
 	.option("--lawful-basis <basis>", "GDPR lawful basis (comma-separated)")
@@ -52,7 +60,11 @@ export const complianceReportCommand = new Command("compliance-report")
 	.option("--dashboard", "Generate interactive dashboard", true)
 	.option("--metrics", "Include compliance metrics", true)
 	.option("--action-plan", "Generate detailed action plan")
-	.option("--timeframe <timeframe>", "Report timeframe (current|historical|projected)", "current")
+	.option(
+		"--timeframe <timeframe>",
+		"Report timeframe (current|historical|projected)",
+		"current",
+	)
 	.option("--dry-run", "Preview what will be assessed without running")
 	.option("--interactive", "Interactive mode with guided prompts")
 	.action(async (options) => {
@@ -76,7 +88,7 @@ async function runInteractiveComplianceReport(options: any): Promise<void> {
 
 	// Standards selection
 	const availableStandards = listComplianceStandards();
-	
+
 	const selectedStandards = await multiselect({
 		message: "Select compliance standards to assess:",
 		options: availableStandards.map((standard) => ({
@@ -96,10 +108,26 @@ async function runInteractiveComplianceReport(options: any): Promise<void> {
 	const reportType = await select({
 		message: "Select report type:",
 		options: [
-			{ value: "executive", label: "Executive Summary", hint: "High-level overview for leadership" },
-			{ value: "detailed", label: "Detailed Report", hint: "Comprehensive analysis with recommendations" },
-			{ value: "technical", label: "Technical Report", hint: "In-depth technical findings" },
-			{ value: "audit", label: "Audit Report", hint: "Formal audit documentation" },
+			{
+				value: "executive",
+				label: "Executive Summary",
+				hint: "High-level overview for leadership",
+			},
+			{
+				value: "detailed",
+				label: "Detailed Report",
+				hint: "Comprehensive analysis with recommendations",
+			},
+			{
+				value: "technical",
+				label: "Technical Report",
+				hint: "In-depth technical findings",
+			},
+			{
+				value: "audit",
+				label: "Audit Report",
+				hint: "Formal audit documentation",
+			},
 		],
 	});
 
@@ -115,8 +143,16 @@ async function runInteractiveComplianceReport(options: any): Promise<void> {
 			message: "Select NSM security classification level:",
 			options: [
 				{ value: "OPEN", label: "OPEN", hint: "Public information" },
-				{ value: "RESTRICTED", label: "RESTRICTED", hint: "Limited distribution" },
-				{ value: "CONFIDENTIAL", label: "CONFIDENTIAL", hint: "Sensitive information" },
+				{
+					value: "RESTRICTED",
+					label: "RESTRICTED",
+					hint: "Limited distribution",
+				},
+				{
+					value: "CONFIDENTIAL",
+					label: "CONFIDENTIAL",
+					hint: "Sensitive information",
+				},
 				{ value: "SECRET", label: "SECRET", hint: "Highly classified" },
 			],
 		});
@@ -135,12 +171,36 @@ async function runInteractiveComplianceReport(options: any): Promise<void> {
 		const lawfulBasis = await multiselect({
 			message: "Select applicable GDPR lawful bases:",
 			options: [
-				{ value: "consent", label: "Consent", hint: "Freely given, specific consent" },
-				{ value: "contract", label: "Contract", hint: "Performance of a contract" },
-				{ value: "legal-obligation", label: "Legal Obligation", hint: "Compliance with legal obligation" },
-				{ value: "vital-interests", label: "Vital Interests", hint: "Protection of vital interests" },
-				{ value: "public-task", label: "Public Task", hint: "Performance of public task" },
-				{ value: "legitimate-interests", label: "Legitimate Interests", hint: "Legitimate interests pursued" },
+				{
+					value: "consent",
+					label: "Consent",
+					hint: "Freely given, specific consent",
+				},
+				{
+					value: "contract",
+					label: "Contract",
+					hint: "Performance of a contract",
+				},
+				{
+					value: "legal-obligation",
+					label: "Legal Obligation",
+					hint: "Compliance with legal obligation",
+				},
+				{
+					value: "vital-interests",
+					label: "Vital Interests",
+					hint: "Protection of vital interests",
+				},
+				{
+					value: "public-task",
+					label: "Public Task",
+					hint: "Performance of public task",
+				},
+				{
+					value: "legitimate-interests",
+					label: "Legitimate Interests",
+					hint: "Legitimate interests pursued",
+				},
 			],
 		});
 
@@ -156,9 +216,17 @@ async function runInteractiveComplianceReport(options: any): Promise<void> {
 	const outputFormat = await select({
 		message: "Select output format:",
 		options: [
-			{ value: "html", label: "HTML Report", hint: "Interactive web report with dashboard" },
+			{
+				value: "html",
+				label: "HTML Report",
+				hint: "Interactive web report with dashboard",
+			},
 			{ value: "json", label: "JSON Data", hint: "Machine-readable format" },
-			{ value: "pdf", label: "PDF Report", hint: "Professional document format" },
+			{
+				value: "pdf",
+				label: "PDF Report",
+				hint: "Professional document format",
+			},
 			{ value: "all", label: "All Formats", hint: "Generate all report types" },
 		],
 	});
@@ -260,9 +328,9 @@ async function runComplianceReport(options: any): Promise<void> {
 	intro(chalk.cyan("📊 Xaheen Compliance Report"));
 
 	// Parse standards
-	const standards = options.standards ? 
-		options.standards.split(",").map((s: string) => s.trim()) : 
-		["gdpr", "owasp"];
+	const standards = options.standards
+		? options.standards.split(",").map((s: string) => s.trim())
+		: ["gdpr", "owasp"];
 
 	// Validate standards
 	const validStandards = standards.filter((std: string) => {
@@ -282,7 +350,9 @@ async function runComplianceReport(options: any): Promise<void> {
 	// Parse GDPR lawful basis
 	let gdprLawfulBasis: GDPRLawfulBasis[] | undefined;
 	if (options.lawfulBasis && validStandards.includes("gdpr")) {
-		gdprLawfulBasis = options.lawfulBasis.split(",").map((b: string) => b.trim()) as GDPRLawfulBasis[];
+		gdprLawfulBasis = options.lawfulBasis
+			.split(",")
+			.map((b: string) => b.trim()) as GDPRLawfulBasis[];
 	}
 
 	// Build compliance options
@@ -320,7 +390,9 @@ async function runComplianceReport(options: any): Promise<void> {
 /**
  * Execute the compliance report generation
  */
-async function executeComplianceReport(options: ComplianceReportOptions): Promise<void> {
+async function executeComplianceReport(
+	options: ComplianceReportOptions,
+): Promise<void> {
 	const s = spinner();
 	s.start("Generating compliance report...");
 
@@ -334,8 +406,12 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 
 		consola.info("");
 		consola.info(chalk.cyan("📈 Compliance Overview:"));
-		consola.info(`Overall Score: ${getScoreColor(result.overallScore)}${result.overallScore}%${chalk.reset()}`);
-		consola.info(`Status: ${getComplianceColor(result.complianceStatus)}${result.complianceStatus.toUpperCase()}${chalk.reset()}`);
+		consola.info(
+			`Overall Score: ${getScoreColor(result.overallScore)}${result.overallScore}%${chalk.reset()}`,
+		);
+		consola.info(
+			`Status: ${getComplianceColor(result.complianceStatus)}${result.complianceStatus.toUpperCase()}${chalk.reset()}`,
+		);
 		consola.info(`Standards Assessed: ${result.standardsResults.length}`);
 
 		// Show standards results
@@ -345,8 +421,12 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 			result.standardsResults.forEach((standard) => {
 				const statusColor = getComplianceColor(standard.status);
 				const riskColor = getRiskColor(standard.riskLevel);
-				consola.info(`${standard.standard.toUpperCase()}: ${statusColor}${standard.score}%${chalk.reset()} (${riskColor}${standard.riskLevel} risk${chalk.reset()})`);
-				consola.info(`  Controls: ${standard.controlsResults.length} total, ${standard.controlsResults.filter(c => c.status === "implemented").length} implemented`);
+				consola.info(
+					`${standard.standard.toUpperCase()}: ${statusColor}${standard.score}%${chalk.reset()} (${riskColor}${standard.riskLevel} risk${chalk.reset()})`,
+				);
+				consola.info(
+					`  Controls: ${standard.controlsResults.length} total, ${standard.controlsResults.filter((c) => c.status === "implemented").length} implemented`,
+				);
 			});
 		}
 
@@ -354,10 +434,16 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 		consola.info("");
 		consola.info(chalk.cyan("📊 Compliance Metrics:"));
 		consola.info(`Total Controls: ${result.metrics.totalControls}`);
-		consola.info(`Implemented: ${chalk.green(result.metrics.implementedControls)} (${Math.round((result.metrics.implementedControls / result.metrics.totalControls) * 100)}%)`);
+		consola.info(
+			`Implemented: ${chalk.green(result.metrics.implementedControls)} (${Math.round((result.metrics.implementedControls / result.metrics.totalControls) * 100)}%)`,
+		);
 		consola.info(`Partial: ${chalk.yellow(result.metrics.partialControls)}`);
-		consola.info(`Not Implemented: ${chalk.red(result.metrics.notImplementedControls)}`);
-		consola.info(`Average Maturity: ${result.metrics.averageMaturityLevel.toFixed(1)}/5`);
+		consola.info(
+			`Not Implemented: ${chalk.red(result.metrics.notImplementedControls)}`,
+		);
+		consola.info(
+			`Average Maturity: ${result.metrics.averageMaturityLevel.toFixed(1)}/5`,
+		);
 
 		// Show top gaps
 		if (result.gapAnalysis.length > 0) {
@@ -365,8 +451,12 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 			consola.info(chalk.cyan("🚨 Top Compliance Gaps:"));
 			result.gapAnalysis.slice(0, 5).forEach((gap, index) => {
 				const impactColor = getSeverityColor(gap.impact);
-				consola.info(`${index + 1}. ${impactColor}[${gap.impact.toUpperCase()}]${chalk.reset()} ${gap.title}`);
-				consola.info(`   ${chalk.gray(gap.standard.toUpperCase())} • Timeline: ${gap.timeline}`);
+				consola.info(
+					`${index + 1}. ${impactColor}[${gap.impact.toUpperCase()}]${chalk.reset()} ${gap.title}`,
+				);
+				consola.info(
+					`   ${chalk.gray(gap.standard.toUpperCase())} • Timeline: ${gap.timeline}`,
+				);
 			});
 		}
 
@@ -376,19 +466,26 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 			consola.info(chalk.cyan("💡 Key Recommendations:"));
 			result.recommendations.slice(0, 3).forEach((rec, index) => {
 				const priorityColor = getSeverityColor(rec.priority);
-				consola.info(`${index + 1}. ${priorityColor}[${rec.priority.toUpperCase()}]${chalk.reset()} ${rec.title}`);
+				consola.info(
+					`${index + 1}. ${priorityColor}[${rec.priority.toUpperCase()}]${chalk.reset()} ${rec.title}`,
+				);
 				consola.info(`   ${chalk.gray(rec.description)}`);
 				consola.info(`   Timeline: ${rec.timeline} • Effort: ${rec.effort}`);
 			});
 		}
 
 		// Show dashboard alerts
-		if (result.dashboardData?.alerts && result.dashboardData.alerts.length > 0) {
+		if (
+			result.dashboardData?.alerts &&
+			result.dashboardData.alerts.length > 0
+		) {
 			consola.info("");
 			consola.info(chalk.cyan("⚠️  Compliance Alerts:"));
 			result.dashboardData.alerts.slice(0, 3).forEach((alert) => {
 				const severityColor = getAlertColor(alert.severity);
-				consola.info(`${severityColor}[${alert.severity.toUpperCase()}]${chalk.reset()} ${alert.title}`);
+				consola.info(
+					`${severityColor}[${alert.severity.toUpperCase()}]${chalk.reset()} ${alert.title}`,
+				);
 				consola.info(`  ${chalk.gray(alert.message)}`);
 			});
 		}
@@ -398,29 +495,43 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 		consola.info("");
 		consola.info(chalk.cyan("📁 Generated Reports:"));
 		if (options.outputFormat === "all" || options.outputFormat === "html") {
-			consola.info(`  HTML Report: ${chalk.green(`${outputDir}/reports/compliance-report.html`)}`);
+			consola.info(
+				`  HTML Report: ${chalk.green(`${outputDir}/reports/compliance-report.html`)}`,
+			);
 		}
 		if (options.outputFormat === "all" || options.outputFormat === "json") {
-			consola.info(`  JSON Data: ${chalk.green(`${outputDir}/reports/compliance-report.json`)}`);
+			consola.info(
+				`  JSON Data: ${chalk.green(`${outputDir}/reports/compliance-report.json`)}`,
+			);
 		}
 		if (options.outputFormat === "all" || options.outputFormat === "pdf") {
-			consola.info(`  PDF Report: ${chalk.green(`${outputDir}/reports/compliance-report.pdf`)}`);
+			consola.info(
+				`  PDF Report: ${chalk.green(`${outputDir}/reports/compliance-report.pdf`)}`,
+			);
 		}
 		if (options.includeDashboard) {
-			consola.info(`  Dashboard: ${chalk.green(`${outputDir}/dashboard/ComplianceDashboard.tsx`)}`);
+			consola.info(
+				`  Dashboard: ${chalk.green(`${outputDir}/dashboard/ComplianceDashboard.tsx`)}`,
+			);
 		}
 		if (options.generateActionPlan) {
-			consola.info(`  Action Plan: ${chalk.green(`${outputDir}/reports/action-plan.md`)}`);
+			consola.info(
+				`  Action Plan: ${chalk.green(`${outputDir}/reports/action-plan.md`)}`,
+			);
 		}
 
 		// Next steps
 		consola.info("");
 		consola.info(chalk.cyan("🔧 Next Steps:"));
-		if (result.gapAnalysis.filter(g => g.impact === "critical").length > 0) {
-			consola.info(`  1. Address ${result.gapAnalysis.filter(g => g.impact === "critical").length} critical compliance gaps immediately`);
+		if (result.gapAnalysis.filter((g) => g.impact === "critical").length > 0) {
+			consola.info(
+				`  1. Address ${result.gapAnalysis.filter((g) => g.impact === "critical").length} critical compliance gaps immediately`,
+			);
 		}
 		if (result.remediationPlan.length > 0) {
-			consola.info(`  2. Implement ${result.remediationPlan.length} remediation actions`);
+			consola.info(
+				`  2. Implement ${result.remediationPlan.length} remediation actions`,
+			);
 		}
 		consola.info("  3. Set up regular compliance monitoring");
 		consola.info("  4. Schedule periodic compliance assessments");
@@ -429,7 +540,6 @@ async function executeComplianceReport(options: ComplianceReportOptions): Promis
 		}
 
 		outro(chalk.green("Compliance report generated successfully! 📊"));
-
 	} catch (error) {
 		s.stop();
 		throw error;

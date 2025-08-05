@@ -3,275 +3,293 @@
  * @description Integrates scaffolding services with existing ServiceRegistry and ServiceInjector
  */
 
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger.js";
+import { HybridScaffoldingOrchestrator } from "./hybrid-orchestrator.js";
 import {
-  ScaffoldingContext,
-  GenerationResult,
-  ScaffoldingService,
-  ServiceRegistration,
-  ScaffoldingError,
-  HybridScaffoldingOptions
-} from './types.js';
-import { HybridScaffoldingOrchestrator } from './hybrid-orchestrator.js';
+	GenerationResult,
+	HybridScaffoldingOptions,
+	ScaffoldingContext,
+	ScaffoldingError,
+	ScaffoldingService,
+	ServiceRegistration,
+} from "./types.js";
 
 // ===== SERVICE REGISTRY =====
 
 export class ScaffoldingServiceRegistry {
-  private readonly services: Map<string, ScaffoldingService> = new Map();
-  private readonly factories: Map<string, () => ScaffoldingService> = new Map();
-  private readonly dependencies: Map<string, readonly string[]> = new Map();
+	private readonly services: Map<string, ScaffoldingService> = new Map();
+	private readonly factories: Map<string, () => ScaffoldingService> = new Map();
+	private readonly dependencies: Map<string, readonly string[]> = new Map();
 
-  register(registration: ServiceRegistration & { service: ScaffoldingService }): void {
-    const { name, service, dependencies = [] } = registration;
+	register(
+		registration: ServiceRegistration & { service: ScaffoldingService },
+	): void {
+		const { name, service, dependencies = [] } = registration;
 
-    this.services.set(name, service);
-    this.dependencies.set(name, dependencies);
+		this.services.set(name, service);
+		this.dependencies.set(name, dependencies);
 
-    logger.debug(`Registered scaffolding service: ${name} (Tier ${service.tier})`);
-  }
+		logger.debug(
+			`Registered scaffolding service: ${name} (Tier ${service.tier})`,
+		);
+	}
 
-  registerFactory(
-    name: string,
-    factory: () => ScaffoldingService,
-    dependencies: readonly string[] = []
-  ): void {
-    this.factories.set(name, factory);
-    this.dependencies.set(name, dependencies);
+	registerFactory(
+		name: string,
+		factory: () => ScaffoldingService,
+		dependencies: readonly string[] = [],
+	): void {
+		this.factories.set(name, factory);
+		this.dependencies.set(name, dependencies);
 
-    logger.debug(`Registered scaffolding service factory: ${name}`);
-  }
+		logger.debug(`Registered scaffolding service factory: ${name}`);
+	}
 
-  get(name: string): ScaffoldingService | undefined {
-    // Try to get existing service
-    let service = this.services.get(name);
-    
-    if (!service) {
-      // Try to create from factory
-      const factory = this.factories.get(name);
-      if (factory) {
-        service = factory();
-        this.services.set(name, service);
-      }
-    }
+	get(name: string): ScaffoldingService | undefined {
+		// Try to get existing service
+		let service = this.services.get(name);
 
-    return service;
-  }
+		if (!service) {
+			// Try to create from factory
+			const factory = this.factories.get(name);
+			if (factory) {
+				service = factory();
+				this.services.set(name, service);
+			}
+		}
 
-  has(name: string): boolean {
-    return this.services.has(name) || this.factories.has(name);
-  }
+		return service;
+	}
 
-  list(): readonly string[] {
-    const serviceNames = new Set([
-      ...this.services.keys(),
-      ...this.factories.keys()
-    ]);
-    
-    return Array.from(serviceNames);
-  }
+	has(name: string): boolean {
+		return this.services.has(name) || this.factories.has(name);
+	}
 
-  getDependencies(name: string): readonly string[] {
-    return this.dependencies.get(name) || [];
-  }
+	list(): readonly string[] {
+		const serviceNames = new Set([
+			...this.services.keys(),
+			...this.factories.keys(),
+		]);
 
-  clear(): void {
-    this.services.clear();
-    this.factories.clear();
-    this.dependencies.clear();
-  }
+		return Array.from(serviceNames);
+	}
+
+	getDependencies(name: string): readonly string[] {
+		return this.dependencies.get(name) || [];
+	}
+
+	clear(): void {
+		this.services.clear();
+		this.factories.clear();
+		this.dependencies.clear();
+	}
 }
 
 // ===== SERVICE INJECTOR =====
 
 export class ScaffoldingServiceInjector {
-  private readonly registry: ScaffoldingServiceRegistry;
-  private readonly cache: Map<string, ScaffoldingService> = new Map();
+	private readonly registry: ScaffoldingServiceRegistry;
+	private readonly cache: Map<string, ScaffoldingService> = new Map();
 
-  constructor(registry: ScaffoldingServiceRegistry) {
-    this.registry = registry;
-  }
+	constructor(registry: ScaffoldingServiceRegistry) {
+		this.registry = registry;
+	}
 
-  inject(name: string): ScaffoldingService {
-    // Check cache first
-    const cached = this.cache.get(name);
-    if (cached) {
-      return cached;
-    }
+	inject(name: string): ScaffoldingService {
+		// Check cache first
+		const cached = this.cache.get(name);
+		if (cached) {
+			return cached;
+		}
 
-    // Resolve dependencies and create service
-    const service = this.resolveService(name);
-    this.cache.set(name, service);
-    
-    return service;
-  }
+		// Resolve dependencies and create service
+		const service = this.resolveService(name);
+		this.cache.set(name, service);
 
-  injectAll(names: readonly string[]): Record<string, ScaffoldingService> {
-    const services: Record<string, ScaffoldingService> = {};
-    
-    for (const name of names) {
-      services[name] = this.inject(name);
-    }
-    
-    return services;
-  }
+		return service;
+	}
 
-  private resolveService(name: string): ScaffoldingService {
-    const visited = new Set<string>();
-    const resolving = new Set<string>();
+	injectAll(names: readonly string[]): Record<string, ScaffoldingService> {
+		const services: Record<string, ScaffoldingService> = {};
 
-    const resolve = (serviceName: string): ScaffoldingService => {
-      if (resolving.has(serviceName)) {
-        throw new ScaffoldingError(
-          `Circular dependency detected: ${serviceName}`,
-          'CIRCULAR_DEPENDENCY'
-        );
-      }
+		for (const name of names) {
+			services[name] = this.inject(name);
+		}
 
-      if (visited.has(serviceName)) {
-        const service = this.cache.get(serviceName);
-        if (service) {
-          return service;
-        }
-      }
+		return services;
+	}
 
-      resolving.add(serviceName);
+	private resolveService(name: string): ScaffoldingService {
+		const visited = new Set<string>();
+		const resolving = new Set<string>();
 
-      // Get service dependencies
-      const dependencies = this.registry.getDependencies(serviceName);
-      
-      // Resolve dependencies first
-      for (const dep of dependencies) {
-        resolve(dep);
-      }
+		const resolve = (serviceName: string): ScaffoldingService => {
+			if (resolving.has(serviceName)) {
+				throw new ScaffoldingError(
+					`Circular dependency detected: ${serviceName}`,
+					"CIRCULAR_DEPENDENCY",
+				);
+			}
 
-      // Get or create the service
-      const service = this.registry.get(serviceName);
-      if (!service) {
-        throw new ScaffoldingError(
-          `Service not found: ${serviceName}`,
-          'SERVICE_NOT_FOUND'
-        );
-      }
+			if (visited.has(serviceName)) {
+				const service = this.cache.get(serviceName);
+				if (service) {
+					return service;
+				}
+			}
 
-      resolving.delete(serviceName);
-      visited.add(serviceName);
-      
-      return service;
-    };
+			resolving.add(serviceName);
 
-    return resolve(name);
-  }
+			// Get service dependencies
+			const dependencies = this.registry.getDependencies(serviceName);
+
+			// Resolve dependencies first
+			for (const dep of dependencies) {
+				resolve(dep);
+			}
+
+			// Get or create the service
+			const service = this.registry.get(serviceName);
+			if (!service) {
+				throw new ScaffoldingError(
+					`Service not found: ${serviceName}`,
+					"SERVICE_NOT_FOUND",
+				);
+			}
+
+			resolving.delete(serviceName);
+			visited.add(serviceName);
+
+			return service;
+		};
+
+		return resolve(name);
+	}
 }
 
 // ===== BUILT-IN SERVICES =====
 
 export class ComponentGeneratorService implements ScaffoldingService {
-  readonly name = 'component-generator';
-  readonly tier = 3 as const;
+	readonly name = "component-generator";
+	readonly tier = 3 as const;
 
-  async generate(
-    context: ScaffoldingContext,
-    options: { name: string; type?: string; features?: string[] }
-  ): Promise<GenerationResult> {
-    const { name, type = 'functional', features = [] } = options;
-    
-    logger.info(`Generating ${type} component: ${name}`);
+	async generate(
+		context: ScaffoldingContext,
+		options: { name: string; type?: string; features?: string[] },
+	): Promise<GenerationResult> {
+		const { name, type = "functional", features = [] } = options;
 
-    const files: string[] = [];
-    const componentPath = `src/components/${name}`;
+		logger.info(`Generating ${type} component: ${name}`);
 
-    // Generate component file
-    const componentContent = this.generateComponentContent(name, type, features);
-    files.push(`${componentPath}/${name}.tsx`);
+		const files: string[] = [];
+		const componentPath = `src/components/${name}`;
 
-    // Generate test file
-    const testContent = this.generateTestContent(name);
-    files.push(`${componentPath}/${name}.test.tsx`);
+		// Generate component file
+		const componentContent = this.generateComponentContent(
+			name,
+			type,
+			features,
+		);
+		files.push(`${componentPath}/${name}.tsx`);
 
-    // Generate story file if requested
-    if (features.includes('storybook')) {
-      const storyContent = this.generateStoryContent(name);
-      files.push(`${componentPath}/${name}.stories.tsx`);
-    }
+		// Generate test file
+		const testContent = this.generateTestContent(name);
+		files.push(`${componentPath}/${name}.test.tsx`);
 
-    return {
-      success: true,
-      files,
-      errors: [],
-      warnings: []
-    };
-  }
+		// Generate story file if requested
+		if (features.includes("storybook")) {
+			const storyContent = this.generateStoryContent(name);
+			files.push(`${componentPath}/${name}.stories.tsx`);
+		}
 
-  async validate(
-    context: ScaffoldingContext,
-    options: unknown
-  ): Promise<readonly string[]> {
-    const errors: string[] = [];
-    const opts = options as { name?: string; type?: string };
+		return {
+			success: true,
+			files,
+			errors: [],
+			warnings: [],
+		};
+	}
 
-    if (!opts.name) {
-      errors.push('Component name is required');
-    }
+	async validate(
+		context: ScaffoldingContext,
+		options: unknown,
+	): Promise<readonly string[]> {
+		const errors: string[] = [];
+		const opts = options as { name?: string; type?: string };
 
-    if (opts.name && !/^[A-Z][a-zA-Z0-9]*$/.test(opts.name)) {
-      errors.push('Component name must start with uppercase letter and contain only alphanumeric characters');
-    }
+		if (!opts.name) {
+			errors.push("Component name is required");
+		}
 
-    return errors;
-  }
+		if (opts.name && !/^[A-Z][a-zA-Z0-9]*$/.test(opts.name)) {
+			errors.push(
+				"Component name must start with uppercase letter and contain only alphanumeric characters",
+			);
+		}
 
-  async preview(
-    context: ScaffoldingContext,
-    options: unknown
-  ): Promise<readonly string[]> {
-    const opts = options as { name: string; features?: string[] };
-    const { name, features = [] } = opts;
+		return errors;
+	}
 
-    const files = [
-      `src/components/${name}/${name}.tsx`,
-      `src/components/${name}/${name}.test.tsx`
-    ];
+	async preview(
+		context: ScaffoldingContext,
+		options: unknown,
+	): Promise<readonly string[]> {
+		const opts = options as { name: string; features?: string[] };
+		const { name, features = [] } = opts;
 
-    if (features.includes('storybook')) {
-      files.push(`src/components/${name}/${name}.stories.tsx`);
-    }
+		const files = [
+			`src/components/${name}/${name}.tsx`,
+			`src/components/${name}/${name}.test.tsx`,
+		];
 
-    return files;
-  }
+		if (features.includes("storybook")) {
+			files.push(`src/components/${name}/${name}.stories.tsx`);
+		}
 
-  private generateComponentContent(name: string, type: string, features: string[]): string {
-    const hasProps = features.includes('props');
-    const hasState = features.includes('state');
+		return files;
+	}
 
-    return `/**
+	private generateComponentContent(
+		name: string,
+		type: string,
+		features: string[],
+	): string {
+		const hasProps = features.includes("props");
+		const hasState = features.includes("state");
+
+		return `/**
  * @fileoverview ${name} Component
  * @description Generated by Xala CLI
  */
 
-import React${hasState ? ', { useState }' : ''} from 'react';
+import React${hasState ? ", { useState }" : ""} from 'react';
 
-${hasProps ? `
+${
+	hasProps
+		? `
 interface ${name}Props {
   readonly className?: string;
   readonly children?: React.ReactNode;
 }
-` : ''}
+`
+		: ""
+}
 
-export const ${name} = (${hasProps ? `{ className, children }: ${name}Props` : ''}): JSX.Element => {
-  ${hasState ? 'const [state, setState] = useState<unknown>(null);' : ''}
+export const ${name} = (${hasProps ? `{ className, children }: ${name}Props` : ""}): JSX.Element => {
+  ${hasState ? "const [state, setState] = useState<unknown>(null);" : ""}
 
   return (
-    <div${hasProps ? ' className={className}' : ''}>
+    <div${hasProps ? " className={className}" : ""}>
       <h1>${name} Component</h1>
-      ${hasProps ? '{children}' : ''}
+      ${hasProps ? "{children}" : ""}
     </div>
   );
 };
 `;
-  }
+	}
 
-  private generateTestContent(name: string): string {
-    return `/**
+	private generateTestContent(name: string): string {
+		return `/**
  * @fileoverview ${name} Component Tests
  * @description Generated by Xala CLI
  */
@@ -286,10 +304,10 @@ describe('${name}', () => {
   });
 });
 `;
-  }
+	}
 
-  private generateStoryContent(name: string): string {
-    return `/**
+	private generateStoryContent(name: string): string {
+		return `/**
  * @fileoverview ${name} Component Stories
  * @description Generated by Xala CLI
  */
@@ -313,84 +331,88 @@ export const Default: Story = {
   args: {},
 };
 `;
-  }
+	}
 }
 
 export class PageGeneratorService implements ScaffoldingService {
-  readonly name = 'page-generator';
-  readonly tier = 3 as const;
+	readonly name = "page-generator";
+	readonly tier = 3 as const;
 
-  async generate(
-    context: ScaffoldingContext,
-    options: { name: string; route?: string; layout?: string }
-  ): Promise<GenerationResult> {
-    const { name, route, layout = 'default' } = options;
-    
-    logger.info(`Generating page: ${name}`);
+	async generate(
+		context: ScaffoldingContext,
+		options: { name: string; route?: string; layout?: string },
+	): Promise<GenerationResult> {
+		const { name, route, layout = "default" } = options;
 
-    const files: string[] = [];
-    const pagePath = `src/pages/${name}`;
+		logger.info(`Generating page: ${name}`);
 
-    // Generate page component
-    const pageContent = this.generatePageContent(name, route, layout);
-    files.push(`${pagePath}/index.tsx`);
+		const files: string[] = [];
+		const pagePath = `src/pages/${name}`;
 
-    // Generate page layout if custom
-    if (layout !== 'default') {
-      const layoutContent = this.generateLayoutContent(name, layout);
-      files.push(`${pagePath}/layout.tsx`);
-    }
+		// Generate page component
+		const pageContent = this.generatePageContent(name, route, layout);
+		files.push(`${pagePath}/index.tsx`);
 
-    return {
-      success: true,
-      files,
-      errors: [],
-      warnings: []
-    };
-  }
+		// Generate page layout if custom
+		if (layout !== "default") {
+			const layoutContent = this.generateLayoutContent(name, layout);
+			files.push(`${pagePath}/layout.tsx`);
+		}
 
-  async validate(
-    context: ScaffoldingContext,
-    options: unknown
-  ): Promise<readonly string[]> {
-    const errors: string[] = [];
-    const opts = options as { name?: string; route?: string };
+		return {
+			success: true,
+			files,
+			errors: [],
+			warnings: [],
+		};
+	}
 
-    if (!opts.name) {
-      errors.push('Page name is required');
-    }
+	async validate(
+		context: ScaffoldingContext,
+		options: unknown,
+	): Promise<readonly string[]> {
+		const errors: string[] = [];
+		const opts = options as { name?: string; route?: string };
 
-    if (opts.route && !opts.route.startsWith('/')) {
-      errors.push('Route must start with forward slash');
-    }
+		if (!opts.name) {
+			errors.push("Page name is required");
+		}
 
-    return errors;
-  }
+		if (opts.route && !opts.route.startsWith("/")) {
+			errors.push("Route must start with forward slash");
+		}
 
-  async preview(
-    context: ScaffoldingContext,
-    options: unknown
-  ): Promise<readonly string[]> {
-    const opts = options as { name: string; layout?: string };
-    const { name, layout = 'default' } = opts;
+		return errors;
+	}
 
-    const files = [`src/pages/${name}/index.tsx`];
+	async preview(
+		context: ScaffoldingContext,
+		options: unknown,
+	): Promise<readonly string[]> {
+		const opts = options as { name: string; layout?: string };
+		const { name, layout = "default" } = opts;
 
-    if (layout !== 'default') {
-      files.push(`src/pages/${name}/layout.tsx`);
-    }
+		const files = [`src/pages/${name}/index.tsx`];
 
-    return files;
-  }
+		if (layout !== "default") {
+			files.push(`src/pages/${name}/layout.tsx`);
+		}
 
-  private generatePageContent(name: string, route?: string, layout?: string): string {
-    return `/**
+		return files;
+	}
+
+	private generatePageContent(
+		name: string,
+		route?: string,
+		layout?: string,
+	): string {
+		return `/**
  * @fileoverview ${name} Page
  * @description Generated by Xala CLI
  */
 
 import React from 'react';
-${layout !== 'default' ? `import { Layout } from './layout';` : ''}
+${layout !== "default" ? `import { Layout } from './layout';` : ""}
 
 export default function ${name}Page(): JSX.Element {
   const content = (
@@ -402,25 +424,33 @@ export default function ${name}Page(): JSX.Element {
     </div>
   );
 
-  ${layout !== 'default' ? `
+  ${
+		layout !== "default"
+			? `
   return (
     <Layout>
       {content}
     </Layout>
-  );` : 'return content;'}
+  );`
+			: "return content;"
+	}
 }
 
-${route ? `
+${
+	route
+		? `
 // Route configuration
 export const routeConfig = {
   path: '${route}',
   component: ${name}Page,
-};` : ''}
+};`
+		: ""
+}
 `;
-  }
+	}
 
-  private generateLayoutContent(name: string, layout: string): string {
-    return `/**
+	private generateLayoutContent(name: string, layout: string): string {
+		return `/**
  * @fileoverview ${name} Page Layout
  * @description Generated by Xala CLI
  */
@@ -453,130 +483,137 @@ export const Layout = ({ children }: LayoutProps): JSX.Element => {
   );
 };
 `;
-  }
+	}
 }
 
 // ===== FACTORY FUNCTIONS =====
 
 export function createScaffoldingServiceRegistry(): ScaffoldingServiceRegistry {
-  const registry = new ScaffoldingServiceRegistry();
-  
-  // Register built-in services
-  registry.register({
-    name: 'component-generator',
-    type: 'singleton',
-    factory: () => new ComponentGeneratorService(),
-    service: new ComponentGeneratorService()
-  });
+	const registry = new ScaffoldingServiceRegistry();
 
-  registry.register({
-    name: 'page-generator',
-    type: 'singleton',
-    factory: () => new PageGeneratorService(),
-    service: new PageGeneratorService()
-  });
+	// Register built-in services
+	registry.register({
+		name: "component-generator",
+		type: "singleton",
+		factory: () => new ComponentGeneratorService(),
+		service: new ComponentGeneratorService(),
+	});
 
-  return registry;
+	registry.register({
+		name: "page-generator",
+		type: "singleton",
+		factory: () => new PageGeneratorService(),
+		service: new PageGeneratorService(),
+	});
+
+	return registry;
 }
 
 export function createScaffoldingServiceInjector(
-  registry?: ScaffoldingServiceRegistry
+	registry?: ScaffoldingServiceRegistry,
 ): ScaffoldingServiceInjector {
-  const serviceRegistry = registry || createScaffoldingServiceRegistry();
-  return new ScaffoldingServiceInjector(serviceRegistry);
+	const serviceRegistry = registry || createScaffoldingServiceRegistry();
+	return new ScaffoldingServiceInjector(serviceRegistry);
 }
 
 // ===== INTEGRATION WITH ORCHESTRATOR =====
 
 export class ServiceIntegratedOrchestrator extends HybridScaffoldingOrchestrator {
-  private readonly serviceRegistry: ScaffoldingServiceRegistry;
-  private readonly serviceInjector: ScaffoldingServiceInjector;
+	private readonly serviceRegistry: ScaffoldingServiceRegistry;
+	private readonly serviceInjector: ScaffoldingServiceInjector;
 
-  constructor(projectPath: string, registry?: ScaffoldingServiceRegistry) {
-    super(projectPath);
-    
-    this.serviceRegistry = registry || createScaffoldingServiceRegistry();
-    this.serviceInjector = new ScaffoldingServiceInjector(this.serviceRegistry);
-    
-    // Register services with orchestrator
-    this.registerBuiltinServices();
-  }
+	constructor(projectPath: string, registry?: ScaffoldingServiceRegistry) {
+		super(projectPath);
 
-  async generateWithServices(
-    context: ScaffoldingContext,
-    options: HybridScaffoldingOptions & {
-      services?: Record<string, unknown>;
-    }
-  ): Promise<GenerationResult> {
-    const results: GenerationResult[] = [];
+		this.serviceRegistry = registry || createScaffoldingServiceRegistry();
+		this.serviceInjector = new ScaffoldingServiceInjector(this.serviceRegistry);
 
-    // Execute regular tiers first
-    const orchestrationResult = await this.orchestrate(context, options);
-    results.push(orchestrationResult);
+		// Register services with orchestrator
+		this.registerBuiltinServices();
+	}
 
-    // Execute services if specified
-    if (options.services) {
-      for (const [serviceName, serviceOptions] of Object.entries(options.services)) {
-        try {
-          const service = this.serviceInjector.inject(serviceName);
-          const serviceResult = await service.generate(context, serviceOptions);
-          results.push(serviceResult);
-        } catch (error) {
-          results.push({
-            success: false,
-            files: [],
-            errors: [error instanceof Error ? error.message : String(error)],
-            warnings: []
-          });
-        }
-      }
-    }
+	async generateWithServices(
+		context: ScaffoldingContext,
+		options: HybridScaffoldingOptions & {
+			services?: Record<string, unknown>;
+		},
+	): Promise<GenerationResult> {
+		const results: GenerationResult[] = [];
 
-    return this.combineResults(results);
-  }
+		// Execute regular tiers first
+		const orchestrationResult = await this.orchestrate(context, options);
+		results.push(orchestrationResult);
 
-  registerService(service: ScaffoldingService, dependencies: string[] = []): void {
-    this.serviceRegistry.register({
-      name: service.name,
-      type: 'singleton',
-      factory: () => service,
-      service,
-      dependencies
-    });
+		// Execute services if specified
+		if (options.services) {
+			for (const [serviceName, serviceOptions] of Object.entries(
+				options.services,
+			)) {
+				try {
+					const service = this.serviceInjector.inject(serviceName);
+					const serviceResult = await service.generate(context, serviceOptions);
+					results.push(serviceResult);
+				} catch (error) {
+					results.push({
+						success: false,
+						files: [],
+						errors: [error instanceof Error ? error.message : String(error)],
+						warnings: [],
+					});
+				}
+			}
+		}
 
-    // Also register with parent orchestrator
-    super.registerService(service);
-  }
+		return this.combineResults(results);
+	}
 
-  getServiceRegistry(): ScaffoldingServiceRegistry {
-    return this.serviceRegistry;
-  }
+	registerService(
+		service: ScaffoldingService,
+		dependencies: string[] = [],
+	): void {
+		this.serviceRegistry.register({
+			name: service.name,
+			type: "singleton",
+			factory: () => service,
+			service,
+			dependencies,
+		});
 
-  getServiceInjector(): ScaffoldingServiceInjector {
-    return this.serviceInjector;
-  }
+		// Also register with parent orchestrator
+		super.registerService(service);
+	}
 
-  private registerBuiltinServices(): void {
-    const services = [
-      new ComponentGeneratorService(),
-      new PageGeneratorService()
-    ];
+	getServiceRegistry(): ScaffoldingServiceRegistry {
+		return this.serviceRegistry;
+	}
 
-    for (const service of services) {
-      this.registerService(service);
-    }
-  }
+	getServiceInjector(): ScaffoldingServiceInjector {
+		return this.serviceInjector;
+	}
 
-  private combineResults(results: readonly GenerationResult[]): GenerationResult {
-    const allFiles = results.flatMap(r => r.files);
-    const allErrors = results.flatMap(r => r.errors);
-    const allWarnings = results.flatMap(r => r.warnings);
+	private registerBuiltinServices(): void {
+		const services = [
+			new ComponentGeneratorService(),
+			new PageGeneratorService(),
+		];
 
-    return {
-      success: allErrors.length === 0,
-      files: [...new Set(allFiles)], // Remove duplicates
-      errors: allErrors,
-      warnings: allWarnings
-    };
-  }
+		for (const service of services) {
+			this.registerService(service);
+		}
+	}
+
+	private combineResults(
+		results: readonly GenerationResult[],
+	): GenerationResult {
+		const allFiles = results.flatMap((r) => r.files);
+		const allErrors = results.flatMap((r) => r.errors);
+		const allWarnings = results.flatMap((r) => r.warnings);
+
+		return {
+			success: allErrors.length === 0,
+			files: [...new Set(allFiles)], // Remove duplicates
+			errors: allErrors,
+			warnings: allWarnings,
+		};
+	}
 }

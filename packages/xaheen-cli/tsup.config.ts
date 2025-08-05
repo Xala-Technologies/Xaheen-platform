@@ -15,6 +15,11 @@ export default defineConfig({
 		options.target = "node18";
 	},
 	// External dependencies that should not be bundled
-	external: ["node:*", "ts-morph", "prism-react-renderer/themes/github", "prism-react-renderer/themes/dracula"],
+	external: [
+		"node:*",
+		"ts-morph",
+		"prism-react-renderer/themes/github",
+		"prism-react-renderer/themes/dracula",
+	],
 	noExternal: ["@clack/prompts", "consola", "chalk"],
 });

@@ -1,6 +1,6 @@
-import { BaseGenerator } from "../base.generator";
-import { TemplateManager } from "../../services/templates/template-loader";
 import { ProjectAnalyzer } from "../../services/analysis/project-analyzer";
+import { TemplateManager } from "../../services/templates/template-loader";
+import { BaseGenerator } from "../base.generator";
 
 export interface SecurityGeneratorOptions {
 	readonly projectName: string;

@@ -1,6 +1,6 @@
 /**
  * AI-Powered Component Suggestions System
- * 
+ *
  * Story 1.2 Implementation: AI-powered component suggestions
  * - Analyzes existing codebase patterns
  * - Provides intelligent component recommendations
@@ -9,12 +9,22 @@
  */
 
 import { logger } from "../../utils/logger.js";
-import { AIService, type ComponentContext } from "./ai-service.js";
 import { mcpClient } from "../mcp/mcp-client.js";
-import { AIContextIndexer, type CodebaseIndex, type ComponentIndex } from "./ai-context-indexer.js";
+import {
+	AIContextIndexer,
+	type CodebaseIndex,
+	type ComponentIndex,
+} from "./ai-context-indexer.js";
+import { AIService, type ComponentContext } from "./ai-service.js";
 
 export interface ComponentSuggestion {
-	type: "reuse" | "pattern" | "optimization" | "accessibility" | "performance" | "compliance";
+	type:
+		| "reuse"
+		| "pattern"
+		| "optimization"
+		| "accessibility"
+		| "performance"
+		| "compliance";
 	title: string;
 	description: string;
 	recommendation: string;
@@ -98,7 +108,7 @@ export class AIComponentSuggestions {
 
 		// Filter and rank suggestions
 		const filteredSuggestions = suggestions
-			.filter(s => s.confidence >= options.minConfidence)
+			.filter((s) => s.confidence >= options.minConfidence)
 			.sort((a, b) => b.confidence - a.confidence)
 			.slice(0, options.maxSuggestions);
 
@@ -157,7 +167,7 @@ export class AIComponentSuggestions {
 
 		const suggestions: ComponentSuggestion[] = [];
 		const relevantPatterns = this.codebaseIndex.patterns.filter(
-			p => p.recommendation === "high" && p.usage > 0,
+			(p) => p.recommendation === "high" && p.usage > 0,
 		);
 
 		for (const pattern of relevantPatterns.slice(0, 2)) {
@@ -195,7 +205,8 @@ export class AIComponentSuggestions {
 		}
 
 		// Generate general optimization suggestions based on component type
-		const generalOptimizations = await this.generateGeneralOptimizations(context);
+		const generalOptimizations =
+			await this.generateGeneralOptimizations(context);
 		suggestions.push(...generalOptimizations);
 
 		return suggestions;
@@ -226,7 +237,8 @@ export class AIComponentSuggestions {
 		}
 
 		// Generate general accessibility suggestions
-		const generalA11y = await this.generateGeneralAccessibilitySuggestions(context);
+		const generalA11y =
+			await this.generateGeneralAccessibilitySuggestions(context);
 		suggestions.push(...generalA11y);
 
 		return suggestions;
@@ -242,13 +254,15 @@ export class AIComponentSuggestions {
 
 		// Analyze component complexity for performance recommendations
 		const complexity = this.estimateComponentComplexity(context);
-		
+
 		if (complexity === "complex") {
 			suggestions.push({
 				type: "performance",
 				title: "Add React.memo for performance optimization",
-				description: "This complex component would benefit from memoization to prevent unnecessary re-renders.",
-				recommendation: "Wrap the component with React.memo and use useCallback for event handlers",
+				description:
+					"This complex component would benefit from memoization to prevent unnecessary re-renders.",
+				recommendation:
+					"Wrap the component with React.memo and use useCallback for event handlers",
 				code: this.generateMemoizationCode(context.componentName),
 				confidence: 0.8,
 				reasoning: [
@@ -267,7 +281,8 @@ export class AIComponentSuggestions {
 			suggestions.push({
 				type: "performance",
 				title: "Consider lazy loading for better performance",
-				description: "Large components can be lazy loaded to improve initial bundle size.",
+				description:
+					"Large components can be lazy loaded to improve initial bundle size.",
 				recommendation: "Use React.lazy and Suspense for code splitting",
 				code: this.generateLazyLoadingCode(context.componentName),
 				confidence: 0.7,
@@ -301,8 +316,10 @@ export class AIComponentSuggestions {
 			suggestions.push({
 				type: "compliance",
 				title: "Add Norwegian compliance features",
-				description: "Implement NSM classification and Norwegian locale support.",
-				recommendation: "Add NSM classification markers and Norwegian language support",
+				description:
+					"Implement NSM classification and Norwegian locale support.",
+				recommendation:
+					"Add NSM classification markers and Norwegian language support",
 				code: this.generateNorwegianComplianceCode(context.componentName),
 				confidence: 0.9,
 				reasoning: [
@@ -322,7 +339,8 @@ export class AIComponentSuggestions {
 				type: "compliance",
 				title: "Implement GDPR compliance features",
 				description: "Add data privacy controls and consent management.",
-				recommendation: "Include GDPR consent handling and data privacy features",
+				recommendation:
+					"Include GDPR consent handling and data privacy features",
 				code: this.generateGDPRComplianceCode(context.componentName),
 				confidence: 0.85,
 				reasoning: [
@@ -351,23 +369,27 @@ export class AIComponentSuggestions {
 		const nameWords = componentName.toLowerCase().split(/(?=[A-Z])/);
 		const components = this.codebaseIndex.components;
 
-		return components.filter(comp => {
-			// Same type gets higher priority
-			if (comp.type === componentType) return true;
+		return components
+			.filter((comp) => {
+				// Same type gets higher priority
+				if (comp.type === componentType) return true;
 
-			// Similar name patterns
-			const compNameWords = comp.name.toLowerCase().split(/(?=[A-Z])/);
-			const commonWords = nameWords.filter(word => 
-				compNameWords.some(compWord => compWord.includes(word) || word.includes(compWord))
-			);
+				// Similar name patterns
+				const compNameWords = comp.name.toLowerCase().split(/(?=[A-Z])/);
+				const commonWords = nameWords.filter((word) =>
+					compNameWords.some(
+						(compWord) => compWord.includes(word) || word.includes(compWord),
+					),
+				);
 
-			return commonWords.length > 0;
-		}).sort((a, b) => {
-			// Sort by reusability score and similarity
-			if (a.type === componentType && b.type !== componentType) return -1;
-			if (b.type === componentType && a.type !== componentType) return 1;
-			return b.reusability - a.reusability;
-		});
+				return commonWords.length > 0;
+			})
+			.sort((a, b) => {
+				// Sort by reusability score and similarity
+				if (a.type === componentType && b.type !== componentType) return -1;
+				if (b.type === componentType && a.type !== componentType) return 1;
+				return b.reusability - a.reusability;
+			});
 	}
 
 	/**
@@ -393,9 +415,12 @@ export class AIComponentSuggestions {
 		}
 
 		// Check prop compatibility
-		const hasCompatibleProps = existing.props.length > 0 && 
-			existing.props.some(prop => prop.name === "children" || prop.name === "className");
-		
+		const hasCompatibleProps =
+			existing.props.length > 0 &&
+			existing.props.some(
+				(prop) => prop.name === "children" || prop.name === "className",
+			);
+
 		if (hasCompatibleProps) {
 			reasoning.push("Has flexible props like children or className");
 			confidence += 0.15;
@@ -408,22 +433,24 @@ export class AIComponentSuggestions {
 		}
 
 		// Check patterns used
-		const hasGoodPatterns = existing.patterns.includes("children-pattern") || 
+		const hasGoodPatterns =
+			existing.patterns.includes("children-pattern") ||
 			existing.patterns.includes("React.memo");
-		
+
 		if (hasGoodPatterns) {
 			reasoning.push("Uses good reusability patterns");
 			confidence += 0.1;
 		}
 
 		const canReuse = confidence > 0.6;
-		
+
 		let recommendation = "";
 		let exampleCode = "";
 
 		if (canReuse) {
-			if (existing.props.some(p => p.name === "children")) {
-				recommendation = "Reuse this component by passing your content as children";
+			if (existing.props.some((p) => p.name === "children")) {
+				recommendation =
+					"Reuse this component by passing your content as children";
 				exampleCode = `import { ${existing.name} } from "${existing.path.replace(process.cwd(), ".")}";
 
 export const ${context.componentName} = (): JSX.Element => {
@@ -508,17 +535,19 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 
 			// Parse AI response and create suggestions
 			// This is a simplified implementation
-			return [{
-				type: "pattern",
-				title: "AI-suggested pattern",
-				description: "AI-generated pattern recommendation",
-				recommendation: aiResult.explanation,
-				confidence: aiResult.confidence,
-				reasoning: aiResult.suggestions,
-				references: [],
-				impact: "medium",
-				effort: "medium",
-			}];
+			return [
+				{
+					type: "pattern",
+					title: "AI-suggested pattern",
+					description: "AI-generated pattern recommendation",
+					recommendation: aiResult.explanation,
+					confidence: aiResult.confidence,
+					reasoning: aiResult.suggestions,
+					references: [],
+					impact: "medium",
+					effort: "medium",
+				},
+			];
 		} catch (error) {
 			logger.debug("Failed to generate AI pattern suggestions:", error);
 			return [];
@@ -539,7 +568,8 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 			suggestions.push({
 				type: "optimization",
 				title: "Add React.memo for performance",
-				description: "Prevent unnecessary re-renders by wrapping component with React.memo",
+				description:
+					"Prevent unnecessary re-renders by wrapping component with React.memo",
 				recommendation: "Wrap your component with React.memo",
 				code: this.generateMemoizationCode(context.componentName),
 				confidence: 0.7,
@@ -555,13 +585,17 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 			suggestions.push({
 				type: "optimization",
 				title: "Use useCallback for event handlers",
-				description: "Optimize event handlers with useCallback to prevent child re-renders",
+				description:
+					"Optimize event handlers with useCallback to prevent child re-renders",
 				recommendation: "Wrap event handlers with useCallback",
 				code: `const handleClick = useCallback(() => {
   // Your click handler logic
 }, [/* dependencies */]);`,
 				confidence: 0.6,
-				reasoning: ["Event handlers not optimized", "Can prevent child re-renders"],
+				reasoning: [
+					"Event handlers not optimized",
+					"Can prevent child re-renders",
+				],
 				references: [],
 				impact: "low",
 				effort: "low",
@@ -584,10 +618,15 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 			suggestions.push({
 				type: "optimization",
 				title: "Consider virtualization for large datasets",
-				description: "Use virtual scrolling for better performance with large lists",
-				recommendation: "Implement react-window or similar virtualization library",
+				description:
+					"Use virtual scrolling for better performance with large lists",
+				recommendation:
+					"Implement react-window or similar virtualization library",
 				confidence: 0.8,
-				reasoning: ["List/table components benefit from virtualization", "Improves performance with large datasets"],
+				reasoning: [
+					"List/table components benefit from virtualization",
+					"Improves performance with large datasets",
+				],
 				references: [],
 				impact: "high",
 				effort: "medium",
@@ -607,8 +646,10 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 		return {
 			type: "accessibility",
 			title: "Implement WCAG AAA accessibility",
-			description: "Add comprehensive accessibility features for inclusive design",
-			recommendation: "Include ARIA labels, keyboard navigation, and semantic HTML",
+			description:
+				"Add comprehensive accessibility features for inclusive design",
+			recommendation:
+				"Include ARIA labels, keyboard navigation, and semantic HTML",
 			code: this.generateAccessibilityCode(context.componentName),
 			confidence: 0.9,
 			reasoning: [
@@ -634,7 +675,8 @@ Suggest 1-2 relevant design patterns that would improve the component.`;
 		suggestions.push({
 			type: "accessibility",
 			title: "Add basic accessibility features",
-			description: "Implement essential accessibility attributes and semantic HTML",
+			description:
+				"Implement essential accessibility attributes and semantic HTML",
 			recommendation: "Use semantic HTML elements and add ARIA labels",
 			code: `// Use semantic HTML
 <main role="main">
@@ -760,7 +802,9 @@ export const ${componentName} = (props: ${componentName}Props): JSX.Element => {
 };`;
 	}
 
-	private estimateComponentComplexity(context: SuggestionContext): "simple" | "medium" | "complex" {
+	private estimateComponentComplexity(
+		context: SuggestionContext,
+	): "simple" | "medium" | "complex" {
 		const description = context.description?.toLowerCase() || "";
 		const type = context.componentType;
 
@@ -770,8 +814,12 @@ export const ${componentName} = (props: ${componentName}Props): JSX.Element => {
 		}
 
 		// Complex descriptions
-		if (description.includes("interactive") || description.includes("dynamic") || 
-			description.includes("complex") || description.includes("advanced")) {
+		if (
+			description.includes("interactive") ||
+			description.includes("dynamic") ||
+			description.includes("complex") ||
+			description.includes("advanced")
+		) {
 			return "complex";
 		}
 

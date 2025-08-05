@@ -6,70 +6,82 @@
  */
 
 import { promises as fs } from "fs";
-import { join, dirname } from "path";
+import { dirname, join } from "path";
 import { BaseGenerator } from "../base.generator.js";
 import type {
-	ContinuousLearningOptions,
-	ContinuousLearningFeature,
-	FeedbackCollectionConfig,
-	ModelVersioningConfig,
-	AnalyticsConfig,
-	MLOpsIntegrationConfig,
 	ABTestingConfig,
+	AnalyticsConfig,
+	ContinuousLearningFeature,
+	ContinuousLearningOptions,
+	FeedbackCollectionConfig,
+	MLOpsIntegrationConfig,
+	ModelVersioningConfig,
 	ReportingConfig,
 } from "./types.js";
 
 export class ContinuousLearningGenerator extends BaseGenerator<ContinuousLearningOptions> {
 	public async generate(options: ContinuousLearningOptions): Promise<void> {
 		this.logger.info(`Generating continuous learning system: ${options.name}`);
-		
+
 		await this.validateOptions(options);
 		await this.ensureOutputDirectory(options.outputPath);
-		
+
 		// Generate core continuous learning components
 		await this.generateFeedbackCollectionSystem(options);
 		await this.generateModelVersioningSystem(options);
 		await this.generateAnalyticsDashboard(options);
 		await this.generateDatabaseSchemas(options);
 		await this.generateReportingSystem(options);
-		
+
 		// Generate optional features
 		if (options.mlopsIntegration) {
 			await this.generateMLOpsIntegration(options);
 		}
-		
+
 		if (options.abTesting?.enabled) {
 			await this.generateABTestingSystem(options);
 		}
-		
+
 		// Generate configuration and documentation
 		await this.generateConfiguration(options);
 		await this.generateDocumentation(options);
 		await this.generatePackageJson(options);
 		await this.generateEnvironmentFiles(options);
-		
-		this.logger.success(`Continuous learning system generated successfully at ${options.outputPath}`);
+
+		this.logger.success(
+			`Continuous learning system generated successfully at ${options.outputPath}`,
+		);
 	}
 
-	protected async validateOptions(options: ContinuousLearningOptions): Promise<void> {
+	protected async validateOptions(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		if (!options.name || options.name.trim().length === 0) {
 			throw new Error("Continuous learning system name is required");
 		}
-		
+
 		if (!options.outputPath || options.outputPath.trim().length === 0) {
 			throw new Error("Output path is required");
 		}
-		
+
 		if (!options.features || options.features.length === 0) {
-			throw new Error("At least one continuous learning feature must be specified");
+			throw new Error(
+				"At least one continuous learning feature must be specified",
+			);
 		}
-		
+
 		// Validate feature combinations
-		if (options.features.includes("a-b-testing") && !options.abTesting?.enabled) {
+		if (
+			options.features.includes("a-b-testing") &&
+			!options.abTesting?.enabled
+		) {
 			throw new Error("A/B testing feature requires abTesting configuration");
 		}
-		
-		if (options.features.includes("drift-detection") && !options.analytics.dashboard) {
+
+		if (
+			options.features.includes("drift-detection") &&
+			!options.analytics.dashboard
+		) {
 			throw new Error("Drift detection requires analytics dashboard");
 		}
 	}
@@ -82,127 +94,181 @@ export class ContinuousLearningGenerator extends BaseGenerator<ContinuousLearnin
 		}
 	}
 
-	private async generateFeedbackCollectionSystem(options: ContinuousLearningOptions): Promise<void> {
+	private async generateFeedbackCollectionSystem(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		this.logger.info("Generating feedback collection system...");
-		
+
 		const feedbackDir = join(options.outputPath, "src/feedback");
 		await fs.mkdir(feedbackDir, { recursive: true });
-		
+
 		// Generate feedback collection API
 		if (options.feedbackCollection.methods.includes("api")) {
 			await this.generateFeedbackAPI(options, feedbackDir);
 		}
-		
+
 		// Generate webhook handler
 		if (options.feedbackCollection.methods.includes("webhook")) {
 			await this.generateWebhookHandler(options, feedbackDir);
 		}
-		
+
 		// Generate event processor
 		if (options.feedbackCollection.methods.includes("events")) {
 			await this.generateEventProcessor(options, feedbackDir);
 		}
-		
+
 		// Generate batch processor
 		if (options.feedbackCollection.methods.includes("batch")) {
 			await this.generateBatchProcessor(options, feedbackDir);
 		}
-		
+
 		// Generate feedback models and validators
 		await this.generateFeedbackModels(options, feedbackDir);
 		await this.generateFeedbackValidators(options, feedbackDir);
 	}
 
-	private async generateFeedbackAPI(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateFeedbackAPI(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const apiContent = this.getFeedbackAPITemplate(options);
 		await fs.writeFile(join(feedbackDir, "feedback-api.ts"), apiContent);
-		
+
 		const controllerContent = this.getFeedbackControllerTemplate(options);
-		await fs.writeFile(join(feedbackDir, "feedback.controller.ts"), controllerContent);
+		await fs.writeFile(
+			join(feedbackDir, "feedback.controller.ts"),
+			controllerContent,
+		);
 	}
 
-	private async generateWebhookHandler(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateWebhookHandler(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const webhookContent = this.getWebhookHandlerTemplate(options);
 		await fs.writeFile(join(feedbackDir, "webhook-handler.ts"), webhookContent);
 	}
 
-	private async generateEventProcessor(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateEventProcessor(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const eventContent = this.getEventProcessorTemplate(options);
 		await fs.writeFile(join(feedbackDir, "event-processor.ts"), eventContent);
 	}
 
-	private async generateBatchProcessor(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateBatchProcessor(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const batchContent = this.getBatchProcessorTemplate(options);
 		await fs.writeFile(join(feedbackDir, "batch-processor.ts"), batchContent);
 	}
 
-	private async generateFeedbackModels(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateFeedbackModels(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const modelsContent = this.getFeedbackModelsTemplate(options);
 		await fs.writeFile(join(feedbackDir, "feedback.models.ts"), modelsContent);
 	}
 
-	private async generateFeedbackValidators(options: ContinuousLearningOptions, feedbackDir: string): Promise<void> {
+	private async generateFeedbackValidators(
+		options: ContinuousLearningOptions,
+		feedbackDir: string,
+	): Promise<void> {
 		const validatorsContent = this.getFeedbackValidatorsTemplate(options);
-		await fs.writeFile(join(feedbackDir, "feedback.validators.ts"), validatorsContent);
+		await fs.writeFile(
+			join(feedbackDir, "feedback.validators.ts"),
+			validatorsContent,
+		);
 	}
 
-	private async generateModelVersioningSystem(options: ContinuousLearningOptions): Promise<void> {
+	private async generateModelVersioningSystem(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		this.logger.info("Generating model versioning system...");
-		
+
 		const versioningDir = join(options.outputPath, "src/versioning");
 		await fs.mkdir(versioningDir, { recursive: true });
-		
+
 		// Generate version manager
 		const versionManagerContent = this.getVersionManagerTemplate(options);
-		await fs.writeFile(join(versioningDir, "version-manager.ts"), versionManagerContent);
-		
+		await fs.writeFile(
+			join(versioningDir, "version-manager.ts"),
+			versionManagerContent,
+		);
+
 		// Generate rollback system
 		if (options.modelVersioning.rollbackSupport) {
 			const rollbackContent = this.getRollbackSystemTemplate(options);
-			await fs.writeFile(join(versioningDir, "rollback-system.ts"), rollbackContent);
+			await fs.writeFile(
+				join(versioningDir, "rollback-system.ts"),
+				rollbackContent,
+			);
 		}
-		
+
 		// Generate canary deployment
 		if (options.modelVersioning.canaryDeployment) {
 			const canaryContent = this.getCanaryDeploymentTemplate(options);
-			await fs.writeFile(join(versioningDir, "canary-deployment.ts"), canaryContent);
+			await fs.writeFile(
+				join(versioningDir, "canary-deployment.ts"),
+				canaryContent,
+			);
 		}
-		
+
 		// Generate health checks
 		if (options.modelVersioning.healthChecks) {
 			const healthCheckContent = this.getHealthCheckTemplate(options);
-			await fs.writeFile(join(versioningDir, "health-check.ts"), healthCheckContent);
+			await fs.writeFile(
+				join(versioningDir, "health-check.ts"),
+				healthCheckContent,
+			);
 		}
 	}
 
-	private async generateAnalyticsDashboard(options: ContinuousLearningOptions): Promise<void> {
+	private async generateAnalyticsDashboard(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		if (!options.analytics.dashboard) return;
-		
+
 		this.logger.info("Generating analytics dashboard...");
-		
+
 		const analyticsDir = join(options.outputPath, "src/analytics");
 		await fs.mkdir(analyticsDir, { recursive: true });
-		
+
 		// Generate dashboard components
 		const dashboardContent = this.getDashboardTemplate(options);
 		await fs.writeFile(join(analyticsDir, "dashboard.ts"), dashboardContent);
-		
+
 		// Generate metrics collector
 		const metricsContent = this.getMetricsCollectorTemplate(options);
-		await fs.writeFile(join(analyticsDir, "metrics-collector.ts"), metricsContent);
-		
+		await fs.writeFile(
+			join(analyticsDir, "metrics-collector.ts"),
+			metricsContent,
+		);
+
 		// Generate visualization components
-		if (options.analytics.visualization === "charts" || options.analytics.visualization === "both") {
+		if (
+			options.analytics.visualization === "charts" ||
+			options.analytics.visualization === "both"
+		) {
 			const chartsContent = this.getChartsTemplate(options);
-			await fs.writeFile(join(analyticsDir, "chart-components.ts"), chartsContent);
+			await fs.writeFile(
+				join(analyticsDir, "chart-components.ts"),
+				chartsContent,
+			);
 		}
-		
+
 		// Generate real-time updates
 		if (options.analytics.realTime) {
 			const realtimeContent = this.getRealtimeUpdatesTemplate(options);
-			await fs.writeFile(join(analyticsDir, "realtime-updates.ts"), realtimeContent);
+			await fs.writeFile(
+				join(analyticsDir, "realtime-updates.ts"),
+				realtimeContent,
+			);
 		}
-		
+
 		// Generate alerts system
 		if (options.analytics.alerts) {
 			const alertsContent = this.getAlertsSystemTemplate(options);
@@ -210,79 +276,118 @@ export class ContinuousLearningGenerator extends BaseGenerator<ContinuousLearnin
 		}
 	}
 
-	private async generateDatabaseSchemas(options: ContinuousLearningOptions): Promise<void> {
+	private async generateDatabaseSchemas(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		this.logger.info("Generating database schemas...");
-		
+
 		const schemasDir = join(options.outputPath, "src/database");
 		await fs.mkdir(schemasDir, { recursive: true });
-		
+
 		// Generate feedback schema
 		const feedbackSchemaContent = this.getFeedbackSchemaTemplate(options);
-		await fs.writeFile(join(schemasDir, "feedback.schema.ts"), feedbackSchemaContent);
-		
+		await fs.writeFile(
+			join(schemasDir, "feedback.schema.ts"),
+			feedbackSchemaContent,
+		);
+
 		// Generate models schema
 		const modelsSchemaContent = this.getModelsSchemaTemplate(options);
-		await fs.writeFile(join(schemasDir, "models.schema.ts"), modelsSchemaContent);
-		
+		await fs.writeFile(
+			join(schemasDir, "models.schema.ts"),
+			modelsSchemaContent,
+		);
+
 		// Generate metrics schema
 		const metricsSchemaContent = this.getMetricsSchemaTemplate(options);
-		await fs.writeFile(join(schemasDir, "metrics.schema.ts"), metricsSchemaContent);
-		
+		await fs.writeFile(
+			join(schemasDir, "metrics.schema.ts"),
+			metricsSchemaContent,
+		);
+
 		// Generate migrations
 		const migrationsContent = this.getMigrationsTemplate(options);
 		await fs.writeFile(join(schemasDir, "migrations.ts"), migrationsContent);
-		
+
 		// Generate seeds
 		const seedsContent = this.getSeedsTemplate(options);
 		await fs.writeFile(join(schemasDir, "seeds.ts"), seedsContent);
 	}
 
-	private async generateReportingSystem(options: ContinuousLearningOptions): Promise<void> {
+	private async generateReportingSystem(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		this.logger.info("Generating reporting system...");
-		
+
 		const reportingDir = join(options.outputPath, "src/reporting");
 		await fs.mkdir(reportingDir, { recursive: true });
-		
+
 		// Generate report generator
 		const reportGeneratorContent = this.getReportGeneratorTemplate(options);
-		await fs.writeFile(join(reportingDir, "report-generator.ts"), reportGeneratorContent);
-		
+		await fs.writeFile(
+			join(reportingDir, "report-generator.ts"),
+			reportGeneratorContent,
+		);
+
 		// Generate scheduler
 		const schedulerContent = this.getReportSchedulerTemplate(options);
-		await fs.writeFile(join(reportingDir, "report-scheduler.ts"), schedulerContent);
-		
+		await fs.writeFile(
+			join(reportingDir, "report-scheduler.ts"),
+			schedulerContent,
+		);
+
 		// Generate export handlers
 		for (const format of options.reporting.format) {
 			const exportContent = this.getExportHandlerTemplate(options, format);
-			await fs.writeFile(join(reportingDir, `${format}-export.ts`), exportContent);
+			await fs.writeFile(
+				join(reportingDir, `${format}-export.ts`),
+				exportContent,
+			);
 		}
-		
+
 		// Generate notification system
-		if (options.reporting.recipients && options.reporting.recipients.length > 0) {
+		if (
+			options.reporting.recipients &&
+			options.reporting.recipients.length > 0
+		) {
 			const notificationContent = this.getNotificationSystemTemplate(options);
-			await fs.writeFile(join(reportingDir, "notification-system.ts"), notificationContent);
+			await fs.writeFile(
+				join(reportingDir, "notification-system.ts"),
+				notificationContent,
+			);
 		}
 	}
 
-	private async generateMLOpsIntegration(options: ContinuousLearningOptions): Promise<void> {
+	private async generateMLOpsIntegration(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		if (!options.mlopsIntegration) return;
-		
+
 		this.logger.info("Generating MLOps integration...");
-		
+
 		const mlopsDir = join(options.outputPath, "src/mlops");
 		await fs.mkdir(mlopsDir, { recursive: true });
-		
+
 		for (const platform of options.mlopsIntegration.platforms) {
-			const integrationContent = this.getMLOpsIntegrationTemplate(options, platform);
-			await fs.writeFile(join(mlopsDir, `${platform}-integration.ts`), integrationContent);
+			const integrationContent = this.getMLOpsIntegrationTemplate(
+				options,
+				platform,
+			);
+			await fs.writeFile(
+				join(mlopsDir, `${platform}-integration.ts`),
+				integrationContent,
+			);
 		}
-		
+
 		// Generate experiment tracking
 		if (options.mlopsIntegration.experimentTracking) {
 			const experimentContent = this.getExperimentTrackingTemplate(options);
-			await fs.writeFile(join(mlopsDir, "experiment-tracking.ts"), experimentContent);
+			await fs.writeFile(
+				join(mlopsDir, "experiment-tracking.ts"),
+				experimentContent,
+			);
 		}
-		
+
 		// Generate model registry integration
 		if (options.mlopsIntegration.modelRegistry) {
 			const registryContent = this.getModelRegistryTemplate(options);
@@ -290,64 +395,96 @@ export class ContinuousLearningGenerator extends BaseGenerator<ContinuousLearnin
 		}
 	}
 
-	private async generateABTestingSystem(options: ContinuousLearningOptions): Promise<void> {
+	private async generateABTestingSystem(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		if (!options.abTesting?.enabled) return;
-		
+
 		this.logger.info("Generating A/B testing system...");
-		
+
 		const abTestingDir = join(options.outputPath, "src/ab-testing");
 		await fs.mkdir(abTestingDir, { recursive: true });
-		
+
 		// Generate experiment manager
 		const experimentManagerContent = this.getExperimentManagerTemplate(options);
-		await fs.writeFile(join(abTestingDir, "experiment-manager.ts"), experimentManagerContent);
-		
+		await fs.writeFile(
+			join(abTestingDir, "experiment-manager.ts"),
+			experimentManagerContent,
+		);
+
 		// Generate traffic splitter
 		const trafficSplitterContent = this.getTrafficSplitterTemplate(options);
-		await fs.writeFile(join(abTestingDir, "traffic-splitter.ts"), trafficSplitterContent);
-		
+		await fs.writeFile(
+			join(abTestingDir, "traffic-splitter.ts"),
+			trafficSplitterContent,
+		);
+
 		// Generate statistical analysis
-		const statisticalAnalysisContent = this.getStatisticalAnalysisTemplate(options);
-		await fs.writeFile(join(abTestingDir, "statistical-analysis.ts"), statisticalAnalysisContent);
+		const statisticalAnalysisContent =
+			this.getStatisticalAnalysisTemplate(options);
+		await fs.writeFile(
+			join(abTestingDir, "statistical-analysis.ts"),
+			statisticalAnalysisContent,
+		);
 	}
 
-	private async generateConfiguration(options: ContinuousLearningOptions): Promise<void> {
+	private async generateConfiguration(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		const configContent = this.getConfigurationTemplate(options);
-		await fs.writeFile(join(options.outputPath, "continuous-learning.config.ts"), configContent);
+		await fs.writeFile(
+			join(options.outputPath, "continuous-learning.config.ts"),
+			configContent,
+		);
 	}
 
-	private async generateDocumentation(options: ContinuousLearningOptions): Promise<void> {
+	private async generateDocumentation(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		const docsDir = join(options.outputPath, "docs");
 		await fs.mkdir(docsDir, { recursive: true });
-		
+
 		// Generate README
 		const readmeContent = this.getReadmeTemplate(options);
 		await fs.writeFile(join(docsDir, "README.md"), readmeContent);
-		
+
 		// Generate API documentation
 		const apiDocsContent = this.getApiDocsTemplate(options);
 		await fs.writeFile(join(docsDir, "api-reference.md"), apiDocsContent);
-		
+
 		// Generate deployment guide
 		const deploymentGuideContent = this.getDeploymentGuideTemplate(options);
-		await fs.writeFile(join(docsDir, "deployment-guide.md"), deploymentGuideContent);
+		await fs.writeFile(
+			join(docsDir, "deployment-guide.md"),
+			deploymentGuideContent,
+		);
 	}
 
-	private async generatePackageJson(options: ContinuousLearningOptions): Promise<void> {
+	private async generatePackageJson(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		const packageJsonContent = this.getPackageJsonTemplate(options);
-		await fs.writeFile(join(options.outputPath, "package.json"), packageJsonContent);
+		await fs.writeFile(
+			join(options.outputPath, "package.json"),
+			packageJsonContent,
+		);
 	}
 
-	private async generateEnvironmentFiles(options: ContinuousLearningOptions): Promise<void> {
+	private async generateEnvironmentFiles(
+		options: ContinuousLearningOptions,
+	): Promise<void> {
 		const envContent = this.getEnvironmentTemplate(options);
 		await fs.writeFile(join(options.outputPath, ".env.example"), envContent);
-		
+
 		const dockerComposeContent = this.getDockerComposeTemplate(options);
-		await fs.writeFile(join(options.outputPath, "docker-compose.yml"), dockerComposeContent);
+		await fs.writeFile(
+			join(options.outputPath, "docker-compose.yml"),
+			dockerComposeContent,
+		);
 	}
 
 	// Template methods (simplified for brevity - in practice these would be much more detailed)
-	
+
 	private getFeedbackAPITemplate(options: ContinuousLearningOptions): string {
 		return `/**
  * Feedback Collection API
@@ -497,7 +634,9 @@ export default FeedbackAPI;
 `;
 	}
 
-	private getFeedbackControllerTemplate(options: ContinuousLearningOptions): string {
+	private getFeedbackControllerTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `/**
  * Feedback Controller for ${options.framework.toUpperCase()}
  * Handles continuous learning feedback collection
@@ -513,7 +652,7 @@ import { RateLimitGuard } from '../guards/rate-limit.guard';
 
 @ApiTags('Continuous Learning')
 @Controller('feedback')
-@UseGuards(AuthGuard${options.feedbackCollection.rateLimiting ? ', RateLimitGuard' : ''})
+@UseGuards(AuthGuard${options.feedbackCollection.rateLimiting ? ", RateLimitGuard" : ""})
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
@@ -567,7 +706,9 @@ export class FeedbackController {
 `;
 	}
 
-	private getVersionManagerTemplate(options: ContinuousLearningOptions): string {
+	private getVersionManagerTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `/**
  * Model Version Manager
  * Handles model versioning, rollbacks, and deployment strategies
@@ -622,17 +763,21 @@ export class VersionManager extends EventEmitter {
         }
       }
 
-      ${options.modelVersioning.canaryDeployment ? `
+      ${
+				options.modelVersioning.canaryDeployment
+					? `
       // Perform canary deployment if enabled
       if (metadata.canaryPercentage && metadata.canaryPercentage > 0) {
         await this.performCanaryDeployment(version, metadata.canaryPercentage);
       } else {
         await this.promoteToProduction(version);
       }
-      ` : `
+      `
+					: `
       // Direct deployment
       await this.promoteToProduction(version);
-      `}
+      `
+			}
 
       version.status = 'active';
       this.currentVersion = version;
@@ -948,10 +1093,10 @@ export const ContinuousLearningDashboard: React.FC<DashboardProps> = ({
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Continuous Learning Dashboard</h1>
-        ${options.analytics.realTime ? '<RealTimeUpdates onUpdate={fetchMetrics} />' : ''}
+        ${options.analytics.realTime ? "<RealTimeUpdates onUpdate={fetchMetrics} />" : ""}
       </div>
 
-      ${options.analytics.alerts ? '<AlertsPanel />' : ''}
+      ${options.analytics.alerts ? "<AlertsPanel />" : ""}
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1010,7 +1155,10 @@ export const ContinuousLearningDashboard: React.FC<DashboardProps> = ({
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        ${options.analytics.visualization === 'charts' || options.analytics.visualization === 'both' ? `
+        ${
+					options.analytics.visualization === "charts" ||
+					options.analytics.visualization === "both"
+						? `
         <Card>
           <CardHeader>
             <CardTitle>Feedback Trends Over Time</CardTitle>
@@ -1071,9 +1219,14 @@ export const ContinuousLearningDashboard: React.FC<DashboardProps> = ({
             />
           </CardContent>
         </Card>
-        ` : ''}
+        `
+						: ""
+				}
 
-        ${options.analytics.visualization === 'tables' || options.analytics.visualization === 'both' ? `
+        ${
+					options.analytics.visualization === "tables" ||
+					options.analytics.visualization === "both"
+						? `
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Recent Feedback</CardTitle>
@@ -1113,7 +1266,9 @@ export const ContinuousLearningDashboard: React.FC<DashboardProps> = ({
             </div>
           </CardContent>
         </Card>
-        ` : ''}
+        `
+						: ""
+				}
       </div>
 
       {/* Model Versions Section */}
@@ -1179,12 +1334,16 @@ export const continuousLearningConfig = {
       duration: ${options.feedbackCollection.retention.duration},
       archiving: ${options.feedbackCollection.retention.archiving},
       compression: ${options.feedbackCollection.retention.compression || false},
-      partitioning: '${options.feedbackCollection.retention.partitioning || 'time'}'
-    }${options.feedbackCollection.rateLimiting ? `,
+      partitioning: '${options.feedbackCollection.retention.partitioning || "time"}'
+    }${
+			options.feedbackCollection.rateLimiting
+				? `,
     rateLimiting: {
       requestsPerMinute: ${options.feedbackCollection.rateLimiting.requestsPerMinute},
       strategy: '${options.feedbackCollection.rateLimiting.strategy}'
-    }` : ''}
+    }`
+				: ""
+		}
   },
   
   modelVersioning: {
@@ -1200,27 +1359,45 @@ export const continuousLearningConfig = {
     dashboard: ${options.analytics.dashboard},
     metrics: ${JSON.stringify(options.analytics.metrics)},
     visualization: '${options.analytics.visualization}',
-    realTime: ${options.analytics.realTime}${options.analytics.alerts ? `,
+    realTime: ${options.analytics.realTime}${
+			options.analytics.alerts
+				? `,
     alerts: {
       thresholds: ${JSON.stringify(options.analytics.alerts.thresholds)},
       channels: ${JSON.stringify(options.analytics.alerts.channels)},
       escalation: ${options.analytics.alerts.escalation || false}
-    }` : ''}${options.analytics.export ? `,
+    }`
+				: ""
+		}${
+			options.analytics.export
+				? `,
     export: {
       formats: ${JSON.stringify(options.analytics.export.formats)},
       schedule: '${options.analytics.export.schedule}',
       destination: '${options.analytics.export.destination}'
-    }` : ''}
+    }`
+				: ""
+		}
   },
   
   reporting: {
     frequency: '${options.reporting.frequency}',
     format: ${JSON.stringify(options.reporting.format)},
     trends: ${options.reporting.trends},
-    recommendations: ${options.reporting.recommendations}${options.reporting.recipients ? `,
-    recipients: ${JSON.stringify(options.reporting.recipients)}` : ''}${options.reporting.customMetrics ? `,
-    customMetrics: ${JSON.stringify(options.reporting.customMetrics)}` : ''}
-  }${options.mlopsIntegration ? `,
+    recommendations: ${options.reporting.recommendations}${
+			options.reporting.recipients
+				? `,
+    recipients: ${JSON.stringify(options.reporting.recipients)}`
+				: ""
+		}${
+			options.reporting.customMetrics
+				? `,
+    customMetrics: ${JSON.stringify(options.reporting.customMetrics)}`
+				: ""
+		}
+  }${
+		options.mlopsIntegration
+			? `,
   
   mlopsIntegration: {
     platforms: ${JSON.stringify(options.mlopsIntegration.platforms)},
@@ -1228,7 +1405,11 @@ export const continuousLearningConfig = {
     modelRegistry: ${options.mlopsIntegration.modelRegistry},
     artifactStorage: ${options.mlopsIntegration.artifactStorage},
     hyperparameterTuning: ${options.mlopsIntegration.hyperparameterTuning || false}
-  }` : ''}${options.abTesting?.enabled ? `,
+  }`
+			: ""
+	}${
+		options.abTesting?.enabled
+			? `,
   
   abTesting: {
     enabled: ${options.abTesting.enabled},
@@ -1237,7 +1418,9 @@ export const continuousLearningConfig = {
     statisticalSignificance: ${options.abTesting.statisticalSignificance},
     minimumSampleSize: ${options.abTesting.minimumSampleSize},
     duration: ${options.abTesting.duration}
-  }` : ''}
+  }`
+			: ""
+	}
 };
 
 export default continuousLearningConfig;
@@ -1251,43 +1434,51 @@ AI-powered continuous learning system for code enhancement with comprehensive fe
 
 ## Features
 
-${options.features.map(feature => `- ✅ ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('\n')}
+${options.features.map((feature) => `- ✅ ${feature.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`).join("\n")}
 
 ## Architecture
 
 This continuous learning system consists of the following components:
 
 ### Feedback Collection
-- **Methods**: ${options.feedbackCollection.methods.join(', ')}
+- **Methods**: ${options.feedbackCollection.methods.join(", ")}
 - **Authentication**: ${options.feedbackCollection.authentication}
-- **Rate Limiting**: ${options.feedbackCollection.rateLimiting ? 'Enabled' : 'Disabled'}
+- **Rate Limiting**: ${options.feedbackCollection.rateLimiting ? "Enabled" : "Disabled"}
 - **Data Retention**: ${options.feedbackCollection.retention.duration} days
 
 ### Model Versioning
 - **Strategy**: ${options.modelVersioning.strategy}
 - **Storage**: ${options.modelVersioning.storage}
-- **Rollback Support**: ${options.modelVersioning.rollbackSupport ? 'Enabled' : 'Disabled'}
-- **Health Checks**: ${options.modelVersioning.healthChecks ? 'Enabled' : 'Disabled'}
+- **Rollback Support**: ${options.modelVersioning.rollbackSupport ? "Enabled" : "Disabled"}
+- **Health Checks**: ${options.modelVersioning.healthChecks ? "Enabled" : "Disabled"}
 
 ### Analytics & Reporting
-- **Dashboard**: ${options.analytics.dashboard ? 'Enabled' : 'Disabled'}
-- **Real-time Updates**: ${options.analytics.realTime ? 'Enabled' : 'Disabled'}
+- **Dashboard**: ${options.analytics.dashboard ? "Enabled" : "Disabled"}
+- **Real-time Updates**: ${options.analytics.realTime ? "Enabled" : "Disabled"}
 - **Report Frequency**: ${options.reporting.frequency}
-- **Export Formats**: ${options.reporting.format.join(', ')}
+- **Export Formats**: ${options.reporting.format.join(", ")}
 
-${options.mlopsIntegration ? `
+${
+	options.mlopsIntegration
+		? `
 ### MLOps Integration
-- **Platforms**: ${options.mlopsIntegration.platforms.join(', ')}
-- **Experiment Tracking**: ${options.mlopsIntegration.experimentTracking ? 'Enabled' : 'Disabled'}
-- **Model Registry**: ${options.mlopsIntegration.modelRegistry ? 'Enabled' : 'Disabled'}
-` : ''}
+- **Platforms**: ${options.mlopsIntegration.platforms.join(", ")}
+- **Experiment Tracking**: ${options.mlopsIntegration.experimentTracking ? "Enabled" : "Disabled"}
+- **Model Registry**: ${options.mlopsIntegration.modelRegistry ? "Enabled" : "Disabled"}
+`
+		: ""
+}
 
-${options.abTesting?.enabled ? `
+${
+	options.abTesting?.enabled
+		? `
 ### A/B Testing
 - **Split Strategy**: ${options.abTesting.splitStrategy}
 - **Traffic Allocation**: ${options.abTesting.trafficAllocation}%
 - **Minimum Sample Size**: ${options.abTesting.minimumSampleSize}
-` : ''}
+`
+		: ""
+}
 
 ## Quick Start
 
@@ -1425,7 +1616,9 @@ export const config = {
 
 ## Monitoring & Alerts
 
-${options.analytics.alerts ? `
+${
+	options.analytics.alerts
+		? `
 ### Alert Configuration
 
 Configure alerts for key metrics:
@@ -1441,11 +1634,15 @@ alerts: {
   escalation: true
 }
 \`\`\`
-` : ''}
+`
+		: ""
+}
 
 ### Dashboard Access
 
-${options.analytics.dashboard ? `
+${
+	options.analytics.dashboard
+		? `
 Access the analytics dashboard at: \`http://localhost:3000/dashboard\`
 
 The dashboard provides:
@@ -1453,7 +1650,9 @@ The dashboard provides:
 - Model performance trends
 - Version comparison tools
 - User behavior analytics
-` : ''}
+`
+		: ""
+}
 
 ## Development Guidelines
 
@@ -1559,54 +1758,54 @@ Generated with Xaheen CLI - AI-Native Developer Productivity
 			cors: '"^2.8.5"',
 			helmet: '"^7.0.0"',
 			compression: '"^1.7.4"',
-			'rate-limiter-flexible': '"^3.0.8"',
+			"rate-limiter-flexible": '"^3.0.8"',
 			zod: '"^3.22.4"',
 			winston: '"^3.10.0"',
 			dotenv: '"^16.3.1"',
 		};
 
 		// Add framework-specific dependencies
-		if (options.framework === 'nestjs') {
+		if (options.framework === "nestjs") {
 			Object.assign(dependencies, {
-				'@nestjs/core': '"^10.0.0"',
-				'@nestjs/common': '"^10.0.0"',
-				'@nestjs/platform-express': '"^10.0.0"',
-				'@nestjs/swagger': '"^7.1.8"',
-				'@nestjs/schedule': '"^3.0.1"',
-				'@nestjs/event-emitter': '"^2.0.2"',
+				"@nestjs/core": '"^10.0.0"',
+				"@nestjs/common": '"^10.0.0"',
+				"@nestjs/platform-express": '"^10.0.0"',
+				"@nestjs/swagger": '"^7.1.8"',
+				"@nestjs/schedule": '"^3.0.1"',
+				"@nestjs/event-emitter": '"^2.0.2"',
 			});
-		} else if (options.framework === 'fastify') {
+		} else if (options.framework === "fastify") {
 			Object.assign(dependencies, {
 				fastify: '"^4.21.0"',
-				'@fastify/cors': '"^8.3.0"',
-				'@fastify/helmet': '"^11.1.1"',
-				'@fastify/rate-limit': '"^8.0.3"',
+				"@fastify/cors": '"^8.3.0"',
+				"@fastify/helmet": '"^11.1.1"',
+				"@fastify/rate-limit": '"^8.0.3"',
 			});
-		} else if (options.framework === 'nextjs') {
+		} else if (options.framework === "nextjs") {
 			Object.assign(dependencies, {
 				next: '"^13.4.12"',
 				react: '"^18.2.0"',
-				'react-dom': '"^18.2.0"',
-				'@next/font': '"13.4.12"',
+				"react-dom": '"^18.2.0"',
+				"@next/font": '"13.4.12"',
 			});
 		}
 
 		// Add database dependencies
-		if (options.database === 'postgresql') {
+		if (options.database === "postgresql") {
 			Object.assign(dependencies, {
 				pg: '"^8.11.3"',
-				'@types/pg': '"^8.10.2"',
+				"@types/pg": '"^8.10.2"',
 			});
-		} else if (options.database === 'mysql') {
+		} else if (options.database === "mysql") {
 			Object.assign(dependencies, {
 				mysql2: '"^3.6.0"',
 			});
-		} else if (options.database === 'mongodb') {
+		} else if (options.database === "mongodb") {
 			Object.assign(dependencies, {
 				mongodb: '"^5.7.0"',
 				mongoose: '"^7.4.3"',
 			});
-		} else if (options.database === 'sqlite') {
+		} else if (options.database === "sqlite") {
 			Object.assign(dependencies, {
 				sqlite3: '"^5.1.6"',
 			});
@@ -1614,12 +1813,12 @@ Generated with Xaheen CLI - AI-Native Developer Productivity
 
 		// Add MLOps dependencies
 		if (options.mlopsIntegration) {
-			if (options.mlopsIntegration.platforms.includes('mlflow')) {
+			if (options.mlopsIntegration.platforms.includes("mlflow")) {
 				Object.assign(dependencies, {
-					'mlflow-tracking': '"^1.0.0"',
+					"mlflow-tracking": '"^1.0.0"',
 				});
 			}
-			if (options.mlopsIntegration.platforms.includes('wandb')) {
+			if (options.mlopsIntegration.platforms.includes("wandb")) {
 				Object.assign(dependencies, {
 					wandb: '"^1.0.0"',
 				});
@@ -1627,67 +1826,74 @@ Generated with Xaheen CLI - AI-Native Developer Productivity
 		}
 
 		// Add visualization dependencies
-		if (options.analytics.dashboard && options.framework === 'nextjs') {
+		if (options.analytics.dashboard && options.framework === "nextjs") {
 			Object.assign(dependencies, {
 				recharts: '"^2.7.2"',
-				'lucide-react': '"^0.263.1"',
-				'@radix-ui/react-card': '"^1.0.4"',
+				"lucide-react": '"^0.263.1"',
+				"@radix-ui/react-card": '"^1.0.4"',
 			});
 		}
 
-		return JSON.stringify({
-			name: options.name.toLowerCase().replace(/\s+/g, '-'),
-			version: "1.0.0",
-			description: `Continuous learning system for AI-powered code enhancement`,
-			type: "module",
-			main: "dist/index.js",
-			scripts: {
-				build: "tsc",
-				start: "node dist/index.js",
-				dev: options.framework === 'nextjs' ? "next dev" : "tsx watch src/index.ts",
-				test: "jest",
-				"test:watch": "jest --watch",
-				"test:coverage": "jest --coverage",
-				"test:integration": "jest --config jest.integration.config.js",
-				"db:migrate": "tsx src/database/migrate.ts",
-				"db:seed": "tsx src/database/seed.ts",
-				lint: "eslint src/**/*.ts",
-				"lint:fix": "eslint src/**/*.ts --fix",
-				format: "prettier --write src/**/*.ts",
-				"type-check": "tsc --noEmit"
+		return JSON.stringify(
+			{
+				name: options.name.toLowerCase().replace(/\s+/g, "-"),
+				version: "1.0.0",
+				description: `Continuous learning system for AI-powered code enhancement`,
+				type: "module",
+				main: "dist/index.js",
+				scripts: {
+					build: "tsc",
+					start: "node dist/index.js",
+					dev:
+						options.framework === "nextjs"
+							? "next dev"
+							: "tsx watch src/index.ts",
+					test: "jest",
+					"test:watch": "jest --watch",
+					"test:coverage": "jest --coverage",
+					"test:integration": "jest --config jest.integration.config.js",
+					"db:migrate": "tsx src/database/migrate.ts",
+					"db:seed": "tsx src/database/seed.ts",
+					lint: "eslint src/**/*.ts",
+					"lint:fix": "eslint src/**/*.ts --fix",
+					format: "prettier --write src/**/*.ts",
+					"type-check": "tsc --noEmit",
+				},
+				keywords: [
+					"continuous-learning",
+					"ai",
+					"code-enhancement",
+					"feedback-collection",
+					"model-versioning",
+					"analytics",
+					"mlops",
+				],
+				author: "Generated with Xaheen CLI",
+				license: "MIT",
+				dependencies,
+				devDependencies: {
+					"@types/node": "^20.4.8",
+					"@types/cors": "^2.8.13",
+					"@types/compression": "^1.7.2",
+					"@types/express": "^4.17.17",
+					"@types/jest": "^29.5.3",
+					"@typescript-eslint/eslint-plugin": "^6.2.1",
+					"@typescript-eslint/parser": "^6.2.1",
+					eslint: "^8.46.0",
+					jest: "^29.6.2",
+					prettier: "^3.0.0",
+					"ts-jest": "^29.1.1",
+					tsx: "^3.12.7",
+					typescript: "^5.1.6",
+				},
+				engines: {
+					node: ">=18.0.0",
+					npm: ">=8.0.0",
+				},
 			},
-			keywords: [
-				"continuous-learning",
-				"ai",
-				"code-enhancement",
-				"feedback-collection",
-				"model-versioning",
-				"analytics",
-				"mlops"
-			],
-			author: "Generated with Xaheen CLI",
-			license: "MIT",
-			dependencies,
-			devDependencies: {
-				"@types/node": "^20.4.8",
-				"@types/cors": "^2.8.13",
-				"@types/compression": "^1.7.2",
-				"@types/express": "^4.17.17",
-				"@types/jest": "^29.5.3",
-				"@typescript-eslint/eslint-plugin": "^6.2.1",
-				"@typescript-eslint/parser": "^6.2.1",
-				"eslint": "^8.46.0",
-				"jest": "^29.6.2",
-				"prettier": "^3.0.0",
-				"ts-jest": "^29.1.1",
-				"tsx": "^3.12.7",
-				"typescript": "^5.1.6"
-			},
-			engines: {
-				node: ">=18.0.0",
-				npm: ">=8.0.0"
-			}
-		}, null, 2);
+			null,
+			2,
+		);
 	}
 
 	private getEnvironmentTemplate(options: ContinuousLearningOptions): string {
@@ -1699,93 +1905,143 @@ PORT=3000
 APP_NAME="${options.name}"
 
 # Database Configuration
-${options.database === 'postgresql' ? `
+${
+	options.database === "postgresql"
+		? `
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=${options.name.toLowerCase().replace(/\s+/g, '_')}_db
+DB_NAME=${options.name.toLowerCase().replace(/\s+/g, "_")}_db
 DB_USER=postgres
 DB_PASSWORD=password
 DATABASE_URL=postgresql://\${DB_USER}:\${DB_PASSWORD}@\${DB_HOST}:\${DB_PORT}/\${DB_NAME}
-` : options.database === 'mysql' ? `
+`
+		: options.database === "mysql"
+			? `
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=${options.name.toLowerCase().replace(/\s+/g, '_')}_db
+DB_NAME=${options.name.toLowerCase().replace(/\s+/g, "_")}_db
 DB_USER=root
 DB_PASSWORD=password
 DATABASE_URL=mysql://\${DB_USER}:\${DB_PASSWORD}@\${DB_HOST}:\${DB_PORT}/\${DB_NAME}
-` : options.database === 'mongodb' ? `
-MONGODB_URI=mongodb://localhost:27017/${options.name.toLowerCase().replace(/\s+/g, '_')}_db
-` : `
-DB_PATH=./data/${options.name.toLowerCase().replace(/\s+/g, '_')}.sqlite
-`}
+`
+			: options.database === "mongodb"
+				? `
+MONGODB_URI=mongodb://localhost:27017/${options.name.toLowerCase().replace(/\s+/g, "_")}_db
+`
+				: `
+DB_PATH=./data/${options.name.toLowerCase().replace(/\s+/g, "_")}.sqlite
+`
+}
 
 # Authentication
-${options.feedbackCollection.authentication === 'jwt' ? `
+${
+	options.feedbackCollection.authentication === "jwt"
+		? `
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 JWT_EXPIRES_IN=24h
-` : options.feedbackCollection.authentication === 'api-key' ? `
+`
+		: options.feedbackCollection.authentication === "api-key"
+			? `
 API_KEY_SECRET=your-api-key-secret
 API_KEY_HEADER=X-API-Key
-` : ''}
+`
+			: ""
+}
 
 # Rate Limiting
-${options.feedbackCollection.rateLimiting ? `
+${
+	options.feedbackCollection.rateLimiting
+		? `
 RATE_LIMIT_WINDOW_MS=${(options.feedbackCollection.rateLimiting.requestsPerMinute / 60) * 1000}
 RATE_LIMIT_MAX_REQUESTS=${options.feedbackCollection.rateLimiting.requestsPerMinute}
-` : ''}
+`
+		: ""
+}
 
 # Model Storage
-${options.modelVersioning.storage === 's3' ? `
+${
+	options.modelVersioning.storage === "s3"
+		? `
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
-S3_BUCKET_NAME=${options.name.toLowerCase().replace(/\s+/g, '-')}-models
-` : options.modelVersioning.storage === 'gcs' ? `
+S3_BUCKET_NAME=${options.name.toLowerCase().replace(/\s+/g, "-")}-models
+`
+		: options.modelVersioning.storage === "gcs"
+			? `
 GCP_PROJECT_ID=your-project-id
 GCP_KEY_FILE=path/to/service-account-key.json
-GCS_BUCKET_NAME=${options.name.toLowerCase().replace(/\s+/g, '-')}-models
-` : options.modelVersioning.storage === 'azure-blob' ? `
+GCS_BUCKET_NAME=${options.name.toLowerCase().replace(/\s+/g, "-")}-models
+`
+			: options.modelVersioning.storage === "azure-blob"
+				? `
 AZURE_STORAGE_ACCOUNT=yourstorageaccount
 AZURE_STORAGE_KEY=your-storage-key
-AZURE_CONTAINER_NAME=${options.name.toLowerCase().replace(/\s+/g, '-')}-models
-` : `
+AZURE_CONTAINER_NAME=${options.name.toLowerCase().replace(/\s+/g, "-")}-models
+`
+				: `
 LOCAL_STORAGE_PATH=./storage/models
-`}
+`
+}
 
 # Analytics Configuration
 ANALYTICS_ENABLED=${options.analytics.dashboard}
 REAL_TIME_UPDATES=${options.analytics.realTime}
 METRICS_RETENTION_DAYS=90
 
-${options.analytics.alerts ? `
+${
+	options.analytics.alerts
+		? `
 # Alerts Configuration
-ALERT_EMAIL_FROM=alerts@${options.name.toLowerCase().replace(/\s+/g, '-')}.com
-ALERT_EMAIL_TO=admin@${options.name.toLowerCase().replace(/\s+/g, '-')}.com
+ALERT_EMAIL_FROM=alerts@${options.name.toLowerCase().replace(/\s+/g, "-")}.com
+ALERT_EMAIL_TO=admin@${options.name.toLowerCase().replace(/\s+/g, "-")}.com
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-` : ''}
+`
+		: ""
+}
 
-${options.mlopsIntegration ? `
+${
+	options.mlopsIntegration
+		? `
 # MLOps Integration
-${options.mlopsIntegration.platforms.includes('mlflow') ? `
+${
+	options.mlopsIntegration.platforms.includes("mlflow")
+		? `
 MLFLOW_TRACKING_URI=http://localhost:5000
-MLFLOW_EXPERIMENT_NAME=${options.name.replace(/\s+/g, '-')}
-` : ''}
-${options.mlopsIntegration.platforms.includes('wandb') ? `
+MLFLOW_EXPERIMENT_NAME=${options.name.replace(/\s+/g, "-")}
+`
+		: ""
+}
+${
+	options.mlopsIntegration.platforms.includes("wandb")
+		? `
 WANDB_API_KEY=your-wandb-api-key
-WANDB_PROJECT=${options.name.toLowerCase().replace(/\s+/g, '-')}
+WANDB_PROJECT=${options.name.toLowerCase().replace(/\s+/g, "-")}
 WANDB_ENTITY=your-wandb-entity
-` : ''}
-${options.mlopsIntegration.platforms.includes('neptune') ? `
+`
+		: ""
+}
+${
+	options.mlopsIntegration.platforms.includes("neptune")
+		? `
 NEPTUNE_API_TOKEN=your-neptune-api-token
-NEPTUNE_PROJECT=your-workspace/${options.name.toLowerCase().replace(/\s+/g, '-')}
-` : ''}
-` : ''}
+NEPTUNE_PROJECT=your-workspace/${options.name.toLowerCase().replace(/\s+/g, "-")}
+`
+		: ""
+}
+`
+		: ""
+}
 
 # Reporting Configuration
 REPORT_OUTPUT_DIR=./reports
-${options.reporting.recipients ? `
-REPORT_EMAIL_RECIPIENTS=${options.reporting.recipients.join(',')}
-` : ''}
+${
+	options.reporting.recipients
+		? `
+REPORT_EMAIL_RECIPIENTS=${options.reporting.recipients.join(",")}
+`
+		: ""
+}
 
 # Security
 CORS_ORIGIN=http://localhost:3000
@@ -1802,160 +2058,183 @@ NODE_OPTIONS="--max-old-space-size=4096"
 UV_THREADPOOL_SIZE=128
 
 # Feature Flags
-${options.features.map(feature => 
-	`FEATURE_${feature.toUpperCase().replace(/-/g, '_')}=true`
-).join('\n')}
+${options.features
+	.map((feature) => `FEATURE_${feature.toUpperCase().replace(/-/g, "_")}=true`)
+	.join("\n")}
 
 # Health Checks
 HEALTH_CHECK_ENABLED=${options.modelVersioning.healthChecks}
 HEALTH_CHECK_INTERVAL=30000
 
-${options.abTesting?.enabled ? `
+${
+	options.abTesting?.enabled
+		? `
 # A/B Testing
 AB_TESTING_ENABLED=true
 AB_TESTING_TRAFFIC_ALLOCATION=${options.abTesting.trafficAllocation}
 AB_TESTING_MIN_SAMPLE_SIZE=${options.abTesting.minimumSampleSize}
-` : ''}
+`
+		: ""
+}
 `;
 	}
 
 	private getDockerComposeTemplate(options: ContinuousLearningOptions): string {
 		const services: any = {
 			app: {
-				build: '.',
-				ports: ['3000:3000'],
-				environment: [
-					'NODE_ENV=development'
-				],
-				volumes: [
-					'.:/app',
-					'/app/node_modules'
-				],
-				depends_on: []
-			}
+				build: ".",
+				ports: ["3000:3000"],
+				environment: ["NODE_ENV=development"],
+				volumes: [".:/app", "/app/node_modules"],
+				depends_on: [],
+			},
 		};
 
 		// Add database service
-		if (options.database === 'postgresql') {
+		if (options.database === "postgresql") {
 			services.postgres = {
-				image: 'postgres:15-alpine',
+				image: "postgres:15-alpine",
 				environment: [
-					'POSTGRES_DB=' + options.name.toLowerCase().replace(/\s+/g, '_') + '_db',
-					'POSTGRES_USER=postgres',
-					'POSTGRES_PASSWORD=password'
+					"POSTGRES_DB=" +
+						options.name.toLowerCase().replace(/\s+/g, "_") +
+						"_db",
+					"POSTGRES_USER=postgres",
+					"POSTGRES_PASSWORD=password",
 				],
-				ports: ['5432:5432'],
-				volumes: [
-					'postgres_data:/var/lib/postgresql/data'
-				]
+				ports: ["5432:5432"],
+				volumes: ["postgres_data:/var/lib/postgresql/data"],
 			};
-			services.app.depends_on.push('postgres');
-		} else if (options.database === 'mysql') {
+			services.app.depends_on.push("postgres");
+		} else if (options.database === "mysql") {
 			services.mysql = {
-				image: 'mysql:8.0',
+				image: "mysql:8.0",
 				environment: [
-					'MYSQL_DATABASE=' + options.name.toLowerCase().replace(/\s+/g, '_') + '_db',
-					'MYSQL_ROOT_PASSWORD=password'
+					"MYSQL_DATABASE=" +
+						options.name.toLowerCase().replace(/\s+/g, "_") +
+						"_db",
+					"MYSQL_ROOT_PASSWORD=password",
 				],
-				ports: ['3306:3306'],
-				volumes: [
-					'mysql_data:/var/lib/mysql'
-				]
+				ports: ["3306:3306"],
+				volumes: ["mysql_data:/var/lib/mysql"],
 			};
-			services.app.depends_on.push('mysql');
-		} else if (options.database === 'mongodb') {
+			services.app.depends_on.push("mysql");
+		} else if (options.database === "mongodb") {
 			services.mongodb = {
-				image: 'mongo:6.0',
+				image: "mongo:6.0",
 				environment: [
-					'MONGO_INITDB_DATABASE=' + options.name.toLowerCase().replace(/\s+/g, '_') + '_db'
+					"MONGO_INITDB_DATABASE=" +
+						options.name.toLowerCase().replace(/\s+/g, "_") +
+						"_db",
 				],
-				ports: ['27017:27017'],
-				volumes: [
-					'mongodb_data:/data/db'
-				]
+				ports: ["27017:27017"],
+				volumes: ["mongodb_data:/data/db"],
 			};
-			services.app.depends_on.push('mongodb');
+			services.app.depends_on.push("mongodb");
 		}
 
 		// Add Redis for caching and real-time features
 		if (options.analytics.realTime) {
 			services.redis = {
-				image: 'redis:7-alpine',
-				ports: ['6379:6379'],
-				volumes: [
-					'redis_data:/data'
-				]
+				image: "redis:7-alpine",
+				ports: ["6379:6379"],
+				volumes: ["redis_data:/data"],
 			};
-			services.app.depends_on.push('redis');
+			services.app.depends_on.push("redis");
 		}
 
 		// Add MLOps services
-		if (options.mlopsIntegration?.platforms.includes('mlflow')) {
+		if (options.mlopsIntegration?.platforms.includes("mlflow")) {
 			services.mlflow = {
-				image: 'python:3.9-slim',
-				command: 'sh -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5000"',
-				ports: ['5000:5000'],
-				volumes: [
-					'mlflow_data:/mlflow'
-				]
+				image: "python:3.9-slim",
+				command:
+					'sh -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5000"',
+				ports: ["5000:5000"],
+				volumes: ["mlflow_data:/mlflow"],
 			};
-			services.app.depends_on.push('mlflow');
+			services.app.depends_on.push("mlflow");
 		}
 
 		const volumes: any = {};
-		if (options.database === 'postgresql') volumes.postgres_data = {};
-		if (options.database === 'mysql') volumes.mysql_data = {};
-		if (options.database === 'mongodb') volumes.mongodb_data = {};
+		if (options.database === "postgresql") volumes.postgres_data = {};
+		if (options.database === "mysql") volumes.mysql_data = {};
+		if (options.database === "mongodb") volumes.mongodb_data = {};
 		if (options.analytics.realTime) volumes.redis_data = {};
-		if (options.mlopsIntegration?.platforms.includes('mlflow')) volumes.mlflow_data = {};
+		if (options.mlopsIntegration?.platforms.includes("mlflow"))
+			volumes.mlflow_data = {};
 
 		return `version: '3.8'
 
 services:
-${Object.entries(services).map(([name, config]) => `  ${name}:
-${Object.entries(config).map(([key, value]) => {
-	if (Array.isArray(value)) {
-		return `    ${key}:\n${value.map(v => `      - ${v}`).join('\n')}`;
-	}
-	return `    ${key}: ${typeof value === 'string' ? `'${value}'` : value}`;
-}).join('\n')}`).join('\n\n')}
+${Object.entries(services)
+	.map(
+		([name, config]) => `  ${name}:
+${Object.entries(config)
+	.map(([key, value]) => {
+		if (Array.isArray(value)) {
+			return `    ${key}:\n${value.map((v) => `      - ${v}`).join("\n")}`;
+		}
+		return `    ${key}: ${typeof value === "string" ? `'${value}'` : value}`;
+	})
+	.join("\n")}`,
+	)
+	.join("\n\n")}
 
-${Object.keys(volumes).length > 0 ? `volumes:
-${Object.keys(volumes).map(name => `  ${name}:`).join('\n')}` : ''}
+${
+	Object.keys(volumes).length > 0
+		? `volumes:
+${Object.keys(volumes)
+	.map((name) => `  ${name}:`)
+	.join("\n")}`
+		: ""
+}
 
 networks:
   default:
-    name: ${options.name.toLowerCase().replace(/\s+/g, '-')}_network
+    name: ${options.name.toLowerCase().replace(/\s+/g, "-")}_network
 `;
 	}
 
 	// Additional template method stubs (would be fully implemented in production)
-	
-	private getWebhookHandlerTemplate(options: ContinuousLearningOptions): string {
+
+	private getWebhookHandlerTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Webhook handler implementation for ${options.name}`;
 	}
 
-	private getEventProcessorTemplate(options: ContinuousLearningOptions): string {
+	private getEventProcessorTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Event processor implementation for ${options.name}`;
 	}
 
-	private getBatchProcessorTemplate(options: ContinuousLearningOptions): string {
+	private getBatchProcessorTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Batch processor implementation for ${options.name}`;
 	}
 
-	private getFeedbackModelsTemplate(options: ContinuousLearningOptions): string {
+	private getFeedbackModelsTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Feedback models implementation for ${options.name}`;
 	}
 
-	private getFeedbackValidatorsTemplate(options: ContinuousLearningOptions): string {
+	private getFeedbackValidatorsTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Feedback validators implementation for ${options.name}`;
 	}
 
-	private getRollbackSystemTemplate(options: ContinuousLearningOptions): string {
+	private getRollbackSystemTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Rollback system implementation for ${options.name}`;
 	}
 
-	private getCanaryDeploymentTemplate(options: ContinuousLearningOptions): string {
+	private getCanaryDeploymentTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Canary deployment implementation for ${options.name}`;
 	}
 
@@ -1967,7 +2246,9 @@ networks:
 		return `// Charts implementation for ${options.name}`;
 	}
 
-	private getRealtimeUpdatesTemplate(options: ContinuousLearningOptions): string {
+	private getRealtimeUpdatesTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Real-time updates implementation for ${options.name}`;
 	}
 
@@ -1975,7 +2256,9 @@ networks:
 		return `// Alerts system implementation for ${options.name}`;
 	}
 
-	private getFeedbackSchemaTemplate(options: ContinuousLearningOptions): string {
+	private getFeedbackSchemaTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Feedback schema implementation for ${options.name}`;
 	}
 
@@ -1995,27 +2278,41 @@ networks:
 		return `// Seeds implementation for ${options.name}`;
 	}
 
-	private getReportGeneratorTemplate(options: ContinuousLearningOptions): string {
+	private getReportGeneratorTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Report generator implementation for ${options.name}`;
 	}
 
-	private getReportSchedulerTemplate(options: ContinuousLearningOptions): string {
+	private getReportSchedulerTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Report scheduler implementation for ${options.name}`;
 	}
 
-	private getExportHandlerTemplate(options: ContinuousLearningOptions, format: string): string {
+	private getExportHandlerTemplate(
+		options: ContinuousLearningOptions,
+		format: string,
+	): string {
 		return `// ${format} export handler implementation for ${options.name}`;
 	}
 
-	private getNotificationSystemTemplate(options: ContinuousLearningOptions): string {
+	private getNotificationSystemTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Notification system implementation for ${options.name}`;
 	}
 
-	private getMLOpsIntegrationTemplate(options: ContinuousLearningOptions, platform: string): string {
+	private getMLOpsIntegrationTemplate(
+		options: ContinuousLearningOptions,
+		platform: string,
+	): string {
 		return `// ${platform} MLOps integration implementation for ${options.name}`;
 	}
 
-	private getExperimentTrackingTemplate(options: ContinuousLearningOptions): string {
+	private getExperimentTrackingTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Experiment tracking implementation for ${options.name}`;
 	}
 
@@ -2023,11 +2320,15 @@ networks:
 		return `// Model registry implementation for ${options.name}`;
 	}
 
-	private getTrafficSplitterTemplate(options: ContinuousLearningOptions): string {
+	private getTrafficSplitterTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Traffic splitter implementation for ${options.name}`;
 	}
 
-	private getStatisticalAnalysisTemplate(options: ContinuousLearningOptions): string {
+	private getStatisticalAnalysisTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Statistical analysis implementation for ${options.name}`;
 	}
 
@@ -2035,13 +2336,17 @@ networks:
 		return `// API documentation for ${options.name}`;
 	}
 
-	private getDeploymentGuideTemplate(options: ContinuousLearningOptions): string {
+	private getDeploymentGuideTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `// Deployment guide for ${options.name}`;
 	}
 
 	// For brevity, I'll implement a few key ones:
 
-	private getMetricsCollectorTemplate(options: ContinuousLearningOptions): string {
+	private getMetricsCollectorTemplate(
+		options: ContinuousLearningOptions,
+	): string {
 		return `/**
  * Metrics Collector for Continuous Learning
  * Collects and processes performance metrics and feedback data
@@ -2061,18 +2366,23 @@ export class MetricsCollector extends EventEmitter {
   }
 
   private setupCollectors(): void {
-    ${options.analytics.metrics.map(metric => `
+    ${options.analytics.metrics
+			.map(
+				(metric) => `
     this.collectors.set('${metric}', async () => {
-      return await this.collect${metric.split('-').map(word => 
-				word.charAt(0).toUpperCase() + word.slice(1)
-			).join('')}();
-    });`).join('')}
+      return await this.collect${metric
+				.split("-")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join("")}();
+    });`,
+			)
+			.join("")}
   }
 
   private async startCollection(): Promise<void> {
     setInterval(async () => {
       await this.collectAllMetrics();
-    }, ${options.analytics.realTime ? '5000' : '60000'}); // ${options.analytics.realTime ? '5 seconds' : '1 minute'}
+    }, ${options.analytics.realTime ? "5000" : "60000"}); // ${options.analytics.realTime ? "5 seconds" : "1 minute"}
   }
 
   private async collectAllMetrics(): Promise<void> {
@@ -2121,14 +2431,20 @@ export class MetricsCollector extends EventEmitter {
   }
 
   // Metric collection methods
-  ${options.analytics.metrics.includes('accuracy') ? `
+  ${
+		options.analytics.metrics.includes("accuracy")
+			? `
   private async collectAccuracy(): Promise<number> {
     // Implement accuracy calculation from feedback data
     // This would query the database for accepted vs total suggestions
     return 0.85; // Placeholder
-  }` : ''}
+  }`
+			: ""
+	}
 
-  ${options.analytics.metrics.includes('acceptance-rate') ? `
+  ${
+		options.analytics.metrics.includes("acceptance-rate")
+			? `
   private async collectAcceptanceRate(): Promise<number> {
     // Calculate acceptance rate from feedback
     const feedbackQuery = \`
@@ -2141,25 +2457,37 @@ export class MetricsCollector extends EventEmitter {
     
     // Execute query and calculate rate
     return 0.72; // Placeholder
-  }` : ''}
+  }`
+			: ""
+	}
 
-  ${options.analytics.metrics.includes('response-time') ? `
+  ${
+		options.analytics.metrics.includes("response-time")
+			? `
   private async collectResponseTime(): Promise<number> {
     // Collect average response time
     return 250; // Placeholder in milliseconds
-  }` : ''}
+  }`
+			: ""
+	}
 
-  ${options.analytics.metrics.includes('user-satisfaction') ? `
+  ${
+		options.analytics.metrics.includes("user-satisfaction")
+			? `
   private async collectUserSatisfaction(): Promise<number> {
     // Calculate user satisfaction score
     return 4.2; // Placeholder (1-5 scale)
-  }` : ''}
+  }`
+			: ""
+	}
 }
 `;
 	}
 
-	private getExperimentManagerTemplate(options: ContinuousLearningOptions): string {
-		if (!options.abTesting?.enabled) return '';
+	private getExperimentManagerTemplate(
+		options: ContinuousLearningOptions,
+	): string {
+		if (!options.abTesting?.enabled) return "";
 
 		return `/**
  * A/B Test Experiment Manager

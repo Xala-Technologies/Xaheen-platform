@@ -4,16 +4,16 @@
  * Generated with Xaheen CLI - AI-Native Developer Productivity
  */
 
+import chalk from "chalk";
+import Table from "cli-table3";
 import { Command } from "commander";
+import inquirer from "inquirer";
 import {
 	createPluginManager,
 	PluginSearchFilters,
 } from "../services/plugins/plugin-manager.js";
 import { logger } from "../utils/logger.js";
 import { validateProject } from "../utils/project-validator.js";
-import inquirer from "inquirer";
-import chalk from "chalk";
-import Table from "cli-table3";
 
 /**
  * Plugin command options interface

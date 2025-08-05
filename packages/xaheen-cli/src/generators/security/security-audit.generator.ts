@@ -3,7 +3,7 @@
  *
  * Generates automated security audit reports with static security analysis
  * integration for SonarQube, ESLint Security, Snyk, and custom security checks.
- * 
+ *
  * Features:
  * - Static security analysis integration
  * - Vulnerability assessment reports
@@ -16,16 +16,16 @@
  * @since 2025-01-04
  */
 
+import { exec } from "child_process";
 import { consola } from "consola";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
-import { exec } from "child_process";
 import { promisify } from "util";
-import type { GeneratorOptions } from "../types";
 import {
-	nsmClassifier,
 	type NSMClassification,
+	nsmClassifier,
 } from "../../services/compliance/nsm-classifier";
+import type { GeneratorOptions } from "../types";
 
 const execAsync = promisify(exec);
 
@@ -157,7 +157,8 @@ export class SecurityAuditGenerator {
 	constructor(options: SecurityAuditOptions) {
 		this.options = options;
 		this.projectPath = options.projectPath || process.cwd();
-		this.outputPath = options.outputDir || join(this.projectPath, "security-audit");
+		this.outputPath =
+			options.outputDir || join(this.projectPath, "security-audit");
 	}
 
 	/**
@@ -471,9 +472,12 @@ export class SecurityAuditGenerator {
 				for (const pattern of securityPatterns) {
 					let match;
 					while ((match = pattern.pattern.exec(content)) !== null) {
-						const lineNumber = content.substring(0, match.index).split("\n").length;
+						const lineNumber = content
+							.substring(0, match.index)
+							.split("\n").length;
 						const line = lines[lineNumber - 1];
-						const column = match.index - content.lastIndexOf("\n", match.index - 1);
+						const column =
+							match.index - content.lastIndexOf("\n", match.index - 1);
 
 						issues.push({
 							rule: pattern.rule,
@@ -514,7 +518,8 @@ export class SecurityAuditGenerator {
 		// Check for required security headers
 		if (metadata.securityRequirements.headers) {
 			const requiredHeaders = metadata.securityRequirements.headers;
-			const hasSecurityHeaders = await this.checkSecurityHeaders(requiredHeaders);
+			const hasSecurityHeaders =
+				await this.checkSecurityHeaders(requiredHeaders);
 
 			if (!hasSecurityHeaders) {
 				issues.push({
@@ -528,7 +533,8 @@ export class SecurityAuditGenerator {
 					fix: {
 						description: "Add required NSM security headers",
 						action: "configure",
-						command: "xaheen generate nsm-security --classification=" + classification,
+						command:
+							"xaheen generate nsm-security --classification=" + classification,
 					},
 				});
 			}
@@ -652,7 +658,10 @@ export class SecurityAuditGenerator {
 
 			if (fileName.includes("next.config")) {
 				// Check for security headers
-				if (!content.includes("securityHeaders") && !content.includes("headers")) {
+				if (
+					!content.includes("securityHeaders") &&
+					!content.includes("headers")
+				) {
 					issues.push({
 						file: relative(this.projectPath, filePath),
 						issue: "Missing security headers configuration",
@@ -712,13 +721,13 @@ export class SecurityAuditGenerator {
 					{
 						id: "GDPR-7.1",
 						description: "Data processing consent implementation",
-						status: await this.checkGDPRConsent() ? "pass" : "fail",
+						status: (await this.checkGDPRConsent()) ? "pass" : "fail",
 						details: "Check for consent management system",
 					},
 					{
 						id: "GDPR-17",
 						description: "Right to erasure implementation",
-						status: await this.checkDataDeletion() ? "pass" : "fail",
+						status: (await this.checkDataDeletion()) ? "pass" : "fail",
 						details: "Check for data deletion capabilities",
 					},
 				);
@@ -731,13 +740,15 @@ export class SecurityAuditGenerator {
 						{
 							id: "NSM-CL1",
 							description: "Classification marking implementation",
-							status: await this.checkClassificationMarking() ? "pass" : "fail",
+							status: (await this.checkClassificationMarking())
+								? "pass"
+								: "fail",
 							details: `Check for ${classification} classification marking`,
 						},
 						{
 							id: "NSM-AU1",
 							description: "Audit logging implementation",
-							status: await this.checkAuditLogging() ? "pass" : "fail",
+							status: (await this.checkAuditLogging()) ? "pass" : "fail",
 							details: "Check for comprehensive audit logging",
 						},
 					);
@@ -749,20 +760,22 @@ export class SecurityAuditGenerator {
 					{
 						id: "OWASP-A1",
 						description: "Injection prevention",
-						status: await this.checkInjectionPrevention() ? "pass" : "fail",
+						status: (await this.checkInjectionPrevention()) ? "pass" : "fail",
 						details: "Check for SQL injection and XSS prevention",
 					},
 					{
 						id: "OWASP-A2",
 						description: "Authentication implementation",
-						status: await this.checkAuthentication() ? "pass" : "fail",
+						status: (await this.checkAuthentication()) ? "pass" : "fail",
 						details: "Check for proper authentication mechanisms",
 					},
 				);
 				break;
 		}
 
-		const passedRequirements = requirements.filter((r) => r.status === "pass").length;
+		const passedRequirements = requirements.filter(
+			(r) => r.status === "pass",
+		).length;
 		const score = Math.round((passedRequirements / requirements.length) * 100);
 		const status =
 			score === 100 ? "compliant" : score >= 70 ? "partial" : "non-compliant";
@@ -852,9 +865,13 @@ export class SecurityAuditGenerator {
 			...auditResult.configurationIssues,
 		];
 
-		const criticalIssues = allIssues.filter((i) => i.severity === "critical").length;
+		const criticalIssues = allIssues.filter(
+			(i) => i.severity === "critical",
+		).length;
 		const highIssues = allIssues.filter((i) => i.severity === "high").length;
-		const mediumIssues = allIssues.filter((i) => i.severity === "medium").length;
+		const mediumIssues = allIssues.filter(
+			(i) => i.severity === "medium",
+		).length;
 		const lowIssues = allIssues.filter((i) => i.severity === "low").length;
 
 		const totalIssues = allIssues.length;
@@ -870,7 +887,11 @@ export class SecurityAuditGenerator {
 				: 100;
 
 		const complianceStatus: "compliant" | "non-compliant" | "partial" =
-			complianceScore >= 90 ? "compliant" : complianceScore >= 70 ? "partial" : "non-compliant";
+			complianceScore >= 90
+				? "compliant"
+				: complianceScore >= 70
+					? "partial"
+					: "non-compliant";
 
 		return {
 			totalIssues,
@@ -886,32 +907,53 @@ export class SecurityAuditGenerator {
 	/**
 	 * Calculate security score
 	 */
-	private calculateSecurityScore(auditResult: SecurityAuditResult): SecurityScore {
+	private calculateSecurityScore(
+		auditResult: SecurityAuditResult,
+	): SecurityScore {
 		const codeScore = Math.max(
 			0,
 			100 -
-				auditResult.codeIssues.filter((i) => i.severity === "critical").length * 20 -
-				auditResult.codeIssues.filter((i) => i.severity === "high").length * 10 -
-				auditResult.codeIssues.filter((i) => i.severity === "medium").length * 5 -
+				auditResult.codeIssues.filter((i) => i.severity === "critical").length *
+					20 -
+				auditResult.codeIssues.filter((i) => i.severity === "high").length *
+					10 -
+				auditResult.codeIssues.filter((i) => i.severity === "medium").length *
+					5 -
 				auditResult.codeIssues.filter((i) => i.severity === "low").length * 1,
 		);
 
 		const dependenciesScore = Math.max(
 			0,
 			100 -
-				auditResult.dependencyIssues.filter((i) => i.severity === "critical").length * 15 -
-				auditResult.dependencyIssues.filter((i) => i.severity === "high").length * 8 -
-				auditResult.dependencyIssues.filter((i) => i.severity === "medium").length * 4 -
-				auditResult.dependencyIssues.filter((i) => i.severity === "low").length * 1,
+				auditResult.dependencyIssues.filter((i) => i.severity === "critical")
+					.length *
+					15 -
+				auditResult.dependencyIssues.filter((i) => i.severity === "high")
+					.length *
+					8 -
+				auditResult.dependencyIssues.filter((i) => i.severity === "medium")
+					.length *
+					4 -
+				auditResult.dependencyIssues.filter((i) => i.severity === "low")
+					.length *
+					1,
 		);
 
 		const configurationScore = Math.max(
 			0,
 			100 -
-				auditResult.configurationIssues.filter((i) => i.severity === "critical").length * 15 -
-				auditResult.configurationIssues.filter((i) => i.severity === "high").length * 8 -
-				auditResult.configurationIssues.filter((i) => i.severity === "medium").length * 4 -
-				auditResult.configurationIssues.filter((i) => i.severity === "low").length * 1,
+				auditResult.configurationIssues.filter((i) => i.severity === "critical")
+					.length *
+					15 -
+				auditResult.configurationIssues.filter((i) => i.severity === "high")
+					.length *
+					8 -
+				auditResult.configurationIssues.filter((i) => i.severity === "medium")
+					.length *
+					4 -
+				auditResult.configurationIssues.filter((i) => i.severity === "low")
+					.length *
+					1,
 		);
 
 		const complianceScore =
@@ -921,7 +963,10 @@ export class SecurityAuditGenerator {
 				: 100;
 
 		const overall = Math.round(
-			(codeScore * 0.3 + dependenciesScore * 0.3 + configurationScore * 0.2 + complianceScore * 0.2),
+			codeScore * 0.3 +
+				dependenciesScore * 0.3 +
+				configurationScore * 0.2 +
+				complianceScore * 0.2,
 		);
 
 		return {
@@ -936,18 +981,23 @@ export class SecurityAuditGenerator {
 	/**
 	 * Generate security recommendations
 	 */
-	private generateRecommendations(auditResult: SecurityAuditResult): readonly SecurityRecommendation[] {
+	private generateRecommendations(
+		auditResult: SecurityAuditResult,
+	): readonly SecurityRecommendation[] {
 		const recommendations: SecurityRecommendation[] = [];
 
 		// High-priority recommendations based on critical issues
-		const criticalIssues = auditResult.vulnerabilities.filter((v) => v.severity === "critical");
+		const criticalIssues = auditResult.vulnerabilities.filter(
+			(v) => v.severity === "critical",
+		);
 		if (criticalIssues.length > 0) {
 			recommendations.push({
 				priority: "critical",
 				category: "security",
 				title: "Address Critical Security Vulnerabilities",
 				description: `Found ${criticalIssues.length} critical security issues that require immediate attention`,
-				action: "Review and fix all critical vulnerabilities listed in the audit report",
+				action:
+					"Review and fix all critical vulnerabilities listed in the audit report",
 				effort: "high",
 			});
 		}
@@ -973,7 +1023,8 @@ export class SecurityAuditGenerator {
 				priority: "medium",
 				category: "tooling",
 				title: "Integrate Snyk for Vulnerability Scanning",
-				description: "Add Snyk to your CI/CD pipeline for continuous vulnerability monitoring",
+				description:
+					"Add Snyk to your CI/CD pipeline for continuous vulnerability monitoring",
 				action: "Install Snyk CLI and add to your build process",
 				effort: "low",
 			});
@@ -1003,8 +1054,10 @@ export class SecurityAuditGenerator {
 				priority: "medium",
 				category: "configuration",
 				title: "Improve Security Configuration",
-				description: "Security misconfigurations detected in application settings",
-				action: "Review and update configuration files with security best practices",
+				description:
+					"Security misconfigurations detected in application settings",
+				action:
+					"Review and update configuration files with security best practices",
 				effort: "medium",
 			});
 		}
@@ -1015,10 +1068,13 @@ export class SecurityAuditGenerator {
 	/**
 	 * Generate audit reports in various formats
 	 */
-	private async generateReports(auditResult: SecurityAuditResult): Promise<void> {
-		const formats = this.options.outputFormat === "all" 
-			? ["json", "html", "markdown"] 
-			: [this.options.outputFormat || "json"];
+	private async generateReports(
+		auditResult: SecurityAuditResult,
+	): Promise<void> {
+		const formats =
+			this.options.outputFormat === "all"
+				? ["json", "html", "markdown"]
+				: [this.options.outputFormat || "json"];
 
 		for (const format of formats) {
 			switch (format) {
@@ -1040,7 +1096,9 @@ export class SecurityAuditGenerator {
 	/**
 	 * Generate JSON report
 	 */
-	private async generateJSONReport(auditResult: SecurityAuditResult): Promise<void> {
+	private async generateJSONReport(
+		auditResult: SecurityAuditResult,
+	): Promise<void> {
 		const reportPath = join(this.outputPath, "reports", "security-audit.json");
 		writeFileSync(reportPath, JSON.stringify(auditResult, null, 2));
 	}
@@ -1048,7 +1106,9 @@ export class SecurityAuditGenerator {
 	/**
 	 * Generate HTML report
 	 */
-	private async generateHTMLReport(auditResult: SecurityAuditResult): Promise<void> {
+	private async generateHTMLReport(
+		auditResult: SecurityAuditResult,
+	): Promise<void> {
 		const htmlContent = this.generateHTMLContent(auditResult);
 		const reportPath = join(this.outputPath, "reports", "security-audit.html");
 		writeFileSync(reportPath, htmlContent);
@@ -1057,7 +1117,9 @@ export class SecurityAuditGenerator {
 	/**
 	 * Generate Markdown report
 	 */
-	private async generateMarkdownReport(auditResult: SecurityAuditResult): Promise<void> {
+	private async generateMarkdownReport(
+		auditResult: SecurityAuditResult,
+	): Promise<void> {
 		const markdownContent = this.generateMarkdownContent(auditResult);
 		const reportPath = join(this.outputPath, "reports", "security-audit.md");
 		writeFileSync(reportPath, markdownContent);
@@ -1129,7 +1191,7 @@ export class SecurityAuditGenerator {
                 <div class="summary-label">Low Issues</div>
             </div>
             <div class="summary-card">
-                <div class="score-circle ${auditResult.score.overall >= 80 ? 'score-high' : auditResult.score.overall >= 60 ? 'score-medium' : 'score-low'}">
+                <div class="score-circle ${auditResult.score.overall >= 80 ? "score-high" : auditResult.score.overall >= 60 ? "score-medium" : "score-low"}">
                     ${auditResult.score.overall}/100
                 </div>
                 <div class="summary-label">Security Score</div>
@@ -1138,21 +1200,28 @@ export class SecurityAuditGenerator {
 
         <div class="section">
             <h2 class="section-title">Top Vulnerabilities</h2>
-            ${auditResult.vulnerabilities.slice(0, 10).map(vuln => `
+            ${auditResult.vulnerabilities
+							.slice(0, 10)
+							.map(
+								(vuln) => `
                 <div class="vulnerability">
                     <div class="vulnerability-header">
                         <span class="vulnerability-title">${vuln.title}</span>
                         <span class="vulnerability-severity severity-${vuln.severity}">${vuln.severity.toUpperCase()}</span>
                     </div>
                     <p>${vuln.description}</p>
-                    <small><strong>File:</strong> ${vuln.file}${vuln.line ? `:${vuln.line}` : ''} • <strong>Source:</strong> ${vuln.source}</small>
+                    <small><strong>File:</strong> ${vuln.file}${vuln.line ? `:${vuln.line}` : ""} • <strong>Source:</strong> ${vuln.source}</small>
                 </div>
-            `).join('')}
+            `,
+							)
+							.join("")}
         </div>
 
         <div class="section">
             <h2 class="section-title">Recommendations</h2>
-            ${auditResult.recommendations.map(rec => `
+            ${auditResult.recommendations
+							.map(
+								(rec) => `
                 <div class="vulnerability">
                     <div class="vulnerability-header">
                         <span class="vulnerability-title">${rec.title}</span>
@@ -1162,7 +1231,9 @@ export class SecurityAuditGenerator {
                     <p><strong>Action:</strong> ${rec.action}</p>
                     <small><strong>Category:</strong> ${rec.category} • <strong>Effort:</strong> ${rec.effort}</small>
                 </div>
-            `).join('')}
+            `,
+							)
+							.join("")}
         </div>
     </div>
 </body>
@@ -1201,39 +1272,56 @@ export class SecurityAuditGenerator {
 
 ## Top Vulnerabilities
 
-${auditResult.vulnerabilities.slice(0, 10).map((vuln, index) => `
+${auditResult.vulnerabilities
+	.slice(0, 10)
+	.map(
+		(vuln, index) => `
 ### ${index + 1}. ${vuln.title} (${vuln.severity.toUpperCase()})
 
 **Description:** ${vuln.description}  
-**File:** ${vuln.file}${vuln.line ? `:${vuln.line}` : ''}  
+**File:** ${vuln.file}${vuln.line ? `:${vuln.line}` : ""}  
 **Source:** ${vuln.source}  
-${vuln.cwe ? `**CWE:** ${vuln.cwe}  ` : ''}
-${vuln.fix ? `**Fix:** ${vuln.fix.description}` : ''}
-`).join('\n')}
+${vuln.cwe ? `**CWE:** ${vuln.cwe}  ` : ""}
+${vuln.fix ? `**Fix:** ${vuln.fix.description}` : ""}
+`,
+	)
+	.join("\n")}
 
 ## Recommendations
 
-${auditResult.recommendations.map((rec, index) => `
+${auditResult.recommendations
+	.map(
+		(rec, index) => `
 ### ${index + 1}. ${rec.title} (${rec.priority.toUpperCase()})
 
 **Category:** ${rec.category}  
 **Description:** ${rec.description}  
 **Action:** ${rec.action}  
 **Effort:** ${rec.effort}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 ## Compliance Results
 
-${auditResult.complianceResults.map(comp => `
+${auditResult.complianceResults
+	.map(
+		(comp) => `
 ### ${comp.standard} Compliance
 
 **Status:** ${comp.status} (${comp.score}%)
 
-${comp.requirements.map(req => `
+${comp.requirements
+	.map(
+		(req) => `
 - **${req.id}:** ${req.description} - **${req.status.toUpperCase()}**
   ${req.details}
-`).join('\n')}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
+`,
+	)
+	.join("\n")}
 
 ---
 
@@ -1248,7 +1336,9 @@ ${comp.requirements.map(req => `
 		return [];
 	}
 
-	private mapESLintSeverity(severity: number): "low" | "medium" | "high" | "critical" {
+	private mapESLintSeverity(
+		severity: number,
+	): "low" | "medium" | "high" | "critical" {
 		switch (severity) {
 			case 1:
 				return "medium";
@@ -1259,17 +1349,23 @@ ${comp.requirements.map(req => `
 		}
 	}
 
-	private categorizeSecurityIssue(ruleId: string): CodeSecurityIssue["category"] {
-		if (ruleId.includes("injection") || ruleId.includes("sql")) return "injection";
+	private categorizeSecurityIssue(
+		ruleId: string,
+	): CodeSecurityIssue["category"] {
+		if (ruleId.includes("injection") || ruleId.includes("sql"))
+			return "injection";
 		if (ruleId.includes("xss") || ruleId.includes("innerHTML")) return "xss";
 		if (ruleId.includes("csrf")) return "csrf";
 		if (ruleId.includes("auth") || ruleId.includes("session")) return "auth";
-		if (ruleId.includes("crypto") || ruleId.includes("encrypt")) return "crypto";
+		if (ruleId.includes("crypto") || ruleId.includes("encrypt"))
+			return "crypto";
 		return "other";
 	}
 
 	// Compliance check helper methods
-	private async checkSecurityHeaders(requiredHeaders: string[]): Promise<boolean> {
+	private async checkSecurityHeaders(
+		requiredHeaders: string[],
+	): Promise<boolean> {
 		// Implementation to check for security headers in Next.js config
 		return false;
 	}

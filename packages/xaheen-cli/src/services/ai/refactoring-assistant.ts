@@ -4,9 +4,9 @@
  * Generated with Xaheen CLI - AI-Native Developer Productivity
  */
 
+import { execSync } from "child_process";
 import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
-import { execSync } from "child_process";
 import { z } from "zod";
 
 /**

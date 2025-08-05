@@ -110,7 +110,7 @@ export interface ValidationError {
 	readonly category: string;
 	readonly field: string;
 	readonly message: string;
-	readonly severity: 'error' | 'warning' | 'info';
+	readonly severity: "error" | "warning" | "info";
 }
 
 // Interactive prompt interfaces
@@ -143,7 +143,7 @@ export interface TechBundle {
 	readonly id: string;
 	readonly name: string;
 	readonly description: string;
-	readonly category: 'starter' | 'professional' | 'enterprise' | 'custom';
+	readonly category: "starter" | "professional" | "enterprise" | "custom";
 	readonly price?: number;
 	readonly features: readonly string[];
 	readonly stack: StackConfiguration;
@@ -211,16 +211,16 @@ export interface CompatibilityChecker {
 	checkCompatibility(
 		category: string,
 		selection: string,
-		currentStack: Partial<StackConfiguration>
+		currentStack: Partial<StackConfiguration>,
 	): boolean;
 	getAvailableOptions(
 		category: string,
-		currentStack: Partial<StackConfiguration>
+		currentStack: Partial<StackConfiguration>,
 	): readonly TechOption[];
 	suggestAlternatives(
 		category: string,
 		incompatibleOption: string,
-		currentStack: Partial<StackConfiguration>
+		currentStack: Partial<StackConfiguration>,
 	): readonly TechOption[];
 }
 
@@ -235,9 +235,13 @@ export interface PreviewContext {
 
 export interface LivePreview {
 	generatePreview(stack: StackConfiguration): Promise<PreviewContext>;
-	validateConfiguration(stack: StackConfiguration): Promise<readonly ValidationError[]>;
+	validateConfiguration(
+		stack: StackConfiguration,
+	): Promise<readonly ValidationError[]>;
 	estimateGenerationTime(stack: StackConfiguration): number;
-	calculateComplexity(stack: StackConfiguration): 'simple' | 'moderate' | 'complex';
+	calculateComplexity(
+		stack: StackConfiguration,
+	): "simple" | "moderate" | "complex";
 }
 
 // Auto-completion and suggestions
@@ -260,62 +264,62 @@ export class BuilderError extends Error {
 	constructor(
 		message: string,
 		public readonly code: string,
-		public readonly category?: string
+		public readonly category?: string,
 	) {
 		super(message);
-		this.name = 'BuilderError';
+		this.name = "BuilderError";
 	}
 }
 
 export class ValidationError extends BuilderError {
 	constructor(message: string, category: string, field: string) {
-		super(message, 'VALIDATION_ERROR', category);
+		super(message, "VALIDATION_ERROR", category);
 		this.field = field;
 	}
-	
+
 	public readonly field: string;
 }
 
 export class CompatibilityError extends BuilderError {
 	constructor(
 		message: string,
-		public readonly conflictingOptions: readonly string[]
+		public readonly conflictingOptions: readonly string[],
 	) {
-		super(message, 'COMPATIBILITY_ERROR');
+		super(message, "COMPATIBILITY_ERROR");
 	}
 }
 
 // Type guards
 export function isProjectType(obj: any): obj is ProjectType {
 	return (
-		typeof obj === 'object' &&
+		typeof obj === "object" &&
 		obj !== null &&
-		typeof obj.id === 'string' &&
-		typeof obj.name === 'string' &&
-		typeof obj.description === 'string' &&
+		typeof obj.id === "string" &&
+		typeof obj.name === "string" &&
+		typeof obj.description === "string" &&
 		Array.isArray(obj.relevantCategories) &&
-		typeof obj.sort_order === 'number'
+		typeof obj.sort_order === "number"
 	);
 }
 
 export function isQuickPreset(obj: any): obj is QuickPreset {
 	return (
-		typeof obj === 'object' &&
+		typeof obj === "object" &&
 		obj !== null &&
-		typeof obj.id === 'string' &&
-		typeof obj.name === 'string' &&
-		typeof obj.projectType === 'string' &&
-		typeof obj.stack === 'object' &&
-		typeof obj.sort_order === 'number'
+		typeof obj.id === "string" &&
+		typeof obj.name === "string" &&
+		typeof obj.projectType === "string" &&
+		typeof obj.stack === "object" &&
+		typeof obj.sort_order === "number"
 	);
 }
 
 export function isValidStackConfiguration(obj: any): obj is StackConfiguration {
 	return (
-		typeof obj === 'object' &&
+		typeof obj === "object" &&
 		obj !== null &&
-		typeof obj.projectName === 'string' &&
-		typeof obj.packageManager === 'string' &&
+		typeof obj.projectName === "string" &&
+		typeof obj.packageManager === "string" &&
 		Array.isArray(obj.addons) &&
 		Array.isArray(obj.examples)
 	);

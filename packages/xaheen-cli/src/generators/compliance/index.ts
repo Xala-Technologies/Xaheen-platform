@@ -8,35 +8,34 @@
  * @privacy-by-design true
  */
 
-// NSM Security Generator
+// Re-export NSM Classifier from services
 export {
-	NSMSecurityGenerator,
-	createNSMSecurityGenerator,
-	generateNSMSecurity,
-	type NSMSecurityOptions,
-	type NSMSecurityContext,
-} from "./nsm-security.generator";
+	type ComplianceContext,
+	type NSMClassification,
+	type NSMClassificationMetadata,
+	NSMClassifier,
+	nsmClassifier,
+} from "../services/compliance/nsm-classifier";
 
 // GDPR Compliance Generator
 export {
-	GDPRComplianceGenerator,
+	type ConsentType,
 	createGDPRComplianceGenerator,
-	generateGDPRCompliance,
+	type DataCategory,
+	GDPRComplianceGenerator,
 	type GDPRComplianceOptions,
 	type GDPRContext,
 	type GDPRLawfulBasis,
-	type DataCategory,
-	type ConsentType,
+	generateGDPRCompliance,
 } from "./gdpr.generator";
-
-// Re-export NSM Classifier from services
+// NSM Security Generator
 export {
-	nsmClassifier,
-	NSMClassifier,
-	type NSMClassification,
-	type NSMClassificationMetadata,
-	type ComplianceContext,
-} from "../services/compliance/nsm-classifier";
+	createNSMSecurityGenerator,
+	generateNSMSecurity,
+	type NSMSecurityContext,
+	NSMSecurityGenerator,
+	type NSMSecurityOptions,
+} from "./nsm-security.generator";
 
 /**
  * Compliance generator registry
