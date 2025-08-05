@@ -500,16 +500,25 @@ export class LicenseCommands {
     }
   }
 
-  private groupFeaturesByCategory(features: FeatureFlag[]): Record<string, FeatureFlag[]> {
-    const groups: Record<string, FeatureFlag[]> = {
-      core: [],
-      platform: [],
-      generator: [],
-      addon: [],
-      enterprise: [],
-      infra: [],
-      testing: [],
-      advanced: [],
+  private groupFeaturesByCategory(features: FeatureFlag[]): {
+    core: FeatureFlag[];
+    platform: FeatureFlag[];
+    generator: FeatureFlag[];
+    addon: FeatureFlag[];
+    enterprise: FeatureFlag[];
+    infra: FeatureFlag[];
+    testing: FeatureFlag[];
+    advanced: FeatureFlag[];
+  } {
+    const groups = {
+      core: [] as FeatureFlag[],
+      platform: [] as FeatureFlag[],
+      generator: [] as FeatureFlag[],
+      addon: [] as FeatureFlag[],
+      enterprise: [] as FeatureFlag[],
+      infra: [] as FeatureFlag[],
+      testing: [] as FeatureFlag[],
+      advanced: [] as FeatureFlag[],
     };
 
     features.forEach(feature => {

@@ -451,8 +451,8 @@ export class LicenseManager {
     // Check add-on packs
     for (const [packId, pack] of Object.entries(ADDON_PACKS)) {
       if (pack.features.includes(feature)) {
-        // Return the minimum compatible tier
-        return pack.compatibleTiers[0];
+        // Return the minimum compatible tier, fallback to enterprise if none specified
+        return pack.compatibleTiers[0] || 'enterprise';
       }
     }
 

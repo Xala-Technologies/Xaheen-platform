@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if we're in the web app directory
+if [ ! -f "package.json" ]; then
+  echo "⚠️  Not in web app directory, skipping pre-commit hooks"
+  exit 0
+fi
+
+# Run lint-staged for staged files
+echo "📝 Running lint-staged..."
+npx lint-staged
+
+# Type checking
+echo "🔍 Running TypeScript type checking..."
+npx tsc --noEmit
+
+# Run tests for affected files
+echo "🧪 Running tests..."
+npm run test:ci
+
+# Security audit
+echo "🔒 Running security audit..."
+npm audit --audit-level=moderate
+
+echo "✅ Pre-commit checks completed successfully!"

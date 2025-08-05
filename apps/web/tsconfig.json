@@ -19,7 +19,16 @@
 		"paths": {
 			"@/.source": ["./.source/index.ts"],
 			"@/*": ["./src/*"],
-			"@/public/*": ["./public/*"]
+			"@/public/*": ["./public/*"],
+			"@/components/*": ["./src/components/*"],
+			"@/lib/*": ["./src/lib/*"],
+			"@/hooks/*": ["./src/hooks/*"],
+			"@/types/*": ["./src/types/*"],
+			"@/data/*": ["./src/data/*"],
+			"@/localization/*": ["./src/localization/*"],
+			"@/config/*": ["./src/config/*"],
+			"@/services/*": ["./src/services/*"],
+			"@/utils/*": ["./src/utils/*"]
 		},
 		"plugins": [
 			{

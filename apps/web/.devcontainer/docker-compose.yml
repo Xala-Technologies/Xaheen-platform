@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: xaheen-web-dev
+    volumes:
+      - ../..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+      - node_modules:/workspace/apps/web/node_modules
+      - next_cache:/workspace/apps/web/.next
+    ports:
+      - "3000:3000"
+      - "3001:3001" # For Storybook
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - TURBOPACK=1
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      - postgres
+      - redis
+      - mcp-server
+    networks:
+      - xaheen-dev
+    restart: unless-stopped
+    command: >
+      sh -c "
+        cd /workspace/apps/web &&
+        npm install &&
+        npm run dev
+      "
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: xaheen-postgres-dev
+    environment:
+      - POSTGRES_DB=xaheen_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - xaheen-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: xaheen-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - xaheen-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-server:
+    build:
+      context: ../../packages/mcp
+      dockerfile: Dockerfile
+    container_name: xaheen-mcp-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    volumes:
+      - ../../packages/mcp:/app
+      - /app/node_modules
+    networks:
+      - xaheen-dev
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: xaheen-mailhog-dev
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - xaheen-dev
+    restart: unless-stopped
+
+volumes:
+  node_modules:
+  next_cache:
+  postgres_data:
+  redis_data:
+
+networks:
+  xaheen-dev:
+    driver: bridge

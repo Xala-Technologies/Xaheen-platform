@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Cache
+.cache/
+.turbo/
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Environment files
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.tsbuildinfo
+.eslintcache
+
+# Documentation builds
+docs/build/
+
+# Storybook
+storybook-static/
+
+# Testing
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files
+*.lock
+
+# Config files that should not be formatted
+*.config.js
+*.config.mjs
+*.config.ts
+!prettier.config.*
+!eslint.config.*
+
+# Markdown files in specific directories
+CHANGELOG.md
+LICENSE.md
+
+# Generated schemas
+schemas/
+types/generated/
+
+# Public assets
+public/

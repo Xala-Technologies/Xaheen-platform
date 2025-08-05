@@ -1,0 +1,63 @@
+# CodeQL Configuration for Xaheen CLI Ecosystem
+# Customized security analysis for JavaScript/TypeScript
+
+name: "Xaheen CodeQL Config"
+
+# Paths to exclude from analysis
+paths-ignore:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.next/**"
+  - "**/coverage/**"
+  - "**/storybook-static/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/__tests__/**"
+
+# Paths to include in analysis
+paths:
+  - "apps/web/src/**"
+  - "packages/*/src/**"
+
+# Disable default queries that may cause noise
+disable-default-queries: false
+
+# Custom queries for enhanced security
+queries:
+  - name: security-extended
+    uses: security-extended
+  - name: security-and-quality
+    uses: security-and-quality
+
+# Custom query packs
+packs:
+  - codeql/javascript-queries:AlertSuppression.ql
+  - codeql/javascript-queries:Security/CWE-079
+  - codeql/javascript-queries:Security/CWE-089
+  - codeql/javascript-queries:Security/CWE-094
+  - codeql/javascript-queries:Security/CWE-295
+  - codeql/javascript-queries:Security/CWE-312
+  - codeql/javascript-queries:Security/CWE-327
+  - codeql/javascript-queries:Security/CWE-352
+  - codeql/javascript-queries:Security/CWE-400
+  - codeql/javascript-queries:Security/CWE-614
+  - codeql/javascript-queries:Security/CWE-730
+  - codeql/javascript-queries:Security/CWE-798
+
+# Query filters
+query-filters:
+  - exclude:
+      id: js/unused-local-variable
+  - exclude:
+      id: js/debugger-statement
+  - include:
+      tags: security
+  - include:
+      tags: correctness
+  - include:
+      tags: maintainability

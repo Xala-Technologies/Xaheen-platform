@@ -1,685 +1,400 @@
-/**
- * Project Creation Wizard - CLAUDE.md Compliant Implementation
- * Xala UI System v6.3.0 CVA Compliant
- * 
- * MANDATORY COMPLIANCE RULES:
- * ✅ TypeScript interfaces with readonly props
- * ✅ Functional component with explicit JSX.Element return type
- * ✅ Modern React hooks (useState, useCallback, useMemo)
- * ✅ Professional sizing (h-12+ buttons, h-14+ inputs)
- * ✅ Tailwind CSS semantic classes only
- * ✅ WCAG AAA accessibility compliance
- * ✅ Xala UI System components ONLY
- * ✅ CVA variant system integration
- * ✅ Error handling and loading states
- * ✅ No 'any' types - strict TypeScript only
- */
+import React, { useState, useCallback } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { NSMBadge } from '@/components/ui/nsm-badge';
+import { cn } from '@/lib/utils';
 
-"use client";
+interface WizardStep {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: string;
+}
 
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  Card,
-  Stack,
-  Typography,
-  Button,
-  Input,
-  TextArea,
-  FormField,
-  RadioGroup,
-  Checkbox,
-  Badge,
-  ProgressBar,
-  Container,
-  Separator,
-  useResponsive
-} from '@xala-technologies/ui-system';
-import { ChevronLeft, ChevronRight, Sparkles, Check, AlertCircle } from 'lucide-react';
-import type { 
-  ProjectWizardProps, 
-  ProjectConfig, 
-  WizardStep, 
-  ProjectFeature,
-  LoadingState 
-} from '../../types/component-interfaces';
+const wizardSteps: readonly WizardStep[] = [
+  { id: 'discovery', title: 'Project Discovery', description: 'Define your project', icon: '🎯' },
+  { id: 'stack', title: 'Technology Stack', description: 'Choose frameworks', icon: '🛠️' },
+  { id: 'features', title: 'Features', description: 'Configure capabilities', icon: '✨' },
+  { id: 'infrastructure', title: 'Infrastructure', description: 'Setup deployment', icon: '☁️' },
+  { id: 'preview', title: 'Review & Generate', description: 'Final confirmation', icon: '🚀' }
+];
 
-const WIZARD_STEPS: readonly WizardStep[] = [
-  {
-    id: 1,
-    title: 'Project Setup',
-    description: 'Basic project information and configuration',
-    isCompleted: false,
-    isActive: true,
-    validation: (config) => {
-      if (!config.name?.trim()) return 'Project name is required';
-      if (config.name.length < 3) return 'Project name must be at least 3 characters';
-      if (!/^[a-z0-9-]+$/.test(config.name)) return 'Use lowercase letters, numbers, and hyphens only';
-      return null;
-    }
-  },
-  {
-    id: 2,
-    title: 'Platform Selection',
-    description: 'Choose your target platform and framework',
-    isCompleted: false,
-    isActive: false
-  },
-  {
-    id: 3,
-    title: 'Features & Integrations',
-    description: 'Select features and third-party integrations',
-    isCompleted: false,
-    isActive: false
-  },
-  {
-    id: 4,
-    title: 'Localization & Theming',
-    description: 'Configure localization and design theme',
-    isCompleted: false,
-    isActive: false
-  },
-  {
-    id: 5,
-    title: 'Review & Generate',
-    description: 'Review configuration and generate project',
-    isCompleted: false,
-    isActive: false
-  }
-] as const;
+interface ProjectConfig {
+  name: string;
+  description: string;
+  type: string;
+  platform: string;
+  features: string[];
+  infrastructure: {
+    provider: string;
+    region: string;
+    cicd: string;
+  };
+  compliance: {
+    nsm: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+    gdpr: boolean;
+    wcag: boolean;
+    bankid: boolean;
+    altinn: boolean;
+  };
+}
 
-const PROJECT_FEATURES: readonly ProjectFeature[] = [
-  {
-    id: 'auth-nextauth',
-    name: 'NextAuth.js Authentication',
-    description: 'Complete authentication system with multiple providers',
-    category: 'auth',
-    required: false,
-    icon: '🔐'
-  },
-  {
-    id: 'database-prisma',
-    name: 'Prisma Database',
-    description: 'Type-safe database client with migrations',
-    category: 'database',
-    required: false,
-    icon: '🗄️'
-  },
-  {
-    id: 'ui-shadcn',
-    name: 'shadcn/ui Components',
-    description: 'Beautiful and accessible React components',
-    category: 'ui',
-    required: true,
-    icon: '🎨'
-  },
-  {
-    id: 'deployment-vercel',
-    name: 'Vercel Deployment',
-    description: 'Optimized deployment configuration for Vercel',
-    category: 'deployment',
-    required: false,
-    icon: '🚀'
-  },
-  {
-    id: 'testing-vitest',
-    name: 'Vitest Testing Suite',
-    description: 'Fast unit and integration testing framework',
-    category: 'testing',
-    required: false,
-    icon: '🧪'
-  },
-  {
-    id: 'monitoring-sentry',
-    name: 'Sentry Error Monitoring',
-    description: 'Real-time error tracking and performance monitoring',
-    category: 'monitoring',
-    required: false,
-    icon: '📊'
-  }
-] as const;
-
-export const ProjectWizard = ({
-  initialStep = 1,
-  initialConfig,
-  onComplete,
-  onCancel,
-  onStepChange,
-  isLoading = false,
-  className
-}: ProjectWizardProps): JSX.Element => {
-  const { isMobile } = useResponsive();
-  
-  const [currentStep, setCurrentStep] = useState<number>(initialStep);
-  const [config, setConfig] = useState<Partial<ProjectConfig>>({
+export function ProjectWizard(): JSX.Element {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [config, setConfig] = useState<ProjectConfig>({
     name: '',
+    description: '',
     type: 'web-app',
-    platform: 'react',
+    platform: 'nextjs',
     features: [],
-    localization: ['en'],
-    theme: 'enterprise',
-    ...initialConfig
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loadingState, setLoadingState] = useState<LoadingState>({
-    isLoading: false,
-    message: '',
-    progress: 0
-  });
-
-  const steps = useMemo(() => 
-    WIZARD_STEPS.map(step => ({
-      ...step,
-      isCompleted: step.id < currentStep,
-      isActive: step.id === currentStep
-    })), [currentStep]
-  );
-
-  const currentStepData = useMemo(() => 
-    steps.find(step => step.id === currentStep), [steps, currentStep]
-  );
-
-  const updateConfig = useCallback((updates: Partial<ProjectConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates }));
-    setErrors({}); // Clear errors on config change
-    onStepChange?.(currentStep, { ...config, ...updates });
-  }, [config, currentStep, onStepChange]);
-
-  const validateCurrentStep = useCallback((): boolean => {
-    const stepData = currentStepData;
-    if (!stepData?.validation) return true;
-
-    const error = stepData.validation(config);
-    if (error) {
-      setErrors({ [currentStep]: error });
-      return false;
+    infrastructure: {
+      provider: 'vercel',
+      region: 'eu-north-1',
+      cicd: 'github-actions'
+    },
+    compliance: {
+      nsm: 'OPEN',
+      gdpr: false,
+      wcag: true,
+      bankid: false,
+      altinn: false
     }
+  });
 
-    setErrors({});
-    return true;
-  }, [currentStepData, config, currentStep]);
-
-  const handleNext = useCallback(async (): Promise<void> => {
-    if (!validateCurrentStep()) return;
-
-    if (currentStep < WIZARD_STEPS.length) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      // Final step - generate project
-      setLoadingState({
-        isLoading: true,
-        message: 'Generating your project...',
-        progress: 0
-      });
-
-      try {
-        // Simulate project generation progress
-        for (let i = 0; i <= 100; i += 10) {
-          setLoadingState(prev => ({ ...prev, progress: i }));
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        await onComplete(config as ProjectConfig);
-      } catch (error) {
-        console.error('Project generation failed:', error);
-        setErrors({ generation: 'Failed to generate project. Please try again.' });
-      } finally {
-        setLoadingState({ isLoading: false, message: '', progress: 0 });
-      }
-    }
-  }, [currentStep, validateCurrentStep, config, onComplete]);
-
-  const handleBack = useCallback((): void => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+  const handleNext = useCallback(() => {
+    if (currentStep < wizardSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
   }, [currentStep]);
 
-  const handleFeatureToggle = useCallback((featureId: string): void => {
-    const currentFeatures = config.features || [];
-    const feature = PROJECT_FEATURES.find(f => f.id === featureId);
-    
-    if (!feature) return;
-
-    if (feature.required) return; // Cannot toggle required features
-
-    const isSelected = currentFeatures.includes(featureId);
-    const newFeatures = isSelected
-      ? currentFeatures.filter(id => id !== featureId)
-      : [...currentFeatures, featureId];
-
-    updateConfig({ features: newFeatures });
-  }, [config.features, updateConfig]);
-
-  const renderStepContent = useCallback((): JSX.Element => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <Stack spacing="lg">
-            <FormField 
-              label="Project Name" 
-              required
-              error={errors[currentStep]}
-              helpText="Use lowercase letters, numbers, and hyphens only"
-            >
-              <Input
-                placeholder="my-awesome-project"
-                value={config.name || ''}
-                onChange={(e) => updateConfig({ name: e.target.value })}
-                size="lg"
-                variant="outline"
-                className="min-h-14"
-                required
-                aria-describedby="name-help"
-                disabled={isLoading}
-              />
-            </FormField>
-            
-            <FormField label="Project Type">
-              <RadioGroup
-                value={config.type || 'web-app'}
-                onChange={(value) => updateConfig({ type: value as ProjectConfig['type'] })}
-                options={[
-                  { value: 'web-app', label: 'Web Application', description: 'Modern web application with React/Next.js' },
-                  { value: 'mobile-app', label: 'Mobile App', description: 'Cross-platform mobile application' },
-                  { value: 'desktop-app', label: 'Desktop App', description: 'Native desktop application with Electron' },
-                  { value: 'library', label: 'Component Library', description: 'Reusable component library package' },
-                  { value: 'monorepo', label: 'Monorepo', description: 'Multi-package monorepo setup' }
-                ]}
-                variant="cards"
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                disabled={isLoading}
-              />
-            </FormField>
-            
-            <FormField label="Description (Optional)">
-              <TextArea
-                placeholder="Describe your project's purpose and goals..."
-                value={config.description || ''}
-                onChange={(e) => updateConfig({ description: e.target.value })}
-                rows={3}
-                size="lg"
-                variant="outline"
-                className="min-h-24"
-                disabled={isLoading}
-              />
-            </FormField>
-          </Stack>
-        );
-
-      case 2:
-        return (
-          <Stack spacing="lg">
-            <Typography variant="h3" size="lg" weight="semibold">
-              Choose Your Platform
-            </Typography>
-            
-            <RadioGroup
-              value={config.platform || 'react'}
-              onChange={(value) => updateConfig({ platform: value as ProjectConfig['platform'] })}
-              options={[
-                { value: 'react', label: 'React', description: 'Modern React with hooks and TypeScript' },
-                { value: 'nextjs', label: 'Next.js', description: 'Full-stack React framework with SSR/SSG' },
-                { value: 'vue', label: 'Vue 3', description: 'Progressive Vue.js framework' },
-                { value: 'angular', label: 'Angular', description: 'Enterprise-grade Angular framework' },
-                { value: 'svelte', label: 'Svelte', description: 'Compile-time optimized framework' },
-                { value: 'electron', label: 'Electron', description: 'Cross-platform desktop applications' },
-                { value: 'react-native', label: 'React Native', description: 'Native mobile applications' }
-              ]}
-              variant="cards"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              disabled={isLoading}
-            />
-          </Stack>
-        );
-
-      case 3:
-        return (
-          <Stack spacing="lg">
-            <Typography variant="h3" size="lg" weight="semibold">
-              Select Features & Integrations
-            </Typography>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {PROJECT_FEATURES.map((feature) => {
-                const isSelected = config.features?.includes(feature.id) || feature.required;
-                
-                return (
-                  <Card
-                    key={feature.id}
-                    variant={isSelected ? "default" : "outline"}
-                    padding="md"
-                    className={`cursor-pointer transition-all duration-200 ${
-                      isSelected ? 'ring-2 ring-primary/20 bg-primary/5' : 'hover:bg-muted/50'
-                    } ${feature.required ? 'opacity-75 cursor-not-allowed' : ''}`}
-                    onClick={() => handleFeatureToggle(feature.id)}
-                  >
-                    <Stack direction="row" align="start" spacing="sm">
-                      <Checkbox
-                        checked={isSelected}
-                        disabled={feature.required || isLoading}
-                        onChange={() => handleFeatureToggle(feature.id)}
-                        className="mt-1"
-                      />
-                      
-                      <Stack spacing="xs" className="flex-1">
-                        <Stack direction="row" align="center" spacing="sm">
-                          <Typography variant="body" weight="medium">
-                            {feature.icon} {feature.name}
-                          </Typography>
-                          {feature.required && (
-                            <Badge variant="secondary" size="sm">Required</Badge>
-                          )}
-                          <Badge variant="outline" size="sm">
-                            {feature.category}
-                          </Badge>
-                        </Stack>
-                        
-                        <Typography variant="caption" size="sm" color="muted">
-                          {feature.description}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Card>
-                );
-              })}
-            </div>
-          </Stack>
-        );
-
-      case 4:
-        return (
-          <Stack spacing="lg">
-            <Typography variant="h3" size="lg" weight="semibold">
-              Localization & Theming
-            </Typography>
-            
-            <FormField label="Supported Languages">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {['en', 'nb', 'fr', 'ar', 'de', 'es', 'it', 'pt'].map((locale) => {
-                  const isSelected = config.localization?.includes(locale) || locale === 'en';
-                  
-                  return (
-                    <Card
-                      key={locale}
-                      variant={isSelected ? "default" : "outline"}
-                      padding="sm"
-                      className={`cursor-pointer transition-all duration-200 text-center ${
-                        isSelected ? 'ring-2 ring-primary/20 bg-primary/5' : 'hover:bg-muted/50'
-                      } ${locale === 'en' ? 'opacity-75 cursor-not-allowed' : ''}`}
-                      onClick={() => {
-                        if (locale === 'en') return; // English is required
-                        
-                        const currentLocales = config.localization || ['en'];
-                        const newLocales = isSelected
-                          ? currentLocales.filter(l => l !== locale)
-                          : [...currentLocales, locale];
-                        
-                        updateConfig({ localization: newLocales });
-                      }}
-                    >
-                      <Stack align="center" spacing="xs">
-                        <Checkbox
-                          checked={isSelected}
-                          disabled={locale === 'en' || isLoading}
-                          readOnly
-                        />
-                        <Typography variant="caption" size="sm" weight="medium">
-                          {locale.toUpperCase()}
-                        </Typography>
-                      </Stack>
-                    </Card>
-                  );
-                })}
-              </div>
-            </FormField>
-            
-            <FormField label="Design Theme">
-              <RadioGroup
-                value={config.theme || 'enterprise'}
-                onChange={(value) => updateConfig({ theme: value as ProjectConfig['theme'] })}
-                options={[
-                  { value: 'enterprise', label: 'Enterprise', description: 'Professional business applications' },
-                  { value: 'finance', label: 'Finance', description: 'Financial services and fintech' },
-                  { value: 'healthcare', label: 'Healthcare', description: 'Medical and healthcare systems' },
-                  { value: 'education', label: 'Education', description: 'Educational platforms and tools' },
-                  { value: 'ecommerce', label: 'E-commerce', description: 'Online stores and marketplaces' },
-                  { value: 'productivity', label: 'Productivity', description: 'Task management and productivity tools' }
-                ]}
-                variant="cards"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                disabled={isLoading}
-              />
-            </FormField>
-          </Stack>
-        );
-
-      case 5:
-        return (
-          <Stack spacing="lg">
-            <Stack direction="row" align="center" spacing="sm">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <Typography variant="h3" size="lg" weight="semibold">
-                Review & Generate
-              </Typography>
-            </Stack>
-            
-            <Card variant="outline" padding="lg">
-              <Stack spacing="md">
-                <Typography variant="h4" size="md" weight="medium">
-                  Project Configuration
-                </Typography>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Stack spacing="sm">
-                    <Typography variant="caption" size="sm" color="muted" weight="medium">
-                      BASIC INFORMATION
-                    </Typography>
-                    <Stack spacing="xs">
-                      <Stack direction="row" justify="between">
-                        <Typography variant="body" size="sm">Name:</Typography>
-                        <Typography variant="body" size="sm" weight="medium">{config.name}</Typography>
-                      </Stack>
-                      <Stack direction="row" justify="between">
-                        <Typography variant="body" size="sm">Type:</Typography>
-                        <Typography variant="body" size="sm" weight="medium">{config.type}</Typography>
-                      </Stack>
-                      <Stack direction="row" justify="between">
-                        <Typography variant="body" size="sm">Platform:</Typography>
-                        <Typography variant="body" size="sm" weight="medium">{config.platform}</Typography>
-                      </Stack>
-                      <Stack direction="row" justify="between">
-                        <Typography variant="body" size="sm">Theme:</Typography>
-                        <Typography variant="body" size="sm" weight="medium">{config.theme}</Typography>
-                      </Stack>
-                    </Stack>
-                  </Stack>
-                  
-                  <Stack spacing="sm">
-                    <Typography variant="caption" size="sm" color="muted" weight="medium">
-                      FEATURES ({config.features?.length || 0})
-                    </Typography>
-                    <Stack spacing="xs">
-                      {config.features?.map((featureId) => {
-                        const feature = PROJECT_FEATURES.find(f => f.id === featureId);
-                        return feature ? (
-                          <Stack key={featureId} direction="row" align="center" spacing="xs">
-                            <Check className="h-3 w-3 text-success" />
-                            <Typography variant="caption" size="sm">{feature.name}</Typography>
-                          </Stack>
-                        ) : null;
-                      })}
-                    </Stack>
-                  </Stack>
-                </div>
-                
-                <Separator />
-                
-                <Stack direction="row" align="center" spacing="sm">
-                  <Typography variant="body" size="sm">Localization:</Typography>
-                  <Stack direction="row" spacing="xs">
-                    {config.localization?.map((locale) => (
-                      <Badge key={locale} variant="secondary" size="sm">
-                        {locale.toUpperCase()}
-                      </Badge>
-                    ))}
-                  </Stack>
-                </Stack>
-              </Stack>
-            </Card>
-            
-            {loadingState.isLoading && (
-              <Card variant="default" padding="lg">
-                <Stack spacing="md" align="center">
-                  <ProgressBar
-                    value={loadingState.progress}
-                    size="md"
-                    variant="primary"
-                    showLabel
-                    label={`${loadingState.progress}%`}
-                    className="w-full"
-                  />
-                  <Typography variant="body" size="sm" color="muted">
-                    {loadingState.message}
-                  </Typography>
-                </Stack>
-              </Card>
-            )}
-            
-            {errors.generation && (
-              <Card variant="destructive" padding="md">
-                <Stack direction="row" align="center" spacing="sm">
-                  <AlertCircle className="h-5 w-5 text-destructive" />
-                  <Typography variant="body" size="sm" color="destructive">
-                    {errors.generation}
-                  </Typography>
-                </Stack>
-              </Card>
-            )}
-          </Stack>
-        );
-
-      default:
-        return <div>Step not found</div>;
+  const handlePrevious = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
-  }, [currentStep, config, errors, isLoading, loadingState, handleFeatureToggle, updateConfig]);
+  }, [currentStep]);
+
+  const updateConfig = useCallback((updates: Partial<ProjectConfig>) => {
+    setConfig(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const currentStepData = wizardSteps[currentStep];
 
   return (
-    <Container maxWidth="4xl" className={className}>
-      <Card variant="elevated" padding="xl">
-        <Stack spacing="xl">
-          {/* Header */}
-          <Stack spacing="md" align="center">
-            <Typography variant="h1" size="3xl" weight="bold" className="text-center">
-              Create New Project
-            </Typography>
-            <Typography variant="body" size="lg" color="muted" className="text-center max-w-2xl">
-              Build production-ready applications with modern frameworks, 
-              best practices, and enterprise-grade features.
-            </Typography>
-          </Stack>
-
-          {/* Progress Indicator */}
-          <Stack spacing="md">
-            <ProgressBar
-              value={(currentStep / WIZARD_STEPS.length) * 100}
-              size="md"
-              variant="primary"
-              className="w-full"
-            />
-            
-            <div className={`grid gap-2 ${isMobile ? 'grid-cols-1' : 'grid-cols-5'}`}>
-              {steps.map((step) => (
-                <Stack
-                  key={step.id}
-                  direction={isMobile ? "row" : "column"}
-                  align="center"
-                  spacing="xs"
-                  className={`p-3 rounded-lg transition-colors ${
-                    step.isActive 
-                      ? 'bg-primary text-primary-foreground' 
-                      : step.isCompleted 
-                        ? 'bg-success/10 text-success' 
-                        : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  <div className={`
-                    flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium
-                    ${step.isActive ? 'bg-primary-foreground text-primary' : ''}
-                    ${step.isCompleted ? 'bg-success text-success-foreground' : ''}
-                  `}>
-                    {step.isCompleted ? <Check className="h-4 w-4" /> : step.id}
-                  </div>
-                  
-                  <Stack align={isMobile ? "start" : "center"} spacing="xs">
-                    <Typography 
-                      variant="caption" 
-                      size="sm" 
-                      weight="medium"
-                      className={isMobile ? 'text-left' : 'text-center'}
-                    >
-                      {step.title}
-                    </Typography>
-                    {!isMobile && (
-                      <Typography 
-                        variant="caption" 
-                        size="xs" 
-                        className="text-center max-w-24"
-                      >
-                        {step.description}
-                      </Typography>
-                    )}
-                  </Stack>
-                </Stack>
-              ))}
-            </div>
-          </Stack>
-
-          {/* Step Content */}
-          <div className="min-h-96">
-            {renderStepContent()}
-          </div>
-
-          {/* Navigation */}
-          <Stack 
-            direction="row" 
-            justify="between" 
-            align="center"
-            className="pt-6 border-t border-border"
-          >
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={currentStep === 1 ? onCancel : handleBack}
-              disabled={loadingState.isLoading}
-              className="min-w-24 h-12"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              {currentStep === 1 ? 'Cancel' : 'Back'}
-            </Button>
-            
-            <Typography variant="body" size="sm" color="muted">
-              Step {currentStep} of {WIZARD_STEPS.length}
-            </Typography>
-            
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleNext}
-              disabled={!config.name?.trim() || loadingState.isLoading}
-              className="min-w-24 h-12"
-            >
-              {loadingState.isLoading ? (
-                <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2" />
-              ) : currentStep === WIZARD_STEPS.length ? (
-                <Sparkles className="h-4 w-4 mr-2" />
-              ) : (
-                <ChevronRight className="h-4 w-4 mr-2" />
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Progress Indicator */}
+      <div className="flex items-center justify-between">
+        {wizardSteps.map((step, index) => (
+          <div key={step.id} className="flex items-center flex-1">
+            <div
+              className={cn(
+                "flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all",
+                index === currentStep
+                  ? "border-primary bg-primary text-white"
+                  : index < currentStep
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-300 bg-white text-gray-500"
               )}
-              {currentStep === WIZARD_STEPS.length ? 'Generate Project' : 'Next'}
-            </Button>
-          </Stack>
-        </Stack>
+            >
+              {index < currentStep ? (
+                <span className="text-lg">✓</span>
+              ) : (
+                <span className="text-xl" aria-hidden="true">{step.icon}</span>
+              )}
+            </div>
+            {index < wizardSteps.length - 1 && (
+              <div
+                className={cn(
+                  "flex-1 h-0.5 mx-2",
+                  index < currentStep ? "bg-primary" : "bg-gray-300"
+                )}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Step Labels */}
+      <div className="flex items-center justify-between">
+        {wizardSteps.map((step, index) => (
+          <div key={step.id} className="flex-1 text-center">
+            <p className={cn(
+              "text-sm font-medium",
+              index === currentStep ? "text-primary" : "text-gray-500"
+            )}>
+              {step.title}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Step Content */}
+      <Card className="p-8">
+        {currentStep === 0 && <StepDiscovery config={config} updateConfig={updateConfig} />}
+        {currentStep === 1 && <StepTechnologyStack config={config} updateConfig={updateConfig} />}
+        {currentStep === 2 && <StepFeatures config={config} updateConfig={updateConfig} />}
+        {currentStep === 3 && <StepInfrastructure config={config} updateConfig={updateConfig} />}
+        {currentStep === 4 && <StepPreview config={config} />}
       </Card>
-    </Container>
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handlePrevious}
+          disabled={currentStep === 0}
+        >
+          Previous
+        </Button>
+        
+        <div className="flex gap-3">
+          <Button variant="outline" size="lg">
+            Save Draft
+          </Button>
+          
+          {currentStep === wizardSteps.length - 1 ? (
+            <Button variant="norway" size="lg">
+              🚀 Generate Project
+            </Button>
+          ) : (
+            <Button variant="default" size="lg" onClick={handleNext}>
+              Next Step
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
-};
+}
+
+// Step Components
+function StepDiscovery({ config, updateConfig }: any): JSX.Element {
+  const projectTypes = [
+    { id: 'web-app', name: 'Web Application', icon: '🌐' },
+    { id: 'mobile-app', name: 'Mobile Application', icon: '📱' },
+    { id: 'desktop-app', name: 'Desktop Application', icon: '🖥️' },
+    { id: 'library', name: 'Component Library', icon: '📚' },
+    { id: 'monorepo', name: 'Monorepo', icon: '📦' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Project Discovery</h2>
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Project Name</label>
+          <Input
+            value={config.name}
+            onChange={(e) => updateConfig({ name: e.target.value })}
+            placeholder="my-awesome-project"
+            size="lg"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-2">Description</label>
+          <textarea
+            value={config.description}
+            onChange={(e) => updateConfig({ description: e.target.value })}
+            placeholder="A comprehensive project that..."
+            className="w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-3">Project Type</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {projectTypes.map(type => (
+              <label
+                key={type.id}
+                className={cn(
+                  "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors",
+                  config.type === type.id
+                    ? "border-primary bg-primary/5"
+                    : "border-gray-300 hover:border-gray-400"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="projectType"
+                  value={type.id}
+                  checked={config.type === type.id}
+                  onChange={(e) => updateConfig({ type: e.target.value })}
+                  className="sr-only"
+                />
+                <span className="text-2xl" aria-hidden="true">{type.icon}</span>
+                <span className="font-medium">{type.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepTechnologyStack({ config, updateConfig }: any): JSX.Element {
+  const platforms = [
+    { id: 'nextjs', name: 'Next.js', icon: '▲', recommended: true },
+    { id: 'react', name: 'React', icon: '⚛️' },
+    { id: 'vue', name: 'Vue', icon: '🟢' },
+    { id: 'angular', name: 'Angular', icon: '🔴' },
+    { id: 'svelte', name: 'Svelte', icon: '🟠' },
+    { id: 'electron', name: 'Electron', icon: '🖥️' },
+    { id: 'react-native', name: 'React Native', icon: '📱' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Technology Stack</h2>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {platforms.map(platform => (
+          <label
+            key={platform.id}
+            className={cn(
+              "relative flex flex-col items-center gap-2 p-6 rounded-lg border-2 cursor-pointer transition-all",
+              config.platform === platform.id
+                ? "border-primary bg-primary/5 shadow-md"
+                : "border-gray-300 hover:border-gray-400"
+            )}
+          >
+            <input
+              type="radio"
+              name="platform"
+              value={platform.id}
+              checked={config.platform === platform.id}
+              onChange={(e) => updateConfig({ platform: e.target.value })}
+              className="sr-only"
+            />
+            {platform.recommended && (
+              <span className="absolute top-2 right-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                Recommended
+              </span>
+            )}
+            <span className="text-4xl" aria-hidden="true">{platform.icon}</span>
+            <span className="font-medium">{platform.name}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StepFeatures({ config, updateConfig }: any): JSX.Element {
+  const features = [
+    { id: 'auth', name: 'Authentication', icon: '🔐' },
+    { id: 'database', name: 'Database', icon: '💾' },
+    { id: 'api', name: 'API Routes', icon: '🔌' },
+    { id: 'ssr', name: 'Server Rendering', icon: '🖥️' },
+    { id: 'pwa', name: 'Progressive Web App', icon: '📱' },
+    { id: 'i18n', name: 'Internationalization', icon: '🌍' },
+    { id: 'analytics', name: 'Analytics', icon: '📊' },
+    { id: 'monitoring', name: 'Monitoring', icon: '📈' }
+  ];
+
+  const toggleFeature = (featureId: string) => {
+    const currentFeatures = config.features || [];
+    const newFeatures = currentFeatures.includes(featureId)
+      ? currentFeatures.filter((f: string) => f !== featureId)
+      : [...currentFeatures, featureId];
+    updateConfig({ features: newFeatures });
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Features Configuration</h2>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {features.map(feature => (
+          <label
+            key={feature.id}
+            className={cn(
+              "flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all",
+              config.features?.includes(feature.id)
+                ? "border-primary bg-primary/5"
+                : "border-gray-300 hover:border-gray-400"
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={config.features?.includes(feature.id) || false}
+              onChange={() => toggleFeature(feature.id)}
+              className="sr-only"
+            />
+            <span className="text-3xl" aria-hidden="true">{feature.icon}</span>
+            <span className="text-sm font-medium text-center">{feature.name}</span>
+          </label>
+        ))}
+      </div>
+      
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4">Norwegian Compliance</h3>
+        <div className="space-y-3">
+          <div className="p-4 border rounded-lg">
+            <label className="flex items-center justify-between">
+              <span className="font-medium">NSM Security Classification</span>
+              <select
+                value={config.compliance.nsm}
+                onChange={(e) => updateConfig({ 
+                  compliance: { ...config.compliance, nsm: e.target.value } 
+                })}
+                className="px-3 py-2 border rounded-md"
+              >
+                <option value="OPEN">OPEN</option>
+                <option value="RESTRICTED">RESTRICTED</option>
+                <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+                <option value="SECRET">SECRET</option>
+              </select>
+            </label>
+            <div className="mt-2">
+              <NSMBadge classification={config.compliance.nsm} />
+            </div>
+          </div>
+          
+          {['gdpr', 'wcag', 'bankid', 'altinn'].map(comp => (
+            <label key={comp} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+              <span className="font-medium">
+                {comp === 'gdpr' && 'GDPR Compliance'}
+                {comp === 'wcag' && 'WCAG AAA Accessibility'}
+                {comp === 'bankid' && 'BankID Integration'}
+                {comp === 'altinn' && 'Altinn Services'}
+              </span>
+              <input
+                type="checkbox"
+                checked={config.compliance[comp]}
+                onChange={(e) => updateConfig({ 
+                  compliance: { ...config.compliance, [comp]: e.target.checked } 
+                })}
+                className="w-5 h-5"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepInfrastructure({ config, updateConfig }: any): JSX.Element {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Infrastructure Setup</h2>
+      <p className="text-gray-600">Configure deployment and CI/CD pipeline</p>
+    </div>
+  );
+}
+
+function StepPreview({ config }: any): JSX.Element {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Review & Generate</h2>
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <pre className="text-sm">{JSON.stringify(config, null, 2)}</pre>
+      </div>
+    </div>
+  );
+}

@@ -2,7 +2,7 @@
  * @fileoverview Full-Stack Generator Integration System
  * @description Comprehensive generator orchestration for the Xaheen CLI
  * @author Xala Technologies
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 import type {
@@ -10,8 +10,20 @@ import type {
 	GeneratorResult,
 	GeneratorType,
 } from "../types/index.js";
+
+// Import core modules from the new modular system
+import {
+	IGenerator,
+	IGeneratorFactory,
+	IGeneratorRegistry,
+	GeneratorRegistry,
+	GeneratorFactory,
+	GeneratorDomain,
+	BaseGenerator,
+} from "./core/index.js";
+
+// Import legacy generators for backward compatibility
 import { RESTAPIGenerator } from "./api/index.js";
-// Generator imports
 import { BackendGenerator } from "./backend/index.js";
 import { PrismaGenerator } from "./database/index.js";
 import {
@@ -55,6 +67,15 @@ import {
 	validatePatternOptions,
 } from "./patterns/index.js";
 
+// Import registrars for the new modular system
+import { registerFrontendGenerators } from "./registrars/frontend.registrar.js";
+import { registerBackendGenerators } from "./registrars/backend.registrar.js";
+import { registerDatabaseGenerators } from "./registrars/database.registrar.js";
+import { registerFullStackGenerators } from "./registrars/fullstack.registrar.js";
+import { registerInfrastructureGenerators } from "./registrars/infrastructure.registrar.js";
+import { registerTestingGenerators } from "./registrars/testing.registrar.js";
+import { registerPatternsGenerators } from "./registrars/patterns.registrar.js";
+
 /**
  * Project information interface
  */
@@ -76,6 +97,25 @@ export interface GeneratorContext {
 	name: string;
 	options: GeneratorOptions;
 	projectInfo: ProjectInfo;
+}
+
+/**
+ * Global registry and factory instances for the modular generator system
+ */
+export const generatorRegistry: IGeneratorRegistry = new GeneratorRegistry();
+export const generatorFactory: IGeneratorFactory = new GeneratorFactory(generatorRegistry);
+
+// Import and initialize all domain registrars
+import { initializeAllRegistrars } from './registrars/index.js';
+
+// Register all generators with the registry
+try {
+  console.log('Initializing modular generator system...');
+  // Pass the registry directly as it already implements IGeneratorRegistry
+  initializeAllRegistrars(generatorRegistry);
+  console.log('Modular generator system initialized successfully');
+} catch (error) {
+  console.error('Error initializing modular generator system:', error);
 }
 
 /**
@@ -254,12 +294,13 @@ async function executeFrontendGenerator(
 }
 
 /**
- * Execute full-stack generator (scaffold, CRUD, auth, feature)
+ * Execute specific full-stack generator types (scaffold, CRUD, auth, feature)
+ * @private Used internally by the main executeFullStackGenerator function
  */
-async function executeFullStackGenerator(
+async function executeSpecificFullStackGenerator(
 	context: GeneratorContext,
 ): Promise<GeneratorResult> {
-	const { type, name, options } = context;
+	const { type } = context;
 
 	switch (type) {
 		case "scaffold":
@@ -1623,16 +1664,17 @@ export async function executeFullStackGenerator(
 						force: context.options.force,
 					});
 				} else {
-					return await executeFullStackGenerator(context);
+					return await executeSpecificFullStackGenerator(context);
 				}
 
 			case "infrastructure":
 				const infraGenerator = createInfrastructureGenerator(type as any);
 				return await infraGenerator.generate(process.cwd(), {
 					type: type as any,
-					platform:
+					platform: (
 						context.options.platform ||
-						(type === "terraform" ? "terraform" : "kubernetes"),
+						(type === "terraform" ? "terraform" : "kubernetes")
+					) as "docker" | "kubernetes" | "terraform" | "github-actions" | "azure-devops" | "gitlab-ci" | "aws" | "azure" | "gcp",
 					environment: context.options.environment || "development",
 					services: context.options.services || [],
 					monitoring: context.options.monitoring || false,

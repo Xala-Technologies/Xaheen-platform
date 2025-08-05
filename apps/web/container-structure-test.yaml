@@ -1,0 +1,89 @@
+# Container Structure Test Configuration
+# Used to validate Docker image structure and security
+
+schemaVersion: '2.0.0'
+
+# Command tests
+commandTests:
+  - name: "Node.js is installed"
+    command: "node"
+    args: ["--version"]
+    expectedOutput: ["v20.*"]
+    
+  - name: "pnpm is installed"
+    command: "pnpm"
+    args: ["--version"]
+    expectedOutput: ["9.*"]
+    
+  - name: "Application files exist"
+    command: "ls"
+    args: ["-la", "/app"]
+    expectedOutput: ["server.js", "package.json"]
+    
+  - name: "Health check script exists"
+    command: "ls"
+    args: ["/app/healthcheck.js"]
+    
+  - name: "Next.js build output exists"
+    command: "ls"
+    args: ["-la", "/app/.next"]
+    expectedOutput: ["static"]
+
+# File existence tests
+fileExistenceTests:
+  - name: "Server file"
+    path: "/app/server.js"
+    shouldExist: true
+    permissions: "-rw-r--r--"
+    
+  - name: "Package.json"
+    path: "/app/package.json"
+    shouldExist: true
+    
+  - name: "Health check script"
+    path: "/app/healthcheck.js"
+    shouldExist: true
+    permissions: "-rw-r--r--"
+    
+  - name: "Next.js static files"
+    path: "/app/.next/static"
+    shouldExist: true
+    isDirectory: true
+
+# File content tests
+fileContentTests:
+  - name: "Health check script contains required content"
+    path: "/app/healthcheck.js"
+    expectedContents: ["http.request", "/api/health"]
+    
+  - name: "Package.json contains required fields"
+    path: "/app/package.json"
+    expectedContents: ["\"name\"", "\"version\""]
+
+# Metadata tests
+metadataTest:
+  exposedPorts: ["3000"]
+  user: "nextjs"
+  workdir: "/app"
+  
+  labels:
+    - key: "org.opencontainers.image.title"
+      value: "Xaheen CLI Ecosystem Web App"
+    - key: "org.opencontainers.image.vendor"
+      value: "Xala Technologies"
+
+# Security tests
+licenseTests:
+  - debian: false
+    files: []
+
+# Environment variable tests
+envVars:
+  - key: "NODE_ENV"
+    value: "production"
+  - key: "NEXT_TELEMETRY_DISABLED"
+    value: "1"
+  - key: "PORT"
+    value: "3000"
+  - key: "HOSTNAME"
+    value: "0.0.0.0"

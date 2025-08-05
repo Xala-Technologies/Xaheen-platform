@@ -601,6 +601,9 @@ export class CommandParser {
 				},
 			},
 
+			// License domain routes are now handled by the LicenseRouteRegistrar and LicenseCommandHandler
+			// as part of the SOLID modular architecture refactoring
+
 			// Deployment domain routes
 			{
 				pattern: "deploy",

@@ -1,693 +1,268 @@
-/**
- * AI Assistant Panel - CLAUDE.md Compliant Implementation
- * Xala UI System v6.3.0 CVA Compliant
- * 
- * MANDATORY COMPLIANCE RULES:
- * ✅ TypeScript interfaces with readonly props
- * ✅ Functional component with explicit JSX.Element return type
- * ✅ Modern React hooks (useState, useCallback, useMemo, useEffect)
- * ✅ Professional sizing (h-12+ buttons, h-14+ inputs)
- * ✅ Tailwind CSS semantic classes only
- * ✅ WCAG AAA accessibility compliance
- * ✅ Xala UI System components ONLY
- * ✅ CVA variant system integration
- * ✅ Error handling and loading states
- * ✅ No 'any' types - strict TypeScript only
- */
+import React, { useState, useCallback, useMemo } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { NSMBadge } from '@/components/ui/nsm-badge';
+import { cn } from '@/lib/utils';
 
-"use client";
-
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import {
-  Card,
-  Stack,
-  Typography,
-  Button,
-  TextArea,
-  Badge,
-  ScrollArea,
-  Avatar,
-  Separator,
-  CodeBlock,
-  Modal,
-  useResponsive
-} from '@xala-technologies/ui-system';
-import { 
-  X, 
-  Send, 
-  Bot, 
-  User, 
-  Copy, 
-  Check, 
-  Play, 
-  Eye, 
-  AlertTriangle,
-  Sparkles,
-  Code,
-  FileText,
-  Trash2
-} from 'lucide-react';
-import type { 
-  AIAssistantProps, 
-  ChatMessage, 
-  CodeChange,
-  ProjectContext 
-} from '../../types/component-interfaces';
-
-export const AIAssistantPanel = ({
-  isOpen,
-  position = 'right',
-  onClose,
-  onApplyChanges,
-  onMessageSend,
-  initialMessages = [],
-  isProcessing = false,
-  projectContext,
-  className
-}: AIAssistantProps): JSX.Element => {
-  const { isMobile } = useResponsive();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const [messages, setMessages] = useState<readonly ChatMessage[]>(initialMessages);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [previewChange, setPreviewChange] = useState<CodeChange | null>(null);
-  const [selectedChanges, setSelectedChanges] = useState<readonly string[]>([]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  // Focus textarea when panel opens
-  useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isOpen]);
-
-  const pendingChanges = useMemo(() => {
-    return messages
-      .filter(msg => msg.role === 'assistant' && msg.codeChanges)
-      .flatMap(msg => msg.codeChanges || []);
-  }, [messages]);
-
-  const handleSendMessage = useCallback(async (): Promise<void> => {
-    if (!inputValue.trim() || isProcessing) return;
-
-    const userMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: 'user',
-      content: inputValue.trim(),
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-
-    try {
-      await onMessageSend?.(inputValue.trim());
-      
-      // Simulate AI response for demo
-      setTimeout(() => {
-        const aiResponse: ChatMessage = {
-          id: `msg-${Date.now()}-ai`,
-          role: 'assistant',
-          content: `I'll help you with that. Based on your request, I suggest the following implementation:`,
-          timestamp: new Date(),
-          codeChanges: [
-            {
-              id: `change-${Date.now()}`,
-              file: 'components/UserProfile.tsx',
-              action: 'create',
-              content: `import React from 'react';
-import { Card, Typography, Avatar, Button } from '@xala-technologies/ui-system';
-
-interface UserProfileProps {
+interface PlatformOption {
+  readonly id: string;
   readonly name: string;
-  readonly email: string;
-  readonly avatar?: string;
+  readonly icon: string;
+  readonly color: string;
 }
 
-export const UserProfile = ({ name, email, avatar }: UserProfileProps): JSX.Element => {
+interface AIAssistantPanelProps {
+  readonly className?: string;
+  readonly onGenerate?: (config: GenerationConfig) => void;
+}
+
+interface GenerationConfig {
+  readonly prompt: string;
+  readonly platform: string;
+  readonly nsmClassification: string;
+  readonly features: string[];
+}
+
+const platforms: readonly PlatformOption[] = [
+  { id: 'nextjs', name: 'Next.js', icon: '▲', color: 'text-black dark:text-white' },
+  { id: 'react', name: 'React', icon: '⚛️', color: 'text-cyan-500' },
+  { id: 'vue', name: 'Vue', icon: '🟢', color: 'text-green-500' },
+  { id: 'angular', name: 'Angular', icon: '🔴', color: 'text-red-600' },
+  { id: 'svelte', name: 'Svelte', icon: '🟠', color: 'text-orange-500' },
+  { id: 'electron', name: 'Electron', icon: '🖥️', color: 'text-blue-600' },
+  { id: 'react-native', name: 'React Native', icon: '📱', color: 'text-purple-600' }
+];
+
+const features = [
+  { id: 'typescript', name: 'TypeScript', checked: true },
+  { id: 'tailwind', name: 'Tailwind CSS', checked: true },
+  { id: 'cva', name: 'CVA Architecture', checked: true },
+  { id: 'ssr', name: 'Server Components', checked: false },
+  { id: 'api', name: 'API Routes', checked: false },
+  { id: 'auth', name: 'Authentication', checked: false },
+  { id: 'db', name: 'Database Models', checked: false },
+  { id: 'bankid', name: 'BankID Integration', checked: false },
+  { id: 'altinn', name: 'Altinn Integration', checked: false }
+];
+
+export function AIAssistantPanel({ className, onGenerate }: AIAssistantPanelProps): JSX.Element {
+  const [prompt, setPrompt] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState('nextjs');
+  const [nsmLevel, setNsmLevel] = useState<'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET'>('OPEN');
+  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(
+    new Set(features.filter(f => f.checked).map(f => f.id))
+  );
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleFeatureToggle = useCallback((featureId: string) => {
+    setSelectedFeatures(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(featureId)) {
+        newSet.delete(featureId);
+      } else {
+        newSet.add(featureId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleGenerate = useCallback(async () => {
+    if (!prompt.trim() || !onGenerate) return;
+
+    setIsGenerating(true);
+    try {
+      await onGenerate({
+        prompt: prompt.trim(),
+        platform: selectedPlatform,
+        nsmClassification: nsmLevel,
+        features: Array.from(selectedFeatures)
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [prompt, selectedPlatform, nsmLevel, selectedFeatures, onGenerate]);
+
+  const characterCount = useMemo(() => prompt.length, [prompt]);
+  const maxCharacters = 5000;
+
   return (
-    <Card variant="elevated" padding="lg">
-      <Stack direction="row" align="center" spacing="md">
-        <Avatar
-          src={avatar}
-          alt={\`\${name}'s profile\`}
+    <Card className={cn("p-6 lg:p-8 space-y-6", className)}>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-semibold">AI Assistant - Natural Language to Production Code</h2>
+        <p className="text-muted-foreground">
+          Describe what you want to build, and I'll generate production-ready code with Norwegian compliance.
+        </p>
+      </div>
+
+      {/* Natural Language Input */}
+      <div className="space-y-2">
+        <label htmlFor="ai-prompt" className="text-sm font-medium">
+          Natural Language Input
+        </label>
+        <div className="relative">
+          <textarea
+            id="ai-prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Create a comprehensive user management system with:&#10;- Norwegian BankID authentication&#10;- NSM RESTRICTED security classification&#10;- Full CRUD operations with data tables&#10;- GDPR compliant data handling&#10;- Accessible forms with WCAG AAA compliance&#10;- Real-time validation and error handling"
+            className="w-full min-h-[200px] p-4 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            aria-label="Describe your project requirements"
+            maxLength={maxCharacters}
+          />
+          <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+            {characterCount}/{maxCharacters} chars
+          </div>
+        </div>
+      </div>
+
+      {/* Configuration Options */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Platform Selection */}
+        <div className="space-y-3">
+          <h3 className="font-medium">Platform</h3>
+          <div className="space-y-2">
+            {platforms.map((platform) => (
+              <label
+                key={platform.id}
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors",
+                  selectedPlatform === platform.id
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="platform"
+                  value={platform.id}
+                  checked={selectedPlatform === platform.id}
+                  onChange={(e) => setSelectedPlatform(e.target.value)}
+                  className="sr-only"
+                />
+                <span className={cn("text-2xl", platform.color)} aria-hidden="true">
+                  {platform.icon}
+                </span>
+                <span className="font-medium">{platform.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="space-y-3">
+          <h3 className="font-medium">Features</h3>
+          <div className="space-y-2">
+            {features.map((feature) => (
+              <label
+                key={feature.id}
+                className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.has(feature.id)}
+                  onChange={() => handleFeatureToggle(feature.id)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm">{feature.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Compliance */}
+        <div className="space-y-3">
+          <h3 className="font-medium">Compliance</h3>
+          <div className="space-y-2">
+            <div className="p-3 rounded-lg border">
+              <label className="text-sm font-medium mb-2 block">
+                NSM Classification:
+              </label>
+              <select
+                value={nsmLevel}
+                onChange={(e) => setNsmLevel(e.target.value as any)}
+                className="w-full h-10 px-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="OPEN">OPEN - Public Data</option>
+                <option value="RESTRICTED">RESTRICTED - Limited Access</option>
+                <option value="CONFIDENTIAL">CONFIDENTIAL - Sensitive</option>
+                <option value="SECRET">SECRET - Classified</option>
+              </select>
+              <div className="mt-2">
+                <NSMBadge classification={nsmLevel} size="sm" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.has('gdpr')}
+                  onChange={() => handleFeatureToggle('gdpr')}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm">GDPR Compliance</span>
+              </label>
+              <label className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.has('wcag')}
+                  onChange={() => handleFeatureToggle('wcag')}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm">WCAG AAA</span>
+              </label>
+              <label className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.has('bankid')}
+                  onChange={() => handleFeatureToggle('bankid')}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm">BankID Ready</span>
+              </label>
+              <label className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.has('altinn')}
+                  onChange={() => handleFeatureToggle('altinn')}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm">Altinn Integration</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <Button
+          variant="outline"
           size="lg"
-          fallback={name.charAt(0)}
-        />
-        <Stack spacing="xs">
-          <Typography variant="h3" size="lg" weight="semibold">
-            {name}
-          </Typography>
-          <Typography variant="body" size="md" color="muted">
-            {email}
-          </Typography>
-        </Stack>
-      </Stack>
+          className="flex-1"
+          disabled={isGenerating}
+        >
+          Save Configuration
+        </Button>
+        <Button
+          variant="outline"
+          size="lg"
+          className="flex-1"
+          disabled={isGenerating}
+        >
+          Preview Full Code
+        </Button>
+        <Button
+          variant="norway"
+          size="lg"
+          className="flex-1 sm:flex-none sm:min-w-[200px]"
+          onClick={handleGenerate}
+          disabled={!prompt.trim() || isGenerating}
+          loading={isGenerating}
+        >
+          🚀 Generate Project
+        </Button>
+      </div>
     </Card>
   );
-};`,
-              language: 'typescript',
-              diff: '+25 lines added'
-            }
-          ],
-          metadata: {
-            confidence: 0.95,
-            executionTime: 1200,
-            sources: ['Xala UI System Documentation', 'TypeScript Best Practices']
-          }
-        };
-
-        setMessages(prev => [...prev, aiResponse]);
-      }, 1500);
-
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      
-      const errorMessage: ChatMessage = {
-        id: `msg-${Date.now()}-error`,
-        role: 'system',
-        content: 'Sorry, I encountered an error processing your request. Please try again.',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-    }
-  }, [inputValue, isProcessing, onMessageSend]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }, [handleSendMessage]);
-
-  const handleCopyCode = useCallback(async (code: string, changeId: string): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedId(changeId);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (error) {
-      console.error('Failed to copy code:', error);
-    }
-  }, []);
-
-  const handlePreviewChange = useCallback((change: CodeChange): void => {
-    setPreviewChange(change);
-  }, []);
-
-  const handleApplySelected = useCallback(async (): Promise<void> => {
-    if (selectedChanges.length === 0) return;
-
-    const changesToApply = pendingChanges.filter(change => 
-      selectedChanges.includes(change.id)
-    );
-
-    try {
-      await onApplyChanges(changesToApply);
-      setSelectedChanges([]);
-      
-      // Show success message
-      const successMessage: ChatMessage = {
-        id: `msg-${Date.now()}-success`,
-        role: 'system',
-        content: `Successfully applied ${changesToApply.length} change(s) to your project.`,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, successMessage]);
-    } catch (error) {
-      console.error('Failed to apply changes:', error);
-      
-      const errorMessage: ChatMessage = {
-        id: `msg-${Date.now()}-error`,
-        role: 'system',
-        content: 'Failed to apply changes. Please try again.',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-    }
-  }, [selectedChanges, pendingChanges, onApplyChanges]);
-
-  const handleToggleChange = useCallback((changeId: string): void => {
-    setSelectedChanges(prev => 
-      prev.includes(changeId)
-        ? prev.filter(id => id !== changeId)
-        : [...prev, changeId]
-    );
-  }, []);
-
-  const handleClearChat = useCallback((): void => {
-    setMessages([]);
-    setSelectedChanges([]);
-  }, []);
-
-  if (!isOpen) return <></>;
-
-  const panelClasses = `
-    ${isMobile ? 'fixed inset-0 z-50' : 'fixed z-50'}
-    ${position === 'right' ? 'right-4 top-20 bottom-4 w-96' : ''}
-    ${position === 'left' ? 'left-4 top-20 bottom-4 w-96' : ''}
-    ${position === 'fullscreen' ? 'inset-4' : ''}
-    ${isMobile ? 'w-full' : ''}
-  `;
-
-  return (
-    <>
-      <Card 
-        variant="elevated" 
-        className={`${panelClasses} ${className || ''}`}
-        padding="none"
-      >
-        <Stack spacing="none" className="h-full">
-          {/* Header */}
-          <Stack 
-            direction="row" 
-            align="center" 
-            justify="between"
-            className="p-6 border-b border-border bg-background/95 backdrop-blur-sm"
-          >
-            <Stack direction="row" align="center" spacing="sm">
-              <div className="relative">
-                <Avatar
-                  size="sm"
-                  variant="circular"
-                  fallback={<Bot className="h-4 w-4" />}
-                  className="bg-primary text-primary-foreground"
-                />
-                {isProcessing && (
-                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-success rounded-full animate-pulse" />
-                )}
-              </div>
-              
-              <Stack spacing="xs">
-                <Typography variant="h3" size="md" weight="semibold">
-                  AI Assistant
-                </Typography>
-                {projectContext && (
-                  <Typography variant="caption" size="xs" color="muted">
-                    Working on {projectContext.name}
-                  </Typography>
-                )}
-              </Stack>
-            </Stack>
-            
-            <Stack direction="row" align="center" spacing="xs">
-              {messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleClearChat}
-                  aria-label="Clear chat"
-                  className="h-8 w-8"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                aria-label="Close AI Assistant"
-                className="h-8 w-8"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </Stack>
-          </Stack>
-
-          {/* Project Context */}
-          {projectContext && (
-            <Card variant="muted" padding="sm" className="m-4 mb-0">
-              <Stack direction="row" align="center" spacing="sm">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <Stack spacing="xs" className="flex-1">
-                  <Typography variant="body" size="sm" weight="medium">
-                    {projectContext.name} ({projectContext.platform})
-                  </Typography>
-                  <Typography variant="caption" size="xs" color="muted">
-                    {projectContext.files.length} files • {projectContext.dependencies.length} dependencies
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Chat Messages */}
-          <ScrollArea 
-            ref={scrollAreaRef}
-            className="flex-1 p-6"
-          >
-            {messages.length === 0 ? (
-              <Stack align="center" justify="center" className="h-full text-center">
-                <div className="p-4 rounded-full bg-muted">
-                  <Sparkles className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <Typography variant="h3" size="lg" weight="medium">
-                  How can I help?
-                </Typography>
-                <Typography variant="body" size="sm" color="muted" className="max-w-xs">
-                  Ask me to create components, fix bugs, add features, or explain code.
-                </Typography>
-              </Stack>
-            ) : (
-              <Stack spacing="lg">
-                {messages.map((message) => (
-                  <Stack
-                    key={message.id}
-                    spacing="sm"
-                    align={message.role === 'user' ? 'end' : 'start'}
-                  >
-                    {/* Message Bubble */}
-                    <Stack
-                      direction={message.role === 'user' ? 'row-reverse' : 'row'}
-                      align="start"
-                      spacing="sm"
-                      className="max-w-full"
-                    >
-                      <Avatar
-                        size="xs"
-                        variant="circular"
-                        fallback={message.role === 'user' ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
-                        className={
-                          message.role === 'user' 
-                            ? 'bg-primary text-primary-foreground' 
-                            : message.role === 'system'
-                              ? 'bg-warning text-warning-foreground'
-                              : 'bg-secondary text-secondary-foreground'
-                        }
-                      />
-                      
-                      <Card
-                        variant={
-                          message.role === 'user' 
-                            ? 'default' 
-                            : message.role === 'system'
-                              ? 'destructive'
-                              : 'outline'
-                        }
-                        padding="md"
-                        className={`
-                          max-w-sm
-                          ${message.role === 'user' ? 'bg-primary text-primary-foreground' : ''}
-                          ${message.role === 'system' ? 'bg-warning/10 border-warning/20' : ''}
-                        `}
-                      >
-                        <Typography 
-                          variant="body" 
-                          size="sm"
-                          className={message.role === 'user' ? 'text-primary-foreground' : undefined}
-                        >
-                          {message.content}
-                        </Typography>
-                        
-                        {message.metadata && (
-                          <Stack direction="row" spacing="xs" className="mt-2">
-                            {message.metadata.confidence && (
-                              <Badge variant="secondary" size="xs">
-                                {Math.round(message.metadata.confidence * 100)}% confident
-                              </Badge>
-                            )}
-                            {message.metadata.executionTime && (
-                              <Badge variant="outline" size="xs">
-                                {message.metadata.executionTime}ms
-                              </Badge>
-                            )}
-                          </Stack>
-                        )}
-                      </Card>
-                    </Stack>
-
-                    {/* Code Changes */}
-                    {message.codeChanges && message.codeChanges.length > 0 && (
-                      <Stack spacing="sm" className="w-full pl-8">
-                        <Typography variant="caption" size="xs" color="muted" weight="medium">
-                          PROPOSED CHANGES ({message.codeChanges.length})
-                        </Typography>
-                        
-                        {message.codeChanges.map((change) => {
-                          const isSelected = selectedChanges.includes(change.id);
-                          
-                          return (
-                            <Card 
-                              key={change.id} 
-                              variant={isSelected ? "default" : "outline"} 
-                              padding="sm"
-                              className={isSelected ? 'ring-2 ring-primary/20' : ''}
-                            >
-                              <Stack spacing="sm">
-                                {/* Change Header */}
-                                <Stack direction="row" align="center" justify="between">
-                                  <Stack direction="row" align="center" spacing="sm">
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={() => handleToggleChange(change.id)}
-                                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
-                                    />
-                                    
-                                    <Badge 
-                                      variant={
-                                        change.action === 'create' ? 'success' :
-                                        change.action === 'modify' ? 'default' :
-                                        change.action === 'delete' ? 'destructive' : 'secondary'
-                                      }
-                                      size="sm"
-                                    >
-                                      {change.action.toUpperCase()}
-                                    </Badge>
-                                    
-                                    <Typography variant="caption" size="sm" weight="medium">
-                                      {change.file}
-                                    </Typography>
-                                    
-                                    {change.diff && (
-                                      <Badge variant="outline" size="xs">
-                                        {change.diff}
-                                      </Badge>
-                                    )}
-                                  </Stack>
-                                  
-                                  <Stack direction="row" spacing="xs">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => handleCopyCode(change.content, change.id)}
-                                      aria-label="Copy code"
-                                      className="h-6 w-6"
-                                    >
-                                      {copiedId === change.id ? (
-                                        <Check className="h-3 w-3 text-success" />
-                                      ) : (
-                                        <Copy className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                    
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => handlePreviewChange(change)}
-                                      aria-label="Preview change"
-                                      className="h-6 w-6"
-                                    >
-                                      <Eye className="h-3 w-3" />
-                                    </Button>
-                                  </Stack>
-                                </Stack>
-                                
-                                {/* Code Block */}
-                                <CodeBlock
-                                  language={change.language}
-                                  code={change.content}
-                                  size="sm"
-                                  showLineNumbers={false}
-                                  maxLines={15}
-                                  className="text-xs"
-                                />
-                              </Stack>
-                            </Card>
-                          );
-                        })}
-                        
-                        {/* Apply Changes Button */}
-                        <Stack direction="row" spacing="sm">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={handleApplySelected}
-                            disabled={selectedChanges.length === 0}
-                            className="h-10"
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Apply Selected ({selectedChanges.length})
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedChanges(message.codeChanges?.map(c => c.id) || [])}
-                            disabled={message.codeChanges?.length === 0}
-                            className="h-10"
-                          >
-                            Select All
-                          </Button>
-                        </Stack>
-                      </Stack>
-                    )}
-                  </Stack>
-                ))}
-
-                {/* Processing Indicator */}
-                {isProcessing && (
-                  <Stack align="start">
-                    <Stack direction="row" align="start" spacing="sm">
-                      <Avatar
-                        size="xs"
-                        variant="circular"
-                        fallback={<Bot className="h-3 w-3" />}
-                        className="bg-secondary text-secondary-foreground"
-                      />
-                      
-                      <Card variant="outline" padding="md" className="bg-muted/50">
-                        <Stack direction="row" align="center" spacing="sm">
-                          <div className="flex space-x-1">
-                            {[0, 1, 2].map((i) => (
-                              <div
-                                key={i}
-                                className={`h-2 w-2 bg-primary rounded-full animate-pulse`}
-                                style={{ animationDelay: `${i * 0.2}s` }}
-                              />
-                            ))}
-                          </div>
-                          <Typography variant="body" size="sm" color="muted">
-                            AI is thinking...
-                          </Typography>
-                        </Stack>
-                      </Card>
-                    </Stack>
-                  </Stack>
-                )}
-              </Stack>
-            )}
-          </ScrollArea>
-
-          {/* Pending Changes Summary */}
-          {pendingChanges.length > 0 && (
-            <Card variant="muted" padding="sm" className="mx-4 mb-0">
-              <Stack direction="row" align="center" justify="between">
-                <Stack direction="row" align="center" spacing="sm">
-                  <Code className="h-4 w-4 text-muted-foreground" />
-                  <Typography variant="caption" size="sm">
-                    {pendingChanges.length} pending change(s)
-                  </Typography>
-                </Stack>
-                
-                <Typography variant="caption" size="xs" color="muted">
-                  {selectedChanges.length} selected
-                </Typography>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Input Area */}
-          <Stack className="p-6 border-t border-border bg-background/95 backdrop-blur-sm" spacing="sm">
-            <TextArea
-              ref={textareaRef}
-              placeholder="Describe what you want to create, modify, or ask about..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={3}
-              size="md"
-              variant="outline"
-              className="min-h-20 resize-none"
-              disabled={isProcessing}
-            />
-            
-            <Stack direction="row" justify="between" align="center">
-              <Typography variant="caption" size="xs" color="muted">
-                Press {isMobile ? 'Cmd' : 'Ctrl'}+Enter to send
-              </Typography>
-              
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim() || isProcessing}
-                className="h-10 min-w-20"
-              >
-                {isProcessing ? (
-                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span className="ml-2">Send</span>
-              </Button>
-            </Stack>
-          </Stack>
-        </Stack>
-      </Card>
-
-      {/* Preview Modal */}
-      <Modal 
-        isOpen={!!previewChange} 
-        onClose={() => setPreviewChange(null)}
-        size="lg"
-      >
-        {previewChange && (
-          <Stack spacing="lg">
-            <Stack direction="row" align="center" justify="between">
-              <Typography variant="h3" size="lg" weight="semibold">
-                Preview: {previewChange.file}
-              </Typography>
-              
-              <Badge variant={
-                previewChange.action === 'create' ? 'success' :
-                previewChange.action === 'modify' ? 'default' :
-                previewChange.action === 'delete' ? 'destructive' : 'secondary'
-              }>
-                {previewChange.action.toUpperCase()}
-              </Badge>
-            </Stack>
-            
-            <CodeBlock
-              language={previewChange.language}
-              code={previewChange.content}
-              size="sm"
-              showLineNumbers
-              className="max-h-96 overflow-auto"
-            />
-            
-            <Stack direction="row" justify="end" spacing="sm">
-              <Button
-                variant="outline"
-                onClick={() => setPreviewChange(null)}
-              >
-                Close
-              </Button>
-              
-              <Button
-                variant="primary"
-                onClick={() => {
-                  handleToggleChange(previewChange.id);
-                  setPreviewChange(null);
-                }}
-              >
-                {selectedChanges.includes(previewChange.id) ? 'Remove from Selection' : 'Add to Selection'}
-              </Button>
-            </Stack>
-          </Stack>
-        )}
-      </Modal>
-    </>
-  );
-};
+}

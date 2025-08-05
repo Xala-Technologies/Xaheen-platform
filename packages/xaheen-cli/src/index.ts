@@ -7,6 +7,11 @@ import { ConfigManager } from "./core/config-manager/index.js";
 import { StackAdapterRegistry } from "./core/stack-adapters/index.js";
 import { CLIError } from "./types/index.js";
 import { cliLogger, logger } from "./utils/logger.js";
+import { LicenseManager, CLILicenseIntegration, CLI_LICENSE_CONFIG } from "./licensing/index.js";
+import { CommandHandlerFactory } from "./core/command-parser/factories/CommandHandlerFactory.js";
+import { RouteRegistry } from "./core/command-parser/registry/RouteRegistry.js";
+import { LicenseCommandHandler } from "./core/command-parser/handlers/LicenseCommandHandler.js";
+import { LicenseRouteRegistrar } from "./core/command-parser/registrars/LicenseRouteRegistrar.js";
 
 async function main(): Promise<void> {
 	const startTime = performance.now();
@@ -18,6 +23,14 @@ async function main(): Promise<void> {
 		// Initialize core systems
 		logger.debug("Initializing Xaheen CLI...");
 
+		// Initialize licensing system
+		const licenseManager = new LicenseManager(CLI_LICENSE_CONFIG);
+		const licenseIntegration = new CLILicenseIntegration(licenseManager);
+		await licenseIntegration.initialize();
+
+		// Display license status
+		await licenseIntegration.displayLicenseStatus();
+
 		// Initialize configuration manager
 		const configManager = new ConfigManager();
 
@@ -26,7 +39,21 @@ async function main(): Promise<void> {
 		const detectedStack = await stackRegistry.detectStack();
 		logger.debug(`Detected stack: ${detectedStack}`);
 
-		// Initialize command parser
+		// Initialize route registry
+		const routeRegistry = new RouteRegistry();
+
+		// Initialize command handler factory
+		const handlerFactory = new CommandHandlerFactory();
+		
+		// Register domain handlers
+		handlerFactory.registerHandler('license', LicenseCommandHandler);
+
+		// Initialize and register route registrars
+		const licenseRegistrar = new LicenseRouteRegistrar();
+		const licenseRoutes = licenseRegistrar.getRoutes();
+		routeRegistry.registerRoutes(licenseRoutes);
+
+		// Initialize command parser (legacy system)
 		const commandParser = new CommandParser();
 
 		// Make core systems available globally for domain handlers
@@ -34,6 +61,10 @@ async function main(): Promise<void> {
 			configManager,
 			commandParser,
 			stackRegistry,
+			licenseManager,
+			licenseIntegration,
+			handlerFactory,
+			routeRegistry,
 		};
 
 		// Parse and execute command
@@ -90,6 +121,10 @@ declare global {
 		configManager: ConfigManager;
 		commandParser: CommandParser;
 		stackRegistry: StackAdapterRegistry;
+		licenseManager: LicenseManager;
+		licenseIntegration: CLILicenseIntegration;
+		handlerFactory: CommandHandlerFactory;
+		routeRegistry: RouteRegistry;
 	};
 }
 

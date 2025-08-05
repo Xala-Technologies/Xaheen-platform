@@ -1,0 +1,578 @@
+# Production Docker Compose Configuration
+# Xaheen CLI Ecosystem Web Application
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # WEB APPLICATION
+  # =============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NODE_VERSION: "20"
+        BUILD_DATE: "${BUILD_DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+        GIT_SHA: "${GIT_SHA:-unknown}"
+        GIT_REF: "${GIT_REF:-unknown}"
+    image: ghcr.io/xaheen/web-app:${TAG:-latest}
+    container_name: xaheen-web-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "1001:1001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - MCP_SERVER_API_KEY=${MCP_SERVER_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - POSTHOG_KEY=${POSTHOG_KEY}
+      - BANKID_CLIENT_ID=${BANKID_CLIENT_ID}
+      - BANKID_CLIENT_SECRET=${BANKID_CLIENT_SECRET}
+      - ALTINN_API_KEY=${ALTINN_API_KEY}
+    
+    # Volume mounts (read-only where possible)
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+      - type: tmpfs
+        target: /app/.next/cache
+        tmpfs:
+          size: 500M
+    
+    # Networking
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend
+      - backend
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "/app/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Dependencies
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-server:
+        condition: service_healthy
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=xaheen-web,environment=production"
+    
+    # Labels for monitoring and management
+    labels:
+      - "com.xaheen.service=web"
+      - "com.xaheen.environment=production"
+      - "com.xaheen.version=${TAG:-latest}"
+      - "traefik.enable=true"
+      - "traefik.http.routers.xaheen-web.rule=Host(`xaheen.no`)"
+      - "traefik.http.routers.xaheen-web.tls=true"
+      - "traefik.http.routers.xaheen-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.xaheen-web.loadbalancer.server.port=3000"
+
+  # =============================================================================
+  # DATABASE
+  # =============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: xaheen-postgres-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "70:70"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Environment configuration
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-xaheen_prod}
+      - POSTGRES_USER=${POSTGRES_USER:-xaheen}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    
+    # Volume mounts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+      - type: tmpfs
+        target: /var/run/postgresql
+        tmpfs:
+          size: 100M
+    
+    # Networking
+    networks:
+      - backend
+    ports:
+      - "127.0.0.1:5432:5432" # Only bind to localhost
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-xaheen} -d ${POSTGRES_DB:-xaheen_prod}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=postgres,environment=production"
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=postgres"
+      - "com.xaheen.environment=production"
+
+  # =============================================================================
+  # REDIS CACHE
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: xaheen-redis-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "999:999"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    
+    # Configuration
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 60
+      --timeout 300
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    
+    # Volume mounts
+    volumes:
+      - redis_data:/data
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+    
+    # Networking
+    networks:
+      - backend
+    ports:
+      - "127.0.0.1:6379:6379" # Only bind to localhost
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=redis"
+      - "com.xaheen.environment=production"
+
+  # =============================================================================
+  # MCP SERVER
+  # =============================================================================
+  mcp-server:
+    build:
+      context: ../../packages/mcp
+      dockerfile: Dockerfile
+      target: production
+    image: ghcr.io/xaheen/mcp-server:${TAG:-latest}
+    container_name: xaheen-mcp-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "1001:1001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+      replicas: 2
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    
+    # Volume mounts
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 500M
+      - type: tmpfs
+        target: /app/cache
+        tmpfs:
+          size: 1G
+    
+    # Networking
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "8080:8080"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Dependencies
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=mcp-server"
+      - "com.xaheen.environment=production"
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-server.rule=Host(`api.xaheen.no`)"
+      - "traefik.http.routers.mcp-server.tls=true"
+      - "traefik.http.routers.mcp-server.tls.certresolver=letsencrypt"
+
+  # =============================================================================
+  # REVERSE PROXY & LOAD BALANCER
+  # =============================================================================
+  traefik:
+    image: traefik:v3.0
+    container_name: xaheen-traefik-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    
+    # Command configuration
+    command:
+      - "--api.dashboard=false"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--global.checknewversion=false"
+      - "--global.sendanonymoususage=false"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+    
+    # Port configuration
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    # Volume mounts
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    
+    # Networking
+    networks:
+      - frontend
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=traefik"
+      - "com.xaheen.environment=production"
+
+  # =============================================================================
+  # MONITORING STACK
+  # =============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: xaheen-prometheus-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "65534:65534"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    
+    # Command configuration
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    
+    # Volume mounts
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+    
+    # Networking
+    networks:
+      - monitoring
+      - backend
+    ports:
+      - "127.0.0.1:9090:9090"
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=prometheus"
+      - "com.xaheen.environment=production"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: xaheen-grafana-prod
+    restart: unless-stopped
+    
+    # Security configuration
+    user: "472:472"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    
+    # Environment configuration
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_USERS_ALLOW_SIGN_UP=false
+    
+    # Volume mounts
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/:/etc/grafana/provisioning/:ro
+    
+    # Networking
+    networks:
+      - monitoring
+      - frontend
+    ports:
+      - "127.0.0.1:3001:3000"
+    
+    # Dependencies
+    depends_on:
+      - prometheus
+    
+    # Labels
+    labels:
+      - "com.xaheen.service=grafana"
+      - "com.xaheen.environment=production"
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`monitoring.xaheen.no`)"
+      - "traefik.http.routers.grafana.tls=true"
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  backend:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+  monitoring:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${POSTGRES_DATA_PATH:-./data/postgres}
+      o: bind
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${REDIS_DATA_PATH:-./data/redis}
+      o: bind
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PROMETHEUS_DATA_PATH:-./data/prometheus}
+      o: bind
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${GRAFANA_DATA_PATH:-./data/grafana}
+      o: bind
+  letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${LETSENCRYPT_DATA_PATH:-./data/letsencrypt}
+      o: bind

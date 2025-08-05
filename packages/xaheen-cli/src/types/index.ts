@@ -42,6 +42,7 @@ export type CLIDomain =
 	| "templates" // Template management
 	| "template" // Template operations (singular)
 	| "deploy" // Deployment management
+	| "license" // License management (feature-gated licensing)
 	| "help"; // Help system
 
 export type CLIAction =
@@ -103,7 +104,18 @@ export type CLIAction =
 	| "kubernetes"
 	| "helm"
 	| "monitoring"
-	| "status";
+	| "status"
+	// License-specific actions
+	| "activate"
+	| "deactivate"
+	| "features"
+	| "upgrade"
+	| "usage"
+	| "renewal"
+	| "addons"
+	| "menu"
+	| "diagnostics"
+	| "license-compliance";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({
