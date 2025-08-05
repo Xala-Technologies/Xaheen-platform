@@ -75,7 +75,7 @@ export {
   TemplateRepositoryService,
   createTemplateRepositoryService,
   type TemplateRepositoryConfig,
-  type TemplateMetadata,
+  type TemplateMetadata as SharedTemplateMetadata,
   type RepositoryOperation,
   type RepositoryEvent,
   RepositoryEventType,
@@ -234,7 +234,7 @@ export async function generateAdvancedComponent(request: {
 export async function initializeSharedTemplateSystem(config: {
   readonly repositoryPath?: string;
   readonly versionDataPath?: string;
-  readonly syncConfig?: Partial<SyncConfig>;
+  readonly syncConfig?: Partial<any>;
   readonly gitConfig: {
     readonly username: string;
     readonly email: string;
@@ -268,8 +268,32 @@ export async function initializeSharedTemplateSystem(config: {
     logger
   );
   
+  const defaultSyncConfig = {
+    enabled: true,
+    norwegianCompliance: {
+      enableGDPRCompliance: true,
+      enableNSMCompliance: true,
+      dataRetention: 7 * 365 * 24 * 60 * 60 * 1000, // 7 years in ms
+      auditAllOperations: true,
+      encryptCache: true
+    },
+    conflictResolution: 'manual' as const,
+    enableWebhooks: false,
+    enableJobs: true,
+    maxRetries: 3,
+    retryBackoff: 1000,
+    concurrency: 3,
+    syncInterval: 300000, // 5 minutes
+    compressionLevel: 6,
+    interval: 300000, // 5 minutes
+    batchSize: 10,
+    retryDelay: 1000,
+    parallelJobs: 3,
+    cacheTTL: 3600000, // 1 hour
+  };
+
   const syncService = createTemplateSyncService(
-    config.syncConfig || { enabled: true },
+    { ...defaultSyncConfig, ...config.syncConfig },
     config.versionDataPath || './versions',
     logger,
     repositoryService,
@@ -293,7 +317,7 @@ export async function initializeSharedTemplateSystem(config: {
  * Register and clone a shared template repository
  */
 export async function registerSharedRepository(
-  repositoryService: TemplateRepositoryService,
+  repositoryService: any,
   config: {
     readonly name: string;
     readonly gitUrl: string;
@@ -308,7 +332,7 @@ export async function registerSharedRepository(
     readonly nsmClearance: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
   }
 ) {
-  const repoConfig: TemplateRepositoryConfig = {
+  const repoConfig: any = {
     name: config.name,
     gitUrl: config.gitUrl,
     branch: config.branch || 'main',
@@ -323,7 +347,7 @@ export async function registerSharedRepository(
     norwegianCompliance: {
       dataClassification: config.nsmClassification || 'OPEN'
     }
-  } as TemplateRepositoryConfig;
+  } as any;
   
   const mockUser = {
     id: user.id,
@@ -394,6 +418,5 @@ export default {
   generateAdvancedComponent,
   getTemplateSystemStatus,
   initializeSharedTemplateSystem,
-  registerSharedRepository,
-  templateOrchestrator
+  registerSharedRepository
 };

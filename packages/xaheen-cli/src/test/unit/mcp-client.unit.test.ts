@@ -48,7 +48,7 @@ describe('MCPClientService Unit Tests', () => {
     });
 
     // Setup mock XalaMCPClient
-    const { XalaMCPClient } = await import('xala-mcp');
+    const { XalaMCPClient } = await import('@xala-technologies/xala-mcp');
     mockXalaMCPClient = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),

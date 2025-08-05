@@ -148,7 +148,7 @@ export const MFAConfigSchema = z.object({
 	totpConfig: z.object({
 		issuer: z.string().default("Xaheen CLI"),
 		algorithm: z.enum(["SHA1", "SHA256", "SHA512"]).default("SHA1"),
-		digits: z.enum([6, 8]).default(6),
+		digits: z.number().int().min(6).max(8).default(6),
 		period: z.number().int().min(15).max(300).default(30),
 		window: z.number().int().min(0).max(10).default(1)
 	}).default({}),
@@ -252,8 +252,8 @@ export const EnterpriseAuthConfigSchema = z.object({
 	version: z.string().default("1.0.0"),
 	enabled: z.boolean().default(true),
 	defaultMethod: z.nativeEnum(AuthenticationMethod).default(AuthenticationMethod.OAUTH2),
-	saml2: SAML2ConfigSchema.default({}),
-	oauth2: OAuth2ConfigSchema.default({}),
+	saml2: SAML2ConfigSchema.optional(),
+	oauth2: OAuth2ConfigSchema.optional(),
 	mfa: MFAConfigSchema.default({}),
 	roles: z.array(RoleConfigSchema).default([]),
 	session: SessionConfigSchema,
