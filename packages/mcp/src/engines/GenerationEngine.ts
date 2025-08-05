@@ -1,32 +1,65 @@
 /**
- * @fileoverview Generation Engine - Basic Implementation for Testing
- * @description Basic stub implementation to support comprehensive testing
- * @version 1.0.0
+ * @fileoverview Generation Engine - Advanced Code Generation System
+ * @description Intelligent code generation with AI integration and Norwegian compliance
+ * @version 2.0.0
  */
 
-export class GenerationEngine {
-	private readonly context: unknown;
+interface GenerationContext {
+	projectPath: string;
+	framework: string;
+	language: string;
+	compliance?: {
+		norwegian?: boolean;
+		accessibility?: 'WCAG_AA' | 'WCAG_AAA';
+	};
+}
 
-	public constructor(context: unknown) {
+interface GenerationResult {
+	success: boolean;
+	files: Array<{
+		path: string;
+		content: string;
+		type: 'component' | 'test' | 'story' | 'style' | 'config';
+	}>;
+	warnings?: string[];
+	errors?: string[];
+}
+
+export class GenerationEngine {
+	private readonly context: GenerationContext;
+
+	public constructor(context: GenerationContext) {
 		this.context = context;
 	}
 
-	public async generateFromDescription(description: string): Promise<unknown> {
-		const componentName = this.extractComponentName(description);
-		return {
-			success: true,
-			files: [
-				{
-					path: `src/components/${componentName}.tsx`,
-					content: `import React from 'react';\n\ninterface ${componentName}Props {\n  children: React.ReactNode;\n  onClick?: () => void;\n  loading?: boolean;\n}\n\nexport const ${componentName}: React.FC<${componentName}Props> = ({ children, onClick, loading }) => {\n  return <button onClick={onClick} disabled={loading}>{children}</button>;\n};`,
-					type: "component",
-				},
-			],
-			warnings:
-				description === ""
-					? ["No specific requirements detected, generating basic component"]
-					: [],
-		};
+	public async generateFromDescription(description: string): Promise<GenerationResult> {
+		if (!description.trim()) {
+			return {
+				success: false,
+				files: [],
+				errors: ["Description is required for code generation"],
+			};
+		}
+
+		try {
+			const componentName = this.extractComponentName(description);
+			const componentType = this.inferComponentType(description);
+			const features = this.extractFeatures(description);
+			
+			const files = await this.generateComponentFiles(componentName, componentType, features);
+			
+			return {
+				success: true,
+				files,
+				warnings: this.generateWarnings(description, features),
+			};
+		} catch (error) {
+			return {
+				success: false,
+				files: [],
+				errors: [`Generation failed: ${error instanceof Error ? error.message : String(error)}`],
+			};
+		}
 	}
 
 	async generateComponent(spec: any): Promise<any> {

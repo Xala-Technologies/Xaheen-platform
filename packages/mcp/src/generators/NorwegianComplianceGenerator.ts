@@ -863,28 +863,108 @@ export function validateGDPRCompliance(data: any, purpose: string): boolean {
 
 function validateMaximumGDPR(data: any, purpose: string): boolean {
   // Check encryption
+  if (!data.encryption || data.encryption.level !== 'AES-256') {
+    return false;
+  }
+  
   // Verify pseudonymization
+  if (!data.pseudonymization || !data.pseudonymization.applied) {
+    return false;
+  }
+  
   // Validate consent for purpose
+  if (!data.consent || !data.consent.purpose || data.consent.purpose !== purpose) {
+    return false;
+  }
+  
   // Check data minimization
-  return true; // Placeholder
+  if (!data.dataMinimization || !data.dataMinimization.validated) {
+    return false;
+  }
+  
+  // Verify data subject rights implementation
+  if (!data.subjectRights || !data.subjectRights.deleteRight || !data.subjectRights.portabilityRight) {
+    return false;
+  }
+  
+  // Check privacy by design
+  if (!data.privacyByDesign || !data.privacyByDesign.implemented) {
+    return false;
+  }
+  
+  return true;
 }
 
 function validateEnhancedGDPR(data: any, purpose: string): boolean {
   // Check encryption
+  if (!data.encryption || !['AES-256', 'AES-192'].includes(data.encryption.level)) {
+    return false;
+  }
+  
   // Validate consent
+  if (!data.consent || !data.consent.explicit || !data.consent.purpose) {
+    return false;
+  }
+  
   // Verify access logging
-  return true; // Placeholder
+  if (!data.accessLog || !data.accessLog.enabled || !data.accessLog.detailed) {
+    return false;
+  }
+  
+  // Check data retention policies
+  if (!data.retention || !data.retention.policy) {
+    return false;
+  }
+  
+  // Verify breach notification capability
+  if (!data.breachNotification || !data.breachNotification.capability) {
+    return false;
+  }
+  
+  return true;
 }
 
 function validateStandardGDPR(data: any, purpose: string): boolean {
   // Validate consent
+  if (!data.consent || !data.consent.granted) {
+    return false;
+  }
+  
   // Check basic security measures
-  return true; // Placeholder
+  if (!data.security || !data.security.basic) {
+    return false;
+  }
+  
+  // Verify data processing purpose
+  if (!data.processingPurpose || data.processingPurpose !== purpose) {
+    return false;
+  }
+  
+  // Check legal basis
+  if (!data.legalBasis || !['consent', 'contract', 'legal_obligation', 'vital_interests', 'public_task', 'legitimate_interests'].includes(data.legalBasis)) {
+    return false;
+  }
+  
+  return true;
 }
 
 function validateMinimalGDPR(data: any, purpose: string): boolean {
   // Basic consent validation
-  return true; // Placeholder
+  if (!data.consent) {
+    return false;
+  }
+  
+  // Check if consent is freely given
+  if (data.consent.forced === true) {
+    return false;
+  }
+  
+  // Verify basic data protection principles
+  if (!data.dataProtection || !data.dataProtection.basic) {
+    return false;
+  }
+  
+  return true;
 }
 
 // Accessibility validation
@@ -907,27 +987,196 @@ export function validate${config.name}Accessibility(element: HTMLElement): boole
 
 function validateWCAG_AAA(element: HTMLElement): boolean {
   // Check color contrast ratios (7:1 for normal text, 4.5:1 for large text)
+  const style = window.getComputedStyle(element);
+  const fontSize = parseInt(style.fontSize);
+  const requiredContrast = fontSize >= 18 ? 4.5 : 7; // AAA levels
+  
   // Verify all interactive elements have accessible names
+  if (element.matches('button, input, select, textarea, [role="button"], [role="link"], [tabindex]')) {
+    const accessibleName = element.getAttribute('aria-label') || 
+                          element.getAttribute('aria-labelledby') || 
+                          element.textContent?.trim();
+    if (!accessibleName) {
+      return false;
+    }
+  }
+  
   // Check focus management
+  if (element.tabIndex < 0 && !element.matches('[tabindex="-1"]')) {
+    // Elements should be focusable unless explicitly excluded
+    if (element.matches('button, input, select, textarea, a[href]')) {
+      return false;
+    }
+  }
+  
   // Validate keyboard navigation
-  return true; // Placeholder
+  if (element.matches('[role="button"], [onclick]') && !element.matches('button, input')) {
+    if (!element.hasAttribute('tabindex') || element.getAttribute('role') !== 'button') {
+      return false;
+    }
+  }
+  
+  // Check ARIA attributes validity
+  const ariaAttributes = Array.from(element.attributes)
+    .filter(attr => attr.name.startsWith('aria-'));
+  
+  for (const attr of ariaAttributes) {
+    if (!isValidAriaAttribute(attr.name, attr.value)) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 function validateWCAG_AA(element: HTMLElement): boolean {
   // Check color contrast ratios (4.5:1 for normal text, 3:1 for large text)
+  const style = window.getComputedStyle(element);
+  const fontSize = parseInt(style.fontSize);
+  const requiredContrast = fontSize >= 18 ? 3 : 4.5; // AA levels
+  
   // Verify basic accessibility features
-  return true; // Placeholder
+  if (element.matches('img') && !element.getAttribute('alt')) {
+    return false;
+  }
+  
+  // Check form labels
+  if (element.matches('input, select, textarea') && element.type !== 'hidden') {
+    const label = document.querySelector(`label[for="${element.id}"]`) ||
+                  element.closest('label') ||
+                  element.getAttribute('aria-label') ||
+                  element.getAttribute('aria-labelledby');
+    if (!label) {
+      return false;
+    }
+  }
+  
+  // Check heading hierarchy
+  if (element.matches('h1, h2, h3, h4, h5, h6')) {
+    const level = parseInt(element.tagName.charAt(1));
+    const prevHeading = getPreviousHeading(element);
+    if (prevHeading && parseInt(prevHeading.tagName.charAt(1)) < level - 1) {
+      return false; // Skipped heading level
+    }
+  }
+  
+  return true;
 }
 
 function validateUniversellUtforming(element: HTMLElement): boolean {
   // Norwegian Universal Design standards
   // Includes WCAG 2.1 AA plus additional requirements
-  return true; // Placeholder
+  
+  // First validate WCAG AA compliance
+  if (!validateWCAG_AA(element)) {
+    return false;
+  }
+  
+  // Additional Norwegian requirements
+  // Check for Norwegian language support
+  if (element.lang && !element.lang.startsWith('no') && !element.lang.startsWith('nb') && !element.lang.startsWith('nn')) {
+    // Allow multilingual content but ensure Norwegian is accessible
+    const norwegianContent = element.querySelector('[lang^="no"], [lang^="nb"], [lang^="nn"]');
+    if (!norwegianContent && element.textContent) {
+      return false;
+    }
+  }
+  
+  // Check for cultural sensitivity in content
+  if (element.matches('[alt], [aria-label], [title]')) {
+    const text = element.getAttribute('alt') || 
+                 element.getAttribute('aria-label') || 
+                 element.getAttribute('title') || '';
+    if (containsExclusiveLanguage(text)) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+// Helper function for Norwegian Universal Design
+function containsExclusiveLanguage(text: string): boolean {
+  // Basic check for inclusive language (simplified)
+  const exclusiveTerms = ['blind', 'deaf', 'lame', 'dumb', 'handicapped'];
+  const lowerText = text.toLowerCase();
+  return exclusiveTerms.some(term => lowerText.includes(term));
 }
 
 function validateEU_AA(element: HTMLElement): boolean {
   // European Accessibility Act requirements
-  return true; // Placeholder
+  // Based on WCAG 2.1 AA with additional EU requirements
+  
+  if (!validateWCAG_AA(element)) {
+    return false;
+  }
+  
+  // EU-specific requirements
+  // Check for multilingual support
+  if (element.textContent && element.textContent.length > 50) {
+    const lang = element.lang || document.documentElement.lang;
+    if (!lang || !isEULanguage(lang)) {
+      return false;
+    }
+  }
+  
+  // Verify digital accessibility statement requirements
+  if (element.matches('a, button') && element.textContent?.toLowerCase().includes('accessibility')) {
+    // Should link to accessibility statement
+    const href = element.getAttribute('href');
+    if (!href || !href.includes('accessibility')) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+// Helper functions
+function isValidAriaAttribute(name: string, value: string): boolean {
+  const validAriaAttributes = [
+    'aria-label', 'aria-labelledby', 'aria-describedby', 'aria-hidden',
+    'aria-expanded', 'aria-pressed', 'aria-checked', 'aria-selected',
+    'aria-disabled', 'aria-required', 'aria-invalid', 'aria-live',
+    'aria-atomic', 'aria-relevant', 'aria-busy', 'aria-controls',
+    'aria-owns', 'aria-flowto', 'aria-current', 'aria-level'
+  ];
+  
+  if (!validAriaAttributes.includes(name)) {
+    return false;
+  }
+  
+  // Basic value validation
+  if (name === 'aria-hidden' && !['true', 'false'].includes(value)) {
+    return false;
+  }
+  
+  if (name === 'aria-expanded' && !['true', 'false', 'undefined'].includes(value)) {
+    return false;
+  }
+  
+  return true;
+}
+
+function getPreviousHeading(element: HTMLElement): HTMLElement | null {
+  let prev = element.previousElementSibling;
+  while (prev) {
+    if (prev.matches('h1, h2, h3, h4, h5, h6')) {
+      return prev as HTMLElement;
+    }
+    prev = prev.previousElementSibling;
+  }
+  return null;
+}
+
+function isEULanguage(lang: string): boolean {
+  const euLanguages = [
+    'bg', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr',
+    'ga', 'hr', 'hu', 'it', 'lt', 'lv', 'mt', 'nl', 'pl', 'pt',
+    'ro', 'sk', 'sl', 'sv', 'no', 'nb', 'nn'
+  ];
+  const langCode = lang.split('-')[0].toLowerCase();
+  return euLanguages.includes(langCode);
 }
 
 // Export validation summary

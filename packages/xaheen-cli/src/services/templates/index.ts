@@ -226,6 +226,125 @@ export async function generateAdvancedComponent(request: {
   return templateOrchestrator.generateAdvancedComponent(advancedRequest);
 }
 
+// EPIC 15 Convenience Functions for Team Template Management
+
+/**
+ * Initialize shared template repository system
+ */
+export async function initializeSharedTemplateSystem(config: {
+  readonly repositoryPath?: string;
+  readonly versionDataPath?: string;
+  readonly syncConfig?: Partial<SyncConfig>;
+  readonly gitConfig: {
+    readonly username: string;
+    readonly email: string;
+    readonly signingKey?: string;
+    readonly sshKeyPath?: string;
+    readonly gpgSign?: boolean;
+  };
+}) {
+  const { createTemplateRepositoryService } = await import('./template-repository.service');
+  const { createTemplateVersionManagerService } = await import('./template-version-manager.service');
+  const { createTemplateSyncService } = await import('./template-sync.service');
+  
+  // Mock logger for initialization
+  const logger = {
+    logOperation: async () => {},
+    logEvent: async () => {},
+    getOperations: async () => [],
+    getEvents: async () => [],
+    generateReport: async () => ({}),
+    clearLogs: async () => {}
+  } as any;
+  
+  const repositoryService = createTemplateRepositoryService(
+    config.repositoryPath || './templates',
+    config.gitConfig,
+    logger
+  );
+  
+  const versionManager = createTemplateVersionManagerService(
+    config.versionDataPath || './versions',
+    logger
+  );
+  
+  const syncService = createTemplateSyncService(
+    config.syncConfig || { enabled: true },
+    config.versionDataPath || './versions',
+    logger,
+    repositoryService,
+    versionManager
+  );
+  
+  return {
+    repositoryService,
+    versionManager,
+    syncService,
+    async start() {
+      await syncService.start();
+    },
+    async stop() {
+      await syncService.stop();
+    }
+  };
+}
+
+/**
+ * Register and clone a shared template repository
+ */
+export async function registerSharedRepository(
+  repositoryService: TemplateRepositoryService,
+  config: {
+    readonly name: string;
+    readonly gitUrl: string;
+    readonly branch?: string;
+    readonly isPrivate?: boolean;
+    readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+    readonly autoSync?: boolean;
+  },
+  user: {
+    readonly id: string;
+    readonly email: string;
+    readonly nsmClearance: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+  }
+) {
+  const repoConfig: TemplateRepositoryConfig = {
+    name: config.name,
+    gitUrl: config.gitUrl,
+    branch: config.branch || 'main',
+    localPath: `./templates/${config.name}`,
+    accessControl: {
+      isPrivate: config.isPrivate || false,
+      nsmClassification: config.nsmClassification || 'OPEN'
+    },
+    synchronization: {
+      autoSync: config.autoSync !== false
+    },
+    norwegianCompliance: {
+      dataClassification: config.nsmClassification || 'OPEN'
+    }
+  } as TemplateRepositoryConfig;
+  
+  const mockUser = {
+    id: user.id,
+    email: user.email,
+    firstName: 'User',
+    lastName: 'Name',
+    roles: ['developer'],
+    permissions: [],
+    nsmClearance: user.nsmClearance as any,
+    mfaEnabled: false,
+    mfaMethods: [],
+    isActive: true,
+    metadata: {}
+  } as any;
+  
+  await repositoryService.registerRepository(repoConfig, mockUser);
+  await repositoryService.cloneRepository(config.name, mockUser);
+  
+  return repoConfig;
+}
+
 // Template system status and health check
 export async function getTemplateSystemStatus() {
   const { templateOrchestrator } = await import('./template-orchestrator.js');
@@ -236,7 +355,7 @@ export async function getTemplateSystemStatus() {
   
   return {
     healthy: true,
-    version: '1.0.0',
+    version: '2.0.0',
     templates: {
       count: availableTemplates.length,
       types: [...new Set(availableTemplates.map(t => t.category))]
@@ -256,7 +375,11 @@ export async function getTemplateSystemStatus() {
       qualityAssurance: true,
       versioning: true,
       norwegianCompliance: true,
-      aiOptimized: true
+      aiOptimized: true,
+      sharedRepositories: true,
+      teamCollaboration: true,
+      automaticSync: true,
+      conflictResolution: true
     },
     compliance: {
       wcag: 'AAA',
@@ -270,5 +393,7 @@ export async function getTemplateSystemStatus() {
 export default {
   generateAdvancedComponent,
   getTemplateSystemStatus,
+  initializeSharedTemplateSystem,
+  registerSharedRepository,
   templateOrchestrator
 };

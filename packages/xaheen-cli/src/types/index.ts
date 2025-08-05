@@ -570,3 +570,6 @@ export interface XalaValidationResult {
 export interface GenerationResult extends GeneratorResult {
 	generatedFiles?: GeneratedFile[];
 }
+
+// EPIC 15 Story 15.3 - Template Repository System Types
+export * from './template-repository.types';

@@ -11,7 +11,7 @@ import { z } from "zod";
 import { performance } from "perf_hooks";
 import { logger } from "../../utils/logger.js";
 import type { MCPConfig } from "./mcp-config.service.js";
-import type { XalaMCPClient } from "xala-mcp";
+import type { XalaMCPClient } from "@xala-technologies/xala-mcp";
 
 // Test configuration schema
 const TestConfigSchema = z.object({
