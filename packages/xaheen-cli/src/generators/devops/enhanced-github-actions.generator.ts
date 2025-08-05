@@ -134,6 +134,11 @@ export interface MatrixConfig {
 	readonly exclude?: readonly Record<string, any>[];
 	readonly fail_fast: boolean;
 	readonly max_parallel?: number;
+	readonly dynamic_matrix?: boolean;
+	readonly conditional_matrix?: Record<string, any>;
+	readonly cross_platform?: boolean;
+	readonly performance_testing?: boolean;
+	readonly security_matrix?: boolean;
 }
 
 export interface CachingConfig {
@@ -1395,32 +1400,11 @@ export class EnhancedGitHubActionsGenerator extends BaseGenerator<EnhancedGitHub
 		if (options.enableTesting) {
 			jobs.test = {
 				name: "Test",
-				runs_on: "ubuntu-latest",
+				runs_on: options.matrix.cross_platform ? "${{ matrix.os }}" : "ubuntu-latest",
 				needs: options.enableCI ? ["build"] : undefined,
 				timeout_minutes: options.timeouts.job,
-				strategy: options.matrix.enabled ? {
-					matrix: options.matrix.dimensions,
-					fail_fast: options.matrix.fail_fast,
-					max_parallel: options.matrix.max_parallel
-				} : undefined,
-				steps: [
-					{
-						name: "Checkout",
-						uses: "actions/checkout@v4"
-					},
-					{
-						name: "Setup Project",
-						uses: "./.github/actions/setup-project"
-					},
-					{
-						name: "Run Tests",
-						uses: "./.github/actions/run-tests",
-						with: {
-							coverage: options.enableCodeCoverage.toString(),
-							upload_coverage: "true"
-						}
-					}
-				]
+				strategy: options.matrix.enabled ? await this.generateAdvancedMatrix(options) : undefined,
+				steps: await this.generateTestSteps(options)
 			};
 		}
 
@@ -1614,5 +1598,548 @@ export class EnhancedGitHubActionsGenerator extends BaseGenerator<EnhancedGitHub
 		};
 
 		return keys[runtime] || "version";
+	}
+
+	/**
+	 * Generate advanced matrix configuration with dynamic, conditional, and performance testing
+	 */
+	private async generateAdvancedMatrix(options: EnhancedGitHubActionsGeneratorOptions): Promise<any> {
+		const matrix: any = {
+			fail_fast: options.matrix.fail_fast,
+			max_parallel: options.matrix.max_parallel
+		};
+
+		// Base matrix dimensions
+		const dimensions = { ...options.matrix.dimensions };
+
+		// Cross-platform matrix
+		if (options.matrix.cross_platform) {
+			dimensions.os = ["ubuntu-latest", "windows-latest", "macos-latest"];
+		}
+
+		// Runtime version matrix
+		switch (options.runtime) {
+			case "node":
+				dimensions.node_version = dimensions.node_version || ["18", "20", "22"];
+				break;
+			case "python":
+				dimensions.python_version = dimensions.python_version || ["3.9", "3.10", "3.11", "3.12"];
+				break;
+			case "go":
+				dimensions.go_version = dimensions.go_version || ["1.20", "1.21", "1.22"];
+				break;
+			case "java":
+				dimensions.java_version = dimensions.java_version || ["11", "17", "21"];
+				break;
+		}
+
+		// Security matrix for different security tools
+		if (options.matrix.security_matrix && options.enableSecurity) {
+			dimensions.security_tool = [];
+			if (options.securityTools.includes("snyk")) dimensions.security_tool.push("snyk");
+			if (options.securityTools.includes("semgrep")) dimensions.security_tool.push("semgrep");
+			if (options.securityTools.includes("bandit")) dimensions.security_tool.push("bandit");
+			if (options.securityTools.includes("gosec")) dimensions.security_tool.push("gosec");
+		}
+
+		// Performance testing matrix
+		if (options.matrix.performance_testing && options.enablePerformanceTesting) {
+			dimensions.performance_scenario = ["light", "medium", "heavy"];
+		}
+
+		matrix.matrix = dimensions;
+
+		// Dynamic matrix generation
+		if (options.matrix.dynamic_matrix) {
+			matrix.matrix = {
+				...dimensions,
+				include: await this.generateDynamicMatrixIncludes(options),
+			};
+		}
+
+		// Conditional matrix excludes
+		if (options.matrix.conditional_matrix) {
+			matrix.matrix.exclude = this.generateConditionalExcludes(options, dimensions);
+		}
+
+		// Include/exclude configurations
+		if (options.matrix.include) {
+			matrix.matrix.include = [...(matrix.matrix.include || []), ...options.matrix.include];
+		}
+
+		if (options.matrix.exclude) {
+			matrix.matrix.exclude = [...(matrix.matrix.exclude || []), ...options.matrix.exclude];
+		}
+
+		return matrix;
+	}
+
+	/**
+	 * Generate dynamic matrix includes based on project analysis
+	 */
+	private async generateDynamicMatrixIncludes(options: EnhancedGitHubActionsGeneratorOptions): Promise<any[]> {
+		const includes: any[] = [];
+
+		// Add specific configurations for different environments
+		if (options.enableDocker) {
+			includes.push({
+				name: "docker-build",
+				os: "ubuntu-latest",
+				docker: true,
+				registry: "ghcr.io"
+			});
+		}
+
+		// Add browser testing matrix for web projects
+		if (options.projectType === "web" || options.projectType === "fullstack") {
+			includes.push(
+				{
+					name: "chrome-tests",
+					os: "ubuntu-latest",
+					browser: "chrome",
+					headless: true
+				},
+				{
+					name: "firefox-tests",
+					os: "ubuntu-latest",
+					browser: "firefox",
+					headless: true
+				},
+				{
+					name: "safari-tests",
+					os: "macos-latest",
+					browser: "safari",
+					headless: false
+				}
+			);
+		}
+
+		// Add mobile testing for mobile projects
+		if (options.projectType === "mobile") {
+			includes.push(
+				{
+					name: "ios-simulator",
+					os: "macos-latest",
+					platform: "ios",
+					device: "iPhone 15"
+				},
+				{
+					name: "android-emulator",
+					os: "ubuntu-latest",
+					platform: "android",
+					api_level: "34"
+				}
+			);
+		}
+
+		return includes;
+	}
+
+	/**
+	 * Generate conditional excludes based on compatibility
+	 */
+	private generateConditionalExcludes(options: EnhancedGitHubActionsGeneratorOptions, dimensions: any): any[] {
+		const excludes: any[] = [];
+
+		// Exclude incompatible OS/runtime combinations
+		if (dimensions.os && dimensions.python_version) {
+			// Python 3.12 not fully supported on older macOS runners
+			excludes.push({
+				os: "macos-11",
+				python_version: "3.12"
+			});
+		}
+
+		// Exclude Windows + certain tools that don't work well
+		if (dimensions.os && dimensions.security_tool) {
+			excludes.push({
+				os: "windows-latest",
+				security_tool: "bandit" // Example: bandit might have issues on Windows
+			});
+		}
+
+		// Custom conditional excludes from options
+		if (options.matrix.conditional_matrix) {
+			Object.entries(options.matrix.conditional_matrix).forEach(([condition, value]) => {
+				excludes.push({ [condition]: value });
+			});
+		}
+
+		return excludes;
+	}
+
+	/**
+	 * Generate comprehensive test steps with matrix support
+	 */
+	private async generateTestSteps(options: EnhancedGitHubActionsGeneratorOptions): Promise<any[]> {
+		const steps: any[] = [];
+
+		// Checkout
+		steps.push({
+			name: "Checkout",
+			uses: "actions/checkout@v4"
+		});
+
+		// Setup runtime with matrix support
+		if (options.matrix.enabled && options.matrix.cross_platform) {
+			steps.push({
+				name: `Setup ${options.runtime}`,
+				uses: this.getRuntimeSetupAction(options.runtime),
+				with: {
+					[this.getRuntimeVersionKey(options.runtime)]: "${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " || '" + this.getDefaultRuntimeVersion(options.runtime) + "' }}"
+				}
+			});
+		} else {
+			steps.push({
+				name: "Setup Project",
+				uses: "./.github/actions/setup-project"
+			});
+		}
+
+		// Install dependencies
+		steps.push({
+			name: "Install dependencies",
+			run: this.getInstallCommand(options.packageManager)
+		});
+
+		// Cache dependencies for matrix builds
+		if (options.caching.enabled && options.matrix.enabled) {
+			steps.push({
+				name: "Cache dependencies",
+				uses: "actions/cache@v4",
+				with: {
+					path: this.getCachePaths(options.runtime, options.packageManager),
+					key: "${{ runner.os }}-${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml') }}",
+					restore_keys: "${{ runner.os }}-${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " }}-"
+				}
+			});
+		}
+
+		// Browser setup for web projects
+		if ((options.projectType === "web" || options.projectType === "fullstack") && options.matrix.enabled) {
+			steps.push({
+				name: "Setup Browser",
+				if: "matrix.browser",
+				uses: "browser-actions/setup-${{ matrix.browser }}@v1"
+			});
+		}
+
+		// Mobile setup
+		if (options.projectType === "mobile" && options.matrix.enabled) {
+			steps.push({
+				name: "Setup iOS Simulator",
+				if: "matrix.platform == 'ios'",
+				uses: "futureware-tech/simulator-action@v3",
+				with: {
+					model: "${{ matrix.device || 'iPhone 15' }}"
+				}
+			});
+
+			steps.push({
+				name: "Setup Android Emulator",
+				if: "matrix.platform == 'android'",
+				uses: "reactivecircus/android-emulator-runner@v2",
+				with: {
+					api_level: "${{ matrix.api_level || '34' }}",
+					target: "google_apis",
+					arch: "x86_64"
+				}
+			});
+		}
+
+		// Run tests with matrix-specific configurations
+		steps.push({
+			name: "Run Tests",
+			run: this.getMatrixTestCommand(options),
+			env: {
+				CI: "true",
+				...(options.matrix.enabled && {
+					MATRIX_OS: "${{ matrix.os }}",
+					MATRIX_RUNTIME: "${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " }}",
+					...(options.projectType === "web" && { BROWSER: "${{ matrix.browser }}" }),
+					...(options.matrix.performance_testing && { PERFORMANCE_SCENARIO: "${{ matrix.performance_scenario }}" })
+				})
+			}
+		});
+
+		// Security testing with matrix
+		if (options.enableSecurity && options.matrix.security_matrix) {
+			steps.push({
+				name: "Run Security Scan",
+				if: "matrix.security_tool",
+				run: this.getSecurityTestCommand("${{ matrix.security_tool }}")
+			});
+		}
+
+		// Performance testing with matrix
+		if (options.enablePerformanceTesting && options.matrix.performance_testing) {
+			steps.push({
+				name: "Run Performance Tests",
+				if: "matrix.performance_scenario",
+				run: this.getPerformanceTestCommand("${{ matrix.performance_scenario }}")
+			});
+		}
+
+		// Code coverage
+		if (options.enableCodeCoverage) {
+			steps.push({
+				name: "Upload Coverage",
+				uses: "codecov/codecov-action@v4",
+				with: {
+					file: "./coverage/lcov.info",
+					flags: options.matrix.enabled ? "${{ matrix.os }}-${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " }}" : "unittests",
+					name: options.matrix.enabled ? "codecov-${{ matrix.os }}" : "codecov-umbrella"
+				}
+			});
+		}
+
+		// Upload test results
+		steps.push({
+			name: "Upload Test Results",
+			if: "always()",
+			uses: "actions/upload-artifact@v4",
+			with: {
+				name: options.matrix.enabled ? "test-results-${{ matrix.os }}-${{ matrix." + this.getRuntimeVersionKey(options.runtime).replace('-', '_') + " }}" : "test-results",
+				path: "test-results.xml",
+				retention_days: 7
+			}
+		});
+
+		return steps;
+	}
+
+	/**
+	 * Get cache paths for different runtimes and package managers
+	 */
+	private getCachePaths(runtime: string, packageManager: string): string {
+		const paths: Record<string, Record<string, string>> = {
+			node: {
+				npm: "~/.npm",
+				yarn: "~/.yarn/cache",
+				pnpm: "~/.pnpm-store",
+				bun: "~/.bun/install/cache"
+			},
+			python: {
+				pip: "~/.cache/pip",
+				poetry: "~/Library/Caches/pypoetry"
+			},
+			go: {
+				"go-mod": "~/go/pkg/mod"
+			},
+			java: {
+				maven: "~/.m2/repository",
+				gradle: "~/.gradle/caches"
+			}
+		};
+
+		return paths[runtime]?.[packageManager] || "~/.cache";
+	}
+
+	/**
+	 * Get matrix-aware test command
+	 */
+	private getMatrixTestCommand(options: EnhancedGitHubActionsGeneratorOptions): string {
+		let baseCommand = this.getTestCommand(options.packageManager);
+
+		// Add matrix-specific flags
+		if (options.matrix.enabled) {
+			switch (options.projectType) {
+				case "web":
+				case "fullstack":
+					baseCommand += " --browser=${{ matrix.browser || 'chrome' }}";
+					break;
+				case "mobile":
+					baseCommand += " --platform=${{ matrix.platform }}";
+					break;
+			}
+
+			// Add parallel execution flag
+			if (options.matrix.max_parallel && options.matrix.max_parallel > 1) {
+				baseCommand += " --parallel";
+			}
+		}
+
+		return baseCommand;
+	}
+
+	/**
+	 * Get security test command for specific tools
+	 */
+	private getSecurityTestCommand(tool: string): string {
+		const commands: Record<string, string> = {
+			snyk: "snyk test --json > security-report-snyk.json",
+			semgrep: "semgrep --config=auto --json --output=security-report-semgrep.json .",
+			bandit: "bandit -r . -f json -o security-report-bandit.json",
+			gosec: "gosec -fmt json -out security-report-gosec.json ./..."
+		};
+
+		return commands[tool] || `echo "Unknown security tool: ${tool}"`;
+	}
+
+	/**
+	 * Get performance test command for different scenarios
+	 */
+	private getPerformanceTestCommand(scenario: string): string {
+		const scenarios: Record<string, string> = {
+			light: "npm run perf:light",
+			medium: "npm run perf:medium",
+			heavy: "npm run perf:heavy"
+		};
+
+		return scenarios[scenario] || "npm run perf:light";
+	}
+
+	/**
+	 * Generate advanced CI/CD workflow with comprehensive matrix support
+	 */
+	async generateAdvancedCICDWorkflow(options: EnhancedGitHubActionsGeneratorOptions): Promise<void> {
+		const workflow = {
+			name: `${options.projectName} - Advanced CI/CD Pipeline`,
+			on: this.generateTriggers(options.triggers),
+			concurrency: {
+				group: "${{ github.workflow }}-${{ github.ref }}",
+				cancel_in_progress: "${{ github.ref != 'refs/heads/main' }}"
+			},
+			env: {
+				...this.generateGlobalEnvVars(options),
+				MATRIX_BUILD: "${{ strategy.job-total > 1 }}"
+			},
+			permissions: this.generatePermissions(options),
+			jobs: {
+				// Pre-flight checks
+				preflight: {
+					name: "Pre-flight Checks",
+					runs_on: "ubuntu-latest",
+					outputs: {
+						matrix: "${{ steps.matrix.outputs.matrix }}",
+						should_deploy: "${{ steps.check.outputs.should_deploy }}"
+					},
+					steps: [
+						{
+							name: "Checkout",
+							uses: "actions/checkout@v4"
+						},
+						{
+							name: "Generate Dynamic Matrix",
+							id: "matrix",
+							run: this.generateDynamicMatrixScript(options)
+						},
+						{
+							name: "Check Deployment Conditions",
+							id: "check",
+							run: `
+								if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.event_name }}" == "release" ]]; then
+									echo "should_deploy=true" >> $GITHUB_OUTPUT
+								else
+									echo "should_deploy=false" >> $GITHUB_OUTPUT
+								fi
+							`
+						}
+					]
+				},
+
+				// Matrix testing
+				test: {
+					name: "Test Matrix",
+					needs: ["preflight"],
+					runs_on: "${{ matrix.os }}",
+					timeout_minutes: options.timeouts.job,
+					strategy: {
+						fail_fast: options.matrix.fail_fast,
+						max_parallel: options.matrix.max_parallel,
+						matrix: "${{ fromJson(needs.preflight.outputs.matrix) }}"
+					},
+					steps: await this.generateTestSteps(options)
+				},
+
+				// Collect results
+				collect: {
+					name: "Collect Results",
+					needs: ["test"],
+					runs_on: "ubuntu-latest",
+					if: "always()",
+					steps: [
+						{
+							name: "Download All Artifacts",
+							uses: "actions/download-artifact@v4"
+						},
+						{
+							name: "Merge Test Results",
+							run: `
+								mkdir -p merged-results
+								find . -name "test-results.xml" -exec cp {} merged-results/ \\;
+								# Merge coverage reports
+								find . -name "lcov.info" -exec cat {} \\; > merged-results/merged-coverage.info
+							`
+						},
+						{
+							name: "Upload Merged Results",
+							uses: "actions/upload-artifact@v4",
+							with: {
+								name: "merged-test-results",
+								path: "merged-results/",
+								retention_days: 30
+							}
+						}
+					]
+				},
+
+				// Build and deploy (conditional)
+				deploy: {
+					name: "Deploy",
+					needs: ["collect", "preflight"],
+					if: "needs.preflight.outputs.should_deploy == 'true' && success()",
+					runs_on: "ubuntu-latest",
+					environment: "production",
+					steps: [
+						{
+							name: "Deploy Application",
+							run: "echo 'Deploying application...'"
+						}
+					]
+				}
+			}
+		};
+
+		await this.templateManager.renderTemplate(
+			"devops/github-actions/advanced-cicd-workflow.yml.hbs",
+			".github/workflows/advanced-ci-cd.yml",
+			workflow
+		);
+	}
+
+	/**
+	 * Generate script for dynamic matrix generation
+	 */
+	private generateDynamicMatrixScript(options: EnhancedGitHubActionsGeneratorOptions): string {
+		return `
+			# Generate dynamic matrix based on changed files and configuration
+			MATRIX='{"include":[]}'
+			
+			# Base configurations
+			${options.matrix.cross_platform ? `
+			MATRIX=$(echo $MATRIX | jq '.include += [
+				{"os": "ubuntu-latest", "name": "Linux"},
+				{"os": "windows-latest", "name": "Windows"},
+				{"os": "macos-latest", "name": "macOS"}
+			]')
+			` : `
+			MATRIX=$(echo $MATRIX | jq '.include += [{"os": "ubuntu-latest", "name": "Default"}]')
+			`}
+			
+			# Add runtime versions
+			${options.runtime === 'node' ? `
+			MATRIX=$(echo $MATRIX | jq '.node_version = ["18", "20", "22"]')
+			` : ''}
+			
+			# Add browser testing for web projects
+			${(options.projectType === 'web' || options.projectType === 'fullstack') ? `
+			if git diff --name-only HEAD~1 | grep -E "\\.(html|css|js|ts|jsx|tsx)$"; then
+				MATRIX=$(echo $MATRIX | jq '.browser = ["chrome", "firefox"]')
+			fi
+			` : ''}
+			
+			echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+		`;
 	}
 }

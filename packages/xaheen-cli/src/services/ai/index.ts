@@ -134,9 +134,17 @@ export async function initializeAIServices(projectRoot?: string): Promise<void> 
 	const root = projectRoot || process.cwd();
 	
 	await Promise.all([
+		// Core AI services
 		aiNativeTemplateSystem.initialize(),
 		aiPatternRecommender.initialize(),
 		aiQualityAssurance.initialize(),
+		
+		// EPIC 16 - Custom AI Model Training and Predictive Analytics
+		customModelTrainer.initialize(),
+		continuousImprovementEngine.initialize(),
+		modelManagementSystem.initialize(),
+		predictiveAnalyticsEngine.initialize(),
+		developmentInsightsEngine.initialize(),
 	]);
 }
 
@@ -149,6 +157,11 @@ export function getAISystemAnalytics(): {
 	patternRecommendations: any; // Would be implemented
 	qualityAssurance: any; // Would be implemented
 	performanceOptimization: any; // Would be implemented
+	customModelTraining: ReturnType<typeof customModelTrainer.getModelAnalytics>;
+	continuousImprovement: ReturnType<typeof continuousImprovementEngine.getImprovementAnalytics>;
+	modelManagement: ReturnType<typeof modelManagementSystem.getManagementAnalytics>;
+	predictiveAnalytics: ReturnType<typeof predictiveAnalyticsEngine.getAnalyticsDashboard>;
+	developmentInsights: ReturnType<typeof developmentInsightsEngine.getDevelopmentInsightsDashboard>;
 } {
 	return {
 		templateSystem: aiNativeTemplateSystem.getSystemAnalytics(),
@@ -156,6 +169,11 @@ export function getAISystemAnalytics(): {
 		patternRecommendations: {}, // Placeholder
 		qualityAssurance: {}, // Placeholder
 		performanceOptimization: {}, // Placeholder
+		customModelTraining: customModelTrainer.getModelAnalytics(),
+		continuousImprovement: continuousImprovementEngine.getImprovementAnalytics(),
+		modelManagement: modelManagementSystem.getManagementAnalytics(),
+		predictiveAnalytics: predictiveAnalyticsEngine.getAnalyticsDashboard(),
+		developmentInsights: developmentInsightsEngine.getDevelopmentInsightsDashboard(),
 	};
 }
 
@@ -237,11 +255,70 @@ export async function checkAISystemHealth(): Promise<{
 	}
 }
 
+// EPIC 16 - Custom AI Model Training and Predictive Analytics
+export {
+	CustomModelTrainer,
+	customModelTrainer,
+	NorwegianComplianceUtils,
+	type CodePattern,
+	type OrganizationContext,
+	type ModelTrainingData,
+	type FeedbackEntry,
+	type ModelVersion,
+	type PatternSimilarity,
+	type TrainingConfig,
+} from "./custom-model-trainer.js";
+
+export {
+	ContinuousImprovementEngine,
+	continuousImprovementEngine,
+	NorwegianGDPRUtils,
+	type FeedbackCollectionConfig,
+	type ImplicitFeedback,
+	type ABTestConfig,
+	type ABTestResult,
+	type ModelPerformanceMetrics,
+	type RetrainingTrigger,
+} from "./continuous-improvement-engine.js";
+
+export {
+	ModelManagementSystem,
+	modelManagementSystem,
+	NSMComplianceUtils,
+	type ModelDeploymentConfig,
+	type ModelRegistry,
+	type DeploymentRecord,
+	type ModelValidationResult,
+	type ExplainabilityReport,
+	type ModelSecurityAudit,
+} from "./model-management-system.js";
+
+export {
+	PredictiveAnalyticsEngine,
+	predictiveAnalyticsEngine,
+	NorwegianDevelopmentStandards,
+	type CodeQualityPrediction,
+	type DevelopmentInsights,
+	type PredictiveModel,
+	type HistoricalProjectData,
+} from "./predictive-analytics-engine.js";
+
+export {
+	DevelopmentInsightsEngine,
+	developmentInsightsEngine,
+	NorwegianCostModeling,
+	type MaintenanceCostModel,
+	type TechnicalDebtAnalysis,
+	type DevelopmentTimeEstimation,
+	type TeamProductivityAnalysis,
+	type NorwegianComplianceAssessment,
+} from "./development-insights-engine.js";
+
 /**
  * Version information for the AI system
  */
 export const AI_SYSTEM_VERSION = {
-	version: "1.0.0",
+	version: "2.0.0",
 	buildDate: new Date().toISOString(),
 	components: {
 		patternRecommender: "1.0.0",
@@ -250,6 +327,11 @@ export const AI_SYSTEM_VERSION = {
 		scoringEngine: "1.0.0",
 		costOptimization: "1.0.0",
 		performanceAnalyzer: "1.0.0",
+		customModelTrainer: "1.0.0",
+		continuousImprovement: "1.0.0",
+		modelManagement: "1.0.0",
+		predictiveAnalytics: "1.0.0",
+		developmentInsights: "1.0.0",
 	},
 	features: [
 		"AI-driven pattern recommendations",
@@ -262,5 +344,23 @@ export const AI_SYSTEM_VERSION = {
 		"Automatic code optimizations",
 		"Multi-template comparison",
 		"Optimization roadmaps",
+		"Custom AI model training",
+		"Organization-specific pattern learning",
+		"Continuous model improvement",
+		"A/B testing for AI models",
+		"Model versioning and deployment",
+		"Explainable AI and transparency",
+		"Security auditing for models",
+		"Code quality prediction",
+		"Bug likelihood assessment",
+		"Performance regression prediction",
+		"Security vulnerability detection",
+		"Development time estimation",
+		"Maintenance cost modeling",
+		"Technical debt quantification",
+		"Team productivity analysis",
+		"Norwegian GDPR compliance",
+		"Norwegian accessibility standards",
+		"NSM security framework support",
 	],
 } as const;

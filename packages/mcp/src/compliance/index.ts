@@ -6,6 +6,7 @@
 
 // Core Types
 export * from '../types/norwegian-compliance.js';
+import type { NSMClassification } from '../types/norwegian-compliance.js';
 
 // NSM Classification System
 export { 

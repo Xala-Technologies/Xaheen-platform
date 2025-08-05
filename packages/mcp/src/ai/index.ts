@@ -201,11 +201,18 @@ export class AITemplateSystem {
         templateName: selectedTemplate.name,
         confidence: updatedContext.userIntent.confidence,
         generatedComponent: {
-          ...generatedComponent,
           componentCode: generatedComponent.code,
+          typesCode: '',
+          stylesCode: '',
+          localizationKeys: {},
+          testCode: generatedComponent.tests,
+          storyCode: '',
+          documentationCode: generatedComponent.documentation,
+          imports: [],
+          dependencies: [],
+          files: this.generateFileStructure(selectedTemplate, generatedComponent) as any,
           platform: updatedContext.projectContext.platform,
-          architecture: 'v5-cva', // Default to v5.0 CVA architecture
-          files: this.generateFileStructure(selectedTemplate, generatedComponent) as any
+          architecture: 'v5-cva' // Default to v5.0 CVA architecture
         },
         mcpRecommendations,
         optimizations: generatedComponent.optimizations,

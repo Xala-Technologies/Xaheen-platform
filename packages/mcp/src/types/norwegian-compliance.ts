@@ -631,6 +631,167 @@ export function getCompliancePreset(presetName: keyof typeof COMPLIANCE_PRESETS)
   return COMPLIANCE_PRESETS[presetName];
 }
 
+// Additional type aliases for compatibility
+export type NSMClassifiedTemplate = NorwegianComplianceTemplateConfig;
+export type NSMAccessControls = NSMSecurityRequirements['access'];
+export type NSMAuditRequirements = NSMSecurityRequirements;
+export type GDPRConsentConfig = GDPRRequirements['personalDataHandling'];
+export type GDPRCookieConsent = GDPRRequirements['cookies'];
+export type GDPRDataProcessingRecord = GDPRRequirements['dataProcessing'];
+export type GDPRUserRights = GDPRRequirements['userRights'];  
+export type GDPRPrivacyNotice = GDPRRequirements['privacyNotice'];
+
+// Accessibility types
+export interface AccessibilityViolation {
+  readonly type: string;
+  readonly severity: 'error' | 'warning' | 'info';
+  readonly message: string;
+  readonly element?: string;
+  readonly recommendation: string;
+}
+
+export interface AccessibilityValidationResult {
+  readonly success: boolean;
+  readonly violations: AccessibilityViolation[];
+  readonly score: number;
+}
+
+export type WCAGLevel = 'A' | 'AA' | 'AAA';
+export type AccessibilityViolationType = 'color-contrast' | 'missing-label' | 'keyboard-navigation' | 'focus-management';
+
+// Altinn design tokens
+export interface AltinnColorTokens {
+  readonly primary: string;
+  readonly secondary: string;
+  readonly accent: string;
+  readonly neutral: string;
+  readonly semantic: Record<string, string>;
+}
+
+export interface AltinnTypographyTokens {
+  readonly fontFamily: string;
+  readonly fontSize: Record<string, string>;
+  readonly fontWeight: Record<string, number>;
+  readonly lineHeight: Record<string, number>;
+}
+
+export interface AltinnSpacingTokens {
+  readonly xs: string;
+  readonly sm: string;
+  readonly md: string;
+  readonly lg: string;
+  readonly xl: string;
+}
+
+export interface AltinnBreakpointTokens {
+  readonly mobile: string;
+  readonly tablet: string;
+  readonly desktop: string;
+  readonly wide: string;
+}
+
+// Norwegian localization types
+export interface NorwegianDateFormats {
+  readonly short: string;
+  readonly medium: string;
+  readonly long: string;
+  readonly full: string;
+}
+
+export interface NorwegianNumberFormats {
+  readonly decimal: string;
+  readonly currency: string;
+  readonly percent: string;
+}
+
+export interface NorwegianCulturalSettings {
+  readonly locale: 'nb-NO' | 'nn-NO';
+  readonly dateFormats: NorwegianDateFormats;
+  readonly numberFormats: NorwegianNumberFormats;
+  readonly firstDayOfWeek: number;
+}
+
+export interface NorwegianTranslations {
+  readonly [key: string]: string | NorwegianTranslations;
+}
+
+// RTL types
+export type RTLLanguage = 'ar' | 'he' | 'fa' | 'ur';
+export type TextDirection = 'ltr' | 'rtl';
+
+export interface RTLConfiguration {
+  readonly enabled: boolean;
+  readonly languages: RTLLanguage[];
+  readonly defaultDirection: TextDirection;
+}
+
+export interface RTLTranslations {
+  readonly [key: string]: {
+    readonly text: string;
+    readonly direction: TextDirection;
+  };
+}
+
+// Classification template types
+export interface ClassificationTemplateConfig {
+  readonly classification: NSMClassification;
+  readonly styling: ClassificationStyling;
+  readonly features: string[];
+}
+
+export interface ClassificationStyling {
+  readonly colors: Record<string, string>;
+  readonly badges: boolean;
+  readonly watermarks: boolean;
+}
+
+// Audit types
+export interface AuditEvent {
+  readonly id: string;
+  readonly type: AuditEventType;
+  readonly timestamp: string;
+  readonly userId?: string;
+  readonly data: Record<string, unknown>;
+}
+
+export type AuditEventType = 'user-action' | 'data-access' | 'security-event' | 'system-event';
+
+export interface AuditConfiguration {
+  readonly enabled: boolean;
+  readonly events: AuditEventType[];
+  readonly retention: number; // days
+}
+
+// Validation types
+export interface ComplianceValidationRequest {
+  readonly config: unknown;
+  readonly complianceRequirements: NorwegianComplianceConfig;
+}
+
+export interface ComplianceViolation {
+  readonly category: string;
+  readonly severity: 'error' | 'warning' | 'info';
+  readonly code: string;
+  readonly message: string;
+  readonly recommendation: string;
+  readonly reference?: string;
+  readonly autoFixable: boolean;
+}
+
+export interface ComplianceValidationResult {
+  readonly success: boolean;
+  readonly violations: ComplianceViolation[];
+  readonly summary: ComplianceValidationSummary;
+}
+
+export interface ComplianceValidationSummary {
+  readonly totalViolations: number;
+  readonly errorCount: number;
+  readonly warningCount: number;
+  readonly infoCount: number;
+  readonly complianceScore: number;
+}
+
 export function createCustomCompliance(overrides: Partial<NorwegianComplianceConfig>): NorwegianComplianceConfig {
   const base = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
   const result: NorwegianComplianceConfig = {
