@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="{{#if (eq language 'nb-NO')}}nb{{else}}en{{/if}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{translations.title}} - {{#if (eq language 'nb-NO')}}Utvikler Dashboard{{else}}Developer Dashboard{{/if}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .code { font-family: 'Fira Code', monospace; }
+        .gradient-bg { background: linear-gradient(135deg, #312e81 0%, #3730a3 100%); }
+        .chart-container { position: relative; height: 250px; }
+        .action-card { transition: all 0.2s ease-in-out; cursor: pointer; }
+        .action-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .vulnerability-card { border-left: 4px solid #ef4444; }
+        .license-card { border-left: 4px solid #f59e0b; }
+        .security-card { border-left: 4px solid #3b82f6; }
+        .gdpr-card { border-left: 4px solid #10b981; }
+        .code-snippet { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; font-size: 0.875rem; overflow-x: auto; }
+        .terminal { background: #0f172a; color: #22d3ee; padding: 1rem; border-radius: 0.5rem; font-family: 'Fira Code', monospace; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-success { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-error { background: #ef4444; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-circle { transition: stroke-dashoffset 0.3s ease-in-out; }
+        .expandable { cursor: pointer; }
+        .expanded .details { display: block; }
+        .details { display: none; }
+        @media (max-width: 768px) {
+            .chart-container { height: 200px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="mr-4">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">{{translations.title}}</h1>
+                        <p class="text-indigo-200 text-sm">{{#if (eq language 'nb-NO')}}Utvikler Dashboard - Handlingsrettede Innsikter{{else}}Developer Dashboard - Actionable Insights{{/if}}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-indigo-200 text-sm">{{translations.lastUpdated}}</p>
+                        <p class="text-white font-medium code text-sm">{{formatDate generatedAt}}</p>
+                    </div>
+                    <button onclick="refreshData()" class="bg-indigo-600 hover:bg-indigo-700 p-2 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <!-- Quick Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Build Status -->
+            <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 {{#if (eq metrics.overallScore 100)}}border-green-500{{else if (gte metrics.overallScore 80)}}border-yellow-500{{else}}border-red-500{{/if}}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">{{#if (eq language 'nb-NO')}}Build Status{{else}}Build Status{{/if}}</p>
+                        <p class="text-lg font-semibold {{#if (eq metrics.overallScore 100)}}text-green-600{{else if (gte metrics.overallScore 80)}}text-yellow-600{{else}}text-red-600{{/if}}">
+                            {{#if (eq metrics.overallScore 100)}}{{#if (eq language 'nb-NO')}}Vellykket{{else}}Passing{{/if}}{{else if (gte metrics.overallScore 80)}}{{#if (eq language 'nb-NO')}}Advarsel{{else}}Warning{{/if}}{{else}}{{#if (eq language 'nb-NO')}}Feilet{{else}}Failing{{/if}}{{/if}}
+                        </p>
+                    </div>
+                    <div class="status-dot {{#if (eq metrics.overallScore 100)}}status-success{{else if (gte metrics.overallScore 80)}}status-warning{{else}}status-error{{/if}}"></div>
+                </div>
+            </div>
+
+            <!-- Critical Issues -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">{{#if (eq language 'nb-NO')}}Kritiske Problemer{{else}}Critical Issues{{/if}}</p>
+                        <p class="text-2xl font-bold {{#if (eq (add metrics.vulnerabilities.critical metrics.nsm.criticalFindings) 0)}}text-green-600{{else}}text-red-600{{/if}}">
+                            {{add metrics.vulnerabilities.critical metrics.nsm.criticalFindings}}
+                        </p>
+                    </div>
+                    <svg class="w-6 h-6 {{#if (eq (add metrics.vulnerabilities.critical metrics.nsm.criticalFindings) 0)}}text-green-500{{else}}text-red-500{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.092 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Test Coverage -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">{{#if (eq language 'nb-NO')}}Test Dekning{{else}}Test Coverage{{/if}}</p>
+                        <p class="text-2xl font-bold text-blue-600">{{subtract 100 (divide (multiply metrics.vulnerabilities.critical 100) metrics.vulnerabilities.totalScanned)}}%</p>
+                    </div>
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- License Issues -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">{{#if (eq language 'nb-NO')}}Lisens Problemer{{else}}License Issues{{/if}}</p>
+                        <p class="text-2xl font-bold {{#if (eq metrics.licenses.nonCompliantPackages 0)}}text-green-600{{else}}text-yellow-600{{/if}}">
+                            {{metrics.licenses.nonCompliantPackages}}
+                        </p>
+                    </div>
+                    <svg class="w-6 h-6 {{#if (eq metrics.licenses.nonCompliantPackages 0)}}text-green-500{{else}}text-yellow-500{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        {{#if (eq language 'nb-NO')}}Umiddelbare Handlinger{{else}}Immediate Actions{{/if}}
+                    </h2>
+                    <span class="text-sm text-gray-500">
+                        {{#if (eq language 'nb-NO')}}{{add (add metrics.vulnerabilities.critical metrics.vulnerabilities.high) metrics.licenses.nonCompliantPackages}} oppgaver{{else}}{{add (add metrics.vulnerabilities.critical metrics.vulnerabilities.high) metrics.licenses.nonCompliantPackages}} tasks{{/if}}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Critical Vulnerabilities -->
+                    {{#if (gt metrics.vulnerabilities.critical 0)}}
+                    <div class="action-card vulnerability-card bg-red-50 rounded-lg p-4" onclick="expandCard(this)">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <h3 class="font-semibold text-red-800">
+                                    {{#if (eq language 'nb-NO')}}Fiks {{metrics.vulnerabilities.critical}} kritiske sårbarheter{{else}}Fix {{metrics.vulnerabilities.critical}} critical vulnerabilities{{/if}}
+                                </h3>
+                            </div>
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                                {{#if (eq language 'nb-NO')}}KRITISK{{else}}CRITICAL{{/if}}
+                            </span>
+                        </div>
+                        <p class="text-sm text-red-700 mb-3">
+                            {{#if (eq language 'nb-NO')}}Disse sårbarhetene kan føre til databrudd og krever umiddelbar oppmerksomhet{{else}}These vulnerabilities could lead to data breaches and require immediate attention{{/if}}
+                        </p>
+                        <div class="details">
+                            <div class="code-snippet mb-3">
+                                <div class="text-cyan-400"># {{#if (eq language 'nb-NO')}}Kjør sårbarhetsskanning{{else}}Run vulnerability scan{{/if}}</div>
+                                <div class="text-gray-300">npm audit --audit-level critical</div>
+                                <div class="text-gray-300">npm audit fix --force</div>
+                            </div>
+                            <div class="text-xs text-red-600">
+                                {{#if (eq language 'nb-NO')}}Estimert tid: 2-4 timer{{else}}Estimated time: 2-4 hours{{/if}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- NSM Security Controls -->
+                    {{#if (lt metrics.nsm.implementedControls metrics.nsm.securityControls)}}
+                    <div class="action-card security-card bg-blue-50 rounded-lg p-4" onclick="expandCard(this)">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <h3 class="font-semibold text-blue-800">
+                                    {{#if (eq language 'nb-NO')}}Implementer {{subtract metrics.nsm.securityControls metrics.nsm.implementedControls}} NSM kontroller{{else}}Implement {{subtract metrics.nsm.securityControls metrics.nsm.implementedControls}} NSM controls{{/if}}
+                                </h3>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                {{#if (eq language 'nb-NO')}}HØY{{else}}HIGH{{/if}}
+                            </span>
+                        </div>
+                        <p class="text-sm text-blue-700 mb-3">
+                            {{#if (eq language 'nb-NO')}}Manglende sikkerhetskontroller påvirker NSM sertifisering{{else}}Missing security controls affect NSM certification{{/if}}
+                        </p>
+                        <div class="details">
+                            <div class="code-snippet mb-3">
+                                <div class="text-cyan-400"># {{#if (eq language 'nb-NO')}}Generer NSM sikkerhetskonfigurasjoner{{else}}Generate NSM security configurations{{/if}}</div>
+                                <div class="text-gray-300">xaheen generate nsm-security --level={{metrics.nsm.classificationLevel}}</div>
+                                <div class="text-gray-300">xaheen compliance validate-nsm</div>
+                            </div>
+                            <div class="text-xs text-blue-600">
+                                {{#if (eq language 'nb-NO')}}Estimert tid: {{multiply (subtract metrics.nsm.securityControls metrics.nsm.implementedControls) 3}} timer{{else}}Estimated time: {{multiply (subtract metrics.nsm.securityControls metrics.nsm.implementedControls) 3}} hours{{/if}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- GDPR Compliance Issues -->
+                    {{#if (lt metrics.gdpr.complianceScore 80)}}
+                    <div class="action-card gdpr-card bg-green-50 rounded-lg p-4" onclick="expandCard(this)">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <h3 class="font-semibold text-green-800">
+                                    {{#if (eq language 'nb-NO')}}Forbedre GDPR etterlevelse{{else}}Improve GDPR compliance{{/if}}
+                                </h3>
+                            </div>
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                {{#if (eq language 'nb-NO')}}MIDDELS{{else}}MEDIUM{{/if}}
+                            </span>
+                        </div>
+                        <p class="text-sm text-green-700 mb-3">
+                            {{#if (eq language 'nb-NO')}}Nåværende score: {{metrics.gdpr.complianceScore}}%. Mål: 80%+{{else}}Current score: {{metrics.gdpr.complianceScore}}%. Target: 80%+{{/if}}
+                        </p>
+                        <div class="details">
+                            <div class="code-snippet mb-3">
+                                <div class="text-cyan-400"># {{#if (eq language 'nb-NO')}}Generer GDPR komponenter{{else}}Generate GDPR components{{/if}}</div>
+                                <div class="text-gray-300">xaheen generate gdpr-consent-banner</div>
+                                <div class="text-gray-300">xaheen generate data-deletion-workflow</div>
+                            </div>
+                            <div class="text-xs text-green-600">
+                                {{#if (eq language 'nb-NO')}}Estimert tid: 6-8 timer{{else}}Estimated time: 6-8 hours{{/if}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- License Issues -->
+                    {{#if (gt metrics.licenses.nonCompliantPackages 0)}}
+                    <div class="action-card license-card bg-yellow-50 rounded-lg p-4" onclick="expandCard(this)">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd"></path>
+                                </svg>
+                                <h3 class="font-semibold text-yellow-800">
+                                    {{#if (eq language 'nb-NO')}}Løs {{metrics.licenses.nonCompliantPackages}} lisensproblemer{{else}}Resolve {{metrics.licenses.nonCompliantPackages}} license issues{{/if}}
+                                </h3>
+                            </div>
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                                {{#if (eq language 'nb-NO')}}MIDDELS{{else}}MEDIUM{{/if}}
+                            </span>
+                        </div>
+                        <p class="text-sm text-yellow-700 mb-3">
+                            {{#if (eq language 'nb-NO')}}Inkompatible lisenser kan skape juridiske problemer{{else}}Incompatible licenses may create legal issues{{/if}}
+                        </p>
+                        <div class="details">
+                            <div class="code-snippet mb-3">
+                                <div class="text-cyan-400"># {{#if (eq language 'nb-NO')}}Sjekk lisensetterlevelse{{else}}Check license compliance{{/if}}</div>
+                                <div class="text-gray-300">xaheen compliance check-licenses</div>
+                                <div class="text-gray-300">xaheen compliance generate-license-report</div>
+                            </div>
+                            <div class="text-xs text-yellow-600">
+                                {{#if (eq language 'nb-NO')}}Estimert tid: {{multiply metrics.licenses.nonCompliantPackages 0.5}} timer{{else}}Estimated time: {{multiply metrics.licenses.nonCompliantPackages 0.5}} hours{{/if}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Development Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Vulnerability Trend -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    {{#if (eq language 'nb-NO')}}Sårbarhets Trend{{else}}Vulnerability Trend{{/if}}
+                </h3>
+                <div class="chart-container">
+                    <canvas id="vulnerabilityTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Compliance Progress -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    {{#if (eq language 'nb-NO')}}Etterlevelse Fremgang{{else}}Compliance Progress{{/if}}
+                </h3>
+                <div class="space-y-4">
+                    <!-- GDPR Progress -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">GDPR</span>
+                            <span class="font-medium">{{metrics.gdpr.complianceScore}}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full transition-all duration-500" style="width: {{metrics.gdpr.complianceScore}}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- NSM Progress -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">NSM</span>
+                            <span class="font-medium">{{divide (multiply metrics.nsm.implementedControls 100) metrics.nsm.securityControls}}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: {{divide (multiply metrics.nsm.implementedControls 100) metrics.nsm.securityControls}}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- License Progress -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">{{#if (eq language 'nb-NO')}}Lisenser{{else}}Licenses{{/if}}</span>
+                            <span class="font-medium">{{divide (multiply metrics.licenses.compliantPackages 100) (add metrics.licenses.compliantPackages metrics.licenses.nonCompliantPackages)}}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-yellow-600 h-2 rounded-full transition-all duration-500" style="width: {{divide (multiply metrics.licenses.compliantPackages 100) (add metrics.licenses.compliantPackages metrics.licenses.nonCompliantPackages)}}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Commands -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                {{#if (eq language 'nb-NO')}}Hurtigkommandoer{{else}}Quick Commands{{/if}}
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="runCommand('audit')" class="text-left p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                        <span class="font-medium">
+                            {{#if (eq language 'nb-NO')}}Kjør Sikkerhetsskanning{{else}}Run Security Audit{{/if}}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 code">npm audit</p>
+                </button>
+                
+                <button onclick="runCommand('compliance')" class="text-left p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-medium">
+                            {{#if (eq language 'nb-NO')}}Sjekk Etterlevelse{{else}}Check Compliance{{/if}}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 code">xaheen compliance check</p>
+                </button>
+                
+                <button onclick="runCommand('generate')" class="text-left p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
+                        <span class="font-medium">
+                            {{#if (eq language 'nb-NO')}}Generer Komponenter{{else}}Generate Components{{/if}}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 code">xaheen generate --help</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Terminal Output -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    {{#if (eq language 'nb-NO')}}Kommando Output{{else}}Command Output{{/if}}
+                </h3>
+                <button onclick="clearTerminal()" class="text-sm text-gray-500 hover:text-gray-700">
+                    {{#if (eq language 'nb-NO')}}Tøm{{else}}Clear{{/if}}
+                </button>
+            </div>
+            <div id="terminal" class="terminal min-h-32">
+                <div class="text-gray-400">{{#if (eq language 'nb-NO')}}Klar for kommandoer...{{else}}Ready for commands...{{/if}}</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-500 text-sm">
+            <p>{{#if (eq language 'nb-NO')}}Xaheen Enterprise Developer Dashboard - Hold prosjektet ditt kompatibelt{{else}}Xaheen Enterprise Developer Dashboard - Keep your project compliant{{/if}}</p>
+            <p class="mt-1 code">{{generatedAt}}</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart.js configuration
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f3f4f6'
+                    }
+                }
+            }
+        };
+
+        // Vulnerability Trend Chart
+        const vulnTrendCtx = document.getElementById('vulnerabilityTrendChart').getContext('2d');
+        new Chart(vulnTrendCtx, {
+            type: 'line',
+            data: {
+                labels: {{json (map metrics.vulnerabilities.trendsLast30Days 'date')}},
+                datasets: [{
+                    label: {{#if (eq language 'nb-NO')}}'Sårbarheter'{{else}}'Vulnerabilities'{{/if}},
+                    data: {{json (map metrics.vulnerabilities.trendsLast30Days 'count')}},
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Interactive functions
+        function expandCard(element) {
+            element.classList.toggle('expanded');
+        }
+
+        function runCommand(type) {
+            const terminal = document.getElementById('terminal');
+            const timestamp = new Date().toLocaleTimeString();
+            let command, output;
+
+            switch(type) {
+                case 'audit':
+                    command = 'npm audit';
+                    output = `<span class="text-yellow-400">[${timestamp}]</span> <span class="text-white">$</span> ${command}
+<span class="text-green-400">✓</span> found {{add metrics.vulnerabilities.critical metrics.vulnerabilities.high}} vulnerabilities ({{metrics.vulnerabilities.critical}} critical, {{metrics.vulnerabilities.high}} high)
+<span class="text-cyan-400">Run \`npm audit fix\` to fix them</span>`;
+                    break;
+                case 'compliance':
+                    command = 'xaheen compliance check';
+                    output = `<span class="text-yellow-400">[${timestamp}]</span> <span class="text-white">$</span> ${command}
+<span class="text-green-400">✓</span> GDPR Compliance: {{metrics.gdpr.complianceScore}}%
+<span class="text-blue-400">✓</span> NSM Controls: {{metrics.nsm.implementedControls}}/{{metrics.nsm.securityControls}}
+<span class="text-yellow-400">⚠</span> License Issues: {{metrics.licenses.nonCompliantPackages}}`;
+                    break;
+                case 'generate':
+                    command = 'xaheen generate --help';
+                    output = `<span class="text-yellow-400">[${timestamp}]</span> <span class="text-white">$</span> ${command}
+<span class="text-cyan-400">Available generators:</span>
+  gdpr-consent-banner    Generate GDPR consent banner
+  nsm-security          Generate NSM security controls
+  compliance-dashboard  Generate compliance dashboard
+  data-table           Generate compliant data table`;
+                    break;
+            }
+
+            terminal.innerHTML += `\n${output}`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal').innerHTML = '<div class="text-gray-400">{{#if (eq language "nb-NO")}}Klar for kommandoer...{{else}}Ready for commands...{{/if}}</div>';
+        }
+
+        function refreshData() {
+            // Simulate data refresh
+            location.reload();
+        }
+
+        // Real-time updates
+        let wsConnection;
+        
+        function initWebSocket() {
+            if (typeof WebSocket !== 'undefined') {
+                wsConnection = new WebSocket('ws://localhost:3001/developer-updates');
+                wsConnection.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    updateDashboard(data);
+                };
+                
+                wsConnection.onerror = function() {
+                    console.log('WebSocket connection failed, using polling instead');
+                    startPolling();
+                };
+            } else {
+                startPolling();
+            }
+        }
+
+        function startPolling() {
+            setInterval(() => {
+                // Poll for updates every 30 seconds
+                fetch('/api/compliance/metrics')
+                    .then(response => response.json())
+                    .then(data => updateDashboard(data))
+                    .catch(console.error);
+            }, 30000);
+        }
+
+        function updateDashboard(data) {
+            // Update metrics in real-time
+            console.log('Updating dashboard with new data:', data);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initWebSocket();
+        });
+    </script>
+</body>
+</html>

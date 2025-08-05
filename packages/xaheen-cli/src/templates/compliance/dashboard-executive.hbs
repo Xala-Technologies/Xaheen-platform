@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="{{#if (eq language 'nb-NO')}}nb{{else}}en{{/if}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{translations.title}} - {{#if (eq language 'nb-NO')}}Lederrapport{{else}}Executive Report{{/if}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .chart-container { position: relative; height: 300px; }
+        .status-indicator { 
+            display: inline-block; 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            margin-right: 8px; 
+        }
+        .status-excellent { background-color: #10b981; }
+        .status-good { background-color: #3b82f6; }
+        .status-warning { background-color: #f59e0b; }
+        .status-critical { background-color: #ef4444; }
+        .metric-card:hover { transform: translateY(-2px); transition: transform 0.2s ease-in-out; }
+        @media print {
+            .no-print { display: none !important; }
+            body { print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">{{translations.title}}</h1>
+                    <p class="text-blue-100">{{#if (eq language 'nb-NO')}}Lederrapport - Samlet etterlevelse{{else}}Executive Report - Overall Compliance{{/if}}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-blue-100 text-sm">{{translations.lastUpdated}}</p>
+                    <p class="text-white font-medium">{{formatDate generatedAt}}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Overall Score -->
+        <div class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{translations.overallScore}}</h2>
+                    <div class="relative inline-block">
+                        <div class="w-32 h-32 mx-auto">
+                            <canvas id="overallScoreChart"></canvas>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold {{#if (gte metrics.overallScore 85)}}text-green-600{{else if (gte metrics.overallScore 70)}}text-blue-600{{else if (gte metrics.overallScore 50)}}text-yellow-600{{else}}text-red-600{{/if}}">
+                                    {{metrics.overallScore}}%
+                                </div>
+                                <div class="text-sm text-gray-500 mt-1">
+                                    <span class="status-indicator {{#if (eq metrics.trend 'improving')}}status-excellent{{else if (eq metrics.trend 'stable')}}status-good{{else}}status-critical{{/if}}"></span>
+                                    {{#if (eq language 'nb-NO')}}
+                                        {{#if (eq metrics.trend 'improving')}}Bedrer seg{{else if (eq metrics.trend 'stable')}}Stabil{{else}}Synkende{{/if}}
+                                    {{else}}
+                                        {{capitalize metrics.trend}}
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- GDPR Compliance -->
+            <div class="bg-white rounded-xl shadow-lg p-6 metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{translations.gdprCompliance}}</h3>
+                    <span class="status-indicator {{#if (gte metrics.gdpr.complianceScore 80)}}status-excellent{{else if (gte metrics.gdpr.complianceScore 60)}}status-good{{else if (gte metrics.gdpr.complianceScore 40)}}status-warning{{else}}status-critical{{/if}}"></span>
+                </div>
+                <div class="text-3xl font-bold {{#if (gte metrics.gdpr.complianceScore 80)}}text-green-600{{else if (gte metrics.gdpr.complianceScore 60)}}text-blue-600{{else if (gte metrics.gdpr.complianceScore 40)}}text-yellow-600{{else}}text-red-600{{/if}} mb-2">
+                    {{metrics.gdpr.complianceScore}}%
+                </div>
+                <div class="text-sm text-gray-600">
+                    {{#if (eq language 'nb-NO')}}
+                        {{#if metrics.gdpr.dataProtectionOfficer}}DPO utnevnt{{else}}DPO mangler{{/if}}
+                    {{else}}
+                        {{#if metrics.gdpr.dataProtectionOfficer}}DPO Appointed{{else}}DPO Missing{{/if}}
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- NSM Security -->
+            <div class="bg-white rounded-xl shadow-lg p-6 metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{translations.nsmCompliance}}</h3>
+                    <span class="status-indicator {{#if (eq metrics.nsm.certificationStatus 'certified')}}status-excellent{{else if (eq metrics.nsm.certificationStatus 'in-progress')}}status-warning{{else}}status-critical{{/if}}"></span>
+                </div>
+                <div class="text-3xl font-bold {{#if (eq metrics.nsm.certificationStatus 'certified')}}text-green-600{{else if (eq metrics.nsm.certificationStatus 'in-progress')}}text-yellow-600{{else}}text-red-600{{/if}} mb-2">
+                    {{metrics.nsm.implementedControls}}/{{metrics.nsm.securityControls}}
+                </div>
+                <div class="text-sm text-gray-600">
+                    {{#if (eq language 'nb-NO')}}
+                        {{#if (eq metrics.nsm.certificationStatus 'certified')}}Sertifisert{{else if (eq metrics.nsm.certificationStatus 'in-progress')}}Pågående{{else}}Ikke sertifisert{{/if}}
+                    {{else}}
+                        {{capitalize metrics.nsm.certificationStatus}}
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- Vulnerabilities -->
+            <div class="bg-white rounded-xl shadow-lg p-6 metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{translations.vulnerabilities}}</h3>
+                    <span class="status-indicator {{#if (eq metrics.vulnerabilities.critical 0)}}{{#if (eq metrics.vulnerabilities.high 0)}}status-excellent{{else}}status-good{{/if}}{{else}}status-critical{{/if}}"></span>
+                </div>
+                <div class="text-3xl font-bold {{#if (gt metrics.vulnerabilities.critical 0)}}text-red-600{{else if (gt metrics.vulnerabilities.high 0)}}text-yellow-600{{else}}text-green-600{{/if}} mb-2">
+                    {{add metrics.vulnerabilities.critical metrics.vulnerabilities.high}}
+                </div>
+                <div class="text-sm text-gray-600">
+                    {{#if (eq language 'nb-NO')}}Kritisk/Høy risiko{{else}}Critical/High Risk{{/if}}
+                </div>
+            </div>
+
+            <!-- License Compliance -->
+            <div class="bg-white rounded-xl shadow-lg p-6 metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{translations.licenseCompliance}}</h3>
+                    <span class="status-indicator {{#if (eq metrics.licenses.nonCompliantPackages 0)}}status-excellent{{else if (lt metrics.licenses.nonCompliantPackages 5)}}status-warning{{else}}status-critical{{/if}}"></span>
+                </div>
+                <div class="text-3xl font-bold {{#if (eq metrics.licenses.nonCompliantPackages 0)}}text-green-600{{else if (lt metrics.licenses.nonCompliantPackages 5)}}text-yellow-600{{else}}text-red-600{{/if}} mb-2">
+                    {{metrics.licenses.nonCompliantPackages}}
+                </div>
+                <div class="text-sm text-gray-600">
+                    {{#if (eq language 'nb-NO')}}Lisens problemer{{else}}License Issues{{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Alerts -->
+        {{#if alerts}}
+        <div class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">{{translations.alerts}}</h2>
+                <div class="space-y-4">
+                    {{#each alerts}}
+                    {{#if (eq severity 'critical')}}
+                    <div class="flex items-start space-x-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-red-800">{{title}}</h3>
+                            <p class="text-sm text-red-700 mt-1">{{description}}</p>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {{#each charts}}
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{title}}</h3>
+                <div class="chart-container">
+                    <canvas id="{{id}}Chart"></canvas>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- Recommendations -->
+        {{#if recommendations}}
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">{{translations.recommendations}}</h2>
+            <div class="space-y-4">
+                {{#each recommendations}}
+                {{#if (eq priority 'immediate')}}
+                <div class="flex items-start space-x-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-orange-800">{{title}}</h3>
+                        <p class="text-sm text-orange-700 mt-1">{{description}}</p>
+                        <div class="mt-2 text-xs text-orange-600">
+                            {{#if (eq ../language 'nb-NO')}}Estimert innsats: {{estimatedEffort}}{{else}}Estimated effort: {{estimatedEffort}}{{/if}}
+                        </div>
+                    </div>
+                </div>
+                {{/if}}
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm no-print">
+            <p>{{#if (eq language 'nb-NO')}}Generert av Xaheen Enterprise Compliance System{{else}}Generated by Xaheen Enterprise Compliance System{{/if}}</p>
+            <p class="mt-1">{{generatedAt}}</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart.js configuration and rendering
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        };
+
+        // Overall Score Doughnut Chart
+        const overallCtx = document.getElementById('overallScoreChart').getContext('2d');
+        new Chart(overallCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [{{metrics.overallScore}}, {{subtract 100 metrics.overallScore}}],
+                    backgroundColor: [
+                        {{#if (gte metrics.overallScore 85)}}'#10b981'{{else if (gte metrics.overallScore 70)}}'#3b82f6'{{else if (gte metrics.overallScore 50)}}'#f59e0b'{{else}}'#ef4444'{{/if}},
+                        '#e5e7eb'
+                    ],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Render other charts
+        {{#each charts}}
+        const {{id}}Ctx = document.getElementById('{{id}}Chart').getContext('2d');
+        new Chart({{id}}Ctx, {{{json config}}});
+        {{/each}}
+
+        // Print functionality
+        function printDashboard() {
+            window.print();
+        }
+
+        // Export functionality
+        function exportToPDF() {
+            window.print();
+        }
+
+        // Real-time updates (if WebSocket available)
+        if (typeof WebSocket !== 'undefined') {
+            const ws = new WebSocket('ws://localhost:3001/compliance-updates');
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                // Update dashboard with real-time data
+                location.reload();
+            };
+        }
+    </script>
+</body>
+</html>

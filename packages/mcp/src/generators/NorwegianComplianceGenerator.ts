@@ -1042,7 +1042,7 @@ function validateWCAG_AA(element: HTMLElement): boolean {
   
   // Check form labels
   if (element.matches('input, select, textarea') && element.type !== 'hidden') {
-    const label = document.querySelector(`label[for="${element.id}"]`) ||
+    const label = document.querySelector('label[for="' + element.id + '"]') ||
                   element.closest('label') ||
                   element.getAttribute('aria-label') ||
                   element.getAttribute('aria-labelledby');

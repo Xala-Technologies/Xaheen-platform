@@ -572,6 +572,15 @@ export class CommandParser {
 				},
 			},
 			{
+				pattern: "license-compliance [project]",
+				domain: "security",
+				action: "license-compliance",
+				handler: this.handleLicenseCompliance.bind(this),
+				legacy: {
+					xaheen: ["license-scan", "license-check"],
+				},
+			},
+			{
 				pattern: "security-scan [project-path]",
 				domain: "security",
 				action: "scan",
@@ -1549,6 +1558,37 @@ export class CommandParser {
 
 		// Parse and execute the compliance report command
 		await complianceReportCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleLicenseCompliance(command: CLICommand): Promise<void> {
+		const { createLicenseComplianceCommand } = await import(
+			"../../commands/license-compliance.js"
+		);
+		
+		// Create the license compliance command
+		const licenseComplianceCommand = createLicenseComplianceCommand();
+		
+		// Create a mock argv array for the license compliance command
+		const argv = ["node", "xaheen", "license-compliance"];
+
+		// Add project path argument if provided
+		if (command.args && command.args.length > 0) {
+			argv.push(command.args[0]);
+		}
+
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the license compliance command
+		await licenseComplianceCommand.parseAsync(argv.slice(2));
 	}
 
 	private async handleSecurityScan(command: CLICommand): Promise<void> {
