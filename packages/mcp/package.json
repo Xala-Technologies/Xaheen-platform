@@ -62,7 +62,7 @@
     "@babel/traverse": "^7.23.0",
     "@babel/types": "^7.23.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@xala-technologies/ui-system": "^5.0.0",
+    "@xala-technologies/ui-system": "^6.3.0",
     "@xala-technologies/xala-cli": "^2.0.0",
     "commander": "^12.1.0",
     "fs-extra": "^11.0.0",
