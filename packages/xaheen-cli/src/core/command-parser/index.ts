@@ -323,6 +323,12 @@ export class CommandParser {
 				handler: this.handleMCPConnect.bind(this),
 			},
 			{
+				pattern: "mcp index",
+				domain: "mcp",
+				action: "index",
+				handler: this.handleMCPIndex.bind(this),
+			},
+			{
 				pattern: "mcp analyze",
 				domain: "mcp",
 				action: "analyze",
@@ -1075,6 +1081,12 @@ export class CommandParser {
 		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
 		const domain = new MCPDomain();
 		await domain.connect(command);
+	}
+
+	private async handleMCPIndex(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.index(command);
 	}
 
 	private async handleMCPDeploy(command: CLICommand): Promise<void> {

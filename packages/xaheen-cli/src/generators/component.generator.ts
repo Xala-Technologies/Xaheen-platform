@@ -7,7 +7,9 @@
  * @since 2025-08-04
  */
 
+import { promises as fs } from "fs";
 import Handlebars from "handlebars";
+import path from "path";
 import {
 	BaseGenerator,
 	BaseGeneratorOptions,
@@ -40,6 +42,10 @@ export interface ComponentGeneratorOptions extends BaseGeneratorOptions {
 	readonly dryRun?: boolean;
 	readonly force?: boolean;
 	readonly typescript?: boolean;
+	readonly semanticUI?: boolean;
+	readonly i18n?: boolean;
+	readonly designTokens?: boolean;
+	readonly componentType?: "basic" | "form" | "layout";
 }
 
 export class ComponentGenerator extends BaseGenerator<ComponentGeneratorOptions> {
@@ -71,45 +77,78 @@ export class ComponentGenerator extends BaseGenerator<ComponentGeneratorOptions>
 		},
 	];
 
-	async generate(options: ComponentGeneratorOptions): Promise<void> {
-		await this.validateOptions(options);
+	async generate(options: ComponentGeneratorOptions): Promise<GeneratorResult> {
+		try {
+			await this.validateOptions(options);
 
-		this.logger.info(`Generating component: ${chalk.cyan(options.name)}`);
+			this.logger.info(`Generating component: ${chalk.cyan(options.name)}`);
 
-		// Detect framework if not specified
-		const framework = options.framework || (await this.detectFramework());
+			// Detect framework if not specified
+			const framework = options.framework || (await this.detectFramework());
 
-		// Generate component data
-		const componentData = {
-			name: options.name,
-			className: this.toPascalCase(options.name),
-			type: options.type || "functional",
-			framework,
-			styling: options.styling || "tailwind",
-			props: await this.parseProps(options.props || []),
-			hooks: options.hooks !== false,
-			stories: options.stories !== false,
-			tests: options.tests !== false,
-			ai: options.ai,
-			typescript: options.typescript !== false,
-		};
+			// Generate component data with semantic UI enhancements
+			const baseComponentData = {
+				name: options.name,
+				className: this.toPascalCase(options.name),
+				kebabCase: this.toKebabCase(options.name),
+				type: options.type || "functional",
+				framework,
+				styling: options.styling || "tailwind",
+				props: await this.parseProps(options.props || []),
+				hooks: options.hooks !== false,
+				stories: options.stories !== false,
+				tests: options.tests !== false,
+				ai: options.ai,
+				typescript: options.typescript !== false,
+				componentType: options.componentType || "basic",
+			};
 
-		// Generate component file based on framework
-		await this.generateComponent(componentData, options);
+			// Enhance with semantic UI data
+			const componentData = this.enhanceTemplateData(baseComponentData, options);
 
-		// Generate Storybook stories
-		if (options.stories) {
-			await this.generateStories(componentData, options);
+			const generatedFiles: string[] = [];
+
+			// Generate component file based on framework and type
+			const componentFile = await this.generateComponent(componentData, options);
+			generatedFiles.push(componentFile);
+
+			// Generate Storybook stories
+			if (options.stories !== false) {
+				const storyFile = await this.generateStories(componentData, options);
+				generatedFiles.push(storyFile);
+			}
+
+			// Generate tests
+			if (options.tests !== false) {
+				const testFile = await this.generateTests(componentData, options);
+				generatedFiles.push(testFile);
+			}
+
+			this.logger.success(
+				`Component ${chalk.green(options.name)} generated successfully!`,
+			);
+
+			return {
+				success: true,
+				message: `Component ${options.name} generated successfully`,
+				files: generatedFiles,
+				nextSteps: [
+					"Import component in your page or parent component",
+					"Add component to Storybook if stories were generated",
+					"Run tests to ensure everything works correctly",
+				],
+			};
+		} catch (error) {
+			this.logger.error(`Failed to generate component: ${error}`);
+			return {
+				success: false,
+				message: `Failed to generate component: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			};
 		}
+	}
 
-		// Generate tests
-		if (options.tests) {
-			await this.generateTests(componentData, options);
-		}
-
-		this.logger.success(
-			`Component ${chalk.green(options.name)} generated successfully!`,
-		);
+	getGeneratorType(): string {
+		return "component";
 	}
 
 	private async detectFramework(): Promise<
@@ -211,88 +250,63 @@ export class ComponentGenerator extends BaseGenerator<ComponentGeneratorOptions>
 	private async generateComponent(
 		componentData: any,
 		options: ComponentGeneratorOptions,
-	): Promise<void> {
-		const templateName = `component/${componentData.framework}-component.hbs`;
-		const template = await this.loadTemplate(templateName);
-		const content = template(componentData);
-
-		const extension = componentData.typescript ? "tsx" : "jsx";
-		const fileName = `${componentData.name}.${extension}`;
-		const filePath = path.join(process.cwd(), "src", "components", fileName);
-
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated component: ${chalk.green(filePath)}`);
+	): Promise<string> {
+		// Determine template based on component type and semantic UI usage
+		let templateName: string;
+		
+		if (componentData.useSemanticUI !== false) {
+			// Use semantic UI templates
+			switch (componentData.componentType) {
+				case "form":
+					templateName = "component/react-semantic-form.hbs";
+					break;
+				case "layout":
+					templateName = "layout/semantic-layout.hbs";
+					break;
+				default:
+					templateName = "component/react-semantic-component.hbs";
+					break;
+			}
 		} else {
-			this.logger.info(`Would generate component: ${chalk.yellow(filePath)}`);
+			// Fallback to original template
+			templateName = `component/${componentData.framework}-component.hbs`;
 		}
+
+		const filePlacement = this.getFilePlacement("component", componentData.name);
+		
+		return await this.generateFile(
+			templateName,
+			filePlacement.filePath,
+			componentData,
+			{ dryRun: options.dryRun, force: options.force }
+		);
 	}
 
 	private async generateStories(
 		componentData: any,
 		options: ComponentGeneratorOptions,
-	): Promise<void> {
-		const template = await this.loadTemplate("component/stories.hbs");
-		const content = template(componentData);
-
-		const fileName = `${componentData.name}.stories.tsx`;
-		const filePath = path.join(process.cwd(), "src", "components", fileName);
-
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated stories: ${chalk.green(filePath)}`);
-		} else {
-			this.logger.info(`Would generate stories: ${chalk.yellow(filePath)}`);
-		}
+	): Promise<string> {
+		const filePlacement = this.getFilePlacement("component", componentData.name);
+		
+		return await this.generateFile(
+			"component/stories.hbs",
+			filePlacement.storyPath!,
+			componentData,
+			{ dryRun: options.dryRun, force: options.force }
+		);
 	}
 
 	private async generateTests(
 		componentData: any,
 		options: ComponentGeneratorOptions,
-	): Promise<void> {
-		const template = await this.loadTemplate("component/test.hbs");
-		const content = template(componentData);
-
-		const fileName = `${componentData.name}.test.tsx`;
-		const filePath = path.join(
-			process.cwd(),
-			"src",
-			"components",
-			"__tests__",
-			fileName,
-		);
-
-		if (!options.dryRun) {
-			await this.ensureDirectoryExists(path.dirname(filePath));
-			await fs.writeFile(filePath, content);
-			this.logger.info(`Generated tests: ${chalk.green(filePath)}`);
-		} else {
-			this.logger.info(`Would generate tests: ${chalk.yellow(filePath)}`);
-		}
-	}
-
-	private async loadTemplate(
-		templatePath: string,
-	): Promise<HandlebarsTemplateDelegate> {
-		const templateFile = path.join(__dirname, "../templates", templatePath);
-		const templateContent = await fs.readFile(templateFile, "utf-8");
-		return Handlebars.compile(templateContent);
-	}
-
-	private async ensureDirectoryExists(dirPath: string): Promise<void> {
-		try {
-			await fs.access(dirPath);
-		} catch {
-			await fs.mkdir(dirPath, { recursive: true });
-		}
-	}
-
-	private toPascalCase(str: string): string {
-		return (
-			str.charAt(0).toUpperCase() +
-			str.slice(1).replace(/[-_](.)/g, (_, char) => char.toUpperCase())
+	): Promise<string> {
+		const filePlacement = this.getFilePlacement("component", componentData.name);
+		
+		return await this.generateFile(
+			"component/test.hbs",
+			filePlacement.testPath!,
+			componentData,
+			{ dryRun: options.dryRun, force: options.force }
 		);
 	}
 

@@ -18,6 +18,7 @@ import {
 	hasUncommittedChanges,
 	validateGitRepository,
 } from "../lib/patch-utils.js";
+import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator.js";
 
 export interface AICommandOptions {
 	readonly model?: string;
@@ -337,6 +338,238 @@ export async function generateRefactoringAssistantCommand(
 }
 
 /**
+ * MCP-enhanced component generation command
+ */
+async function mcpEnhancedComponentCommand(
+	name: string,
+	options: {
+		framework?: string;
+		description?: string;
+		tests?: boolean;
+		stories?: boolean;
+		model?: string;
+		dryRun?: boolean;
+	}
+): Promise<void> {
+	console.log(chalk.blue("🎨 MCP-Enhanced Component Generation\n"));
+
+	try {
+		// Initialize MCP orchestrator
+		await mcpGenerationOrchestrator.initialize();
+
+		// Create MCP generation request
+		const mcpRequest = {
+			type: "component" as const,
+			name,
+			description: options.description || `Generate ${name} component with best practices`,
+			options: {
+				framework: options.framework || "react",
+				styling: "tailwind",
+				hooks: true,
+				stories: options.stories !== false,
+				tests: options.tests !== false,
+				typescript: true,
+			},
+			platform: (options.framework as any) || "react",
+			aiEnhancement: !!options.description,
+		};
+
+		// Generate component with MCP intelligence
+		const result = await mcpGenerationOrchestrator.generateComponent(mcpRequest);
+
+		if (result.success) {
+			console.log(chalk.green("\n✅ MCP-enhanced component generated successfully!"));
+			console.log(chalk.blue(`📁 Files generated: ${result.files.length}`));
+			console.log(chalk.yellow(`⏱️ Generation time: ${result.mcpMetadata.generationTime}ms`));
+			console.log(chalk.yellow(`🤖 AI enhanced: ${result.mcpMetadata.aiEnhanced ? 'Yes' : 'No'}`));
+			console.log(chalk.yellow(`🎯 Confidence: ${Math.round(result.mcpMetadata.confidence * 100)}%`));
+
+			if (result.files.length > 0) {
+				console.log(chalk.gray("\n📄 Generated files:"));
+				result.files.forEach((file) => {
+					console.log(chalk.gray(`  • ${file}`));
+				});
+			}
+
+			if (result.recommendations && result.recommendations.length > 0) {
+				console.log(chalk.cyan("\n💡 Recommendations:"));
+				result.recommendations.forEach((rec) => {
+					console.log(chalk.gray(`  • ${rec}`));
+				});
+			}
+
+			if (result.nextSteps && result.nextSteps.length > 0) {
+				console.log(chalk.cyan("\n📋 Next steps:"));
+				result.nextSteps.forEach((step) => {
+					console.log(chalk.gray(`  • ${step}`));
+				});
+			}
+		} else {
+			console.error(chalk.red(`\n❌ Component generation failed: ${result.message}`));
+			process.exit(1);
+		}
+	} catch (error) {
+		console.error(chalk.red("\n❌ Error generating MCP-enhanced component:"));
+		console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+		process.exit(1);
+	}
+}
+
+/**
+ * MCP-enhanced service generation command
+ */
+async function mcpEnhancedServiceCommand(
+	name: string,
+	options: {
+		description?: string;
+		features?: string[];
+		model?: string;
+		dryRun?: boolean;
+	}
+): Promise<void> {
+	console.log(chalk.blue("⚙️ MCP-Enhanced Service Generation\n"));
+
+	try {
+		// Initialize MCP orchestrator
+		await mcpGenerationOrchestrator.initialize();
+
+		// Create MCP generation request
+		const mcpRequest = {
+			type: "service" as const,
+			name,
+			description: options.description || `Generate ${name} service with enterprise-grade architecture`,
+			options: {
+				framework: "express",
+				features: [
+					"dependency-injection",
+					"error-handling",
+					"logging",
+					"validation",
+					"caching",
+					...(options.features || []),
+				],
+				typescript: true,
+				testing: true,
+			},
+			platform: "react" as const,
+			aiEnhancement: !!options.description,
+		};
+
+		// Generate service with MCP intelligence
+		const result = await mcpGenerationOrchestrator.generateService(mcpRequest);
+
+		if (result.success) {
+			console.log(chalk.green("\n✅ MCP-enhanced service generated successfully!"));
+			console.log(chalk.blue(`📁 Files generated: ${result.files.length}`));
+			console.log(chalk.yellow(`⏱️ Generation time: ${result.mcpMetadata.generationTime}ms`));
+			console.log(chalk.yellow(`🤖 AI enhanced: ${result.mcpMetadata.aiEnhanced ? 'Yes' : 'No'}`));
+			console.log(chalk.yellow(`🎯 Confidence: ${Math.round(result.mcpMetadata.confidence * 100)}%`));
+
+			if (result.files.length > 0) {
+				console.log(chalk.gray("\n📄 Generated files:"));
+				result.files.forEach((file) => {
+					console.log(chalk.gray(`  • ${file}`));
+				});
+			}
+
+			if (result.recommendations && result.recommendations.length > 0) {
+				console.log(chalk.cyan("\n💡 Recommendations:"));
+				result.recommendations.forEach((rec) => {
+					console.log(chalk.gray(`  • ${rec}`));
+				});
+			}
+
+			if (result.nextSteps && result.nextSteps.length > 0) {
+				console.log(chalk.cyan("\n📋 Next steps:"));
+				result.nextSteps.forEach((step) => {
+					console.log(chalk.gray(`  • ${step}`));
+				});
+			}
+		} else {
+			console.error(chalk.red(`\n❌ Service generation failed: ${result.message}`));
+			process.exit(1);
+		}
+	} catch (error) {
+		console.error(chalk.red("\n❌ Error generating MCP-enhanced service:"));
+		console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+		process.exit(1);
+	}
+}
+
+/**
+ * MCP code enhancement command
+ */
+async function mcpCodeEnhancementCommand(
+	file: string,
+	options: {
+		prompt?: string;
+		model?: string;
+		dryRun?: boolean;
+	}
+): Promise<void> {
+	console.log(chalk.blue("🚀 MCP Code Enhancement\n"));
+
+	try {
+		// Read the file content
+		const fs = await import("fs/promises");
+		const path = await import("path");
+		
+		const filePath = path.resolve(file);
+		let originalCode: string;
+		
+		try {
+			originalCode = await fs.readFile(filePath, "utf-8");
+		} catch (error) {
+			console.error(chalk.red(`❌ Failed to read file: ${filePath}`));
+			process.exit(1);
+		}
+
+		console.log(chalk.blue(`📄 Enhancing: ${filePath}`));
+		console.log(chalk.gray(`🔍 Original size: ${originalCode.length} characters`));
+
+		// Initialize MCP orchestrator
+		await mcpGenerationOrchestrator.initialize();
+
+		// Determine code type
+		const codeType = file.endsWith('.tsx') || file.endsWith('.jsx') ? 'component' : 
+						 file.includes('service') || file.includes('api') ? 'service' : 'other';
+
+		// Enhance code with MCP
+		const enhancedCode = await mcpGenerationOrchestrator.enhanceCode(
+			originalCode,
+			options.prompt || "Improve and optimize this code following best practices",
+			codeType as any
+		);
+
+		if (enhancedCode === originalCode) {
+			console.log(chalk.yellow("⚠️ No enhancements were made to the code."));
+			return;
+		}
+
+		console.log(chalk.green(`✅ Code enhanced successfully!`));
+		console.log(chalk.gray(`📈 Enhanced size: ${enhancedCode.length} characters`));
+		console.log(chalk.gray(`📊 Size change: ${enhancedCode.length - originalCode.length > 0 ? '+' : ''}${enhancedCode.length - originalCode.length} characters`));
+
+		if (options.dryRun) {
+			console.log(chalk.blue("\n🔍 Dry run - Enhanced code preview:"));
+			console.log(chalk.gray("=" .repeat(50)));
+			console.log(enhancedCode);
+			console.log(chalk.gray("=" .repeat(50)));
+		} else {
+			// Write enhanced code back to file
+			await fs.writeFile(filePath, enhancedCode, "utf-8");
+			console.log(chalk.green(`💾 Enhanced code saved to: ${filePath}`));
+		}
+
+		console.log(chalk.cyan("\n💡 Enhancement completed using MCP intelligence"));
+	} catch (error) {
+		console.error(chalk.red("\n❌ Error enhancing code with MCP:"));
+		console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+		process.exit(1);
+	}
+}
+
+/**
  * Creates the AI command structure for the CLI
  */
 export function createAICommand(): Command {
@@ -429,6 +662,53 @@ export function createAICommand(): Command {
 				});
 			},
 		);
+
+	// MCP-enhanced component generation
+	aiCommand
+		.command("component <name>")
+		.description("Generate intelligent UI component using MCP and AI")
+		.option("-f, --framework <framework>", "Target framework", "react")
+		.option("-d, --description <description>", "AI description for enhancement")
+		.option("--no-tests", "Skip generating test files")
+		.option("--no-stories", "Skip generating Storybook stories")
+		.action(async (name: string, options) => {
+			await mcpEnhancedComponentCommand(name, {
+				framework: options.framework,
+				description: options.description,
+				tests: options.tests,
+				stories: options.stories,
+				model: aiCommand.opts().model,
+				dryRun: aiCommand.opts().dryRun,
+			});
+		});
+
+	// MCP-enhanced service generation
+	aiCommand
+		.command("service <name>")
+		.description("Generate intelligent microservice using MCP and AI")
+		.option("-d, --description <description>", "AI description for business logic")
+		.option("--features <features>", "Comma-separated service features")
+		.action(async (name: string, options) => {
+			await mcpEnhancedServiceCommand(name, {
+				description: options.description,
+				features: options.features?.split(",") || [],
+				model: aiCommand.opts().model,
+				dryRun: aiCommand.opts().dryRun,
+			});
+		});
+
+	// MCP code enhancement
+	aiCommand
+		.command("enhance <file>")
+		.description("Enhance existing code with AI using MCP intelligence")
+		.option("-p, --prompt <prompt>", "Enhancement description", "Improve and optimize this code")
+		.action(async (file: string, options) => {
+			await mcpCodeEnhancementCommand(file, {
+				prompt: options.prompt,
+				model: aiCommand.opts().model,
+				dryRun: aiCommand.opts().dryRun,
+			});
+		});
 
 	return aiCommand;
 }

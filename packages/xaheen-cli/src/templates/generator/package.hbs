@@ -1,0 +1,177 @@
+{{!-- Generator Package.json Template --}}
+{{!-- Generated: {{now}} --}}
+{
+  "name": "{{name}}",
+  "version": "{{version}}",
+  "description": "{{description}}",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "{{kebabCase name}}": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rimraf dist",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "validate": "xaheen validate-generator .",
+    "benchmark": "node dist/benchmark.js"
+  },
+  "keywords": [
+    "xaheen",
+    "generator",
+    "{{category}}",
+    "typescript",
+    "cli",
+    "code-generation"
+    {{#each tags}}
+    ,"{{this}}"
+    {{/each}}
+  ],
+  "author": "{{author}}",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xaheen/generators.git",
+    "directory": "packages/{{kebabCase name}}"
+  },
+  "homepage": "https://github.com/xaheen/generators/tree/main/packages/{{kebabCase name}}#readme",
+  "bugs": {
+    "url": "https://github.com/xaheen/generators/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "peerDependencies": {
+    "@xaheen/cli": "^1.0.0",
+    "typescript": ">=5.0.0"
+    {{#each dependencies}}
+    {{#unless (eq id "@xaheen/cli")}}
+    ,"{{id}}": "{{version}}"
+    {{/unless}}
+    {{/each}}
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "chalk": "^5.3.0",
+    "handlebars": "^4.7.8",
+    "semver": "^7.5.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@types/semver": "^7.5.5",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts",
+      "**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/cli.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "@typescript-eslint/recommended",
+      "prettier"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-type": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "xaheen": {
+    "generator": {
+      "id": "{{kebabCase name}}",
+      "category": "{{category}}",
+      "platforms": {{json platforms}},
+      "framework": {{json framework}},
+      "version": "{{version}}",
+      "templates": [
+        "templates/**/*.hbs"
+      ],
+      "examples": [
+        "examples/**/*"
+      ],
+      "tests": [
+        "__tests__/**/*.test.ts"
+      ]
+    },
+    "marketplace": {
+      "featured": false,
+      "certified": false,
+      "tags": {{json tags}},
+      "screenshots": [],
+      "documentation": {
+        "readme": "README.md",
+        "examples": "examples/",
+        "api": "docs/api.md"
+      }
+    },
+    "analytics": {
+      "enabled": true,
+      "anonymous": true,
+      "events": [
+        "generate",
+        "validate",
+        "test"
+      ]
+    }
+  }
+}

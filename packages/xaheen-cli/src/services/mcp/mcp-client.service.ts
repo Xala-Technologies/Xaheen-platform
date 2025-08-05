@@ -11,6 +11,32 @@ import { z } from "zod";
 import { logger } from "../../utils/logger.js";
 import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "xala-mcp";
 
+// Telemetry interfaces
+export interface TelemetryEvent {
+	readonly eventType: "connection" | "generation" | "indexing" | "error" | "performance";
+	readonly timestamp: Date;
+	readonly eventId: string;
+	readonly sessionId: string;
+	readonly data: Record<string, any>;
+	readonly userAgent: string;
+	readonly version: string;
+}
+
+export interface TelemetryMetrics {
+	readonly totalConnections: number;
+	readonly totalGenerations: number;
+	readonly totalErrors: number;
+	readonly averageResponseTime: number;
+	readonly peakMemoryUsage: number;
+	readonly sessionDuration: number;
+}
+
+export interface TelemetryReporter {
+	reportEvent(event: TelemetryEvent): Promise<void>;
+	reportMetrics(metrics: TelemetryMetrics): Promise<void>;
+	flush(): Promise<void>;
+}
+
 // MCP Client Configuration Schema
 const MCPConfigSchema = z.object({
 	serverUrl: z.string().url(),
@@ -68,6 +94,138 @@ export interface ContextLoaderOptions {
 }
 
 /**
+ * Enterprise Telemetry Reporter for MCP operations
+ */
+class MCPTelemetryReporter implements TelemetryReporter {
+	private events: TelemetryEvent[] = [];
+	private metrics: TelemetryMetrics | null = null;
+	private readonly sessionId: string;
+	private readonly startTime: number;
+
+	constructor() {
+		this.sessionId = this.generateSessionId();
+		this.startTime = Date.now();
+	}
+
+	async reportEvent(event: TelemetryEvent): Promise<void> {
+		this.events.push(event);
+		
+		// Log important events
+		if (event.eventType === "error") {
+			logger.error(`📊 Telemetry Error: ${JSON.stringify(event.data)}`);
+		} else if (event.eventType === "performance") {
+			logger.debug(`📊 Performance: ${JSON.stringify(event.data)}`);
+		}
+
+		// Auto-flush after 50 events to prevent memory issues
+		if (this.events.length >= 50) {
+			await this.flush();
+		}
+	}
+
+	async reportMetrics(metrics: TelemetryMetrics): Promise<void> {
+		this.metrics = metrics;
+		logger.info(`📊 Session Metrics: ${JSON.stringify(metrics)}`);
+
+		// Report to external telemetry service if configured
+		if (process.env.XALA_TELEMETRY_ENDPOINT) {
+			try {
+				const response = await fetch(process.env.XALA_TELEMETRY_ENDPOINT, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${process.env.XALA_TELEMETRY_TOKEN}`,
+					},
+					body: JSON.stringify({
+						sessionId: this.sessionId,
+						metrics,
+						timestamp: new Date().toISOString(),
+					}),
+				});
+
+				if (!response.ok) {
+					logger.warn(`Failed to report metrics: ${response.status}`);
+				}
+			} catch (error) {
+				logger.warn("Failed to send telemetry metrics:", error);
+			}
+		}
+	}
+
+	async flush(): Promise<void> {
+		if (this.events.length === 0) return;
+
+		logger.debug(`📊 Flushing ${this.events.length} telemetry events`);
+
+		// Report to external telemetry service if configured
+		if (process.env.XALA_TELEMETRY_ENDPOINT) {
+			try {
+				const response = await fetch(process.env.XALA_TELEMETRY_ENDPOINT, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${process.env.XALA_TELEMETRY_TOKEN}`,
+					},
+					body: JSON.stringify({
+						sessionId: this.sessionId,
+						events: this.events,
+						timestamp: new Date().toISOString(),
+					}),
+				});
+
+				if (!response.ok) {
+					logger.warn(`Failed to flush telemetry: ${response.status}`);
+				}
+			} catch (error) {
+				logger.warn("Failed to send telemetry events:", error);
+			}
+		}
+
+		// Clear events after reporting
+		this.events = [];
+	}
+
+	private generateSessionId(): string {
+		return `mcp_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+	}
+
+	getSessionMetrics(): TelemetryMetrics {
+		const now = Date.now();
+		const sessionDuration = now - this.startTime;
+		
+		const connectionEvents = this.events.filter(e => e.eventType === "connection");
+		const generationEvents = this.events.filter(e => e.eventType === "generation");
+		const errorEvents = this.events.filter(e => e.eventType === "error");
+		const performanceEvents = this.events.filter(e => e.eventType === "performance");
+
+		const responseTimes = performanceEvents
+			.map(e => e.data.responseTime)
+			.filter(rt => typeof rt === "number");
+		
+		const averageResponseTime = responseTimes.length > 0 
+			? responseTimes.reduce((sum, rt) => sum + rt, 0) / responseTimes.length 
+			: 0;
+
+		const memoryUsages = performanceEvents
+			.map(e => e.data.memoryUsage)
+			.filter(mu => typeof mu === "number");
+		
+		const peakMemoryUsage = memoryUsages.length > 0 
+			? Math.max(...memoryUsages) 
+			: process.memoryUsage().heapUsed;
+
+		return {
+			totalConnections: connectionEvents.length,
+			totalGenerations: generationEvents.length,
+			totalErrors: errorEvents.length,
+			averageResponseTime,
+			peakMemoryUsage,
+			sessionDuration,
+		};
+	}
+}
+
+/**
  * Enhanced MCP Client Service for enterprise environments
  * Provides secure, scalable AI context management with Norwegian compliance
  */
@@ -78,6 +236,8 @@ export class MCPClientService {
 	private isConnected = false;
 	private readonly options: MCPClientOptions;
 	private xalaMCPClient: XalaMCPClient | null = null;
+	private telemetryReporter: MCPTelemetryReporter;
+	private performanceMetrics: Map<string, number> = new Map();
 
 	constructor(options: MCPClientOptions = {}) {
 		this.options = {
@@ -86,6 +246,9 @@ export class MCPClientService {
 			debug: false,
 			...options,
 		};
+
+		// Initialize telemetry reporter
+		this.telemetryReporter = new MCPTelemetryReporter();
 
 		if (this.options.debug) {
 			logger.info("MCP Client Service initialized in debug mode");
@@ -96,8 +259,17 @@ export class MCPClientService {
 	 * Initialize MCP client with enterprise credentials
 	 */
 	async initialize(projectRoot: string = process.cwd()): Promise<void> {
+		const startTime = Date.now();
+		
 		try {
 			logger.info("🔌 Initializing MCP Client Service...");
+
+			// Report initialization start
+			await this.reportTelemetryEvent("connection", {
+				action: "initialization_start",
+				projectRoot,
+				options: this.options,
+			});
 
 			// Load configuration
 			await this.loadConfiguration(projectRoot);
@@ -114,10 +286,32 @@ export class MCPClientService {
 			await this.loadProjectContext(projectRoot);
 
 			this.isConnected = true;
+
+			// Report successful initialization
+			const initializationTime = Date.now() - startTime;
+			await this.reportTelemetryEvent("connection", {
+				action: "initialization_success",
+				duration: initializationTime,
+				securityClassification: this.config?.securityClassification,
+			});
+
+			await this.reportTelemetryEvent("performance", {
+				operation: "initialization",
+				responseTime: initializationTime,
+				memoryUsage: process.memoryUsage().heapUsed,
+			});
+
 			logger.success(
 				`✅ MCP Client initialized successfully (${this.config?.securityClassification} mode)`,
 			);
 		} catch (error) {
+			// Report initialization failure
+			await this.reportTelemetryEvent("error", {
+				action: "initialization_failed",
+				error: error.message,
+				duration: Date.now() - startTime,
+			});
+
 			logger.error("Failed to initialize MCP Client:", error);
 			throw new Error(`MCP initialization failed: ${error.message}`);
 		}
@@ -476,9 +670,19 @@ export class MCPClientService {
 			throw new Error("MCP client not connected. Call initialize() first.");
 		}
 
+		const startTime = Date.now();
 		logger.info(`🎨 Generating ${type} component: ${name}`);
 
 		try {
+			// Report generation start
+			await this.reportTelemetryEvent("generation", {
+				action: "component_generation_start",
+				name,
+				type,
+				platform: options.platform || "react",
+				features: Object.keys(options.features || {}),
+			});
+
 			const result = await this.xalaMCPClient.generate({
 				type: "component",
 				name,
@@ -491,9 +695,35 @@ export class MCPClientService {
 				},
 			});
 
+			// Report successful generation
+			const generationTime = Date.now() - startTime;
+			await this.reportTelemetryEvent("generation", {
+				action: "component_generation_success",
+				name,
+				type,
+				duration: generationTime,
+				linesGenerated: result?.linesGenerated || 0,
+				filesGenerated: result?.filesGenerated || 1,
+			});
+
+			await this.reportTelemetryEvent("performance", {
+				operation: "component_generation",
+				responseTime: generationTime,
+				memoryUsage: process.memoryUsage().heapUsed,
+			});
+
 			logger.success(`✅ Component generation completed: ${name}`);
 			return result;
 		} catch (error) {
+			// Report generation failure
+			await this.reportTelemetryEvent("error", {
+				action: "component_generation_failed",
+				name,
+				type,
+				error: error.message,
+				duration: Date.now() - startTime,
+			});
+
 			logger.error(`Failed to generate component ${name}:`, error);
 			throw error;
 		}
@@ -518,9 +748,19 @@ export class MCPClientService {
 			throw new Error("Project context not loaded. Call loadProjectContext() first.");
 		}
 
+		const startTime = Date.now();
 		logger.info("📤 Sending project context to MCP server for indexing...");
 
 		try {
+			// Report indexing start
+			await this.reportTelemetryEvent("indexing", {
+				action: "context_indexing_start",
+				totalFiles: this.projectContext.totalFiles,
+				totalSize: this.projectContext.totalSize,
+				framework: this.projectContext.framework,
+				language: this.projectContext.language,
+			});
+
 			const contextData = {
 				projectContext: this.projectContext,
 				contextItems: Array.from(this.contextItems.values()),
@@ -528,8 +768,30 @@ export class MCPClientService {
 			};
 
 			await this.xalaMCPClient.indexContext(contextData);
+
+			// Report successful indexing
+			const indexingTime = Date.now() - startTime;
+			await this.reportTelemetryEvent("indexing", {
+				action: "context_indexing_success",
+				duration: indexingTime,
+				itemsIndexed: this.contextItems.size,
+			});
+
+			await this.reportTelemetryEvent("performance", {
+				operation: "context_indexing",
+				responseTime: indexingTime,
+				memoryUsage: process.memoryUsage().heapUsed,
+			});
+
 			logger.success("✅ Project context indexed successfully");
 		} catch (error) {
+			// Report indexing failure
+			await this.reportTelemetryEvent("error", {
+				action: "context_indexing_failed",
+				error: error.message,
+				duration: Date.now() - startTime,
+			});
+
 			logger.error("Failed to index project context:", error);
 			throw error;
 		}
@@ -543,6 +805,17 @@ export class MCPClientService {
 			logger.info("🔌 Disconnecting from MCP server...");
 			
 			try {
+				// Report final session metrics before disconnect
+				const sessionMetrics = this.telemetryReporter.getSessionMetrics();
+				await this.telemetryReporter.reportMetrics(sessionMetrics);
+				await this.telemetryReporter.flush();
+
+				// Report disconnection
+				await this.reportTelemetryEvent("connection", {
+					action: "disconnection",
+					sessionDuration: sessionMetrics.sessionDuration,
+				});
+
 				await this.xalaMCPClient.disconnect();
 			} catch (error) {
 				logger.warn("Error during MCP client disconnect:", error);
@@ -552,6 +825,55 @@ export class MCPClientService {
 			this.xalaMCPClient = null;
 			this.clearContext();
 			logger.success("✅ Disconnected successfully");
+		}
+	}
+
+	/**
+	 * Report telemetry event with proper error handling
+	 */
+	private async reportTelemetryEvent(
+		eventType: TelemetryEvent["eventType"],
+		data: Record<string, any>
+	): Promise<void> {
+		if (!this.config?.enableTelemetry) return;
+
+		try {
+			const event: TelemetryEvent = {
+				eventType,
+				timestamp: new Date(),
+				eventId: this.generateEventId(),
+				sessionId: (this.telemetryReporter as any).sessionId,
+				data,
+				userAgent: `xaheen-cli/${this.config?.version || "1.0.0"}`,
+				version: this.config?.version || "1.0.0",
+			};
+
+			await this.telemetryReporter.reportEvent(event);
+		} catch (error) {
+			// Silently fail telemetry to not interrupt main workflow
+			if (this.options.debug) {
+				logger.debug("Failed to report telemetry event:", error);
+			}
+		}
+	}
+
+	/**
+	 * Get telemetry metrics for the current session
+	 */
+	getTelemetryMetrics(): TelemetryMetrics {
+		return this.telemetryReporter.getSessionMetrics();
+	}
+
+	/**
+	 * Flush pending telemetry events
+	 */
+	async flushTelemetry(): Promise<void> {
+		try {
+			await this.telemetryReporter.flush();
+		} catch (error) {
+			if (this.options.debug) {
+				logger.debug("Failed to flush telemetry:", error);
+			}
 		}
 	}
 
@@ -570,6 +892,10 @@ export class MCPClientService {
 	private generateItemId(filePath: string): string {
 		// Create a simple hash-like ID from file path
 		return Buffer.from(filePath).toString("base64").replace(/[^a-zA-Z0-9]/g, "");
+	}
+
+	private generateEventId(): string {
+		return `evt_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 	}
 
 	private detectFramework(packageData: any): string | undefined {

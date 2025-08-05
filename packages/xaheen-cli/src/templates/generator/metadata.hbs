@@ -1,0 +1,177 @@
+{{!-- Generator Metadata Template --}}
+{{!-- Generated: {{now}} --}}
+{
+  "id": "{{metadata.id}}",
+  "name": "{{metadata.name}}",
+  "version": "{{metadata.version}}",
+  "description": "{{metadata.description}}",
+  "author": "{{metadata.author}}",
+  "category": "{{metadata.category}}",
+  "tags": {{json metadata.tags}},
+  "dependencies": {{json metadata.dependencies}},
+  "conflicts": {{json metadata.conflicts}},
+  "platforms": {{json metadata.platforms}},
+  "framework": {{json metadata.framework}},
+  "license": "{{metadata.license}}",
+  "repository": {{#if metadata.repository}}"{{metadata.repository}}"{{else}}null{{/if}},
+  "homepage": {{#if metadata.homepage}}"{{metadata.homepage}}"{{else}}null{{/if}},
+  "documentation": {{#if metadata.documentation}}"{{metadata.documentation}}"{{else}}null{{/if}},
+  "createdAt": "{{metadata.createdAt}}",
+  "updatedAt": "{{metadata.updatedAt}}",
+  "downloads": {{metadata.downloads}},
+  "rating": {{metadata.rating}},
+  "reviews": {{metadata.reviews}},
+  "certified": {{metadata.certified}},
+  "deprecated": {{metadata.deprecated}},
+  "experimental": {{metadata.experimental}},
+  
+  "features": {
+    "typescript": true,
+    "testing": true,
+    "storybook": {{#if (eq metadata.category "component")}}true{{else}}false{{/if}},
+    "accessibility": true,
+    "internationalization": true,
+    "norwegianCompliance": true,
+    "darkMode": {{#if (includes metadata.framework "xaheen")}}true{{else}}false{{/if}},
+    "responsive": {{#if (eq metadata.category "component")}}true{{else}}false{{/if}},
+    "semanticHTML": true,
+    "errorBoundaries": {{#if (includes metadata.platforms "react")}}true{{else}}false{{/if}}
+  },
+  
+  "requirements": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0",
+    "typescript": ">=5.0.0",
+    {{#if (includes metadata.platforms "react")}}
+    "react": ">=18.0.0",
+    {{/if}}
+    {{#if (includes metadata.platforms "nextjs")}}
+    "next": ">=14.0.0",
+    {{/if}}
+    {{#if (includes metadata.platforms "vue")}}
+    "vue": ">=3.0.0",
+    {{/if}}
+    {{#if (includes metadata.platforms "angular")}}
+    "@angular/core": ">=17.0.0",
+    {{/if}}
+    {{#if (includes metadata.platforms "svelte")}}
+    "svelte": ">=4.0.0",
+    {{/if}}
+    "tailwindcss": ">=3.0.0"
+  },
+  
+  "outputs": {
+    "files": [
+      {{#if (eq metadata.category "component")}}
+      "src/components/{{pascalCase metadata.name}}.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}",
+      "src/components/__tests__/{{pascalCase metadata.name}}.test.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}",
+      "src/components/{{pascalCase metadata.name}}.stories.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}"
+      {{else if (eq metadata.category "service")}}
+      "src/services/{{kebabCase metadata.name}}.service.ts",
+      "src/services/__tests__/{{kebabCase metadata.name}}.service.test.ts"
+      {{else if (eq metadata.category "layout")}}
+      "src/layouts/{{pascalCase metadata.name}}.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}",
+      "src/layouts/__tests__/{{pascalCase metadata.name}}.test.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}",
+      "src/layouts/{{pascalCase metadata.name}}.stories.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}"
+      {{else}}
+      "src/{{kebabCase metadata.category}}s/{{kebabCase metadata.name}}.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}",
+      "src/{{kebabCase metadata.category}}s/__tests__/{{kebabCase metadata.name}}.test.{{#if (includes metadata.platforms "react")}}tsx{{else}}ts{{/if}}"
+      {{/if}}
+    ],
+    "directories": [
+      {{#if (eq metadata.category "component")}}
+      "src/components",
+      "src/components/__tests__"
+      {{else if (eq metadata.category "service")}}
+      "src/services",
+      "src/services/__tests__"
+      {{else if (eq metadata.category "layout")}}
+      "src/layouts",
+      "src/layouts/__tests__"
+      {{else}}
+      "src/{{kebabCase metadata.category}}s",
+      "src/{{kebabCase metadata.category}}s/__tests__"
+      {{/if}}
+    ]
+  },
+  
+  "configuration": {
+    "prompts": [
+      {
+        "name": "name",
+        "type": "input",
+        "message": "{{#if (eq metadata.category "component")}}Component{{else if (eq metadata.category "service")}}Service{{else}}{{pascalCase metadata.category}}{{/if}} name:",
+        "required": true,
+        "validation": "^[A-Za-z][A-Za-z0-9]*$"
+      },
+      {
+        "name": "typescript",
+        "type": "confirm",
+        "message": "Use TypeScript?",
+        "default": true
+      },
+      {
+        "name": "tests",
+        "type": "confirm", 
+        "message": "Generate tests?",
+        "default": true
+      }
+      {{#if (eq metadata.category "component")}}
+      ,{
+        "name": "stories",
+        "type": "confirm",
+        "message": "Generate Storybook stories?",
+        "default": true
+      }
+      {{/if}}
+    ]
+  },
+  
+  "validation": {
+    "rules": {
+      "typescript": true,
+      "eslint": true,
+      "prettier": true,
+      "accessibility": true,
+      "performance": true,
+      "security": true
+    },
+    "thresholds": {
+      "testCoverage": 80,
+      "performanceScore": 90,
+      "accessibilityScore": 95,
+      "codeQuality": 85
+    }
+  },
+  
+  "marketplace": {
+    "categories": ["{{metadata.category}}"],
+    "keywords": {{json metadata.tags}},
+    "screenshots": [],
+    "examples": [
+      {
+        "name": "Basic Usage",
+        "description": "Simple example of using the generated {{metadata.category}}",
+        "code": "// Example will be generated"
+      }
+    ],
+    "changelog": {
+      "{{metadata.version}}": {
+        "date": "{{formatDate metadata.updatedAt}}",
+        "changes": [
+          "Initial version generated by Xaheen Meta-Generator",
+          "Includes TypeScript support",
+          "Accessibility compliant",
+          "Norwegian localization ready"
+        ]
+      }
+    }
+  },
+  
+  "analytics": {
+    "trackUsage": true,
+    "trackPerformance": true,
+    "trackErrors": true,
+    "anonymizeData": true
+  }
+}

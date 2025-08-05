@@ -95,5 +95,11 @@
     "README.md",
     "CHANGELOG.md",
     "templates"
-  ]
+  ],
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "types": "./dist/index.d.ts"
 }

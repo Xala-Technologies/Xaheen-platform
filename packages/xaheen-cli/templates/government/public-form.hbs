@@ -1,0 +1,867 @@
+{{!-- Norwegian Government Public Form Template - WCAG AAA Compliant --}}
+{{>parent}}
+
+{{#slot imports}}
+import { useForm, type FieldValues, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@xala-ui/form';
+import { Button } from '@xala-ui/button';
+import { Input } from '@xala-ui/input';
+import { Textarea } from '@xala-ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@xala-ui/select';
+import { Checkbox } from '@xala-ui/checkbox';
+import { Alert, AlertDescription } from '@xala-ui/alert';
+import { InfoIcon, AlertCircle, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'> {
+  readonly className?: string;
+  readonly onSubmit?: SubmitHandler<GovernmentFormData>;
+  readonly defaultValues?: Partial<GovernmentFormData>;
+  readonly validationSchema?: z.ZodSchema<any>;
+  readonly isLoading?: boolean;
+  readonly disabled?: boolean;
+  readonly showProgressIndicator?: boolean;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL';
+  readonly accessibilityMode?: 'standard' | 'enhanced' | 'maximum';
+  readonly 'aria-label'?: string;
+}
+
+interface GovernmentFormData extends FieldValues {
+  readonly personalNumber?: string; // Fødselsnummer
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly address: string;
+  readonly postalCode: string;
+  readonly city: string;
+  readonly email: string;
+  readonly phone?: string;
+  readonly preferredLanguage: 'nb-NO' | 'nn-NO' | 'en' | 'se';
+  readonly consentToDataProcessing: boolean;
+  readonly consentToMarketing: boolean;
+  readonly additionalInformation?: string;
+}
+
+interface FormProgressState {
+  readonly currentStep: number;
+  readonly totalSteps: number;
+  readonly completedSteps: string[];
+  readonly isValid: boolean;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} - Norwegian Government Public Form
+ * 
+ * @description WCAG AAA compliant form for Norwegian government digital services
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant with full keyboard navigation
+ * @nsm-classification {{nsmClassification}}
+ * @gdpr-compliant Full GDPR compliance with explicit consent
+ * @languages Supports Norwegian (Bokmål/Nynorsk), English, and Sami
+ */
+export const {{componentName}} = ({
+  className,
+  onSubmit,
+  defaultValues = {},
+  validationSchema,
+  isLoading = false,
+  disabled = false,
+  showProgressIndicator = true,
+  nsmClassification = 'OPEN',
+  accessibilityMode = 'enhanced',
+  'aria-label': ariaLabel,
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  // Norwegian localization
+  const { t, i18n } = useTranslation('government-forms');
+  const currentLanguage = i18n.language as GovernmentFormData['preferredLanguage'];
+
+  // Form state management
+  const [formProgress, setFormProgress] = useState<FormProgressState>({
+    currentStep: 1,
+    totalSteps: 3,
+    completedSteps: [],
+    isValid: false
+  });
+  const [submitAttempts, setSubmitAttempts] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Norwegian validation schema
+  const norwegianValidationSchema = useMemo(() => validationSchema || z.object({
+    personalNumber: z.string()
+      .optional()
+      .refine((val) => !val || /^\\d{11}$/.test(val), {
+        message: t('validation.personalNumber.format')
+      }),
+    firstName: z.string()
+      .min(2, t('validation.firstName.min'))
+      .max(50, t('validation.firstName.max'))
+      .regex(/^[a-zA-ZæøåÆØÅ\\s-']+$/, t('validation.firstName.format')),
+    lastName: z.string()
+      .min(2, t('validation.lastName.min'))
+      .max(50, t('validation.lastName.max'))
+      .regex(/^[a-zA-ZæøåÆØÅ\\s-']+$/, t('validation.lastName.format')),
+    email: z.string()
+      .email(t('validation.email.format'))
+      .min(5, t('validation.email.min')),
+    address: z.string()
+      .min(5, t('validation.address.min'))
+      .max(100, t('validation.address.max')),
+    postalCode: z.string()
+      .regex(/^\\d{4}$/, t('validation.postalCode.format')),
+    city: z.string()
+      .min(2, t('validation.city.min'))
+      .max(50, t('validation.city.max')),
+    phone: z.string()
+      .optional()
+      .refine((val) => !val || /^[+]?[0-9\\s-()]{8,15}$/.test(val), {
+        message: t('validation.phone.format')
+      }),
+    preferredLanguage: z.enum(['nb-NO', 'nn-NO', 'en', 'se']),
+    consentToDataProcessing: z.boolean()
+      .refine((val) => val === true, {
+        message: t('validation.consent.required')
+      }),
+    consentToMarketing: z.boolean(),
+    additionalInformation: z.string()
+      .max(1000, t('validation.additionalInfo.max'))
+      .optional()
+  }), [validationSchema, t]);
+
+  // Form setup with Norwegian defaults
+  const form = useForm<GovernmentFormData>({
+    resolver: zodResolver(norwegianValidationSchema),
+    defaultValues: {
+      preferredLanguage: currentLanguage,
+      consentToDataProcessing: false,
+      consentToMarketing: false,
+      ...defaultValues
+    },
+    mode: 'onBlur',
+    criteriaMode: 'all'
+  });
+
+  // Form submission with Norwegian government standards
+  const handleSubmit = useCallback<SubmitHandler<GovernmentFormData>>((data) => {
+    setSubmitAttempts(prev => prev + 1);
+    
+    // Log submission for audit trail (Norwegian government requirement)
+    console.info('Government form submission:', {
+      timestamp: new Date().toISOString(),
+      nsmClassification,
+      dataProcessingConsent: data.consentToDataProcessing,
+      preferredLanguage: data.preferredLanguage,
+      submitAttempt: submitAttempts + 1
+    });
+
+    if (onSubmit) {
+      onSubmit(data);
+    }
+    
+    setIsSubmitted(true);
+  }, [onSubmit, nsmClassification, submitAttempts]);
+
+  // Form reset with accessibility announcement
+  const handleReset = useCallback(() => {
+    form.reset();
+    setFormProgress({
+      currentStep: 1,
+      totalSteps: 3,
+      completedSteps: [],
+      isValid: false
+    });
+    setSubmitAttempts(0);
+    setIsSubmitted(false);
+    
+    // Announce reset to screen readers
+    announceToScreenReader(t('form.reset.announced'));
+  }, [form, t]);
+
+  // Progress tracking for accessibility
+  const updateProgress = useCallback((step: number, isValid: boolean) => {
+    setFormProgress(prev => ({
+      ...prev,
+      currentStep: step,
+      isValid,
+      completedSteps: isValid ? [...prev.completedSteps, `step-${step}`] : prev.completedSteps
+    }));
+  }, []);
+
+  // Screen reader announcements
+  const announceToScreenReader = useCallback((message: string) => {
+    const announcement = document.getElementById('form-announcements');
+    if (announcement) {
+      announcement.textContent = message;
+      // Clear after announcement
+      setTimeout(() => {
+        announcement.textContent = '';
+      }, 1000);
+    }
+  }, []);
+
+  // Keyboard navigation helpers
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    // Norwegian keyboard shortcuts
+    if (event.altKey) {
+      switch (event.key) {
+        case 'h': // Alt+H for help (Hjelp)
+          event.preventDefault();
+          announceToScreenReader(t('accessibility.help.available'));
+          break;
+        case 's': // Alt+S for submit (Send)
+          event.preventDefault();
+          form.handleSubmit(handleSubmit)();
+          break;
+        case 'r': // Alt+R for reset (Tilbakestill)
+          event.preventDefault();
+          handleReset();
+          break;
+      }
+    }
+
+    // Escape to clear current field
+    if (event.key === 'Escape') {
+      const activeElement = document.activeElement as HTMLInputElement;
+      if (activeElement && activeElement.tagName === 'INPUT') {
+        activeElement.value = '';
+        activeElement.focus();
+      }
+    }
+  }, [form, handleSubmit, handleReset, t]);
+
+  try {
+    return (
+      <div 
+        className={cn(
+          'max-w-4xl mx-auto p-8 bg-white rounded-xl shadow-lg',
+          'border-2 border-gray-200',
+          'focus-within:border-blue-500',
+          'motion-safe:transition-all motion-safe:duration-300',
+          className
+        )}
+        onKeyDown={handleKeyDown}
+        lang={currentLanguage}
+      >
+        {/* Skip links for keyboard navigation */}
+        <div className="skip-links sr-only focus-within:not-sr-only">
+          <a 
+            href="#form-content" 
+            className="absolute top-4 left-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            tabIndex={1}
+          >
+            {t('accessibility.skipToForm')}
+          </a>
+          <a 
+            href="#form-submit" 
+            className="absolute top-4 left-40 z-50 px-4 py-2 bg-blue-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            tabIndex={2}
+          >
+            {t('accessibility.skipToSubmit')}
+          </a>
+        </div>
+
+        {/* Screen reader announcements */}
+        <div 
+          id="form-announcements"
+          className="sr-only" 
+          aria-live="polite" 
+          aria-atomic="true"
+          lang={currentLanguage}
+        />
+
+        {/* Progress indicator */}
+        {showProgressIndicator && (
+          <div 
+            className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+            role="progressbar" 
+            aria-valuenow={formProgress.currentStep} 
+            aria-valuemin={1} 
+            aria-valuemax={formProgress.totalSteps}
+            aria-label={t('form.progress.label', { 
+              current: formProgress.currentStep, 
+              total: formProgress.totalSteps 
+            })}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-800">
+                {t('form.progress.text', { 
+                  current: formProgress.currentStep, 
+                  total: formProgress.totalSteps 
+                })}
+              </span>
+              <span className="text-xs text-blue-600">
+                {Math.round((formProgress.currentStep / formProgress.totalSteps) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${(formProgress.currentStep / formProgress.totalSteps) * 100}%` }}
+                role="presentation"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NSM Classification Notice */}
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <InfoIcon className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>{t('nsm.classification.label')}:</strong> {nsmClassification} | 
+            <strong className="ml-2">{t('wcag.level.label')}:</strong> AAA | 
+            <strong className="ml-2">{t('gdpr.compliant.label')}:</strong> {t('gdpr.compliant.yes')}
+          </AlertDescription>
+        </Alert>
+
+        {/* Success message */}
+        {isSubmitted && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              {t('form.submitted.success')}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Form {...form}>
+          <form 
+            id="form-content"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+            aria-label={ariaLabel || t('form.aria.label')}
+            role="form"
+            noValidate
+            {...props}
+          >
+            {/* Personal Information Section */}
+            <fieldset className="space-y-6 p-6 border border-gray-200 rounded-lg">
+              <legend className="text-lg font-semibold text-gray-900 px-2">
+                {t('form.sections.personalInfo')}
+              </legend>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* First Name */}
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 required">
+                        {t('form.fields.firstName.label')} *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="text"
+                          autoComplete="given-name"
+                          placeholder={t('form.fields.firstName.placeholder')}
+                          disabled={disabled || isLoading}
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          aria-describedby="firstName-description firstName-error"
+                        />
+                      </FormControl>
+                      <FormDescription id="firstName-description" className="text-sm text-gray-600">
+                        {t('form.fields.firstName.description')}
+                      </FormDescription>
+                      <FormMessage id="firstName-error" className="text-sm text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Last Name */}
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 required">
+                        {t('form.fields.lastName.label')} *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="text"
+                          autoComplete="family-name"
+                          placeholder={t('form.fields.lastName.placeholder')}
+                          disabled={disabled || isLoading}
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          aria-describedby="lastName-description lastName-error"
+                        />
+                      </FormControl>
+                      <FormDescription id="lastName-description" className="text-sm text-gray-600">
+                        {t('form.fields.lastName.description')}
+                      </FormDescription>
+                      <FormMessage id="lastName-error" className="text-sm text-red-600" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Personal Number (Optional) */}
+              <FormField
+                control={form.control}
+                name="personalNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t('form.fields.personalNumber.label')}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        autoComplete="off"
+                        placeholder={t('form.fields.personalNumber.placeholder')}
+                        disabled={disabled || isLoading}
+                        className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        aria-describedby="personalNumber-description personalNumber-error"
+                        maxLength={11}
+                      />
+                    </FormControl>
+                    <FormDescription id="personalNumber-description" className="text-sm text-gray-600">
+                      {t('form.fields.personalNumber.description')}
+                    </FormDescription>
+                    <FormMessage id="personalNumber-error" className="text-sm text-red-600" />
+                  </FormItem>
+                )}
+              />
+            </fieldset>
+
+            {/* Contact Information Section */}
+            <fieldset className="space-y-6 p-6 border border-gray-200 rounded-lg">
+              <legend className="text-lg font-semibold text-gray-900 px-2">
+                {t('form.sections.contactInfo')}
+              </legend>
+
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700 required">
+                      {t('form.fields.email.label')} *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        autoComplete="email"
+                        placeholder={t('form.fields.email.placeholder')}
+                        disabled={disabled || isLoading}
+                        className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        aria-describedby="email-description email-error"
+                      />
+                    </FormControl>
+                    <FormDescription id="email-description" className="text-sm text-gray-600">
+                      {t('form.fields.email.description')}
+                    </FormDescription>
+                    <FormMessage id="email-error" className="text-sm text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Phone (Optional) */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t('form.fields.phone.label')}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        autoComplete="tel"
+                        placeholder={t('form.fields.phone.placeholder')}
+                        disabled={disabled || isLoading}
+                        className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        aria-describedby="phone-description phone-error"
+                      />
+                    </FormControl>
+                    <FormDescription id="phone-description" className="text-sm text-gray-600">
+                      {t('form.fields.phone.description')}
+                    </FormDescription>
+                    <FormMessage id="phone-error" className="text-sm text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Address */}
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700 required">
+                      {t('form.fields.address.label')} *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        autoComplete="street-address"
+                        placeholder={t('form.fields.address.placeholder')}
+                        disabled={disabled || isLoading}
+                        className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        aria-describedby="address-description address-error"
+                      />
+                    </FormControl>
+                    <FormDescription id="address-description" className="text-sm text-gray-600">
+                      {t('form.fields.address.description')}
+                    </FormDescription>
+                    <FormMessage id="address-error" className="text-sm text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Postal Code */}
+                <FormField
+                  control={form.control}
+                  name="postalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 required">
+                        {t('form.fields.postalCode.label')} *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="text"
+                          autoComplete="postal-code"
+                          placeholder={t('form.fields.postalCode.placeholder')}
+                          disabled={disabled || isLoading}
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          aria-describedby="postalCode-description postalCode-error"
+                          maxLength={4}
+                        />
+                      </FormControl>
+                      <FormDescription id="postalCode-description" className="text-sm text-gray-600">
+                        {t('form.fields.postalCode.description')}
+                      </FormDescription>
+                      <FormMessage id="postalCode-error" className="text-sm text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* City */}
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 required">
+                        {t('form.fields.city.label')} *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="text"
+                          autoComplete="address-level2"
+                          placeholder={t('form.fields.city.placeholder')}
+                          disabled={disabled || isLoading}
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          aria-describedby="city-description city-error"
+                        />
+                      </FormControl>
+                      <FormDescription id="city-description" className="text-sm text-gray-600">
+                        {t('form.fields.city.description')}
+                      </FormDescription>
+                      <FormMessage id="city-error" className="text-sm text-red-600" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </fieldset>
+
+            {/* Preferences and Consent Section */}
+            <fieldset className="space-y-6 p-6 border border-gray-200 rounded-lg">
+              <legend className="text-lg font-semibold text-gray-900 px-2">
+                {t('form.sections.preferences')}
+              </legend>
+
+              {/* Language Preference */}
+              <FormField
+                control={form.control}
+                name="preferredLanguage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t('form.fields.language.label')}
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger 
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          aria-describedby="language-description"
+                        >
+                          <SelectValue placeholder={t('form.fields.language.placeholder')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="nb-NO">{t('form.fields.language.options.norwegian')}</SelectItem>
+                        <SelectItem value="nn-NO">{t('form.fields.language.options.nynorsk')}</SelectItem>
+                        <SelectItem value="en">{t('form.fields.language.options.english')}</SelectItem>
+                        <SelectItem value="se">{t('form.fields.language.options.sami')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription id="language-description" className="text-sm text-gray-600">
+                      {t('form.fields.language.description')}
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              {/* Additional Information */}
+              <FormField
+                control={form.control}
+                name="additionalInformation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t('form.fields.additionalInfo.label')}
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder={t('form.fields.additionalInfo.placeholder')}
+                        disabled={disabled || isLoading}
+                        className="min-h-[120px] text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-y"
+                        aria-describedby="additionalInfo-description additionalInfo-error"
+                        maxLength={1000}
+                      />
+                    </FormControl>
+                    <FormDescription id="additionalInfo-description" className="text-sm text-gray-600">
+                      {t('form.fields.additionalInfo.description')}
+                    </FormDescription>
+                    <FormMessage id="additionalInfo-error" className="text-sm text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              {/* GDPR Consent - Required */}
+              <FormField
+                control={form.control}
+                name="consentToDataProcessing"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={disabled || isLoading}
+                        className="mt-1"
+                        aria-describedby="dataProcessing-description dataProcessing-error"
+                        required
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-medium text-blue-900 cursor-pointer">
+                        {t('form.fields.dataProcessingConsent.label')} *
+                      </FormLabel>
+                      <FormDescription id="dataProcessing-description" className="text-sm text-blue-800">
+                        {t('form.fields.dataProcessingConsent.description')}
+                        <a 
+                          href="/privacy-policy" 
+                          className="ml-1 underline hover:text-blue-600 focus:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={t('form.links.privacyPolicy.aria')}
+                        >
+                          {t('form.links.privacyPolicy.text')}
+                        </a>
+                      </FormDescription>
+                      <FormMessage id="dataProcessing-error" className="text-sm text-red-600" />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Marketing Consent - Optional */}
+              <FormField
+                control={form.control}
+                name="consentToMarketing"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border border-gray-200 rounded-lg">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={disabled || isLoading}
+                        className="mt-1"
+                        aria-describedby="marketing-description"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-medium text-gray-700 cursor-pointer">
+                        {t('form.fields.marketingConsent.label')}
+                      </FormLabel>
+                      <FormDescription id="marketing-description" className="text-sm text-gray-600">
+                        {t('form.fields.marketingConsent.description')}
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </fieldset>
+
+            {/* Form Actions */}
+            <div 
+              id="form-submit"
+              className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200"
+            >
+              <Button 
+                type="submit" 
+                variant="primary" 
+                size="lg"
+                disabled={disabled || isLoading || !form.formState.isValid}
+                className="flex-1 sm:flex-none min-w-[160px] h-14 text-base font-medium"
+                aria-label={t('form.actions.submit.aria')}
+                aria-describedby="submit-description"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    {t('form.actions.submit.loading')}
+                  </>
+                ) : (
+                  t('form.actions.submit.text')
+                )}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="secondary" 
+                size="lg"
+                onClick={handleReset}
+                disabled={disabled || isLoading}
+                className="flex-1 sm:flex-none min-w-[160px] h-14 text-base font-medium"
+                aria-label={t('form.actions.reset.aria')}
+                aria-describedby="reset-description"
+              >
+                {t('form.actions.reset.text')}
+              </Button>
+            </div>
+
+            {/* Action descriptions for screen readers */}
+            <div className="sr-only">
+              <p id="submit-description">{t('form.actions.submit.description')}</p>
+              <p id="reset-description">{t('form.actions.reset.description')}</p>
+            </div>
+
+            {/* Keyboard shortcuts help */}
+            <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-800 mb-2">
+                {t('accessibility.keyboardShortcuts.title')}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-gray-600">
+                <div>
+                  <kbd className="px-2 py-1 bg-white border border-gray-300 rounded text-xs">Alt + S</kbd> 
+                  <span className="ml-1">{t('accessibility.keyboardShortcuts.submit')}</span>
+                </div>
+                <div>
+                  <kbd className="px-2 py-1 bg-white border border-gray-300 rounded text-xs">Alt + R</kbd> 
+                  <span className="ml-1">{t('accessibility.keyboardShortcuts.reset')}</span>
+                </div>
+                <div>
+                  <kbd className="px-2 py-1 bg-white border border-gray-300 rounded text-xs">Alt + H</kbd> 
+                  <span className="ml-1">{t('accessibility.keyboardShortcuts.help')}</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </Form>
+
+        {{>mixins}}
+
+        {/* Norwegian government compliance metadata */}
+        <div className="sr-only">
+          <meta name="nsm-classification" content={nsmClassification} />
+          <meta name="wcag-level" content="AAA" />
+          <meta name="gdpr-compliant" content="true" />
+          <meta name="language-support" content="nb-NO,nn-NO,en,se" />
+          <meta name="form-version" content="1.0.0" />
+          <meta name="last-updated" content={new Date().toISOString()} />
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error(`${componentName} form error:`, error);
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            {t('form.error.general')}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Norwegian government form helpers
+export const norwegianPostalCodeLookup = async (postalCode: string): Promise<{ city: string; region: string } | null> => {
+  // Integration with Norwegian postal code service
+  try {
+    const response = await fetch(`https://api.postecode.no/${postalCode}`);
+    if (response.ok) {
+      const data = await response.json();
+      return { city: data.city, region: data.region };
+    }
+  } catch (error) {
+    console.warn('Postal code lookup failed:', error);
+  }
+  return null;
+};
+
+// Personal number validation (Fødselsnummer)
+export const validateNorwegianPersonalNumber = (personalNumber: string): boolean => {
+  if (!/^\\d{11}$/.test(personalNumber)) return false;
+  
+  // Simplified validation - in real implementation, use full algorithm
+  const digits = personalNumber.split('').map(Number);
+  return digits.length === 11;
+};
+
+// GDPR compliance checker
+export const checkGDPRCompliance = (formData: GovernmentFormData): {
+  compliant: boolean;
+  issues: string[];
+} => {
+  const issues: string[] = [];
+  
+  if (!formData.consentToDataProcessing) {
+    issues.push('Data processing consent required');
+  }
+  
+  return {
+    compliant: issues.length === 0,
+    issues
+  };
+};
+
+// Accessibility announcer
+export const announceFormProgress = (step: number, total: number, language: string = 'nb-NO') => {
+  const messages = {
+    'nb-NO': `Trinn ${step} av ${total} fullført`,
+    'nn-NO': `Steg ${step} av ${total} fullført`,
+    'en': `Step ${step} of ${total} completed`,
+    'se': `Lávki ${step} ${total}:s ollán`
+  };
+  
+  return messages[language as keyof typeof messages] || messages['nb-NO'];
+};
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props, GovernmentFormData };

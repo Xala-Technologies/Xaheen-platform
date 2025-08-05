@@ -528,12 +528,12 @@ class DefaultRefactoringStrategy implements RefactoringStrategy {
   }
 }
 
-${this.generateRefactoringStrategies(options)}`;
+${this.generateRefactoringStrategiesContent(options)}`;
 
 		await fs.writeFile(join(engineDir, "refactoring-engine.ts"), engineContent);
 	}
 
-	private generateRefactoringStrategies(options: AIRefactoringOptions): string {
+	private generateRefactoringStrategiesContent(options: AIRefactoringOptions): string {
 		return options.features
 			.map((feature) => {
 				switch (feature) {

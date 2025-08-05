@@ -144,6 +144,13 @@ export const generateCommand = new Command("generate")
 	.option("--skip-tests", "Skip generating test files")
 	.option("--typescript", "Generate TypeScript files (default)")
 	.option("--javascript", "Generate JavaScript files")
+	.option("--semantic-ui", "Use Xala semantic UI components (default: true)")
+	.option("--no-semantic-ui", "Disable semantic UI components")
+	.option("--i18n", "Include internationalization support (default: true)")
+	.option("--no-i18n", "Disable internationalization support")
+	.option("--design-tokens", "Include design token imports (default: true)")
+	.option("--no-design-tokens", "Disable design token imports")
+	.option("--component-type <type>", "Component type (basic, form, layout)")
 	.action(async (type: string, name: string, options: GeneratorOptions) => {
 		try {
 			intro(chalk.cyan("🎨 Xaheen Generator (Rails-inspired with MCP Intelligence)"));
@@ -487,7 +494,7 @@ async function generateComponent(
 ): Promise<GeneratorResult> {
 	try {
 		const componentGenerator = new ComponentGenerator();
-		await componentGenerator.generate({
+		return await componentGenerator.generate({
 			name,
 			type: options.type as "functional" | "class",
 			framework: options.framework as "react" | "vue" | "angular" | "svelte",
@@ -503,25 +510,15 @@ async function generateComponent(
 			dryRun: options.dryRun,
 			force: options.force,
 			typescript: options.typescript !== false,
+			semanticUI: options.semanticUI !== false,
+			i18n: options.i18n !== false,
+			designTokens: options.designTokens !== false,
+			componentType: options.componentType as "basic" | "form" | "layout",
 		});
-
-		return {
-			success: true,
-			message: `Component ${name} generated successfully`,
-			files: [
-				`src/components/${name}.tsx`,
-				`src/components/${name}.stories.tsx`,
-				`src/components/__tests__/${name}.test.tsx`,
-			],
-			nextSteps: [
-				"Import component in your page",
-				"Add component to Storybook",
-			],
-		};
 	} catch (error) {
 		return {
 			success: false,
-			message: `Failed to generate component: ${error.message}`,
+			message: `Failed to generate component: ${error instanceof Error ? error.message : 'Unknown error'}`,
 		};
 	}
 }
