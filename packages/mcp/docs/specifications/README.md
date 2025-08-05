@@ -1,237 +1,372 @@
-# Xala UI Component Specification System
+# MCP Server - Component Specifications
 
-[![Version](https://img.shields.io/badge/version-v5.0.0-blue.svg)](./schema-reference.md)
-[![WCAG](https://img.shields.io/badge/WCAG-AAA-green.svg)](./guides/accessibility.md)
-[![Norwegian Compliance](https://img.shields.io/badge/NSM-Compliant-red.svg)](./guides/norwegian-compliance.md)
+## 🤖 Machine-Readable Component Specifications
 
-## Overview
+This directory contains comprehensive, AI-optimized component specifications for the Universal Design System v5.0. Each component is designed with semantic naming, predictable APIs, and intelligent defaults to ensure AI tools can generate professional, accessible applications.
 
-The Xala UI Component Specification System is a comprehensive JSON-based architecture for defining, generating, and maintaining UI components across multiple platforms. This system enables:
+## 📋 Quick Reference
 
-- **AI-Powered Generation**: Specifications optimized for AI code generation
-- **Multi-Platform Support**: React, Vue, Angular, Svelte, Solid, Web Components
-- **Norwegian Compliance**: NSM security classifications, GDPR compliance, and WCAG AAA accessibility
-- **Enterprise Standards**: Type safety, testing requirements, and performance metrics
-- **Version Management**: Semantic versioning with migration paths
+### Available Specifications
+- **[Form Components](./form-components.md)** - Input, Button, Select, TextArea, Checkbox, Radio
+- **[Layout Components](./layout-components.md)** - Container, Stack, Grid, Card, Divider
+- **[Display Components](./display-components.md)** - Text, Image, Badge, Avatar, Icon
+- **[Navigation Components](./navigation-components.md)** - WebNavbar, Breadcrumb, Sidebar, Pagination
+- **[Data Components](./data-components.md)** - DataTable, List, Timeline, Chart
+- **[Feedback Components](./feedback-components.md)** - Alert, Toast, Modal, Progress
+- **[Specialized Components](./specialized-components.md)** - ClassificationIndicator, PriorityIndicator
 
-## Quick Start
+## 🎯 AI Component Understanding
 
-```bash
-# Install the specification system
-npm install @xala-technologies/ui-system-mcp
-
-# Generate a component from specification
-npx xala-ui generate --spec ./specs/Button.json --platform react
-
-# Validate specifications
-npx xala-ui validate --schema v5.0
-
-# Generate documentation
-npx xala-ui docs generate --output ./docs/components
-```
-
-## Architecture
-
-### Component Categories
-
-The system organizes components into 9 categories:
-
-| Category | Description | Examples |
-|----------|-------------|----------|
-| **basic** | Fundamental UI elements | Button, Input, Text, Icon |
-| **composite** | Multi-element components | Card, Modal, Dropdown |
-| **layout** | Structure and positioning | Grid, Stack, Container |
-| **navigation** | User navigation | Navbar, Breadcrumb, Pagination |
-| **feedback** | User feedback | Alert, Toast, Progress |
-| **overlay** | Layered UI elements | Modal, Tooltip, Popover |
-| **form** | Form controls | FormField, Checkbox, Radio |
-| **data-display** | Data presentation | Table, List, DataGrid |
-| **specialized** | Domain-specific | Chart, Calendar, Editor |
-
-### Specification Structure
-
-Each component specification includes:
-
-```json
-{
-  "metadata": {
-    "name": "ComponentName",
-    "version": "1.0.0",
-    "category": "basic",
-    "description": "Component description"
+### Semantic Component Hierarchy
+```typescript
+// MCP server understands this semantic structure
+interface ComponentHierarchy {
+  Layout: {
+    Container: 'responsive-wrapper',
+    Stack: 'flexible-layout',
+    Grid: 'responsive-grid',
+    Card: 'content-container'
   },
-  "compliance": {
-    "wcag": { "level": "AAA" },
-    "norwegian": { "nsmClassification": "OPEN" },
-    "i18n": { "supportedLocales": ["nb-NO", "en-US"] }
+  Content: {
+    Text: 'semantic-typography',
+    Image: 'responsive-media',
+    Icon: 'semantic-icons',
+    Badge: 'status-indicator'
   },
-  "props": {
-    "schema": { /* TypeScript-style prop definitions */ },
-    "groups": { /* Required/optional prop organization */ }
+  Forms: {
+    Input: 'text-field',
+    Select: 'dropdown-choice',
+    Button: 'action-trigger',
+    Checkbox: 'boolean-input'
   },
-  "accessibility": {
-    "role": { "primary": "button" },
-    "keyboardNavigation": { /* ARIA patterns */ },
-    "screenReader": { /* Announcements and labels */ }
+  Navigation: {
+    WebNavbar: 'site-navigation',
+    Breadcrumb: 'hierarchical-nav',
+    Sidebar: 'side-navigation',
+    Pagination: 'content-pagination'
   },
-  "platforms": {
-    "supported": ["react", "vue", "angular"],
-    "implementations": { /* Platform-specific code */ }
+  Data: {
+    DataTable: 'structured-data',
+    List: 'item-collection',
+    Timeline: 'chronological-data',
+    Chart: 'data-visualization'
+  },
+  Feedback: {
+    Alert: 'status-message',
+    Toast: 'temporary-notification',
+    Modal: 'dialog-overlay',
+    Progress: 'loading-indicator'
   }
 }
 ```
 
-## Documentation Structure
+### AI Pattern Recognition Tags
+Each component includes AI-friendly tags for natural language processing:
 
-```
-docs/specifications/
-├── README.md                  # This overview
-├── getting-started.md         # Setup and first steps
-├── schema-reference.md        # Complete schema documentation
-├── components/                # Component documentation
-│   ├── basic/                # Basic components
-│   ├── composite/            # Composite components
-│   ├── layout/               # Layout components
-│   ├── navigation/           # Navigation components
-│   ├── feedback/             # Feedback components
-│   ├── overlay/              # Overlay components
-│   ├── form/                 # Form components
-│   ├── data-display/         # Data display components
-│   └── specialized/          # Specialized components
-├── guides/                   # Implementation guides
-│   ├── ai-usage.md          # AI generation guide
-│   ├── validation.md        # Specification validation
-│   ├── migration.md         # Version migration
-│   ├── accessibility.md     # WCAG compliance
-│   ├── norwegian-compliance.md # NSM and GDPR
-│   └── platform-support.md # Multi-platform development
-└── api/                     # API documentation
-    └── specification-api.md # Programmatic API reference
-```
-
-## Key Features
-
-### 🤖 AI-Optimized
-
-- **Generation Hints**: Patterns and anti-patterns for AI code generation
-- **Complexity Scoring**: Token estimation and priority levels
-- **Template Integration**: Pre-built templates for common patterns
-- **Validation Rules**: Automated quality checks
-
-### 🌍 Multi-Platform
-
-- **Unified Specifications**: Single source of truth for all platforms
-- **Platform-Specific Templates**: Optimized code generation per framework
-- **Dependency Management**: Automatic dependency resolution
-- **Migration Tools**: Cross-platform component migration
-
-### 🇳🇴 Norwegian Compliance
-
-- **NSM Classifications**: OPEN, RESTRICTED, CONFIDENTIAL, SECRET
-- **GDPR Compliance**: Privacy-by-design patterns
-- **WCAG AAA**: Comprehensive accessibility support
-- **Audit Trails**: Compliance tracking and reporting
-
-### 🔒 Enterprise Standards
-
-- **Type Safety**: Zero-tolerance for `any` types
-- **Performance Metrics**: Bundle size and render time requirements
-- **Testing Requirements**: 95%+ coverage standards
-- **Security Patterns**: Object injection prevention
-
-## Getting Started
-
-1. **[Setup Guide](./getting-started.md)** - Installation and configuration
-2. **[Schema Reference](./schema-reference.md)** - Complete specification format
-3. **[Component Examples](./components/)** - Browse component documentation
-4. **[AI Usage Guide](./guides/ai-usage.md)** - AI-powered development
-5. **[Migration Guide](./guides/migration.md)** - Version upgrades
-
-## Component Examples
-
-### Basic Button Component
-
-```json
-{
-  "metadata": {
-    "name": "Button",
-    "version": "1.0.0",
-    "category": "basic",
-    "description": "Primary action button with multiple variants"
-  },
-  "props": {
-    "schema": {
-      "variant": {
-        "type": "string",
-        "enum": ["primary", "secondary", "outline", "ghost"],
-        "default": "primary"
-      },
-      "size": {
-        "type": "string", 
-        "enum": ["sm", "md", "lg"],
-        "default": "md"
-      },
-      "disabled": {
-        "type": "boolean",
-        "default": false
-      }
-    }
-  },
-  "accessibility": {
-    "role": { "primary": "button" },
-    "keyboardNavigation": {
-      "supported": true,
-      "patterns": [
-        { "key": "Enter", "action": "activate" },
-        { "key": "Space", "action": "activate" }
-      ]
-    }
-  }
+```typescript
+interface ComponentTags {
+  Button: ['action', 'primary', 'interactive', 'cta', 'submit', 'click'],
+  Input: ['form', 'text', 'field', 'input', 'data-entry', 'user-input'],
+  Card: ['container', 'content', 'layout', 'group', 'panel', 'surface'],
+  DataTable: ['data', 'table', 'list', 'rows', 'columns', 'sorting'],
+  Alert: ['notification', 'message', 'status', 'feedback', 'warning', 'success']
 }
 ```
 
-### Usage across platforms:
+## 🔧 Component Specification Format
 
-```tsx
-// React
-<Button variant="primary" size="lg" onClick={handleClick}>
-  Submit
-</Button>
+Each component specification follows this standardized format:
 
-// Vue
-<Button variant="primary" size="lg" @click="handleClick">
-  Submit
-</Button>
+```typescript
+interface ComponentSpecification {
+  name: string;                    // Component name
+  category: string;                // Component category
+  description: string;             // Brief description
+  aiTags: string[];               // AI recognition tags
+  props: ComponentProp[];          // Available props
+  variants: ComponentVariant[];    // Available variants
+  examples: CodeExample[];         // Usage examples
+  accessibility: AccessibilityInfo; // WCAG compliance
+  performance: PerformanceInfo;    // Performance characteristics
+  compliance: ComplianceInfo;      // Norwegian compliance
+  platformSupport: PlatformInfo;  // Platform compatibility
+}
 
-// Angular
-<xala-button variant="primary" size="lg" (click)="handleClick()">
-  Submit
-</xala-button>
+interface ComponentProp {
+  name: string;
+  type: string;
+  required: boolean;
+  default?: any;
+  description: string;
+  examples: any[];
+  aiRecommendations: string[];
+}
+
+interface ComponentVariant {
+  name: string;
+  description: string;
+  props: Record<string, any>;
+  example: string;
+  aiUseCase: string;
+}
 ```
 
-## Version History
+## 🎨 Smart Component Combinations
 
-| Version | Date | Changes |
-|---------|------|---------|
-| **v5.0.0** | 2024-01 | Initial comprehensive specification system |
-| **v5.1.0** | 2024-03 | Enhanced AI optimization features |
-| **v5.2.0** | 2024-06 | Norwegian compliance enhancements |
+### AI Composition Patterns
 
-## Contributing
+#### Dashboard Pattern
+```typescript
+const DashboardPattern = {
+  name: 'dashboard',
+  components: ['Container', 'Stack', 'Text', 'Grid', 'Card', 'Badge'],
+  structure: `
+    Container(size="xl")
+      Stack(direction="vertical", gap="xl")
+        Stack(direction="horizontal", justify="space-between")
+          Text(variant="h1") // Page title
+          Button(variant="primary") // Primary action
+        Grid(cols={base: 1, md: 2, lg: 4}, gap="lg")
+          Card // KPI cards with metrics
+        Grid(cols={base: 1, lg: 2}, gap="xl")
+          Card // Content sections
+  `,
+  aiTags: ['dashboard', 'admin', 'analytics', 'metrics', 'overview']
+};
+```
 
-1. **Specification Changes**: Follow the [schema validation](./guides/validation.md) process
-2. **Documentation Updates**: Use the provided [templates](./templates/)
-3. **Platform Support**: Add new platform implementations via [platform guide](./guides/platform-support.md)
-4. **Compliance**: Ensure all changes meet [Norwegian compliance](./guides/norwegian-compliance.md) requirements
+#### Form Pattern
+```typescript
+const FormPattern = {
+  name: 'form',
+  components: ['Container', 'Card', 'Stack', 'Input', 'Button'],
+  structure: `
+    Container(size="md")
+      Card(padding="xl")
+        Stack(direction="vertical", gap="lg")
+          Text(variant="h2") // Form title
+          Stack(direction="vertical", gap="md")
+            Input // Form fields with labels
+          Stack(direction="horizontal", gap="md")
+            Button(type="submit") // Primary action
+            Button(variant="outline") // Secondary action
+  `,
+  aiTags: ['form', 'contact', 'signup', 'login', 'submit', 'input']
+};
+```
 
-## Resources
+#### E-commerce Pattern
+```typescript
+const EcommercePattern = {
+  name: 'product-grid',
+  components: ['Container', 'Grid', 'Card', 'Image', 'Text', 'Button'],
+  structure: `
+    Container(size="xl")
+      Grid(cols={base: 1, sm: 2, md: 3, lg: 4}, gap="lg")
+        Card
+          Image // Product image
+          Stack(direction="vertical", gap="sm")
+            Text(variant="h4") // Product name
+            Text(variant="h3") // Price
+            Button(fullWidth) // Add to cart
+  `,
+  aiTags: ['ecommerce', 'products', 'shop', 'catalog', 'store']
+};
+```
 
-- **[Component Gallery](https://xala-ui.dev/components)** - Live component examples
-- **[Design System](https://xala-ui.dev/design)** - Norwegian design tokens
-- **[API Reference](./api/specification-api.md)** - Programmatic access
-- **[GitHub Repository](https://github.com/xala-technologies/ui-system)** - Source code
-- **[Support](mailto:support@xala-technologies.com)** - Technical support
+## 🌍 Norwegian Compliance Integration
+
+### NSM Classification Support
+```typescript
+interface NorwegianComplianceProps {
+  nsmClassification?: 'ÅPEN' | 'BEGRENSET' | 'KONFIDENSIELT' | 'HEMMELIG';
+  auditTrail?: boolean;
+  dataRetention?: string;
+  gdprCompliant?: boolean;
+  accessControl?: AccessControlConfig;
+}
+
+// Example usage in specifications
+const SecureDataTableSpec = {
+  name: 'DataTable',
+  compliance: {
+    nsmClassification: 'KONFIDENSIELT',
+    auditTrail: true,
+    dataRetention: '7-years',
+    gdprCompliant: true
+  }
+};
+```
+
+### WCAG 2.2 AAA Accessibility
+```typescript
+interface AccessibilityInfo {
+  level: 'WCAG_2_1_AA' | 'WCAG_2_2_AAA';
+  screenReader: boolean;
+  keyboardNavigation: boolean;
+  focusManagement: boolean;
+  colorContrast: string;
+  textScaling: boolean;
+  motionReduction: boolean;
+  requirements: AccessibilityRequirement[];
+}
+
+// All components meet WCAG 2.2 AAA by default
+const ButtonAccessibility = {
+  level: 'WCAG_2_2_AAA',
+  screenReader: true,
+  keyboardNavigation: true,
+  focusManagement: true,
+  colorContrast: '7:1', // AAA level
+  textScaling: true,
+  motionReduction: true
+};
+```
+
+## ⚡ Performance Characteristics
+
+### Component Performance Specs
+```typescript
+interface PerformanceInfo {
+  bundleSize: string;           // Gzipped size
+  renderTime: string;           // Average render time
+  memoryUsage: string;          // Memory footprint
+  treeShaking: boolean;         // Tree-shakeable
+  lazyLoadable: boolean;        // Supports lazy loading
+  ssrCompatible: boolean;       // SSR safe
+  optimization: string[];       // Performance optimizations
+}
+
+// Example performance specs
+const ButtonPerformance = {
+  bundleSize: '2.1KB gzipped',
+  renderTime: '<1ms',
+  memoryUsage: '<100KB',
+  treeShaking: true,
+  lazyLoadable: false, // Core component
+  ssrCompatible: true,
+  optimization: ['minimal-dom', 'css-in-js-cached', 'event-delegation']
+};
+```
+
+## 🔍 AI Generation Examples
+
+### Natural Language to Code
+
+**User Request**: "Create a contact form with name, email, and message fields"
+
+**AI Analysis**:
+```typescript
+const analysis = {
+  intent: 'form',
+  components: ['Container', 'Card', 'Stack', 'Input', 'TextArea', 'Button'],
+  pattern: 'form',
+  fields: ['name', 'email', 'message'],
+  validation: true
+};
+```
+
+**Generated Code**:
+```typescript
+<Container size="md">
+  <Card padding="xl">
+    <Stack direction="vertical" gap="lg">
+      <Text variant="h2">Contact Us</Text>
+      <Stack direction="vertical" gap="md">
+        <Input 
+          label="Full Name" 
+          required 
+          placeholder="Enter your full name"
+        />
+        <Input 
+          label="Email Address" 
+          type="email" 
+          required 
+          placeholder="your@email.com"
+        />
+        <TextArea 
+          label="Message" 
+          required 
+          rows={4}
+          placeholder="How can we help you?"
+        />
+      </Stack>
+      <Button variant="primary" type="submit" fullWidth>
+        Send Message
+      </Button>
+    </Stack>
+  </Card>
+</Container>
+```
+
+### Context-Aware Generation
+
+**User Request**: "Build a healthcare dashboard for patient data"
+
+**AI Context Analysis**:
+```typescript
+const healthcareContext = {
+  domain: 'healthcare',
+  compliance: ['hipaa', 'norwegian', 'gdpr'],
+  accessibility: 'WCAG_2_2_AAA',
+  security: 'high',
+  dataClassification: 'KONFIDENSIELT'
+};
+```
+
+**Generated Code**:
+```typescript
+<Container size="xl">
+  <ClassificationIndicator level="KONFIDENSIELT" />
+  <Stack direction="vertical" gap="xl">
+    <Stack direction="horizontal" justify="space-between">
+      <Text variant="h1">Patient Dashboard</Text>
+      <AuditTrailIndicator />
+    </Stack>
+    
+    <DataTable
+      data={patientData}
+      columns={patientColumns}
+      nsmClassification="KONFIDENSIELT"
+      hipaaCompliant={true}
+      auditTrail={true}
+      encryption="AES-256"
+    />
+  </Stack>
+</Container>
+```
+
+## 📊 Quality Metrics
+
+### AI Generation Quality Indicators
+
+#### Technical Quality
+- ✅ **Semantic Components**: Uses proper component names and hierarchy
+- ✅ **TypeScript Safety**: Full type coverage with explicit return types
+- ✅ **Accessibility**: WCAG 2.2 AAA compliance built-in
+- ✅ **Performance**: Optimized for production use
+- ✅ **Norwegian Compliance**: NSM, GDPR, and regulatory standards
+
+#### Design Quality
+- ✅ **Visual Hierarchy**: Proper typography and spacing
+- ✅ **Responsive Design**: Mobile-first approach
+- ✅ **Color System**: Semantic color tokens
+- ✅ **Interaction States**: Hover, focus, disabled states
+- ✅ **Loading States**: Skeleton loaders and progress
+
+#### Code Quality
+- ✅ **Component Composition**: Logical nesting and structure
+- ✅ **Props Interface**: Clear, predictable API
+- ✅ **Error Handling**: Graceful error boundaries
+- ✅ **Testing**: Automatic test generation
+- ✅ **Documentation**: Self-documenting code
+
+## 🔗 Related Documentation
+
+- **[MCP Server API Reference](../api-reference.md)** - Complete MCP tool documentation
+- **[AI Integration Guide](../ai-integration.md)** - Advanced AI development workflows
+- **[Getting Started](../getting-started.md)** - MCP server setup and configuration
 
 ---
 
-*This documentation is automatically generated from component specifications and maintained by the Xala UI System.*
+*MCP Server Component Specifications v2.0 - Machine-readable design system for AI*

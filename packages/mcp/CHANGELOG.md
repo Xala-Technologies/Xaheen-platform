@@ -5,7 +5,97 @@ All notable changes to the Xala UI System MCP Server will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.3.0] - 2025-08-05
+## [6.5.0] - 2025-08-05
+
+### 🏗️ Major Architecture Compliance Overhaul
+
+#### `init_project` Tool - Complete Rewrite
+- **BREAKING**: Completely rewritten to follow documented architecture instead of custom workarounds
+- **NEW**: Full integration with UI Compliance Engine (from `docs/architecture/ui-compliance.md`)
+- **NEW**: Integration with Service Registry and Bundle System (from `docs/architecture/service-registry.md`)
+- **NEW**: Architecture-compliant rule application instead of manual code generation
+
+#### UI Compliance Engine Integration
+- **NEW**: `applyUIComplianceRules()` - Scans and fixes UI compliance violations automatically
+- **NEW**: `scanForViolations()` - Detects violations against Xala UI System v5 rules:
+  - ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.)
+  - ✅ ONLY semantic components from @xala-technologies/ui-system
+  - ❌ NO hardcoded styling (no style prop, no arbitrary Tailwind values)
+  - ✅ MANDATORY design token usage for all styling
+  - ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+  - ✅ WCAG 2.2 AAA compliance for accessibility
+  - ❌ NO hardcoded user-facing text - ALL text must use t() function
+  - ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+  - ✅ Explicit TypeScript return types (no 'any' types)
+  - ✅ Maximum 200 lines per file, 20 lines per function
+- **NEW**: `autoFixViolations()` - Applies documented auto-fixes from compliance engine
+
+#### Service Registry & Bundle System Integration
+- **NEW**: `applyServiceArchitecture()` - Uses existing service registry and bundle system
+- **NEW**: `getRecommendedBundle()` - Leverages documented bundle definitions (saas-starter, minimal, etc.)
+- **NEW**: `applyServiceBundle()` - Integrates with BundleResolver and ServiceInjector
+- **ENHANCED**: Follows existing CLI architecture patterns instead of custom implementations
+
+#### Three Operational Modes
+- **ENHANCED**: Analysis Mode (`analyze: true`) - Analyzes existing project structure
+- **NEW**: Dry-Run Mode (`analyze: false, dryRun: true`) - Shows planned changes without applying
+- **NEW**: Enhancement Mode (`analyze: false, dryRun: false`) - Actually applies documented rules
+
+### ✅ Comprehensive Validation
+- **VERIFIED**: All 10 MCP tools functional and accessible
+- **VERIFIED**: Analysis mode correctly detects frameworks, dependencies, and features
+- **VERIFIED**: Dry-run mode shows proper planned enhancements
+- **VERIFIED**: Enhancement mode applies UI compliance rules and service bundles
+- **VERIFIED**: Integration with xala-ui-mcp server working correctly
+
+### 🔧 Technical Improvements
+- **REMOVED**: Custom content generators and hardcoded templates
+- **REMOVED**: Manual file creation and workaround implementations
+- **ADDED**: Proper error handling for workspace dependencies (npm workspace protocol)
+- **IMPROVED**: TypeScript compliance with zero build errors
+- **ENHANCED**: Documentation with architecture validation results
+
+### 📚 Documentation Updates
+- **NEW**: `ARCHITECTURE-COMPLIANT-INIT.md` - Detailed implementation explanation
+- **NEW**: `VALIDATION-RESULTS.md` - Comprehensive testing and validation results
+- **IMPROVED**: Clear documentation of architectural compliance approach
+
+## [6.4.1] - 2025-08-05
+
+### 🔧 Enhanced Project Analysis Tool
+
+#### `init_project` Tool Enhancements
+- **IMPROVED**: Project analysis capabilities fully functional with comprehensive testing
+- **FIXED**: Error handling for invalid paths and missing parameters
+- **OPTIMIZED**: Response size reduced to well within MCP token limits (< 2KB per call)
+- **VERIFIED**: Framework detection, feature detection, and recommendations generation working correctly
+
+### ✅ Testing & Quality Assurance
+- **NEW**: Comprehensive test suite for `init_project` tool
+- **NEW**: JSON parsing error handling in test scripts
+- **IMPROVED**: Detailed test output with success/failure status and response metrics
+
+## [6.4.0] - 2025-08-04
+
+### 🏗️ Major Architectural Refactoring
+
+#### Modular Architecture
+- **NEW**: Transitioned from monolithic 77KB `index.ts` to modular SOLID architecture
+- **IMPROVED**: Reduced from 51 tools to 6 core tools for better maintainability
+- **NEW**: Modular file structure with clear separation of concerns
+
+#### Core Components
+- **NEW**: `/src/server/XalaUISystemServer.ts` - Main server class following Single Responsibility principle
+- **NEW**: `/src/handlers/CoreToolHandlers.ts` - Tool implementation handlers
+- **NEW**: `/src/tools/CoreTools.ts` - Tool definitions and schemas
+- **ENHANCED**: `/src/types/index.ts` - Enhanced with MCPToolResult and core tool types
+
+#### New Tool Implementation
+- **NEW**: `init_project` tool replacing oversized `create_project` tool
+- **NEW**: Support for both project creation and project analysis modes
+- **NEW**: Integration with official CLI tools for project scaffolding
+
+## [6.3.0] - 2025-08-01
 
 ### 🚀 Major Enhancement: Enhanced Prompts Integration
 

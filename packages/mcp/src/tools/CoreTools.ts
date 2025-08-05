@@ -76,11 +76,14 @@ const AnalyseCodeInputSchema = z.object({
 });
 
 const InitProjectInputSchema = z.object({
-	name: z.string().describe("Project name"),
+	name: z.string().optional().describe("Project name (for new projects)"),
+	projectPath: z.string().optional().describe("Path to existing project (for analysis)"),
 	platform: z.enum(["react", "vue", "angular", "svelte", "nextjs", "electron", "react-native"]).describe("Primary platform"),
-	type: z.enum(["web-app", "mobile-app", "desktop-app", "library", "component-library"]).describe("Project type"),
+	type: z.enum(["web-app", "mobile-app", "desktop-app", "library", "component-library"]).optional().describe("Project type"),
 	features: z.array(z.string()).optional().describe("Required features (auth, i18n, etc.)"),
-	templateStyle: z.enum(["minimal", "standard", "enterprise"]).optional().describe("Project template complexity")
+	templateStyle: z.enum(["minimal", "standard", "enterprise"]).optional().describe("Project template complexity"),
+	analyze: z.boolean().optional().describe("Analyze existing project instead of creating new one"),
+	dryRun: z.boolean().optional().describe("Perform dry run without creating files")
 });
 
 // Export input argument types

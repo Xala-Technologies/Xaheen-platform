@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "mcpServers": {
+      "xala-ui-system": {
+        "command": "xala-ui-mcp",
+        "args": [],
+        "env": {}
+      }
+    }
+  }
+}

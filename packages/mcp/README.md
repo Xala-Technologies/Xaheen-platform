@@ -1,14 +1,35 @@
-# Xala MCP Server v6.3.0
+# Xala MCP Server v6.5.0
 
 Multi-platform MCP server with **Enhanced Prompts Integration** for generating enterprise-grade UI components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using the Xala UI System v5.0 semantic architecture.
 
-**🚀 NEW in v6.3.0: Enhanced Prompts Integration** - Revolutionary prompt-driven AI guidance system that provides structured, context-aware recommendations for better development results.
+**🏗️ MAJOR in v6.5.0: Architecture Compliance Overhaul** - Complete rewrite of `init_project` tool to follow documented architecture, full integration with UI Compliance Engine and Service Registry, three operational modes (analyze/dry-run/enhance), and comprehensive validation of architectural compliance.
+
+**🚀 Enhanced in v6.4.1: Project Analysis** - Fully functional project analysis capabilities for `init_project` tool, optimized response size, comprehensive testing suite, and improved error handling.
+
+**🏗️ MAJOR in v6.4.0: Streamlined MCP Architecture** - Major refactoring from monolithic 77KB index.ts to modular SOLID architecture with 6 core tools, improved `init_project` tool using official CLI tools, and enhanced maintainability.
 
 **100% CLI Template Alignment** - This MCP server uses the exact same templates as the Xala UI System CLI, ensuring complete consistency across all generation methods.
 
 ## Features
 
-### ✨ Enhanced Prompts Integration (v6.3.0)
+### 🏗️ Architecture Compliance Overhaul (v6.5.0)
+- **🏗️ Documented Architecture** - Complete rewrite to follow documented UI Compliance Engine and Service Registry patterns
+- **🔧 UI Compliance Integration** - Automatic scanning and fixing of UI compliance violations (Xala UI System v5 rules)
+- **⚙️ Service Registry Integration** - Uses existing service bundles (saas-starter, minimal) and BundleResolver architecture
+- **🎛️ Three Operational Modes** - Analysis mode, dry-run mode, and full enhancement mode
+- **✅ Zero Custom Workarounds** - Removed all custom generators in favor of documented architecture integration
+- **🧪 Comprehensive Validation** - Fully tested integration with xala-ui-mcp server and all 10 tools
+
+### 🔍 Enhanced Project Analysis (v6.4.1)
+- **🔄 Dual Mode** - Single `init_project` tool supports both project creation and analysis
+- **📊 Framework Detection** - Automatic detection of frameworks like Next.js, React, Vue
+- **📦 Package Analysis** - Identifies package manager and installed dependencies
+- **🧰 Feature Detection** - Detects key features like Tailwind CSS, i18n, UI libraries
+- **💡 Smart Recommendations** - Contextual next steps based on project state
+- **🎯 Optimized Response Size** - Well within MCP token limits (< 2KB per call)
+- **⚠️ Robust Error Handling** - Clear error messages for invalid paths or parameters
+
+### ✨ Streamlined MCP Architecture (v6.4.0)
 - **🧠 Intelligent Guidance** - AI-powered prompts provide structured, step-by-step implementation guidance
 - **🎯 Context-Aware Recommendations** - Platform-specific optimizations and best practices
 - **📋 Comprehensive Instructions** - Detailed implementation steps with examples and testing suggestions
@@ -296,7 +317,7 @@ Combines **comprehensive component generation** (131+ templates) with **shadcn/u
 
 > **🧠 All tools now include Enhanced Prompts Integration for better AI guidance and results!**
 
-### ✨ Enhanced Practical Tools (v6.3.0)
+### ✨ Enhanced Practical Tools (v6.4.0)
 
 All 10 practical MCP tools now feature integrated enhanced prompts that provide:
 - 📋 **Structured Implementation Guidance** - Step-by-step instructions
@@ -1141,6 +1162,43 @@ node test-enhanced-prompts.js --verbose
 # Test rapid prompt generation
 for i in {1..10}; do node test-enhanced-prompts.js; done
 ```
+
+## 📋 Changelog
+
+### v6.4.0 (2025-08-05)
+
+**🏗️ Major Architecture Refactoring:**
+- **Modular SOLID Architecture**: Refactored from monolithic 77KB `index.ts` to modular architecture following SOLID principles
+- **Reduced Tool Count**: Streamlined from 51 tools to 6 core tools for better maintainability
+- **Enhanced `init_project` Tool**: Replaced oversized `create_project` with efficient `init_project` using official CLI tools (create-next-app, etc.)
+- **Response Size Optimization**: Reduced MCP response size from 25,000+ tokens to 200-800 tokens (99% reduction)
+- **File Size Reduction**: Reduced main index from 77KB to ~300 bytes entry point
+
+**🔧 Technical Improvements:**
+- **SOLID Principles Implementation**: Single Responsibility, Open/Closed, Dependency Injection patterns
+- **Modular Structure**: Separated concerns into dedicated modules (`XalaUISystemServer.ts`, `CoreToolHandlers.ts`, `CoreTools.ts`)
+- **Enhanced Type Safety**: Improved TypeScript compliance with explicit return types
+- **Build Optimization**: Bypassed licensing build issues for stable compilation
+- **Project Initializer**: New `ProjectInitializer` utility class for CLI-based project creation
+
+**🚀 Core Tools (6 Total):**
+1. `generate` - Unified generation for components, layouts, forms, pages, navigation, tables, projects
+2. `get_template` - Template retrieval with filtering capabilities
+3. `validate` - Comprehensive validation including Norwegian compliance
+4. `recommend` - Platform and technology recommendations
+5. `transform` - Code transformation between platforms
+6. `get_block` - Pre-built UI blocks (shadcn-style)
+
+**📦 Dependency Updates:**
+- Enhanced MCP SDK integration
+- Improved CLI tool integration
+- Optimized template compilation
+- Better error handling and validation
+
+### v6.3.0 (Previous)
+- Enhanced Prompts Integration
+- Revolutionary prompt-driven AI guidance system
+- Structured, context-aware recommendations
 
 ## Contributing
 

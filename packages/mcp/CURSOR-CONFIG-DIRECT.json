@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "mcpServers": {
+      "xala-ui-system": {
+        "command": "node",
+        "args": ["/Volumes/Development/Xaheen Enterprise/xaheen/packages/mcp/dist/index.js"],
+        "env": {}
+      }
+    }
+  }
+}

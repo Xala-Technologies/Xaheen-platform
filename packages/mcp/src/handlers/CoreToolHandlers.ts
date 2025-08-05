@@ -339,21 +339,35 @@ export class CoreToolHandlers {
 	 */
 	async handleInitProject(args: InitProjectArgs): Promise<MCPToolResult> {
 		try {
-			const { name, platform, type, features, templateStyle } = args;
+			const { name, projectPath, platform, type, features, templateStyle, analyze, dryRun } = args;
 			
-			const project = await this.initializeProject(name, platform, type, features, templateStyle);
-
-			return {
-				content: [{
-					type: "text",
-					text: JSON.stringify(project, null, 2)
-				}]
-			};
+			// Determine operation mode
+			if (analyze && projectPath) {
+				// Analyze existing project
+				const analysis = await this.analyzeProject(projectPath, platform, features);
+				return {
+					content: [{
+						type: "text",
+						text: JSON.stringify(analysis, null, 2)
+					}]
+				};
+			} else if (name) {
+				// Create new project
+				const project = await this.initializeProject(name, platform, type || 'web-app', features, templateStyle);
+				return {
+					content: [{
+						type: "text",
+						text: JSON.stringify(project, null, 2)
+					}]
+				};
+			} else {
+				return await this.enhanceExistingProject(projectPath!, platform, features, dryRun);
+			}
 		} catch (error) {
 			return {
 				content: [{
 					type: "text",
-					text: `Error initializing project: ${error instanceof Error ? error.message : String(error)}`
+					text: `Error: ${error instanceof Error ? error.message : String(error)}`
 				}]
 			};
 		}
@@ -463,6 +477,122 @@ export class CoreToolHandlers {
 		};
 	}
 
+	private async analyzeProject(projectPath: string, platform: string, features?: string[]): Promise<any> {
+		try {
+			const fs = await import('fs');
+			const path = await import('path');
+			
+			// Check if project exists
+			if (!fs.existsSync(projectPath)) {
+				throw new Error(`Project path does not exist: ${projectPath}`);
+			}
+			
+			// Analyze package.json
+			const packageJsonPath = path.join(projectPath, 'package.json');
+			let packageJson: any = {};
+			let detectedFramework = platform;
+			let detectedFeatures: string[] = [];
+			let dependencies: string[] = [];
+			
+			if (fs.existsSync(packageJsonPath)) {
+				const packageContent = fs.readFileSync(packageJsonPath, 'utf8');
+				packageJson = JSON.parse(packageContent);
+				
+				// Detect framework from dependencies
+				const allDeps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+				dependencies = Object.keys(allDeps);
+				
+				if (allDeps.next) detectedFramework = 'nextjs';
+				else if (allDeps.react) detectedFramework = 'react';
+				else if (allDeps.vue) detectedFramework = 'vue';
+				else if (allDeps['@angular/core']) detectedFramework = 'angular';
+				else if (allDeps.svelte) detectedFramework = 'svelte';
+				
+				// Detect features
+				if (allDeps['next-auth'] || allDeps['@auth/nextjs'] || allDeps['@supabase/auth-helpers-nextjs']) {
+					detectedFeatures.push('auth');
+				}
+				if (allDeps.prisma || allDeps['@prisma/client'] || allDeps.mongoose || allDeps.typeorm) {
+					detectedFeatures.push('database');
+				}
+				if (allDeps['next-i18next'] || allDeps['react-i18next'] || allDeps.i18next) {
+					detectedFeatures.push('i18n');
+				}
+				if (allDeps.tailwindcss || allDeps['@tailwindcss/forms']) {
+					detectedFeatures.push('tailwind');
+				}
+				if (allDeps['@xala-technologies/ui-system']) {
+					detectedFeatures.push('xala-ui-system');
+				}
+			}
+			
+			// Check for configuration files
+			const configFiles = [
+				'next.config.js', 'next.config.ts', 'next.config.mjs',
+				'tailwind.config.js', 'tailwind.config.ts',
+				'tsconfig.json', 'jsconfig.json',
+				'prisma/schema.prisma',
+				'.env.local', '.env.example'
+			].filter(file => fs.existsSync(path.join(projectPath, file)));
+			
+			// Generate recommendations
+			const recommendations = [];
+			const nextSteps = [];
+			
+			if (features?.includes('auth') && !detectedFeatures.includes('auth')) {
+				recommendations.push('Add authentication system (NextAuth.js or Supabase Auth)');
+				nextSteps.push('Install authentication dependencies');
+			}
+			
+			if (features?.includes('database') && !detectedFeatures.includes('database')) {
+				recommendations.push('Add database integration (Prisma or similar ORM)');
+				nextSteps.push('Set up database schema and connection');
+			}
+			
+			if (features?.includes('i18n') && !detectedFeatures.includes('i18n')) {
+				recommendations.push('Add internationalization support (next-i18next)');
+				nextSteps.push('Configure i18n routing and translations');
+			}
+			
+			if (!detectedFeatures.includes('xala-ui-system')) {
+				recommendations.push('Integrate Xala UI System for consistent design');
+				nextSteps.push('Install @xala-technologies/ui-system package');
+			}
+			
+			return {
+				success: true,
+				analysis: {
+					projectPath,
+					framework: detectedFramework,
+					packageManager: fs.existsSync(path.join(projectPath, 'yarn.lock')) ? 'yarn' : 
+									 fs.existsSync(path.join(projectPath, 'pnpm-lock.yaml')) ? 'pnpm' :
+									 fs.existsSync(path.join(projectPath, 'bun.lockb')) ? 'bun' : 'npm',
+					dependencies,
+					features: detectedFeatures,
+					configFiles,
+					projectName: packageJson.name || path.basename(projectPath)
+				},
+				recommendations,
+				nextSteps,
+				requested: {
+					platform,
+					features: features || []
+				}
+			};
+		} catch (error) {
+			return {
+				success: false,
+				platform,
+				features: features || [],
+				templateStyle: 'standard',
+				files: [],
+				setupInstructions: [],
+				nextSteps: [],
+				error: error instanceof Error ? error.message : String(error)
+			};
+		}
+	}
+
 	private async initializeProject(name: string, platform: string, type: string, features?: string[], templateStyle?: string): Promise<any> {
 		try {
 			const projectInitializer = new ProjectInitializer();
@@ -483,6 +613,69 @@ export class CoreToolHandlers {
 				templateStyle: templateStyle || 'standard'
 			};
 		}
+	}
+
+	/**
+	 * Enhance an existing project with recommended improvements
+	 */
+	private async enhanceExistingProject(
+		projectPath: string, 
+		platform?: string, 
+		features?: string[], 
+		dryRun?: boolean
+	): Promise<MCPToolResult> {
+		// First analyze the project to get recommendations
+		const analysisResult = await this.handleInitProject({
+			projectPath,
+			platform: platform as any,
+			features,
+			analyze: true
+		});
+		const analysisData = JSON.parse(analysisResult.content[0]?.text || '{}');
+		
+		if (!analysisData.success) {
+			throw new Error("Failed to analyze project before enhancement");
+		}
+		
+		const recommendations = analysisData.recommendations || [];
+		const nextSteps = analysisData.nextSteps || [];
+		
+		if (dryRun) {
+			return {
+				content: [{
+					type: "text",
+					text: JSON.stringify({
+						success: true,
+						mode: "dry-run",
+						analysis: analysisData.analysis,
+						plannedEnhancements: [...recommendations, ...nextSteps],
+						message: "Dry run complete. Use analyze: false to apply changes."
+					}, null, 2)
+				}]
+			};
+		}
+		
+		// Apply the enhancements
+		const { ProjectInitializer } = await import("../utils/ProjectInitializer.js");
+		const projectInitializer = new ProjectInitializer();
+		const enhancementResult = await projectInitializer.enhanceExistingProject(projectPath, [...recommendations, ...nextSteps]);
+		
+		return {
+			content: [{
+				type: "text",
+				text: JSON.stringify({
+					success: enhancementResult.success,
+					mode: "enhancement",
+					originalAnalysis: analysisData.analysis,
+					appliedFixes: enhancementResult.appliedFixes,
+					errors: enhancementResult.errors,
+					nextSteps: enhancementResult.nextSteps,
+					message: enhancementResult.success ? 
+						"Project enhanced successfully!" : 
+						"Some enhancements failed. Check errors for details."
+				}, null, 2)
+			}]
+		};
 	}
 
 	// Enhanced methods for prompt integration

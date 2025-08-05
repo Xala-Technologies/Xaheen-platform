@@ -33,7 +33,7 @@ export class XalaUISystemServer {
 		this.server = new Server(
 			{
 				name: "xala-ui-system-mcp",
-				version: "6.3.0",
+				version: "6.5.0",
 			},
 			{
 				capabilities: {

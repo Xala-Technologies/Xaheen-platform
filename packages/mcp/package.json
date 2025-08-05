@@ -1,6 +1,6 @@
 {
   "name": "@xala-technologies/xala-mcp",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "description": "Multi-platform MCP server with enhanced prompts for generating components across React, Next.js, Vue, Angular, Svelte, Electron, and React Native using Xala UI System v5.0 semantic architecture",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
