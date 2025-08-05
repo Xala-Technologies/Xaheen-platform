@@ -17,6 +17,8 @@ import {
 import { z } from "zod";
 import { ComponentGenerator } from "./generators/ComponentGenerator.js";
 import { TemplateManager } from "./templates/TemplateManager.js";
+import { AITemplateSystem } from "./ai/index.js";
+import type { AIGenerationRequest, AIGenerationResponse } from "./ai/index.js";
 import {
 	cliStyleToolHandlers,
 	cliStyleTools,
@@ -43,6 +45,16 @@ import { EnhancedValidator } from "./utils/enhanced-validation.js";
 export { promptHandlers, prompts } from "./prompts.js";
 export type * from "./types/index.js";
 export { getFramework, getFrameworkConfig } from "./utils/framework.js";
+
+// Export AI-native template system
+export { AITemplateSystem } from "./ai/index.js";
+export type { 
+	AITemplateContext, 
+	AIEnhancedTemplateConfig, 
+	AIPromptTemplate,
+	AIGenerationRequest,
+	AIGenerationResponse 
+} from "./ai/index.js";
 
 // Zod schemas for validation
 const ComponentConfigSchema = z.object({
@@ -206,6 +218,7 @@ class XalaUISystemMCPServer {
 	private server: Server;
 	private componentGenerator: ComponentGenerator;
 	private templateManager: TemplateManager;
+	private aiTemplateSystem: AITemplateSystem;
 
 	constructor() {
 		this.server = new Server(
@@ -222,6 +235,15 @@ class XalaUISystemMCPServer {
 
 		this.componentGenerator = new ComponentGenerator();
 		this.templateManager = new TemplateManager();
+		this.aiTemplateSystem = new AITemplateSystem({
+			enableMCPIntegration: true,
+			enablePerformanceOptimization: true,
+			enableNorwegianCompliance: true,
+			defaultPlatform: 'react',
+			defaultTheme: 'enterprise',
+			cacheEnabled: true,
+			debugMode: false
+		});
 		this.setupToolHandlers();
 	}
 
@@ -750,6 +772,15 @@ class XalaUISystemMCPServer {
 				}
 
 				switch (name) {
+					// Handle AI-native template system tools
+					case "ai_generate_from_input":
+						return await this.handleAIGenerateFromInput(args);
+					case "ai_analyze_project":
+						return await this.handleAIAnalyzeProject(args);
+					case "ai_get_enhanced_templates":
+						return await this.handleAIGetEnhancedTemplates(args);
+					case "ai_generate_migration_plan":
+						return await this.handleAIGenerateMigrationPlan(args);
 					case "generate_multi_platform_component":
 						return await this.handleGenerateMultiPlatformComponent(args);
 					case "generate_all_platforms":

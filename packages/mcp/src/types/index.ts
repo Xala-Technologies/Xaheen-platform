@@ -493,3 +493,217 @@ export type MCPArguments<T extends MCPPromptDefinition> = {
 								: any)
 				| undefined;
 };
+
+// AI-Native Template System Types
+export interface AIComplexityMetrics {
+	readonly estimatedLinesOfCode: number;
+	readonly componentDepth: number;
+	readonly featureComplexity: 'simple' | 'moderate' | 'complex' | 'enterprise';
+	readonly aiTokenEstimate: {
+		readonly input: number;
+		readonly output: number;
+		readonly contextWindow: number;
+	};
+	readonly buildTime: number; // estimated milliseconds
+	readonly dependencies: number;
+	readonly platformComplexity: Record<SupportedPlatform, number>;
+}
+
+export interface AIOptimizationHints {
+	readonly generationPriority: 'critical' | 'important' | 'optional';
+	readonly codePatterns: string[];
+	readonly performanceOptimizations: string[];
+	readonly accessibilityRequirements: string[];
+	readonly norwegianComplianceNeeds: string[];
+	readonly commonPitfalls: string[];
+	readonly bestPractices: string[];
+}
+
+export interface AISemanticHints {
+	readonly purpose: string;
+	readonly usagePatterns: string[];
+	readonly relationships: {
+		readonly dependsOn: string[];
+		readonly usedBy: string[];
+		readonly alternatives: string[];
+	};
+	readonly businessDomains: IndustryTheme[];
+	readonly keywords: string[];
+	readonly synonyms: string[];
+}
+
+export interface AINamingConventions {
+	readonly componentNaming: {
+		readonly pattern: string;
+		readonly examples: string[];
+		readonly reserved: string[];
+	};
+	readonly propNaming: {
+		readonly pattern: string;
+		readonly conventions: Record<string, string>;
+	};
+	readonly fileStructure: {
+		readonly pattern: string;
+		readonly extensions: Record<SupportedPlatform, string>;
+	};
+}
+
+export interface AIDocumentationMetadata {
+	readonly structuredComments: {
+		readonly componentDescription: string;
+		readonly propsDescription: Record<string, string>;
+		readonly usageExamples: string[];
+		readonly migrationNotes: string[];
+	};
+	readonly generationContext: {
+		readonly reasoning: string;
+		readonly alternatives: string[];
+		readonly tradeoffs: string[];
+	};
+}
+
+export interface AIPatternRecognition {
+	readonly keywordMatching: {
+		readonly primary: string[];
+		readonly secondary: string[];
+		readonly negativeKeywords: string[];
+	};
+	readonly intentClassification: {
+		readonly userIntents: string[];
+		readonly confidenceThreshold: number;
+	};
+	readonly complexityAnalysis: {
+		readonly indicators: string[];
+		readonly scoringWeights: Record<string, number>;
+	};
+}
+
+export interface AIPlatformDetection {
+	readonly packageJsonPatterns: string[];
+	readonly fileSystemPatterns: string[];
+	readonly dependencySignatures: Record<SupportedPlatform, string[]>;
+	readonly configurationFiles: Record<SupportedPlatform, string[]>;
+}
+
+export interface AIAccessibilityDetection {
+	readonly wcagLevelIndicators: {
+		readonly AA: string[];
+		readonly AAA: string[];
+	};
+	readonly screenReaderRequirements: string[];
+	readonly keyboardNavigationNeeds: string[];
+	readonly colorContrastRequirements: string[];
+}
+
+export interface AINorwegianComplianceDetection {
+	readonly nsmClassificationTriggers: {
+		readonly OPEN: string[];
+		readonly RESTRICTED: string[];
+		readonly CONFIDENTIAL: string[];
+		readonly SECRET: string[];
+	};
+	readonly gdprRequirements: string[];
+	readonly localizationNeeds: string[];
+	readonly altinnComplianceNeeds: string[];
+}
+
+export interface AIEnhancedTemplateConfig extends ComponentTemplateConfig {
+	readonly aiMetrics: AIComplexityMetrics;
+	readonly aiOptimization: AIOptimizationHints;
+	readonly aiSemantics: AISemanticHints;
+	readonly aiNaming: AINamingConventions;
+	readonly aiDocumentation: AIDocumentationMetadata;
+	readonly aiPatterns: AIPatternRecognition;
+	readonly aiPlatformDetection: AIPlatformDetection;
+	readonly aiAccessibilityDetection: AIAccessibilityDetection;
+	readonly aiNorwegianCompliance: AINorwegianComplianceDetection;
+}
+
+export interface AIPromptTemplate {
+	readonly id: string;
+	readonly name: string;
+	readonly category: 'component' | 'layout' | 'business-context' | 'accessibility' | 'norwegian-compliance' | 'performance' | 'migration';
+	readonly description: string;
+	readonly template: string;
+	readonly variables: Record<string, {
+		readonly type: string;
+		readonly description: string;
+		readonly required: boolean;
+		readonly default?: any;
+	}>;
+	readonly examples: Array<{
+		readonly name: string;
+		readonly input: Record<string, any>;
+		readonly expectedOutput: string;
+	}>;
+	readonly platforms: SupportedPlatform[];
+	readonly complexity: 'simple' | 'moderate' | 'complex' | 'enterprise';
+	readonly tokenEstimate: {
+		readonly input: number;
+		readonly output: number;
+	};
+}
+
+export interface AIMCPIntegration {
+	readonly specificationAPI: {
+		readonly endpoint: string;
+		readonly methods: string[];
+	};
+	readonly layoutPatterns: {
+		readonly recommendations: string[];
+		readonly generators: string[];
+	};
+	readonly componentSelection: {
+		readonly library: string[];
+		readonly filters: Record<string, any>;
+	};
+	readonly accessibilityValidation: {
+		readonly tools: string[];
+		readonly checkers: string[];
+	};
+	readonly norwegianCompliance: {
+		readonly validators: string[];
+		readonly classifiers: string[];
+	};
+	readonly performanceOptimization: {
+		readonly analyzers: string[];
+		readonly optimizers: string[];
+	};
+	readonly designTokens: {
+		readonly transformers: string[];
+		readonly validators: string[];
+	};
+}
+
+export interface AITemplateContext {
+	readonly userIntent: {
+		readonly description: string;
+		readonly confidence: number;
+		readonly alternativeInterpretations: string[];
+	};
+	readonly projectContext: {
+		readonly platform: SupportedPlatform;
+		readonly framework: string;
+		readonly dependencies: string[];
+		readonly structure: Record<string, any>;
+	};
+	readonly businessContext: {
+		readonly domain: IndustryTheme;
+		readonly requirements: string[];
+		readonly constraints: string[];
+	};
+	readonly complianceContext: {
+		readonly accessibility: AccessibilityOptions;
+		readonly norwegian: boolean;
+		readonly gdpr: boolean;
+		readonly nsm: boolean;
+	};
+	readonly performanceContext: {
+		readonly requirements: string[];
+		readonly constraints: string[];
+		readonly optimizations: string[];
+	};
+}
+
+// Norwegian Compliance Types Re-export
+export * from './norwegian-compliance.js';
