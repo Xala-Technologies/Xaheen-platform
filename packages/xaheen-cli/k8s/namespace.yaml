@@ -1,0 +1,60 @@
+# Kubernetes Namespace for Xaheen CLI
+# Provides resource isolation and security boundaries
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xaheen-cli
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: xaheen-platform
+    app.kubernetes.io/managed-by: helm
+    compliance.norway/level: restricted
+    security.policy/audit: enabled
+  annotations:
+    description: "Xaheen CLI production namespace"
+    owner: "devops@xaheen.com"
+    compliance.norway/classification: "RESTRICTED"
+    security.policy/network-isolation: "enabled"
+---
+# Resource Quota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: xaheen-cli-quota
+  namespace: xaheen-cli
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "10"
+    limits.memory: 20Gi
+    pods: "20"
+    services: "10"
+    persistentvolumeclaims: "5"
+    secrets: "20"
+    configmaps: "20"
+---
+# Limit Range for default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: xaheen-cli-limits
+  namespace: xaheen-cli
+spec:
+  limits:
+  - default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+  - max:
+      cpu: "2"
+      memory: "2Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container

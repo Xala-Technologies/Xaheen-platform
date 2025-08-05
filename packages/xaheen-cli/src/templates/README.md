@@ -1,6 +1,19 @@
-# CLI v2 Template System
+# Templates Module - Advanced Template System
 
-This directory contains the external template files for the Xaheen CLI v2 service injection system. Templates are organized by service category and type for better maintainability and reusability.
+## Overview
+
+The Templates module is the comprehensive template management system of the Xaheen CLI. It provides a sophisticated, extensible template engine that supports multi-platform code generation, Norwegian compliance, accessibility validation, and intelligent template composition. The system manages 20+ template categories with specialized templates for different frameworks, patterns, and compliance requirements.
+
+## Architecture
+
+The templates module follows a hierarchical, domain-driven architecture:
+
+- **Template Engine**: Handlebars-based processing with custom helpers
+- **Template Registry**: Dynamic template discovery and management
+- **Template Loader**: Efficient loading and caching system
+- **Validation Layer**: Template syntax and compliance validation
+- **Composition System**: Complex template composition and inheritance
+- **Modernization Engine**: Automatic template updates and migrations
 
 ## Directory Structure
 
@@ -347,13 +360,536 @@ if (!result.valid) {
 cat generated-project/src/lib/service.ts
 ```
 
+## Advanced Template Features
+
+### Template Inheritance
+
+Templates support inheritance for complex composition:
+
+```handlebars
+{{!-- base-component.hbs --}}
+{{> base-imports}}
+
+export const {{pascalCase name}} = (props: {{pascalCase name}}Props) => {
+  {{#block "component-logic"}}
+  // Default logic
+  {{/block}}
+
+  return (
+    <div className="{{#block "base-classes"}}base-component{{/block}}">
+      {{#block "component-content"}}
+      <p>Default content</p>
+      {{/block}}
+    </div>
+  );
+};
+```
+
+```handlebars
+{{!-- button-component.hbs --}}
+{{#extend "base-component"}}
+  {{#content "component-logic"}}
+  const handleClick = () => {
+    onClick?.(props);
+  };
+  {{/content}}
+
+  {{#content "base-classes"}}btn btn-primary{{/content}}
+
+  {{#content "component-content"}}
+  <button onClick={handleClick}>
+    {{children}}
+  </button>
+  {{/content}}
+{{/extend}}
+```
+
+### Norwegian Compliance Templates
+
+Templates with built-in Norwegian regulatory compliance:
+
+```handlebars
+{{!-- norwegian-form.hbs --}}
+{{> norwegian-compliance-header}}
+
+export const {{pascalCase name}}Form = () => {
+  {{#norwegianCompliance}}
+  const auditLogger = useAuditLogger({
+    classification: '{{dataClassification}}',
+    purpose: 'user-input-collection'
+  });
+  {{/norwegianCompliance}}
+
+  return (
+    <Form
+      {{#if gdprCompliant}}
+      gdprCompliant
+      consentRequired
+      {{/if}}
+      {{#if nsmCompliant}}
+      dataClassification="{{dataClassification}}"
+      auditTrail={auditLogger}
+      {{/if}}
+    >
+      {{> form-fields}}
+    </Form>
+  );
+};
+```
+
+### Multi-Platform Templates
+
+Single template generating for multiple platforms:
+
+```handlebars
+{{!-- multi-platform-component.hbs --}}
+{{#ifPlatform "react"}}
+import React from 'react';
+
+export const {{pascalCase name}}: React.FC<Props> = ({ children }) => {
+  return <div className="{{kebabCase name}}">{children}</div>;
+};
+{{/ifPlatform}}
+
+{{#ifPlatform "vue"}}
+<template>
+  <div class="{{kebabCase name}}">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  // Props definition
+}
+</script>
+{{/ifPlatform}}
+
+{{#ifPlatform "angular"}}
+@Component({
+  selector: 'app-{{kebabCase name}}',
+  template: `<div class="{{kebabCase name}}"><ng-content></ng-content></div>`
+})
+export class {{pascalCase name}}Component {
+  // Component logic
+}
+{{/ifPlatform}}
+```
+
+### AI-Enhanced Templates
+
+Templates that leverage AI for intelligent generation:
+
+```handlebars
+{{!-- ai-enhanced-component.hbs --}}
+{{> ai-analysis-comment}}
+
+{{#ai-optimize codeContext}}
+export const {{pascalCase name}} = memo((props: {{pascalCase name}}Props) => {
+  {{#ai-suggest-hooks props}}
+  const [state, setState] = useState({{ai-infer-initial-state props}});
+  {{/ai-suggest-hooks}}
+
+  {{#ai-performance-optimizations}}
+  const memoizedValue = useMemo(() => {
+    return computeExpensiveValue(props.data);
+  }, [props.data]);
+  {{/ai-performance-optimizations}}
+
+  return (
+    {{#ai-generate-jsx props}}
+    <div className="{{ai-suggest-styles name props}}">
+      {/* AI-generated component structure */}
+    </div>
+    {{/ai-generate-jsx}}
+  );
+});
+{{/ai-optimize}}
+```
+
+## Template Composition System
+
+### Composition Engine
+
+```typescript
+export class TemplateComposer {
+  private compositions = new Map<string, CompositionRule[]>();
+
+  async compose(
+    baseTemplate: string,
+    compositions: CompositionRule[]
+  ): Promise<CompiledTemplate> {
+    let template = await this.loadTemplate(baseTemplate);
+    
+    for (const rule of compositions) {
+      template = await this.applyComposition(template, rule);
+    }
+
+    return this.compile(template);
+  }
+
+  private async applyComposition(
+    template: string,
+    rule: CompositionRule
+  ): Promise<string> {
+    switch (rule.type) {
+      case 'extend':
+        return this.extendTemplate(template, rule);
+      case 'include':
+        return this.includePartial(template, rule);
+      case 'merge':
+        return this.mergeTemplates(template, rule);
+      default:
+        return template;
+    }
+  }
+}
+```
+
+### Template Modernization
+
+Automatic template updates and modernization:
+
+```typescript
+export class TemplateModernizer {
+  private modernizationRules: ModernizationRule[] = [
+    {
+      name: 'react-hooks-upgrade',
+      pattern: /class\s+(\w+)\s+extends\s+React\.Component/g,
+      replacement: 'const $1 = () => {',
+      description: 'Convert class components to functional components'
+    },
+    {
+      name: 'typescript-strict',
+      pattern: /:\s*any\b/g,
+      replacement: ': unknown',
+      description: 'Replace any types with unknown'
+    }
+  ];
+
+  async modernizeTemplate(templatePath: string): Promise<ModernizationResult> {
+    const template = await this.loadTemplate(templatePath);
+    let modernizedTemplate = template;
+    const appliedRules: string[] = [];
+
+    for (const rule of this.modernizationRules) {
+      if (rule.pattern.test(modernizedTemplate)) {
+        modernizedTemplate = modernizedTemplate.replace(rule.pattern, rule.replacement);
+        appliedRules.push(rule.name);
+      }
+    }
+
+    return {
+      original: template,
+      modernized: modernizedTemplate,
+      appliedRules,
+      success: appliedRules.length > 0
+    };
+  }
+}
+```
+
+## Performance Optimization
+
+### Template Caching
+
+```typescript
+export class TemplateCache {
+  private compiledCache = new Map<string, CompiledTemplate>();
+  private sourceCache = new Map<string, string>();
+  private lastModified = new Map<string, number>();
+
+  async getCompiledTemplate(path: string): Promise<CompiledTemplate> {
+    const modTime = await this.getModificationTime(path);
+    const cachedTime = this.lastModified.get(path);
+
+    if (cachedTime && modTime <= cachedTime && this.compiledCache.has(path)) {
+      return this.compiledCache.get(path)!;
+    }
+
+    const source = await this.loadTemplateSource(path);
+    const compiled = this.compileTemplate(source);
+    
+    this.compiledCache.set(path, compiled);
+    this.sourceCache.set(path, source);
+    this.lastModified.set(path, modTime);
+
+    return compiled;
+  }
+}
+```
+
+### Parallel Template Processing
+
+```typescript
+export class ParallelTemplateProcessor {
+  private maxConcurrency = 4;
+
+  async processTemplates(
+    templates: TemplateProcessingJob[]
+  ): Promise<ProcessingResult[]> {
+    const chunks = this.chunkTemplates(templates, this.maxConcurrency);
+    const results: ProcessingResult[] = [];
+
+    for (const chunk of chunks) {
+      const chunkResults = await Promise.all(
+        chunk.map(job => this.processTemplate(job))
+      );
+      results.push(...chunkResults);
+    }
+
+    return results;
+  }
+
+  private async processTemplate(job: TemplateProcessingJob): Promise<ProcessingResult> {
+    try {
+      const template = await this.loadTemplate(job.templatePath);
+      const rendered = await this.renderTemplate(template, job.context);
+      const validated = await this.validateOutput(rendered);
+
+      return {
+        job,
+        success: true,
+        output: rendered,
+        validation: validated
+      };
+    } catch (error) {
+      return {
+        job,
+        success: false,
+        error: error.message
+      };
+    }
+  }
+}
+```
+
+## Security and Validation
+
+### Template Security
+
+```typescript
+export class TemplateSecurityValidator {
+  private securityRules: SecurityRule[] = [
+    {
+      name: 'no-eval',
+      pattern: /eval\s*\(/g,
+      severity: 'critical',
+      message: 'eval() usage is not allowed in templates'
+    },
+    {
+      name: 'no-process-access',
+      pattern: /process\.(env|argv|exit)/g,
+      severity: 'high',
+      message: 'Direct process access is restricted'
+    }
+  ];
+
+  validateTemplate(template: string): SecurityValidationResult {
+    const violations: SecurityViolation[] = [];
+
+    for (const rule of this.securityRules) {
+      const matches = Array.from(template.matchAll(rule.pattern));
+      
+      for (const match of matches) {
+        violations.push({
+          rule: rule.name,
+          severity: rule.severity,
+          message: rule.message,
+          line: this.getLineNumber(template, match.index!),
+          column: this.getColumnNumber(template, match.index!)
+        });
+      }
+    }
+
+    return {
+      secure: violations.length === 0,
+      violations,
+      criticalCount: violations.filter(v => v.severity === 'critical').length
+    };
+  }
+}
+```
+
+### Accessibility Validation
+
+```typescript
+export class AccessibilityValidator {
+  private accessibilityRules: A11yRule[] = [
+    {
+      name: 'alt-text-required',
+      pattern: /<img(?![^>]*alt=)/g,
+      message: 'Images must have alt text for accessibility'
+    },
+    {
+      name: 'button-accessible-name',
+      pattern: /<button(?![^>]*aria-label)(?![^>]*>.*\w.*<\/button>)/g,
+      message: 'Buttons must have accessible names'
+    }
+  ];
+
+  validateAccessibility(template: string): A11yValidationResult {
+    const issues: A11yIssue[] = [];
+
+    for (const rule of this.accessibilityRules) {
+      const matches = Array.from(template.matchAll(rule.pattern));
+      
+      for (const match of matches) {
+        issues.push({
+          rule: rule.name,
+          message: rule.message,
+          line: this.getLineNumber(template, match.index!),
+          severity: 'warning'
+        });
+      }
+    }
+
+    return {
+      accessible: issues.length === 0,
+      issues,
+      score: this.calculateA11yScore(issues)
+    };
+  }
+}
+```
+
+## Testing Templates
+
+### Template Testing Framework
+
+```typescript
+export class TemplateTestRunner {
+  async testTemplate(
+    templatePath: string,
+    testCases: TemplateTestCase[]
+  ): Promise<TemplateTestResult> {
+    const results: TestCaseResult[] = [];
+
+    for (const testCase of testCases) {
+      try {
+        const rendered = await this.renderTemplate(templatePath, testCase.context);
+        const assertions = await this.runAssertions(rendered, testCase.assertions);
+        
+        results.push({
+          name: testCase.name,
+          success: assertions.every(a => a.passed),
+          assertions,
+          output: rendered
+        });
+      } catch (error) {
+        results.push({
+          name: testCase.name,
+          success: false,
+          error: error.message,
+          output: null
+        });
+      }
+    }
+
+    return {
+      templatePath,
+      totalTests: testCases.length,
+      passedTests: results.filter(r => r.success).length,
+      results
+    };
+  }
+}
+```
+
+### Test Case Examples
+
+```typescript
+const templateTests: TemplateTestCase[] = [
+  {
+    name: 'React component with TypeScript',
+    context: {
+      name: 'TestComponent',
+      platform: 'react',
+      typescript: true,
+      props: ['title', 'onClick']
+    },
+    assertions: [
+      { type: 'contains', value: 'export const TestComponent' },
+      { type: 'contains', value: 'interface TestComponentProps' },
+      { type: 'contains', value: 'title: string' },
+      { type: 'not-contains', value: 'any' }
+    ]
+  }
+];
+```
+
 ## Contributing
 
-When adding new templates:
+### Template Development Guidelines
 
-1. Follow the established directory structure
-2. Use consistent naming conventions
-3. Add comprehensive documentation
-4. Test with multiple configurations
-5. Update the template registry
-6. Add examples and usage instructions
+1. **Consistency**: Follow established naming conventions and patterns
+2. **Documentation**: Document all template variables and usage
+3. **Testing**: Write comprehensive test cases for all scenarios
+4. **Security**: Validate templates for security vulnerabilities
+5. **Accessibility**: Ensure generated code meets accessibility standards
+6. **Performance**: Optimize templates for rendering performance
+7. **Maintainability**: Keep templates modular and reusable
+
+### Adding New Template Categories
+
+```typescript
+// 1. Create directory structure
+mkdir -p src/templates/new-category/{files,components,configs}
+
+// 2. Create base templates
+touch src/templates/new-category/files/base.hbs
+
+// 3. Register in template registry
+const newCategoryRegistry = {
+  category: 'new-category',
+  templates: {
+    'base': 'new-category/files/base.hbs'
+  },
+  metadata: {
+    description: 'New category templates',
+    version: '1.0.0',
+    author: 'Your Name'
+  }
+};
+
+// 4. Add tests
+const tests: TemplateTestCase[] = [
+  // Test cases
+];
+```
+
+### Template Validation Pipeline
+
+```typescript
+export class TemplateValidationPipeline {
+  private validators: TemplateValidator[] = [
+    new SyntaxValidator(),
+    new SecurityValidator(),
+    new AccessibilityValidator(),
+    new PerformanceValidator(),
+    new ComplianceValidator()
+  ];
+
+  async validateTemplate(templatePath: string): Promise<ValidationReport> {
+    const results = await Promise.all(
+      this.validators.map(validator => validator.validate(templatePath))
+    );
+
+    return {
+      templatePath,
+      overall: results.every(r => r.valid),
+      results,
+      recommendations: this.generateRecommendations(results)
+    };
+  }
+}
+```
+
+## Future Enhancements
+
+- **AI Template Generation**: AI-powered template creation and optimization
+- **Real-time Collaboration**: Collaborative template editing
+- **Template Marketplace**: Community template sharing platform
+- **Version Control**: Template versioning and rollback capabilities
+- **Performance Analytics**: Template usage and performance monitoring
+- **Custom Validators**: User-defined validation rules and plugins

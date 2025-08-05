@@ -1,0 +1,660 @@
+# Xaheen CLI - Production Security Policies
+# Norwegian Enterprise Grade Security with NSM Compliance
+# Kubernetes Security Policies, Network Policies, and RBAC
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xaheen-system
+  labels:
+    name: xaheen-system
+    tier: production
+    security.nsm.classification: restricted
+    compliance.gdpr: "true"
+    compliance.norwegian: "true"
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+    description: "Xaheen CLI production namespace with Norwegian NSM security compliance"
+
+---
+# =============================================================================
+# Pod Security Policy
+# =============================================================================
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: xaheen-cli-psp
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.policy: restrictive
+    nsm.classification: restricted
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1001
+        max: 1001
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1001
+        max: 1001
+  readOnlyRootFilesystem: false
+  seLinux:
+    rule: 'RunAsAny'
+  seccompProfile:
+    type: RuntimeDefault
+  forbiddenSysctls:
+    - '*'
+
+---
+# =============================================================================
+# Network Policy - Ingress
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: xaheen-cli-ingress
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    policy-type: ingress
+    nsm.classification: restricted
+spec:
+  podSelector:
+    matchLabels:
+      app: xaheen-cli
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow ingress from load balancer
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 8080
+    
+    # Allow health checks from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 3000
+    
+    # Allow internal service communication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: xaheen-cli
+      ports:
+        - protocol: TCP
+          port: 3000
+
+---
+# =============================================================================
+# Network Policy - Egress
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: xaheen-cli-egress
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    policy-type: egress
+    nsm.classification: restricted
+spec:
+  podSelector:
+    matchLabels:
+      app: xaheen-cli
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    
+    # Allow HTTPS to Norwegian cloud services
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+    
+    # Allow database connection (PostgreSQL)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    
+    # Allow Redis connection
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    
+    # Allow monitoring egress
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090  # Prometheus
+        - protocol: TCP
+          port: 3000  # Grafana
+        - protocol: TCP
+          port: 14268 # Jaeger
+
+---
+# =============================================================================
+# Service Account
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xaheen-cli
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.rbac: enabled
+    nsm.classification: restricted
+  annotations:
+    description: "Service account for Xaheen CLI with minimal required permissions"
+automountServiceAccountToken: false
+
+---
+# =============================================================================
+# Role - Minimal Required Permissions
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: xaheen-cli-role
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.rbac: role
+    nsm.classification: restricted
+rules:
+  # Allow reading own pod information
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+    resourceNames: []
+  
+  # Allow reading config maps (for configuration)
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+    resourceNames: ["xaheen-cli-config", "norwegian-compliance-config"]
+  
+  # Allow reading secrets (for sensitive configuration)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+    resourceNames: ["xaheen-cli-secrets"]
+  
+  # Allow creating events (for audit logging)
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+
+---
+# =============================================================================
+# Role Binding
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: xaheen-cli-rolebinding
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.rbac: binding
+    nsm.classification: restricted
+subjects:
+  - kind: ServiceAccount
+    name: xaheen-cli
+    namespace: xaheen-system
+roleRef:
+  kind: Role
+  name: xaheen-cli-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# =============================================================================
+# Security Context Constraints (OpenShift)
+# =============================================================================
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: xaheen-cli-scc
+  labels:
+    app: xaheen-cli
+    security.scc: restrictive
+    nsm.classification: restricted
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowedCapabilities: []
+allowedFlexVolumes: []
+defaultAddCapabilities: []
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 1001
+      max: 1001
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+  - ALL
+runAsUser:
+  type: MustRunAsNonRoot
+seLinuxContext:
+  type: MustRunAs
+users:
+  - system:serviceaccount:xaheen-system:xaheen-cli
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - persistentVolumeClaim
+  - projected
+  - secret
+
+---
+# =============================================================================
+# OPA Gatekeeper Constraint Template
+# =============================================================================
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: xaheensecuritypolicy
+  labels:
+    app: xaheen-cli
+    security.opa: constraint-template
+    nsm.classification: restricted
+spec:
+  crd:
+    spec:
+      names:
+        kind: XaheenSecurityPolicy
+      validation:
+        properties:
+          allowedImages:
+            type: array
+            items:
+              type: string
+          requiredLabels:
+            type: array
+            items:
+              type: string
+          nsmClassification:
+            type: string
+            enum: ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"]
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package xaheensecuritypolicy
+        
+        violation[{"msg": msg}] {
+          # Check required Norwegian compliance labels
+          required_labels := input.parameters.requiredLabels
+          missing_labels := required_labels[_]
+          not input.review.object.metadata.labels[missing_labels]
+          msg := sprintf("Missing required Norwegian compliance label: %v", [missing_labels])
+        }
+        
+        violation[{"msg": msg}] {
+          # Check NSM classification
+          nsm_classification := input.review.object.metadata.labels["nsm.classification"]
+          not nsm_classification == input.parameters.nsmClassification
+          msg := sprintf("NSM classification must be: %v", [input.parameters.nsmClassification])
+        }
+        
+        violation[{"msg": msg}] {
+          # Check allowed container images
+          container := input.review.object.spec.containers[_]
+          not starts_with(container.image, input.parameters.allowedImages[_])
+          msg := sprintf("Container image %v is not from allowed registry", [container.image])
+        }
+        
+        violation[{"msg": msg}] {
+          # Ensure running as non-root
+          container := input.review.object.spec.containers[_]
+          container.securityContext.runAsUser == 0
+          msg := "Containers must not run as root user"
+        }
+        
+        violation[{"msg": msg}] {
+          # Check for Norwegian GDPR compliance
+          gdpr_compliant := input.review.object.metadata.labels["compliance.gdpr"]
+          not gdpr_compliant == "true"
+          msg := "Norwegian deployments must be GDPR compliant"
+        }
+
+---
+# =============================================================================
+# OPA Gatekeeper Constraint
+# =============================================================================
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: XaheenSecurityPolicy
+metadata:
+  name: xaheen-cli-security-constraint
+  labels:
+    app: xaheen-cli
+    security.opa: constraint
+    nsm.classification: restricted
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces: ["xaheen-system"]
+  parameters:
+    allowedImages:
+      - "registry.norwegian-cloud.no/xaheen/"
+      - "docker.io/library/postgres:"
+      - "docker.io/library/redis:"
+    requiredLabels:
+      - "app"
+      - "version"
+      - "nsm.classification"
+      - "compliance.gdpr"
+      - "compliance.norwegian"
+    nsmClassification: "restricted"
+
+---
+# =============================================================================
+# Falco Rules for Runtime Security
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xaheen-cli-falco-rules
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.falco: rules
+    nsm.classification: restricted
+data:
+  xaheen_rules.yaml: |
+    - rule: Xaheen CLI Suspicious Network Activity
+      desc: Detect suspicious network activity in Xaheen CLI containers
+      condition: >
+        container.name startswith "xaheen-cli" and
+        ((fd.type=ipv4 or fd.type=ipv6) and 
+         (fd.ip != "127.0.0.1" and fd.ip != "::1") and
+         not fd.ip in (postgresql_ips, redis_ips, prometheus_ips))
+      output: >
+        Suspicious network connection from Xaheen CLI
+        (user=%user.name command=%proc.cmdline connection=%fd.name container=%container.name)
+      priority: WARNING
+      tags: [network, xaheen-cli, norwegian-compliance]
+    
+    - rule: Xaheen CLI File System Anomaly
+      desc: Detect unusual file system activity in Xaheen CLI
+      condition: >
+        container.name startswith "xaheen-cli" and
+        (open_write and fd.name startswith "/etc") or
+        (open_write and fd.name startswith "/usr") or
+        (spawned_process and proc.name in (nc, ncat, nmap, wget, curl))
+      output: >
+        Anomalous file system activity in Xaheen CLI
+        (user=%user.name command=%proc.cmdline file=%fd.name container=%container.name)
+      priority: HIGH
+      tags: [filesystem, xaheen-cli, security-anomaly]
+    
+    - rule: Xaheen CLI Process Anomaly
+      desc: Detect suspicious process execution in Xaheen CLI
+      condition: >
+        container.name startswith "xaheen-cli" and
+        spawned_process and
+        not proc.name in (node, npm, tini, dumb-init) and
+        not proc.cmdline startswith "node dist/index.js"
+      output: >
+        Suspicious process in Xaheen CLI container
+        (user=%user.name command=%proc.cmdline container=%container.name)
+      priority: WARNING
+      tags: [process, xaheen-cli, runtime-security]
+    
+    - rule: Xaheen CLI Norwegian Compliance Violation
+      desc: Detect potential Norwegian compliance violations
+      condition: >
+        container.name startswith "xaheen-cli" and
+        ((open_read or open_write) and 
+         (fd.name contains "personal-data" or 
+          fd.name contains "sensitive" or
+          fd.name contains "classified")) and
+        not proc.name in (node, authorized-access-tool)
+      output: >
+        Potential Norwegian compliance violation in Xaheen CLI
+        (user=%user.name file=%fd.name process=%proc.name container=%container.name)
+      priority: HIGH
+      tags: [compliance, norwegian, data-protection, xaheen-cli]
+
+---
+# =============================================================================
+# Service Monitor for Prometheus
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: xaheen-cli-metrics
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    monitoring.prometheus: enabled
+    nsm.classification: restricted
+spec:
+  selector:
+    matchLabels:
+      app: xaheen-cli
+      monitoring: enabled
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: instance
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: kubernetes_namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_nsm_classification]
+          targetLabel: nsm_classification
+        - sourceLabels: [__meta_kubernetes_pod_label_compliance_gdpr]
+          targetLabel: gdpr_compliant
+
+---
+# =============================================================================
+# Istio Security Policies
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: xaheen-cli-peer-auth
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.istio: peer-authentication
+    nsm.classification: restricted
+spec:
+  selector:
+    matchLabels:
+      app: xaheen-cli
+  mtls:
+    mode: STRICT
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: xaheen-cli-authz
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    security.istio: authorization
+    nsm.classification: restricted
+spec:
+  selector:
+    matchLabels:
+      app: xaheen-cli
+  rules:
+    # Allow ingress traffic
+    - from:
+        - source:
+            namespaces: ["ingress-nginx", "istio-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE"]
+            paths: ["/api/*", "/health/*", "/metrics"]
+    
+    # Allow monitoring traffic
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+            principals: ["cluster.local/ns/monitoring/sa/prometheus"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics", "/health/*"]
+    
+    # Norwegian compliance endpoints (restricted access)
+    - from:
+        - source:
+            principals: ["cluster.local/ns/xaheen-system/sa/compliance-officer"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/compliance/*", "/audit/*"]
+
+---
+# =============================================================================
+# Pod Disruption Budget
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: xaheen-cli-pdb
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    availability: high
+    nsm.classification: restricted
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: xaheen-cli
+
+---
+# =============================================================================
+# Resource Quotas
+# =============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: xaheen-cli-quota
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    resource-management: enabled
+    nsm.classification: restricted
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "10"
+    persistentvolumeclaims: "5"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# =============================================================================
+# Limit Range
+# =============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: xaheen-cli-limits
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    resource-limits: enabled
+    nsm.classification: restricted
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 512Mi
+      max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 100m
+        memory: 128Mi
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: 8Gi

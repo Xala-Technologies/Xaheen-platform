@@ -1,0 +1,536 @@
+# Xaheen CLI - Prometheus Rules & Alerts
+# Norwegian Enterprise Monitoring with NSM Compliance
+# Production-grade alerting and SLA monitoring
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: xaheen-cli-rules
+  namespace: xaheen-system
+  labels:
+    app: xaheen-cli
+    monitoring: prometheus
+    nsm.classification: restricted
+    compliance.norwegian: "true"
+spec:
+  groups:
+  
+  # =============================================================================
+  # Application Performance Rules
+  # =============================================================================
+  - name: xaheen-cli.application.performance
+    interval: 30s
+    rules:
+    
+    # Response time SLA (Norwegian enterprise requirement: <2s)
+    - alert: XaheenCLIHighResponseTime
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(http_request_duration_seconds_bucket{
+            job="xaheen-cli",
+            nsm_classification="restricted"
+          }[5m])) by (le)
+        ) > 2
+      for: 2m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        sla: response-time
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Xaheen CLI response time exceeds Norwegian SLA"
+        description: |
+          Xaheen CLI 95th percentile response time is {{ $value }}s, 
+          exceeding the 2s Norwegian enterprise SLA requirement.
+          Norwegian compliance may be affected.
+        runbook_url: "https://runbooks.xaheen.no/alerts/high-response-time"
+        
+    - alert: XaheenCLICriticalResponseTime
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(http_request_duration_seconds_bucket{
+            job="xaheen-cli",
+            nsm_classification="restricted"
+          }[5m])) by (le)
+        ) > 5
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        sla: response-time
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Xaheen CLI critical response time violation"
+        description: |
+          Xaheen CLI 95th percentile response time is {{ $value }}s, 
+          critically exceeding Norwegian enterprise requirements.
+          Immediate intervention required.
+    
+    # Throughput monitoring
+    - alert: XaheenCLILowThroughput
+      expr: |
+        sum(rate(http_requests_total{
+          job="xaheen-cli",
+          nsm_classification="restricted"
+        }[5m])) < 10
+      for: 5m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        metric: throughput
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI low throughput detected"
+        description: |
+          Xaheen CLI is processing only {{ $value }} requests/second,
+          below the expected Norwegian enterprise baseline of 10 req/s.
+  
+  # =============================================================================
+  # Error Rate Rules
+  # =============================================================================
+  - name: xaheen-cli.application.errors
+    interval: 30s
+    rules:
+    
+    # HTTP error rate (Norwegian requirement: <1% error rate)
+    - alert: XaheenCLIHighErrorRate
+      expr: |
+        (
+          sum(rate(http_requests_total{
+            job="xaheen-cli",
+            status=~"5..",
+            nsm_classification="restricted"
+          }[5m])) /
+          sum(rate(http_requests_total{
+            job="xaheen-cli",
+            nsm_classification="restricted"
+          }[5m]))
+        ) * 100 > 1
+      for: 2m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        sla: error-rate
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Xaheen CLI error rate exceeds Norwegian SLA"
+        description: |
+          Xaheen CLI error rate is {{ $value }}%, exceeding the 
+          1% Norwegian enterprise SLA requirement.
+          
+    - alert: XaheenCLICriticalErrorRate
+      expr: |
+        (
+          sum(rate(http_requests_total{
+            job="xaheen-cli",
+            status=~"5..",
+            nsm_classification="restricted"
+          }[5m])) /
+          sum(rate(http_requests_total{
+            job="xaheen-cli",
+            nsm_classification="restricted"
+          }[5m]))
+        ) * 100 > 5
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        sla: error-rate
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Xaheen CLI critical error rate violation"
+        description: |
+          Xaheen CLI error rate is {{ $value }}%, critically high.
+          Norwegian enterprise service is severely degraded.
+    
+    # NSM security events
+    - alert: XaheenCLISecurityViolation
+      expr: |
+        sum(rate(xaheen_security_violations_total{
+          job="xaheen-cli",
+          nsm_classification="restricted"
+        }[5m])) > 0
+      for: 0s
+      labels:
+        severity: critical
+        component: xaheen-cli
+        security: nsm-violation
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "NSM security violation detected in Xaheen CLI"
+        description: |
+          NSM (Norwegian National Security Authority) security violation 
+          detected. Immediate security review required.
+          Rate: {{ $value }} violations/second
+  
+  # =============================================================================
+  # Resource Utilization Rules
+  # =============================================================================
+  - name: xaheen-cli.resources
+    interval: 30s
+    rules:
+    
+    # Memory usage (Norwegian requirement: <80% utilization)
+    - alert: XaheenCLIHighMemoryUsage
+      expr: |
+        (
+          container_memory_working_set_bytes{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          } /
+          container_spec_memory_limit_bytes{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          }
+        ) * 100 > 80
+      for: 2m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        resource: memory
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI high memory usage"
+        description: |
+          Xaheen CLI memory usage is {{ $value }}%, exceeding 
+          Norwegian enterprise threshold of 80%.
+          Pod: {{ $labels.pod }}
+          
+    - alert: XaheenCLICriticalMemoryUsage
+      expr: |
+        (
+          container_memory_working_set_bytes{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          } /
+          container_spec_memory_limit_bytes{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          }
+        ) * 100 > 95
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        resource: memory
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI critical memory usage"
+        description: |
+          Xaheen CLI memory usage is {{ $value }}%, critically high.
+          Container may be killed soon. Immediate action required.
+          Pod: {{ $labels.pod }}
+    
+    # CPU usage
+    - alert: XaheenCLIHighCPUUsage
+      expr: |
+        (
+          rate(container_cpu_usage_seconds_total{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          }[5m]) /
+          container_spec_cpu_quota{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          } * container_spec_cpu_period{
+            pod=~"xaheen-cli-.*",
+            namespace="xaheen-system"
+          }
+        ) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        resource: cpu
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI high CPU usage"
+        description: |
+          Xaheen CLI CPU usage is {{ $value }}% over 5 minutes,
+          exceeding Norwegian enterprise threshold.
+          Pod: {{ $labels.pod }}
+  
+  # =============================================================================
+  # Availability Rules (Norwegian SLA: 99.9%)
+  # =============================================================================
+  - name: xaheen-cli.availability
+    interval: 30s
+    rules:
+    
+    # Service availability
+    - alert: XaheenCLIServiceDown
+      expr: |
+        up{job="xaheen-cli", nsm_classification="restricted"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        sla: availability
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Xaheen CLI service is down"
+        description: |
+          Xaheen CLI service is not responding to health checks.
+          Norwegian enterprise service is unavailable.
+          Instance: {{ $labels.instance }}
+    
+    # Health check failures
+    - alert: XaheenCLIHealthCheckFailing
+      expr: |
+        xaheen_health_check_success{
+          job="xaheen-cli",
+          nsm_classification="restricted"
+        } == 0
+      for: 2m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        health: failing
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI health check failing"
+        description: |
+          Xaheen CLI health check is failing for {{ $labels.check_type }}.
+          Service may be degraded.
+          Instance: {{ $labels.instance }}
+    
+    # Pod restart rate
+    - alert: XaheenCLIHighRestartRate
+      expr: |
+        increase(kube_pod_container_status_restarts_total{
+          pod=~"xaheen-cli-.*",
+          namespace="xaheen-system"
+        }[15m]) > 3
+      for: 0s
+      labels:
+        severity: warning
+        component: xaheen-cli
+        stability: restarts
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI high restart rate"
+        description: |
+          Xaheen CLI pod has restarted {{ $value }} times in 15 minutes.
+          Service stability may be compromised.
+          Pod: {{ $labels.pod }}
+  
+  # =============================================================================
+  # Norwegian Compliance Rules
+  # =============================================================================
+  - name: xaheen-cli.norwegian.compliance
+    interval: 60s
+    rules:
+    
+    # GDPR compliance monitoring
+    - alert: XaheenCLIGDPRViolation
+      expr: |
+        xaheen_gdpr_compliance_score{
+          job="xaheen-cli",
+          gdpr_compliant="true"
+        } < 95
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        compliance: gdpr
+        norwegian_compliance: "true"
+        regulation: gdpr
+      annotations:
+        summary: "Xaheen CLI GDPR compliance violation"
+        description: |
+          GDPR compliance score is {{ $value }}%, below required 95%.
+          Norwegian data protection regulations may be violated.
+          
+    # Data localization check
+    - alert: XaheenCLIDataLocalizationViolation
+      expr: |
+        xaheen_data_outside_norway_total{
+          job="xaheen-cli",
+          data_localization="norway"
+        } > 0
+      for: 0s
+      labels:
+        severity: critical
+        component: xaheen-cli
+        compliance: data-localization
+        norwegian_compliance: "true"
+        regulation: norwegian-data-act
+      annotations:
+        summary: "Data processed outside Norway detected"
+        description: |
+          {{ $value }} data operations detected outside Norwegian borders.
+          Violates Norwegian data localization requirements.
+    
+    # Audit trail completeness
+    - alert: XaheenCLIAuditTrailGap
+      expr: |
+        xaheen_audit_events_missing_total{
+          job="xaheen-cli",
+          nsm_classification="restricted"
+        } > 0
+      for: 1m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        compliance: audit
+        norwegian_compliance: "true"
+        nsm_classification: restricted
+      annotations:
+        summary: "Audit trail gaps detected in Xaheen CLI"
+        description: |
+          {{ $value }} audit events are missing from the trail.
+          NSM compliance requirements may be violated.
+  
+  # =============================================================================
+  # Performance SLA Rules
+  # =============================================================================
+  - name: xaheen-cli.sla
+    interval: 300s  # 5 minute evaluation
+    rules:
+    
+    # Monthly SLA calculation (99.9% uptime requirement)
+    - record: xaheen_cli:sla_uptime_monthly
+      expr: |
+        (
+          (
+            time() - time() % (30*24*3600)  # Start of month
+          ) -
+          sum_over_time(
+            (up{job="xaheen-cli", nsm_classification="restricted"} == 0)[30d:1m]
+          ) * 60
+        ) / (30*24*3600) * 100
+    
+    # Daily availability
+    - record: xaheen_cli:availability_daily
+      expr: |
+        avg_over_time(up{job="xaheen-cli", nsm_classification="restricted"}[24h]) * 100
+    
+    # Error budget consumption (Norwegian SLA allows 0.1% errors monthly)
+    - record: xaheen_cli:error_budget_remaining
+      expr: |
+        1 - (
+          sum_over_time(
+            increase(http_requests_total{
+              job="xaheen-cli",
+              status=~"5..",
+              nsm_classification="restricted"
+            }[30d])
+          ) /
+          sum_over_time(
+            increase(http_requests_total{
+              job="xaheen-cli",
+              nsm_classification="restricted"
+            }[30d])
+          )
+        ) / 0.001  # 0.1% error budget
+    
+    # SLA breach alert
+    - alert: XaheenCLISLABreach
+      expr: |
+        xaheen_cli:sla_uptime_monthly < 99.9
+      for: 0s
+      labels:
+        severity: critical
+        component: xaheen-cli
+        sla: uptime
+        norwegian_compliance: "true"
+        business_impact: high
+      annotations:
+        summary: "Xaheen CLI Norwegian SLA breach"
+        description: |
+          Monthly uptime is {{ $value }}%, below Norwegian enterprise 
+          SLA requirement of 99.9%. Business impact is high.
+          
+    # Error budget exhaustion
+    - alert: XaheenCLIErrorBudgetExhausted
+      expr: |
+        xaheen_cli:error_budget_remaining < 0.1
+      for: 5m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        sla: error-budget
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Xaheen CLI error budget nearly exhausted"
+        description: |
+          Error budget remaining: {{ $value }}%. 
+          Norwegian SLA at risk if error rate continues.
+  
+  # =============================================================================
+  # Business Impact Rules
+  # =============================================================================
+  - name: xaheen-cli.business
+    interval: 60s
+    rules:
+    
+    # Command generation success rate
+    - alert: XaheenCLICommandGenerationFailure
+      expr: |
+        (
+          sum(rate(xaheen_command_generation_total{
+            job="xaheen-cli",
+            status="failed",
+            nsm_classification="restricted"
+          }[5m])) /
+          sum(rate(xaheen_command_generation_total{
+            job="xaheen-cli",
+            nsm_classification="restricted"
+          }[5m]))
+        ) * 100 > 2
+      for: 3m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        business_function: command-generation
+        norwegian_compliance: "true"
+      annotations:
+        summary: "High command generation failure rate"
+        description: |
+          Command generation failure rate is {{ $value }}%.
+          Norwegian developer productivity may be impacted.
+    
+    # Norwegian compliance operations
+    - alert: XaheenCLINorwegianComplianceOperationFailure
+      expr: |
+        sum(rate(xaheen_norwegian_compliance_operations_total{
+          job="xaheen-cli",
+          status="failed"
+        }[5m])) > 0.1
+      for: 1m
+      labels:
+        severity: critical
+        component: xaheen-cli
+        business_function: norwegian-compliance
+        norwegian_compliance: "true"
+        regulation_impact: high
+      annotations:
+        summary: "Norwegian compliance operations failing"
+        description: |
+          Norwegian compliance operations failing at {{ $value }}/second.
+          Regulatory compliance at risk.
+    
+    # User experience metrics
+    - alert: XaheenCLIPoorUserExperience
+      expr: |
+        xaheen_user_satisfaction_score{
+          job="xaheen-cli",
+          norwegian_locale="nb-NO"
+        } < 4.0
+      for: 10m
+      labels:
+        severity: warning
+        component: xaheen-cli
+        user_experience: satisfaction
+        norwegian_compliance: "true"
+      annotations:
+        summary: "Poor user experience detected"
+        description: |
+          User satisfaction score is {{ $value }}/5.0 for Norwegian users.
+          Below acceptable threshold of 4.0/5.0.
