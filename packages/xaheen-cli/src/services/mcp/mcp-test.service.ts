@@ -512,10 +512,39 @@ export class MCPTestService {
 						`Custom test ${customTest.name} should return ${customTest.expectedStatus}`
 					);
 					
-					// Run custom assertions
+					// Run custom assertions (safe evaluation)
 					for (const assertion of customTest.assertions) {
-						// Simple assertion evaluation
-						eval(`this.assert(${assertion}, "Custom assertion: ${assertion}");`);
+						try {
+							// Parse assertion safely instead of using eval
+							const [left, operator, right] = assertion.split(/\s*(===|!==|==|!=|>|<|>=|<=)\s/);
+							const leftValue = this.getResponseValue(response, left.trim());
+							const rightValue = this.parseValue(right.trim());
+							
+							switch (operator) {
+								case '===':
+									this.assert(leftValue === rightValue, `Custom assertion: ${assertion}`);
+									break;
+								case '!==':
+									this.assert(leftValue !== rightValue, `Custom assertion: ${assertion}`);
+									break;
+								case '>':
+									this.assert(leftValue > rightValue, `Custom assertion: ${assertion}`);
+									break;
+								case '<':
+									this.assert(leftValue < rightValue, `Custom assertion: ${assertion}`);
+									break;
+								case '>=':
+									this.assert(leftValue >= rightValue, `Custom assertion: ${assertion}`);
+									break;
+								case '<=':
+									this.assert(leftValue <= rightValue, `Custom assertion: ${assertion}`);
+									break;
+								default:
+									this.assert(false, `Unsupported operator in assertion: ${assertion}`);
+							}
+						} catch (error) {
+							this.assert(false, `Failed to evaluate assertion: ${assertion} - ${error}`);
+						}
 					}
 					
 					return {
@@ -1144,6 +1173,34 @@ ${test.status === "failed" ? `      <failure message="${test.error?.message}">${
   </div>`).join("")}
 </body>
 </html>`;
+	}
+
+	private getResponseValue(response: any, path: string): any {
+		// Simple dot notation path access
+		const parts = path.split('.');
+		let value = response;
+		for (const part of parts) {
+			if (value && typeof value === 'object' && part in value) {
+				value = value[part];
+			} else {
+				return undefined;
+			}
+		}
+		return value;
+	}
+
+	private parseValue(value: string): any {
+		// Parse string values to appropriate types
+		if (value === 'true') return true;
+		if (value === 'false') return false;
+		if (value === 'null') return null;
+		if (value === 'undefined') return undefined;
+		if (value.startsWith('"') && value.endsWith('"')) {
+			return value.slice(1, -1); // Remove quotes
+		}
+		const num = Number(value);
+		if (!isNaN(num)) return num;
+		return value; // Return as string if nothing else matches
 	}
 }
 

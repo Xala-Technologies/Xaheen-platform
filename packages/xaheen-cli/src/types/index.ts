@@ -40,6 +40,7 @@ export type CLIDomain =
 	| "docs" // Documentation generation
 	| "security" // Security audit and compliance
 	| "templates" // Template management
+	| "template" // Template operations (singular)
 	| "help"; // Help system
 
 export type CLIAction =
@@ -82,7 +83,19 @@ export type CLIAction =
 	| "compliance"
 	| "scan"
 	// Template-specific actions
-	| "modernize";
+	| "modernize"
+	// New template and MCP actions
+	| "extend"
+	| "compose"
+	| "init"
+	| "test"
+	| "config-init"
+	| "config-show"
+	| "plugin-list"
+	| "plugin-register" 
+	| "plugin-unregister"
+	| "plugin-enable"
+	| "plugin-disable";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({
