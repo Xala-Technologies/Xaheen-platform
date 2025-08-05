@@ -9,6 +9,7 @@ import { AITemplateSystem } from "../ai/index.js";
 import { NorwegianComplianceGenerator } from "../generators/NorwegianComplianceGenerator.js";
 import { NorwegianComplianceValidator } from "../utils/norwegian-compliance-validation.js";
 import { practicalToolPrompts } from "../prompts/PracticalToolPrompts.js";
+import { ProjectInitializer } from "../utils/ProjectInitializer.js";
 import type { 
 	MCPToolResult, 
 	GetComponentsArgs, 
@@ -463,25 +464,25 @@ export class CoreToolHandlers {
 	}
 
 	private async initializeProject(name: string, platform: string, type: string, features?: string[], templateStyle?: string): Promise<any> {
-		// Mock implementation - replace with actual project initialization logic
-		return {
-			projectName: name,
-			platform,
-			type,
-			features: features || [],
-			templateStyle: templateStyle || 'standard',
-			files: [
-				'package.json',
-				'README.md',
-				'src/index.ts',
-				'src/components/',
-				'src/pages/'
-			],
-			setupInstructions: [
-				'npm install',
-				'npm run dev'
-			]
-		};
+		try {
+			const projectInitializer = new ProjectInitializer();
+			return await projectInitializer.createProject({
+				name,
+				platform: platform as "react" | "vue" | "angular" | "svelte" | "nextjs" | "electron" | "react-native",
+				type,
+				features: features || [],
+				templateStyle: (templateStyle || 'standard') as "minimal" | "standard" | "enterprise"
+			});
+		} catch (error) {
+			return {
+				error: `Failed to initialize project: ${error instanceof Error ? error.message : String(error)}`,
+				projectName: name,
+				platform,
+				type,
+				features: features || [],
+				templateStyle: templateStyle || 'standard'
+			};
+		}
 	}
 
 	// Enhanced methods for prompt integration

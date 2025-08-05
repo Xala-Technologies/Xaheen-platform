@@ -24,17 +24,28 @@
 
 "use client";
 
-import {
-	Avatar,
-	Badge,
-	Button,
-	Container,
-	GlobalSearch,
-	Stack,
-	Typography,
-	useResponsive,
-	WebNavbar,
-} from "@xala-technologies/ui-system";
+// Temporarily disabled broken UI system imports
+// TODO: Fix @xala-technologies/ui-system package
+const Avatar = ({ children, src, alt, ...props }: any) => (
+  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200" {...props}>
+    {src ? <img src={src} alt={alt} className="w-full h-full object-cover" /> : children}
+  </div>
+);
+const Badge = ({ children, ...props }: any) => <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" {...props}>{children}</span>;
+const Button = ({ children, variant = "default", ...props }: any) => {
+  const variants = {
+    default: "bg-blue-600 text-white hover:bg-blue-700",
+    outline: "border border-gray-300 hover:bg-gray-50",
+    ghost: "hover:bg-gray-100"
+  };
+  return <button className={`px-4 py-2 rounded-lg transition-colors ${variants[variant]}`} {...props}>{children}</button>;
+};
+const Container = ({ children, ...props }: any) => <div className="container mx-auto px-4" {...props}>{children}</div>;
+const GlobalSearch = ({ ...props }: any) => <div {...props} />;
+const Stack = ({ children, ...props }: any) => <div className="flex items-center gap-4" {...props}>{children}</div>;
+const Typography = ({ children, ...props }: any) => <span {...props}>{children}</span>;
+const useResponsive = () => ({ isMobile: false });
+const WebNavbar = ({ children, ...props }: any) => <nav className="bg-white shadow-sm" {...props}>{children}</nav>;
 import { Bell } from "lucide-react";
 
 import { ThemeSwitcher } from "../ui/ThemeSwitcher";

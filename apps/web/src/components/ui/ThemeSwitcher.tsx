@@ -12,7 +12,7 @@
 "use client";
 
 import { Button } from "@xala-technologies/ui-system";
-import { useTheme } from "@xala-technologies/ui-system/hooks";
+import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
 /**

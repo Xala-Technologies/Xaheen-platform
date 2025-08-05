@@ -5,6 +5,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "dev:bun": "bun run dev",
+    "dev:npm": "npm run dev",
     "start": "next start",
     "check": "biome check --write .",
     "postinstall": "fumadocs-mdx",

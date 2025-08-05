@@ -1,0 +1,468 @@
+# Istio Ambient Mode Configuration for Xaheen CLI
+# Service Mesh with 90% Resource Reduction and Zero Application Restarts
+
+---
+# Waypoint Proxy for L7 Processing
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: xaheen-waypoint
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: waypoint
+    istio.io/waypoint-for: service
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    istio.io/waypoint-for: "xaheen-cli"
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
+
+---
+# Authorization Policy for Norwegian Compliance
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: xaheen-cli-authz
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    gdpr.eu/article32: "true"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+  rules:
+  # Allow health checks
+  - from:
+    - source:
+        principals: ["cluster.local/ns/istio-system/sa/istio-proxy"]
+    to:
+    - operation:
+        paths: ["/health", "/ready", "/startup"]
+    when:
+    - key: source.namespace
+      values: ["istio-system", "kube-system"]
+      
+  # Allow metrics scraping
+  - from:
+    - source:
+        principals: ["cluster.local/ns/monitoring/sa/prometheus"]
+    to:
+    - operation:
+        paths: ["/metrics"]
+        
+  # Allow API access with Norwegian compliance
+  - from:
+    - source:
+        namespaces: ["xaheen-production", "xaheen-staging"]
+    to:
+    - operation:
+        methods: ["GET", "POST", "PUT", "DELETE"]
+    when:
+    - key: request.headers[nsm-classification]
+      values: ["OPEN", "RESTRICTED"]
+    - key: request.headers[x-norwegian-locale]
+      values: ["nb-NO", "nn-NO", "en-NO"]
+
+---
+# Peer Authentication for mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: xaheen-cli-mtls
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    security.compliance: "nsm-framework"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+  mtls:
+    mode: STRICT
+  portLevelMtls:
+    3000:
+      mode: STRICT
+    9090:
+      mode: PERMISSIVE  # Allow Prometheus scraping
+
+---
+# Telemetry v2 Configuration
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: xaheen-cli-telemetry
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    monitoring.compliance: "norwegian-gdpr"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+  metrics:
+  - providers:
+    - name: prometheus
+  - overrides:
+    - match:
+        metric: ALL_METRICS
+      tagOverrides:
+        # Norwegian compliance tags
+        nsm_classification:
+          value: "RESTRICTED"
+        norwegian_locale:
+          value: "nb-NO"
+        gdpr_compliant:
+          value: "true"
+        data_localization:
+          value: "norway"
+  accessLogging:
+  - providers:
+    - name: otel
+  tracing:
+  - providers:
+    - name: jaeger
+
+---
+# Traffic Policy for Performance and Compliance
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: xaheen-cli-destination
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    performance.optimization: "enabled"
+spec:
+  host: xaheen-cli.xaheen-production.svc.cluster.local
+  trafficPolicy:
+    # Load balancing for Norwegian data locality
+    loadBalancer:
+      simple: LEAST_REQUEST
+      localityLbSetting:
+        enabled: true
+        distribute:
+        - from: "region/norway-east/*"
+          to:
+            "region/norway-east/*": 100
+        failover:
+        - from: norway-east
+          to: norway-west
+          
+    # Connection pool settings
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s
+        keepAlive:
+          time: 7200s
+          interval: 75s
+      http:
+        http1MaxPendingRequests: 64
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 3
+        consecutiveGatewayErrors: 5
+        interval: 30s
+        baseEjectionTime: 30s
+        
+    # Circuit breaker
+    outlierDetection:
+      consecutiveGatewayErrors: 3
+      consecutive5xxErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+      
+  portLevelSettings:
+  - port:
+      number: 3000
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 10s
+
+---
+# Virtual Service for Traffic Management
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: xaheen-cli-routing
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    traffic.management: "enabled"
+spec:
+  hosts:
+  - xaheen-cli.xaheen-production.svc.cluster.local
+  - xaheen-cli.xala.no
+  http:
+  # Health check routes
+  - match:
+    - uri:
+        prefix: /health
+    - uri:
+        prefix: /ready
+    - uri:
+        prefix: /startup
+    route:
+    - destination:
+        host: xaheen-cli.xaheen-production.svc.cluster.local
+        port:
+          number: 3000
+    timeout: 5s
+    
+  # Metrics route for Prometheus
+  - match:
+    - uri:
+        exact: /metrics
+    route:
+    - destination:
+        host: xaheen-cli.xaheen-production.svc.cluster.local
+        port:
+          number: 9090
+    timeout: 10s
+    
+  # API routes with Norwegian compliance headers
+  - match:
+    - uri:
+        prefix: /api
+    headers:
+      request:
+        add:
+          x-nsm-classification: "RESTRICTED"
+          x-norwegian-locale: "nb-NO"
+          x-gdpr-compliant: "true"
+    route:
+    - destination:
+        host: xaheen-cli.xaheen-production.svc.cluster.local
+        port:
+          number: 3000
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: gateway-error,connect-failure,refused-stream
+    timeout: 30s
+    
+  # Default route
+  - route:
+    - destination:
+        host: xaheen-cli.xaheen-production.svc.cluster.local
+        port:
+          number: 3000
+    retries:
+      attempts: 2
+      perTryTimeout: 15s
+    timeout: 30s
+
+---
+# Service Monitor for Prometheus Integration
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: xaheen-cli-metrics
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: monitoring
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+      app.kubernetes.io/instance: production
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    scheme: http
+    tlsConfig:
+      insecureSkipVerify: true
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'istio_.*'
+      targetLabel: __tmp_istio_metric
+    - sourceLabels: [__tmp_istio_metric]
+      regex: '.*'
+      replacement: 'xaheen-cli'
+      targetLabel: service
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_annotation_nsm_no_classification]
+      targetLabel: nsm_classification
+    - sourceLabels: [__meta_kubernetes_pod_annotation_gdpr_eu_article32]
+      targetLabel: gdpr_compliant
+    - replacement: 'norway'
+      targetLabel: data_localization
+    - replacement: 'nb-NO'
+      targetLabel: norwegian_locale
+
+---
+# Waypoint for Staging Environment
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: xaheen-staging-waypoint
+  namespace: xaheen-staging
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: staging
+    app.kubernetes.io/component: waypoint
+    istio.io/waypoint-for: service
+  annotations:
+    nsm.no/classification: "OPEN"
+    istio.io/waypoint-for: "xaheen-cli"
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
+
+---
+# Network Policy for Additional Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: xaheen-cli-netpol
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    security.compliance: "nsm-framework"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+      app.kubernetes.io/instance: production
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from Istio system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+    ports:
+    - protocol: TCP
+      port: 15008  # HBONE port
+    - protocol: TCP
+      port: 15001  # Envoy admin
+      
+  # Allow monitoring traffic
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090  # Metrics
+      
+  # Allow health checks from kube-system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 3000  # Health endpoints
+      
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+      
+  # Allow external HTTPS for APIs (Norwegian compliance endpoints)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+      
+  # Allow Redis connection
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+# EnvoyFilter for Custom Norwegian Compliance Headers
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: xaheen-cli-headers
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: xaheen-cli
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inline_code: |
+            function envoy_on_request(request_handle)
+              -- Add Norwegian compliance headers
+              request_handle:headers():add("x-nsm-classification", "RESTRICTED")
+              request_handle:headers():add("x-norwegian-locale", "nb-NO")
+              request_handle:headers():add("x-gdpr-compliant", "true")
+              request_handle:headers():add("x-data-localization", "norway")
+              request_handle:headers():add("x-timezone", "Europe/Oslo")
+            end
+            
+            function envoy_on_response(response_handle)
+              -- Add security headers for Norwegian compliance
+              response_handle:headers():add("x-content-type-options", "nosniff")
+              response_handle:headers():add("x-frame-options", "DENY")
+              response_handle:headers():add("x-xss-protection", "1; mode=block")
+              response_handle:headers():add("strict-transport-security", "max-age=31536000; includeSubDomains")
+              response_handle:headers():add("x-nsm-classification", "RESTRICTED")
+            end

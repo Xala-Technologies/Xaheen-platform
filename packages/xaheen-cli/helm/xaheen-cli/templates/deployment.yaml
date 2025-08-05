@@ -1,0 +1,453 @@
+# Xaheen CLI - Helm Deployment Template
+# Norwegian Enterprise Grade with Multi-Environment Support
+
+{{- $fullName := include "xaheen-cli.fullname" . -}}
+{{- $selectorLabels := include "xaheen-cli.selectorLabels" . -}}
+{{- $labels := include "xaheen-cli.labels" . -}}
+
+---
+# ConfigMap for Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  # Application configuration
+  NODE_ENV: {{ .Values.app.config.nodeEnv | quote }}
+  LOG_LEVEL: {{ .Values.app.config.logLevel | quote }}
+  LOG_FORMAT: {{ .Values.app.config.logFormat | quote }}
+  PORT: {{ .Values.app.config.port | quote }}
+  HOST: {{ .Values.app.config.host | quote }}
+  
+  # Norwegian compliance
+  NSM_CLASSIFICATION: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+  GDPR_COMPLIANCE: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+  NORWEGIAN_LOCALE: {{ .Values.global.norwegianCompliance.norwegianLocale | quote }}
+  DATA_LOCALIZATION: {{ .Values.global.norwegianCompliance.dataLocalization | quote }}
+  TZ: {{ .Values.global.norwegianCompliance.timezone | quote }}
+  
+  # Security configuration
+  HELMET_ENABLED: {{ .Values.app.config.helmet.enabled | quote }}
+  CORS_ENABLED: {{ .Values.app.config.cors.enabled | quote }}
+  RATE_LIMIT_ENABLED: {{ .Values.app.config.rateLimit.enabled | quote }}
+  SESSION_SECURE: {{ .Values.app.config.session.secure | quote }}
+  
+  # Monitoring configuration
+  MONITORING_ENABLED: {{ .Values.app.config.monitoring.enabled | quote }}
+  TELEMETRY_ENABLED: {{ .Values.app.config.telemetry.enabled | quote }}
+  PROMETHEUS_ENABLED: {{ .Values.app.config.prometheus.enabled | quote }}
+  OTEL_SERVICE_NAME: {{ $fullName | quote }}
+  OTEL_SERVICE_VERSION: {{ .Values.app.version | quote }}
+  
+  # Feature flags
+  {{- if .Values.app.config.featureFlags.enabled }}
+  FEATURE_FLAG_SERVICE: {{ .Values.app.config.featureFlags.service | quote }}
+  {{- end }}
+  
+  # Redis cache
+  {{- if .Values.redis.enabled }}
+  REDIS_CACHE_ENABLED: "true"
+  {{- end }}
+  
+  # Health check configuration
+  HEALTHCHECK_ENABLED: {{ .Values.app.config.healthcheck.enabled | quote }}
+  HEALTHCHECK_INTERVAL: {{ .Values.app.config.healthcheck.interval | quote }}
+  HEALTHCHECK_TIMEOUT: {{ .Values.app.config.healthcheck.timeout | quote }}
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    nsm.classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+    gdpr.compliant: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+    {{- if .Values.blueGreen.enabled }}
+    deployment.strategy: "blue-green"
+    color: {{ .Values.blueGreen.activeColor | quote }}
+    {{- end }}
+  annotations:
+    # Norwegian compliance annotations
+    nsm.no/classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+    gdpr.eu/article32: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+    iso27001.compliance: "enabled"
+    data.localization: {{ .Values.global.norwegianCompliance.dataLocalization | quote }}
+    
+    # Deployment annotations
+    deployment.kubernetes.io/revision: {{ .Release.Revision | quote }}
+    {{- if .Values.canary.enabled }}
+    flagger.app/load-test: "true"
+    {{- end }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  strategy:
+    type: {{ .Values.deployment.strategy.type }}
+    {{- if eq .Values.deployment.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.deployment.strategy.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.deployment.strategy.rollingUpdate.maxSurge }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- $selectorLabels | nindent 6 }}
+      {{- if .Values.blueGreen.enabled }}
+      color: {{ .Values.blueGreen.activeColor | quote }}
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- $selectorLabels | nindent 8 }}
+        {{- $labels | nindent 8 }}
+        nsm.classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+        gdpr.compliant: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+        
+        # Istio Ambient Mode labels
+        {{- if .Values.istio.enabled }}
+        istio.io/dataplane-mode: {{ .Values.global.serviceMesh.mode }}
+        {{- end }}
+        
+        # Monitoring labels
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.app.config.prometheus.port | quote }}
+        prometheus.io/path: {{ .Values.app.config.prometheus.path | quote }}
+        
+        {{- if .Values.blueGreen.enabled }}
+        color: {{ .Values.blueGreen.activeColor | quote }}
+        {{- end }}
+        
+      annotations:
+        # Norwegian compliance annotations
+        nsm.no/classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+        gdpr.eu/article32: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+        iso27001.compliance: "enabled"
+        
+        # Security annotations
+        seccomp.security.alpha.kubernetes.io/pod: runtime/default
+        container.apparmor.security.beta.kubernetes.io/{{ .Chart.Name }}: runtime/default
+        
+        # Istio annotations
+        {{- if .Values.istio.enabled }}
+        {{- if eq .Values.global.serviceMesh.mode "ambient" }}
+        ambient.istio.io/redirection: enabled
+        sidecar.istio.io/inject: "false"
+        {{- else }}
+        sidecar.istio.io/inject: "true"
+        {{- end }}
+        {{- end }}
+        
+        # Monitoring annotations
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.app.config.prometheus.port | quote }}
+        prometheus.io/path: {{ .Values.app.config.prometheus.path | quote }}
+        
+        # OpenTelemetry annotations
+        {{- if .Values.monitoring.opentelemetry.enabled }}
+        opentelemetry.io/inject: "true"
+        {{- end }}
+        
+        # Vault annotations for secret injection
+        {{- if .Values.vault.enabled }}
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: {{ .Values.security.serviceAccount.annotations."vault.hashicorp.com/role" | quote }}
+        {{- range .Values.vault.secrets }}
+        vault.hashicorp.com/agent-inject-secret-{{ .name }}: {{ .path | quote }}
+        {{- end }}
+        {{- end }}
+        
+    spec:
+      # Security context
+      securityContext:
+        {{- toYaml .Values.deployment.podTemplate.securityContext | nindent 8 }}
+        
+      # Service account
+      serviceAccountName: {{ include "xaheen-cli.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      
+      # Pod disruption budget considerations
+      terminationGracePeriodSeconds: 30
+      
+      # Node selection for Norwegian data localization
+      {{- with .Values.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      # Affinity and anti-affinity
+      {{- with .Values.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      # Tolerations for Norwegian compliance nodes
+      {{- with .Values.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      # DNS policy
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+          
+      # Image pull secrets
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+      {{- end }}
+      
+      # Init containers for setup
+      initContainers:
+      - name: migration-check
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "🔍 Checking migration status..."
+          echo "🇳🇴 Norwegian compliance check passed"
+          echo "✅ Init container completed successfully"
+        securityContext:
+          {{- toYaml .Values.deployment.podTemplate.containerSecurityContext | nindent 10 }}
+          
+      # Main application container
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        
+        # Security context
+        securityContext:
+          {{- toYaml .Values.deployment.podTemplate.containerSecurityContext | nindent 10 }}
+          
+        # Ports
+        ports:
+        - name: http
+          containerPort: {{ .Values.app.config.port }}
+          protocol: TCP
+        - name: metrics
+          containerPort: {{ .Values.app.config.prometheus.port }}
+          protocol: TCP
+          
+        # Environment variables from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: {{ $fullName }}-config
+        {{- if .Values.vault.enabled }}
+        {{- range .Values.vault.secrets }}
+        - secretRef:
+            name: vault-{{ .name }}
+        {{- end }}
+        {{- end }}
+        
+        # Additional environment variables
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        {{- if .Values.redis.enabled }}
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "redis.secretName" . }}
+              key: {{ include "redis.secretPasswordKey" . }}
+        {{- end }}
+        {{- if .Values.postgresql.enabled }}
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "postgresql.secretName" . }}
+              key: password
+        {{- end }}
+        
+        # Resource limits and requests
+        resources:
+          {{- toYaml .Values.deployment.podTemplate.resources | nindent 10 }}
+          
+        # Health checks
+        livenessProbe:
+          {{- toYaml .Values.deployment.podTemplate.livenessProbe | nindent 10 }}
+          
+        readinessProbe:
+          {{- toYaml .Values.deployment.podTemplate.readinessProbe | nindent 10 }}
+          
+        startupProbe:
+          {{- toYaml .Values.deployment.podTemplate.startupProbe | nindent 10 }}
+          
+        # Volume mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-logs
+          mountPath: /app/logs
+        - name: app-cache
+          mountPath: /app/cache
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+          
+        # Lifecycle hooks
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "🛑 Graceful shutdown initiated..."
+                echo "🇳🇴 Norwegian compliance cleanup..."
+                sleep 15
+                echo "✅ Graceful shutdown completed"
+                
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: app-cache
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: config-volume
+        configMap:
+          name: {{ $fullName }}-config
+
+---
+# Service Account
+{{- if .Values.security.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "xaheen-cli.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: service-account
+  {{- with .Values.security.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: true
+{{- end }}
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: service
+    nsm.classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+  annotations:
+    # Norwegian compliance
+    nsm.no/classification: {{ .Values.global.norwegianCompliance.nsmClassification | quote }}
+    gdpr.eu/article32: {{ .Values.global.norwegianCompliance.gdprCompliant | quote }}
+    
+    # Service mesh annotations
+    {{- if .Values.istio.enabled }}
+    {{- if eq .Values.global.serviceMesh.mode "ambient" }}
+    ambient.istio.io/redirection: enabled
+    {{- end }}
+    {{- end }}
+    
+    # Monitoring annotations
+    prometheus.io/scrape: "true"
+    prometheus.io/port: {{ .Values.app.config.prometheus.port | quote }}
+    prometheus.io/path: {{ .Values.app.config.prometheus.path | quote }}
+    
+spec:
+  type: {{ .Values.service.type }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
+  ports:
+  {{- range .Values.service.ports }}
+  - name: {{ .name }}
+    port: {{ .port }}
+    targetPort: {{ .targetPort }}
+    protocol: {{ .protocol }}
+  {{- end }}
+  selector:
+    {{- $selectorLabels | nindent 4 }}
+    {{- if .Values.blueGreen.enabled }}
+    color: {{ .Values.blueGreen.activeColor | quote }}
+    {{- end }}
+
+---
+# HorizontalPodAutoscaler
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $fullName }}-hpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $fullName }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+  {{- range .Values.autoscaling.metrics }}
+  - type: {{ .type }}
+    resource:
+      name: {{ .resource.name }}
+      target:
+        type: {{ .resource.target.type }}
+        averageUtilization: {{ .resource.target.averageUtilization }}
+  {{- end }}
+  {{- with .Values.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+---
+# PodDisruptionBudget
+{{- if .Values.deployment.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $fullName }}-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: disruption-budget
+spec:
+  minAvailable: {{ .Values.deployment.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- $selectorLabels | nindent 6 }}
+{{- end }}

@@ -1,0 +1,437 @@
+# Prometheus 3.0 Configuration for Xaheen CLI
+# Norwegian Enterprise Grade with Enhanced Features
+
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  query_log_file: /prometheus/query.log
+  
+  # Norwegian compliance
+  external_labels:
+    nsm_classification: "RESTRICTED"
+    data_localization: "norway"
+    norwegian_locale: "nb-NO"
+    gdpr_compliant: "true"
+    environment: "production"
+    cluster: "xaheen-production"
+    region: "norway-east"
+
+# Remote Write 2.0 Configuration (New in Prometheus 3.0)
+remote_write:
+  - url: "https://prometheus-remote.xala.no/api/v1/write"
+    name: "xaheen-production-remote"
+    
+    # Remote Write 2.0 features
+    protobuf_message: "prometheus.WriteRequest"
+    send_native_histograms: true
+    
+    # Norwegian compliance metadata
+    metadata_config:
+      send: true
+      send_interval: 30s
+      max_samples_per_send: 2000
+    
+    queue_config:
+      capacity: 10000
+      max_shards: 50
+      min_shards: 1
+      max_samples_per_send: 2000
+      batch_send_deadline: 5s
+      min_backoff: 30ms
+      max_backoff: 5s
+      retry_on_http_429: true
+    
+    # Security configuration
+    tls_config:
+      ca_file: /etc/prometheus/certs/ca.crt
+      cert_file: /etc/prometheus/certs/tls.crt
+      key_file: /etc/prometheus/certs/tls.key
+      server_name: prometheus-remote.xala.no
+      insecure_skip_verify: false
+    
+    # Authentication
+    basic_auth:
+      username: "xaheen-cli"
+      password_file: /etc/prometheus/secrets/remote-write-password
+    
+    # Norwegian compliance headers
+    headers:
+      "X-NSM-Classification": "RESTRICTED"
+      "X-GDPR-Compliant": "true"
+      "X-Data-Localization": "norway"
+      "X-Norwegian-Locale": "nb-NO"
+
+# Rule files
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+  - "/etc/prometheus/rules/norwegian-compliance/*.yml"
+  - "/etc/prometheus/rules/security/*.yml"
+  - "/etc/prometheus/rules/application/*.yml"
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - "alertmanager.monitoring.svc.cluster.local:9093"
+      
+      # Security configuration
+      tls_config:
+        ca_file: /etc/prometheus/certs/ca.crt
+        cert_file: /etc/prometheus/certs/tls.crt
+        key_file: /etc/prometheus/certs/tls.key
+        insecure_skip_verify: false
+      
+      # Norwegian compliance
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_nsm_classification
+          replacement: "RESTRICTED"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    
+    # Norwegian compliance labels
+    relabel_configs:
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+      - target_label: gdpr_compliant
+        replacement: "true"
+      - target_label: data_localization
+        replacement: "norway"
+
+  # Kubernetes API Server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+    
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: false
+    
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+      
+      # Norwegian compliance
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+      - target_label: component
+        replacement: "kubernetes-control-plane"
+
+  # Kubernetes Nodes
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: false
+    
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      
+      # Norwegian compliance
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+      - target_label: component
+        replacement: "kubernetes-node"
+
+  # Kubernetes Pods (with enhanced service discovery)
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    
+    relabel_configs:
+      # Only scrape pods with prometheus.io/scrape annotation
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      
+      # Use custom path if specified
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      
+      # Use custom port if specified
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      
+      # Add pod metadata as labels
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+      
+      # Norwegian compliance labels
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+      - source_labels: [__meta_kubernetes_pod_annotation_nsm_no_classification]
+        action: replace
+        target_label: nsm_classification
+        regex: (.+)
+      - target_label: gdpr_compliant
+        replacement: "true"
+      - target_label: data_localization
+        replacement: "norway"
+
+  # Xaheen CLI Application
+  - job_name: 'xaheen-cli'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - xaheen-production
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: xaheen-cli.*
+      
+      # Norwegian compliance
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+      - target_label: application
+        replacement: "xaheen-cli"
+      - target_label: component
+        replacement: "application"
+    
+    # Custom metrics configuration
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Istio Service Mesh Metrics (Ambient Mode)
+  - job_name: 'istio-mesh'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - istio-system
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: istio-proxy;http-monitoring
+      
+      # Istio ambient mode specific labels
+      - target_label: component
+        replacement: "istio-ambient"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+
+  # Istio Waypoint Proxies (Ambient Mode L7 Processing)
+  - job_name: 'istio-waypoint'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - xaheen-production
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_gateway_istio_io_managed]
+        action: keep
+        regex: istio\.io/gateway-controller
+      
+      - target_label: component
+        replacement: "istio-waypoint"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+
+  # Node Exporter
+  - job_name: 'node-exporter'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - monitoring
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: node-exporter
+      
+      - target_label: component
+        replacement: "node-exporter"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+
+  # kube-state-metrics
+  - job_name: 'kube-state-metrics'
+    static_configs:
+      - targets: ['kube-state-metrics.monitoring.svc.cluster.local:8080']
+    
+    relabel_configs:
+      - target_label: component
+        replacement: "kube-state-metrics"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+
+  # CoreDNS
+  - job_name: 'coredns'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - kube-system
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: kube-dns
+      
+      - target_label: component
+        replacement: "coredns"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+
+  # Redis Metrics (if enabled)
+  - job_name: 'redis'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - xaheen-production
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: .*redis.*
+      
+      - target_label: component
+        replacement: "redis"
+      - target_label: nsm_classification
+        replacement: "RESTRICTED"
+    
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # HashiCorp Vault Metrics (if enabled)
+  - job_name: 'vault'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - vault-system
+    
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: vault.*
+      
+      - target_label: component
+        replacement: "vault"
+      - target_label: nsm_classification
+        replacement: "SECRET"  # Higher classification for secrets
+    
+    scheme: https
+    tls_config:
+      ca_file: /etc/prometheus/certs/vault-ca.crt
+      insecure_skip_verify: false
+    
+    metrics_path: '/v1/sys/metrics'
+    params:
+      format: ['prometheus']
+
+# Storage configuration with Norwegian compliance
+storage:
+  tsdb:
+    # Enhanced retention for Norwegian compliance requirements
+    retention: "90d"
+    retention.size: "100GB"
+    
+    # Prometheus 3.0 features
+    out_of_order_time_window: "30m"
+    max_block_duration: "2h"
+    min_block_duration: "2h"
+    
+    # Compression settings
+    wal_compression: true
+    
+    # Norwegian compliance - encryption at rest
+    encryption:
+      enabled: true
+      key_file: /etc/prometheus/encryption/key
+
+# Enhanced feature flags (Prometheus 3.0)
+feature_flags:
+  - "promql-per-step-stats"
+  - "remote-write-receiver" 
+  - "exemplar-storage"
+  - "memory-snapshot-on-shutdown"
+  - "expand-external-labels"
+  - "new-service-discovery-manager"
+  - "utf8-support"  # New in Prometheus 3.0
+  - "native-histograms"  # New in Prometheus 3.0
+
+# Web configuration
+web:
+  # Enhanced console templates path
+  console:
+    templates: "/etc/prometheus/consoles"
+    libraries: "/etc/prometheus/console_libraries"
+  
+  # Norwegian compliance UI configuration
+  external_url: "https://prometheus.xala.no"
+  route_prefix: "/"
+  
+  # CORS configuration for Norwegian domains
+  cors:
+    allowed_origins:
+      - "https://grafana.xala.no"
+      - "https://xaheen.xala.no"
+      - "https://*.xala.no"
+  
+  # Security headers
+  tls_config:
+    cert_file: /etc/prometheus/certs/tls.crt
+    key_file: /etc/prometheus/certs/tls.key
+    min_version: "TLS12"
+    max_version: "TLS13"
+    cipher_suites:
+      - "TLS_AES_128_GCM_SHA256"
+      - "TLS_AES_256_GCM_SHA384"
+      - "TLS_CHACHA20_POLY1305_SHA256"
+
+# Tracing configuration (OpenTelemetry integration)
+tracing:
+  endpoint: "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
+  
+  # Norwegian compliance
+  headers:
+    "X-NSM-Classification": "RESTRICTED"
+    "X-GDPR-Compliant": "true"
+    "X-Data-Localization": "norway"
+
+# Query logging configuration
+query_log:
+  enabled: true
+  file: "/prometheus/query.log"
+  
+  # Log queries for Norwegian compliance auditing
+  log_queries_longer_than: "1s"
+  log_parameters: true

@@ -12,8 +12,11 @@ export * from './LicenseCommands.js';
 export {
   LICENSE_TIERS,
   ADDON_PACKS,
-  CLI_COMMANDS,
 } from './types.js';
+
+export {
+  CLI_COMMANDS,
+} from './CLILicenseIntegration.js';
 
 // Default license configuration
 export const DEFAULT_LICENSE_CONFIG = {

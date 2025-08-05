@@ -1,60 +1,160 @@
-# Kubernetes Namespace for Xaheen CLI
-# Provides resource isolation and security boundaries
+# Xaheen CLI - Production Namespace Configuration
+# Norwegian Enterprise Grade with NSM Security and Istio Ambient Mode
 
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: xaheen-cli
+  name: xaheen-production
   labels:
+    # Application labels
     app.kubernetes.io/name: xaheen-cli
-    app.kubernetes.io/component: namespace
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: application
     app.kubernetes.io/part-of: xaheen-platform
     app.kubernetes.io/managed-by: helm
-    compliance.norway/level: restricted
-    security.policy/audit: enabled
+    
+    # Norwegian compliance labels
+    nsm.classification: "RESTRICTED"
+    gdpr.compliant: "true"
+    data.localization: "norway"
+    norwegian.locale: "nb-NO"
+    compliance.framework: "nsm"
+    
+    # Security labels
+    security.level: "high"
+    security.scan: "enabled"
+    network.policy: "enabled"
+    pod.security.standard: "restricted"
+    
+    # Istio Ambient Mode labels
+    istio.io/dataplane-mode: ambient
+    istio.io/use-waypoint: xaheen-waypoint
+    
+    # Monitoring labels
+    monitoring.prometheus.io/scrape: "true"
+    telemetry.opentelemetry.io/enabled: "true"
+    
+    # Environment labels
+    environment: production
+    tier: production
+    zone: norway-east
+    
   annotations:
-    description: "Xaheen CLI production namespace"
-    owner: "devops@xaheen.com"
-    compliance.norway/classification: "RESTRICTED"
-    security.policy/network-isolation: "enabled"
+    # Norwegian compliance annotations
+    nsm.no/classification: "RESTRICTED"
+    gdpr.eu/article32: "true"
+    iso27001.compliance: "enabled"
+    
+    # Security annotations
+    security.kubernetes.io/audit: "enabled"
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+    
+    # Istio annotations
+    istio.io/rev: default
+    ambient.istio.io/redirection: enabled
+    
+    # Monitoring annotations
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "15020"
+    
+    # Resource management
+    scheduler.alpha.kubernetes.io/preferred-zone: "norway-east-1a"
+    
 ---
-# Resource Quota for the namespace
+# Staging Namespace
 apiVersion: v1
-kind: ResourceQuota
+kind: Namespace
 metadata:
-  name: xaheen-cli-quota
-  namespace: xaheen-cli
-spec:
-  hard:
-    requests.cpu: "4"
-    requests.memory: 8Gi
-    limits.cpu: "10"
-    limits.memory: 20Gi
-    pods: "20"
-    services: "10"
-    persistentvolumeclaims: "5"
-    secrets: "20"
-    configmaps: "20"
+  name: xaheen-staging
+  labels:
+    # Application labels
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: staging
+    app.kubernetes.io/version: "1.0.0-staging"
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: xaheen-platform
+    app.kubernetes.io/managed-by: helm
+    
+    # Norwegian compliance labels
+    nsm.classification: "OPEN"
+    gdpr.compliant: "true"
+    data.localization: "norway"
+    norwegian.locale: "nb-NO"
+    
+    # Security labels
+    security.level: "medium"
+    security.scan: "enabled"
+    network.policy: "enabled"
+    pod.security.standard: "baseline"
+    
+    # Istio Ambient Mode labels
+    istio.io/dataplane-mode: ambient
+    istio.io/use-waypoint: xaheen-staging-waypoint
+    
+    # Monitoring labels
+    monitoring.prometheus.io/scrape: "true"
+    telemetry.opentelemetry.io/enabled: "true"
+    
+    # Environment labels
+    environment: staging
+    tier: staging
+    zone: norway-east
+    
+  annotations:
+    # Norwegian compliance annotations
+    nsm.no/classification: "OPEN"
+    gdpr.eu/article32: "true"
+    
+    # Security annotations
+    security.kubernetes.io/audit: "enabled"
+    
+    # Istio annotations
+    istio.io/rev: default
+    ambient.istio.io/redirection: enabled
+    
+    # Monitoring annotations
+    prometheus.io/scrape: "true"
+    
 ---
-# Limit Range for default resource constraints
+# Development Namespace
 apiVersion: v1
-kind: LimitRange
+kind: Namespace
 metadata:
-  name: xaheen-cli-limits
-  namespace: xaheen-cli
-spec:
-  limits:
-  - default:
-      cpu: "500m"
-      memory: "512Mi"
-    defaultRequest:
-      cpu: "100m"
-      memory: "128Mi"
-    type: Container
-  - max:
-      cpu: "2"
-      memory: "2Gi"
-    min:
-      cpu: "50m"
-      memory: "64Mi"
-    type: Container
+  name: xaheen-development
+  labels:
+    # Application labels
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: development
+    app.kubernetes.io/version: "1.0.0-dev"
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: xaheen-platform
+    app.kubernetes.io/managed-by: helm
+    
+    # Norwegian compliance labels
+    nsm.classification: "OPEN"
+    gdpr.compliant: "true"
+    data.localization: "norway"
+    norwegian.locale: "nb-NO"
+    
+    # Security labels
+    security.level: "low"
+    security.scan: "disabled"
+    network.policy: "permissive"
+    pod.security.standard: "baseline"
+    
+    # Monitoring labels
+    monitoring.prometheus.io/scrape: "true"
+    telemetry.opentelemetry.io/enabled: "true"
+    
+    # Environment labels
+    environment: development  
+    tier: development
+    zone: norway-east
+    
+  annotations:
+    # Norwegian compliance annotations
+    nsm.no/classification: "OPEN"
+    
+    # Monitoring annotations
+    prometheus.io/scrape: "true"

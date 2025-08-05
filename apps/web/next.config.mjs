@@ -5,9 +5,7 @@ const config = {
   poweredByHeader: false,
   
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: [
-      '@xala-technologies/ui-system',
       'lucide-react',
       'recharts',
       'date-fns',

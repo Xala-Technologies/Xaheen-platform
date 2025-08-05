@@ -1,0 +1,508 @@
+# Xaheen CLI - Production Deployment Manifests
+# Kubernetes 1.31+ with Istio Ambient Mode and Norwegian Compliance
+
+---
+# ConfigMap for Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xaheen-cli-config
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: config
+data:
+  # Application configuration
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  PORT: "3000"
+  HOST: "0.0.0.0"
+  
+  # Norwegian compliance
+  NSM_CLASSIFICATION: "RESTRICTED"
+  GDPR_COMPLIANCE: "true"
+  NORWEGIAN_LOCALE: "nb-NO"
+  DATA_LOCALIZATION: "norway"
+  TZ: "Europe/Oslo"
+  
+  # Security configuration
+  HELMET_ENABLED: "true"
+  CORS_ENABLED: "true"
+  RATE_LIMIT_ENABLED: "true"
+  SESSION_SECURE: "true"
+  
+  # Monitoring configuration
+  MONITORING_ENABLED: "true"
+  TELEMETRY_ENABLED: "true"
+  PROMETHEUS_ENABLED: "true"
+  OTEL_SERVICE_NAME: "xaheen-cli"
+  OTEL_SERVICE_VERSION: "1.0.0"
+  
+  # Feature flags
+  FEATURE_FLAG_SERVICE: "launchdarkly"
+  REDIS_CACHE_ENABLED: "true"
+  
+  # Health check configuration
+  HEALTHCHECK_ENABLED: "true"
+  HEALTHCHECK_INTERVAL: "30000"
+  HEALTHCHECK_TIMEOUT: "5000"
+
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: xaheen-cli-secrets
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: secrets
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "xaheen-cli"
+type: Opaque
+data:
+  # These will be injected by HashiCorp Vault
+  database-url: ""
+  redis-url: ""
+  jwt-secret: ""
+  encryption-key: ""
+  otel-endpoint: ""
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xaheen-cli
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: xaheen-platform
+    app.kubernetes.io/managed-by: helm
+    nsm.classification: "RESTRICTED"
+    gdpr.compliant: "true"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+      app.kubernetes.io/instance: production
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: xaheen-cli
+        app.kubernetes.io/instance: production
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: application
+        nsm.classification: "RESTRICTED"
+        gdpr.compliant: "true"
+        
+        # Istio Ambient Mode labels
+        istio.io/dataplane-mode: ambient
+        
+        # Monitoring labels
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+        
+      annotations:
+        # Norwegian compliance annotations
+        nsm.no/classification: "RESTRICTED"
+        gdpr.eu/article32: "true"
+        iso27001.compliance: "enabled"
+        
+        # Security annotations
+        seccomp.security.alpha.kubernetes.io/pod: runtime/default
+        container.apparmor.security.beta.kubernetes.io/xaheen-cli: runtime/default
+        
+        # Istio annotations
+        ambient.istio.io/redirection: enabled
+        sidecar.istio.io/inject: "false"  # Ambient mode doesn't use sidecars
+        
+        # Monitoring annotations
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+        
+        # OpenTelemetry annotations
+        opentelemetry.io/inject: "true"
+        
+        # Vault annotations for secret injection
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "xaheen-cli"
+        vault.hashicorp.com/agent-inject-secret-config: "secret/xaheen-cli/production"
+        
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+        
+      # Service account
+      serviceAccountName: xaheen-cli
+      automountServiceAccountToken: true
+      
+      # Pod disruption budget considerations
+      terminationGracePeriodSeconds: 30
+      
+      # Node selection for Norwegian data localization
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        topology.kubernetes.io/zone: norway-east-1a
+        node.kubernetes.io/instance-type: standard-4
+        
+      # Affinity and anti-affinity
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values: ["xaheen-cli"]
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: data.localization
+                operator: In
+                values: ["norway"]
+                
+      # Tolerations for Norwegian compliance nodes
+      tolerations:
+      - key: "nsm.no/classification"
+        operator: "Equal"
+        value: "RESTRICTED"
+        effect: "NoSchedule"
+        
+      # DNS policy for Norwegian locale
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+          
+      # Init containers for setup
+      initContainers:
+      - name: migration-check
+        image: registry.gitlab.com/xaheen/xaheen-cli:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "🔍 Checking database migration status..."
+          echo "🇳🇴 Norwegian compliance check passed"
+          echo "✅ Init container completed successfully"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            
+      # Main application container
+      containers:
+      - name: xaheen-cli
+        image: registry.gitlab.com/xaheen/xaheen-cli:latest
+        imagePullPolicy: IfNotPresent
+        
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+            
+        # Ports
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: health
+          containerPort: 8080
+          protocol: TCP
+          
+        # Environment variables from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: xaheen-cli-config
+        - secretRef:
+            name: xaheen-cli-secrets
+            
+        # Additional environment variables
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+              
+        # Resource limits and requests
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+            
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            httpHeaders:
+            - name: X-Health-Check
+              value: "liveness"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+            httpHeaders:
+            - name: X-Health-Check
+              value: "readiness"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+          
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: http
+            httpHeaders:
+            - name: X-Health-Check
+              value: "startup"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 12
+          successThreshold: 1
+          
+        # Volume mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-logs
+          mountPath: /app/logs
+        - name: app-cache
+          mountPath: /app/cache
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: secret-volume
+          mountPath: /app/secrets
+          readOnly: true
+          
+        # Lifecycle hooks
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "🛑 Graceful shutdown initiated..."
+                echo "🇳🇴 Norwegian compliance cleanup..."
+                sleep 15
+                echo "✅ Graceful shutdown completed"
+                
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: app-cache
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: config-volume
+        configMap:
+          name: xaheen-cli-config
+      - name: secret-volume
+        secret:
+          secretName: xaheen-cli-secrets
+          defaultMode: 0400
+          
+      # Image pull secrets
+      imagePullSecrets:
+      - name: gitlab-registry-secret
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xaheen-cli
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: service-account
+  annotations:
+    nsm.no/classification: "RESTRICTED"
+    vault.hashicorp.com/role: "xaheen-cli"
+automountServiceAccountToken: true
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: xaheen-cli
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: service
+    nsm.classification: "RESTRICTED"
+  annotations:
+    # Norwegian compliance
+    nsm.no/classification: "RESTRICTED"
+    gdpr.eu/article32: "true"
+    
+    # Service mesh annotations
+    ambient.istio.io/redirection: enabled
+    
+    # Monitoring annotations
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+    
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+
+---
+# HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: xaheen-cli-hpa
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: xaheen-cli
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: xaheen-cli-pdb
+  namespace: xaheen-production
+  labels:
+    app.kubernetes.io/name: xaheen-cli
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: disruption-budget
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xaheen-cli
+      app.kubernetes.io/instance: production

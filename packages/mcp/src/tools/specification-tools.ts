@@ -559,41 +559,6 @@ export function getSpecificationTools(): Tool[] {
 			},
 		},
 		{
-			name: "create_project",
-			description: "Create new project with Xala UI System integration",
-			inputSchema: {
-				type: "object",
-				properties: {
-					projectName: {
-						type: "string",
-						description: "Name of the new project",
-					},
-					framework: {
-						type: "string",
-						enum: ["nextjs", "react", "vue", "angular", "svelte"],
-						description: "Framework to use",
-					},
-					template: {
-						type: "string",
-						description: "Project template",
-						default: "default",
-					},
-					features: {
-						type: "array",
-						items: { type: "string" },
-						description: "Features to include (auth, database, etc.)",
-					},
-					packageManager: {
-						type: "string",
-						enum: ["npm", "yarn", "pnpm"],
-						description: "Package manager to use",
-						default: "npm",
-					},
-				},
-				required: ["projectName", "framework"],
-			},
-		},
-		{
 			name: "generate_page",
 			description:
 				"Generate complete page with components using CLI integration",
@@ -1329,24 +1294,7 @@ ${
 		};
 	},
 
-	create_project: async (args: any) => {
-		const cliManager = new CliIntegrationManager();
-		const result = await cliManager.createProject({
-			name: args.projectName,
-			framework: args.framework,
-			template: args.template,
-			features: args.features || [],
-			packageManager: args.packageManager || "npm",
-		});
 
-		return {
-			success: result.success,
-			output: result.output,
-			error: result.error,
-			generatedFiles: result.generatedFiles,
-			projectName: args.projectName,
-		};
-	},
 
 	generate_page: async (args: any) => {
 		const cliManager = new CliIntegrationManager();

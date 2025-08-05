@@ -23,16 +23,27 @@
 
 "use client";
 
-import {
-	Badge,
-	Card,
-	Container,
-	Grid,
-	GridItem,
-	Skeleton,
-	Stack,
-	Typography,
-} from "@xala-technologies/ui-system";
+// Temporarily disabled broken UI system imports
+// TODO: Fix @xala-technologies/ui-system package
+const Badge = ({ children, ...props }: any) => <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" {...props}>{children}</span>;
+const Card = ({ children, ...props }: any) => <div className="bg-white rounded-lg shadow-md p-6" {...props}>{children}</div>;
+const Container = ({ children, ...props }: any) => <div className="container mx-auto px-4" {...props}>{children}</div>;
+const Grid = ({ children, ...props }: any) => <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" {...props}>{children}</div>;
+const GridItem = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Skeleton = ({ className, ...props }: any) => <div className={`animate-pulse bg-gray-200 rounded ${className}`} {...props} />;
+const Stack = ({ children, gap = 4, ...props }: any) => <div className={`flex flex-col gap-${gap}`} {...props}>{children}</div>;
+const Typography = ({ variant = "body", children, ...props }: any) => {
+  const classes = {
+    h1: "text-4xl font-bold",
+    h2: "text-3xl font-semibold", 
+    h3: "text-2xl font-semibold",
+    h4: "text-xl font-semibold",
+    body: "text-base",
+    small: "text-sm"
+  };
+  const Tag = variant.startsWith('h') ? variant : 'p';
+  return <Tag className={classes[variant] || classes.body} {...props}>{children}</Tag>;
+};
 import React, { useEffect, useState } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { CommandDisplay } from "./CommandDisplay";

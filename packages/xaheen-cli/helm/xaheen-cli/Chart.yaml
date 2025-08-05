@@ -1,0 +1,199 @@
+# Xaheen CLI Helm Chart
+# Norwegian Enterprise Grade with Multi-Environment Support
+
+apiVersion: v2
+name: xaheen-cli
+description: >
+  AI-powered CLI for modern development workflows with Norwegian compliance support.
+  Features production-ready deployment with Istio Ambient Mode, Prometheus 3.0 monitoring,
+  and comprehensive security hardening for NSM classification levels.
+
+# Chart type
+type: application
+
+# Chart version (semantic versioning)
+version: 1.0.0
+
+# Application version
+appVersion: "1.0.0"
+
+# Chart keywords for discoverability
+keywords:
+  - cli
+  - ai
+  - development
+  - typescript
+  - norwegian
+  - compliance
+  - nsm
+  - gdpr
+  - enterprise
+  - microservice
+  - istio
+  - prometheus
+  - monitoring
+
+# Home page
+home: https://xaheen.dev
+
+# Source code repository
+sources:
+  - https://github.com/xaheen/xaheen-cli
+
+# Maintainers
+maintainers:
+  - name: Xaheen Enterprise
+    email: devops@xaheen.no
+    url: https://xaheen.dev
+  - name: Ibrahim Rahmani
+    email: ibrahim@xaheen.com
+
+# Dependencies
+dependencies:
+  # Redis for caching and session management
+  - name: redis
+    version: "18.1.5"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    tags:
+      - cache
+      - session
+      
+  # PostgreSQL for persistent storage
+  - name: postgresql
+    version: "12.10.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+    tags:
+      - database
+      - persistence
+      
+  # Prometheus for monitoring
+  - name: kube-prometheus-stack
+    version: "55.5.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: monitoring.prometheus.enabled
+    tags:
+      - monitoring
+      - observability
+      
+  # HashiCorp Vault for secret management
+  - name: vault
+    version: "0.25.0"
+    repository: "https://helm.releases.hashicorp.com"
+    condition: vault.enabled
+    tags:
+      - security
+      - secrets
+      
+  # Istio for service mesh (Ambient Mode)
+  - name: istiod
+    version: "1.20.0"
+    repository: "https://istio-release.storage.googleapis.com/charts"
+    condition: istio.enabled
+    tags:
+      - servicemesh
+      - security
+      - observability
+
+# Annotations for Norwegian compliance
+annotations:
+  # Application metadata
+  app.kubernetes.io/name: "xaheen-cli"
+  app.kubernetes.io/component: "development-tools"
+  app.kubernetes.io/part-of: "xaheen-platform"
+  
+  # Norwegian compliance annotations
+  nsm.no/classification: "RESTRICTED"
+  gdpr.eu/compliant: "true"
+  gdpr.eu/article32: "true"
+  iso27001.compliance: "enabled"
+  data.localization: "norway"
+  norwegian.locale: "nb-NO"
+  
+  # Security annotations
+  security.level: "high"
+  security.framework: "nsm"
+  security.scan: "enabled"
+  vulnerability.scan: "enabled"
+  
+  # Monitoring annotations
+  monitoring.prometheus.io/scrape: "true"
+  telemetry.opentelemetry.io/enabled: "true"
+  
+  # DevOps annotations
+  ci.gitlab.com/pipeline: "true"
+  deployment.strategy: "blue-green"
+  rollback.enabled: "true"
+  
+  # Enterprise annotations
+  enterprise.grade: "true"
+  enterprise.support: "24x7"
+  enterprise.sla: "99.9%"
+  
+  # Licensing
+  license: "MIT"
+  license.commercial: "available"
+  
+  # Documentation
+  documentation.url: "https://docs.xaheen.dev"
+  api.documentation: "https://api.xaheen.dev/docs"
+  
+  # Support
+  support.email: "support@xaheen.no"
+  support.slack: "https://xaheen.slack.com"
+  
+  # Artifact information
+  artifact.hub.io/changes: |
+    - kind: added
+      description: "Initial release with Norwegian compliance support"
+    - kind: added  
+      description: "Istio Ambient Mode service mesh integration"
+    - kind: added
+      description: "Prometheus 3.0 monitoring stack"
+    - kind: added
+      description: "HashiCorp Vault secret management"
+    - kind: added
+      description: "Multi-environment deployment support"
+    - kind: added
+      description: "Blue-green deployment strategy"
+    - kind: added
+      description: "Comprehensive security hardening"
+      
+  artifact.hub.io/containsSecurityUpdates: "true"
+  artifact.hub.io/prerelease: "false"
+  artifact.hub.io/operator: "false"
+  
+  # Images
+  artifact.hub.io/images: |
+    - name: xaheen-cli
+      image: registry.gitlab.com/xaheen/xaheen-cli:1.0.0
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      whitelisted: true
+      
+  # Links
+  artifact.hub.io/links: |
+    - name: Chart Source
+      url: https://github.com/xaheen/xaheen-cli/tree/main/helm/xaheen-cli
+    - name: Documentation
+      url: https://docs.xaheen.dev
+    - name: Norwegian Compliance Guide
+      url: https://docs.xaheen.dev/compliance/norwegian
+    - name: Security Guide
+      url: https://docs.xaheen.dev/security
+    - name: API Reference
+      url: https://api.xaheen.dev/docs
+
+# Minimum Kubernetes version
+kubeVersion: ">=1.28.0"
+
+# Chart engine version
+engine: gotpl
+
+# Icon
+icon: https://xaheen.dev/assets/logo.svg
+
+# Deprecated flag
+deprecated: false

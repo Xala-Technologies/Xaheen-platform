@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for Xaheen CLI
-# Production-optimized with security hardening and minimal attack surface
+# Xaheen CLI - Multi-stage Dockerfile with 2025 Security Best Practices
+# Production-optimized with Prometheus 3.0, Istio Ambient Mode, and Norwegian compliance
 
 # Build arguments
 ARG NODE_VERSION=20.11.0
@@ -7,6 +7,8 @@ ARG ALPINE_VERSION=3.19
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
+ARG NSM_CLASSIFICATION=RESTRICTED
+ARG NORWEGIAN_LOCALE=nb-NO
 
 # Stage 1: Build dependencies and compile TypeScript
 FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS dependencies

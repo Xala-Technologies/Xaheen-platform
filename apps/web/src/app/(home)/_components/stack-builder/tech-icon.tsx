@@ -1,4 +1,4 @@
-import { useTheme } from "@xala-technologies/ui-system/hooks";
+import { useTheme } from "@xala-technologies/ui-system";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 

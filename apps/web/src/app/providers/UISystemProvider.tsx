@@ -12,25 +12,21 @@
 
 "use client";
 
-import { UISystemProvider as XalaUISystemProvider } from "@xala-technologies/ui-system";
 import { ReactNode } from "react";
-import { SupportedLocale } from "@/lib/i18n";
 
 interface UISystemProviderProps {
 	children: ReactNode;
-	locale?: SupportedLocale;
+	locale?: string;
 }
 
 /**
- * Enhanced UI System Provider with Xala UI System v5.0.0 configuration
- * Provides proper SSR support, accessibility, and localization features
- *
- * Note: Based on the actual UI System API, we use the provider without
- * additional props as the system handles configuration internally
+ * Temporary UI System Provider - bypassing broken @xala-technologies/ui-system
+ * TODO: Fix the broken UI system package structure
  */
 export function UISystemProvider({
 	children,
 	locale = "en",
 }: UISystemProviderProps): React.JSX.Element {
-	return <XalaUISystemProvider>{children}</XalaUISystemProvider>;
+	// Temporarily return children directly until UI system is fixed
+	return <>{children}</>;
 }

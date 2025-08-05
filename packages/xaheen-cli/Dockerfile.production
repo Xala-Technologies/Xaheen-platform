@@ -3,9 +3,9 @@
 # Multi-stage build optimized for security and performance
 
 # =============================================================================
-# Stage 1: Base Security Image
+# Stage 1: Base Security Image with Distroless Support
 # =============================================================================
-FROM node:18-alpine3.18 AS security-base
+FROM node:20-alpine3.18 AS security-base
 
 # Security metadata
 LABEL maintainer="Xaheen Enterprise <security@xaheen.no>"
