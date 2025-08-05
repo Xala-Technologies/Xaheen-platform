@@ -107,7 +107,21 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     }
     
     // Use custom config or default to PUBLIC_WEBSITE
-    return config.compliance as NorwegianComplianceConfig || COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+    if (config.compliance) {
+      // Merge with default preset to ensure all required fields
+      const base = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+      return {
+        nsm: config.compliance.nsm || base.nsm!,
+        gdpr: config.compliance.gdpr || base.gdpr!,
+        accessibility: config.compliance.accessibility || base.accessibility!,
+        designSystem: config.compliance.designSystem || base.designSystem,
+        localization: config.compliance.localization || base.localization!,
+        auditTrail: config.compliance.auditTrail || base.auditTrail!,
+        metadata: config.compliance.metadata || base.metadata!,
+      };
+    }
+    
+    return COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
   }
 
   /**
@@ -118,12 +132,13 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     config: ComponentConfig
   ): void {
     // Validate accessibility requirements
-    if (compliance.accessibility.standard === 'WCAG_AAA' && config.accessibility.level !== 'AAA') {
+    if (compliance.accessibility && compliance.accessibility.standard === 'WCAG_AAA' && config.accessibility.level !== 'AAA') {
       throw new Error('Component must have AAA accessibility level for selected compliance standard');
     }
     
     // Validate encryption requirements for confidential/secret data
     if (
+      compliance.nsm && 
       (compliance.nsm.classification === 'CONFIDENTIAL' || compliance.nsm.classification === 'SECRET') &&
       !compliance.nsm.dataHandling.encryption
     ) {
@@ -132,7 +147,9 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     
     // Validate audit trail for restricted data and above
     if (
+      compliance.nsm &&
       compliance.nsm.classification !== 'OPEN' &&
+      compliance.auditTrail &&
       !compliance.auditTrail.enabled
     ) {
       console.warn('Audit trail is recommended for RESTRICTED data and above');
@@ -147,19 +164,19 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     compliance: NorwegianComplianceConfig,
     platform: SupportedPlatform
   ): Promise<string> {
-    const template = this.getComplianceTemplate(config.category, compliance.nsm.classification);
+    const template = this.getComplianceTemplate(config.category, compliance.nsm?.classification || 'OPEN');
     
     return this.renderTemplate(template, {
       componentName: config.name,
-      nsmClassification: compliance.nsm.classification,
-      gdprLevel: compliance.gdpr.level,
-      accessibilityStandard: compliance.accessibility.standard,
-      requiresEncryption: compliance.nsm.dataHandling.encryption,
-      requiresAuditTrail: compliance.auditTrail.enabled,
-      requiresAuthentication: compliance.nsm.technical.authenticationRequired,
-      sessionTimeout: compliance.nsm.technical.sessionTimeout,
-      primaryLocale: compliance.localization.primaryLocale,
-      supportedLocales: compliance.localization.supportedLocales,
+      nsmClassification: compliance.nsm?.classification || 'OPEN',
+      gdprLevel: compliance.gdpr?.level || 'minimal',
+      accessibilityStandard: compliance.accessibility?.standard || 'WCAG_AA',
+      requiresEncryption: compliance.nsm?.dataHandling.encryption || false,
+      requiresAuditTrail: compliance.auditTrail?.enabled || false,
+      requiresAuthentication: compliance.nsm?.technical.authenticationRequired || false,
+      sessionTimeout: compliance.nsm?.technical.sessionTimeout || 0,
+      primaryLocale: compliance.localization?.primaryLocale || 'nb-NO',
+      supportedLocales: compliance.localization?.supportedLocales || ['nb-NO'],
       designSystem: compliance.designSystem?.version || 'none',
       platform,
     });
@@ -966,11 +983,11 @@ export function get${config.name}ComplianceSummary(): {
 
 ## Compliance Metadata
 
-- **Version**: ${compliance.metadata.version}
-- **Last Updated**: ${compliance.metadata.lastUpdated}
-- **Review Date**: ${compliance.metadata.reviewDate}
-- **Approved By**: ${compliance.metadata.approvedBy}
-- **Compliance Officer**: ${compliance.metadata.complianceOfficer}
+- **Version**: ${compliance.metadata?.version || '1.0.0'}
+- **Last Updated**: ${compliance.metadata?.lastUpdated || 'Not specified'}
+- **Review Date**: ${compliance.metadata?.reviewDate || 'Not specified'}
+- **Approved By**: ${compliance.metadata?.approvedBy || 'Not specified'}
+- **Compliance Officer**: ${compliance.metadata?.complianceOfficer || 'Not specified'}
 
 ---
 
@@ -1087,7 +1104,7 @@ This component has been designed and implemented according to Norwegian complian
       },
     };
     
-    return baseTranslations[locale] || baseTranslations['nb-NO'];
+    return baseTranslations[locale] || baseTranslations['nb-NO'] || {};
   }
 
   /**
@@ -1436,19 +1453,19 @@ export const {{componentName}} = ({
     if (platform === 'react' || platform === 'nextjs') {
       imports.push('react');
       
-      if (compliance.nsm.technical.authenticationRequired) {
+      if (compliance.nsm?.technical.authenticationRequired) {
         imports.push('@/hooks/useAuth');
       }
       
-      if (compliance.nsm.dataHandling.encryption) {
+      if (compliance.nsm?.dataHandling.encryption) {
         imports.push('@/hooks/useEncryption');
       }
       
-      if (compliance.auditTrail.enabled) {
+      if (compliance.auditTrail?.enabled) {
         imports.push('@/utils/audit');
       }
       
-      if (compliance.gdpr.personalDataHandling.consentManagement) {
+      if (compliance.gdpr?.personalDataHandling.consentManagement) {
         imports.push('@/components/ConsentManager');
       }
     }
@@ -1468,20 +1485,20 @@ export const {{componentName}} = ({
     deps.push('zod');
     
     // Encryption libraries
-    if (compliance.nsm.dataHandling.encryption) {
+    if (compliance.nsm?.dataHandling.encryption) {
       deps.push('crypto-js');
       deps.push('@noble/ciphers');
     }
     
     // Audit trail dependencies
-    if (compliance.auditTrail.enabled) {
+    if (compliance.auditTrail?.enabled) {
       if (compliance.auditTrail.retention.storage === 'external') {
         deps.push('@elastic/elasticsearch');
       }
     }
     
     // Accessibility testing
-    if (compliance.accessibility.testing.automatedTesting) {
+    if (compliance.accessibility?.testing.automatedTesting) {
       deps.push('axe-core');
       deps.push('@testing-library/jest-dom');
     }

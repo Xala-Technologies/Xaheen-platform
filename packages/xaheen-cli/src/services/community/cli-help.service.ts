@@ -12,6 +12,29 @@ import { z } from "zod";
 import { logger } from "../../utils/logger.js";
 
 /**
+ * Video tutorial integration
+ */
+export interface VideoTutorial {
+	readonly id: string;
+	readonly title: string;
+	readonly description: string;
+	readonly url: string;
+	readonly thumbnail: string;
+	readonly duration: number; // in seconds
+	readonly provider: "youtube" | "vimeo" | "twitch" | "custom";
+	readonly transcript?: string;
+	readonly captions?: Array<{
+		readonly language: string;
+		readonly url: string;
+	}>;
+	readonly chapters?: Array<{
+		readonly title: string;
+		readonly startTime: number;
+		readonly endTime: number;
+	}>;
+}
+
+/**
  * Help content types
  */
 export enum HelpContentType {

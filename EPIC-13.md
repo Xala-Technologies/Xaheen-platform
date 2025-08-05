@@ -31,38 +31,38 @@ Below is an **EPIC 13** that brings in your “Perfect Frontend Framework” pla
 * [x] Provide undo/rollback for template changes and generator actions
 * [x] Surface progress bars, diffs, and rich CLI output (emoji, color-coding) in frontend flows
 
-### **Story 13.4: Advanced Template Inheritance & Composition**
+### **Story 13.4: Advanced Template Inheritance & Composition** ✅
 
 *Enable reusable base templates and flexible composition for frontend*
 
-* [ ] Define base templates (page, component, form, dashboard) with slots/partials
-* [ ] Implement template inheritance so variants (dark mode, RTL, compliance) extend a common core
-* [ ] Add local Hygen/Enquirer-driven templates within generated projects for ad-hoc scaffolding
+* [x] Define base templates (page, component, form, dashboard) with slots/partials
+* [x] Implement template inheritance so variants (dark mode, RTL, compliance) extend a common core
+* [x] Add local Hygen/Enquirer-driven templates within generated projects for ad-hoc scaffolding
 
-### **Story 13.5: AI-Native Template System**
+### **Story 13.5: AI-Native Template System** ✅
 
 *Deeply integrate MCP intelligence into frontend template selection*
 
-* [ ] Surface AI-driven pattern recommendations (e.g. grid vs list layout) at scaffold time
-* [ ] Include token-usage estimates in template metadata for cost-aware generation
-* [ ] Loop in AI-powered accessibility checks and compliance validations post-generation
+* [x] Surface AI-driven pattern recommendations (e.g. grid vs list layout) at scaffold time
+* [x] Include token-usage estimates in template metadata for cost-aware generation
+* [x] Loop in AI-powered accessibility checks and compliance validations post-generation
 
-### **Story 13.6: Documentation & Interactive Learning**
+### **Story 13.6: Documentation & Interactive Learning** ✅
 
 *Automate comprehensive frontend docs and tutorials*
 
-* [ ] Generate Storybook config and sample stories for every generated component
-* [ ] Create “Your First Component” in-CLI tutorial that walks through scaffold → play → refine
-* [ ] Produce automatic MDX docs populated from template comments and design tokens
+* [x] Generate Storybook config and sample stories for every generated component
+* [x] Create "Your First Component" in-CLI tutorial that walks through scaffold → play → refine
+* [x] Produce automatic MDX docs populated from template comments and design tokens
 
-### **Story 13.7: Integration & QA for Frontend**
+### **Story 13.7: Integration & QA for Frontend** ✅
 
 *Test every layer of your frontend generator and templates*
 
-* [ ] Unit-test each generator and template helper with Jest/Vitest
-* [ ] Integration-test template output renders in a headless browser (Playwright)
-* [ ] E2E-test a full `xaheen scaffold frontend` → `npm run build` → `npm test` workflow
-* [ ] Performance-test cold/warm scaffold times and template compile speed
+* [x] Unit-test each generator and template helper with Jest/Vitest
+* [x] Integration-test template output renders in a headless browser (Playwright)
+* [x] E2E-test a full `xaheen scaffold frontend` → `npm run build` → `npm test` workflow
+* [x] Performance-test cold/warm scaffold times and template compile speed
 
 ---
 

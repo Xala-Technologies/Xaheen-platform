@@ -1295,7 +1295,7 @@ export class AIEnhancedTemplateManager extends TemplateManager {
       performanceContext: {
         requirements: this.extractPerformanceRequirements(userInput),
         constraints: this.identifyPerformanceConstraints(userInput),
-        optimizations: this.suggestOptimizations(userInput)
+        optimizations: []
       }
     };
   }

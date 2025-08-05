@@ -112,39 +112,48 @@ export class AITemplateSystem {
       // Step 1: Analyze user intent and create context
       const context = this.templateManager.analyzeUserIntent(request.userInput);
       
-      // Merge request overrides into context
-      if (request.platform) {
-        context.projectContext.platform = request.platform;
-      }
-      if (request.accessibility) {
-        context.complianceContext.accessibility = {
-          ...context.complianceContext.accessibility,
-          ...request.accessibility
-        };
-      }
-      if (request.norwegianCompliance) {
-        context.complianceContext.norwegian = request.norwegianCompliance.nsm || request.norwegianCompliance.gdpr || request.norwegianCompliance.altinn;
-        context.complianceContext.gdpr = request.norwegianCompliance.gdpr;
-        context.complianceContext.nsm = request.norwegianCompliance.nsm;
-      }
+      // Merge request overrides into context (create new objects to avoid readonly issues)
+      const updatedContext = {
+        ...context,
+        projectContext: {
+          ...context.projectContext,
+          platform: request.platform || context.projectContext.platform
+        },
+        complianceContext: {
+          ...context.complianceContext,
+          accessibility: request.accessibility ? {
+            ...context.complianceContext.accessibility,
+            ...request.accessibility
+          } : context.complianceContext.accessibility,
+          norwegian: request.norwegianCompliance ? 
+            (request.norwegianCompliance.nsm || request.norwegianCompliance.gdpr || request.norwegianCompliance.altinn) :
+            context.complianceContext.norwegian,
+          gdpr: request.norwegianCompliance?.gdpr ?? context.complianceContext.gdpr,
+          nsm: request.norwegianCompliance?.nsm ?? context.complianceContext.nsm
+        }
+      };
 
       if (this.config.debugMode) {
         console.log('📊 AI Context Analysis:', {
-          intent: context.userIntent.description,
-          confidence: context.userIntent.confidence,
-          platform: context.projectContext.platform,
-          domain: context.businessContext.domain
+          intent: updatedContext.userIntent.description,
+          confidence: updatedContext.userIntent.confidence,
+          platform: updatedContext.projectContext.platform,
+          domain: updatedContext.businessContext.domain
         });
       }
 
       // Step 2: Get recommended templates based on context
-      const recommendedTemplates = this.templateManager.getRecommendedTemplates(context);
+      const recommendedTemplates = this.templateManager.getRecommendedTemplates(updatedContext);
       
       if (recommendedTemplates.length === 0) {
         throw new Error('No suitable templates found for the given requirements');
       }
 
       const selectedTemplate = recommendedTemplates[0]; // Use highest scoring template
+      
+      if (!selectedTemplate) {
+        throw new Error('No template could be selected from recommendations');
+      }
       
       if (this.config.debugMode) {
         console.log('🎯 Selected Template:', {
@@ -159,7 +168,7 @@ export class AITemplateSystem {
       if (this.config.enableMCPIntegration) {
         mcpRecommendations = await this.mcpService.generateEnhancedRecommendations(
           selectedTemplate,
-          context
+          updatedContext
         );
         
         if (this.config.debugMode) {
@@ -170,12 +179,12 @@ export class AITemplateSystem {
       // Step 4: Generate AI-optimized component
       const generatedComponent = await this.templateManager.generateAIOptimizedComponent(
         selectedTemplate.name,
-        context
+        updatedContext
       );
 
       // Step 5: Apply additional code patterns (if enabled)
       if (this.config.enablePerformanceOptimization) {
-        const codePatternConfig = this.createCodePatternConfig(selectedTemplate, context, request);
+        const codePatternConfig = this.createCodePatternConfig(selectedTemplate, updatedContext, request);
         const codePattern = this.codeGenerator.generateCodePattern(codePatternConfig);
         
         // Merge generated code with patterns
@@ -190,18 +199,18 @@ export class AITemplateSystem {
       const response: AIGenerationResponse = {
         success: true,
         templateName: selectedTemplate.name,
-        confidence: context.userIntent.confidence,
+        confidence: updatedContext.userIntent.confidence,
         generatedComponent: {
           ...generatedComponent,
           componentCode: generatedComponent.code,
-          platform: context.projectContext.platform,
+          platform: updatedContext.projectContext.platform,
           architecture: 'v5-cva', // Default to v5.0 CVA architecture
-          files: this.generateFileStructure(selectedTemplate, generatedComponent)
+          files: this.generateFileStructure(selectedTemplate, generatedComponent) as any
         },
         mcpRecommendations,
         optimizations: generatedComponent.optimizations,
-        warnings: this.generateWarnings(selectedTemplate, context, mcpRecommendations),
-        nextSteps: this.generateNextSteps(selectedTemplate, context, mcpRecommendations)
+        warnings: this.generateWarnings(selectedTemplate, updatedContext, mcpRecommendations),
+        nextSteps: this.generateNextSteps(selectedTemplate, updatedContext, mcpRecommendations)
       };
 
       if (this.config.debugMode) {

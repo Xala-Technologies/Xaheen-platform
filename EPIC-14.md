@@ -15,7 +15,7 @@
 
 * [x] Refactor `xaheen generate` handlers to delegate template selection to the `xala-mcp` recommendation engine
 * [x] Pipe CLI parameter schemas into `mcp.generateSpec` to dynamically compose generation specifications
-* [ ] Capture and store MCP execution logs for auditability and replayability
+* [x] Capture and store MCP execution logs for auditability and replayability
 
 ### **Story 14.3: AI-First Content Generation** ✅
 
@@ -25,21 +25,21 @@
 * [x] Leverage `mcp.generateService` for boilerplate microservice code, including controllers, tests, and documentation
 * [x] Use `mcp.enhanceCode` for post-generation refactoring (compliance checks, performance optimizations, accessibility fixes)
 
-### **Story 14.4: MCP Configuration & Extension**
+### **Story 14.4: MCP Configuration & Extension** ✅
 
 *Enable advanced customization and extension of MCP behaviors*
 
-* [ ] Read default MCP config from `.xaheenrc` and allow overrides via CLI flags
-* [ ] Allow users to register custom MCP plugins or prompt templates for domain-specific patterns
-* [ ] Provide `xaheen mcp test` command to run integration tests against MCP endpoints
+* [x] Read default MCP config from `.xaheenrc` and allow overrides via CLI flags
+* [x] Allow users to register custom MCP plugins or prompt templates for domain-specific patterns
+* [x] Provide `xaheen mcp test` command to run integration tests against MCP endpoints
 
-### **Story 14.5: Testing & Validation for MCP Workflows**
+### **Story 14.5: Testing & Validation for MCP Workflows** ✅
 
 *Ensure MCP-driven pipelines remain reliable and enterprise-grade*
 
-* [ ] Unit-test all MCP client wrappers with mocked API responses
-* [ ] Integration-test full MCP flows in a sandbox (`index` → `generate` → `preview` → `apply`)
-* [ ] Validate error handling and fallback behaviors when MCP is unreachable or times out
+* [x] Unit-test all MCP client wrappers with mocked API responses
+* [x] Integration-test full MCP flows in a sandbox (`index` → `generate` → `preview` → `apply`)
+* [x] Validate error handling and fallback behaviors when MCP is unreachable or times out
 
 ---
 

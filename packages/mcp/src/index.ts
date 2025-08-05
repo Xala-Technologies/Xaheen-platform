@@ -909,7 +909,7 @@ class XalaUISystemMCPServer {
 				}
 
 				switch (name) {
-					// Handle AI-native template system tools
+					// Handle AI-native template system tools  
 					case "ai_generate_from_input":
 						return await this.handleAIGenerateFromInput(args);
 					case "ai_analyze_project":
@@ -1898,19 +1898,21 @@ ${this.getPlatformBestPractices(platform)}
 		
 		let templates = this.norwegianComplianceTemplateManager.listTemplates('all');
 		
-		// Filter by classification if provided
-		if (classification) {
-			templates = this.norwegianComplianceTemplateManager.getTemplatesByClassification(classification);
-		}
-		
-		// Filter by GDPR level if provided
-		if (gdprLevel) {
-			templates = this.norwegianComplianceTemplateManager.getTemplatesByGDPRLevel(gdprLevel);
-		}
-		
-		// Filter by design system if provided
-		if (designSystem) {
-			templates = this.norwegianComplianceTemplateManager.getTemplatesByDesignSystem(designSystem);
+		// Apply filters if provided 
+		if (classification || gdprLevel || designSystem) {
+			templates = templates.filter(template => {
+				const complianceTemplate = template as any;
+				if (classification && complianceTemplate.compliance?.nsm?.classification !== classification) {
+					return false;
+				}
+				if (gdprLevel && complianceTemplate.compliance?.gdpr?.level !== gdprLevel) {
+					return false;
+				}
+				if (designSystem && complianceTemplate.compliance?.designSystem?.name !== designSystem) {
+					return false;
+				}
+				return true;
+			});
 		}
 		
 		let response = `# Norwegian Compliance Templates\n\n`;
@@ -2058,6 +2060,64 @@ ${this.getPlatformBestPractices(platform)}
 			content: [{
 				type: "text",
 				text: response
+			}]
+		};
+	}
+
+	// AI-native template system handlers
+	private async handleAIGenerateFromInput(args: any) {
+		const { userInput, platform, category, features, accessibility, norwegianCompliance, performance } = args;
+		
+		const request: AIGenerationRequest = {
+			userInput,
+			platform,
+			category,
+			features,
+			accessibility,
+			norwegianCompliance,
+			performance
+		};
+		
+		const result = await this.aiTemplateSystem.generateFromUserInput(request);
+		
+		return {
+			content: [{
+				type: "text",
+				text: JSON.stringify(result, null, 2)
+			}]
+		};
+	}
+
+	private async handleAIAnalyzeProject(args: any) {
+		const { projectPath } = args;
+		const result = await this.aiTemplateSystem.analyzeProject(projectPath);
+		
+		return {
+			content: [{
+				type: "text", 
+				text: JSON.stringify(result, null, 2)
+			}]
+		};
+	}
+
+	private async handleAIGetEnhancedTemplates(args: any) {
+		const { platform, category, complexity } = args;
+		const result = this.aiTemplateSystem.getAvailableTemplates({ platform, category, complexity });
+		
+		return {
+			content: [{
+				type: "text",
+				text: JSON.stringify(result, null, 2)
+			}]
+		};
+	}
+
+	private async handleAIGenerateMigrationPlan(args: any) {
+		// Placeholder for migration plan generation
+		return {
+			content: [{
+				type: "text",
+				text: "AI migration plan generation is coming soon!"
 			}]
 		};
 	}

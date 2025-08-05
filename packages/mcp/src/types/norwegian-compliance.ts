@@ -633,13 +633,22 @@ export function getCompliancePreset(presetName: keyof typeof COMPLIANCE_PRESETS)
 
 export function createCustomCompliance(overrides: Partial<NorwegianComplianceConfig>): NorwegianComplianceConfig {
   const base = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
-  return {
+  const result: NorwegianComplianceConfig = {
     ...base,
     ...overrides,
-    metadata: {
-      ...(base.metadata || {}),
-      ...(overrides.metadata || {}),
-      lastUpdated: new Date().toISOString(),
-    },
   };
+  
+  // Ensure metadata is properly typed and required fields are present
+  if (result.metadata && base.metadata) {
+    result.metadata = {
+      version: base.metadata.version,
+      lastUpdated: new Date().toISOString(),
+      reviewDate: base.metadata.reviewDate,
+      approvedBy: base.metadata.approvedBy,
+      complianceOfficer: base.metadata.complianceOfficer,
+      ...overrides.metadata,
+    };
+  }
+  
+  return result;
 }

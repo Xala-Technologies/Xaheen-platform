@@ -27,7 +27,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'public-contact-form',
       description: 'Public contact form with basic GDPR compliance and cookie consent',
       category: 'form',
-      compliance: COMPLIANCE_PRESETS.PUBLIC_WEBSITE,
+      compliance: COMPLIANCE_PRESETS.PUBLIC_WEBSITE as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'PublicContactForm',
         category: 'form',
@@ -67,7 +67,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'public-data-display',
       description: 'Public data table with Norwegian locale support and accessibility',
       category: 'data-display',
-      compliance: COMPLIANCE_PRESETS.PUBLIC_WEBSITE,
+      compliance: COMPLIANCE_PRESETS.PUBLIC_WEBSITE as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'PublicDataDisplay',
         category: 'data-display',
@@ -109,7 +109,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'government-service-form',
       description: 'Government service form with authentication, audit trail, and Altinn integration',
       category: 'form',
-      compliance: COMPLIANCE_PRESETS.GOVERNMENT_SERVICE,
+      compliance: COMPLIANCE_PRESETS.GOVERNMENT_SERVICE as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'GovernmentServiceForm',
         category: 'form',
@@ -150,7 +150,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'government-admin-dashboard',
       description: 'Government admin dashboard with role-based access and comprehensive audit logging',
       category: 'layouts',
-      compliance: COMPLIANCE_PRESETS.GOVERNMENT_SERVICE,
+      compliance: COMPLIANCE_PRESETS.GOVERNMENT_SERVICE as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'GovernmentAdminDashboard',
         category: 'layouts',
@@ -193,7 +193,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'healthcare-patient-form',
       description: 'Healthcare patient form with encryption, consent management, and 30-year retention',
       category: 'form',
-      compliance: COMPLIANCE_PRESETS.HEALTHCARE_SYSTEM,
+      compliance: COMPLIANCE_PRESETS.HEALTHCARE_SYSTEM as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'HealthcarePatientForm',
         category: 'form',
@@ -234,7 +234,7 @@ export class NorwegianComplianceTemplateManager extends TemplateManager {
       name: 'healthcare-data-viewer',
       description: 'Healthcare data viewer with encryption, access control, and audit trail',
       category: 'data-display',
-      compliance: COMPLIANCE_PRESETS.HEALTHCARE_SYSTEM,
+      compliance: COMPLIANCE_PRESETS.HEALTHCARE_SYSTEM as NorwegianComplianceConfig,
       defaultConfig: {
         name: 'HealthcareDataViewer',
         category: 'data-display',
