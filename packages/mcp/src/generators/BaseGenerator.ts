@@ -3,13 +3,13 @@
  */
 
 import type { SupportedPlatform } from '../types/index.js';
-import * as Handlebars from 'handlebars';
+import Handlebars from 'handlebars';
 
 export abstract class BaseGenerator {
   protected handlebars: typeof Handlebars;
 
   constructor() {
-    this.handlebars = Handlebars.create();
+    this.handlebars = Handlebars;
     this.registerHelpers();
   }
 

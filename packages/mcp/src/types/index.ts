@@ -619,6 +619,28 @@ export interface AIEnhancedTemplateConfig extends ComponentTemplateConfig {
 	readonly aiNorwegianCompliance: AINorwegianComplianceDetection;
 }
 
+// MCP Tool Result Type
+export interface MCPToolResult {
+	content: Array<{
+		type: "text";
+		text: string;
+	}>;
+}
+
+// Export core tool types for practical MCP tools
+export type {
+	GetComponentsArgs,
+	GetBlocksArgs,
+	GetRulesArgs,
+	GenerateComponentArgs,
+	GeneratePageArgs,
+	NorwegianComplianceArgs,
+	GDPRComplianceArgs,
+	TransformCodeArgs,
+	AnalyseCodeArgs,
+	InitProjectArgs
+} from "../tools/CoreTools.js";
+
 export interface AIPromptTemplate {
 	readonly id: string;
 	readonly name: string;
