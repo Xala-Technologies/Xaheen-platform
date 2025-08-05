@@ -393,6 +393,9 @@ export type GeneratorType =
 	| "interceptor"
 	| "pipe"
 	| "decorator"
+	| "database"
+	| "backend"
+	| "resolver"
 	// Database generators
 	| "migration"
 	| "seed"
@@ -405,9 +408,15 @@ export type GeneratorType =
 	| "feature"
 	// Infrastructure generators
 	| "docker"
+	| "kubernetes"
 	| "k8s"
+	| "github-actions"
+	| "azure-devops"
+	| "gitlab-ci"
 	| "ci"
 	| "deployment"
+	| "devops"
+	| "infrastructure"
 	// Integration generators
 	| "webhook"
 	| "queue"
@@ -421,9 +430,17 @@ export type GeneratorType =
 	// Configuration generators
 	| "config"
 	| "env"
+	// Compliance generators
+	| "nsm-security"
+	| "gdpr-compliance"
+	| "privacy-policy"
+	| "cookie-consent"
+	| "accessibility"
+	| "data-retention"
 	| "docs";
 
 export interface GeneratorOptions {
+	// Core options
 	fields?: string;
 	actions?: string;
 	ai?: string;
@@ -435,6 +452,8 @@ export interface GeneratorOptions {
 	skipTests?: boolean;
 	typescript?: boolean;
 	javascript?: boolean;
+	// Allow any additional properties for flexibility
+	[key: string]: any;
 }
 
 export interface GeneratorResult {

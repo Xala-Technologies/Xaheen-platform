@@ -15,6 +15,9 @@ export enum GeneratorDomain {
   INFRASTRUCTURE = 'infrastructure',
   TESTING = 'testing',
   PATTERNS = 'patterns',
+  COMPLIANCE = 'compliance',
+  DEVOPS = 'devops',
+  META = 'meta',
   MISC = 'misc'
 }
 

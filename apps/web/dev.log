@@ -1,0 +1,14 @@
+$ next dev
+[MDX] updated map file in 4.217209000000025ms
+[MDX] started dev server
+  ▲ Next.js 14.2.31
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · optimizeCss
+
+ ✓ Starting...
+ ⚠ Invalid next.config.mjs options detected: 
+ ⚠     Unrecognized key(s) in object: 'turbopack'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+   automatically enabled Fast Refresh for 1 custom loader

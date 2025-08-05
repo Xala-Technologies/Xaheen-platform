@@ -9,17 +9,10 @@ const config = {
 	skipTrailingSlashRedirect: true,
 	
 	// Performance optimizations
-	swcMinify: true,
 	poweredByHeader: false,
 	
 	// Experimental features for performance
 	experimental: {
-		reactCompiler: true,
-		turbo: {
-			loaders: {
-				'.svg': ['@svgr/webpack'],
-			},
-		},
 		optimizeCss: true,
 		optimizePackageImports: [
 			'@xala-technologies/ui-system',
@@ -27,8 +20,10 @@ const config = {
 			'recharts',
 			'date-fns',
 		],
-		serverComponentsExternalPackages: ['@xala-technologies/ui-system'],
 	},
+	
+	
+	// Note: @xala-technologies/ui-system is already in optimizePackageImports
 	
 	eslint: {
 		// Warning: This allows production builds to successfully complete even if
@@ -37,7 +32,8 @@ const config = {
 	},
 	
 	compiler: {
-		removeConsole: process.env.NODE_ENV === "production",
+		// removeConsole is not supported with Turbopack in Next.js 14
+		// removeConsole: process.env.NODE_ENV === "production",
 		styledComponents: true,
 	},
 	
@@ -170,7 +166,3 @@ const config = {
 };
 
 export default withMDX(config);
-
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-
-initOpenNextCloudflareForDev();

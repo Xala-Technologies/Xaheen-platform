@@ -37,6 +37,9 @@
 		"packages/*"
 	],
 	"dependencies": {
-		"@xala-technologies/xala-mcp": "workspace:*"
+		"@xala-technologies/xala-mcp": "workspace:*",
+		"i18next": "^25.3.2",
+		"i18next-resources-to-backend": "^1.2.1",
+		"react-i18next": "^15.6.1"
 	}
 }

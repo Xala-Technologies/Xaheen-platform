@@ -12,7 +12,7 @@
 
 import { createInstance, Resource } from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
-import { initReactI18next } from "react-i18next/initReactI18next";
+import { initReactI18next } from "react-i18next";
 
 export const supportedLocales = ["en", "no", "fr", "ar"] as const;
 export type SupportedLocale = (typeof supportedLocales)[number];
