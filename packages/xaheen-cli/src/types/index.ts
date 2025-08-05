@@ -41,6 +41,7 @@ export type CLIDomain =
 	| "security" // Security audit and compliance
 	| "templates" // Template management
 	| "template" // Template operations (singular)
+	| "deploy" // Deployment management
 	| "help"; // Help system
 
 export type CLIAction =
@@ -95,7 +96,14 @@ export type CLIAction =
 	| "plugin-register" 
 	| "plugin-unregister"
 	| "plugin-enable"
-	| "plugin-disable";
+	| "plugin-disable"
+	// Deployment-specific actions
+	| "version"
+	| "docker"
+	| "kubernetes"
+	| "helm"
+	| "monitoring"
+	| "status";
 
 // Xaheen configuration schema
 export const XaheenConfigSchema = z.object({

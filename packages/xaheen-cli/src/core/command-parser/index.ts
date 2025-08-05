@@ -591,6 +591,53 @@ export class CommandParser {
 					xaheen: ["modernize-templates", "upgrade-templates"],
 				},
 			},
+
+			// Deployment domain routes
+			{
+				pattern: "deploy",
+				domain: "deploy",
+				action: "generate",
+				handler: this.handleDeploy.bind(this),
+				legacy: {
+					xaheen: ["deployment", "deploy-config"],
+				},
+			},
+			{
+				pattern: "deploy version",
+				domain: "deploy",
+				action: "version",
+				handler: this.handleDeployVersion.bind(this),
+			},
+			{
+				pattern: "deploy docker",
+				domain: "deploy",
+				action: "docker",
+				handler: this.handleDeployDocker.bind(this),
+			},
+			{
+				pattern: "deploy kubernetes",
+				domain: "deploy",
+				action: "kubernetes",
+				handler: this.handleDeployKubernetes.bind(this),
+			},
+			{
+				pattern: "deploy helm",
+				domain: "deploy",
+				action: "helm",
+				handler: this.handleDeployHelm.bind(this),
+			},
+			{
+				pattern: "deploy monitoring",
+				domain: "deploy",
+				action: "monitoring",
+				handler: this.handleDeployMonitoring.bind(this),
+			},
+			{
+				pattern: "deploy status",
+				domain: "deploy",
+				action: "status",
+				handler: this.handleDeployStatus.bind(this),
+			},
 		];
 
 		// Register routes
@@ -858,6 +905,79 @@ export class CommandParser {
 					)
 					.option("--report", "Generate comprehensive report", true)
 					.option("--verbose", "Verbose output", false);
+			}
+
+			// Add Deployment-specific options
+			if (route.domain === "deploy") {
+				command
+					.option('-n, --name <name>', 'Application name')
+					.option('-t, --type <type>', 'Project type (nodejs, nextjs, nestjs, express)')
+					.option('-p, --package-manager <manager>', 'Package manager (npm, yarn, pnpm, bun)')
+					.option('-s, --strategy <strategy>', 'Deployment strategy (rolling, blue-green, canary)')
+					.option('-r, --registry <registry>', 'Container registry')
+					.option('--repository <repository>', 'Container repository')
+					.option('--namespace <namespace>', 'Kubernetes namespace')
+					.option('-e, --environment <env>', 'Target environment (dev, staging, prod)')
+					.option('--monitoring', 'Enable monitoring and observability')
+					.option('--compliance', 'Enable Norwegian compliance features')
+					.option('-o, --output <path>', 'Output directory', './deployment')
+					.option('--no-interactive', 'Disable interactive mode')
+					.option('--dry-run', 'Show what would be generated without creating files');
+
+				// Add version-specific options
+				if (route.action === "version") {
+					command
+						.option('--current', 'Show current version')
+						.option('--next', 'Show next version')
+						.option('--release', 'Create a new release');
+				}
+
+				// Add docker-specific options
+				if (route.action === "docker") {
+					command
+						.option('--build', 'Build Docker image')
+						.option('--scan', 'Scan image for vulnerabilities')
+						.option('--tag <tag>', 'Image tag', 'latest')
+						.option('--platform <platforms>', 'Target platforms (comma-separated)', 'linux/amd64');
+				}
+
+				// Add kubernetes-specific options
+				if (route.action === "kubernetes") {
+					command
+						.option('--apply', 'Apply manifests to cluster')
+						.option('--status', 'Get deployment status')
+						.option('--scale <replicas>', 'Scale deployment')
+						.option('--rollback [revision]', 'Rollback deployment')
+						.option('--app-name <name>', 'Application name');
+				}
+
+				// Add helm-specific options
+				if (route.action === "helm") {
+					command
+						.option('--install', 'Install/upgrade Helm release')
+						.option('--uninstall', 'Uninstall Helm release')
+						.option('--status', 'Get release status')
+						.option('--test', 'Run Helm tests')
+						.option('--rollback [revision]', 'Rollback release')
+						.option('--release-name <name>', 'Helm release name')
+						.option('--chart-path <path>', 'Path to Helm chart', './deployment/helm');
+				}
+
+				// Add monitoring-specific options
+				if (route.action === "monitoring") {
+					command
+						.option('--setup', 'Setup monitoring stack')
+						.option('--health', 'Check application health')
+						.option('--metrics', 'Get metrics summary')
+						.option('--app-name <name>', 'Application name');
+				}
+
+				// Add status-specific options
+				if (route.action === "status") {
+					command
+						.option('--app-name <name>', 'Application name')
+						.option('--environment <env>', 'Environment to check');
+				}
 			}
 
 			// Add Security-specific options
@@ -1640,6 +1760,161 @@ export class CommandParser {
 		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
 		const domain = new MCPDomain();
 		await domain.pluginDisable(command);
+	}
+
+	// Deployment Command Handlers
+	private async handleDeploy(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy command
+		const argv = ["node", "xaheen", "deploy"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployVersion(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy version subcommand
+		const argv = ["node", "xaheen", "deploy", "version"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy version command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployDocker(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy docker subcommand
+		const argv = ["node", "xaheen", "deploy", "docker"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy docker command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployKubernetes(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy kubernetes subcommand
+		const argv = ["node", "xaheen", "deploy", "kubernetes"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy kubernetes command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployHelm(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy helm subcommand
+		const argv = ["node", "xaheen", "deploy", "helm"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy helm command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployMonitoring(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy monitoring subcommand
+		const argv = ["node", "xaheen", "deploy", "monitoring"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy monitoring command
+		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	private async handleDeployStatus(command: CLICommand): Promise<void> {
+		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const deployCommand = createDeployCommand();
+		
+		// Create a mock argv array for the deploy status subcommand
+		const argv = ["node", "xaheen", "deploy", "status"];
+		
+		// Add command options
+		Object.entries(command.options).forEach(([key, value]) => {
+			if (value !== undefined && value !== false) {
+				if (value === true) {
+					argv.push(`--${key}`);
+				} else {
+					argv.push(`--${key}`, String(value));
+				}
+			}
+		});
+
+		// Parse and execute the deploy status command
+		await deployCommand.parseAsync(argv.slice(2));
 	}
 
 	public async parse(args?: string[]): Promise<void> {
