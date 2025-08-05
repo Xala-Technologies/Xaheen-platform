@@ -761,7 +761,7 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 		// Calculate CPU efficiency based on process usage
 		const cpuUsage = process.cpuUsage();
 		const totalTime = (cpuUsage.user + cpuUsage.system) / 1000000; // Convert to seconds
-		const sessionDuration = (session.endTime?.getTime() ?? Date.now()) - session.startTime.getTime();
+		const sessionDuration = (session.endTime ?? Date.now()) - session.startTime;
 		
 		if (sessionDuration === 0) return 1.0;
 		

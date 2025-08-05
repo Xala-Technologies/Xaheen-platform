@@ -41,8 +41,17 @@ import {
 import specificationTools, {
 	specificationToolHandlers,
 } from "./tools/specification-tools.js";
+import {
+	platformRecommendationsTools,
+	platformRecommendationsToolHandlers,
+} from "./tools/platform-recommendations-tools.js";
+import {
+	shadcnBlocksTools,
+	shadcnBlocksToolHandlers,
+} from "./tools/shadcn-blocks-tools.js";
 import { ComponentConfig, GenerationContext } from "./types/index.js";
 import { EnhancedValidator } from "./utils/enhanced-validation.js";
+import { createXalaTransformer, transformShadcnComponent } from "./transformers/xala-ast-transformer.js";
 
 // Export public API
 export { promptHandlers, prompts } from "./prompts.js";
@@ -63,6 +72,12 @@ export type {
 	AIGenerationRequest,
 	AIGenerationResponse 
 } from "./ai/index.js";
+
+// Export new tools and transformers
+export { createXalaTransformer, transformShadcnComponent } from "./transformers/xala-ast-transformer.js";
+export type { XalaTransformationConfig, TransformationResult } from "./transformers/xala-ast-transformer.js";
+export { getPlatformRecommendations } from "./tools/platform-recommendations-tools.js";
+export { getShadcnBlocks, getShadcnBlock } from "./tools/shadcn-blocks-tools.js";
 
 // Zod schemas for validation
 const ComponentConfigSchema = z.object({
@@ -273,6 +288,10 @@ class XalaUISystemMCPServer {
 					...cliStyleTools,
 					// Specification-based tools
 					...specificationTools.tools,
+					// Platform recommendations tools
+					...platformRecommendationsTools,
+					// shadcn-ui blocks integration tools
+					...shadcnBlocksTools,
 					{
 						name: "generate_multi_platform_component",
 						description:
@@ -794,6 +813,38 @@ class XalaUISystemMCPServer {
 							required: ["category", "classification"]
 						}
 					},
+					{
+						name: "transform_with_xala_conventions",
+						description: "Transform React/JSX code to apply Xala UI conventions, design tokens, accessibility, and Norwegian compliance",
+						inputSchema: {
+							type: "object",
+							properties: {
+								sourceCode: {
+									type: "string",
+									description: "React/JSX source code to transform"
+								},
+								theme: {
+									type: "string",
+									enum: ["enterprise", "finance", "healthcare", "education", "ecommerce", "productivity"],
+									description: "Industry theme to apply"
+								},
+								platform: {
+									type: "string",
+									enum: ["react", "nextjs", "vue", "angular", "svelte", "electron", "react-native"],
+									description: "Target platform"
+								},
+								enforceAccessibility: {
+									type: "boolean",
+									description: "Enforce WCAG AAA accessibility standards"
+								},
+								norwegianCompliance: {
+									type: "boolean",
+									description: "Apply Norwegian compliance rules and i18n"
+								}
+							},
+							required: ["sourceCode"]
+						}
+					},
 				] as Tool[],
 			};
 		});
@@ -908,6 +959,52 @@ class XalaUISystemMCPServer {
 					};
 				}
 
+				// Handle platform recommendations tools
+				if (
+					platformRecommendationsToolHandlers[
+						name as keyof typeof platformRecommendationsToolHandlers
+					]
+				) {
+					const result =
+						await platformRecommendationsToolHandlers[
+							name as keyof typeof platformRecommendationsToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+
+				// Handle shadcn blocks tools
+				if (
+					shadcnBlocksToolHandlers[
+						name as keyof typeof shadcnBlocksToolHandlers
+					]
+				) {
+					const result =
+						await shadcnBlocksToolHandlers[
+							name as keyof typeof shadcnBlocksToolHandlers
+						](args);
+					return {
+						content: [
+							{
+								type: "text",
+								text:
+									typeof result === "string"
+										? result
+										: JSON.stringify(result, null, 2),
+							},
+						],
+					};
+				}
+
 				switch (name) {
 					// Handle AI-native template system tools  
 					case "ai_generate_from_input":
@@ -955,6 +1052,8 @@ class XalaUISystemMCPServer {
 						return await this.handleValidateNorwegianCompliance(args);
 					case "get_compliance_recommendations":
 						return await this.handleGetComplianceRecommendations(args);
+					case "transform_with_xala_conventions":
+						return await this.handleTransformWithXalaConventions(args);
 					default:
 						throw new Error(`Unknown tool: ${name}`);
 				}
@@ -1931,7 +2030,7 @@ ${this.getPlatformBestPractices(platform)}
 		// Group templates by category
 		const byCategory = templates.reduce((acc, template) => {
 			if (!acc[template.category]) acc[template.category] = [];
-			acc[template.category].push(template);
+			acc[template.category]!.push(template);
 			return acc;
 		}, {} as Record<string, typeof templates>);
 		
@@ -2120,6 +2219,76 @@ ${this.getPlatformBestPractices(platform)}
 				text: "AI migration plan generation is coming soon!"
 			}]
 		};
+	}
+
+	private async handleTransformWithXalaConventions(args: any) {
+		const { 
+			sourceCode, 
+			theme = 'enterprise', 
+			platform = 'react', 
+			enforceAccessibility = true, 
+			norwegianCompliance = true 
+		} = args;
+		
+		try {
+			const result = transformShadcnComponent(sourceCode, theme, platform);
+			
+			let response = `# Xala UI Transformation Applied\n\n`;
+			response += `**Theme**: ${theme}\n`;
+			response += `**Platform**: ${platform}\n`;
+			response += `**Accessibility**: ${enforceAccessibility ? 'Enabled' : 'Disabled'}\n`;
+			response += `**Norwegian Compliance**: ${norwegianCompliance ? 'Enabled' : 'Disabled'}\n\n`;
+			
+			response += `## Transformed Code\n\n`;
+			response += `\`\`\`tsx\n${result.transformedCode}\n\`\`\`\n\n`;
+			
+			if (result.appliedTransformations.length > 0) {
+				response += `## Applied Transformations\n\n`;
+				result.appliedTransformations.forEach(transformation => {
+					response += `✅ ${transformation}\n`;
+				});
+				response += '\n';
+			}
+			
+			if (result.designTokensUsed.length > 0) {
+				response += `## Design Tokens Used\n\n`;
+				result.designTokensUsed.forEach(token => {
+					response += `🎨 ${token}\n`;
+				});
+				response += '\n';
+			}
+			
+			if (result.violations.length > 0) {
+				response += `## Violations Found\n\n`;
+				result.violations.forEach(violation => {
+					response += `⚠️ ${violation}\n`;
+				});
+				response += '\n';
+			}
+			
+			if (result.suggestions.length > 0) {
+				response += `## Suggestions\n\n`;
+				result.suggestions.forEach(suggestion => {
+					response += `💡 ${suggestion}\n`;
+				});
+				response += '\n';
+			}
+			
+			return {
+				content: [{
+					type: "text",
+					text: response
+				}]
+			};
+		} catch (error) {
+			return {
+				content: [{
+					type: "text",
+					text: `Error transforming code: ${error instanceof Error ? error.message : 'Unknown error'}`
+				}],
+				isError: true
+			};
+		}
 	}
 
 	async run(): Promise<void> {

@@ -34,7 +34,7 @@ import { TemplateManager } from './TemplateManager.js';
 export class AIEnhancedTemplateManager extends TemplateManager {
   private aiEnhancedTemplates: Map<string, AIEnhancedTemplateConfig> = new Map();
   private promptTemplates: Map<string, AIPromptTemplate> = new Map();
-  private mcpIntegration: AIMCPIntegration;
+  private mcpIntegration!: AIMCPIntegration;
 
   constructor() {
     super();

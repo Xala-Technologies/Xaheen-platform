@@ -57,6 +57,10 @@
   "author": "Xala Technologies",
   "license": "MIT",
   "dependencies": {
+    "@babel/generator": "^7.23.0",
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@xala-technologies/ui-system": "^5.0.0",
     "@xala-technologies/xala-cli": "^2.0.0",
@@ -69,6 +73,8 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/babel__generator": "^7.6.0",
+    "@types/babel__traverse": "^7.20.0",
     "@types/fs-extra": "^11.0.0",
     "@types/handlebars": "^4.1.0",
     "@types/jest": "^29.0.0",

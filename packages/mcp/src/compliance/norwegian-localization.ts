@@ -682,7 +682,7 @@ export class NorwegianLocalizationService {
           timeZone: NORWEGIAN_CULTURAL_SETTINGS.timeZone,
         }).format(date);
       case 'iso':
-        return date.toISOString().split('T')[0];
+        return date.toISOString().split('T')[0] || date.toISOString();
       case 'time':
         return new Intl.DateTimeFormat(locale, {
           hour: '2-digit',
@@ -759,7 +759,7 @@ export class NorwegianLocalizationService {
    */
   static isPublicHoliday(date: Date): boolean {
     const dateStr = date.toISOString().split('T')[0];
-    return NORWEGIAN_CULTURAL_SETTINGS.publicHolidays.includes(dateStr);
+    return dateStr ? NORWEGIAN_CULTURAL_SETTINGS.publicHolidays.includes(dateStr) : false;
   }
 
   /**

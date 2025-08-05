@@ -84,7 +84,8 @@
       "Bash(cd:*)",
       "Bash(cd:*)",
       "Bash(bun publish:*)",
-      "WebFetch(domain:ui.shadcn.com)"
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

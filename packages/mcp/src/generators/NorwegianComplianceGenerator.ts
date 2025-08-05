@@ -43,7 +43,7 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     });
     
     // Generate audit trail component if required
-    if (complianceConfig.auditTrail.enabled) {
+    if (complianceConfig.auditTrail?.enabled) {
       const auditCode = await this.generateAuditTrailComponent(config, complianceConfig, platform);
       files.push({
         path: `${config.name}AuditTrail.${this.getFileExtension(platform)}`,
@@ -53,7 +53,7 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     }
     
     // Generate GDPR consent management if required
-    if (complianceConfig.gdpr.personalDataHandling.consentManagement) {
+    if (complianceConfig.gdpr?.personalDataHandling?.consentManagement) {
       const consentCode = await this.generateConsentManagement(config, complianceConfig, platform);
       files.push({
         path: `${config.name}Consent.${this.getFileExtension(platform)}`,
@@ -102,7 +102,10 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     if (config.compliance && 'preset' in config.compliance) {
       const preset = (config.compliance as any).preset;
       if (preset && preset in COMPLIANCE_PRESETS) {
-        return COMPLIANCE_PRESETS[preset as keyof typeof COMPLIANCE_PRESETS];
+        const presetConfig = COMPLIANCE_PRESETS[preset as keyof typeof COMPLIANCE_PRESETS];
+        if (presetConfig) {
+          return presetConfig;
+        }
       }
     }
     
@@ -110,18 +113,25 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     if (config.compliance) {
       // Merge with default preset to ensure all required fields
       const base = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+      if (!base) {
+        throw new Error('PUBLIC_WEBSITE preset not found');
+      }
       return {
-        nsm: config.compliance.nsm || base.nsm!,
-        gdpr: config.compliance.gdpr || base.gdpr!,
-        accessibility: config.compliance.accessibility || base.accessibility!,
+        nsm: config.compliance.nsm || base.nsm,
+        gdpr: config.compliance.gdpr || base.gdpr,
+        accessibility: config.compliance.accessibility || base.accessibility,
         designSystem: config.compliance.designSystem || base.designSystem,
-        localization: config.compliance.localization || base.localization!,
-        auditTrail: config.compliance.auditTrail || base.auditTrail!,
-        metadata: config.compliance.metadata || base.metadata!,
+        localization: config.compliance.localization || base.localization,
+        auditTrail: config.compliance.auditTrail || base.auditTrail,
+        metadata: config.compliance.metadata || base.metadata,
       };
     }
     
-    return COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+    const defaultPreset = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+    if (!defaultPreset) {
+      throw new Error('PUBLIC_WEBSITE preset not found');
+    }
+    return defaultPreset;
   }
 
   /**
@@ -140,7 +150,7 @@ export class NorwegianComplianceGenerator extends BaseGenerator {
     if (
       compliance.nsm && 
       (compliance.nsm.classification === 'CONFIDENTIAL' || compliance.nsm.classification === 'SECRET') &&
-      !compliance.nsm.dataHandling.encryption
+      !compliance.nsm.dataHandling?.encryption
     ) {
       throw new Error('Encryption is required for CONFIDENTIAL and SECRET classifications');
     }
@@ -721,8 +731,8 @@ import type { NSMClassification, GDPRComplianceLevel } from '@xala/types';
 
 /**
  * Compliance validation for ${config.name}
- * NSM Classification: ${compliance.nsm.classification}
- * GDPR Level: ${compliance.gdpr.level}
+ * NSM Classification: ${compliance.nsm?.classification || 'OPEN'}
+ * GDPR Level: ${compliance.gdpr?.level || 'minimal'}
  */
 
 // Data classification schema
@@ -731,14 +741,14 @@ export const ${config.name}DataSchema = z.object({
   id: z.string().uuid(),
   created: z.string().datetime(),
   updated: z.string().datetime(),
-  classification: z.literal('${compliance.nsm.classification}'),
+  classification: z.literal('${compliance.nsm?.classification || 'OPEN'}'),
 });
 
 // Validate data against NSM classification
 export function validate${config.name}Data(data: unknown): boolean {
   try {
     ${config.name}DataSchema.parse(data);
-    return validateNSMRequirements(data, '${compliance.nsm.classification}');
+    return validateNSMRequirements(data, '${compliance.nsm?.classification || 'OPEN'}');
   } catch (error) {
     console.error('[${config.name}] Validation error:', error);
     return false;
@@ -783,7 +793,7 @@ function validateRestrictedData(data: any): boolean {
 
 // GDPR validation
 export function validateGDPRCompliance(data: any, purpose: string): boolean {
-  const level: GDPRComplianceLevel = '${compliance.gdpr.level}';
+  const level: GDPRComplianceLevel = '${compliance.gdpr?.level || 'minimal'}' as GDPRComplianceLevel;
   
   switch (level) {
     case 'maximum':
@@ -827,7 +837,7 @@ function validateMinimalGDPR(data: any, purpose: string): boolean {
 
 // Accessibility validation
 export function validate${config.name}Accessibility(element: HTMLElement): boolean {
-  const standard = '${compliance.accessibility.standard}';
+  const standard = '${compliance.accessibility?.standard || 'WCAG_AA'}';
   
   switch (standard) {
     case 'WCAG_AAA':
@@ -878,12 +888,12 @@ export function get${config.name}ComplianceSummary(): {
   consentRequired: boolean;
 } {
   return {
-    nsmClassification: '${compliance.nsm.classification}',
-    gdprLevel: '${compliance.gdpr.level}',
-    accessibilityStandard: '${compliance.accessibility.standard}',
-    auditRequired: ${compliance.auditTrail.enabled},
-    encryptionRequired: ${compliance.nsm.dataHandling.encryption},
-    consentRequired: ${compliance.gdpr.personalDataHandling.consentManagement},
+    nsmClassification: '${compliance.nsm?.classification || 'OPEN'}',
+    gdprLevel: '${compliance.gdpr?.level || 'minimal'}',
+    accessibilityStandard: '${compliance.accessibility?.standard || 'WCAG_AA'}',
+    auditRequired: ${compliance.auditTrail?.enabled || false},
+    encryptionRequired: ${compliance.nsm?.dataHandling?.encryption || false},
+    consentRequired: ${compliance.gdpr?.personalDataHandling?.consentManagement || false},
   };
 }
 `;
@@ -898,88 +908,88 @@ export function get${config.name}ComplianceSummary(): {
   ): Promise<string> {
     return `# ${config.name} Compliance Documentation
 
-## NSM Security Classification: ${compliance.nsm.classification}
+## NSM Security Classification: ${compliance.nsm?.classification || 'OPEN'}
 
 ### Data Handling Requirements
-- **Encryption**: ${compliance.nsm.dataHandling.encryption ? 'Required' : 'Not required'}
-- **Audit Trail**: ${compliance.nsm.dataHandling.auditTrail ? 'Required' : 'Not required'}
-- **Access Control**: ${compliance.nsm.dataHandling.accessControl ? 'Required' : 'Not required'}
-- **Data Retention**: ${compliance.nsm.dataHandling.dataRetention}
-- **Data Minimization**: ${compliance.nsm.dataHandling.dataMinimization ? 'Required' : 'Not required'}
+- **Encryption**: ${compliance.nsm?.dataHandling?.encryption ? 'Required' : 'Not required'}
+- **Audit Trail**: ${compliance.nsm?.dataHandling?.auditTrail ? 'Required' : 'Not required'}
+- **Access Control**: ${compliance.nsm?.dataHandling?.accessControl ? 'Required' : 'Not required'}
+- **Data Retention**: ${compliance.nsm?.dataHandling?.dataRetention || 'Not specified'}
+- **Data Minimization**: ${compliance.nsm?.dataHandling?.dataMinimization ? 'Required' : 'Not required'}
 
 ### Technical Requirements
-- **SSL/TLS**: ${compliance.nsm.technical.sslRequired ? 'Required' : 'Not required'}
-- **Authentication**: ${compliance.nsm.technical.authenticationRequired ? 'Required' : 'Not required'}
-- **Session Timeout**: ${compliance.nsm.technical.sessionTimeout} minutes
-- **IP Whitelisting**: ${compliance.nsm.technical.ipWhitelisting ? 'Required' : 'Not required'}
-- **VPN**: ${compliance.nsm.technical.vpnRequired ? 'Required' : 'Not required'}
+- **SSL/TLS**: ${compliance.nsm?.technical?.sslRequired ? 'Required' : 'Not required'}
+- **Authentication**: ${compliance.nsm?.technical?.authenticationRequired ? 'Required' : 'Not required'}
+- **Session Timeout**: ${compliance.nsm?.technical?.sessionTimeout || 0} minutes
+- **IP Whitelisting**: ${compliance.nsm?.technical?.ipWhitelisting ? 'Required' : 'Not required'}
+- **VPN**: ${compliance.nsm?.technical?.vpnRequired ? 'Required' : 'Not required'}
 
 ### Operational Requirements
-- **User Training**: ${compliance.nsm.operational.userTraining ? 'Required' : 'Not required'}
-- **Incident Reporting**: ${compliance.nsm.operational.incidentReporting ? 'Required' : 'Not required'}
-- **Regular Audits**: ${compliance.nsm.operational.regularAudits ? 'Required' : 'Not required'}
-- **Background Checks**: ${compliance.nsm.operational.backgroundChecks ? 'Required' : 'Not required'}
+- **User Training**: ${compliance.nsm?.operational?.userTraining ? 'Required' : 'Not required'}
+- **Incident Reporting**: ${compliance.nsm?.operational?.incidentReporting ? 'Required' : 'Not required'}
+- **Regular Audits**: ${compliance.nsm?.operational?.regularAudits ? 'Required' : 'Not required'}
+- **Background Checks**: ${compliance.nsm?.operational?.backgroundChecks ? 'Required' : 'Not required'}
 
-## GDPR Compliance Level: ${compliance.gdpr.level}
+## GDPR Compliance Level: ${compliance.gdpr?.level || 'minimal'}
 
 ### Personal Data Handling
-- **Processing Basis**: ${compliance.gdpr.personalDataHandling.dataProcessingBasis}
-- **Consent Management**: ${compliance.gdpr.personalDataHandling.consentManagement ? 'Implemented' : 'Not required'}
-- **Data Portability**: ${compliance.gdpr.personalDataHandling.dataPortability ? 'Supported' : 'Not supported'}
-- **Right to Erasure**: ${compliance.gdpr.personalDataHandling.rightToErasure ? 'Supported' : 'Not supported'}
+- **Processing Basis**: ${compliance.gdpr?.personalDataHandling?.dataProcessingBasis || 'Not specified'}
+- **Consent Management**: ${compliance.gdpr?.personalDataHandling?.consentManagement ? 'Implemented' : 'Not required'}
+- **Data Portability**: ${compliance.gdpr?.personalDataHandling?.dataPortability ? 'Supported' : 'Not supported'}
+- **Right to Erasure**: ${compliance.gdpr?.personalDataHandling?.rightToErasure ? 'Supported' : 'Not supported'}
 
 ### Technical Measures
-- **Encryption**: ${compliance.gdpr.technicalMeasures.encryption ? 'Implemented' : 'Not implemented'}
-- **Pseudonymization**: ${compliance.gdpr.technicalMeasures.pseudonymization ? 'Implemented' : 'Not implemented'}
-- **Access Logging**: ${compliance.gdpr.technicalMeasures.accessLogging ? 'Implemented' : 'Not implemented'}
+- **Encryption**: ${compliance.gdpr?.technicalMeasures?.encryption ? 'Implemented' : 'Not implemented'}
+- **Pseudonymization**: ${compliance.gdpr?.technicalMeasures?.pseudonymization ? 'Implemented' : 'Not implemented'}
+- **Access Logging**: ${compliance.gdpr?.technicalMeasures?.accessLogging ? 'Implemented' : 'Not implemented'}
 
 ### User Rights
-- **Data Access**: ${compliance.gdpr.userRights.dataAccess ? 'Supported' : 'Not supported'}
-- **Data Rectification**: ${compliance.gdpr.userRights.dataRectification ? 'Supported' : 'Not supported'}
-- **Data Erasure**: ${compliance.gdpr.userRights.dataErasure ? 'Supported' : 'Not supported'}
-- **Data Portability**: ${compliance.gdpr.userRights.dataPortability ? 'Supported' : 'Not supported'}
+- **Data Access**: ${compliance.gdpr?.userRights?.dataAccess ? 'Supported' : 'Not supported'}
+- **Data Rectification**: ${compliance.gdpr?.userRights?.dataRectification ? 'Supported' : 'Not supported'}
+- **Data Erasure**: ${compliance.gdpr?.userRights?.dataErasure ? 'Supported' : 'Not supported'}
+- **Data Portability**: ${compliance.gdpr?.userRights?.dataPortability ? 'Supported' : 'Not supported'}
 
-## Accessibility Standard: ${compliance.accessibility.standard}
+## Accessibility Standard: ${compliance.accessibility?.standard || 'WCAG_AA'}
 
 ### Features
-- **Keyboard Navigation**: ${compliance.accessibility.features.keyboardNavigation ? 'Implemented' : 'Not implemented'}
-- **Screen Reader Support**: ${compliance.accessibility.features.screenReaderSupport ? 'Implemented' : 'Not implemented'}
-- **High Contrast Mode**: ${compliance.accessibility.features.highContrast ? 'Supported' : 'Not supported'}
-- **Reduced Motion**: ${compliance.accessibility.features.reducedMotion ? 'Supported' : 'Not supported'}
+- **Keyboard Navigation**: ${compliance.accessibility?.features?.keyboardNavigation ? 'Implemented' : 'Not implemented'}
+- **Screen Reader Support**: ${compliance.accessibility?.features?.screenReaderSupport ? 'Implemented' : 'Not implemented'}
+- **High Contrast Mode**: ${compliance.accessibility?.features?.highContrast ? 'Supported' : 'Not supported'}
+- **Reduced Motion**: ${compliance.accessibility?.features?.reducedMotion ? 'Supported' : 'Not supported'}
 
 ### Testing
-- **Automated Testing**: ${compliance.accessibility.testing.automatedTesting ? 'Implemented' : 'Not implemented'}
-- **Manual Testing**: ${compliance.accessibility.testing.manualTesting ? 'Required' : 'Not required'}
-- **User Testing**: ${compliance.accessibility.testing.userTesting ? 'Required' : 'Not required'}
-- **Assistive Technology Testing**: ${compliance.accessibility.testing.assistiveTechnologyTesting ? 'Required' : 'Not required'}
+- **Automated Testing**: ${compliance.accessibility?.testing?.automatedTesting ? 'Implemented' : 'Not implemented'}
+- **Manual Testing**: ${compliance.accessibility?.testing?.manualTesting ? 'Required' : 'Not required'}
+- **User Testing**: ${compliance.accessibility?.testing?.userTesting ? 'Required' : 'Not required'}
+- **Assistive Technology Testing**: ${compliance.accessibility?.testing?.assistiveTechnologyTesting ? 'Required' : 'Not required'}
 
 ## Localization
 
-### Primary Locale: ${compliance.localization.primaryLocale}
-### Supported Locales: ${compliance.localization.supportedLocales.join(', ')}
+### Primary Locale: ${compliance.localization?.primaryLocale || 'nb-NO'}
+### Supported Locales: ${compliance.localization?.supportedLocales?.join(', ') || 'nb-NO'}
 
 ### Date Formats
-- **Short**: ${compliance.localization.dateFormats.short}
-- **Medium**: ${compliance.localization.dateFormats.medium}
-- **Long**: ${compliance.localization.dateFormats.long}
-- **ISO**: ${compliance.localization.dateFormats.iso}
+- **Short**: ${compliance.localization?.dateFormats?.short || 'dd.MM.yyyy'}
+- **Medium**: ${compliance.localization?.dateFormats?.medium || 'dd. MMM yyyy'}
+- **Long**: ${compliance.localization?.dateFormats?.long || 'dd. MMMM yyyy'}
+- **ISO**: ${compliance.localization?.dateFormats?.iso || 'yyyy-MM-dd'}
 
 ### Number Formats
-- **Decimal**: ${compliance.localization.numberFormats.decimal}
-- **Currency**: ${compliance.localization.numberFormats.currency}
-- **Percentage**: ${compliance.localization.numberFormats.percentage}
+- **Decimal**: ${compliance.localization?.numberFormats?.decimal || '1 234,56'}
+- **Currency**: ${compliance.localization?.numberFormats?.currency || '1 234,56 kr'}
+- **Percentage**: ${compliance.localization?.numberFormats?.percentage || '12,34 %'}
 
 ## Audit Trail
 
-- **Enabled**: ${compliance.auditTrail.enabled ? 'Yes' : 'No'}
-- **Retention Period**: ${compliance.auditTrail.retention.duration}
-- **Storage Type**: ${compliance.auditTrail.retention.storage}
+- **Enabled**: ${compliance.auditTrail?.enabled ? 'Yes' : 'No'}
+- **Retention Period**: ${compliance.auditTrail?.retention?.duration || 'Not specified'}
+- **Storage Type**: ${compliance.auditTrail?.retention?.storage || 'Not specified'}
 
 ### Tracked Events
-- **User Actions**: ${compliance.auditTrail.events.userActions ? 'Tracked' : 'Not tracked'}
-- **Data Access**: ${compliance.auditTrail.events.dataAccess ? 'Tracked' : 'Not tracked'}
-- **System Events**: ${compliance.auditTrail.events.systemEvents ? 'Tracked' : 'Not tracked'}
-- **Security Events**: ${compliance.auditTrail.events.securityEvents ? 'Tracked' : 'Not tracked'}
+- **User Actions**: ${compliance.auditTrail?.events?.userActions ? 'Tracked' : 'Not tracked'}
+- **Data Access**: ${compliance.auditTrail?.events?.dataAccess ? 'Tracked' : 'Not tracked'}
+- **System Events**: ${compliance.auditTrail?.events?.systemEvents ? 'Tracked' : 'Not tracked'}
+- **Security Events**: ${compliance.auditTrail?.events?.securityEvents ? 'Tracked' : 'Not tracked'}
 
 ## Compliance Metadata
 
@@ -1002,7 +1012,7 @@ This component has been designed and implemented according to Norwegian complian
     config: ComponentConfig,
     compliance: NorwegianComplianceConfig
   ): Promise<Record<string, any>> {
-    const locales = compliance.localization.supportedLocales;
+    const locales = compliance.localization?.supportedLocales || ['nb-NO'];
     const localizationKeys: Record<string, any> = {};
     
     // Generate for each supported locale

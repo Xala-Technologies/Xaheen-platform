@@ -628,12 +628,75 @@ export function validateAccessibilityCompliance(
 }
 
 export function getCompliancePreset(presetName: keyof typeof COMPLIANCE_PRESETS): NorwegianComplianceConfig {
-  return COMPLIANCE_PRESETS[presetName];
+  const preset = COMPLIANCE_PRESETS[presetName];
+  if (!preset) {
+    throw new Error(`Compliance preset not found: ${presetName}`);
+  }
+  return preset;
+}
+
+// Missing type definitions for compatibility
+export interface NorwegianComplianceTemplateConfig extends NorwegianComplianceConfig {
+  readonly templateName: string;
+  readonly templateDescription: string;
+  readonly templateVersion: string;
+  readonly compatiblePlatforms: string[];
+  readonly exampleUsage?: string;
+}
+
+export interface GDPRRequirements {
+  readonly personalDataHandling: {
+    readonly dataProcessingBasis: 'consent' | 'contract' | 'legal_obligation' | 'vital_interests' | 'public_task' | 'legitimate_interests';
+    readonly consentManagement: boolean;
+    readonly dataPortability: boolean;
+    readonly rightToErasure: boolean;
+    readonly dataAccuracy: boolean;
+    readonly storageMinimization: boolean;
+  };
+  readonly cookies: {
+    readonly essential: boolean;
+    readonly analytics: boolean;
+    readonly marketing: boolean;
+    readonly preferences: boolean;
+    readonly consentRequired: boolean;
+  };
+  readonly userRights: {
+    readonly dataAccess: boolean;
+    readonly dataRectification: boolean;
+    readonly dataErasure: boolean;
+    readonly dataPortability: boolean;
+    readonly processingRestriction: boolean;
+    readonly objectionToProcessing: boolean;
+  };
+  readonly dataProcessing: {
+    readonly lawfulBasis: string;
+    readonly purposeLimitation: boolean;
+    readonly dataMinimization: boolean;
+    readonly accuracyPrinciple: boolean;
+    readonly storageLimitation: boolean;
+    readonly integrityConfidentiality: boolean;
+    readonly accountability: boolean;
+  };
+  readonly privacyNotice: {
+    readonly dataController: string;
+    readonly contactDetails: string;
+    readonly processingPurposes: string[];
+    readonly legalBasis: string;
+    readonly dataRetention: string;
+    readonly dataRecipients: string[];
+    readonly userRights: string[];
+  };
 }
 
 // Additional type aliases for compatibility
 export type NSMClassifiedTemplate = NorwegianComplianceTemplateConfig;
-export type NSMAccessControls = NSMSecurityRequirements['access'];
+export type NSMAccessControls = {
+  readonly authenticationRequired: boolean;
+  readonly roleBasedAccess: boolean;
+  readonly multiFactorAuth: boolean;
+  readonly ipWhitelisting: boolean;
+  readonly vpnRequired: boolean;
+};
 export type NSMAuditRequirements = NSMSecurityRequirements;
 export type GDPRConsentConfig = GDPRRequirements['personalDataHandling'];
 export type GDPRCookieConsent = GDPRRequirements['cookies'];
@@ -794,22 +857,22 @@ export interface ComplianceValidationSummary {
 
 export function createCustomCompliance(overrides: Partial<NorwegianComplianceConfig>): NorwegianComplianceConfig {
   const base = COMPLIANCE_PRESETS.PUBLIC_WEBSITE;
+  if (!base) {
+    throw new Error('PUBLIC_WEBSITE preset not found');
+  }
+  
+  // Create a mutable version with proper metadata handling
+  const mergedMetadata = base.metadata ? {
+    ...base.metadata,
+    lastUpdated: new Date().toISOString(),
+    ...(overrides.metadata || {}),
+  } : overrides.metadata;
+  
   const result: NorwegianComplianceConfig = {
     ...base,
     ...overrides,
+    metadata: mergedMetadata,
   };
-  
-  // Ensure metadata is properly typed and required fields are present
-  if (result.metadata && base.metadata) {
-    result.metadata = {
-      version: base.metadata.version,
-      lastUpdated: new Date().toISOString(),
-      reviewDate: base.metadata.reviewDate,
-      approvedBy: base.metadata.approvedBy,
-      complianceOfficer: base.metadata.complianceOfficer,
-      ...overrides.metadata,
-    };
-  }
   
   return result;
 }
