@@ -182,4 +182,37 @@ export class GenerationEngine {
 		}
 		return processed;
 	}
+
+	// Missing method implementations
+	private inferComponentType(description: string): string {
+		return this.extractComponentType(description);
+	}
+
+	private extractFeatures(description: string): any {
+		return {
+			props: this.extractProps(description),
+			hasState: description.includes('state') || description.includes('useState'),
+			hasEffects: description.includes('effect') || description.includes('useEffect'),
+			isInteractive: description.includes('click') || description.includes('button')
+		};
+	}
+
+	private async generateComponentFiles(componentName: string, componentType: string, features: any): Promise<any[]> {
+		return [{
+			path: `src/components/${componentName}.tsx`,
+			content: `interface ${componentName}Props {\n}\n\nexport const ${componentName}: React.FC<${componentName}Props> = () => {\n  return <div>${componentName}</div>;\n};`,
+			type: 'component'
+		}];
+	}
+
+	private generateWarnings(description: string, features: any): string[] {
+		const warnings: string[] = [];
+		if (!features.hasState && description.includes('interactive')) {
+			warnings.push('Consider adding state management for interactive components');
+		}
+		if (!features.hasEffects && description.includes('data')) {
+			warnings.push('Consider adding useEffect for data fetching');
+		}
+		return warnings;
+	}
 }

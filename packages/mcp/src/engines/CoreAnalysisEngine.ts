@@ -113,7 +113,6 @@ export class CoreAnalysisEngine {
 			buildSystem: { name: buildSystem, version: '1.0.0', configFiles: [] },
 			languages,
 			packageManager: packageManager as 'npm' | 'yarn' | 'pnpm' | 'bun',
-			configFiles: [],
 		};
 	}
 
@@ -174,7 +173,7 @@ export class CoreAnalysisEngine {
 
 	private getFallbackAnalysis(): ProjectAnalysis {
 		return {
-			projectStructure: { framework: { name: 'unknown', version: '1.0.0', type: 'spa' as const }, buildSystem: { name: 'unknown', version: '1.0.0', configFiles: [] }, languages: [], packageManager: 'npm' as const, configFiles: [] },
+			projectStructure: { name: 'unknown', version: '1.0.0', framework: { name: 'unknown', version: '1.0.0', type: 'spa' as const }, buildSystem: { name: 'unknown', version: '1.0.0', configFiles: [] }, languages: [], packageManager: 'npm' as const },
 			components: [],
 			quality: { overall: 50, codeQuality: 50, security: 50, performance: 50, maintainability: 50, testCoverage: 0, accessibility: 50, norwegianCompliance: 50 },
 			dependencies: [],
