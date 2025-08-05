@@ -743,7 +743,65 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 
 	private calculateMemoryDelta(): number {
 		// Calculate memory usage change since last measurement
-		return 0; // Placeholder implementation
+		const currentMemory = process.memoryUsage();
+		if (this.lastMemoryMeasurement) {
+			const delta = currentMemory.heapUsed - this.lastMemoryMeasurement.heapUsed;
+			this.lastMemoryMeasurement = currentMemory;
+			return delta;
+		}
+		this.lastMemoryMeasurement = currentMemory;
+		return 0;
+	}
+
+	private lastMemoryMeasurement?: NodeJS.MemoryUsage;
+	private cpuUsageHistory: number[] = [];
+	private ioMetrics: { reads: number; writes: number; timestamp: number }[] = [];
+
+	private calculateCpuEfficiency(session: GenerationSession): number {
+		// Calculate CPU efficiency based on process usage
+		const cpuUsage = process.cpuUsage();
+		const totalTime = (cpuUsage.user + cpuUsage.system) / 1000000; // Convert to seconds
+		const sessionDuration = (session.endTime?.getTime() ?? Date.now()) - session.startTime.getTime();
+		
+		if (sessionDuration === 0) return 1.0;
+		
+		const efficiency = Math.max(0, Math.min(1, 1 - (totalTime / (sessionDuration / 1000))));
+		this.cpuUsageHistory.push(efficiency);
+		
+		// Keep only last 10 measurements
+		if (this.cpuUsageHistory.length > 10) {
+			this.cpuUsageHistory.shift();
+		}
+		
+		return efficiency;
+	}
+
+	private calculateIoEfficiency(session: GenerationSession): number {
+		// Estimate I/O efficiency based on file operations
+		const currentTime = Date.now();
+		const recentMetrics = this.ioMetrics.filter(m => currentTime - m.timestamp < 60000); // Last minute
+		
+		if (recentMetrics.length === 0) return 0.9; // Default good efficiency
+		
+		const totalOps = recentMetrics.reduce((sum, m) => sum + m.reads + m.writes, 0);
+		const timeSpan = Math.max(1, currentTime - Math.min(...recentMetrics.map(m => m.timestamp)));
+		const opsPerSecond = totalOps / (timeSpan / 1000);
+		
+		// Consider efficient if < 100 ops per second
+		return Math.max(0.1, Math.min(1.0, 1 - (opsPerSecond / 100)));
+	}
+
+	private recordIoOperation(reads: number = 0, writes: number = 0): void {
+		this.ioMetrics.push({
+			reads,
+			writes,
+			timestamp: Date.now(),
+		});
+		
+		// Keep only last 100 measurements
+		if (this.ioMetrics.length > 100) {
+			this.ioMetrics.shift();
+		}
 	}
 
 	private suggestErrorResolution(
@@ -1048,8 +1106,8 @@ ${error.error.stack ? `**Stack Trace**:\n\`\`\`\n${error.error.stack}\n\`\`\`` :
 
 	private analyzeResourceUsage(session: GenerationSession): ResourceAnalysis {
 		const memoryEfficiency = this.calculateResourceEfficiency(session);
-		const cpuEfficiency = 0.8; // Placeholder - would calculate based on CPU metrics
-		const ioEfficiency = 0.9; // Placeholder - would calculate based on I/O metrics
+		const cpuEfficiency = this.calculateCpuEfficiency(session);
+		const ioEfficiency = this.calculateIoEfficiency(session);
 
 		const bottlenecks: string[] = [];
 		const optimization: string[] = [];

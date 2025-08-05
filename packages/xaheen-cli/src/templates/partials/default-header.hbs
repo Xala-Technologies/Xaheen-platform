@@ -1,0 +1,45 @@
+{{!-- Default Header Partial --}}
+<div className="w-full px-6 py-4 {{#if (variant 'dark')}}bg-gray-800 border-gray-700{{else}}bg-white border-gray-200{{/if}} border-b">
+  <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="flex items-center gap-4">
+      {{!-- Logo/Brand --}}
+      <h1 className="text-xl font-bold {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+        {{#if appName}}{{appName}}{{else}}Xaheen App{{/if}}
+      </h1>
+      
+      {{!-- Skip to content link for accessibility --}}
+      {{#if compliance.wcag}}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg">
+        {{#if useI18n}}{t('accessibility.skipToContent')}{{else}}Skip to content{{/if}}
+      </a>
+      {{/if}}
+    </div>
+
+    {{!-- Navigation --}}
+    <nav 
+      className="hidden md:flex items-center gap-6"
+      {{#if compliance.wcag}}role="navigation" aria-label="Main navigation"{{/if}}
+    >
+      <a href="/" className="{{#if (variant 'dark')}}text-gray-300 hover:text-white{{else}}text-gray-600 hover:text-gray-900{{/if}} transition-colors">
+        {{#if useI18n}}{t('nav.home')}{{else}}Home{{/if}}
+      </a>
+      <a href="/about" className="{{#if (variant 'dark')}}text-gray-300 hover:text-white{{else}}text-gray-600 hover:text-gray-900{{/if}} transition-colors">
+        {{#if useI18n}}{t('nav.about')}{{else}}About{{/if}}
+      </a>
+      <a href="/contact" className="{{#if (variant 'dark')}}text-gray-300 hover:text-white{{else}}text-gray-600 hover:text-gray-900{{/if}} transition-colors">
+        {{#if useI18n}}{t('nav.contact')}{{else}}Contact{{/if}}
+      </a>
+    </nav>
+
+    {{!-- Mobile menu button --}}
+    <button
+      className="md:hidden p-2 rounded-lg {{#if (variant 'dark')}}hover:bg-gray-700{{else}}hover:bg-gray-100{{/if}}"
+      aria-label="Toggle menu"
+      {{#if compliance.wcag}}aria-expanded="false"{{/if}}
+    >
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+</div>

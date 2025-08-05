@@ -1,0 +1,187 @@
+{{!-- Accessibility Enhanced Mixin - Advanced accessibility features --}}
+
+{/* Enhanced Accessibility Features */}
+{/* Screen Reader Announcements */}
+<div
+  aria-live="polite"
+  aria-atomic="true"
+  className="sr-only"
+  id="${componentName}-announcements"
+>
+  {/* Dynamic announcements will be inserted here */}
+</div>
+
+{/* Skip Link for Component */}
+<a
+  href="#${componentName}-main-content"
+  className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-primary text-primary-foreground px-4 py-2 rounded z-50"
+>
+  Hopp til ${componentName} innhold
+</a>
+
+{/* High Contrast Mode Support */}
+<style jsx>{`
+  @media (prefers-contrast: high) {
+    .${componentName}-container {
+      border: 2px solid currentColor;
+      background: Canvas;
+      color: CanvasText;
+    }
+    
+    .${componentName}-container button {
+      border: 2px solid ButtonText;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+    
+    .${componentName}-container button:hover {
+      background: Highlight;
+      color: HighlightText;
+    }
+  }
+`}</style>
+
+{/* Reduced Motion Support */}
+<style jsx>{`
+  @media (prefers-reduced-motion: reduce) {
+    .${componentName}-container * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+`}</style>
+
+{/* Large Text / Zoom Support */}
+<style jsx>{`
+  @media (min-resolution: 2dppx) {
+    .${componentName}-container {
+      font-size: 1.125rem; /* 18px base */
+      line-height: 1.6;
+    }
+  }
+  
+  /* Support for 200% text scaling */
+  @media (min-width: 1280px) {
+    .${componentName}-container {
+      font-size: clamp(1rem, 1.25vw, 1.5rem);
+    }
+  }
+`}</style>
+
+{/* Norwegian Language Support */}
+<div lang="nb-NO" className="sr-only">
+  <p>
+    Dette er ${componentName} komponenten. 
+    Bruk tab-tasten for å navigere mellom interaktive elementer.
+    {{#if hasForm}}
+    Skjemaet inneholder påkrevde felt merket med stjerne.
+    {{/if}}
+    {{#if hasNavigation}}
+    Hovednavigasjonen er tilgjengelig øverst på siden.
+    {{/if}}
+  </p>
+</div>
+
+{/* Focus Management */}
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function() {
+        let focusableElements = [];
+        let firstFocusableElement;
+        let lastFocusableElement;
+        
+        function updateFocusableElements() {
+          const container = document.querySelector('.${componentName}-container');
+          if (!container) return;
+          
+          focusableElements = container.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          
+          firstFocusableElement = focusableElements[0];
+          lastFocusableElement = focusableElements[focusableElements.length - 1];
+        }
+        
+        function handleKeyDown(e) {
+          const isTabPressed = e.key === 'Tab';
+          
+          if (!isTabPressed) return;
+          
+          // Trap focus within component
+          if (e.shiftKey) {
+            if (document.activeElement === firstFocusableElement) {
+              lastFocusableElement.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastFocusableElement) {
+              firstFocusableElement.focus();
+              e.preventDefault();
+            }
+          }
+        }
+        
+        // Initialize on component mount
+        updateFocusableElements();
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // Update when DOM changes
+        const observer = new MutationObserver(updateFocusableElements);
+        const container = document.querySelector('.${componentName}-container');
+        if (container) {
+          observer.observe(container, { childList: true, subtree: true });
+        }
+        
+        // Cleanup
+        return () => {
+          document.removeEventListener('keydown', handleKeyDown);
+          observer.disconnect();
+        };
+      })();
+    `
+  }}
+/>
+
+{/* Announce Dynamic Content Changes */}
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      window.announceToScreenReader = function(message) {
+        const announcer = document.getElementById('${componentName}-announcements');
+        if (announcer) {
+          announcer.textContent = message;
+          // Clear after announcement
+          setTimeout(() => {
+            announcer.textContent = '';
+          }, 1000);
+        }
+      };
+    `
+  }}
+/>
+
+{/* Keyboard Shortcut Support */}
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      document.addEventListener('keydown', function(e) {
+        // Alt + H for help
+        if (e.altKey && e.key === 'h') {
+          e.preventDefault();
+          const helpText = 'Tilgjengelige hurtigtaster: Alt+H for hjelp, Escape for å lukke';
+          window.announceToScreenReader(helpText);
+        }
+        
+        // Escape to close modals/overlays
+        if (e.key === 'Escape') {
+          const closeButton = document.querySelector('[data-close-button]');
+          if (closeButton) {
+            closeButton.click();
+          }
+        }
+      });
+    `
+  }}
+/>

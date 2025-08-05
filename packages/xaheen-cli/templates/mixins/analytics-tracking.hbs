@@ -1,0 +1,63 @@
+{{!-- Analytics Tracking Mixin - Add analytics and monitoring capabilities --}}
+
+{/* Analytics Tracking Mixin */}
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      // Analytics tracking for ${componentName}
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'component_interaction', {
+          'event_category': '${componentName}',
+          'event_label': '${variant || 'default'}',
+          'custom_map': {
+            'nsm_classification': '${nsmClassification || 'OPEN'}',
+            'component_type': '${category || 'component'}'
+          }
+        });
+      }
+      
+      // Norwegian Analytics (if applicable)
+      if (typeof _paq !== 'undefined') {
+        _paq.push(['trackEvent', 'Component', '${componentName}', '${variant || 'default'}']);
+      }
+    `
+  }}
+/>
+
+{/* Performance monitoring */}
+{typeof window !== 'undefined' && (
+  <script
+    dangerouslySetInnerHTML={{
+      __html: `
+        // Performance tracking
+        if ('performance' in window) {
+          const componentStartTime = performance.now();
+          
+          // Track component render time
+          window.addEventListener('load', () => {
+            const componentEndTime = performance.now();
+            const renderTime = componentEndTime - componentStartTime;
+            
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'timing_complete', {
+                'name': '${componentName}_render',
+                'value': Math.round(renderTime)
+              });
+            }
+          });
+          
+          // Track Core Web Vitals
+          if ('web-vitals' in window) {
+            import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+              getCLS(console.log);
+              getFID(console.log);
+              getFCP(console.log);
+              getLCP(console.log);
+              getTTFB(console.log);
+            });
+          }
+        }
+      `
+    }}
+  />
+)}

@@ -1,0 +1,257 @@
+/**
+ * {{className}} - Express Authentication Middleware
+ * Generated at: {{generatedAt}}
+ */
+
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+{{#if hasFeature 'metrics'}}
+import { collectMetrics } from '../utils/metrics';
+{{/if}}
+{{#if norwegian}}
+import { auditLogger } from '../utils/audit-logger';
+{{/if}}
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    permissions: string[];
+  };
+}
+
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
+  permissions: string[];
+  iat: number;
+  exp: number;
+}
+
+{{#if async}}
+export const {{camelCase name}}Middleware = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+{{else}}
+export const {{camelCase name}}Middleware = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+{{/if}}
+  {{#if hasFeature 'request-id'}}
+  const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  req.headers['x-request-id'] = requestId;
+  {{/if}}
+
+  {{#if hasFeature 'metrics'}}
+  const startTime = Date.now();
+  {{/if}}
+
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      {{#if norwegian}}
+      auditLogger.logAuthFailure(
+        {{#if hasFeature 'request-id'}}String(requestId){{else}}'unknown'{{/if}},
+        req.ip,
+        'missing_token',
+        'No authorization token provided'
+      );
+      {{/if}}
+      
+      {{#if hasFeature 'metrics'}}
+      collectMetrics.incrementCounter('auth_failures', { reason: 'missing_token' });
+      {{/if}}
+      
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authorization token is required',
+        {{#if hasFeature 'request-id'}}
+        requestId
+        {{/if}}
+      });
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    {{#if async}}
+    // Verify JWT token asynchronously
+    const decoded = await new Promise<JWTPayload>((resolve, reject) => {
+      jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
+        if (err) reject(err);
+        else resolve(decoded as JWTPayload);
+      });
+    });
+    {{else}}
+    // Verify JWT token synchronously
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+    {{/if}}
+
+    // Check token expiration
+    if (decoded.exp < Date.now() / 1000) {
+      {{#if norwegian}}
+      auditLogger.logAuthFailure(
+        {{#if hasFeature 'request-id'}}String(requestId){{else}}'unknown'{{/if}},
+        req.ip,
+        'token_expired',
+        `Token expired for user ${decoded.userId}`
+      );
+      {{/if}}
+      
+      {{#if hasFeature 'metrics'}}
+      collectMetrics.incrementCounter('auth_failures', { reason: 'token_expired' });
+      {{/if}}
+      
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Token has expired',
+        {{#if hasFeature 'request-id'}}
+        requestId
+        {{/if}}
+      });
+    }
+
+    // Attach user information to request
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+      permissions: decoded.permissions || []
+    };
+
+    {{#if norwegian}}
+    // Log successful authentication for audit
+    auditLogger.logAuthSuccess(
+      {{#if hasFeature 'request-id'}}String(requestId){{else}}'unknown'{{/if}},
+      req.ip,
+      decoded.userId,
+      req.method,
+      req.originalUrl
+    );
+    {{/if}}
+
+    {{#if hasFeature 'metrics'}}
+    const duration = Date.now() - startTime;
+    collectMetrics.recordHistogram('auth_middleware_duration', duration);
+    collectMetrics.incrementCounter('auth_successes');
+    {{/if}}
+
+    {{#if hasFeature 'user-agent'}}
+    // Parse and validate user agent
+    const userAgent = req.headers['user-agent'];
+    if (userAgent) {
+      req.headers['x-parsed-user-agent'] = parseUserAgent(userAgent);
+    }
+    {{/if}}
+
+    next();
+  } catch (error) {
+    {{#if norwegian}}
+    auditLogger.logAuthFailure(
+      {{#if hasFeature 'request-id'}}String(req.headers['x-request-id'] || 'unknown'){{else}}'unknown'{{/if}},
+      req.ip,
+      'token_invalid',
+      `Invalid token: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    {{/if}}
+    
+    {{#if hasFeature 'metrics'}}
+    collectMetrics.incrementCounter('auth_failures', { reason: 'token_invalid' });
+    {{/if}}
+
+    {{#if async}}
+    console.error('Authentication middleware error:', error);
+    {{/if}}
+    
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid authorization token',
+      {{#if hasFeature 'request-id'}}
+      requestId: req.headers['x-request-id']
+      {{/if}}
+    });
+  }
+};
+
+{{#if hasFeature 'user-agent'}}
+function parseUserAgent(userAgent: string): any {
+  // Simple user agent parsing - in production, use a library like 'ua-parser-js'
+  return {
+    raw: userAgent,
+    isMobile: /Mobile|Android|iPhone|iPad/.test(userAgent),
+    browser: userAgent.split(' ')[0],
+    timestamp: new Date().toISOString()
+  };
+}
+{{/if}}
+
+// Role-based authorization middleware
+export const requireRole = (allowedRoles: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      {{#if norwegian}}
+      auditLogger.logAuthorizationFailure(
+        {{#if hasFeature 'request-id'}}String(req.headers['x-request-id'] || 'unknown'){{else}}'unknown'{{/if}},
+        req.user.id,
+        req.method,
+        req.originalUrl,
+        `Role ${req.user.role} not in allowed roles: ${allowedRoles.join(', ')}`
+      );
+      {{/if}}
+      
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'Insufficient permissions'
+      });
+    }
+
+    next();
+  };
+};
+
+// Permission-based authorization middleware
+export const requirePermission = (requiredPermission: string) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    if (!req.user.permissions.includes(requiredPermission)) {
+      {{#if norwegian}}
+      auditLogger.logAuthorizationFailure(
+        {{#if hasFeature 'request-id'}}String(req.headers['x-request-id'] || 'unknown'){{else}}'unknown'{{/if}},
+        req.user.id,
+        req.method,
+        req.originalUrl,
+        `Missing required permission: ${requiredPermission}`
+      );
+      {{/if}}
+      
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `Permission required: ${requiredPermission}`
+      });
+    }
+
+    next();
+  };
+};
+
+export default {{camelCase name}}Middleware;

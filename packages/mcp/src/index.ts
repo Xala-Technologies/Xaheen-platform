@@ -18,6 +18,9 @@ import { z } from "zod";
 import { ComponentGenerator } from "./generators/ComponentGenerator.js";
 import { TemplateManager } from "./templates/TemplateManager.js";
 import { AITemplateSystem } from "./ai/index.js";
+import { NorwegianComplianceGenerator } from "./generators/NorwegianComplianceGenerator.js";
+import { NorwegianComplianceTemplateManager } from "./templates/NorwegianComplianceTemplateManager.js";
+import { NorwegianComplianceValidator } from "./utils/norwegian-compliance-validation.js";
 import type { AIGenerationRequest, AIGenerationResponse } from "./ai/index.js";
 import {
 	cliStyleToolHandlers,
@@ -45,6 +48,11 @@ import { EnhancedValidator } from "./utils/enhanced-validation.js";
 export { promptHandlers, prompts } from "./prompts.js";
 export type * from "./types/index.js";
 export { getFramework, getFrameworkConfig } from "./utils/framework.js";
+
+// Export Norwegian Compliance components
+export { NorwegianComplianceGenerator } from "./generators/NorwegianComplianceGenerator.js";
+export { NorwegianComplianceTemplateManager } from "./templates/NorwegianComplianceTemplateManager.js";
+export { NorwegianComplianceValidator } from "./utils/norwegian-compliance-validation.js";
 
 // Export AI-native template system
 export { AITemplateSystem } from "./ai/index.js";
@@ -219,6 +227,8 @@ class XalaUISystemMCPServer {
 	private componentGenerator: ComponentGenerator;
 	private templateManager: TemplateManager;
 	private aiTemplateSystem: AITemplateSystem;
+	private norwegianComplianceGenerator: NorwegianComplianceGenerator;
+	private norwegianComplianceTemplateManager: NorwegianComplianceTemplateManager;
 
 	constructor() {
 		this.server = new Server(
@@ -244,6 +254,8 @@ class XalaUISystemMCPServer {
 			cacheEnabled: true,
 			debugMode: false
 		});
+		this.norwegianComplianceGenerator = new NorwegianComplianceGenerator();
+		this.norwegianComplianceTemplateManager = new NorwegianComplianceTemplateManager();
 		this.setupToolHandlers();
 	}
 
@@ -657,6 +669,131 @@ class XalaUISystemMCPServer {
 							required: ["projectName", "projectType"],
 						},
 					},
+					// Norwegian Compliance Tools
+					{
+						name: "generate_norwegian_compliance_component",
+						description: "Generate component with Norwegian compliance (NSM security classification, GDPR, accessibility)",
+						inputSchema: {
+							type: "object",
+							properties: {
+								config: {
+									type: "object",
+									description: "Component configuration with compliance settings",
+									properties: {
+										name: { type: "string", description: "Component name" },
+										category: { type: "string", description: "Component category" },
+										compliance: {
+											type: "object",
+											description: "Norwegian compliance configuration",
+											properties: {
+												preset: {
+													type: "string",
+													enum: ["PUBLIC_WEBSITE", "GOVERNMENT_SERVICE", "HEALTHCARE_SYSTEM"],
+													description: "Use preset compliance configuration"
+												},
+												nsm: {
+													type: "object",
+													properties: {
+														classification: {
+															type: "string",
+															enum: ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"],
+															description: "NSM security classification"
+														}
+													}
+												},
+												gdpr: {
+													type: "object",
+													properties: {
+														level: {
+															type: "string",
+															enum: ["minimal", "standard", "enhanced", "maximum"],
+															description: "GDPR compliance level"
+														}
+													}
+												},
+												accessibility: {
+													type: "object",
+													properties: {
+														standard: {
+															type: "string",
+															enum: ["WCAG_AA", "WCAG_AAA", "UU", "EU_AA"],
+															description: "Accessibility standard"
+														}
+													}
+												}
+											}
+										}
+									},
+									required: ["name", "category"]
+								},
+								context: {
+									type: "object",
+									description: "Generation context"
+								}
+							},
+							required: ["config"]
+						}
+					},
+					{
+						name: "list_norwegian_compliance_templates",
+						description: "List available Norwegian compliance templates by classification or category",
+						inputSchema: {
+							type: "object",
+							properties: {
+								classification: {
+									type: "string",
+									enum: ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"],
+									description: "Filter by NSM classification"
+								},
+								gdprLevel: {
+									type: "string",
+									enum: ["minimal", "standard", "enhanced", "maximum"],
+									description: "Filter by GDPR level"
+								},
+								designSystem: {
+									type: "string",
+									description: "Filter by design system (e.g., 'altinn')"
+								}
+							}
+						}
+					},
+					{
+						name: "validate_norwegian_compliance",
+						description: "Validate component configuration against Norwegian compliance requirements",
+						inputSchema: {
+							type: "object",
+							properties: {
+								config: {
+									type: "object",
+									description: "Component configuration to validate"
+								},
+								complianceConfig: {
+									type: "object",
+									description: "Norwegian compliance requirements"
+								}
+							},
+							required: ["config", "complianceConfig"]
+						}
+					},
+					{
+						name: "get_compliance_recommendations",
+						description: "Get Norwegian compliance recommendations for a component type",
+						inputSchema: {
+							type: "object",
+							properties: {
+								category: {
+									type: "string",
+									description: "Component category"
+								},
+								classification: {
+									type: "string",
+									enum: ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"],
+									description: "NSM security classification"
+								}
+							},
+							required: ["category", "classification"]
+						}
+					},
 				] as Tool[],
 			};
 		});
@@ -809,6 +946,15 @@ class XalaUISystemMCPServer {
 						return await this.handleValidateConfig(args);
 					case "generate_complete_project":
 						return await this.handleGenerateCompleteProject(args);
+					// Norwegian Compliance tools
+					case "generate_norwegian_compliance_component":
+						return await this.handleGenerateNorwegianComplianceComponent(args);
+					case "list_norwegian_compliance_templates":
+						return await this.handleListNorwegianComplianceTemplates(args);
+					case "validate_norwegian_compliance":
+						return await this.handleValidateNorwegianCompliance(args);
+					case "get_compliance_recommendations":
+						return await this.handleGetComplianceRecommendations(args);
 					default:
 						throw new Error(`Unknown tool: ${name}`);
 				}
@@ -1679,6 +1825,241 @@ ${this.getPlatformBestPractices(platform)}
 		};
 
 		return practices[platform] || "- Follow standard development practices";
+	}
+
+	// Norwegian Compliance handlers
+	private async handleGenerateNorwegianComplianceComponent(args: any) {
+		const { config, context } = args;
+		const validatedContext = context ? GenerationContextSchema.parse(context) : {};
+		
+		try {
+			const result = await this.norwegianComplianceGenerator.generate(config, validatedContext);
+			
+			let response = `# Generated Norwegian Compliance Component: ${config.name}\n\n`;
+			
+			// Show compliance configuration
+			if (config.compliance) {
+				response += `## Compliance Configuration\n\n`;
+				if (config.compliance.preset) {
+					response += `**Preset**: ${config.compliance.preset}\n\n`;
+				} else {
+					response += `**NSM Classification**: ${config.compliance.nsm?.classification || 'OPEN'}\n`;
+					response += `**GDPR Level**: ${config.compliance.gdpr?.level || 'minimal'}\n`;
+					response += `**Accessibility Standard**: ${config.compliance.accessibility?.standard || 'WCAG_AA'}\n\n`;
+				}
+			}
+			
+			response += `## Component Code\n\n\`\`\`${this.getFileExtension(result.platform)}\n${result.componentCode}\n\`\`\`\n\n`;
+			
+			// Show additional generated files
+			const auditFile = result.files.find(f => f.path.includes('AuditTrail'));
+			if (auditFile) {
+				response += `## Audit Trail Component\n\n\`\`\`${this.getFileExtension(result.platform)}\n${auditFile.content.slice(0, 500)}...\n\`\`\`\n\n`;
+			}
+			
+			const consentFile = result.files.find(f => f.path.includes('Consent'));
+			if (consentFile) {
+				response += `## Consent Management Component\n\n\`\`\`${this.getFileExtension(result.platform)}\n${consentFile.content.slice(0, 500)}...\n\`\`\`\n\n`;
+			}
+			
+			response += `## Compliance Validation\n\n\`\`\`typescript\n${result.files.find(f => f.path.includes('.validation.ts'))?.content.slice(0, 500)}...\n\`\`\`\n\n`;
+			
+			response += `## Localization Keys\n\n\`\`\`json\n${JSON.stringify(result.localizationKeys, null, 2)}\n\`\`\`\n\n`;
+			
+			response += `## Files Generated\n\n`;
+			result.files.forEach(file => {
+				response += `- ${file.path} (${file.type})\n`;
+			});
+			
+			response += `\n## Dependencies\n\n`;
+			result.dependencies.forEach(dep => {
+				response += `- ${dep}\n`;
+			});
+			
+			return {
+				content: [{
+					type: "text",
+					text: response
+				}]
+			};
+		} catch (error) {
+			return {
+				content: [{
+					type: "text",
+					text: `Error generating Norwegian compliance component: ${error instanceof Error ? error.message : 'Unknown error'}`
+				}],
+				isError: true
+			};
+		}
+	}
+
+	private async handleListNorwegianComplianceTemplates(args: any) {
+		const { classification, gdprLevel, designSystem } = args;
+		
+		let templates = this.norwegianComplianceTemplateManager.listTemplates('all');
+		
+		// Filter by classification if provided
+		if (classification) {
+			templates = this.norwegianComplianceTemplateManager.getTemplatesByClassification(classification);
+		}
+		
+		// Filter by GDPR level if provided
+		if (gdprLevel) {
+			templates = this.norwegianComplianceTemplateManager.getTemplatesByGDPRLevel(gdprLevel);
+		}
+		
+		// Filter by design system if provided
+		if (designSystem) {
+			templates = this.norwegianComplianceTemplateManager.getTemplatesByDesignSystem(designSystem);
+		}
+		
+		let response = `# Norwegian Compliance Templates\n\n`;
+		
+		if (classification) {
+			response += `**NSM Classification**: ${classification}\n`;
+		}
+		if (gdprLevel) {
+			response += `**GDPR Level**: ${gdprLevel}\n`;
+		}
+		if (designSystem) {
+			response += `**Design System**: ${designSystem}\n`;
+		}
+		response += `\n**Total Templates**: ${templates.length}\n\n`;
+		
+		// Group templates by category
+		const byCategory = templates.reduce((acc, template) => {
+			if (!acc[template.category]) acc[template.category] = [];
+			acc[template.category].push(template);
+			return acc;
+		}, {} as Record<string, typeof templates>);
+		
+		for (const [category, categoryTemplates] of Object.entries(byCategory)) {
+			response += `## ${category.toUpperCase()}\n\n`;
+			
+			categoryTemplates.forEach(template => {
+				const complianceTemplate = template as any;
+				response += `### ${template.name}\n`;
+				response += `**Description**: ${template.description}\n`;
+				
+				if (complianceTemplate.compliance) {
+					response += `**NSM**: ${complianceTemplate.compliance.nsm.classification} | `;
+					response += `**GDPR**: ${complianceTemplate.compliance.gdpr.level} | `;
+					response += `**Accessibility**: ${complianceTemplate.compliance.accessibility.standard}\n`;
+				}
+				
+				response += `**Required Features**: ${template.requiredFeatures.join(', ')}\n\n`;
+			});
+		}
+		
+		return {
+			content: [{
+				type: "text",
+				text: response
+			}]
+		};
+	}
+
+	private async handleValidateNorwegianCompliance(args: any) {
+		const { config, complianceConfig } = args;
+		
+		const result = NorwegianComplianceValidator.validateNorwegianCompliance(
+			config,
+			complianceConfig
+		);
+		
+		if (result.success) {
+			return {
+				content: [{
+					type: "text",
+					text: `✅ **Norwegian Compliance Validation Passed**\n\nThe component configuration meets all Norwegian compliance requirements.`
+				}]
+			};
+		} else {
+			const errorMessage = NorwegianComplianceValidator.formatNorwegianComplianceError(result);
+			return {
+				content: [{
+					type: "text",
+					text: errorMessage
+				}],
+				isError: true
+			};
+		}
+	}
+
+	private async handleGetComplianceRecommendations(args: any) {
+		const { category, classification } = args;
+		
+		const recommendations = NorwegianComplianceValidator.getComplianceRecommendations(
+			category,
+			classification
+		);
+		
+		let response = `# Norwegian Compliance Recommendations\n\n`;
+		response += `**Component Category**: ${category}\n`;
+		response += `**NSM Classification**: ${classification}\n\n`;
+		
+		response += `## Recommendations\n\n`;
+		recommendations.forEach((rec, index) => {
+			response += `${index + 1}. ${rec}\n`;
+		});
+		
+		// Add specific guidance based on classification
+		response += `\n## ${classification} Classification Guidelines\n\n`;
+		
+		switch (classification) {
+			case 'SECRET':
+				response += `### 🔴 SECRET - Maximum Security Required\n\n`;
+				response += `- **Authentication**: Multi-factor authentication (MFA) is mandatory\n`;
+				response += `- **Encryption**: End-to-end encryption with approved algorithms\n`;
+				response += `- **Access**: VPN-only access with IP whitelisting\n`;
+				response += `- **Session**: Maximum 10-minute timeout\n`;
+				response += `- **Audit**: Comprehensive logging with 50-year retention\n`;
+				response += `- **Platform**: Desktop-only (no mobile access)\n`;
+				break;
+				
+			case 'CONFIDENTIAL':
+				response += `### 🟠 CONFIDENTIAL - High Security Required\n\n`;
+				response += `- **Authentication**: Strong authentication required\n`;
+				response += `- **Encryption**: Data encryption at rest and in transit\n`;
+				response += `- **Session**: 15-minute timeout recommended\n`;
+				response += `- **Audit**: Full audit trail with 30-year retention\n`;
+				response += `- **Access**: Role-based access control (RBAC)\n`;
+				break;
+				
+			case 'RESTRICTED':
+				response += `### 🟡 RESTRICTED - Enhanced Security\n\n`;
+				response += `- **Authentication**: User authentication required\n`;
+				response += `- **Encryption**: HTTPS/TLS required\n`;
+				response += `- **Session**: 30-minute timeout\n`;
+				response += `- **Audit**: Basic audit trail with 7-year retention\n`;
+				response += `- **Access**: Basic access control\n`;
+				break;
+				
+			case 'OPEN':
+				response += `### 🟢 OPEN - Standard Security\n\n`;
+				response += `- **Privacy**: GDPR cookie consent required\n`;
+				response += `- **Accessibility**: Minimum WCAG AA compliance\n`;
+				response += `- **Localization**: Support Norwegian locales (nb-NO, nn-NO)\n`;
+				response += `- **SSL**: HTTPS recommended\n`;
+				break;
+		}
+		
+		response += `\n## Implementation Checklist\n\n`;
+		response += `- [ ] Implement required authentication level\n`;
+		response += `- [ ] Configure encryption settings\n`;
+		response += `- [ ] Set up audit trail logging\n`;
+		response += `- [ ] Add security classification badges\n`;
+		response += `- [ ] Implement session management\n`;
+		response += `- [ ] Add Norwegian localization\n`;
+		response += `- [ ] Ensure accessibility compliance\n`;
+		response += `- [ ] Configure GDPR features\n`;
+		
+		return {
+			content: [{
+				type: "text",
+				text: response
+			}]
+		};
 	}
 
 	async run(): Promise<void> {

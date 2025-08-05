@@ -1,0 +1,70 @@
+{{!-- Default Footer Partial --}}
+<div className="w-full px-6 py-8 {{#if (variant 'dark')}}bg-gray-800 text-gray-300{{else}}bg-gray-100 text-gray-600{{/if}}">
+  <div className="max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {{!-- Company Info --}}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+          {{#if appName}}{{appName}}{{else}}Xaheen{{/if}}
+        </h3>
+        <p className="text-sm">
+          {{#if useI18n}}{t('footer.description')}{{else}}Built with Xaheen UI System{{/if}}
+        </p>
+      </div>
+
+      {{!-- Quick Links --}}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+          {{#if useI18n}}{t('footer.quickLinks')}{{else}}Quick Links{{/if}}
+        </h3>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <a href="/privacy" className="hover:underline">
+              {{#if useI18n}}{t('footer.privacy')}{{else}}Privacy Policy{{/if}}
+            </a>
+          </li>
+          <li>
+            <a href="/terms" className="hover:underline">
+              {{#if useI18n}}{t('footer.terms')}{{else}}Terms of Service{{/if}}
+            </a>
+          </li>
+          {{#if (variant 'norwegian-compliance')}}
+          <li>
+            <a href="/gdpr" className="hover:underline">
+              {{#if useI18n}}{t('footer.gdpr')}{{else}}GDPR Information{{/if}}
+            </a>
+          </li>
+          {{/if}}
+        </ul>
+      </div>
+
+      {{!-- Contact Info --}}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+          {{#if useI18n}}{t('footer.contact')}{{else}}Contact{{/if}}
+        </h3>
+        <address className="text-sm not-italic">
+          {{#if (variant 'norwegian-compliance')}}
+          <p>{{#if useI18n}}{t('footer.orgNumber')}{{else}}Org.nr{{/if}}: 123 456 789 MVA</p>
+          {{/if}}
+          <p>{{#if useI18n}}{t('footer.email')}{{else}}Email{{/if}}: support@xaheen.com</p>
+        </address>
+      </div>
+    </div>
+
+    {{!-- Copyright --}}
+    <div className="mt-8 pt-8 border-t {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-300{{/if}} text-center text-sm">
+      <p>
+        © {{currentYear}} {{#if appName}}{{appName}}{{else}}Xaheen{{/if}}. 
+        {{#if useI18n}}{t('footer.allRightsReserved')}{{else}}All rights reserved{{/if}}.
+      </p>
+      {{#if compliance.wcag}}
+      <p className="mt-2">
+        <a href="/accessibility" className="hover:underline">
+          {{#if useI18n}}{t('footer.accessibility')}{{else}}Accessibility Statement{{/if}}
+        </a>
+      </p>
+      {{/if}}
+    </div>
+  </div>
+</div>

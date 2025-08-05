@@ -58,15 +58,17 @@ export const cliLogger = {
 	},
 };
 
-// Set up global error handlers
-process.on("unhandledRejection", (reason, promise) => {
-	logger.error("Unhandled Rejection at:", promise, "reason:", reason);
-	process.exit(1);
-});
+// Set up global error handlers (skip in test environment)
+if (process.env.NODE_ENV !== "test" && typeof process.on === "function") {
+	process.on("unhandledRejection", (reason, promise) => {
+		logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+		process.exit(1);
+	});
 
-process.on("uncaughtException", (error) => {
-	logger.error("Uncaught Exception:", error);
-	process.exit(1);
-});
+	process.on("uncaughtException", (error) => {
+		logger.error("Uncaught Exception:", error);
+		process.exit(1);
+	});
+}
 
 export default logger;

@@ -623,6 +623,300 @@ export class TemplateInheritance {
       }
     });
 
+    // Base Page Template
+    this.registerBaseTemplate({
+      id: 'base-page',
+      name: 'Base Page',
+      description: 'Base template for page components with SEO and metadata',
+      category: 'page',
+      platform: 'react',
+      path: 'base/base-page.hbs',
+      extends: 'base-component',
+      slots: [
+        {
+          name: 'seo-head',
+          description: 'Additional SEO head content',
+          required: false,
+          defaultContent: ''
+        },
+        {
+          name: 'page-header',
+          description: 'Page header content',
+          required: false,
+          defaultContent: ''
+        },
+        {
+          name: 'page-content',
+          description: 'Main page content',
+          required: true
+        },
+        {
+          name: 'page-footer',
+          description: 'Page footer content',
+          required: false,
+          defaultContent: ''
+        }
+      ],
+      props: [
+        {
+          name: 'title',
+          type: 'string',
+          description: 'Page title for SEO',
+          required: false,
+          defaultValue: 'Page'
+        },
+        {
+          name: 'description',
+          type: 'string',
+          description: 'Page description for SEO',
+          required: false
+        },
+        {
+          name: 'canonicalUrl',
+          type: 'string',
+          description: 'Canonical URL for SEO',
+          required: false
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['page', 'seo', 'metadata', 'react'],
+        complexity: 'moderate',
+        estimatedTokens: 1000,
+        nsmClassification: 'OPEN',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
+    // Base Authentication Template
+    this.registerBaseTemplate({
+      id: 'base-auth',
+      name: 'Base Authentication',
+      description: 'Base template for authentication components with security patterns',
+      category: 'component',
+      platform: 'react',
+      path: 'base/base-auth.hbs',
+      extends: 'base-component',
+      slots: [
+        {
+          name: 'auth-form',
+          description: 'Authentication form content',
+          required: true
+        },
+        {
+          name: 'two-factor',
+          description: 'Two-factor authentication content',
+          required: false,
+          defaultContent: ''
+        },
+        {
+          name: 'auth-links',
+          description: 'Authentication navigation links',
+          required: false,
+          defaultContent: ''
+        }
+      ],
+      props: [
+        {
+          name: 'variant',
+          type: 'string',
+          description: 'Authentication variant',
+          required: false,
+          defaultValue: 'login'
+        },
+        {
+          name: 'requireTwoFactor',
+          type: 'boolean',
+          description: 'Whether two-factor authentication is required',
+          required: false,
+          defaultValue: false
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['auth', 'security', 'component', 'react'],
+        complexity: 'complex',
+        estimatedTokens: 1500,
+        nsmClassification: 'RESTRICTED',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
+    // Base Error Handling Template
+    this.registerBaseTemplate({
+      id: 'base-error',
+      name: 'Base Error Handling',
+      description: 'Base template for error components with user feedback',
+      category: 'component',
+      platform: 'react',
+      path: 'base/base-error.hbs',
+      extends: 'base-component',
+      slots: [
+        {
+          name: 'error-details',
+          description: 'Error details content',
+          required: false,
+          defaultContent: ''
+        },
+        {
+          name: 'support-info',
+          description: 'Support information content',
+          required: false,
+          defaultContent: ''
+        }
+      ],
+      props: [
+        {
+          name: 'error',
+          type: 'object',
+          description: 'Error object',
+          required: false
+        },
+        {
+          name: 'statusCode',
+          type: 'number',
+          description: 'HTTP status code',
+          required: false,
+          defaultValue: 500
+        },
+        {
+          name: 'showRetry',
+          type: 'boolean',
+          description: 'Whether to show retry button',
+          required: false,
+          defaultValue: true
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['error', 'feedback', 'component', 'react'],
+        complexity: 'moderate',
+        estimatedTokens: 1200,
+        nsmClassification: 'OPEN',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
+    // Analytics Tracking Mixin
+    this.registerBaseTemplate({
+      id: 'analytics-tracking-mixin',
+      name: 'Analytics Tracking Mixin',
+      description: 'Mixin for analytics and performance tracking',
+      category: 'utility',
+      platform: 'react',
+      path: 'mixins/analytics-tracking.hbs',
+      slots: [],
+      props: [
+        {
+          name: 'trackingId',
+          type: 'string',
+          description: 'Analytics tracking ID',
+          required: false
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['mixin', 'analytics', 'tracking', 'performance'],
+        complexity: 'simple',
+        estimatedTokens: 300,
+        nsmClassification: 'OPEN',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
+    // Accessibility Enhanced Mixin
+    this.registerBaseTemplate({
+      id: 'accessibility-enhanced-mixin',
+      name: 'Accessibility Enhanced Mixin',
+      description: 'Mixin for advanced accessibility features',
+      category: 'utility',
+      platform: 'react',
+      path: 'mixins/accessibility-enhanced.hbs',
+      slots: [],
+      props: [
+        {
+          name: 'hasForm',
+          type: 'boolean',
+          description: 'Whether component contains forms',
+          required: false,
+          defaultValue: false
+        },
+        {
+          name: 'hasNavigation',
+          type: 'boolean',
+          description: 'Whether component contains navigation',
+          required: false,
+          defaultValue: false
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['mixin', 'accessibility', 'a11y', 'wcag'],
+        complexity: 'moderate',
+        estimatedTokens: 400,
+        nsmClassification: 'OPEN',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
+    // SEO Optimization Mixin
+    this.registerBaseTemplate({
+      id: 'seo-optimization-mixin',
+      name: 'SEO Optimization Mixin',
+      description: 'Mixin for search engine optimization',
+      category: 'utility',
+      platform: 'react',
+      path: 'mixins/seo-optimization.hbs',
+      slots: [],
+      props: [
+        {
+          name: 'isPage',
+          type: 'boolean',
+          description: 'Whether this is a page component',
+          required: false,
+          defaultValue: false
+        },
+        {
+          name: 'breadcrumbs',
+          type: 'array',
+          description: 'Breadcrumb navigation items',
+          required: false
+        }
+      ],
+      metadata: {
+        version: '1.0.0',
+        author: 'CLI Template Generator Agent',
+        created: '2025-01-03T00:00:00Z',
+        lastModified: '2025-01-03T00:00:00Z',
+        tags: ['mixin', 'seo', 'optimization', 'metadata'],
+        complexity: 'moderate',
+        estimatedTokens: 500,
+        nsmClassification: 'OPEN',
+        wcagLevel: 'AAA',
+        norwegianCompliant: true
+      }
+    });
+
     consola.success('Initialized template inheritance system with base templates');
   }
 }

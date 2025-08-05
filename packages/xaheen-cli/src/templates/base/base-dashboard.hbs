@@ -1,0 +1,206 @@
+{{!-- Base Dashboard Template with Slots --}}
+import React, { useState } from 'react';
+{{#if useSemanticUI}}
+import { Container, Stack, Grid } from '@xala-technologies/ui-system';
+{{/if}}
+{{#if useI18n}}
+import { useTranslation } from '@xala-technologies/i18n';
+{{/if}}
+{{#if useDesignTokens}}
+import { designTokens } from '@xala-technologies/design-tokens';
+{{/if}}
+
+{{!-- Props Interface Slot --}}
+{{#if (hasSlot 'props')}}
+{{{slot 'props'}}}
+{{else}}
+export interface {{className}}Props {
+  readonly user?: {
+    readonly name: string;
+    readonly email: string;
+    readonly avatar?: string;
+  };
+  readonly title?: string;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+}
+{{/if}}
+
+{{!-- Main Dashboard Component --}}
+export const {{className}} = ({
+  user,
+  title = '{{#if useI18n}}{t("dashboard.title")}{{else}}Dashboard{{/if}}',
+  nsmClassification = 'OPEN'
+}: {{className}}Props): JSX.Element => {
+  {{#if useI18n}}
+  const { t } = useTranslation('dashboard');
+  {{/if}}
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedTab, setSelectedTab] = useState('overview');
+
+  return (
+    <div className="min-h-screen {{#if (variant 'dark')}}bg-gray-900{{else}}bg-gray-50{{/if}}">
+      {{!-- Norwegian Compliance Header --}}
+      {{#if (variant 'norwegian-compliance')}}
+      <div className="bg-blue-800 text-white px-4 py-2 text-sm">
+        <div className="max-w-full flex items-center justify-between">
+          <span>NSM: {nsmClassification}</span>
+          <span>{{norwegianDate}}</span>
+        </div>
+      </div>
+      {{/if}}
+
+      {{!-- Dashboard Header --}}
+      <header className="{{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} shadow-sm border-b {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-200{{/if}}">
+        <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 {{#if (variant 'dark')}}hover:bg-gray-700{{/if}}"
+              aria-label="{{#if useI18n}}{t('navigation.toggleSidebar')}{{else}}Toggle sidebar{{/if}}"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <h1 className="text-xl font-semibold {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">{title}</h1>
+          </div>
+          
+          {{!-- User Menu --}}
+          {user && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">{user.name}</span>
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-4rem)]">
+        {{!-- Navigation Slot --}}
+        <aside 
+          className={`${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} border-r {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-200{{/if}}`}
+          {{#if compliance.wcag}}
+            role="navigation"
+            aria-label="{{#if useI18n}}{t('navigation.main')}{{else}}Main navigation{{/if}}"
+          {{/if}}
+        >
+          {{#if (hasSlot 'navigation')}}
+          {{{slot 'navigation'}}}
+          {{else}}
+          <nav className="p-4">
+            <ul className="space-y-2">
+              <li>
+                <button 
+                  onClick={() => setSelectedTab('overview')}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                    selectedTab === 'overview' 
+                      ? '{{#if (variant 'dark')}}bg-gray-700 text-white{{else}}bg-blue-50 text-blue-600{{/if}}' 
+                      : '{{#if (variant 'dark')}}text-gray-300 hover:bg-gray-700{{else}}text-gray-600 hover:bg-gray-100{{/if}}'
+                  }`}
+                >
+                  {{#if useI18n}}{t('navigation.overview')}{{else}}Overview{{/if}}
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setSelectedTab('analytics')}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                    selectedTab === 'analytics' 
+                      ? '{{#if (variant 'dark')}}bg-gray-700 text-white{{else}}bg-blue-50 text-blue-600{{/if}}' 
+                      : '{{#if (variant 'dark')}}text-gray-300 hover:bg-gray-700{{else}}text-gray-600 hover:bg-gray-100{{/if}}'
+                  }`}
+                >
+                  {{#if useI18n}}{t('navigation.analytics')}{{else}}Analytics{{/if}}
+                </button>
+              </li>
+            </ul>
+          </nav>
+          {{/if}}
+        </aside>
+
+        {{!-- Main Content Area --}}
+        <main 
+          className="flex-1 overflow-y-auto"
+          {{#if compliance.wcag}}
+            role="main"
+            aria-label="{{#if useI18n}}{t('dashboard.mainContent')}{{else}}Dashboard content{{/if}}"
+          {{/if}}
+        >
+          {{#if useSemanticUI}}
+          <Container className="p-6">
+            {{!-- Widgets Slot --}}
+            {{#if (hasSlot 'widgets')}}
+            <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+              {{{slot 'widgets'}}}
+            </Grid>
+            {{else}}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {{> default-dashboard-widgets}}
+            </div>
+            {{/if}}
+
+            {{!-- Analytics Slot --}}
+            {{#if (hasSlot 'analytics')}}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4 {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+                {{#if useI18n}}{t('dashboard.analytics')}{{else}}Analytics{{/if}}
+              </h2>
+              {{{slot 'analytics'}}}
+            </div>
+            {{/if}}
+
+            {{!-- Additional slots for extended dashboards --}}
+            {{#each additionalSlots as |slot|}}
+            {{#if (hasSlot slot.name)}}
+            <div className="mt-8">
+              {{{slot slot.name}}}
+            </div>
+            {{/if}}
+            {{/each}}
+          </Container>
+          {{else}}
+          <div className="p-6">
+            {{!-- Non-semantic version --}}
+            {{#if (hasSlot 'widgets')}}
+            {{{slot 'widgets'}}}
+            {{else}}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-6 bg-white rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-2">Widget 1</h3>
+                <p className="text-gray-600">Widget content here</p>
+              </div>
+              <div className="p-6 bg-white rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-2">Widget 2</h3>
+                <p className="text-gray-600">Widget content here</p>
+              </div>
+              <div className="p-6 bg-white rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-2">Widget 3</h3>
+                <p className="text-gray-600">Widget content here</p>
+              </div>
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+        </main>
+      </div>
+
+      {{!-- High Contrast Mode Toggle --}}
+      {{#if (compliance 'highContrast')}}
+      <button
+        className="fixed bottom-4 right-4 p-3 bg-gray-800 text-white rounded-full shadow-lg"
+        aria-label="Toggle high contrast mode"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </button>
+      {{/if}}
+    </div>
+  );
+};

@@ -1,0 +1,305 @@
+{{!-- Base Authentication Template - Foundation for auth components with security patterns --}}
+import React, { useState, useCallback, useEffect, type JSX } from 'react';
+import { useRouter } from 'next/router';
+import { Container, Stack, Card, Button, Alert } from '@xala-ui/components';
+import { cn } from '@xala-ui/utils';
+import { Shield, AlertTriangle } from 'lucide-react';
+{{#slot imports}}{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props {
+  readonly className?: string;
+  readonly variant?: 'login' | 'register' | 'reset' | 'verify';
+  readonly redirectUrl?: string;
+  readonly onSuccess?: (user: any) => void;
+  readonly onError?: (error: Error) => void;
+  readonly requireTwoFactor?: boolean;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+}
+
+interface AuthState {
+  readonly isLoading: boolean;
+  readonly error: string | null;
+  readonly attempts: number;
+  readonly isLocked: boolean;
+  readonly lockUntil?: Date;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} Authentication Component
+ * 
+ * @description Secure authentication component with Norwegian compliance
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant
+ * @nsm-classification {{nsmClassification}}
+ * @security High - Implements secure authentication patterns
+ */
+export const {{componentName}} = ({
+  className,
+  variant = 'login',
+  redirectUrl = '/dashboard',
+  onSuccess,
+  onError,
+  requireTwoFactor = false,
+  nsmClassification = 'RESTRICTED',
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  const router = useRouter();
+  
+  // Authentication state
+  const [authState, setAuthState] = useState<AuthState>({
+    isLoading: false,
+    error: null,
+    attempts: 0,
+    isLocked: false
+  });
+
+  // Security monitoring
+  useEffect(() => {
+    // Log authentication attempts for security auditing
+    const logAttempt = () => {
+      console.info(`Auth attempt for variant: ${variant}`, {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        classification: nsmClassification
+      });
+    };
+    
+    logAttempt();
+  }, [variant, nsmClassification]);
+
+  // Handle authentication submission
+  const handleAuth = useCallback(async (formData: FormData) => {
+    if (authState.isLocked) {
+      setAuthState(prev => ({
+        ...prev,
+        error: 'Konto midlertidig låst på grunn av for mange forsøk. Prøv igjen senere.'
+      }));
+      return;
+    }
+
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      // Implement authentication logic here
+      const result = await authenticateUser(formData, variant);
+      
+      if (result.success) {
+        // Security logging for successful authentication
+        console.info('Authentication successful', {
+          variant,
+          userId: result.user?.id,
+          timestamp: new Date().toISOString()
+        });
+        
+        onSuccess?.(result.user);
+        await router.push(redirectUrl);
+      } else {
+        throw new Error(result.error || 'Autentisering feilet');
+      }
+    } catch (error) {
+      const attempts = authState.attempts + 1;
+      const isLocked = attempts >= 5;
+      
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'En ukjent feil oppstod',
+        attempts,
+        isLocked,
+        lockUntil: isLocked ? new Date(Date.now() + 15 * 60 * 1000) : undefined // 15 minutes
+      }));
+
+      // Security logging for failed attempts
+      console.warn('Authentication failed', {
+        variant,
+        attempts,
+        isLocked,
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      onError?.(error instanceof Error ? error : new Error('Authentication failed'));
+    }
+  }, [authState, variant, onSuccess, onError, redirectUrl, router]);
+
+  const componentStyles = cn(
+    'w-full max-w-md mx-auto',
+    className
+  );
+
+  const getTitle = () => {
+    switch (variant) {
+      case 'login': return 'Logg inn';
+      case 'register': return 'Opprett konto';
+      case 'reset': return 'Tilbakestill passord';
+      case 'verify': return 'Verifiser konto';
+      default: return 'Autentisering';
+    }
+  };
+
+  const getDescription = () => {
+    switch (variant) {
+      case 'login': return 'Logg inn på din konto for å fortsette';
+      case 'register': return 'Opprett en ny konto for å komme i gang';
+      case 'reset': return 'Skriv inn e-postadressen din for å tilbakestille passordet';
+      case 'verify': return 'Verifiser e-postadressen din for å aktivere kontoen';
+      default: return 'Fullfør autentiseringsprosessen';
+    }
+  };
+
+  try {
+    return (
+      <Container className={componentStyles} {...props}>
+        <Card className="p-8 shadow-lg">
+          <Stack spacing="lg">
+            {/* Header */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <Shield className="h-12 w-12 text-primary" aria-hidden="true" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {getTitle()}
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                {getDescription()}
+              </p>
+            </div>
+
+            {/* Security Classification Notice */}
+            {nsmClassification !== 'OPEN' && (
+              <Alert variant="info">
+                <AlertTriangle className="h-4 w-4" />
+                <div>
+                  <p className="font-medium">Sikkerhetsinformasjon</p>
+                  <p className="text-sm">
+                    Dette systemet håndterer {nsmClassification} informasjon.
+                    All aktivitet blir logget og overvåket.
+                  </p>
+                </div>
+              </Alert>
+            )}
+
+            {/* Error Display */}
+            {authState.error && (
+              <Alert variant="destructive" role="alert">
+                <AlertTriangle className="h-4 w-4" />
+                <p>{authState.error}</p>
+              </Alert>
+            )}
+
+            {/* Lock Notice */}
+            {authState.isLocked && (
+              <Alert variant="warning">
+                <AlertTriangle className="h-4 w-4" />
+                <div>
+                  <p className="font-medium">Konto midlertidig låst</p>
+                  <p className="text-sm">
+                    For mange mislykkede forsøk. Kontoen låses opp automatisk om 15 minutter.
+                  </p>
+                </div>
+              </Alert>
+            )}
+
+            {{#slot auth-form}}
+            <form action={handleAuth} className="space-y-6">
+              {/* Form fields will be inserted here */}
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={authState.isLoading || authState.isLocked}
+                aria-describedby={authState.error ? "auth-error" : undefined}
+              >
+                {authState.isLoading ? 'Behandler...' : getTitle()}
+              </Button>
+            </form>
+            {{/slot}}
+
+            {{#if requireTwoFactor}}
+            {{#slot two-factor}}
+            <div className="border-t pt-6">
+              <p className="text-sm text-muted-foreground text-center">
+                Tofaktorautentisering er påkrevd for denne tjenesten
+              </p>
+            </div>
+            {{/slot}}
+            {{/if}}
+
+            {{#slot auth-links}}
+            <div className="text-center text-sm text-muted-foreground">
+              {/* Authentication links will be inserted here */}
+            </div>
+            {{/slot}}
+          </Stack>
+        </Card>
+        
+        {{>mixins}}
+      </Container>
+    );
+  } catch (error) {
+    console.error(`${componentName} authentication error:`, error);
+    return (
+      <Container className={componentStyles}>
+        <Card className="p-8 shadow-lg">
+          <div className="text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-destructive mb-2">
+              Autentiseringsfeil
+            </h1>
+            <p className="text-muted-foreground">
+              En teknisk feil oppstod. Vennligst prøv igjen senere.
+            </p>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Authentication helper functions
+async function authenticateUser(formData: FormData, variant: string) {
+  // This would integrate with your authentication service
+  // Implementation depends on your auth provider (NextAuth, Auth0, etc.)
+  throw new Error('Authentication service not configured');
+}
+
+export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (password.length < 12) {
+    errors.push('Passordet må være minst 12 tegn langt');
+  }
+  
+  if (!/(?=.*[a-z])/.test(password)) {
+    errors.push('Passordet må inneholde minst én liten bokstav');
+  }
+  
+  if (!/(?=.*[A-Z])/.test(password)) {
+    errors.push('Passordet må inneholde minst én stor bokstav');
+  }
+  
+  if (!/(?=.*\d)/.test(password)) {
+    errors.push('Passordet må inneholde minst ett tall');
+  }
+  
+  if (!/(?=.*[!@#$%^&*])/.test(password)) {
+    errors.push('Passordet må inneholde minst ett spesialtegn');
+  }
+  
+  return { isValid: errors.length === 0, errors };
+};
+
+export const generateSecurityHeaders = () => ({
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+});
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props, AuthState };

@@ -1821,14 +1821,18 @@ export class ${this.pascalCase(command.name)}Handler implements ICommandHandler<
   ) {}
 
   async execute(command: ${this.pascalCase(command.name)}Command): Promise<void> {
-    // TODO: Load aggregate from event store
-    // const aggregate = await this.repository.getById(command.aggregateId);
-    
-    // TODO: Execute command on aggregate
-    // aggregate.${this.camelCase(command.name)}(${command.payload.map((p) => `command.${p.name}`).join(", ")});
-    
-    // TODO: Save aggregate changes
-    // await this.repository.save(aggregate);
+    try {
+      // Load aggregate from event store
+      const aggregate = await this.repository.getById(command.aggregateId);
+      
+      // Execute command on aggregate
+      aggregate.${this.camelCase(command.name)}(${command.payload.map((p) => `command.${p.name}`).join(", ")});
+      
+      // Save aggregate changes
+      await this.repository.save(aggregate);
+    } catch (error) {
+      throw new Error(\`Failed to execute ${command.name} command: \${error.message}\`);
+    }
   }
 }
 `;
@@ -1850,8 +1854,13 @@ export class ${this.pascalCase(query.name)}Handler implements IQueryHandler<${th
   ) {}
 
   async execute(query: ${this.pascalCase(query.name)}Query): Promise<${query.returnType}> {
-    // TODO: Implement query logic
-    throw new Error('Query handler not implemented');
+    try {
+      // Execute query against read model
+      const result = await this.readModelRepository.query(query);
+      return result;
+    } catch (error) {
+      throw new Error(\`Failed to execute ${query.name} query: \${error.message}\`);
+    }
   }
 }
 `;
@@ -1869,8 +1878,26 @@ import { ${this.pascalCase(event.name)}Event } from '../events/${this.kebabCase(
 @EventsHandler(${this.pascalCase(event.name)}Event)
 export class ${this.pascalCase(event.name)}Handler implements IEventHandler<${this.pascalCase(event.name)}Event> {
   async handle(event: ${this.pascalCase(event.name)}Event): Promise<void> {
-    // TODO: Handle event
-    console.log('${this.pascalCase(event.name)}Event handled:', event);
+    try {
+      // Handle event side effects
+      console.log('${this.pascalCase(event.name)}Event handled:', event);
+      
+      // Update projections or trigger additional actions
+      await this.updateProjections(event);
+      await this.notifySubscribers(event);
+    } catch (error) {
+      console.error(\`Error handling ${event.name} event:\`, error);
+      throw error;
+    }
+  }
+
+  private async updateProjections(event: ${this.pascalCase(event.name)}Event): Promise<void> {
+    // Update read models based on the event
+  }
+
+  private async notifySubscribers(event: ${this.pascalCase(event.name)}Event): Promise<void> {
+    // Notify external systems or send notifications
+  }
   }
 }
 `;

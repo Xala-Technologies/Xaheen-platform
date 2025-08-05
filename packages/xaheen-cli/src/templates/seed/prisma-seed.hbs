@@ -1,0 +1,265 @@
+/**
+ * {{className}} - Prisma Seed Data
+ * Generated at: {{generatedAt}}
+ */
+
+import { PrismaClient } from '@prisma/client';
+{{#if gdprCompliant}}
+import { faker } from '@faker-js/faker';
+{{/if}}
+
+const prisma = new PrismaClient();
+
+{{#if locale 'norwegian'}}
+// Norwegian seed data
+const norwegianData = {
+  cities: ['Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Kristiansand', 'Fredrikstad', 'Sandnes', 'Tromsø'],
+  companies: [
+    { name: 'Equinor ASA', orgNumber: '923609016' },
+    { name: 'DNB ASA', orgNumber: '984851006' },
+    { name: 'Telenor ASA', orgNumber: '935033350' },
+    { name: 'Orkla ASA', orgNumber: '910747711' },
+    { name: 'Yara International ASA', orgNumber: '986228608' }
+  ],
+  norwegianNames: [
+    'Ola Nordmann', 'Kari Hansen', 'Lars Johansen', 'Anne Larsen', 'Erik Andersen',
+    'Ingrid Nilsen', 'Magnus Eriksen', 'Astrid Olsen', 'Jonas Pedersen', 'Sofie Kristiansen'
+  ]
+};
+{{/if}}
+
+{{#each tables}}
+async function seed{{toPascalCase name}}() {
+  console.log('Seeding {{name}} table...');
+  
+  const {{camelCase name}}Data = [];
+  
+  for (let i = 0; i < {{../recordCount}}; i++) {
+    {{#if ../gdprCompliant}}
+    // GDPR compliant data generation
+    const data = {
+      {{#if ../locale 'norwegian'}}
+      // Norwegian-specific data
+      name: norwegianData.norwegianNames[Math.floor(Math.random() * norwegianData.norwegianNames.length)],
+      email: `user${i + 1}@example.no`,
+      city: norwegianData.cities[Math.floor(Math.random() * norwegianData.cities.length)],
+      {{#if ../dataCompliance}}
+      dataConsentGiven: true,
+      dataConsentDate: faker.date.recent({ days: 30 }),
+      dataRetentionUntil: faker.date.future({ years: 2 }),
+      {{/if}}
+      {{#if ../norwegian}}
+      uuAccessible: true,
+      languagePreference: Math.random() > 0.8 ? 'en' : 'nb-NO',
+      {{/if}}
+      {{else}}
+      // English/International data
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      city: faker.location.city(),
+      {{/if}}
+    };
+    {{else}}
+    // Basic seed data
+    const data = {
+      name: `{{toPascalCase name}} ${i + 1}`,
+      description: `Sample {{name}} record ${i + 1}`,
+      {{#if ../norwegian}}
+      uuAccessible: true,
+      languagePreference: 'nb-NO',
+      {{/if}}
+    };
+    {{/if}}
+    
+    {{camelCase name}}Data.push(data);
+  }
+  
+  // Insert data using Prisma
+  await prisma.{{camelCase name}}.createMany({
+    data: {{camelCase name}}Data,
+    skipDuplicates: true,
+  });
+  
+  console.log(`✅ Seeded ${{{camelCase name}}Data.length} {{name}} records`);
+}
+{{/each}}
+
+{{#if relationships}}
+async function seedRelationships() {
+  console.log('Creating relationships...');
+  
+  {{#each relationships}}
+  // Create {{type}} relationship between {{../name}} and {{targetTable}}
+  const {{camelCase ../name}}Records = await prisma.{{camelCase ../name}}.findMany();
+  const {{camelCase targetTable}}Records = await prisma.{{camelCase targetTable}}.findMany();
+  
+  for (const {{camelCase ../name}} of {{camelCase ../name}}Records) {
+    {{#if eq type 'oneToMany'}}
+    // One-to-many: Assign random {{targetTable}} to {{../name}}
+    const random{{toPascalCase targetTable}} = {{camelCase targetTable}}Records[Math.floor(Math.random() * {{camelCase targetTable}}Records.length)];
+    await prisma.{{camelCase ../name}}.update({
+      where: { id: {{camelCase ../name}}.id },
+      data: {
+        {{foreignKey}}: random{{toPascalCase targetTable}}.id
+      }
+    });
+    {{/if}}
+    
+    {{#if eq type 'manyToMany'}}
+    // Many-to-many: Connect random {{targetTable}} records
+    const connected{{toPascalCase targetTable}} = {{camelCase targetTable}}Records
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.floor(Math.random() * 3) + 1);
+    
+    await prisma.{{camelCase ../name}}.update({
+      where: { id: {{camelCase ../name}}.id },
+      data: {
+        {{camelCase targetTable}}: {
+          connect: connected{{toPascalCase targetTable}}.map(item => ({ id: item.id }))
+        }
+      }
+    });
+    {{/if}}
+  }
+  {{/each}}
+  
+  console.log('✅ Created relationships');
+}
+{{/if}}
+
+{{#if gdprCompliant}}
+async function seedGDPRCompliance() {
+  console.log('Setting up GDPR compliance data...');
+  
+  // Create some test records that are due for anonymization
+  {{#each tables}}
+  await prisma.{{camelCase name}}.create({
+    data: {
+      name: 'Test User for Anonymization',
+      email: 'test.anonymize@example.com',
+      dataConsentGiven: true,
+      dataConsentDate: faker.date.past({ years: 1 }),
+      dataRetentionUntil: faker.date.past({ days: 1 }), // Already expired
+      isAnonymized: false,
+      {{#if ../norwegian}}
+      uuAccessible: true,
+      languagePreference: 'nb-NO',
+      {{/if}}
+    }
+  });
+  {{/each}}
+  
+  console.log('✅ GDPR compliance test data created');
+}
+{{/if}}
+
+{{#if anonymized}}
+async function anonymizeExpiredData() {
+  console.log('Anonymizing expired data...');
+  
+  {{#each tables}}
+  const expiredRecords = await prisma.{{camelCase name}}.findMany({
+    where: {
+      dataRetentionUntil: {
+        lt: new Date()
+      },
+      isAnonymized: false
+    }
+  });
+  
+  for (const record of expiredRecords) {
+    await prisma.{{camelCase name}}.update({
+      where: { id: record.id },
+      data: {
+        name: `Anonymized User ${record.id}`,
+        email: `anonymized.${record.id}@example.com`,
+        isAnonymized: true,
+        anonymizationDate: new Date(),
+      }
+    });
+  }
+  
+  console.log(`✅ Anonymized ${expiredRecords.length} expired {{name}} records`);
+  {{/each}}
+}
+{{/if}}
+
+async function main() {
+  console.log('🌱 Starting database seeding...\n');
+  
+  try {
+    {{#each tables}}
+    await seed{{toPascalCase name}}();
+    {{/each}}
+    
+    {{#if relationships}}
+    await seedRelationships();
+    {{/if}}
+    
+    {{#if gdprCompliant}}
+    await seedGDPRCompliance();
+    {{/if}}
+    
+    {{#if anonymized}}
+    await anonymizeExpiredData();
+    {{/if}}
+    
+    console.log('\n✅ Database seeding completed successfully!');
+    
+    {{#if norwegian}}
+    console.log('\n🇳🇴 Norwegian compliance features:');
+    console.log('- UU accessibility flags set to true');
+    console.log('- Language preferences set to nb-NO');
+    console.log('- Norwegian cities and company data included');
+    {{/if}}
+    
+    {{#if gdprCompliant}}
+    console.log('\n🔒 GDPR compliance features:');
+    console.log('- Data consent tracking enabled');
+    console.log('- Data retention periods set');
+    console.log('- Anonymization capabilities configured');
+    {{/if}}
+    
+  } catch (error) {
+    console.error('❌ Error during seeding:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+
+{{#if gdprCompliant}}
+// Export helper functions for GDPR compliance
+export async function anonymizeUser(userId: number) {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: `Anonymized User ${userId}`,
+      email: `anonymized.${userId}@example.com`,
+      isAnonymized: true,
+      anonymizationDate: new Date(),
+    }
+  });
+}
+
+export async function deleteExpiredData() {
+  const tables = [{{#each tables}}'{{camelCase name}}'{{#unless @last}}, {{/unless}}{{/each}}];
+  
+  for (const tableName of tables) {
+    const count = await (prisma as any)[tableName].deleteMany({
+      where: {
+        dataRetentionUntil: {
+          lt: new Date()
+        }
+      }
+    });
+    console.log(`Deleted ${count.count} expired records from ${tableName}`);
+  }
+}
+{{/if}}

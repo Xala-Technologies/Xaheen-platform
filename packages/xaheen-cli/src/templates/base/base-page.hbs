@@ -1,0 +1,135 @@
+{{!-- Base Page Template with Slots --}}
+import React from 'react';
+{{#if useSemanticUI}}
+import { Container, Stack } from '@xala-technologies/ui-system';
+{{/if}}
+{{#if useI18n}}
+import { useTranslation } from '@xala-technologies/i18n';
+{{/if}}
+{{#if useDesignTokens}}
+import { designTokens } from '@xala-technologies/design-tokens';
+{{/if}}
+
+{{!-- Props Interface Slot --}}
+{{#if (hasSlot 'props')}}
+{{{slot 'props'}}}
+{{else}}
+export interface {{className}}Props {
+  readonly children?: React.ReactNode;
+}
+{{/if}}
+
+{{!-- Main Component --}}
+export const {{className}} = ({{#if (hasSlot 'props')}}props: {{className}}Props{{else}}{ children }: {{className}}Props{{/if}}): JSX.Element => {
+  {{#if useI18n}}
+  const { t } = useTranslation('{{i18nNamespace}}');
+  {{/if}}
+
+  return (
+    {{#if useSemanticUI}}
+    <Container 
+      size="{{containerSize}}"
+      className="min-h-screen {{#if (variant 'dark')}}bg-gray-900 text-gray-100{{else}}bg-white{{/if}}"
+      {{#if (variant 'rtl')}}dir="rtl"{{/if}}
+      {{#if compliance.wcag}}
+        role="main"
+        aria-label="{{#if useI18n}}{t('page.main.label')}{{else}}Main content{{/if}}"
+      {{/if}}
+    >
+      <Stack gap="none" className="min-h-screen">
+        {{!-- Header Slot --}}
+        {{#if (hasSlot 'header')}}
+        <header 
+          className="sticky top-0 z-50 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} shadow-md"
+          {{#if compliance.wcag}}role="banner"{{/if}}
+        >
+          {{{slot 'header'}}}
+        </header>
+        {{else}}
+        {{> default-header}}
+        {{/if}}
+
+        {{!-- Content Slot --}}
+        <main 
+          className="flex-1 {{#if (variant 'rtl')}}text-right{{/if}}"
+          {{#if compliance.wcag}}
+            id="main-content"
+            tabIndex={-1}
+          {{/if}}
+        >
+          {{#if (hasSlot 'content')}}
+          {{{slot 'content'}}}
+          {{else}}
+          <div className="p-8">
+            <p className="text-gray-600">No content provided</p>
+          </div>
+          {{/if}}
+        </main>
+
+        {{!-- Footer Slot --}}
+        {{#if (hasSlot 'footer')}}
+        <footer 
+          className="{{#if (variant 'dark')}}bg-gray-800 text-gray-300{{else}}bg-gray-100{{/if}} mt-auto"
+          {{#if compliance.wcag}}role="contentinfo"{{/if}}
+        >
+          {{{slot 'footer'}}}
+        </footer>
+        {{else}}
+        {{> default-footer}}
+        {{/if}}
+      </Stack>
+    </Container>
+    {{else}}
+    <div className="min-h-screen flex flex-col {{#if (variant 'dark')}}bg-gray-900 text-gray-100{{else}}bg-white{{/if}}">
+      {{!-- Non-semantic version --}}
+      {{#if (hasSlot 'header')}}
+      <header className="sticky top-0 z-50 bg-white shadow-md">
+        {{{slot 'header'}}}
+      </header>
+      {{/if}}
+      
+      <main className="flex-1">
+        {{#if (hasSlot 'content')}}
+        {{{slot 'content'}}}
+        {{else}}
+        {children}
+        {{/if}}
+      </main>
+      
+      {{#if (hasSlot 'footer')}}
+      <footer className="bg-gray-100 mt-auto">
+        {{{slot 'footer'}}}
+      </footer>
+      {{/if}}
+    </div>
+    {{/if}}
+  );
+};
+
+{{!-- Skip Link for Accessibility --}}
+{{#if compliance.wcag}}
+export const SkipToContent = (): JSX.Element => (
+  <a
+    href="#main-content"
+    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50"
+  >
+    {{#if useI18n}}{t('accessibility.skipToContent')}{{else}}Skip to main content{{/if}}
+  </a>
+);
+{{/if}}
+
+{{!-- Norwegian Compliance Banner --}}
+{{#if (variant 'norwegian-compliance')}}
+export const ComplianceBanner = (): JSX.Element => (
+  <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 text-sm">
+    <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <span className="text-blue-800">
+        {{#if useI18n}}{t('compliance.nsmClassification')}: {{nsmClassification}}{{else}}NSM Classification: {{nsmClassification}}{{/if}}
+      </span>
+      <span className="text-blue-600">
+        {{#if useI18n}}{t('compliance.gdprCompliant')}{{else}}GDPR Compliant{{/if}}
+      </span>
+    </div>
+  </div>
+);
+{{/if}}

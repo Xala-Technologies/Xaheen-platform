@@ -1,0 +1,302 @@
+/**
+ * {{className}} - React Page Component
+ * Generated at: {{generatedAt}}
+ */
+
+import React, { useState, useEffect{{#if hasFeature 'loading'}}, Suspense{{/if}} } from 'react';
+{{#if useSemanticUI}}
+{{semanticImports}}
+{{/if}}
+{{#if useI18n}}
+{{i18nHelpers}}
+{{/if}}
+
+interface {{className}}Props {
+  readonly className?: string;
+  {{#if auth}}
+  readonly user?: User;
+  {{/if}}
+}
+
+{{#if hasFeature 'loading'}}
+const LoadingSpinner: React.FC = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+);
+{{/if}}
+
+export const {{className}}: React.FC<{{className}}Props> = ({ 
+  className,
+  {{#if auth}}user,{{/if}}
+}): JSX.Element => {
+  {{#if hasFeature 'loading'}}
+  const [isLoading, setIsLoading] = useState(true);
+  {{/if}}
+  {{#if useI18n}}
+  const { t } = useTranslation();
+  {{/if}}
+
+  {{#if hasFeature 'loading'}}
+  useEffect(() => {
+    // Simulate loading
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  {{/if}}
+
+  {{#if hasFeature 'error'}}
+  try {
+  {{/if}}
+    {{#if hasFeature 'loading'}}
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+    {{/if}}
+
+    return (
+      {{#if useSemanticUI}}
+      <Container 
+        maxWidth="lg" 
+        className={`py-8 ${className || ''}`}
+        role="main"
+        aria-label="{{className}} page"
+      >
+        <Stack spacing={6}>
+          <Text 
+            variant="h1" 
+            className="text-center font-bold text-gray-900"
+            tabIndex={0}
+          >
+            {{#if useI18n}}
+            {t('{{camelCase name}}.title', '{{className}}')}
+            {{else}}
+            {{className}}
+            {{/if}}
+          </Text>
+          
+          {{#if hasFeature 'loading'}}
+          <Suspense fallback={<LoadingSpinner />}>
+          {{/if}}
+          
+          <Card className="p-8 shadow-lg">
+            <Stack spacing={4}>
+              <Text variant="h2" className="text-xl font-semibold text-gray-800">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.welcome', 'Welcome to {{className}}')}
+                {{else}}
+                Welcome to {{className}}
+                {{/if}}
+              </Text>
+              
+              <Text className="text-gray-600">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.description', 'This is your {{className}} page component.')}
+                {{else}}
+                This is your {{className}} page component.
+                {{/if}}
+              </Text>
+              
+              {{#if auth}}
+              {user ? (
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <Text className="text-green-800">
+                    {{#if useI18n}}
+                    {t('auth.welcome', 'Welcome back, {name}!', { name: user.name })}
+                    {{else}}
+                    Welcome back, {user.name}!
+                    {{/if}}
+                  </Text>
+                </div>
+              ) : (
+                <Button 
+                  variant="primary" 
+                  className="w-fit"
+                  onClick={() => {
+                    // Add authentication logic here
+                  }}
+                  aria-label="{{#if useI18n}}{t('auth.login')}{{else}}Login{{/if}}"
+                >
+                  {{#if useI18n}}
+                  {t('auth.login', 'Login')}
+                  {{else}}
+                  Login
+                  {{/if}}
+                </Button>
+              )}
+              {{/if}}
+            </Stack>
+          </Card>
+          
+          {{#if hasFeature 'loading'}}
+          </Suspense>
+          {{/if}}
+          
+          {{#if norwegian}}
+          {/* Norwegian UU Compliance */}
+          <div 
+            className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+            role="region"
+            aria-label="{{#if useI18n}}{t('compliance.uu.label')}{{else}}Accessibility compliance information{{/if}}"
+          >
+            <Text className="text-sm text-blue-800">
+              {{#if useI18n}}
+              {t('compliance.uu.notice', 'This page follows Norwegian UU accessibility guidelines')}
+              {{else}}
+              This page follows Norwegian UU accessibility guidelines
+              {{/if}}
+            </Text>
+          </div>
+          {{/if}}
+        </Stack>
+      </Container>
+      {{else}}
+      <main 
+        className={`min-h-screen bg-gray-50 ${className || ''}`}
+        role="main"
+        aria-label="{{className}} page"
+      >
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <header className="text-center mb-12">
+            <h1 
+              className="text-4xl font-bold text-gray-900 mb-4"
+              tabIndex={0}
+            >
+              {{#if useI18n}}
+              {t('{{camelCase name}}.title', '{{className}}')}
+              {{else}}
+              {{className}}
+              {{/if}}
+            </h1>
+            
+            <p className="text-xl text-gray-600">
+              {{#if useI18n}}
+              {t('{{camelCase name}}.subtitle', 'Welcome to your new React page')}
+              {{else}}
+              Welcome to your new React page
+              {{/if}}
+            </p>
+          </header>
+          
+          <section className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              {{#if useI18n}}
+              {t('{{camelCase name}}.content.title', 'Page Content')}
+              {{else}}
+              Page Content
+              {{/if}}
+            </h2>
+            
+            <div className="prose max-w-none">
+              <p className="text-gray-600 mb-4">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.content.description', 'Add your page content here.')}
+                {{else}}
+                Add your page content here.
+                {{/if}}
+              </p>
+              
+              {{#if auth}}
+              {user ? (
+                <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-green-800">
+                    {{#if useI18n}}
+                    {t('auth.welcome', 'Welcome back, {name}!', { name: user.name })}
+                    {{else}}
+                    Welcome back, {user.name}!
+                    {{/if}}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <button 
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    onClick={() => {
+                      // Add authentication logic here
+                    }}
+                    aria-label="{{#if useI18n}}{t('auth.login')}{{else}}Login to access features{{/if}}"
+                  >
+                    {{#if useI18n}}
+                    {t('auth.login', 'Login')}
+                    {{else}}
+                    Login
+                    {{/if}}
+                  </button>
+                </div>
+              )}
+              {{/if}}
+            </div>
+          </section>
+          
+          {{#if norwegian}}
+          {/* Norwegian Compliance Footer */}
+          <footer 
+            className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4"
+            role="contentinfo"
+            aria-label="{{#if useI18n}}{t('compliance.footer.label')}{{else}}Accessibility information{{/if}}"
+          >
+            <div className="flex items-center">
+              <svg 
+                className="h-5 w-5 text-blue-600 mr-2" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <p className="text-sm text-blue-800">
+                {{#if useI18n}}
+                {t('compliance.accessibility', 'This page is designed for universal accessibility (UU)')}
+                {{else}}
+                This page is designed for universal accessibility (UU)
+                {{/if}}
+              </p>
+            </div>
+          </footer>
+          {{/if}}
+        </div>
+      </main>
+      {{/if}}
+    );
+  {{#if hasFeature 'error'}}
+  } catch (error) {
+    console.error('{{className}} page error:', error);
+    return (
+      <div 
+        className="min-h-screen bg-red-50 flex items-center justify-center"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-800 mb-4">
+            {{#if useI18n}}
+            {t('errors.pageError', 'Page Error')}
+            {{else}}
+            Page Error
+            {{/if}}
+          </h1>
+          <p className="text-red-600">
+            {{#if useI18n}}
+            {t('errors.tryAgain', 'Please try refreshing the page')}
+            {{else}}
+            Please try refreshing the page
+            {{/if}}
+          </p>
+          <button 
+            className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            onClick={() => window.location.reload()}
+          >
+            {{#if useI18n}}
+            {t('errors.refresh', 'Refresh Page')}
+            {{else}}
+            Refresh Page
+            {{/if}}
+          </button>
+        </div>
+      </div>
+    );
+  }
+  {{/if}}
+};
+
+export default {{className}};

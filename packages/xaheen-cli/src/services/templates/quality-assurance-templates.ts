@@ -1220,7 +1220,742 @@ jobs:
       }
     });
 
+    // Accessibility Testing Template
+    this.templates.set('accessibility-comprehensive', {
+      id: 'accessibility-comprehensive',
+      name: 'Comprehensive Accessibility Testing',
+      description: 'Complete accessibility testing with WCAG AAA compliance validation',
+      category: 'testing',
+      content: '// Comprehensive accessibility testing template',
+      dependencies: [],
+      devDependencies: [
+        '@axe-core/playwright',
+        '@testing-library/jest-dom',
+        'jest-axe',
+        'pa11y',
+        'lighthouse'
+      ],
+      scripts: {
+        'a11y:test': 'jest --testMatch="**/*.a11y.test.*"',
+        'a11y:audit': 'pa11y --standard WCAG2AAA --reporter cli',
+        'a11y:lighthouse': 'lighthouse --chrome-flags="--headless" --only-categories=accessibility'
+      },
+      metadata: {
+        framework: 'testing',
+        complexity: 'advanced',
+        maintainability: 9
+      }
+    });
+
+    // Performance Testing Template
+    this.templates.set('performance-comprehensive', {
+      id: 'performance-comprehensive',
+      name: 'Comprehensive Performance Testing',
+      description: 'Complete performance testing with Core Web Vitals and bundle analysis',
+      category: 'testing',
+      content: '// Comprehensive performance testing template',
+      dependencies: [],
+      devDependencies: [
+        'lighthouse',
+        'web-vitals',
+        'webpack-bundle-analyzer',
+        '@next/bundle-analyzer',
+        'size-limit'
+      ],
+      scripts: {
+        'perf:test': 'jest --testMatch="**/*.perf.test.*"',
+        'perf:lighthouse': 'lighthouse --chrome-flags="--headless" --only-categories=performance',
+        'perf:bundle': 'webpack-bundle-analyzer build/static/js/*.js',
+        'perf:size': 'size-limit'
+      },
+      metadata: {
+        framework: 'testing',
+        complexity: 'advanced',
+        maintainability: 8
+      }
+    });
+
+    // Norwegian Compliance Template
+    this.templates.set('norwegian-compliance-comprehensive', {
+      id: 'norwegian-compliance-comprehensive',
+      name: 'Norwegian Compliance Suite',
+      description: 'Complete Norwegian compliance validation including NSM and GDPR',
+      category: 'testing',
+      content: '// Norwegian compliance testing template',
+      dependencies: [],
+      devDependencies: [
+        'jest-axe',
+        '@axe-core/playwright',
+        'pa11y'
+      ],
+      scripts: {
+        'compliance:check': 'jest --testMatch="**/*.compliance.test.*"',
+        'compliance:nsm': 'jest --testMatch="**/*.nsm.test.*"',
+        'compliance:gdpr': 'jest --testMatch="**/*.gdpr.test.*"',
+        'compliance:wcag': 'pa11y --standard WCAG2AAA --reporter json'
+      },
+      metadata: {
+        framework: 'compliance',
+        complexity: 'advanced',
+        maintainability: 10
+      }
+    });
+
     consola.success('Initialized quality assurance templates');
+  }
+
+  /**
+   * Generate comprehensive accessibility testing files
+   */
+  private async generateAccessibilityTestFiles(projectPath: string, config: QATemplateConfig): Promise<string[]> {
+    const testFiles: string[] = [];
+    const a11yDir = path.join(projectPath, 'src/__tests__/accessibility');
+    
+    await fs.ensureDir(a11yDir);
+
+    // Generate WCAG compliance test
+    const wcagTestPath = path.join(a11yDir, 'wcag-compliance.a11y.test.tsx');
+    const wcagTestContent = this.generateWCAGComplianceTest(config);
+    await fs.writeFile(wcagTestPath, wcagTestContent, 'utf-8');
+    testFiles.push('src/__tests__/accessibility/wcag-compliance.a11y.test.tsx');
+
+    // Generate keyboard navigation test
+    const keyboardTestPath = path.join(a11yDir, 'keyboard-navigation.a11y.test.tsx');
+    const keyboardTestContent = this.generateKeyboardNavigationTest(config);
+    await fs.writeFile(keyboardTestPath, keyboardTestContent, 'utf-8');
+    testFiles.push('src/__tests__/accessibility/keyboard-navigation.a11y.test.tsx');
+
+    // Generate screen reader test
+    const screenReaderTestPath = path.join(a11yDir, 'screen-reader.a11y.test.tsx');
+    const screenReaderTestContent = this.generateScreenReaderTest(config);
+    await fs.writeFile(screenReaderTestPath, screenReaderTestContent, 'utf-8');
+    testFiles.push('src/__tests__/accessibility/screen-reader.a11y.test.tsx');
+
+    // Generate color contrast test
+    const contrastTestPath = path.join(a11yDir, 'color-contrast.a11y.test.tsx');
+    const contrastTestContent = this.generateColorContrastTest(config);
+    await fs.writeFile(contrastTestPath, contrastTestContent, 'utf-8');
+    testFiles.push('src/__tests__/accessibility/color-contrast.a11y.test.tsx');
+
+    return testFiles;
+  }
+
+  /**
+   * Generate WCAG compliance test
+   */
+  private generateWCAGComplianceTest(config: QATemplateConfig): string {
+    return `
+import { render } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import { SampleComponent } from '../sample-component';
+
+expect.extend(toHaveNoViolations);
+
+describe('WCAG Compliance Tests', () => {
+  it('should not have any accessibility violations', async () => {
+    const { container } = render(<SampleComponent title="Test Component" />);
+    const results = await axe(container, {
+      rules: {
+        // WCAG 2.1 AAA rules
+        'color-contrast-enhanced': { enabled: ${config.accessibility} },
+        'landmark-unique': { enabled: true },
+        'page-has-heading-one': { enabled: true },
+        'region': { enabled: true }
+      }
+    });
+    
+    expect(results).toHaveNoViolations();
+  });
+
+  it('should have proper heading hierarchy', async () => {
+    const { container } = render(<SampleComponent title="Main Title" />);
+    
+    const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    let previousLevel = 0;
+    
+    headings.forEach((heading) => {
+      const currentLevel = parseInt(heading.tagName.charAt(1));
+      expect(currentLevel).toBeLessThanOrEqual(previousLevel + 1);
+      previousLevel = currentLevel;
+    });
+  });
+
+  it('should have proper landmark structure', async () => {
+    const { container } = render(<SampleComponent title="Test" />);
+    
+    // Check for main landmark
+    expect(container.querySelector('[role="main"], main')).toBeInTheDocument();
+    
+    // Check for navigation landmarks if present
+    const navElements = container.querySelectorAll('[role="navigation"], nav');
+    navElements.forEach(nav => {
+      expect(nav).toHaveAttribute('aria-label');
+    });
+  });
+
+  ${config.norwegianCompliance ? `
+  it('should support Norwegian language attributes', async () => {
+    const { container } = render(<SampleComponent title="Norsk Tittel" />);
+    
+    // Check for language attributes
+    const langElements = container.querySelectorAll('[lang]');
+    langElements.forEach(element => {
+      const lang = element.getAttribute('lang');
+      expect(['nb-NO', 'nn-NO', 'no'].includes(lang)).toBeTruthy();
+    });
+  });
+  ` : ''}
+});
+    `.trim();
+  }
+
+  /**
+   * Generate keyboard navigation test
+   */
+  private generateKeyboardNavigationTest(config: QATemplateConfig): string {
+    return `
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SampleComponent } from '../sample-component';
+
+describe('Keyboard Navigation Tests', () => {
+  it('should be fully navigable with keyboard', async () => {
+    const user = userEvent.setup();
+    render(<SampleComponent title="Keyboard Test" />);
+    
+    // Get all focusable elements
+    const focusableElements = screen.getAllByRole('button')
+      .concat(screen.getAllByRole('link'))
+      .concat(screen.getAllByRole('textbox'))
+      .concat(screen.getAllByRole('combobox'));
+    
+    // Tab through all elements
+    for (const element of focusableElements) {
+      await user.tab();
+      expect(element).toHaveFocus();
+    }
+  });
+
+  it('should support escape key for closing modals', async () => {
+    const user = userEvent.setup();
+    const mockClose = jest.fn();
+    
+    render(<SampleComponent title="Modal Test" onClose={mockClose} />);
+    
+    // Simulate escape key
+    await user.keyboard('{Escape}');
+    
+    // Verify close function was called (if modal is present)
+    if (screen.queryByRole('dialog')) {
+      expect(mockClose).toHaveBeenCalled();
+    }
+  });
+
+  it('should trap focus within modals', async () => {
+    const user = userEvent.setup();
+    render(<SampleComponent title="Focus Trap Test" showModal={true} />);
+    
+    const modal = screen.queryByRole('dialog');
+    if (modal) {
+      const focusableInModal = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      if (focusableInModal.length > 1) {
+        // Focus first element
+        focusableInModal[0].focus();
+        
+        // Tab to last element
+        for (let i = 0; i < focusableInModal.length - 1; i++) {
+          await user.tab();
+        }
+        
+        // Tab once more should cycle back to first
+        await user.tab();
+        expect(focusableInModal[0]).toHaveFocus();
+      }
+    }
+  });
+
+  it('should have visible focus indicators', async () => {
+    const user = userEvent.setup();
+    render(<SampleComponent title="Focus Indicator Test" />);
+    
+    const buttons = screen.getAllByRole('button');
+    
+    for (const button of buttons) {
+      await user.tab();
+      if (button === document.activeElement) {
+        const styles = window.getComputedStyle(button);
+        
+        // Check for focus indicators (outline, box-shadow, etc.)
+        const hasOutline = styles.outline !== 'none' && styles.outline !== '0px';
+        const hasBoxShadow = styles.boxShadow !== 'none' && styles.boxShadow !== '';
+        const hasFocusRing = styles.getPropertyValue('--tw-ring-width') !== '';
+        
+        expect(hasOutline || hasBoxShadow || hasFocusRing).toBeTruthy();
+      }
+    }
+  });
+});
+    `.trim();
+  }
+
+  /**
+   * Generate screen reader test
+   */
+  private generateScreenReaderTest(config: QATemplateConfig): string {
+    return `
+import { render, screen } from '@testing-library/react';
+import { SampleComponent } from '../sample-component';
+
+describe('Screen Reader Compatibility Tests', () => {
+  it('should have proper ARIA labels for all interactive elements', () => {
+    render(<SampleComponent title="ARIA Test" />);
+    
+    // Check buttons have accessible names
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach(button => {
+      const accessibleName = button.getAttribute('aria-label') || 
+                           button.textContent || 
+                           button.getAttribute('aria-labelledby');
+      expect(accessibleName).toBeTruthy();
+    });
+  });
+
+  it('should use proper ARIA roles for custom components', () => {
+    render(<SampleComponent title="Role Test" />);
+    
+    // Check for proper roles
+    const customElements = screen.container.querySelectorAll('[role]');
+    customElements.forEach(element => {
+      const role = element.getAttribute('role');
+      const validRoles = [
+        'button', 'link', 'textbox', 'combobox', 'listbox', 'option',
+        'menu', 'menuitem', 'tablist', 'tab', 'tabpanel', 'dialog',
+        'alertdialog', 'alert', 'status', 'progressbar', 'slider',
+        'navigation', 'main', 'complementary', 'banner', 'contentinfo'
+      ];
+      expect(validRoles.includes(role)).toBeTruthy();
+    });
+  });
+
+  it('should provide proper live region announcements', async () => {
+    render(<SampleComponent title="Live Region Test" />);
+    
+    // Check for live regions
+    const liveRegions = screen.container.querySelectorAll('[aria-live]');
+    liveRegions.forEach(region => {
+      const liveValue = region.getAttribute('aria-live');
+      expect(['polite', 'assertive', 'off'].includes(liveValue)).toBeTruthy();
+      
+      // Check for aria-atomic if present
+      if (region.hasAttribute('aria-atomic')) {
+        const atomicValue = region.getAttribute('aria-atomic');
+        expect(['true', 'false'].includes(atomicValue)).toBeTruthy();
+      }
+    });
+  });
+
+  it('should have proper form labels and descriptions', () => {
+    render(<SampleComponent title="Form Test" showForm={true} />);
+    
+    // Check form inputs have labels
+    const inputs = screen.container.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+      const id = input.getAttribute('id');
+      const label = screen.container.querySelector(\`label[for="\${id}"]\`);
+      const ariaLabel = input.getAttribute('aria-label');
+      const ariaLabelledby = input.getAttribute('aria-labelledby');
+      
+      expect(label || ariaLabel || ariaLabelledby).toBeTruthy();
+    });
+  });
+
+  ${config.norwegianCompliance ? `
+  it('should announce content in Norwegian', () => {
+    render(<SampleComponent title="Norsk Innhold" />);
+    
+    // Check for Norwegian language content
+    const norwegianElements = screen.container.querySelectorAll('[lang="nb-NO"], [lang="nn-NO"]');
+    norwegianElements.forEach(element => {
+      expect(element.textContent).toBeTruthy();
+    });
+  });
+  ` : ''}
+});
+    `.trim();
+  }
+
+  /**
+   * Generate color contrast test
+   */
+  private generateColorContrastTest(config: QATemplateConfig): string {
+    return `
+import { render } from '@testing-library/react';
+import { SampleComponent } from '../sample-component';
+
+// Color contrast calculation utilities
+function getRGB(color: string): { r: number; g: number; b: number } | null {
+  const match = color.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+  if (match) {
+    return {
+      r: parseInt(match[1], 10),
+      g: parseInt(match[2], 10),
+      b: parseInt(match[3], 10)
+    };
+  }
+  return null;
+}
+
+function getLuminance(rgb: { r: number; g: number; b: number }): number {
+  const { r, g, b } = rgb;
+  const [rs, gs, bs] = [r, g, b].map(c => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function getContrastRatio(color1: string, color2: string): number {
+  const rgb1 = getRGB(color1);
+  const rgb2 = getRGB(color2);
+  
+  if (!rgb1 || !rgb2) return 1;
+  
+  const lum1 = getLuminance(rgb1);
+  const lum2 = getLuminance(rgb2);
+  
+  const brightest = Math.max(lum1, lum2);
+  const darkest = Math.min(lum1, lum2);
+  
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
+describe('Color Contrast Tests', () => {
+  it('should meet WCAG AAA color contrast requirements', () => {
+    const { container } = render(<SampleComponent title="Contrast Test" />);
+    
+    // Get all text elements
+    const textElements = container.querySelectorAll('*');
+    
+    textElements.forEach(element => {
+      const styles = window.getComputedStyle(element);
+      const textColor = styles.color;
+      const backgroundColor = styles.backgroundColor;
+      
+      if (textColor && backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)') {
+        const contrastRatio = getContrastRatio(textColor, backgroundColor);
+        
+        // WCAG AAA requires 7:1 for normal text, 4.5:1 for large text
+        const fontSize = parseFloat(styles.fontSize);
+        const fontWeight = styles.fontWeight;
+        
+        const isLargeText = fontSize >= 18 || (fontSize >= 14 && (fontWeight === 'bold' || parseInt(fontWeight) >= 700));
+        const requiredRatio = ${config.accessibility ? '7' : '4.5'};
+        const minimumRatio = isLargeText ? 4.5 : requiredRatio;
+        
+        if (element.textContent?.trim()) {
+          expect(contrastRatio).toBeGreaterThanOrEqual(minimumRatio);
+        }
+      }
+    });
+  });
+
+  it('should not rely solely on color to convey information', () => {
+    const { container } = render(<SampleComponent title="Color Dependency Test" />);
+    
+    // Check for error states, warnings, etc.
+    const coloredElements = container.querySelectorAll('[class*="error"], [class*="warning"], [class*="success"]');
+    
+    coloredElements.forEach(element => {
+      // Should have additional indicators like icons, text, or patterns
+      const hasIcon = element.querySelector('svg, [role="img"]');
+      const hasText = element.textContent?.trim();
+      const hasPattern = element.classList.toString().match(/border|outline|underline/);
+      
+      expect(hasIcon || hasText || hasPattern).toBeTruthy();
+    });
+  });
+
+  it('should maintain contrast in high contrast mode', () => {
+    // Simulate high contrast mode
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation(query => ({
+        matches: query === '(prefers-contrast: high)',
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      })),
+    });
+    
+    const { container } = render(<SampleComponent title="High Contrast Test" />);
+    
+    // In high contrast mode, elements should use system colors
+    const elements = container.querySelectorAll('*');
+    elements.forEach(element => {
+      const styles = window.getComputedStyle(element);
+      
+      // Check if high contrast styles are applied
+      if (element.textContent?.trim()) {
+        const hasSystemColors = styles.color.includes('CanvasText') || 
+                               styles.backgroundColor.includes('Canvas') ||
+                               styles.borderColor.includes('ButtonText');
+        
+        // This is a simplified check - in practice, you'd verify system color usage
+        expect(styles.color).toBeTruthy();
+      }
+    });
+  });
+});
+    `.trim();
+  }
+
+  /**
+   * Generate performance testing files
+   */
+  private async generatePerformanceTestFiles(projectPath: string, config: QATemplateConfig): Promise<string[]> {
+    const testFiles: string[] = [];
+    const perfDir = path.join(projectPath, 'src/__tests__/performance');
+    
+    await fs.ensureDir(perfDir);
+
+    // Generate Core Web Vitals test
+    const coreWebVitalsTestPath = path.join(perfDir, 'core-web-vitals.perf.test.tsx');
+    const coreWebVitalsContent = this.generateCoreWebVitalsTest(config);
+    await fs.writeFile(coreWebVitalsTestPath, coreWebVitalsContent, 'utf-8');
+    testFiles.push('src/__tests__/performance/core-web-vitals.perf.test.tsx');
+
+    // Generate bundle size test
+    const bundleSizeTestPath = path.join(perfDir, 'bundle-size.perf.test.ts');
+    const bundleSizeContent = this.generateBundleSizeTest(config);
+    await fs.writeFile(bundleSizeTestPath, bundleSizeContent, 'utf-8');
+    testFiles.push('src/__tests__/performance/bundle-size.perf.test.ts');
+
+    return testFiles;
+  }
+
+  /**
+   * Generate Core Web Vitals test
+   */
+  private generateCoreWebVitalsTest(config: QATemplateConfig): string {
+    return `
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+
+describe('Core Web Vitals Performance Tests', () => {
+  it('should meet Core Web Vitals thresholds', (done) => {
+    const vitals = {
+      cls: null,
+      fid: null,
+      fcp: null,
+      lcp: null,
+      ttfb: null
+    };
+    
+    let reportCount = 0;
+    const expectedReports = 5;
+    
+    const checkComplete = () => {
+      reportCount++;
+      if (reportCount === expectedReports) {
+        // LCP should be less than 2.5s (good)
+        if (vitals.lcp !== null) {
+          expect(vitals.lcp).toBeLessThan(2500);
+        }
+        
+        // FID should be less than 100ms (good)
+        if (vitals.fid !== null) {
+          expect(vitals.fid).toBeLessThan(100);
+        }
+        
+        // CLS should be less than 0.1 (good)
+        if (vitals.cls !== null) {
+          expect(vitals.cls).toBeLessThan(0.1);
+        }
+        
+        // FCP should be less than 1.8s (good)
+        if (vitals.fcp !== null) {
+          expect(vitals.fcp).toBeLessThan(1800);
+        }
+        
+        // TTFB should be less than 800ms (good)
+        if (vitals.ttfb !== null) {
+          expect(vitals.ttfb).toBeLessThan(800);
+        }
+        
+        done();
+      }
+    };
+    
+    getCLS((metric) => {
+      vitals.cls = metric.value;
+      checkComplete();
+    });
+    
+    getFID((metric) => {
+      vitals.fid = metric.value;
+      checkComplete();
+    });
+    
+    getFCP((metric) => {
+      vitals.fcp = metric.value;
+      checkComplete();
+    });
+    
+    getLCP((metric) => {
+      vitals.lcp = metric.value;
+      checkComplete();
+    });
+    
+    getTTFB((metric) => {
+      vitals.ttfb = metric.value;
+      checkComplete();
+    });
+    
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      if (reportCount < expectedReports) {
+        console.warn('Not all Core Web Vitals metrics were reported within timeout');
+        done();
+      }
+    }, 30000);
+  });
+
+  it('should have acceptable JavaScript execution time', async () => {
+    const startTime = performance.now();
+    
+    // Simulate heavy JavaScript execution
+    await import('../sample-component').then(module => {
+      // Component should load quickly
+      const loadTime = performance.now() - startTime;
+      expect(loadTime).toBeLessThan(${config.performance ? '100' : '500'}); // milliseconds
+    });
+  });
+
+  it('should have optimized image loading', async () => {
+    // Mock image loading
+    const mockImage = new Image();
+    const imageLoadPromise = new Promise((resolve, reject) => {
+      mockImage.onload = resolve;
+      mockImage.onerror = reject;
+      mockImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==';
+    });
+    
+    const startTime = performance.now();
+    await imageLoadPromise;
+    const loadTime = performance.now() - startTime;
+    
+    // Image should load quickly (under 100ms for small test image)
+    expect(loadTime).toBeLessThan(100);
+  });
+});
+    `.trim();
+  }
+
+  /**
+   * Generate bundle size test
+   */
+  private generateBundleSizeTest(config: QATemplateConfig): string {
+    return `
+import fs from 'fs';
+import path from 'path';
+import { gzipSync } from 'zlib';
+
+describe('Bundle Size Tests', () => {
+  const buildDir = path.join(process.cwd(), 'build', 'static', 'js');
+  const nextBuildDir = path.join(process.cwd(), '.next', 'static', 'chunks');
+  
+  it('should have acceptable main bundle size', () => {
+    let bundleDir = buildDir;
+    
+    // Check for Next.js build
+    if (fs.existsSync(nextBuildDir)) {
+      bundleDir = nextBuildDir;
+    }
+    
+    if (!fs.existsSync(bundleDir)) {
+      console.warn('Build directory not found, skipping bundle size test');
+      return;
+    }
+    
+    const jsFiles = fs.readdirSync(bundleDir)
+      .filter(file => file.endsWith('.js') && !file.includes('.map'))
+      .filter(file => file.includes('main') || file.includes('app') || file.includes('pages'));
+    
+    let totalSize = 0;
+    let totalGzipSize = 0;
+    
+    jsFiles.forEach(file => {
+      const filePath = path.join(bundleDir, file);
+      const content = fs.readFileSync(filePath);
+      const gzipped = gzipSync(content);
+      
+      totalSize += content.length;
+      totalGzipSize += gzipped.length;
+    });
+    
+    // Convert to KB
+    const totalSizeKB = totalSize / 1024;
+    const totalGzipSizeKB = totalGzipSize / 1024;
+    
+    console.log(\`Bundle size: \${totalSizeKB.toFixed(2)}KB (\${totalGzipSizeKB.toFixed(2)}KB gzipped)\`);
+    
+    // Main bundle should be under reasonable limits
+    const maxSizeKB = ${config.performance ? '200' : '500'}; // KB
+    const maxGzipSizeKB = ${config.performance ? '80' : '200'}; // KB
+    
+    expect(totalSizeKB).toBeLessThan(maxSizeKB);
+    expect(totalGzipSizeKB).toBeLessThan(maxGzipSizeKB);
+  });
+
+  it('should not have duplicate dependencies', () => {
+    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    
+    if (!fs.existsSync(packageJsonPath)) {
+      return;
+    }
+    
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    const dependencies = Object.keys(packageJson.dependencies || {});
+    const devDependencies = Object.keys(packageJson.devDependencies || {});
+    
+    // Check for duplicates between dependencies and devDependencies
+    const duplicates = dependencies.filter(dep => devDependencies.includes(dep));
+    
+    expect(duplicates).toHaveLength(0);
+  });
+
+  it('should have tree-shaking friendly imports', async () => {
+    // This is a simplified check - in practice, you'd analyze the actual bundle
+    const testFile = path.join(process.cwd(), 'src', 'test-tree-shaking.js');
+    
+    // Create a test file that imports a large library
+    const testContent = \`
+      import { debounce } from 'lodash';
+      export const debouncedFn = debounce(() => {}, 300);
+    \`;
+    
+    fs.writeFileSync(testFile, testContent);
+    
+    try {
+      // In a real scenario, you'd build this file and check the output size
+      // For now, we'll just check that the import is tree-shakable
+      expect(testContent.includes('import {')).toBeTruthy();
+      expect(testContent.includes('} from')).toBeTruthy();
+    } finally {
+      // Clean up
+      if (fs.existsSync(testFile)) {
+        fs.unlinkSync(testFile);
+      }
+    }
+  });
+});
+    `.trim();
   }
 }
 

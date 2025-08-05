@@ -874,7 +874,513 @@ module.exports = {
       }
     });
 
+    // Healthcare pattern
+    this.businessPatterns.set('healthcare', {
+      id: 'healthcare',
+      name: 'Healthcare Platform',
+      description: 'Medical and healthcare service components',
+      domain: 'healthcare',
+      patterns: [
+        {
+          name: 'patient-portal',
+          description: 'Patient information and appointment management',
+          template: 'healthcare/patient-portal.hbs',
+          props: { secureMessaging: true, appointmentBooking: true },
+          conditions: { hasPatientData: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['security', 'privacy', 'audit-trail', 'accessibility'],
+      recommendedMixins: ['accessibility-enhanced', 'norwegian-compliance'],
+      compliance: [
+        { standard: 'WCAG', level: 'AAA', required: true, features: ['full-accessibility'] },
+        { standard: 'HIPAA', level: 'compliant', required: true, features: ['data-encryption', 'audit-logging'] },
+        { standard: 'GDPR', level: 'compliant', required: true, features: ['consent-management', 'data-protection'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#0ea5e9',
+          secondary: '#64748b',
+          accent: '#10b981',
+          background: '#ffffff',
+          surface: '#f8fafc'
+        },
+        typography: {
+          heading: 'system-ui, sans-serif',
+          body: 'system-ui, sans-serif'
+        },
+        spacing: {
+          xs: '0.5rem',
+          sm: '1rem',
+          md: '1.5rem',
+          lg: '2rem',
+          xl: '3rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: false
+      },
+      metadata: {
+        industry: 'Healthcare',
+        target_audience: 'Patients and Healthcare Providers',
+        complexity: 'enterprise',
+        scale: 'large',
+        performance_requirements: 'high-performance'
+      }
+    });
+
+    // Finance pattern
+    this.businessPatterns.set('finance', {
+      id: 'finance',
+      name: 'Financial Services',
+      description: 'Banking and financial service components',
+      domain: 'finance',
+      patterns: [
+        {
+          name: 'trading-dashboard',
+          description: 'Financial trading and portfolio management',
+          template: 'finance/trading-dashboard.hbs',
+          props: { realTimeData: true, riskManagement: true },
+          conditions: { hasFinancialData: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['security', 'audit-trail', 'real-time-data', 'compliance'],
+      recommendedMixins: ['analytics-tracking', 'accessibility-enhanced'],
+      compliance: [
+        { standard: 'WCAG', level: 'AA', required: true, features: ['accessibility'] },
+        { standard: 'PCI', level: 'compliant', required: true, features: ['payment-security'] },
+        { standard: 'SOX', level: 'compliant', required: true, features: ['financial-reporting'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#1e40af',
+          secondary: '#475569',
+          accent: '#059669',
+          background: '#ffffff',
+          surface: '#f1f5f9'
+        },
+        typography: {
+          heading: 'Inter, sans-serif',
+          body: 'Inter, sans-serif'
+        },
+        spacing: {
+          xs: '0.25rem',
+          sm: '0.5rem',
+          md: '1rem',
+          lg: '1.5rem',
+          xl: '2rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: true
+      },
+      metadata: {
+        industry: 'Financial Services',
+        target_audience: 'Financial Professionals',
+        complexity: 'enterprise',
+        scale: 'enterprise',
+        performance_requirements: 'high-performance'
+      }
+    });
+
+    // Education pattern
+    this.businessPatterns.set('education', {
+      id: 'education',
+      name: 'Educational Platform',
+      description: 'Learning management and educational components',
+      domain: 'education',
+      patterns: [
+        {
+          name: 'course-management',
+          description: 'Course content and student progress tracking',
+          template: 'education/course-management.hbs',
+          props: { progressTracking: true, assessments: true },
+          conditions: { hasCourses: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['accessibility', 'progress-tracking', 'content-management'],
+      recommendedMixins: ['accessibility-enhanced', 'analytics-tracking'],
+      compliance: [
+        { standard: 'WCAG', level: 'AAA', required: true, features: ['full-accessibility'] },
+        { standard: 'GDPR', level: 'compliant', required: true, features: ['student-privacy'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#7c3aed',
+          secondary: '#6b7280',
+          accent: '#f59e0b',
+          background: '#ffffff',
+          surface: '#f9fafb'
+        },
+        typography: {
+          heading: 'Inter, sans-serif',
+          body: 'Inter, sans-serif'
+        },
+        spacing: {
+          xs: '0.5rem',
+          sm: '1rem',
+          md: '1.5rem',
+          lg: '2rem',
+          xl: '3rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: true
+      },
+      metadata: {
+        industry: 'Education',
+        target_audience: 'Students and Educators',
+        complexity: 'moderate',
+        scale: 'large',
+        performance_requirements: 'optimized'
+      }
+    });
+
+    // Portfolio pattern
+    this.businessPatterns.set('portfolio', {
+      id: 'portfolio',
+      name: 'Portfolio Showcase',
+      description: 'Personal and professional portfolio components',
+      domain: 'portfolio',
+      patterns: [
+        {
+          name: 'project-showcase',
+          description: 'Project gallery and case study presentation',
+          template: 'portfolio/project-showcase.hbs',
+          props: { imageGallery: true, caseStudies: true },
+          conditions: { hasProjects: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['seo', 'responsive-design', 'image-optimization'],
+      recommendedMixins: ['seo-optimization', 'analytics-tracking'],
+      compliance: [
+        { standard: 'WCAG', level: 'AA', required: true, features: ['accessibility'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#8b5cf6',
+          secondary: '#64748b',
+          accent: '#06b6d4',
+          background: '#ffffff',
+          surface: '#f8fafc'
+        },
+        typography: {
+          heading: 'Inter, sans-serif',
+          body: 'Inter, sans-serif'
+        },
+        spacing: {
+          xs: '0.5rem',
+          sm: '1rem',
+          md: '1.5rem',
+          lg: '2rem',
+          xl: '3rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: true
+      },
+      metadata: {
+        industry: 'Creative',
+        target_audience: 'Potential Clients and Employers',
+        complexity: 'simple',
+        scale: 'small',
+        performance_requirements: 'optimized'
+      }
+    });
+
+    // Blog pattern
+    this.businessPatterns.set('blog', {
+      id: 'blog',
+      name: 'Blog Platform',
+      description: 'Content management and publishing components',
+      domain: 'blog',
+      patterns: [
+        {
+          name: 'article-layout',
+          description: 'Article display with reading experience optimization',
+          template: 'blog/article-layout.hbs',
+          props: { readingTime: true, tableOfContents: true },
+          conditions: { hasContent: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['seo', 'content-management', 'search', 'comments'],
+      recommendedMixins: ['seo-optimization', 'accessibility-enhanced'],
+      compliance: [
+        { standard: 'WCAG', level: 'AA', required: true, features: ['content-accessibility'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#059669',
+          secondary: '#6b7280',
+          accent: '#f59e0b',
+          background: '#ffffff',
+          surface: '#f9fafb'
+        },
+        typography: {
+          heading: 'Georgia, serif',
+          body: 'Georgia, serif'
+        },
+        spacing: {
+          xs: '0.5rem',
+          sm: '1rem',
+          md: '1.5rem',
+          lg: '2rem',
+          xl: '3rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: true
+      },
+      metadata: {
+        industry: 'Publishing',
+        target_audience: 'Readers',
+        complexity: 'moderate',
+        scale: 'medium',
+        performance_requirements: 'optimized'
+      }
+    });
+
+    // Corporate pattern (enhanced)
+    this.businessPatterns.set('corporate', {
+      id: 'corporate',
+      name: 'Corporate Website',
+      description: 'Professional corporate and business components',
+      domain: 'corporate',
+      patterns: [
+        {
+          name: 'company-profile',
+          description: 'Company information and team presentation',
+          template: 'corporate/company-profile.hbs',
+          props: { teamDirectory: true, companyStats: true },
+          conditions: { hasCompanyInfo: true },
+          priority: 1
+        }
+      ],
+      requiredFeatures: ['seo', 'contact-forms', 'professional-design'],
+      recommendedMixins: ['seo-optimization', 'norwegian-compliance'],
+      compliance: [
+        { standard: 'WCAG', level: 'AA', required: true, features: ['accessibility'] },
+        { standard: 'GDPR', level: 'compliant', required: true, features: ['privacy-compliance'] }
+      ],
+      styling: {
+        colorPalette: {
+          primary: '#1e40af',
+          secondary: '#64748b',
+          accent: '#059669',
+          background: '#ffffff',
+          surface: '#f8fafc'
+        },
+        typography: {
+          heading: 'system-ui, sans-serif',
+          body: 'system-ui, sans-serif'
+        },
+        spacing: {
+          xs: '0.5rem',
+          sm: '1rem',
+          md: '1.5rem',
+          lg: '2rem',
+          xl: '3rem'
+        },
+        components: {},
+        responsive: true,
+        darkMode: false
+      },
+      metadata: {
+        industry: 'Professional Services',
+        target_audience: 'Business Clients',
+        complexity: 'moderate',
+        scale: 'medium',
+        performance_requirements: 'optimized'
+      }
+    });
+
     consola.success('Initialized business context patterns');
+  }
+
+  /**
+   * Add technical context optimization patterns
+   */
+  addTechnicalOptimizations(composition: CompositionContext): CompositionContext {
+    const optimized = { ...composition };
+
+    // React-specific optimizations
+    if (composition.platform === 'react' || composition.platform === 'nextjs') {
+      optimized.features = {
+        ...optimized.features,
+        memo: true,
+        useCallback: true,
+        useMemo: true,
+        lazy: composition.features?.lazy || false
+      };
+    }
+
+    // Vue-specific optimizations
+    if (composition.platform === 'vue') {
+      optimized.features = {
+        ...optimized.features,
+        computed: true,
+        watchers: true,
+        compositionAPI: true
+      };
+    }
+
+    // Angular-specific optimizations
+    if (composition.platform === 'angular') {
+      optimized.features = {
+        ...optimized.features,
+        onPush: true,
+        trackBy: true,
+        standalone: true
+      };
+    }
+
+    // Svelte-specific optimizations
+    if (composition.platform === 'svelte') {
+      optimized.features = {
+        ...optimized.features,
+        stores: true,
+        reactive: true,
+        transitions: composition.features?.animations || false
+      };
+    }
+
+    // TypeScript strict mode patterns
+    if (optimized.features?.typescript) {
+      optimized.customization = {
+        ...optimized.customization,
+        typeScript: {
+          strict: true,
+          noImplicitAny: true,
+          exactOptionalPropertyTypes: true
+        }
+      };
+    }
+
+    // SSR optimization patterns
+    if (composition.platform === 'nextjs' || optimized.features?.ssr) {
+      optimized.features = {
+        ...optimized.features,
+        ssr: true,
+        hydration: true,
+        staticGeneration: true
+      };
+    }
+
+    // Mobile-first responsive patterns
+    if (optimized.features?.responsive) {
+      optimized.customization = {
+        ...optimized.customization,
+        responsive: {
+          strategy: 'mobile-first',
+          breakpoints: ['sm', 'md', 'lg', 'xl', '2xl'],
+          containerQueries: true
+        }
+      };
+    }
+
+    return optimized;
+  }
+
+  /**
+   * Add performance context integration
+   */
+  addPerformanceOptimizations(composition: CompositionContext): CompositionContext {
+    const optimized = { ...composition };
+
+    // Bundle size optimization
+    if (optimized.customization?.performance === 'high-performance') {
+      optimized.features = {
+        ...optimized.features,
+        treeShaking: true,
+        codesplitting: true,
+        dynamicImports: true,
+        bundleAnalysis: true
+      };
+    }
+
+    // Lazy loading patterns
+    if (optimized.features?.lazy) {
+      optimized.customization = {
+        ...optimized.customization,
+        lazyLoading: {
+          images: true,
+          components: true,
+          routes: true,
+          intersectionObserver: true
+        }
+      };
+    }
+
+    // Virtual scrolling for large datasets
+    if (optimized.features?.virtualScrolling) {
+      optimized.customization = {
+        ...optimized.customization,
+        virtualScrolling: {
+          itemHeight: 'auto',
+          overscan: 5,
+          windowSize: 10
+        }
+      };
+    }
+
+    // Image optimization
+    if (optimized.features?.imageOptimization) {
+      optimized.customization = {
+        ...optimized.customization,
+        images: {
+          responsive: true,
+          webp: true,
+          avif: true,
+          placeholder: 'blur',
+          sizes: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+        }
+      };
+    }
+
+    // Caching patterns
+    if (optimized.features?.caching) {
+      optimized.customization = {
+        ...optimized.customization,
+        caching: {
+          apiCache: true,
+          staticAssets: true,
+          serviceWorker: true,
+          staleWhileRevalidate: true
+        }
+      };
+    }
+
+    // Prefetching patterns
+    if (optimized.features?.prefetching) {
+      optimized.customization = {
+        ...optimized.customization,
+        prefetching: {
+          dns: true,
+          preconnect: true,
+          preload: true,
+          prefetch: true
+        }
+      };
+    }
+
+    // Service worker patterns
+    if (optimized.features?.serviceWorker) {
+      optimized.customization = {
+        ...optimized.customization,
+        serviceWorker: {
+          caching: true,
+          offline: true,
+          pushNotifications: false,
+          backgroundSync: false
+        }
+      };
+    }
+
+    return optimized;
   }
 }
 

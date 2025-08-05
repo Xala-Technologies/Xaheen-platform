@@ -1,0 +1,375 @@
+{{!-- Base Error Handling Template - Foundation for error components with user feedback --}}
+import React, { useEffect, useCallback, type JSX } from 'react';
+import { useRouter } from 'next/router';
+import { Container, Stack, Card, Button, Alert } from '@xala-ui/components';
+import { cn } from '@xala-ui/utils';
+import { AlertTriangle, RefreshCw, Home, ArrowLeft, Bug } from 'lucide-react';
+{{#slot imports}}{{/slot}}
+
+{{#slot interfaces}}
+interface {{componentName}}Props {
+  readonly error?: Error;
+  readonly errorInfo?: React.ErrorInfo;
+  readonly statusCode?: number;
+  readonly title?: string;
+  readonly message?: string;
+  readonly showDetails?: boolean;
+  readonly showRetry?: boolean;
+  readonly showHome?: boolean;
+  readonly showBack?: boolean;
+  readonly onRetry?: () => void;
+  readonly onReport?: (error: Error, errorInfo?: React.ErrorInfo) => void;
+  readonly className?: string;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+}
+
+interface ErrorDetails {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly userAgent: string;
+  readonly url: string;
+  readonly userId?: string;
+}
+{{/slot}}
+
+/**
+ * {{componentName}} Error Component
+ * 
+ * @description Comprehensive error handling with user feedback and reporting
+ * @author Xaheen CLI Template Generator
+ * @wcag AAA compliant
+ * @nsm-classification {{nsmClassification}}
+ */
+export const {{componentName}} = ({
+  error,
+  errorInfo,
+  statusCode = 500,
+  title,
+  message,
+  showDetails = false,
+  showRetry = true,
+  showHome = true,
+  showBack = true,
+  onRetry,
+  onReport,
+  className,
+  nsmClassification = 'OPEN',
+  ...props
+}: {{componentName}}Props): JSX.Element => {
+  const router = useRouter();
+
+  // Generate error ID for tracking
+  const errorDetails: ErrorDetails = {
+    id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: new Date().toISOString(),
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+    url: typeof window !== 'undefined' ? window.location.href : 'Unknown'
+  };
+
+  // Log error for monitoring
+  useEffect(() => {
+    if (error) {
+      console.error('Error boundary caught error:', {
+        error: error.message,
+        stack: error.stack,
+        errorInfo,
+        details: errorDetails,
+        classification: nsmClassification
+      });
+
+      // Report error if handler provided
+      onReport?.(error, errorInfo);
+    }
+  }, [error, errorInfo, onReport, nsmClassification]);
+
+  // Handle retry action
+  const handleRetry = useCallback(() => {
+    if (onRetry) {
+      onRetry();
+    } else {
+      // Default retry: reload the page
+      window.location.reload();
+    }
+  }, [onRetry]);
+
+  // Handle navigation actions
+  const handleGoHome = useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  const handleGoBack = useCallback(() => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  }, [router]);
+
+  // Get error message based on status code
+  const getErrorMessage = (): { title: string; message: string; severity: 'error' | 'warning' | 'info' } => {
+    if (title && message) {
+      return { title, message, severity: 'error' };
+    }
+
+    switch (statusCode) {
+      case 400:
+        return {
+          title: 'Ugyldig forespørsel',
+          message: 'Forespørselen din inneholder ugyldige data. Vennligst sjekk og prøv igjen.',
+          severity: 'warning'
+        };
+      case 401:
+        return {
+          title: 'Ikke autorisert',
+          message: 'Du må logge inn for å få tilgang til denne siden.',
+          severity: 'warning'
+        };
+      case 403:
+        return {
+          title: 'Tilgang nektet',
+          message: 'Du har ikke tillatelse til å få tilgang til denne ressursen.',
+          severity: 'error'
+        };
+      case 404:
+        return {
+          title: 'Siden ikke funnet',
+          message: 'Siden du leter etter eksisterer ikke eller har blitt flyttet.',
+          severity: 'info'
+        };
+      case 429:
+        return {
+          title: 'For mange forespørsler',
+          message: 'Du har sendt for mange forespørsler. Vennligst vent litt før du prøver igjen.',
+          severity: 'warning'
+        };
+      case 500:
+        return {
+          title: 'Intern serverfeil',
+          message: 'En teknisk feil oppstod på serveren. Vi jobber med å løse problemet.',
+          severity: 'error'
+        };
+      case 502:
+        return {
+          title: 'Tjeneste utilgjengelig',
+          message: 'Tjenesten er midlertidig utilgjengelig. Prøv igjen om noen minutter.',
+          severity: 'error'
+        };
+      case 503:
+        return {
+          title: 'Tjeneste utilgjengelig',
+          message: 'Tjenesten er under vedlikehold. Prøv igjen senere.',
+          severity: 'warning'
+        };
+      default:
+        return {
+          title: 'Noe gikk galt',
+          message: 'En uventet feil oppstod. Vennligst prøv igjen eller kontakt support.',
+          severity: 'error'
+        };
+    }
+  };
+
+  const { title: errorTitle, message: errorMessage, severity } = getErrorMessage();
+  
+  const componentStyles = cn(
+    'min-h-screen flex items-center justify-center',
+    'bg-background text-foreground',
+    className
+  );
+
+  const getIconColor = () => {
+    switch (severity) {
+      case 'warning': return 'text-warning';
+      case 'info': return 'text-info';
+      default: return 'text-destructive';
+    }
+  };
+
+  try {
+    return (
+      <div className={componentStyles} {...props}>
+        <Container maxWidth="md">
+          <Card className="p-8 text-center shadow-lg">
+            <Stack spacing="lg" align="center">
+              {/* Error Icon */}
+              <AlertTriangle className={cn("h-16 w-16", getIconColor())} aria-hidden="true" />
+              
+              {/* Error Title */}
+              <h1 className="text-3xl font-bold text-foreground">
+                {errorTitle}
+              </h1>
+              
+              {/* Error Message */}
+              <p className="text-lg text-muted-foreground max-w-lg">
+                {errorMessage}
+              </p>
+
+              {/* Classification Notice */}
+              {nsmClassification !== 'OPEN' && (
+                <Alert variant="info" className="text-left">
+                  <AlertTriangle className="h-4 w-4" />
+                  <div>
+                    <p className="font-medium">Sikkerhetsinformasjon</p>
+                    <p className="text-sm">
+                      Denne feilen kan inneholde {nsmClassification} informasjon.
+                      Feil-ID: {errorDetails.id}
+                    </p>
+                  </div>
+                </Alert>
+              )}
+
+              {{#slot error-details}}
+              {/* Error Details (Development only) */}
+              {showDetails && error && (
+                <Card className="p-4 bg-muted text-left w-full">
+                  <h3 className="font-bold mb-2 flex items-center">
+                    <Bug className="h-4 w-4 mr-2" />
+                    Tekniske detaljer
+                  </h3>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p><strong>Feil:</strong> {error.message}</p>
+                    <p><strong>Tidspunkt:</strong> {errorDetails.timestamp}</p>
+                    <p><strong>Feil-ID:</strong> {errorDetails.id}</p>
+                    {error.stack && (
+                      <details className="mt-2">
+                        <summary className="cursor-pointer font-medium">Stack trace</summary>
+                        <pre className="mt-2 text-xs overflow-auto bg-background p-2 rounded border">
+                          {error.stack}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                </Card>
+              )}
+              {{/slot}}
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing="md" wrap className="pt-4">
+                {showRetry && (
+                  <Button
+                    onClick={handleRetry}
+                    variant="primary"
+                    className="min-w-32"
+                    aria-label="Prøv igjen"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Prøv igjen
+                  </Button>
+                )}
+                
+                {showHome && (
+                  <Button
+                    onClick={handleGoHome}
+                    variant="secondary"
+                    className="min-w-32"
+                    aria-label="Gå til forsiden"
+                  >
+                    <Home className="h-4 w-4 mr-2" />
+                    Hjem
+                  </Button>
+                )}
+                
+                {showBack && (
+                  <Button
+                    onClick={handleGoBack}
+                    variant="outline"
+                    className="min-w-32"
+                    aria-label="Gå tilbake"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Tilbake
+                  </Button>
+                )}
+              </Stack>
+
+              {{#slot support-info}}
+              {/* Support Information */}
+              <div className="text-sm text-muted-foreground border-t pt-6 w-full text-center">
+                <p>Trenger du hjelp?</p>
+                <p>
+                  Kontakt support med feil-ID: <code className="bg-muted px-2 py-1 rounded">{errorDetails.id}</code>
+                </p>
+              </div>
+              {{/slot}}
+            </Stack>
+          </Card>
+        </Container>
+        
+        {{>mixins}}
+      </div>
+    );
+  } catch (renderError) {
+    // Fallback error UI if even the error component fails
+    console.error('Error component failed to render:', renderError);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-destructive mb-4">
+            Kritisk feil
+          </h1>
+          <p className="text-muted-foreground">
+            En kritisk feil oppstod som hindrer normal visning. 
+            Vennligst last siden på nytt.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            Last siden på nytt
+          </button>
+        </div>
+      </div>
+    );
+  }
+};
+
+{{#slot helpers}}
+// Error reporting and logging utilities
+export const reportError = async (
+  error: Error, 
+  errorInfo?: React.ErrorInfo,
+  additionalContext?: Record<string, any>
+) => {
+  try {
+    // This would integrate with your error reporting service
+    // (Sentry, LogRocket, custom API, etc.)
+    const errorReport = {
+      message: error.message,
+      stack: error.stack,
+      errorInfo,
+      context: additionalContext,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    };
+
+    console.log('Error report:', errorReport);
+    
+    // Example: Send to error reporting service
+    // await fetch('/api/errors', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(errorReport)
+    // });
+  } catch (reportingError) {
+    console.error('Failed to report error:', reportingError);
+  }
+};
+
+export const isRetryableError = (statusCode?: number): boolean => {
+  if (!statusCode) return true;
+  
+  // Retryable status codes
+  const retryableStatusCodes = [408, 429, 500, 502, 503, 504];
+  return retryableStatusCodes.includes(statusCode);
+};
+
+export const getRetryDelay = (attempt: number): number => {
+  // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+  return Math.min(Math.pow(2, attempt) * 1000, 30000);
+};
+{{/slot}}
+
+{{componentName}}.displayName = '{{componentName}}';
+
+export type { {{componentName}}Props, ErrorDetails };

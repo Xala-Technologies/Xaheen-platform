@@ -184,13 +184,13 @@ export interface ComplianceAuditTrail {
 }
 
 export interface NorwegianComplianceConfig {
-  readonly nsm: NSMSecurityRequirements;
-  readonly gdpr: GDPRComplianceRequirements;
-  readonly accessibility: NorwegianAccessibilityRequirements;
+  readonly nsm?: NSMSecurityRequirements;
+  readonly gdpr?: GDPRComplianceRequirements;
+  readonly accessibility?: NorwegianAccessibilityRequirements;
   readonly designSystem?: AltinnDesignSystemRequirements;
-  readonly localization: NorwegianLocalizationRequirements;
-  readonly auditTrail: ComplianceAuditTrail;
-  readonly metadata: {
+  readonly localization?: NorwegianLocalizationRequirements;
+  readonly auditTrail?: ComplianceAuditTrail;
+  readonly metadata?: {
     readonly version: string;
     readonly lastUpdated: string; // ISO 8601 date
     readonly reviewDate: string; // ISO 8601 date
@@ -637,8 +637,8 @@ export function createCustomCompliance(overrides: Partial<NorwegianComplianceCon
     ...base,
     ...overrides,
     metadata: {
-      ...base.metadata,
-      ...overrides.metadata,
+      ...(base.metadata || {}),
+      ...(overrides.metadata || {}),
       lastUpdated: new Date().toISOString(),
     },
   };

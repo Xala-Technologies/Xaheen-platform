@@ -5,59 +5,57 @@
  * with Codebuff and other AI services.
  */
 
-import { spawn } from "child_process";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { testUtils } from "../test/test-helpers.js";
 import type { AICommandOptions } from "./ai.js";
 
+// Move mock declarations to top
+const mockSpawn = vi.fn();
+const mockInquirer = {
+	prompt: vi.fn(),
+	select: vi.fn(),
+	confirm: vi.fn(),
+};
+const mockPatchUtils = {
+	applyPatches: vi.fn(),
+	generatePatch: vi.fn(),
+	diffPreview: vi.fn(),
+	applyPatch: vi.fn(),
+	createCodebuffIndex: vi.fn(),
+	validateGitRepository: vi.fn(),
+	hasUncommittedChanges: vi.fn(),
+	getCurrentBranch: vi.fn(),
+};
+const mockRefactoringGenerator = {
+	generateRefactoring: vi.fn(),
+};
+
 // Mock all dependencies
-vi.mock("child_process");
-vi.mock("inquirer");
-vi.mock("../lib/patch-utils.js");
-vi.mock("../generators/ai/refactoring.generator.js");
+vi.mock("child_process", () => ({
+	spawn: mockSpawn,
+}));
+vi.mock("inquirer", () => mockInquirer);
+vi.mock("../lib/patch-utils.js", () => mockPatchUtils);
+vi.mock("../generators/ai/refactoring.generator.js", () => mockRefactoringGenerator);
 
 describe("AI Command", () => {
-	let mockSpawn: Mock;
-	let mockInquirer: any;
-	let mockPatchUtils: any;
-	let mockRefactoringGenerator: any;
-
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		// Setup mocks
-		mockSpawn = vi.mocked(spawn);
+		// Reset mock functions
+		mockInquirer.prompt.mockResolvedValue({ confirmed: true });
+		mockPatchUtils.diffPreview.mockResolvedValue("diff preview");
+		mockPatchUtils.applyPatch.mockResolvedValue(undefined);
+		mockPatchUtils.createCodebuffIndex.mockResolvedValue(undefined);
+		mockPatchUtils.validateGitRepository.mockResolvedValue(true);
+		mockPatchUtils.hasUncommittedChanges.mockResolvedValue(false);
+		mockPatchUtils.getCurrentBranch.mockResolvedValue("main");
 
-		const inquirer = await import("inquirer");
-		mockInquirer = {
-			prompt: vi.fn().mockResolvedValue({ confirmed: true }),
-		};
-		Object.assign(inquirer, { default: mockInquirer });
-
-		const patchUtils = await import("../lib/patch-utils.js");
-		mockPatchUtils = {
-			diffPreview: vi.fn().mockResolvedValue("diff preview"),
-			applyPatch: vi.fn().mockResolvedValue(undefined),
-			createCodebuffIndex: vi.fn().mockResolvedValue(undefined),
-			validateGitRepository: vi.fn().mockResolvedValue(true),
-			hasUncommittedChanges: vi.fn().mockResolvedValue(false),
-			getCurrentBranch: vi.fn().mockResolvedValue("main"),
-		};
-		Object.assign(patchUtils, mockPatchUtils);
-
-		const { AIRefactoringGenerator } = await import(
-			"../generators/ai/refactoring.generator.js"
-		);
-		mockRefactoringGenerator = {
-			generate: vi.fn().mockResolvedValue({
-				success: true,
-				files: ["src/components/Button.tsx"],
-				changes: "Added button component",
-			}),
-		};
-		(AIRefactoringGenerator as Mock).mockImplementation(
-			() => mockRefactoringGenerator,
-		);
+		mockRefactoringGenerator.generateRefactoring.mockResolvedValue({
+			success: true,
+			files: ["src/components/Button.tsx"],
+			changes: "Added button component",
+		});
 	});
 
 	describe("runCodebuffCLI", () => {

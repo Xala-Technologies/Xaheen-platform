@@ -8,6 +8,7 @@ import type {
 } from "../../types/index.js";
 import { CLIError } from "../../types/index.js";
 import { logger } from "../../utils/logger.js";
+import { aiGenerateCommand } from "../../commands/ai-generate.js";
 
 export class CommandParser {
 	private program: Command;
@@ -22,6 +23,7 @@ export class CommandParser {
 		this.setupProgram();
 		this.setupRoutes();
 		this.setupAliasCommands();
+		this.setupAICommands();
 	}
 
 	private setupProgram(): void {
@@ -287,6 +289,44 @@ export class CommandParser {
 				},
 			},
 
+			// Template domain routes (Advanced Inheritance & Composition)
+			{
+				pattern: "template list",
+				domain: "template",
+				action: "list",
+				handler: this.handleTemplateList.bind(this),
+			},
+			{
+				pattern: "template create",
+				domain: "template",
+				action: "create",
+				handler: this.handleTemplateCreate.bind(this),
+			},
+			{
+				pattern: "template extend <parent>",
+				domain: "template",
+				action: "extend",
+				handler: this.handleTemplateExtend.bind(this),
+			},
+			{
+				pattern: "template compose",
+				domain: "template",
+				action: "compose",
+				handler: this.handleTemplateCompose.bind(this),
+			},
+			{
+				pattern: "template init",
+				domain: "template",
+				action: "init",
+				handler: this.handleTemplateInit.bind(this),
+			},
+			{
+				pattern: "template generate <name>",
+				domain: "template",
+				action: "generate",
+				handler: this.handleTemplateGenerate.bind(this),
+			},
+
 			// AI domain routes
 			{
 				pattern: "ai generate <prompt>",
@@ -375,6 +415,54 @@ export class CommandParser {
 				domain: "mcp",
 				action: "deploy",
 				handler: this.handleMCPDeploy.bind(this),
+			},
+			{
+				pattern: "mcp test [suite]",
+				domain: "mcp",
+				action: "test",
+				handler: this.handleMCPTest.bind(this),
+			},
+			{
+				pattern: "mcp config init [target]",
+				domain: "mcp",
+				action: "config-init",
+				handler: this.handleMCPConfigInit.bind(this),
+			},
+			{
+				pattern: "mcp config show",
+				domain: "mcp",
+				action: "config-show",
+				handler: this.handleMCPConfigShow.bind(this),
+			},
+			{
+				pattern: "mcp plugin list",
+				domain: "mcp",
+				action: "plugin-list",
+				handler: this.handleMCPPluginList.bind(this),
+			},
+			{
+				pattern: "mcp plugin register <path>",
+				domain: "mcp",
+				action: "plugin-register",
+				handler: this.handleMCPPluginRegister.bind(this),
+			},
+			{
+				pattern: "mcp plugin unregister <name>",
+				domain: "mcp",
+				action: "plugin-unregister",
+				handler: this.handleMCPPluginUnregister.bind(this),
+			},
+			{
+				pattern: "mcp plugin enable <name>",
+				domain: "mcp",
+				action: "plugin-enable",
+				handler: this.handleMCPPluginEnable.bind(this),
+			},
+			{
+				pattern: "mcp plugin disable <name>",
+				domain: "mcp",
+				action: "plugin-disable",
+				handler: this.handleMCPPluginDisable.bind(this),
 			},
 
 			// Help domain routes
@@ -690,6 +778,51 @@ export class CommandParser {
 					)
 					.option("--name <name>", "Component name to generate")
 					.option("--force", "Force deployment despite critical issues");
+
+				// Add test-specific options
+				if (route.action === "test") {
+					command
+						.option(
+							"--suites <suites>",
+							"Test suites to run (comma-separated: connectivity,authentication,api-endpoints,response-validation,performance,security,compliance,integration)",
+							"connectivity,authentication,api-endpoints,response-validation"
+						)
+						.option("--timeout <ms>", "Test timeout in milliseconds", "30000")
+						.option("--retry <attempts>", "Number of retry attempts", "2")
+						.option("--parallel", "Run tests in parallel", false)
+						.option("--verbose", "Verbose test output", false)
+						.option(
+							"--format <format>",
+							"Output format (json|junit|html|console)",
+							"console"
+						)
+						.option("--output <path>", "Output file path for reports")
+						.option("--fail-fast", "Stop on first failure", false)
+						.option("--coverage", "Enable test coverage", false)
+						.option("--benchmark", "Enable benchmarking", false)
+						.option("--dry-run", "Preview tests without execution", false);
+				}
+
+				// Add config-specific options
+				if (route.action === "config-init") {
+					command
+						.option(
+							"--target <target>",
+							"Configuration target (global|project|both)",
+							"project"
+						)
+						.option("--force", "Overwrite existing configuration", false);
+				}
+
+				// Add plugin-specific options
+				if (route.action.startsWith("plugin-")) {
+					command
+						.option("--source <source>", "Plugin source (local|npm|git|registry)", "local")
+						.option("--category <category>", "Filter by plugin category")
+						.option("--type <type>", "Filter by plugin type")
+						.option("--enabled", "Show only enabled plugins", false)
+						.option("--disabled", "Show only disabled plugins", false);
+				}
 			}
 
 			// Add Template Modernization-specific options
@@ -1056,6 +1189,50 @@ export class CommandParser {
 		await domain.list(command);
 	}
 
+	// Template domain handlers
+	private async handleTemplateList(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.list(command);
+	}
+	private async handleTemplateCreate(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.create(command);
+	}
+	private async handleTemplateExtend(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.extend(command);
+	}
+	private async handleTemplateCompose(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.compose(command);
+	}
+	private async handleTemplateInit(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.init(command);
+	}
+	private async handleTemplateGenerate(command: CLICommand): Promise<void> {
+		const { default: TemplateDomain } = await import(
+			"../../domains/template/index.js"
+		);
+		const domain = new TemplateDomain();
+		await domain.generate(command);
+	}
+
 	private async handleAIGenerate(command: CLICommand): Promise<void> {
 		const { default: AIDomain } = await import("../../domains/ai/index.js");
 		const domain = new AIDomain();
@@ -1415,6 +1592,56 @@ export class CommandParser {
 		await docsCommand.parseAsync(argv.slice(2));
 	}
 
+	// MCP Command Handlers
+
+	private async handleMCPTest(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.test(command);
+	}
+
+	private async handleMCPConfigInit(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.configInit(command);
+	}
+
+	private async handleMCPConfigShow(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.configShow(command);
+	}
+
+	private async handleMCPPluginList(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.pluginList(command);
+	}
+
+	private async handleMCPPluginRegister(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.pluginRegister(command);
+	}
+
+	private async handleMCPPluginUnregister(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.pluginUnregister(command);
+	}
+
+	private async handleMCPPluginEnable(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.pluginEnable(command);
+	}
+
+	private async handleMCPPluginDisable(command: CLICommand): Promise<void> {
+		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const domain = new MCPDomain();
+		await domain.pluginDisable(command);
+	}
+
 	public async parse(args?: string[]): Promise<void> {
 		try {
 			await this.program.parseAsync(args);
@@ -1435,5 +1662,18 @@ export class CommandParser {
 
 	public getRoutes(): Map<string, CommandRoute> {
 		return this.routes;
+	}
+
+	/**
+	 * Setup AI-Native Template System commands
+	 */
+	private setupAICommands(): void {
+		try {
+			// Add the AI generate command to the program
+			this.program.addCommand(aiGenerateCommand.getCommand());
+			logger.debug("Registered AI-Native Template System commands");
+		} catch (error) {
+			logger.warn("Failed to register AI commands:", error);
+		}
 	}
 }

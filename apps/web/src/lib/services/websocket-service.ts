@@ -47,6 +47,8 @@ export class WebSocketService {
 	private heartbeatIntervalId: NodeJS.Timeout | null = null;
 	private isReconnecting = false;
 	private currentReconnectAttempts = 0;
+	private messageQueue: AgentMessage[] = [];
+	private readonly maxQueueSize = 100;
 
 	constructor(config: Partial<WebSocketConfig> = {}) {
 		this.config = {
@@ -68,6 +70,8 @@ export class WebSocketService {
 					this.currentReconnectAttempts = 0;
 					this.startHeartbeat();
 					this.notifyConnectionHandlers(true);
+					// Process any queued messages
+					this.processQueuedMessages();
 					resolve();
 				};
 
@@ -142,7 +146,7 @@ export class WebSocketService {
 			}
 		} else {
 			console.warn("WebSocket not connected, message queued:", message);
-			// TODO: Implement message queuing for offline mode
+			this.queueMessage(message);
 		}
 	}
 
@@ -264,6 +268,50 @@ export class WebSocketService {
 
 	private generateMessageId(): string {
 		return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	}
+
+	private queueMessage(message: AgentMessage): void {
+		// Add message to queue with timestamp
+		const queuedMessage = {
+			...message,
+			queuedAt: Date.now(),
+		};
+
+		this.messageQueue.push(queuedMessage);
+
+		// Limit queue size to prevent memory issues
+		if (this.messageQueue.length > this.maxQueueSize) {
+			const removed = this.messageQueue.shift();
+			console.warn("Message queue full, oldest message discarded:", removed?.id);
+		}
+	}
+
+	private processQueuedMessages(): void {
+		if (this.messageQueue.length === 0) return;
+
+		console.log(`Processing ${this.messageQueue.length} queued messages`);
+
+		// Process messages in FIFO order
+		while (this.messageQueue.length > 0 && this.isConnected()) {
+			const message = this.messageQueue.shift();
+			if (message) {
+				// Check if message hasn't expired (5 minutes)
+				const messageAge = Date.now() - (message.queuedAt || 0);
+				if (messageAge < 300000) { // 5 minutes
+					try {
+						this.socket?.send(JSON.stringify(message));
+						console.log("Queued message sent:", message.id);
+					} catch (error) {
+						console.error("Failed to send queued message:", error);
+						// Re-queue the message if send failed
+						this.messageQueue.unshift(message);
+						break;
+					}
+				} else {
+					console.warn("Expired queued message discarded:", message.id);
+				}
+			}
+		}
 	}
 }
 

@@ -122,6 +122,13 @@ export { GettingStartedGenerator } from "./getting-started.generator";
 export { OpenAPIGenerator } from "./openapi.generator";
 export { TroubleshootingDocsGenerator } from "./troubleshooting.generator";
 
+// EPIC 13 Story 13.6 - Documentation & Interactive Learning exports
+export { StorybookIntegrationGenerator, type StorybookIntegrationOptions } from "./storybook-integration.generator";
+export { InteractiveTutorialGenerator, type InteractiveTutorialOptions } from "./interactive-tutorial.generator";
+export { MDXDocumentationGenerator, type MDXDocumentationOptions } from "./mdx-documentation.generator";
+export { DocumentationOrchestrator, documentationOrchestrator, type DocumentationOrchestrationOptions } from "./documentation-orchestrator.generator";
+export { DocumentationWatcherService, documentationWatcher } from "./documentation-watcher.service";
+
 /**
  * Main Documentation Generator Factory
  */

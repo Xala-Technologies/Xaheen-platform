@@ -2,6 +2,9 @@ import chalk from "chalk";
 import { ConfigManager } from "../../core/config-manager/index.js";
 import { MCPClientService } from "../../services/mcp/mcp-client.service.js";
 import { mcpContextIndexer } from "../../services/mcp/mcp-context-indexer.service.js";
+import { mcpConfigService } from "../../services/mcp/mcp-config.service.js";
+import { mcpPluginManager } from "../../services/mcp/mcp-plugin-manager.service.js";
+import { mcpTestService } from "../../services/mcp/mcp-test.service.js";
 import type { CLICommand } from "../../types/index.js";
 import { CLIError } from "../../types/index.js";
 import { cliLogger, logger } from "../../utils/logger.js";
@@ -720,5 +723,407 @@ export default class MCPDomain {
 		}
 
 		return `${size.toFixed(1)} ${units[unitIndex]}`;
+	}
+
+	// New MCP Configuration & Extension Methods - EPIC 14 Story 14.4
+
+	/**
+	 * Run comprehensive MCP tests
+	 */
+	public async test(command: CLICommand): Promise<void> {
+		try {
+			cliLogger.info(chalk.cyan("🧪 Running MCP Test Suite"));
+			cliLogger.info(chalk.gray("Testing MCP connectivity, authentication, and response validation..."));
+
+			// Load MCP configuration with CLI overrides
+			const cliOverrides = this.extractConfigOverrides(command.options);
+			const mcpConfig = await mcpConfigService.getConfig(cliOverrides);
+
+			// Parse test configuration from command options
+			const testConfig = {
+				testSuites: command.options.suites ? 
+					command.options.suites.split(",").map((s: string) => s.trim()) :
+					["connectivity", "authentication", "api-endpoints", "response-validation"],
+				timeout: parseInt(command.options.timeout || "30000"),
+				retryAttempts: parseInt(command.options.retry || "2"),
+				parallelTests: command.options.parallel || false,
+				verbose: command.options.verbose || false,
+				outputFormat: command.options.format || "console",
+				outputPath: command.options.output,
+				failFast: command.options.failFast || false,
+				coverage: command.options.coverage || false,
+				benchmarking: command.options.benchmark || false,
+				customTests: [], // Could be loaded from config file
+			};
+
+			// Initialize MCP client if needed
+			let mcpClient = null;
+			if (!command.options.dryRun) {
+				if (!this.mcpClient.isClientConnected()) {
+					await this.mcpClient.initialize();
+				}
+				mcpClient = this.mcpClient.getMCPClient();
+			}
+
+			// Run tests
+			const report = await mcpTestService.runTests(mcpConfig, testConfig, mcpClient);
+
+			// Display summary
+			const statusIcon = report.failedTests === 0 ? "✅" : "❌";
+			cliLogger.info(chalk.blue(`\n${statusIcon} MCP Test Summary:`));
+			cliLogger.info(`  Total Tests: ${chalk.cyan(report.totalTests)}`);
+			cliLogger.info(`  Passed: ${chalk.green(report.passedTests)}`);
+			cliLogger.info(`  Failed: ${chalk.red(report.failedTests)}`);
+			cliLogger.info(`  Skipped: ${chalk.yellow(report.skippedTests)}`);
+			cliLogger.info(`  Duration: ${chalk.cyan(report.duration.toFixed(2))}ms`);
+			cliLogger.info(`  Security Score: ${chalk.cyan(report.compliance.securityScore)}%`);
+
+			if (report.failedTests > 0) {
+				process.exit(1);
+			}
+		} catch (error) {
+			throw new CLIError(
+				`MCP test failed: ${error}`,
+				"MCP_TEST_FAILED",
+				"mcp",
+				"test",
+			);
+		}
+	}
+
+	/**
+	 * Initialize MCP configuration
+	 */
+	public async configInit(command: CLICommand): Promise<void> {
+		try {
+			const target = command.target || command.options.target || "project";
+			const force = command.options.force || false;
+
+			cliLogger.info(chalk.cyan(`🔧 Initializing MCP configuration (${target})`));
+
+			// Check if configuration already exists and handle force flag
+			const configFiles = await mcpConfigService.checkConfigFiles();
+			
+			if (!force) {
+				if (target === "global" && configFiles.globalExists) {
+					throw new Error(`Global configuration already exists at ${configFiles.globalPath}. Use --force to overwrite.`);
+				}
+				if (target === "project" && configFiles.projectExists) {
+					throw new Error(`Project configuration already exists at ${configFiles.projectPath}. Use --force to overwrite.`);
+				}
+				if (target === "both" && (configFiles.globalExists || configFiles.projectExists)) {
+					throw new Error("Configuration files already exist. Use --force to overwrite.");
+				}
+			}
+
+			// Initialize configuration
+			await mcpConfigService.initializeConfig(target as any);
+
+			cliLogger.info(chalk.green("✅ MCP configuration initialized successfully"));
+			
+			// Show next steps
+			cliLogger.info(chalk.blue("\n📋 Next steps:"));
+			cliLogger.info("  • Review and customize your configuration");
+			cliLogger.info("  • Set your MCP server URL and API key");
+			cliLogger.info("  • Run 'xaheen mcp test' to verify connectivity");
+		} catch (error) {
+			throw new CLIError(
+				`MCP config initialization failed: ${error}`,
+				"MCP_CONFIG_INIT_FAILED",
+				"mcp",
+				"config-init",
+			);
+		}
+	}
+
+	/**
+	 * Show MCP configuration
+	 */
+	public async configShow(command: CLICommand): Promise<void> {
+		try {
+			cliLogger.info(chalk.cyan("🔧 MCP Configuration"));
+			
+			// Load configuration hierarchy
+			const cliOverrides = this.extractConfigOverrides(command.options);
+			const config = await mcpConfigService.getConfig(cliOverrides);
+			const hierarchy = mcpConfigService.getConfigHierarchy();
+
+			cliLogger.info(chalk.blue("\n📊 Configuration Sources:"));
+			if (hierarchy) {
+				hierarchy.sources.forEach((source, index) => {
+					const arrow = index > 0 ? " → " : "";
+					cliLogger.info(`${arrow}${chalk.cyan(source)}`);
+				});
+			}
+
+			cliLogger.info(chalk.blue("\n🔗 Server Configuration:"));
+			cliLogger.info(`  URL: ${chalk.cyan(config.server.url)}`);
+			cliLogger.info(`  Client ID: ${chalk.cyan(config.server.clientId)}`);
+			cliLogger.info(`  Timeout: ${chalk.cyan(config.server.timeout)}ms`);
+			cliLogger.info(`  Retry Attempts: ${chalk.cyan(config.server.retryAttempts)}`);
+
+			cliLogger.info(chalk.blue("\n🛡️  Security Configuration:"));
+			cliLogger.info(`  Classification: ${chalk.cyan(config.security.securityClassification)}`);
+			cliLogger.info(`  Telemetry: ${config.security.enableTelemetry ? chalk.green("Enabled") : chalk.red("Disabled")}`);
+			cliLogger.info(`  Encryption: ${config.security.enableEncryption ? chalk.green("Enabled") : chalk.red("Disabled")}`);
+
+			cliLogger.info(chalk.blue("\n🇳🇴 Norwegian Compliance:"));
+			cliLogger.info(`  GDPR: ${config.norwegianCompliance.enableGDPRCompliance ? chalk.green("Enabled") : chalk.red("Disabled")}`);
+			cliLogger.info(`  NSM: ${config.norwegianCompliance.enableNSMCompliance ? chalk.green("Enabled") : chalk.red("Disabled")}`);
+			cliLogger.info(`  Data Retention: ${chalk.cyan(config.norwegianCompliance.dataRetentionPeriod)} days`);
+
+			cliLogger.info(chalk.blue("\n📂 Indexing Configuration:"));
+			cliLogger.info(`  Max File Size: ${chalk.cyan(this.formatBytes(config.indexing.maxFileSize))}`);
+			cliLogger.info(`  Deep Analysis: ${config.indexing.enableDeepAnalysis ? chalk.green("Enabled") : chalk.red("Disabled")}`);
+			cliLogger.info(`  Include Patterns: ${chalk.cyan(config.indexing.includePatterns.length)} patterns`);
+
+			const pluginCount = Object.keys(config.plugins).length;
+			cliLogger.info(chalk.blue(`\n🔌 Plugins: ${chalk.cyan(pluginCount)} configured`));
+
+		} catch (error) {
+			throw new CLIError(
+				`MCP config show failed: ${error}`,
+				"MCP_CONFIG_SHOW_FAILED",
+				"mcp",
+				"config-show",
+			);
+		}
+	}
+
+	/**
+	 * List registered MCP plugins
+	 */
+	public async pluginList(command: CLICommand): Promise<void> {
+		try {
+			cliLogger.info(chalk.cyan("🔌 MCP Plugin Registry"));
+
+			// Initialize plugin manager if needed
+			if (!mcpPluginManager.listenerCount("initialized")) {
+				await mcpPluginManager.initialize();
+			}
+
+			// Get plugins with filtering
+			let plugins = mcpPluginManager.getRegisteredPlugins();
+
+			// Apply filters
+			if (command.options.category) {
+				plugins = plugins.filter(p => p.manifest.category === command.options.category);
+			}
+			if (command.options.type) {
+				plugins = plugins.filter(p => p.manifest.type === command.options.type);
+			}
+			if (command.options.enabled) {
+				plugins = plugins.filter(p => p.enabled);
+			}
+			if (command.options.disabled) {
+				plugins = plugins.filter(p => !p.enabled);
+			}
+
+			if (plugins.length === 0) {
+				cliLogger.info(chalk.yellow("No plugins found matching the criteria"));
+				cliLogger.info(chalk.gray("Run 'xaheen mcp plugin register <path>' to add plugins"));
+				return;
+			}
+
+			cliLogger.info(chalk.blue(`\n📦 Found ${plugins.length} plugins:\n`));
+
+			plugins.forEach((plugin, index) => {
+				const statusIcon = plugin.enabled ? "✅" : "❌";
+				const verifiedIcon = plugin.verified ? "🔒" : "";
+				
+				cliLogger.info(`${index + 1}. ${statusIcon} ${chalk.bold(plugin.name)}@${chalk.cyan(plugin.version)} ${verifiedIcon}`);
+				cliLogger.info(`   ${chalk.gray(plugin.manifest.description)}`);
+				cliLogger.info(`   ${chalk.blue("Type:")} ${plugin.manifest.type} | ${chalk.blue("Category:")} ${plugin.manifest.category}`);
+				cliLogger.info(`   ${chalk.blue("Source:")} ${plugin.source} | ${chalk.blue("Path:")} ${chalk.gray(plugin.path)}`);
+				
+				if (plugin.manifest.keywords.length > 0) {
+					cliLogger.info(`   ${chalk.blue("Keywords:")} ${plugin.manifest.keywords.join(", ")}`);
+				}
+				
+				cliLogger.info("");
+			});
+
+			// Show statistics
+			const enabledCount = plugins.filter(p => p.enabled).length;
+			const verifiedCount = plugins.filter(p => p.verified).length;
+			
+			cliLogger.info(chalk.blue("📊 Statistics:"));
+			cliLogger.info(`  • Enabled: ${chalk.green(enabledCount)}/${plugins.length}`);
+			cliLogger.info(`  • Verified: ${chalk.cyan(verifiedCount)}/${plugins.length}`);
+		} catch (error) {
+			throw new CLIError(
+				`MCP plugin list failed: ${error}`,
+				"MCP_PLUGIN_LIST_FAILED",
+				"mcp",
+				"plugin-list",
+			);
+		}
+	}
+
+	/**
+	 * Register a new MCP plugin
+	 */
+	public async pluginRegister(command: CLICommand): Promise<void> {
+		try {
+			const pluginPath = command.target;
+			const source = command.options.source || "local";
+			const force = command.options.force || false;
+
+			if (!pluginPath) {
+				throw new Error("Plugin path is required");
+			}
+
+			cliLogger.info(chalk.cyan(`🔌 Registering MCP plugin from ${pluginPath}`));
+
+			// Initialize plugin manager if needed
+			if (!mcpPluginManager.listenerCount("initialized")) {
+				await mcpPluginManager.initialize();
+			}
+
+			// Register plugin
+			const entry = await mcpPluginManager.registerPlugin(pluginPath, { 
+				force, 
+				source: source as any 
+			});
+
+			cliLogger.info(chalk.green(`✅ Plugin registered successfully:`));
+			cliLogger.info(`  • Name: ${chalk.cyan(entry.name)}`);
+			cliLogger.info(`  • Version: ${chalk.cyan(entry.version)}`);
+			cliLogger.info(`  • Type: ${chalk.cyan(entry.manifest.type)}`);
+			cliLogger.info(`  • Category: ${chalk.cyan(entry.manifest.category)}`);
+			cliLogger.info(`  • Verified: ${entry.verified ? chalk.green("Yes") : chalk.yellow("No")}`);
+
+			if (entry.manifest.permissions.length > 0) {
+				cliLogger.info(`  • Permissions: ${entry.manifest.permissions.join(", ")}`);
+			}
+
+		} catch (error) {
+			throw new CLIError(
+				`MCP plugin registration failed: ${error}`,
+				"MCP_PLUGIN_REGISTER_FAILED",
+				"mcp",
+				"plugin-register",
+			);
+		}
+	}
+
+	/**
+	 * Unregister an MCP plugin
+	 */
+	public async pluginUnregister(command: CLICommand): Promise<void> {
+		try {
+			const pluginName = command.target;
+
+			if (!pluginName) {
+				throw new Error("Plugin name is required");
+			}
+
+			cliLogger.info(chalk.cyan(`🗑️  Unregistering MCP plugin: ${pluginName}`));
+
+			// Initialize plugin manager if needed
+			if (!mcpPluginManager.listenerCount("initialized")) {
+				await mcpPluginManager.initialize();
+			}
+
+			await mcpPluginManager.unregisterPlugin(pluginName);
+
+			cliLogger.info(chalk.green(`✅ Plugin ${pluginName} unregistered successfully`));
+
+		} catch (error) {
+			throw new CLIError(
+				`MCP plugin unregistration failed: ${error}`,
+				"MCP_PLUGIN_UNREGISTER_FAILED",
+				"mcp",
+				"plugin-unregister",
+			);
+		}
+	}
+
+	/**
+	 * Enable an MCP plugin
+	 */
+	public async pluginEnable(command: CLICommand): Promise<void> {
+		try {
+			const pluginName = command.target;
+
+			if (!pluginName) {
+				throw new Error("Plugin name is required");
+			}
+
+			cliLogger.info(chalk.cyan(`✅ Enabling MCP plugin: ${pluginName}`));
+
+			// Initialize plugin manager if needed
+			if (!mcpPluginManager.listenerCount("initialized")) {
+				await mcpPluginManager.initialize();
+			}
+
+			await mcpPluginManager.setPluginEnabled(pluginName, true);
+
+			cliLogger.info(chalk.green(`✅ Plugin ${pluginName} enabled successfully`));
+
+		} catch (error) {
+			throw new CLIError(
+				`MCP plugin enable failed: ${error}`,
+				"MCP_PLUGIN_ENABLE_FAILED",
+				"mcp",
+				"plugin-enable",
+			);
+		}
+	}
+
+	/**
+	 * Disable an MCP plugin
+	 */
+	public async pluginDisable(command: CLICommand): Promise<void> {
+		try {
+			const pluginName = command.target;
+
+			if (!pluginName) {
+				throw new Error("Plugin name is required");
+			}
+
+			cliLogger.info(chalk.cyan(`❌ Disabling MCP plugin: ${pluginName}`));
+
+			// Initialize plugin manager if needed
+			if (!mcpPluginManager.listenerCount("initialized")) {
+				await mcpPluginManager.initialize();
+			}
+
+			await mcpPluginManager.setPluginEnabled(pluginName, false);
+
+			cliLogger.info(chalk.green(`✅ Plugin ${pluginName} disabled successfully`));
+
+		} catch (error) {
+			throw new CLIError(
+				`MCP plugin disable failed: ${error}`,
+				"MCP_PLUGIN_DISABLE_FAILED",
+				"mcp",
+				"plugin-disable",
+			);
+		}
+	}
+
+	/**
+	 * Extract configuration overrides from CLI options
+	 */
+	private extractConfigOverrides(options: Record<string, any>): any {
+		const overrides: any = {};
+
+		// Server overrides
+		if (options.server) {
+			overrides.server = { url: options.server };
+		}
+
+		// Security overrides
+		if (options.classification) {
+			overrides.security = { securityClassification: options.classification };
+		}
+
+		// Indexing overrides
+		if (options.maxSize) {
+			overrides.indexing = { maxFileSize: parseInt(options.maxSize) * 1024 * 1024 };
+		}
+
+		return overrides;
 	}
 }

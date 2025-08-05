@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "environment": "development",
+  "server": {
+    "url": "https://api.xala.ai/mcp",
+    "apiKey": "${XALA_MCP_API_KEY}",
+    "clientId": "example-client-id",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "enableCompression": true,
+    "maxConcurrentRequests": 10
+  },
+  "security": {
+    "enableTelemetry": true,
+    "securityClassification": "OPEN",
+    "enableEncryption": true,
+    "enableMutualTLS": false
+  },
+  "indexing": {
+    "maxFileSize": 1048576,
+    "includePatterns": [
+      "**/*.{ts,tsx,js,jsx,json,md,yml,yaml}"
+    ],
+    "excludePatterns": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*.log",
+      "coverage/**",
+      ".next/**",
+      "build/**"
+    ],
+    "followSymlinks": false,
+    "includeHidden": false,
+    "enableDeepAnalysis": true,
+    "analyzeTests": true,
+    "analyzeDependencies": true,
+    "generateMetrics": true,
+    "maxTokensPerFile": 10000
+  },
+  "norwegianCompliance": {
+    "enableGDPRCompliance": true,
+    "enableNSMCompliance": true,
+    "dataProcessingBasis": "legitimate_interests",
+    "dataRetentionPeriod": 365,
+    "enableAuditLogging": true,
+    "enableDataMinimization": true,
+    "enableRightToErasure": true
+  },
+  "plugins": {
+    "sample-norwegian-compliance-plugin": {
+      "enabled": true,
+      "path": "./plugins/sample-norwegian-compliance-plugin",
+      "version": "1.0.0",
+      "config": {
+        "nsmClassification": "OPEN",
+        "gdprStrictMode": true,
+        "auditLevel": "detailed"
+      },
+      "dependencies": [],
+      "permissions": [
+        "read:project",
+        "mcp:analyze"
+      ]
+    }
+  },
+  "customPatterns": {
+    "validation": [
+      "custom-validation-pattern",
+      "enhanced-security-check"
+    ],
+    "generation": [
+      "norwegian-text-generation",
+      "gdpr-compliant-forms"
+    ]
+  },
+  "features": {
+    "aiGeneration": true,
+    "contextIndexing": true,
+    "qualityAnalysis": true,
+    "securityScanning": true,
+    "performanceMonitoring": true
+  },
+  "metadata": {
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z",
+    "createdBy": "xaheen-cli",
+    "configVersion": "1.0.0"
+  }
+}

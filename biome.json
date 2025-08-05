@@ -30,24 +30,33 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": false,
+			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "off",
-				"noConsole": "off",
-				"noDebugger": "warn"
+				"noExplicitAny": "error",
+				"noConsole": "warn",
+				"noDebugger": "error",
+				"noConfusingVoidType": "error",
+				"noDuplicateParameters": "error",
+				"noEmptyInterface": "error"
 			},
 			"correctness": {
-				"noUnusedImports": "warn",
-				"noUnusedVariables": "off"
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error",
+				"useIsNan": "error"
 			},
 			"style": {
-				"noNonNullAssertion": "off",
-				"noParameterAssign": "off",
-				"useSelfClosingElements": "warn"
+				"noNonNullAssertion": "warn",
+				"noParameterAssign": "error",
+				"useSelfClosingElements": "error",
+				"useTemplate": "error"
 			},
 			"complexity": {
-				"useLiteralKeys": "off",
-				"noBannedTypes": "off"
+				"useLiteralKeys": "warn",
+				"noBannedTypes": "error",
+				"noForEach": "warn"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "error"
 			},
 			"nursery": {
 				"useSortedClasses": "off"

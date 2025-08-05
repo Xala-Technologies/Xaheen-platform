@@ -1,0 +1,366 @@
+version: 1.0.0
+baseTemplates:
+  - name: base-page
+    path: base/base-page.hbs
+    category: page
+    slots:
+      - name: header
+        required: false
+        defaultContent: "{{> default-header}}"
+        description: Page header content
+      - name: content
+        required: true
+        description: Main page content
+      - name: footer
+        required: false
+        defaultContent: "{{> default-footer}}"
+        description: Page footer content
+      - name: props
+        required: false
+        description: Custom props interface
+    variants:
+      - name: dark
+        description: Dark mode variant
+        modifiers:
+          theme: dark
+          backgroundColor: bg-gray-900
+          textColor: text-gray-100
+        compliance:
+          darkMode: true
+          highContrast: true
+      - name: rtl
+        description: Right-to-left variant for Arabic
+        modifiers:
+          direction: rtl
+          textAlign: text-right
+        compliance:
+          rtl: true
+      - name: norwegian-compliance
+        description: Norwegian compliance variant
+        modifiers:
+          locale: nb-NO
+          dateFormat: dd.MM.yyyy
+          nsmBanner: true
+        compliance:
+          darkMode: true
+          rtl: false
+          highContrast: true
+          reducedMotion: true
+    metadata:
+      description: Base page template with header, content, and footer slots
+      tags:
+        - page
+        - layout
+        - base
+      compliance:
+        wcag: AAA
+        nsmClassification: OPEN
+        gdprCompliant: true
+
+  - name: base-component
+    path: base/base-component.hbs
+    category: component
+    slots:
+      - name: props
+        required: true
+        description: Component props interface
+      - name: render
+        required: true
+        description: Component render logic
+      - name: styles
+        required: false
+        defaultContent: "{{> default-styles}}"
+        description: Component styles
+      - name: hooks
+        required: false
+        description: Custom hooks section
+    metadata:
+      description: Base component template with TypeScript support
+      tags:
+        - component
+        - typescript
+        - base
+      compliance:
+        wcag: AAA
+        nsmClassification: OPEN
+        gdprCompliant: true
+
+  - name: base-form
+    path: base/base-form.hbs
+    category: form
+    slots:
+      - name: fields
+        required: true
+        description: Form fields
+      - name: validation
+        required: false
+        defaultContent: "{{> default-validation}}"
+        description: Form validation logic
+      - name: submission
+        required: true
+        description: Form submission handler
+      - name: error-handling
+        required: false
+        description: Custom error handling
+    variants:
+      - name: norwegian-compliance
+        description: Norwegian compliance variant with Altinn support
+        modifiers:
+          locale: nb-NO
+          dateFormat: dd.MM.yyyy
+          currencyFormat: NOK
+          altinnIntegration: true
+          personalNumberValidation: true
+        compliance:
+          darkMode: false
+          rtl: false
+          highContrast: true
+          reducedMotion: true
+    metadata:
+      description: Base form template with validation and submission
+      tags:
+        - form
+        - validation
+        - base
+      compliance:
+        wcag: AAA
+        nsmClassification: RESTRICTED
+        gdprCompliant: true
+
+  - name: base-dashboard
+    path: base/base-dashboard.hbs
+    category: dashboard
+    slots:
+      - name: navigation
+        required: true
+        description: Dashboard navigation
+      - name: widgets
+        required: true
+        description: Dashboard widgets
+      - name: analytics
+        required: false
+        description: Analytics section
+      - name: user-menu
+        required: false
+        description: User menu customization
+    variants:
+      - name: admin
+        description: Admin dashboard variant
+        modifiers:
+          sidebarWidth: w-64
+          headerHeight: h-16
+          restrictedAccess: true
+      - name: norwegian-compliance
+        description: Norwegian government dashboard
+        modifiers:
+          locale: nb-NO
+          nsmBanner: true
+          auditLogging: true
+    metadata:
+      description: Base dashboard template with navigation and widgets
+      tags:
+        - dashboard
+        - analytics
+        - base
+      compliance:
+        wcag: AAA
+        nsmClassification: CONFIDENTIAL
+        gdprCompliant: true
+
+  - name: base-layout
+    path: base/base-layout.hbs
+    category: layout
+    slots:
+      - name: navigation
+        required: false
+        description: Layout navigation
+      - name: sidebar
+        required: false
+        description: Sidebar content
+      - name: main
+        required: true
+        description: Main content area
+      - name: aside
+        required: false
+        description: Aside content
+    variants:
+      - name: two-column
+        description: Two column layout
+        modifiers:
+          gridColumns: 2
+          sidebarPosition: left
+      - name: three-column
+        description: Three column layout
+        modifiers:
+          gridColumns: 3
+          sidebarPosition: left
+          asidePosition: right
+    metadata:
+      description: Base layout template for complex page structures
+      tags:
+        - layout
+        - grid
+        - base
+      compliance:
+        wcag: AAA
+        nsmClassification: OPEN
+        gdprCompliant: true
+
+childTemplates:
+  - name: login-page
+    extends: base-page
+    category: page
+    overrides:
+      content: auth/login-form.hbs
+      header: auth/minimal-header.hbs
+    additionalContext:
+      pageTitle: Login
+      requiresAuth: false
+      showFooter: false
+    removeSlots:
+      - footer
+
+  - name: dashboard-page
+    extends: base-page
+    category: page
+    overrides:
+      content: dashboard/dashboard-content.hbs
+      header: dashboard/dashboard-header.hbs
+    additionalContext:
+      pageTitle: Dashboard
+      requiresAuth: true
+      containerSize: full
+
+  - name: admin-dashboard
+    extends: base-dashboard
+    category: dashboard
+    overrides:
+      navigation: admin/sidebar-navigation.hbs
+      widgets: admin/admin-widgets.hbs
+    additionalSlots:
+      - name: userManagement
+        required: true
+        description: User management section
+      - name: systemSettings
+        required: false
+        description: System settings section
+    additionalContext:
+      restrictedAccess: true
+      minRole: admin
+
+  - name: user-dashboard
+    extends: base-dashboard
+    category: dashboard
+    overrides:
+      navigation: user/user-navigation.hbs
+      widgets: user/user-widgets.hbs
+    removeSlots:
+      - analytics
+    additionalContext:
+      restrictedAccess: false
+      showAnalytics: false
+
+  - name: contact-form
+    extends: base-form
+    category: form
+    overrides:
+      fields: forms/contact-fields.hbs
+      submission: forms/contact-submission.hbs
+    additionalContext:
+      formName: contact
+      submitEndpoint: /api/contact
+      successMessage: Thank you for contacting us!
+
+  - name: registration-form
+    extends: base-form
+    category: form
+    overrides:
+      fields: forms/registration-fields.hbs
+      validation: forms/registration-validation.hbs
+      submission: forms/registration-submission.hbs
+    additionalContext:
+      formName: registration
+      submitEndpoint: /api/register
+      requiresTermsAcceptance: true
+
+compositeTemplates:
+  - name: full-stack-app
+    layout: base-page
+    components:
+      - template: navbar
+        slot: header
+        context:
+          theme: primary
+          sticky: true
+      - template: dashboard
+        slot: content
+        condition: isAuthenticated
+      - template: login-form
+        slot: content
+        condition: "!isAuthenticated"
+      - template: footer
+        slot: footer
+    globalContext:
+      appName: Xaheen Application
+      version: 1.0.0
+      theme: light
+
+  - name: admin-portal
+    layout: admin-dashboard
+    components:
+      - template: admin-navigation
+        slot: navigation
+      - template: user-table
+        slot: userManagement
+      - template: system-metrics
+        slot: widgets
+      - template: audit-log
+        slot: analytics
+    globalContext:
+      portalName: Admin Portal
+      requiresAuth: true
+      minRole: admin
+
+  - name: norwegian-government-portal
+    layout: base-page
+    components:
+      - template: gov-header
+        slot: header
+        context:
+          showLanguageSelector: true
+          languages: ["nb-NO", "nn-NO", "en-NO"]
+      - template: altinn-integration
+        slot: content
+        condition: requiresAltinn
+      - template: gov-footer
+        slot: footer
+        context:
+          showCompliance: true
+          nsmClassification: RESTRICTED
+    globalContext:
+      locale: nb-NO
+      compliance:
+        gdpr: true
+        nsm: true
+        wcag: AAA
+
+partials:
+  - name: default-header
+    path: partials/default-header.hbs
+    description: Default header partial
+
+  - name: default-footer
+    path: partials/default-footer.hbs
+    description: Default footer partial
+
+  - name: default-validation
+    path: partials/default-validation.hbs
+    description: Default form validation
+
+  - name: default-dashboard-widgets
+    path: partials/default-dashboard-widgets.hbs
+    description: Default dashboard widgets
+
+  - name: norwegian-compliance-banner
+    path: partials/norwegian-compliance-banner.hbs
+    description: Norwegian compliance banner

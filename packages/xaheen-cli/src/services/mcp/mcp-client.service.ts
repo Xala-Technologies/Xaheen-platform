@@ -10,6 +10,7 @@ import { join, resolve, dirname } from "path";
 import { z } from "zod";
 import { logger } from "../../utils/logger.js";
 import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "xala-mcp";
+import { mcpConfigService, type MCPConfig } from "./mcp-config.service.js";
 
 // Telemetry interfaces
 export interface TelemetryEvent {
@@ -318,27 +319,54 @@ export class MCPClientService {
 	}
 
 	/**
-	 * Load and validate MCP configuration
+	 * Load and validate MCP configuration using the new config service
 	 */
 	private async loadConfiguration(projectRoot: string): Promise<void> {
-		const configPath = resolve(projectRoot, this.options.configPath || "");
-
 		try {
-			// Try to load existing configuration
-			const configContent = await fs.readFile(configPath, "utf-8");
-			const rawConfig = JSON.parse(configContent);
-			this.config = MCPConfigSchema.parse(rawConfig);
+			// Use the new MCP configuration service
+			const fullConfig = await mcpConfigService.getConfig();
+			
+			// Convert to legacy format for compatibility
+			this.config = {
+				serverUrl: fullConfig.server.url,
+				apiKey: fullConfig.server.apiKey,
+				clientId: fullConfig.server.clientId,
+				version: fullConfig.version,
+				timeout: fullConfig.server.timeout,
+				retryAttempts: fullConfig.server.retryAttempts,
+				enableTelemetry: fullConfig.security.enableTelemetry,
+				securityClassification: fullConfig.security.securityClassification,
+			};
 
-			logger.info(`📄 Loaded MCP configuration from ${configPath}`);
+			logger.info("📄 Loaded MCP configuration with hierarchical inheritance");
+			
+			if (this.options.debug) {
+				const hierarchy = mcpConfigService.getConfigHierarchy();
+				logger.debug(`Configuration sources: ${hierarchy?.sources.join(" → ")}`);
+			}
 		} catch (error) {
 			// Generate default configuration for enterprise mode
 			if (this.options.enterpriseMode) {
-				this.config = await this.generateEnterpriseConfig(projectRoot);
-				await this.saveConfiguration(configPath);
-				logger.info(`📄 Generated enterprise MCP configuration at ${configPath}`);
+				logger.info("Initializing default MCP configuration...");
+				await mcpConfigService.initializeConfig("project");
+				
+				// Retry loading after initialization
+				const fullConfig = await mcpConfigService.getConfig();
+				this.config = {
+					serverUrl: fullConfig.server.url,
+					apiKey: fullConfig.server.apiKey,
+					clientId: fullConfig.server.clientId,
+					version: fullConfig.version,
+					timeout: fullConfig.server.timeout,
+					retryAttempts: fullConfig.server.retryAttempts,
+					enableTelemetry: fullConfig.security.enableTelemetry,
+					securityClassification: fullConfig.security.securityClassification,
+				};
+				
+				logger.info("📄 Generated and loaded default MCP configuration");
 			} else {
 				throw new Error(
-					`MCP configuration not found at ${configPath}. Run 'xaheen mcp init' first.`,
+					`MCP configuration not found. Run 'xaheen mcp config init' first.`,
 				);
 			}
 		}

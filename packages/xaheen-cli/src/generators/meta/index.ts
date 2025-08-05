@@ -20,6 +20,10 @@ export { TemplateEngine } from './template-engine';
 export { GeneratorValidator } from './generator-validator';
 export { GeneratorAnalytics } from './generator-analytics';
 
+// Security and advanced features
+export { GeneratorSecurityScanner } from './generator-security';
+export { AdvancedGeneratorFeatures } from './advanced-features';
+
 // Marketplace and distribution
 export { GeneratorMarketplace } from './marketplace';
 
@@ -37,11 +41,16 @@ export async function createMetaGeneratorSystem(options: {
   marketplaceConfig?: any;
   validationRules?: any;
   analyticsConfig?: any;
+  securityConfig?: any;
+  debugOptions?: any;
 } = {}) {
   const registry = new GeneratorRegistry(options.registryPath);
   const validator = new GeneratorValidator(options.validationRules);
   const analytics = new GeneratorAnalytics(options.analyticsConfig);
+  const security = new GeneratorSecurityScanner(options.securityConfig);
   const marketplace = new GeneratorMarketplace(registry, validator, analytics, options.marketplaceConfig);
+  const composer = new GeneratorComposer(registry);
+  const advancedFeatures = new AdvancedGeneratorFeatures(registry, composer);
   const metaGenerator = new MetaGenerator();
 
   // Wait for all systems to initialize
@@ -54,7 +63,10 @@ export async function createMetaGeneratorSystem(options: {
     registry,
     validator,
     analytics,
+    security,
     marketplace,
+    composer,
+    advancedFeatures,
     metaGenerator,
     
     // Convenience methods
@@ -92,12 +104,46 @@ export async function createMetaGeneratorSystem(options: {
       return analytics.getGeneratorAnalytics(generatorId);
     },
 
+    async scanGeneratorSecurity(generatorId: string) {
+      const entry = await registry.getGenerator(generatorId);
+      if (!entry) {
+        throw new Error(`Generator not found: ${generatorId}`);
+      }
+      return security.scanGenerator(entry);
+    },
+
+    async executeConditionalGeneration(generatorId: string, baseOptions: any, conditions: any) {
+      return advancedFeatures.executeConditionalGeneration(generatorId, baseOptions, conditions);
+    },
+
+    async executeBatchGeneration(targets: any[]) {
+      return advancedFeatures.executeBatchGeneration({
+        targets,
+        parallelism: 3,
+        failureStrategy: 'continue'
+      });
+    },
+
+    async debugGeneration(generatorId: string, options: any, debugOptions: any) {
+      return advancedFeatures.startDebugSession(generatorId, options, debugOptions);
+    },
+
+    async inspectTemplate(templatePath: string) {
+      return advancedFeatures.inspectTemplate(templatePath);
+    },
+
+    async composeGenerators(composition: any) {
+      return composer.executeComposition(composition);
+    },
+
     // Cleanup
     async dispose() {
       await Promise.all([
         registry.dispose?.(),
         analytics.dispose(),
-        marketplace.dispose()
+        security.dispose(),
+        marketplace.dispose(),
+        advancedFeatures.dispose()
       ]);
     }
   };

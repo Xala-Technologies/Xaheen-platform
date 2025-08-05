@@ -1,0 +1,189 @@
+{{!-- Admin Dashboard Widgets --}}
+{{#if useSemanticUI}}
+<Grid columns={{ base: 1, md: 2, lg: 4 }} gap="lg">
+  {{!-- Total Users Widget --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <div className="flex items-center justify-between">
+        <div className="p-3 {{#if (variant 'dark')}}bg-blue-900{{else}}bg-blue-100{{/if}} rounded-lg">
+          <svg className="w-8 h-8 {{#if (variant 'dark')}}text-blue-300{{else}}text-blue-600{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        {{#if (eq nsmClassification 'CONFIDENTIAL')}}
+        <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-800">{{nsmClassification}}</span>
+        {{/if}}
+      </div>
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.totalUsers')}{{else}}Total Users{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        {{#if (variant 'norwegian-compliance')}}{norwegianNumber(15678)}{{else}}15,678{{/if}}
+      </Text>
+      <div className="flex items-center gap-2">
+        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <Text variant="body-sm" className="{{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}}">
+          +23% {{#if useI18n}}{t('admin.widgets.thisMonth')}{{else}}this month{{/if}}
+        </Text>
+      </div>
+    </Stack>
+  </Card>
+
+  {{!-- Active Sessions Widget --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <div className="flex items-center justify-between">
+        <div className="p-3 {{#if (variant 'dark')}}bg-green-900{{else}}bg-green-100{{/if}} rounded-lg">
+          <svg className="w-8 h-8 {{#if (variant 'dark')}}text-green-300{{else}}text-green-600{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.activeSessions')}{{else}}Active Sessions{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        {{#if (variant 'norwegian-compliance')}}{norwegianNumber(3429)}{{else}}3,429{{/if}}
+      </Text>
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <Text variant="body-sm" className="{{#if (variant 'dark')}}text-gray-400{{else}}text-gray-600{{/if}}">
+          {{#if useI18n}}{t('admin.widgets.live')}{{else}}Live{{/if}}
+        </Text>
+      </div>
+    </Stack>
+  </Card>
+
+  {{!-- System Health Widget --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <div className="flex items-center justify-between">
+        <div className="p-3 {{#if (variant 'dark')}}bg-purple-900{{else}}bg-purple-100{{/if}} rounded-lg">
+          <svg className="w-8 h-8 {{#if (variant 'dark')}}text-purple-300{{else}}text-purple-600{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+      </div>
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.systemHealth')}{{else}}System Health{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        99.9%
+      </Text>
+      <div className="flex items-center gap-2">
+        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+        <Text variant="body-sm" className="{{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}}">
+          {{#if useI18n}}{t('admin.widgets.operational')}{{else}}Operational{{/if}}
+        </Text>
+      </div>
+    </Stack>
+  </Card>
+
+  {{!-- Security Alerts Widget --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <div className="flex items-center justify-between">
+        <div className="p-3 {{#if (variant 'dark')}}bg-red-900{{else}}bg-red-100{{/if}} rounded-lg">
+          <svg className="w-8 h-8 {{#if (variant 'dark')}}text-red-300{{else}}text-red-600{{/if}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        {{#if (eq nsmClassification 'SECRET')}}
+        <span className="px-2 py-1 text-xs rounded bg-red-100 text-red-800">{{nsmClassification}}</span>
+        {{/if}}
+      </div>
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.securityAlerts')}{{else}}Security Alerts{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        3
+      </Text>
+      <Text variant="body-sm" className="{{#if (variant 'dark')}}text-red-400{{else}}text-red-600{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.requiresAttention')}{{else}}Requires attention{{/if}}
+      </Text>
+    </Stack>
+  </Card>
+</Grid>
+
+{{!-- Activity Chart --}}
+<Card className="mt-6 p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+  <Stack gap="lg">
+    <div className="flex items-center justify-between">
+      <Text variant="h3" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.userActivity')}{{else}}User Activity{{/if}}
+      </Text>
+      <select className="px-4 py-2 {{#if (variant 'dark')}}bg-gray-700 text-gray-300{{else}}bg-gray-100 text-gray-700{{/if}} rounded-lg">
+        <option>{{#if useI18n}}{t('admin.widgets.last7Days')}{{else}}Last 7 days{{/if}}</option>
+        <option>{{#if useI18n}}{t('admin.widgets.last30Days')}{{else}}Last 30 days{{/if}}</option>
+        <option>{{#if useI18n}}{t('admin.widgets.last90Days')}{{else}}Last 90 days{{/if}}</option>
+      </select>
+    </div>
+    <div className="h-64 flex items-center justify-center {{#if (variant 'dark')}}bg-gray-700{{else}}bg-gray-100{{/if}} rounded-lg">
+      <Text variant="body" className="{{#if (variant 'dark')}}text-gray-400{{else}}text-gray-500{{/if}}">
+        {{#if useI18n}}{t('admin.widgets.chartPlaceholder')}{{else}}Activity chart would be rendered here{{/if}}
+      </Text>
+    </div>
+  </Stack>
+</Card>
+
+{{!-- Recent Actions Table --}}
+<Card className="mt-6 p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+  <Stack gap="lg">
+    <Text variant="h3" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+      {{#if useI18n}}{t('admin.widgets.recentActions')}{{else}}Recent Admin Actions{{/if}}
+    </Text>
+    <div className="overflow-x-auto">
+      <table className="w-full" {{#if compliance.wcag}}role="table"{{/if}}>
+        <thead>
+          <tr className="border-b {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-200{{/if}}">
+            <th className="text-left py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+              {{#if useI18n}}{t('admin.widgets.user')}{{else}}User{{/if}}
+            </th>
+            <th className="text-left py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+              {{#if useI18n}}{t('admin.widgets.action')}{{else}}Action{{/if}}
+            </th>
+            <th className="text-left py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+              {{#if useI18n}}{t('admin.widgets.timestamp')}{{else}}Timestamp{{/if}}
+            </th>
+            <th className="text-left py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+              {{#if useI18n}}{t('admin.widgets.status')}{{else}}Status{{/if}}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border-b {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-100{{/if}}">
+            <td className="py-3 px-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm">
+                  JD
+                </div>
+                <span className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">John Doe</span>
+              </div>
+            </td>
+            <td className="py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-700{{/if}}">
+              Updated user permissions
+            </td>
+            <td className="py-3 px-4 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-700{{/if}}">
+              {{#if (variant 'norwegian-compliance')}}{norwegianDate(new Date())}{{else}}{new Date().toLocaleDateString()}{{/if}}
+            </td>
+            <td className="py-3 px-4">
+              <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                {{#if useI18n}}{t('admin.widgets.success')}{{else}}Success{{/if}}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </Stack>
+</Card>
+{{else}}
+{{!-- Non-semantic version --}}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  <!-- Similar content without semantic UI components -->
+</div>
+{{/if}}

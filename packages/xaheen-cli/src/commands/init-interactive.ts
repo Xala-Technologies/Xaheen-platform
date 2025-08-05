@@ -7,7 +7,7 @@
 import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync, readFileSync } from "fs";
-// import { createProject } from '../services/project-creator.js'; // TODO: Implement project creator service
+import { createProject } from '../services/project-creator.js';
 import inquirer from "inquirer";
 import { join } from "path";
 import { z } from "zod";
@@ -827,11 +827,7 @@ async function createProjectWithConfig(
 	};
 
 	// Create the project
-	// TODO: Implement actual project creation
-	logger.info(
-		"Project creation would be executed here with options:",
-		projectOptions,
-	);
+	await createProject(projectOptions);
 }
 
 /**

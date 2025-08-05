@@ -1,0 +1,236 @@
+/**
+ * {{className}} - Static Next.js Page
+ * Generated at: {{generatedAt}}
+ */
+
+import { Metadata } from 'next';
+{{#if useSemanticUI}}
+{{semanticImports}}
+{{/if}}
+{{#if useI18n}}
+{{i18nHelpers}}
+{{/if}}
+
+// SEO Configuration
+export const metadata: Metadata = {
+  title: '{{className}}',
+  description: '{{className}} page with full SEO optimization',
+  {{#if hasFeature 'seo'}}
+  openGraph: {
+    title: '{{className}}',
+    description: '{{className}} page',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '{{className}}',
+    description: '{{className}} page',
+  },
+  {{/if}}
+};
+
+{{#if useI18n}}
+interface {{className}}Props {
+  params: { locale: string };
+}
+
+export default function {{className}}({ params: { locale } }: {{className}}Props): JSX.Element {
+  const { t } = useTranslation(locale);
+{{else}}
+export default function {{className}}(): JSX.Element {
+{{/if}}
+  {{#if hasFeature 'error'}}
+  try {
+  {{/if}}
+    return (
+      {{#if useSemanticUI}}
+      <Container maxWidth="lg" className="py-8">
+        <Stack spacing={6}>
+          <Text variant="h1" className="text-center font-bold text-gray-900">
+            {{#if useI18n}}
+            {t('{{camelCase name}}.title', '{{className}}')}
+            {{else}}
+            {{className}}
+            {{/if}}
+          </Text>
+          
+          {{#if hasFeature 'loading'}}
+          <Suspense fallback={
+            <Card className="p-8">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </Card>
+          }>
+          {{/if}}
+          
+          <Card className="p-8 shadow-lg">
+            <Stack spacing={4}>
+              <Text variant="h2" className="text-xl font-semibold text-gray-800">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.welcome', 'Welcome to {{className}}')}
+                {{else}}
+                Welcome to {{className}}
+                {{/if}}
+              </Text>
+              
+              <Text className="text-gray-600">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.description', 'This is your {{className}} page.')}
+                {{else}}
+                This is your {{className}} page.
+                {{/if}}
+              </Text>
+              
+              {{#if hasFeature 'auth'}}
+              <Button 
+                variant="primary" 
+                className="w-fit"
+                onClick={() => {
+                  // Add authentication logic here
+                }}
+              >
+                {{#if useI18n}}
+                {t('common.login', 'Login')}
+                {{else}}
+                Login
+                {{/if}}
+              </Button>
+              {{/if}}
+            </Stack>
+          </Card>
+          
+          {{#if hasFeature 'loading'}}
+          </Suspense>
+          {{/if}}
+          
+          {{#if norwegian}}
+          {/* Norwegian UU Compliance Banner */}
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <Text className="text-sm text-blue-800">
+              {{#if useI18n}}
+              {t('compliance.uu.notice', 'This page follows Norwegian UU accessibility guidelines')}
+              {{else}}
+              This page follows Norwegian UU accessibility guidelines
+              {{/if}}
+            </Text>
+          </div>
+          {{/if}}
+        </Stack>
+      </Container>
+      {{else}}
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              {{#if useI18n}}
+              {t('{{camelCase name}}.title', '{{className}}')}
+              {{else}}
+              {{className}}
+              {{/if}}
+            </h1>
+            
+            <p className="text-xl text-gray-600">
+              {{#if useI18n}}
+              {t('{{camelCase name}}.subtitle', 'Welcome to your new page')}
+              {{else}}
+              Welcome to your new page
+              {{/if}}
+            </p>
+          </div>
+          
+          {{#if hasFeature 'loading'}}
+          <div className="mb-8">
+            {/* Loading placeholder */}
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+          {{/if}}
+          
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              {{#if useI18n}}
+              {t('{{camelCase name}}.content.title', 'Page Content')}
+              {{else}}
+              Page Content
+              {{/if}}
+            </h2>
+            
+            <div className="prose max-w-none">
+              <p className="text-gray-600 mb-4">
+                {{#if useI18n}}
+                {t('{{camelCase name}}.content.description', 'Add your page content here.')}
+                {{else}}
+                Add your page content here.
+                {{/if}}
+              </p>
+              
+              {{#if hasFeature 'auth'}}
+              <div className="mt-6">
+                <button 
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  onClick={() => {
+                    // Add authentication logic here
+                  }}
+                >
+                  {{#if useI18n}}
+                  {t('common.getStarted', 'Get Started')}
+                  {{else}}
+                  Get Started
+                  {{/if}}
+                </button>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+          
+          {{#if norwegian}}
+          {/* Norwegian Compliance */}
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <p className="text-sm text-blue-800">
+                {{#if useI18n}}
+                {t('compliance.accessibility', 'This page is designed for universal accessibility (UU)')}
+                {{else}}
+                This page is designed for universal accessibility (UU)
+                {{/if}}
+              </p>
+            </div>
+          </div>
+          {{/if}}
+        </div>
+      </main>
+      {{/if}}
+    );
+  {{#if hasFeature 'error'}}
+  } catch (error) {
+    console.error('{{className}} page error:', error);
+    return (
+      <div className="min-h-screen bg-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-800 mb-4">
+            {{#if useI18n}}
+            {t('errors.pageError', 'Page Error')}
+            {{else}}
+            Page Error
+            {{/if}}
+          </h1>
+          <p className="text-red-600">
+            {{#if useI18n}}
+            {t('errors.tryAgain', 'Please try refreshing the page')}
+            {{else}}
+            Please try refreshing the page
+            {{/if}}  
+          </p>
+        </div>
+      </div>
+    );
+  }
+  {{/if}}
+}

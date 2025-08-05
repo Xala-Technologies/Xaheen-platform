@@ -1,0 +1,74 @@
+{
+  "name": "sample-norwegian-compliance-plugin",
+  "version": "1.0.0",
+  "description": "Sample MCP plugin for Norwegian compliance validation",
+  "author": "Xaheen Enterprise",
+  "license": "MIT",
+  "homepage": "https://xaheen.com/plugins/norwegian-compliance",
+  "repository": "https://github.com/xaheen/mcp-plugins/norwegian-compliance",
+  "keywords": ["norwegian", "compliance", "gdpr", "nsm", "validation"],
+  "main": "index.js",
+  "type": "validator",
+  "category": "norwegian-compliance",
+  "engines": {
+    "node": ">=18.0.0",
+    "xaheen": ">=3.0.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "permissions": [
+    "read:project",
+    "mcp:analyze"
+  ],
+  "domainPatterns": {
+    "norwegian-compliance": [
+      "validate-gdpr-compliance",
+      "check-nsm-classification",
+      "audit-data-retention",
+      "verify-privacy-policy"
+    ],
+    "security": [
+      "scan-personal-data",
+      "check-encryption-requirements"
+    ]
+  },
+  "supportedPlatforms": ["all"],
+  "config": {
+    "schema": {
+      "nsmClassification": {
+        "type": "string",
+        "enum": ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"],
+        "default": "OPEN"
+      },
+      "gdprStrictMode": {
+        "type": "boolean",
+        "default": true
+      },
+      "auditLevel": {
+        "type": "string",
+        "enum": ["basic", "detailed", "comprehensive"],
+        "default": "detailed"
+      }
+    },
+    "defaults": {
+      "nsmClassification": "OPEN",
+      "gdprStrictMode": true,
+      "auditLevel": "detailed"
+    },
+    "required": ["nsmClassification"]
+  },
+  "hooks": {
+    "beforeAnalyze": "validateCompliance",
+    "afterGenerate": "auditGenerated",
+    "validate": "runComplianceCheck"
+  },
+  "metadata": {
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z",
+    "downloadCount": 0,
+    "rating": 5.0,
+    "verified": true,
+    "norwegianCompliant": true,
+    "securityAudited": true
+  }
+}

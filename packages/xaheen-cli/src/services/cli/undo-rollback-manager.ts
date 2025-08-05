@@ -23,6 +23,11 @@ export enum FileOperationType {
 	DELETE = "delete",
 	MOVE = "move",
 	COPY = "copy",
+	SYMLINK = "symlink",
+	CHMOD = "chmod",
+	ENV_VARIABLE = "env_variable",
+	PACKAGE_INSTALL = "package_install",
+	DIRECTORY_CREATE = "directory_create",
 }
 
 /**
@@ -80,6 +85,54 @@ export interface RollbackResult {
 	readonly errors: string[];
 	readonly warnings: string[];
 	readonly skippedOperations: string[];
+	readonly duration: number;
+	readonly riskLevel: 'low' | 'medium' | 'high';
+}
+
+/**
+ * Checkpoint data
+ */
+export interface Checkpoint {
+	readonly id: string;
+	readonly name: string;
+	readonly description: string;
+	readonly timestamp: string;
+	readonly transactionIds: string[];
+	readonly metadata: Record<string, any>;
+}
+
+/**
+ * Rollback preview
+ */
+export interface RollbackPreview {
+	readonly operations: Array<{
+		readonly type: string;
+		readonly path: string;
+		readonly action: string;
+		readonly hasBackup: boolean;
+		readonly riskLevel: 'low' | 'medium' | 'high';
+		readonly estimatedTime: number;
+	}>;
+	readonly warnings: string[];
+	readonly totalOperations: number;
+	readonly estimatedDuration: number;
+	readonly overallRiskLevel: 'low' | 'medium' | 'high';
+	readonly canProceed: boolean;
+}
+
+/**
+ * Session statistics
+ */
+export interface SessionStatistics {
+	readonly totalTransactions: number;
+	readonly completedTransactions: number;
+	readonly failedTransactions: number;
+	readonly rolledBackTransactions: number;
+	readonly totalOperations: number;
+	readonly averageOperationsPerTransaction: number;
+	readonly sessionDuration: number;
+	readonly mostCommonOperationType: string;
+	readonly riskDistribution: Record<string, number>;
 }
 
 /**
@@ -95,37 +148,47 @@ export interface TransactionEvents {
 }
 
 /**
- * Undo/Rollback manager
+ * Enhanced Undo/Rollback manager with modern CLI patterns
  */
 export class UndoRollbackManager extends EventEmitter {
 	private readonly projectPath: string;
 	private readonly transactionsPath: string;
 	private readonly backupsPath: string;
+	private readonly checkpointsPath: string;
 	private readonly maxTransactions: number;
 	private currentTransaction: Transaction | null = null;
 	private readonly transactionHistory: Map<string, Transaction> = new Map();
+	private readonly checkpoints: Map<string, Checkpoint> = new Map();
+	private readonly sessionStartTime: number = Date.now();
+	private operationQueue: Array<() => Promise<void>> = [];
+	private parallelRollbackEnabled: boolean = false;
 
-	constructor(projectPath: string, maxTransactions: number = 50) {
+	constructor(projectPath: string, maxTransactions: number = 50, options: {
+		readonly enableParallelRollback?: boolean;
+	} = {}) {
 		super();
 		this.projectPath = projectPath;
 		this.maxTransactions = maxTransactions;
 		this.transactionsPath = join(projectPath, ".xaheen", "transactions");
 		this.backupsPath = join(projectPath, ".xaheen", "backups");
+		this.checkpointsPath = join(projectPath, ".xaheen", "checkpoints");
+		this.parallelRollbackEnabled = options.enableParallelRollback ?? false;
 	}
 
 	/**
-	 * Initialize undo/rollback system
+	 * Initialize enhanced undo/rollback system
 	 */
 	public async initialize(): Promise<void> {
 		try {
 			// Ensure directories exist
 			await this.ensureDirectories();
 
-			// Load transaction history
+			// Load transaction history and checkpoints
 			await this.loadTransactionHistory();
+			await this.loadCheckpoints();
 
 			logger.info(
-				`Undo/Rollback system initialized with ${this.transactionHistory.size} transactions`,
+				`Enhanced Undo/Rollback system initialized with ${this.transactionHistory.size} transactions and ${this.checkpoints.size} checkpoints`,
 			);
 		} catch (error) {
 			logger.error("Failed to initialize undo/rollback system:", error);
@@ -281,83 +344,14 @@ export class UndoRollbackManager extends EventEmitter {
 	}
 
 	/**
-	 * Rollback transaction
+	 * Rollback transaction (legacy method, use rollbackTransactionEnhanced for better features)
 	 */
 	public async rollbackTransaction(
 		transactionId: string,
 		options: RollbackOptions = {},
 	): Promise<RollbackResult> {
-		const result: RollbackResult = {
-			success: false,
-			transactionId,
-			rolledBackOperations: 0,
-			errors: [],
-			warnings: [],
-			skippedOperations: [],
-		};
-
-		try {
-			const transaction = this.transactionHistory.get(transactionId);
-			if (!transaction) {
-				result.errors.push(`Transaction ${transactionId} not found`);
-				return result;
-			}
-
-			if (transaction.status === "rolled_back") {
-				result.warnings.push("Transaction already rolled back");
-				result.success = true;
-				return result;
-			}
-
-			this.emit("rollbackStarted", transactionId);
-
-			logger.info(`Starting rollback of transaction: ${transaction.name}`);
-
-			// Rollback operations in reverse order
-			const operations = [...transaction.operations].reverse();
-
-			for (const operation of operations) {
-				try {
-					const rollbackSuccess = await this.rollbackOperation(
-						operation,
-						options,
-					);
-					
-					if (rollbackSuccess) {
-						result.rolledBackOperations++;
-					} else {
-						result.skippedOperations.push(operation.path);
-					}
-				} catch (error) {
-					const errorMsg = `Failed to rollback operation ${operation.id}: ${error}`;
-					result.errors.push(errorMsg);
-					logger.error(errorMsg);
-
-					if (!options.force) {
-						break; // Stop on first error unless force is enabled
-					}
-				}
-			}
-
-			// Update transaction status
-			if (result.errors.length === 0) {
-				transaction.status = "rolled_back";
-				transaction.rollbackTimestamp = new Date().toISOString();
-				await this.saveTransaction(transaction);
-				result.success = true;
-			}
-
-			this.emit("rollbackCompleted", result);
-
-			logger.info(
-				`Rollback completed: ${result.rolledBackOperations}/${operations.length} operations`,
-			);
-		} catch (error) {
-			result.errors.push(`Rollback failed: ${error}`);
-			logger.error("Transaction rollback failed:", error);
-		}
-
-		return result;
+		// Delegate to enhanced method for consistency
+		return this.rollbackTransactionEnhanced(transactionId, options);
 	}
 
 	/**
@@ -407,19 +401,11 @@ export class UndoRollbackManager extends EventEmitter {
 	}
 
 	/**
-	 * Preview rollback changes
+	 * Enhanced rollback preview with risk assessment
 	 */
 	public async previewRollback(
 		transactionId: string,
-	): Promise<{
-		operations: Array<{
-			type: string;
-			path: string;
-			action: string;
-			hasBackup: boolean;
-		}>;
-		warnings: string[];
-	}> {
+	): Promise<RollbackPreview> {
 		const transaction = this.transactionHistory.get(transactionId);
 		if (!transaction) {
 			throw new Error(`Transaction ${transactionId} not found`);
@@ -427,44 +413,91 @@ export class UndoRollbackManager extends EventEmitter {
 
 		const operations = [];
 		const warnings = [];
+		let totalEstimatedTime = 0;
+		let highRiskOperations = 0;
+		let canProceed = true;
 
 		for (const op of [...transaction.operations].reverse()) {
 			const hasBackup = await this.hasBackup(op.id);
 			let action = "";
+			let riskLevel: 'low' | 'medium' | 'high' = 'low';
+			let estimatedTime = 100; // milliseconds
 
 			switch (op.type) {
 				case FileOperationType.CREATE:
 					action = "Delete created file";
+					riskLevel = 'low';
+					estimatedTime = 50;
 					break;
 				case FileOperationType.UPDATE:
 					action = hasBackup ? "Restore from backup" : "Cannot restore (no backup)";
+					riskLevel = hasBackup ? 'low' : 'high';
+					estimatedTime = hasBackup ? 150 : 0;
 					if (!hasBackup) {
 						warnings.push(`No backup available for ${op.path}`);
+						canProceed = false;
 					}
 					break;
 				case FileOperationType.DELETE:
 					action = hasBackup ? "Restore deleted file" : "Cannot restore (no backup)";
+					riskLevel = hasBackup ? 'medium' : 'high';
+					estimatedTime = hasBackup ? 200 : 0;
 					if (!hasBackup) {
 						warnings.push(`No backup available for ${op.path}`);
+						canProceed = false;
 					}
 					break;
 				case FileOperationType.MOVE:
 					action = "Move file back to original location";
+					riskLevel = existsSync(op.path) ? 'low' : 'high';
+					estimatedTime = 100;
 					break;
 				case FileOperationType.COPY:
 					action = "Delete copied file";
+					riskLevel = 'low';
+					estimatedTime = 50;
 					break;
+				case FileOperationType.SYMLINK:
+					action = "Remove symbolic link";
+					riskLevel = 'low';
+					estimatedTime = 30;
+					break;
+				case FileOperationType.PACKAGE_INSTALL:
+					action = "Uninstall package";
+					riskLevel = 'medium';
+					estimatedTime = 5000;
+					break;
+				default:
+					action = "Unknown operation";
+					riskLevel = 'medium';
+					estimatedTime = 100;
 			}
+
+			if (riskLevel === 'high') highRiskOperations++;
+			totalEstimatedTime += estimatedTime;
 
 			operations.push({
 				type: op.type,
 				path: op.path,
 				action,
 				hasBackup,
+				riskLevel,
+				estimatedTime,
 			});
 		}
 
-		return { operations, warnings };
+		const overallRiskLevel: 'low' | 'medium' | 'high' = 
+			highRiskOperations > 0 ? 'high' :
+			operations.filter(op => op.riskLevel === 'medium').length > operations.length / 2 ? 'medium' : 'low';
+
+		return {
+			operations,
+			warnings,
+			totalOperations: operations.length,
+			estimatedDuration: totalEstimatedTime,
+			overallRiskLevel,
+			canProceed,
+		};
 	}
 
 	/**
@@ -508,10 +541,290 @@ export class UndoRollbackManager extends EventEmitter {
 		}
 	}
 
+	/**
+	 * Create a checkpoint for selective rollback
+	 */
+	public async createCheckpoint(
+		name: string,
+		description: string,
+		transactionIds?: string[],
+		metadata?: Record<string, any>,
+	): Promise<string> {
+		try {
+			const checkpointId = this.generateCheckpointId();
+			const relevantTransactionIds = transactionIds || 
+				Array.from(this.transactionHistory.keys()).slice(-10); // Last 10 transactions
+
+			const checkpoint: Checkpoint = {
+				id: checkpointId,
+				name,
+				description,
+				timestamp: new Date().toISOString(),
+				transactionIds: relevantTransactionIds,
+				metadata: metadata || {},
+			};
+
+			this.checkpoints.set(checkpointId, checkpoint);
+			await this.saveCheckpoint(checkpoint);
+
+			logger.info(`Created checkpoint: ${name} (${checkpointId})`);
+			return checkpointId;
+		} catch (error) {
+			logger.error("Failed to create checkpoint:", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Rollback to a specific checkpoint
+	 */
+	public async rollbackToCheckpoint(
+		checkpointId: string,
+		options: RollbackOptions = {},
+	): Promise<RollbackResult[]> {
+		const checkpoint = this.checkpoints.get(checkpointId);
+		if (!checkpoint) {
+			throw new Error(`Checkpoint ${checkpointId} not found`);
+		}
+
+		logger.info(`Rolling back to checkpoint: ${checkpoint.name}`);
+
+		const results: RollbackResult[] = [];
+		const transactionsToRollback = checkpoint.transactionIds
+			.filter(id => this.transactionHistory.has(id))
+			.reverse(); // Rollback in reverse order
+
+		if (this.parallelRollbackEnabled && !options.interactive) {
+			// Parallel rollback for independent operations
+			const rollbackPromises = transactionsToRollback.map(async (txId) => {
+				return this.rollbackTransaction(txId, options);
+			});
+
+			const parallelResults = await Promise.allSettled(rollbackPromises);
+			for (const result of parallelResults) {
+				if (result.status === 'fulfilled') {
+					results.push(result.value);
+				} else {
+					logger.error('Parallel rollback failed:', result.reason);
+				}
+			}
+		} else {
+			// Sequential rollback
+			for (const txId of transactionsToRollback) {
+				const result = await this.rollbackTransaction(txId, options);
+				results.push(result);
+				
+				if (!result.success && !options.force) {
+					logger.warn('Rollback failed, stopping checkpoint rollback');
+					break;
+				}
+			}
+		}
+
+		return results;
+	}
+
+	/**
+	 * Get all checkpoints
+	 */
+	public getCheckpoints(): readonly Checkpoint[] {
+		return Array.from(this.checkpoints.values()).sort(
+			(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+		);
+	}
+
+	/**
+	 * Interactive rollback selector
+	 */
+	public async selectiveRollback(
+		transactionIds: string[],
+		options: RollbackOptions = {},
+	): Promise<RollbackResult[]> {
+		logger.info(`Starting selective rollback of ${transactionIds.length} transactions`);
+
+		const results: RollbackResult[] = [];
+		const validTransactionIds = transactionIds.filter(id => 
+			this.transactionHistory.has(id)
+		);
+
+		if (validTransactionIds.length === 0) {
+			throw new Error('No valid transactions found for rollback');
+		}
+
+		// Show preview for each transaction
+		for (const txId of validTransactionIds) {
+			const preview = await this.previewRollback(txId);
+			logger.info(`\n${chalk.cyan('Transaction:')} ${txId}`);
+			logger.info(`${chalk.yellow('Risk Level:')} ${preview.overallRiskLevel}`);
+			logger.info(`${chalk.blue('Operations:')} ${preview.totalOperations}`);
+			logger.info(`${chalk.green('Estimated Time:')} ${preview.estimatedDuration}ms`);
+
+			if (preview.warnings.length > 0) {
+				logger.warn(`${chalk.red('Warnings:')}`);
+				preview.warnings.forEach(warning => logger.warn(`  - ${warning}`));
+			}
+		}
+
+		// Execute rollbacks
+		for (const txId of validTransactionIds.reverse()) {
+			const result = await this.rollbackTransaction(txId, options);
+			results.push(result);
+			
+			if (!result.success && !options.force) {
+				logger.warn('Rollback failed, stopping selective rollback');
+				break;
+			}
+		}
+
+		return results;
+	}
+
+	/**
+	 * Get session statistics
+	 */
+	public getSessionStatistics(): SessionStatistics {
+		const transactions = Array.from(this.transactionHistory.values());
+		const sessionDuration = Date.now() - this.sessionStartTime;
+
+		const completedTransactions = transactions.filter(tx => tx.status === 'completed').length;
+		const failedTransactions = transactions.filter(tx => tx.status === 'failed').length;
+		const rolledBackTransactions = transactions.filter(tx => tx.status === 'rolled_back').length;
+
+		const totalOperations = transactions.reduce((sum, tx) => sum + tx.operations.length, 0);
+		const averageOperationsPerTransaction = transactions.length > 0 
+			? totalOperations / transactions.length 
+			: 0;
+
+		// Count operation types
+		const operationCounts: Record<string, number> = {};
+		transactions.forEach(tx => {
+			tx.operations.forEach(op => {
+				operationCounts[op.type] = (operationCounts[op.type] || 0) + 1;
+			});
+		});
+
+		const mostCommonOperationType = Object.entries(operationCounts)
+			.sort(([,a], [,b]) => b - a)[0]?.[0] || 'none';
+
+		// Risk distribution (mock calculation)
+		const riskDistribution = {
+			low: Math.floor(totalOperations * 0.6),
+			medium: Math.floor(totalOperations * 0.3),
+			high: Math.floor(totalOperations * 0.1),
+		};
+
+		return {
+			totalTransactions: transactions.length,
+			completedTransactions,
+			failedTransactions,
+			rolledBackTransactions,
+			totalOperations,
+			averageOperationsPerTransaction,
+			sessionDuration,
+			mostCommonOperationType,
+			riskDistribution,
+		};
+	}
+
+	/**
+	 * Enhanced rollback with better error handling and progress tracking
+	 */
+	public async rollbackTransactionEnhanced(
+		transactionId: string,
+		options: RollbackOptions = {},
+	): Promise<RollbackResult> {
+		const startTime = Date.now();
+		const result: RollbackResult = {
+			success: false,
+			transactionId,
+			rolledBackOperations: 0,
+			errors: [],
+			warnings: [],
+			skippedOperations: [],
+			duration: 0,
+			riskLevel: 'low',
+		};
+
+		try {
+			const transaction = this.transactionHistory.get(transactionId);
+			if (!transaction) {
+				result.errors.push(`Transaction ${transactionId} not found`);
+				return result;
+			}
+
+			if (transaction.status === "rolled_back") {
+				result.warnings.push("Transaction already rolled back");
+				result.success = true;
+				result.duration = Date.now() - startTime;
+				return result;
+			}
+
+			// Get rollback preview for risk assessment
+			const preview = await this.previewRollback(transactionId);
+			result.riskLevel = preview.overallRiskLevel;
+
+			if (!preview.canProceed && !options.force) {
+				result.errors.push('Rollback cannot proceed due to missing backups');
+				result.duration = Date.now() - startTime;
+				return result;
+			}
+
+			this.emit("rollbackStarted", transactionId);
+			logger.info(`Starting enhanced rollback of transaction: ${transaction.name}`);
+
+			// Rollback operations in reverse order
+			const operations = [...transaction.operations].reverse();
+
+			for (const operation of operations) {
+				try {
+					const rollbackSuccess = await this.rollbackOperation(
+						operation,
+						options,
+					);
+					
+					if (rollbackSuccess) {
+						result.rolledBackOperations++;
+					} else {
+						result.skippedOperations.push(operation.path);
+					}
+				} catch (error) {
+					const errorMsg = `Failed to rollback operation ${operation.id}: ${error}`;
+					result.errors.push(errorMsg);
+					logger.error(errorMsg);
+
+					if (!options.force) {
+						break; // Stop on first error unless force is enabled
+					}
+				}
+			}
+
+			// Update transaction status
+			if (result.errors.length === 0) {
+				transaction.status = "rolled_back";
+				transaction.rollbackTimestamp = new Date().toISOString();
+				await this.saveTransaction(transaction);
+				result.success = true;
+			}
+
+			result.duration = Date.now() - startTime;
+			this.emit("rollbackCompleted", result);
+
+			logger.info(
+				`Enhanced rollback completed in ${result.duration}ms: ${result.rolledBackOperations}/${operations.length} operations`,
+			);
+		} catch (error) {
+			result.errors.push(`Rollback failed: ${error}`);
+			result.duration = Date.now() - startTime;
+			logger.error("Enhanced transaction rollback failed:", error);
+		}
+
+		return result;
+	}
+
 	// Private helper methods
 
 	private async ensureDirectories(): Promise<void> {
-		const dirs = [this.transactionsPath, this.backupsPath];
+		const dirs = [this.transactionsPath, this.backupsPath, this.checkpointsPath];
 		
 		for (const dir of dirs) {
 			if (!existsSync(dir)) {
@@ -784,6 +1097,45 @@ export class UndoRollbackManager extends EventEmitter {
 		} catch (error) {
 			logger.warn(`Failed to remove transaction ${transactionId}:`, error);
 		}
+	}
+
+	private async loadCheckpoints(): Promise<void> {
+		try {
+			if (!existsSync(this.checkpointsPath)) {
+				return;
+			}
+
+			const files = await readdir(this.checkpointsPath);
+			
+			for (const file of files) {
+				if (file.endsWith(".json")) {
+					try {
+						const filePath = join(this.checkpointsPath, file);
+						const content = await readFile(filePath, "utf8");
+						const checkpoint = JSON.parse(content) as Checkpoint;
+						this.checkpoints.set(checkpoint.id, checkpoint);
+					} catch (error) {
+						logger.warn(`Failed to load checkpoint ${file}:`, error);
+					}
+				}
+			}
+		} catch (error) {
+			logger.warn("Failed to load checkpoints:", error);
+		}
+	}
+
+	private async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+		try {
+			const filePath = join(this.checkpointsPath, `${checkpoint.id}.json`);
+			await writeFile(filePath, JSON.stringify(checkpoint, null, 2));
+		} catch (error) {
+			logger.error(`Failed to save checkpoint ${checkpoint.id}:`, error);
+			throw error;
+		}
+	}
+
+	private generateCheckpointId(): string {
+		return `cp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	}
 }
 

@@ -1,0 +1,148 @@
+{{!-- Default Dashboard Widgets Partial --}}
+{{#if useSemanticUI}}
+<Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+  {{!-- Stats Widget 1 --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('dashboard.totalUsers')}{{else}}Total Users{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        1,234
+      </Text>
+      <Text variant="body-sm" className="{{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}}">
+        +12% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+      </Text>
+    </Stack>
+  </Card>
+
+  {{!-- Stats Widget 2 --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('dashboard.revenue')}{{else}}Revenue{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        {{#if (variant 'norwegian-compliance')}}
+        {norwegianCurrency(45678)}
+        {{else}}
+        $45,678
+        {{/if}}
+      </Text>
+      <Text variant="body-sm" className="{{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}}">
+        +8% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+      </Text>
+    </Stack>
+  </Card>
+
+  {{!-- Stats Widget 3 --}}
+  <Card className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <Stack gap="sm">
+      <Text variant="h4" className="{{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+        {{#if useI18n}}{t('dashboard.activeProjects')}{{else}}Active Projects{{/if}}
+      </Text>
+      <Text variant="h2" className="{{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}} font-bold">
+        42
+      </Text>
+      <Text variant="body-sm" className="{{#if (variant 'dark')}}text-red-400{{else}}text-red-600{{/if}}">
+        -3% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+      </Text>
+    </Stack>
+  </Card>
+</Grid>
+{{else}}
+{{!-- Non-semantic version --}}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {{!-- Stats Widget 1 --}}
+  <div className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <h3 className="text-lg font-semibold mb-2 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-700{{/if}}">
+      {{#if useI18n}}{t('dashboard.totalUsers')}{{else}}Total Users{{/if}}
+    </h3>
+    <p className="text-3xl font-bold {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">1,234</p>
+    <p className="text-sm {{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}} mt-1">
+      +12% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+    </p>
+  </div>
+
+  {{!-- Stats Widget 2 --}}
+  <div className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <h3 className="text-lg font-semibold mb-2 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-700{{/if}}">
+      {{#if useI18n}}{t('dashboard.revenue')}{{else}}Revenue{{/if}}
+    </h3>
+    <p className="text-3xl font-bold {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">
+      {{#if (variant 'norwegian-compliance')}}
+      {norwegianCurrency(45678)}
+      {{else}}
+      $45,678
+      {{/if}}
+    </p>
+    <p className="text-sm {{#if (variant 'dark')}}text-green-400{{else}}text-green-600{{/if}} mt-1">
+      +8% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+    </p>
+  </div>
+
+  {{!-- Stats Widget 3 --}}
+  <div className="p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+    <h3 className="text-lg font-semibold mb-2 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-700{{/if}}">
+      {{#if useI18n}}{t('dashboard.activeProjects')}{{else}}Active Projects{{/if}}
+    </h3>
+    <p className="text-3xl font-bold {{#if (variant 'dark')}}text-white{{else}}text-gray-900{{/if}}">42</p>
+    <p className="text-sm {{#if (variant 'dark')}}text-red-400{{else}}text-red-600{{/if}} mt-1">
+      -3% {{#if useI18n}}{t('dashboard.fromLastMonth')}{{else}}from last month{{/if}}
+    </p>
+  </div>
+</div>
+{{/if}}
+
+{{!-- Activity Chart Widget --}}
+<div className="mt-6 p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+  <h3 className="text-lg font-semibold mb-4 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+    {{#if useI18n}}{t('dashboard.activityOverview')}{{else}}Activity Overview{{/if}}
+  </h3>
+  <div className="h-64 flex items-center justify-center {{#if (variant 'dark')}}bg-gray-700{{else}}bg-gray-100{{/if}} rounded-lg">
+    <p className="text-gray-500">
+      {{#if useI18n}}{t('dashboard.chartPlaceholder')}{{else}}Chart visualization would go here{{/if}}
+    </p>
+  </div>
+</div>
+
+{{!-- Recent Items Table --}}
+<div className="mt-6 p-6 {{#if (variant 'dark')}}bg-gray-800{{else}}bg-white{{/if}} rounded-xl shadow-lg">
+  <h3 className="text-lg font-semibold mb-4 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">
+    {{#if useI18n}}{t('dashboard.recentActivity')}{{else}}Recent Activity{{/if}}
+  </h3>
+  <div className="overflow-x-auto">
+    <table className="w-full" {{#if compliance.wcag}}role="table"{{/if}}>
+      <thead>
+        <tr className="border-b {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-200{{/if}}">
+          <th className="text-left py-2 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+            {{#if useI18n}}{t('dashboard.item')}{{else}}Item{{/if}}
+          </th>
+          <th className="text-left py-2 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+            {{#if useI18n}}{t('dashboard.status')}{{else}}Status{{/if}}
+          </th>
+          <th className="text-left py-2 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+            {{#if useI18n}}{t('dashboard.date')}{{else}}Date{{/if}}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="border-b {{#if (variant 'dark')}}border-gray-700{{else}}border-gray-100{{/if}}">
+          <td className="py-2 {{#if (variant 'dark')}}text-gray-100{{else}}text-gray-900{{/if}}">Project Alpha</td>
+          <td className="py-2">
+            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+              {{#if useI18n}}{t('dashboard.status.active')}{{else}}Active{{/if}}
+            </span>
+          </td>
+          <td className="py-2 {{#if (variant 'dark')}}text-gray-300{{else}}text-gray-600{{/if}}">
+            {{#if (variant 'norwegian-compliance')}}
+            {norwegianDate(new Date())}
+            {{else}}
+            {new Date().toLocaleDateString()}
+            {{/if}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

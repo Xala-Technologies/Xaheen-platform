@@ -1,0 +1,364 @@
+/**
+ * {{className}} - React Component Tests
+ * Generated at: {{generatedAt}}
+ */
+
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import userEvent from '@testing-library/user-event';
+{{#if norwegian}}
+import { vi } from 'vitest';
+{{/if}}
+{{#if fixtures}}
+import { {{camelCase name}}Fixture } from '../fixtures/{{kebabCase name}}.fixture';
+{{/if}}
+import { {{className}} } from '../{{className}}';
+
+// Extend Jest matchers
+expect.extend(toHaveNoViolations);
+
+{{#if mocks}}
+// Mock dependencies
+{{#if norwegian}}
+vi.mock('../utils/audit-logger', () => ({
+  auditLogger: {
+    logUserAction: vi.fn(),
+    logAccessibilityEvent: vi.fn(),
+  }
+}));
+{{/if}}
+
+vi.mock('../hooks/use{{className}}', () => ({
+  use{{className}}: vi.fn(() => ({
+    data: null,
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  }))
+}));
+{{/if}}
+
+describe('{{className}}', () => {
+  {{#if fixtures}}
+  const defaultProps = {{camelCase name}}Fixture.getDefaultProps();
+  {{else}}
+  const defaultProps = {
+    title: 'Test {{className}}',
+    onAction: vi.fn(),
+  };
+  {{/if}}
+
+  beforeEach(() => {
+    {{#if mocks}}
+    vi.clearAllMocks();
+    {{/if}}
+  });
+
+  describe('Rendering', () => {
+    it('should render without crashing', () => {
+      const { container } = render(<{{className}} {...defaultProps} />);
+      expect(container).toBeInTheDocument();
+    });
+
+    it('should render with correct title', () => {
+      render(<{{className}} {...defaultProps} />);
+      expect(screen.getByText('Test {{className}}')).toBeInTheDocument();
+    });
+
+    {{#if hasTestType 'accessibility'}}
+    it('should have proper heading structure', () => {
+      render(<{{className}} {...defaultProps} />);
+      const heading = screen.getByRole('heading', { level: 1 });
+      expect(heading).toBeInTheDocument();
+      expect(heading).toHaveTextContent('Test {{className}}');
+    });
+    {{/if}}
+
+    {{#if fixtures}}
+    it('should render with loading state', () => {
+      const loadingProps = {{camelCase name}}Fixture.getLoadingProps();
+      render(<{{className}} {...loadingProps} />);
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+    });
+
+    it('should render with error state', () => {
+      const errorProps = {{camelCase name}}Fixture.getErrorProps();
+      render(<{{className}} {...errorProps} />);
+      expect(screen.getByText(/error/i)).toBeInTheDocument();
+    });
+    {{/if}}
+  });
+
+  describe('Interactions', () => {
+    it('should handle button clicks', async () => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      
+      render(<{{className}} {...defaultProps} onAction={onAction} />);
+      
+      const button = screen.getByRole('button', { name: /action/i });
+      await user.click(button);
+      
+      expect(onAction).toHaveBeenCalledTimes(1);
+    });
+
+    {{#if hasFeature 'form'}}
+    it('should handle form submission', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      
+      render(<{{className}} {...defaultProps} onSubmit={onSubmit} />);
+      
+      const input = screen.getByLabelText(/name/i);
+      await user.type(input, 'Test Input');
+      
+      const submitButton = screen.getByRole('button', { name: /submit/i });
+      await user.click(submitButton);
+      
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: 'Test Input'
+          })
+        );
+      });
+    });
+
+    it('should validate form inputs', async () => {
+      const user = userEvent.setup();
+      
+      render(<{{className}} {...defaultProps} />);
+      
+      const submitButton = screen.getByRole('button', { name: /submit/i });
+      await user.click(submitButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/required/i)).toBeInTheDocument();
+      });
+    });
+    {{/if}}
+
+    {{#if hasFeature 'async'}}
+    it('should handle async operations', async () => {
+      const mockAsyncAction = vi.fn().mockResolvedValue({ success: true });
+      
+      render(<{{className}} {...defaultProps} onAsyncAction={mockAsyncAction} />);
+      
+      const asyncButton = screen.getByRole('button', { name: /async action/i });
+      fireEvent.click(asyncButton);
+      
+      // Should show loading state
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+      
+      await waitFor(() => {
+        expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument();
+      });
+      
+      expect(mockAsyncAction).toHaveBeenCalledTimes(1);
+    });
+    {{/if}}
+  });
+
+  {{#if hasTestType 'accessibility'}}
+  describe('Accessibility', () => {
+    it('should not have accessibility violations', async () => {
+      const { container } = render(<{{className}} {...defaultProps} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should support keyboard navigation', async () => {
+      const user = userEvent.setup();
+      
+      render(<{{className}} {...defaultProps} />);
+      
+      const button = screen.getByRole('button', { name: /action/i });
+      
+      // Tab to button
+      await user.tab();
+      expect(button).toHaveFocus();
+      
+      // Press Enter
+      await user.keyboard('{Enter}');
+      expect(defaultProps.onAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('should have proper ARIA labels', () => {
+      render(<{{className}} {...defaultProps} />);
+      
+      const button = screen.getByRole('button', { name: /action/i });
+      expect(button).toHaveAttribute('aria-label');
+    });
+
+    {{#if norwegian}}
+    it('should support screen readers in Norwegian', () => {
+      render(<{{className}} {...defaultProps} locale="nb-NO" />);
+      
+      const heading = screen.getByRole('heading', { level: 1 });
+      expect(heading).toHaveAttribute('lang', 'no');
+    });
+
+    it('should have high contrast support', () => {
+      render(<{{className}} {...defaultProps} highContrast={true} />);
+      
+      const container = screen.getByTestId('{{kebabCase name}}-container');
+      expect(container).toHaveClass('high-contrast');
+    });
+    {{/if}}
+
+    it('should handle focus management', async () => {
+      const user = userEvent.setup();
+      
+      render(<{{className}} {...defaultProps} />);
+      
+      const firstButton = screen.getByRole('button', { name: /first/i });
+      const lastButton = screen.getByRole('button', { name: /last/i });
+      
+      // Tab to first button
+      await user.tab();
+      expect(firstButton).toHaveFocus();
+      
+      // Shift+Tab should not go past first element
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(firstButton).toHaveFocus();
+      
+      // Tab to last button
+      await user.tab();
+      expect(lastButton).toHaveFocus();
+      
+      // Tab should not go past last element
+      await user.tab();
+      expect(lastButton).toHaveFocus();
+    });
+  });
+  {{/if}}
+
+  {{#if hasTestType 'performance'}}
+  describe('Performance', () => {
+    it('should render within performance budget', () => {
+      const startTime = performance.now();
+      
+      render(<{{className}} {...defaultProps} />);
+      
+      const endTime = performance.now();
+      const renderTime = endTime - startTime;
+      
+      // Should render in less than 16ms (60fps)
+      expect(renderTime).toBeLessThan(16);
+    });
+
+    it('should not cause memory leaks', () => {
+      const { unmount } = render(<{{className}} {...defaultProps} />);
+      
+      // Unmount component
+      unmount();
+      
+      // Check that no listeners are left behind
+      expect(document.eventListeners?.length || 0).toBe(0);
+    });
+  });
+  {{/if}}
+
+  {{#if norwegian}}
+  describe('Norwegian Compliance', () => {
+    it('should log UU compliance events', async () => {
+      const user = userEvent.setup();
+      
+      render(<{{className}} {...defaultProps} />);
+      
+      const button = screen.getByRole('button', { name: /action/i });
+      await user.click(button);
+      
+      expect(auditLogger.logAccessibilityEvent).toHaveBeenCalledWith({
+        component: '{{className}}',
+        action: 'button_click',
+        compliance: 'UU',
+        timestamp: expect.any(String)
+      });
+    });
+
+    it('should support Norwegian language', () => {
+      render(<{{className}} {...defaultProps} locale="nb-NO" />);
+      
+      expect(screen.getByText(/norwegian text/i)).toBeInTheDocument();
+    });
+
+    it('should follow Norwegian design patterns', () => {
+      render(<{{className}} {...defaultProps} />);
+      
+      const container = screen.getByTestId('{{kebabCase name}}-container');
+      expect(container).toHaveClass('norwegian-design');
+    });
+  });
+  {{/if}}
+
+  describe('Edge Cases', () => {
+    it('should handle null props gracefully', () => {
+      const nullProps = { ...defaultProps, title: null };
+      
+      expect(() => {
+        render(<{{className}} {...nullProps} />);
+      }).not.toThrow();
+    });
+
+    it('should handle empty data', () => {
+      const emptyProps = { ...defaultProps, data: [] };
+      
+      render(<{{className}} {...emptyProps} />);
+      expect(screen.getByText(/no data/i)).toBeInTheDocument();
+    });
+
+    {{#if hasFeature 'error'}}
+    it('should display error boundary when child throws', () => {
+      const ThrowError = () => {
+        throw new Error('Test error');
+      };
+      
+      const { container } = render(
+        <{{className}} {...defaultProps}>
+          <ThrowError />
+        </{{className}}>
+      );
+      
+      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    });
+    {{/if}}
+  });
+
+  {{#if coverage}}
+  describe('Code Coverage', () => {
+    it('should cover all conditional branches', async () => {
+      const user = userEvent.setup();
+      
+      // Test true branch
+      render(<{{className}} {...defaultProps} showOptional={true} />);
+      expect(screen.getByTestId('optional-content')).toBeInTheDocument();
+      
+      // Test false branch
+      render(<{{className}} {...defaultProps} showOptional={false} />);
+      expect(screen.queryByTestId('optional-content')).not.toBeInTheDocument();
+    });
+
+    it('should test all event handlers', async () => {
+      const user = userEvent.setup();
+      const handlers = {
+        onAction: vi.fn(),
+        onCancel: vi.fn(),
+        onSubmit: vi.fn(),
+      };
+      
+      render(<{{className}} {...defaultProps} {...handlers} />);
+      
+      // Test all buttons
+      await user.click(screen.getByRole('button', { name: /action/i }));
+      await user.click(screen.getByRole('button', { name: /cancel/i }));
+      await user.click(screen.getByRole('button', { name: /submit/i }));
+      
+      expect(handlers.onAction).toHaveBeenCalled();
+      expect(handlers.onCancel).toHaveBeenCalled();
+      expect(handlers.onSubmit).toHaveBeenCalled();
+    });
+  });
+  {{/if}}
+});
