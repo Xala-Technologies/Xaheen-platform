@@ -13,9 +13,7 @@ const spinnerVariants = cva(
     'animate-spin rounded-full border-solid border-current',
     'border-r-transparent',
     // Respect reduced motion preferences
-    '@media (prefers-reduced-motion: reduce)': {
-      'animate-none'
-    }
+    'motion-reduce:animate-none'
   ],
   {
     variants: {
@@ -64,7 +62,7 @@ export const LoadingSpinner = React.forwardRef<HTMLDivElement, LoadingSpinnerPro
   }, ref) => {
     // Auto-select NSM variant if classification is provided
     const finalVariant = nsmClassification 
-      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as any
+      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'
       : variant;
 
     return (
@@ -89,9 +87,7 @@ const skeletonVariants = cva(
   [
     'animate-pulse rounded-md bg-muted',
     // Respect reduced motion preferences
-    '@media (prefers-reduced-motion: reduce)': {
-      'animate-none opacity-50'
-    }
+    'motion-reduce:animate-none motion-reduce:opacity-50'
   ],
   {
     variants: {
@@ -166,9 +162,7 @@ export const PulseText = React.forwardRef<HTMLSpanElement, PulseTextProps>(
           'inline-block h-4 rounded animate-pulse bg-muted',
           widths[length],
           // Respect reduced motion preferences  
-          '@media (prefers-reduced-motion: reduce)': {
-            'animate-none opacity-50'
-          },
+          'motion-reduce:animate-none motion-reduce:opacity-50',
           className
         )}
         aria-hidden="true"
@@ -202,6 +196,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
       return () => clearTimeout(timer);
     } else {
       setShowLoader(isLoading);
+      return undefined;
     }
   }, [isLoading, delay]);
 

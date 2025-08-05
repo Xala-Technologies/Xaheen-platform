@@ -8,12 +8,18 @@
 export * from './tokens/colors';
 export * from './tokens/spacing';
 export * from './tokens/typography';
+export * from './tokens/shadows';
+export * from './tokens/themes';
+
+// Complete Token Export
+export * from './tokens';
 
 // Core Components
 export * from './components/Button/Button';
 export * from './components/Input/Input';
 export * from './components/Card/Card';
 export * from './components/LoadingSpinner/LoadingSpinner';
+export * from './components/ThemeSwitcher/ThemeSwitcher';
 
 // Hooks
 export * from './hooks/useResponsive';

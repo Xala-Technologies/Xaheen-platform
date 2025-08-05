@@ -3,9 +3,9 @@
  * Comprehensive examples including Norwegian compliance and NSM classifications
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
-import { UserIcon, ShieldCheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { action } from 'storybook/actions';
+// Removed heroicons import - using text instead of icons for examples
 import { Button } from './Button';
 
 const meta = {
@@ -145,15 +145,15 @@ export const Sizes: Story = {
 export const WithIcons: Story = {
   render: () => (
     <div className="flex flex-wrap gap-4">
-      <Button leftIcon={<UserIcon className="w-5 h-5" />}>
+      <Button leftIcon={<span>👤</span>}>
         Sign In
       </Button>
-      <Button rightIcon={<ShieldCheckIcon className="w-5 h-5" />} variant="secondary">
+      <Button rightIcon={<span>🛡️</span>} variant="secondary">
         Secure Access
       </Button>
       <Button 
-        leftIcon={<GlobeAltIcon className="w-5 h-5" />}
-        rightIcon={<ShieldCheckIcon className="w-5 h-5" />}
+        leftIcon={<span>🌍</span>}
+        rightIcon={<span>🛡️</span>}
         variant="outline"
       >
         Global Security
@@ -173,13 +173,13 @@ export const IconOnly: Story = {
   render: () => (
     <div className="flex gap-4">
       <Button size="icon" aria-label="User profile">
-        <UserIcon className="w-5 h-5" />
+        👤
       </Button>
       <Button size="iconLg" variant="secondary" aria-label="Security settings">
-        <ShieldCheckIcon className="w-6 h-6" />
+        🛡️
       </Button>
       <Button size="iconXl" variant="outline" aria-label="Global settings">
-        <GlobeAltIcon className="w-7 h-7" />
+        🌍
       </Button>
     </div>
   ),

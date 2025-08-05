@@ -91,10 +91,8 @@ export function focusRing(variant: 'default' | 'primary' | 'destructive' = 'defa
 export function highContrast(classes: ClassValue): string {
   return cn(
     classes,
-    '@media (prefers-contrast: high)': {
-      'border-2 !important': true,
-      'shadow-none !important': true
-    }
+    'contrast-more:border-2',
+    'contrast-more:shadow-none'
   );
 }
 

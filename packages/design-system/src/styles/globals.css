@@ -1,0 +1,188 @@
+/**
+ * Global Styles - Xaheen Design System
+ * Enhanced design tokens with WCAG AAA compliance
+ * Norwegian NSM security standards
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Inter font for professional typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
+
+@layer base {
+  /* CSS Custom Properties are injected by Tailwind plugin */
+  
+  /* Base styles using design tokens */
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Typography using semantic tokens */
+  h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-display);
+  }
+  
+  h2 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-display);
+  }
+  
+  h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    font-family: var(--font-family-sans);
+  }
+  
+  h4 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    font-family: var(--font-family-sans);
+  }
+  
+  h5 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+  }
+  
+  h6 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+  }
+  
+  p {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+  }
+  
+  code {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    background-color: var(--color-background-tertiary);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  pre {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+  }
+}
+
+@layer components {
+  /* Gradient backgrounds using tokens */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  .bg-gradient-success {
+    background: var(--gradient-success);
+  }
+  
+  .bg-gradient-aurora {
+    background: var(--gradient-aurora);
+  }
+  
+  .bg-gradient-northern {
+    background: var(--gradient-northern);
+  }
+  
+  /* NSM Classification badges */
+  .nsm-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .nsm-badge-open {
+    @apply bg-nsm-open-background text-nsm-open-dark border border-nsm-open-border;
+  }
+  
+  .nsm-badge-restricted {
+    @apply bg-nsm-restricted-background text-nsm-restricted-dark border border-nsm-restricted-border;
+  }
+  
+  .nsm-badge-confidential {
+    @apply bg-nsm-confidential-background text-nsm-confidential-dark border border-nsm-confidential-border;
+  }
+  
+  .nsm-badge-secret {
+    @apply bg-nsm-secret-background text-nsm-secret-dark border border-nsm-secret-border;
+  }
+}
+
+@layer utilities {
+  /* High contrast mode utilities */
+  @media (prefers-contrast: high) {
+    .contrast-border {
+      @apply border-2 border-foreground;
+    }
+    
+    .contrast-ring {
+      @apply ring-2 ring-foreground ring-offset-2;
+    }
+  }
+  
+  /* Reduced motion utilities */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* Norwegian language optimizations */
+  .text-norwegian {
+    font-feature-settings: "ss01" 1; /* Stylistic alternates for æ, ø, å */
+    hyphens: auto;
+    word-break: break-word;
+  }
+  
+  /* Focus visible utilities */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+  
+  /* Professional sizing utilities */
+  .min-h-professional {
+    min-height: 3rem; /* 48px - CLAUDE.md minimum */
+  }
+  
+  .min-h-professional-lg {
+    min-height: 3.5rem; /* 56px */
+  }
+  
+  .min-h-professional-xl {
+    min-height: 4rem; /* 64px */
+  }
+}

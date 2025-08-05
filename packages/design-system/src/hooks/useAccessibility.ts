@@ -87,7 +87,7 @@ export function useFocusTrap(isActive: boolean = false) {
 export function useAriaLive() {
   const [message, setMessage] = useState('');
   const [politeness, setPoliteness] = useState<'polite' | 'assertive'>('polite');
-  const liveRegionRef = useRef<HTMLDivElement>(null);
+  const liveRegionRef = useRef<HTMLDivElement | null>(null);
 
   const announce = useCallback((
     text: string, 
@@ -215,7 +215,7 @@ export function useKeyboardNavigation(
         onSelect?.(focusedIndex);
         break;
     }
-  }, [focusedIndex, moveFocus, orientation, columns, onSelect]);
+  }, [focusedIndex, moveFocus, orientation, columns, onSelect, itemCount]);
 
   // Focus the currently selected item
   useEffect(() => {
@@ -360,7 +360,7 @@ export function useNorwegianA11y() {
 
   const announceInNorwegian = useCallback((
     text: string,
-    priority: 'polite' | 'assertive' = 'polite'
+    _priority: 'polite' | 'assertive' = 'polite'
   ) => {
     // Norwegian-specific announcements
     const norwegianText = locale === 'nb-NO' 
@@ -409,8 +409,7 @@ export function useScreenReader() {
         userAgent.includes('jaws') ||
         userAgent.includes('voiceover') ||
         userAgent.includes('talkback') ||
-        // @ts-ignore - Check for accessibility APIs
-        window.speechSynthesis ||
+        Boolean(window.speechSynthesis) ||
         document.documentElement.getAttribute('data-whatinput') === 'keyboard';
 
       setIsScreenReader(hasScreenReader);

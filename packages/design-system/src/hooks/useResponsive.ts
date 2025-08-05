@@ -104,7 +104,7 @@ export function useMediaQuery(query: string): boolean {
       case 'max':
         mediaQueryString = `(max-width: ${breakpointValue - 1}px)`;
         break;
-      case 'only':
+      case 'only': {
         const nextBreakpointIndex = Object.keys(breakpoints).indexOf(breakpointKey) + 1;
         const nextBreakpoint = Object.values(breakpoints)[nextBreakpointIndex];
         
@@ -114,6 +114,7 @@ export function useMediaQuery(query: string): boolean {
           mediaQueryString = `(min-width: ${breakpointValue}px)`;
         }
         break;
+      }
       default:
         console.warn(`Invalid operator: ${operator}. Use 'min', 'max', or 'only'`);
         return;
@@ -182,7 +183,7 @@ export function useTouchDevice(): boolean {
       setIsTouch(
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
-        // @ts-ignore - Legacy property
+        // @ts-expect-error - Legacy property
         navigator.msMaxTouchPoints > 0
       );
     };

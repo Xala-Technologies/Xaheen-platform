@@ -300,7 +300,7 @@ export const cssAnimations = {
   keyframes: Object.entries(keyframes).reduce((acc, [key, frames]) => {
     acc[key] = frames;
     return acc;
-  }, {} as Record<string, any>),
+  }, {} as Record<string, typeof keyframes[keyof typeof keyframes]>),
   
   // Animation mixins
   mixins: {

@@ -14,9 +14,7 @@ const cardVariants = cva(
   [
     'rounded-xl border bg-card text-card-foreground transition-all duration-200 ease-in-out',
     // High contrast mode support
-    '@media (prefers-contrast: high)': {
-      'border-2'
-    }
+    'contrast-more:border-2'
   ],
   {
     variants: {
@@ -123,7 +121,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     
     // Auto-select NSM variant if classification is provided
     const finalVariant = nsmClassification 
-      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as any
+      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'
       : variant;
     
     // Add proper ARIA attributes for interactive cards

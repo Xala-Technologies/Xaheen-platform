@@ -1,5 +1,7 @@
-import type { Preview } from '@storybook/react';
-import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
+import type { Preview } from '@storybook/react-vite';
+import React from 'react';
+import { INITIAL_VIEWPORTS } from 'storybook/viewport';
+import './styles.css';
 
 const preview: Preview = {
   parameters: {
@@ -66,25 +68,33 @@ const preview: Preview = {
       defaultViewport: 'responsive',
     },
 
-    // Background colors for testing
+    // Background colors for testing (using enhanced color tokens)
     backgrounds: {
       default: 'light',
       values: [
         {
           name: 'light',
-          value: '#ffffff',
+          value: 'hsl(0, 0%, 100%)', // Pure white
         },
         {
           name: 'dark',
-          value: '#1a1a1a',
+          value: 'hsl(222, 47%, 7%)', // colorTokens.neutral.dark[0]
         },
         {
-          name: 'norway-light',
-          value: '#f8fafc',
+          name: 'brand',
+          value: 'hsl(217, 91%, 43%)', // colorTokens.primary[600]
         },
         {
-          name: 'norway-dark',
-          value: '#0f172a',
+          name: 'nsm-open',
+          value: 'hsl(152, 69%, 97%)', // colorTokens.nsm.open.background
+        },
+        {
+          name: 'nsm-restricted',
+          value: 'hsl(38, 92%, 97%)', // colorTokens.nsm.restricted.background
+        },
+        {
+          name: 'nsm-confidential',
+          value: 'hsl(0, 84%, 97%)', // colorTokens.nsm.confidential.background
         },
       ],
     },
@@ -109,11 +119,21 @@ const preview: Preview = {
 
   // Global decorators
   decorators: [
-    (Story) => (
-      <div style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <Story />
-      </div>
-    ),
+    (Story, context) => {
+      // Apply theme class to enable CSS custom properties
+      const theme = context.globals.theme || 'light';
+      React.useEffect(() => {
+        const root = document.documentElement;
+        root.classList.remove('light', 'dark', 'high-contrast');
+        root.classList.add(theme);
+      }, [theme]);
+      
+      return (
+        <div style={{ fontFamily: 'var(--font-family-sans, Inter, system-ui, sans-serif)' }}>
+          <Story />
+        </div>
+      );
+    },
   ],
 
   // Global arg types
@@ -187,10 +207,25 @@ const preview: Preview = {
         defaultValue: { summary: 'false' },
       },
     },
-  ],
+  },
 
   // Global toolbar items
   globalTypes: {
+    // Theme toggle
+    theme: {
+      description: 'Global theme for components',
+      defaultValue: 'light',
+      toolbar: {
+        title: 'Theme',
+        icon: 'circle',
+        items: [
+          { value: 'light', title: 'Light', icon: 'circlehollow' },
+          { value: 'dark', title: 'Dark', icon: 'circle' },
+          { value: 'high-contrast', title: 'High Contrast', icon: 'contrast' },
+        ],
+        dynamicTitle: true,
+      },
+    },
     // Norwegian locale toggle
     locale: {
       description: 'Language locale',

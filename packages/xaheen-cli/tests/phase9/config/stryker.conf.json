@@ -1,0 +1,120 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "npm",
+  "reporters": [
+    "html",
+    "clear-text",
+    "progress",
+    "json",
+    "dashboard"
+  ],
+  "testRunner": "vitest",
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/core/**/*.ts",
+    "src/commands/**/*.ts",
+    "src/services/**/*.ts",
+    "!src/**/*.test.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.d.ts"
+  ],
+  "testFramework": "vitest",
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "buildCommand": "npm run build",
+  "mutator": {
+    "plugins": ["typescript"],
+    "excludedMutations": [
+      "StringLiteral",
+      "ArrayDeclaration"
+    ]
+  },
+  "thresholds": {
+    "high": 95,
+    "low": 75,
+    "break": 70
+  },
+  "timeoutMS": 60000,
+  "timeoutFactor": 2,
+  "maxConcurrentTestRunners": 4,
+  "files": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "package.json",
+    "tsconfig.json",
+    "vitest.config.ts"
+  ],
+  "htmlReporter": {
+    "baseDir": "test-output/mutation"
+  },
+  "jsonReporter": {
+    "fileName": "test-output/mutation/mutation-report.json"
+  },
+  "dashboard": {
+    "project": "xaheen-cli",
+    "version": "main",
+    "module": "github.com/Xala-Technologies/xaheen"
+  },
+  "plugins": [
+    "@stryker-mutator/typescript-checker",
+    "@stryker-mutator/vitest-runner"
+  ],
+  "vitest": {
+    "configFile": "vitest.config.ts"
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "coverage/**",
+    "test-output/**",
+    "docs/**",
+    "examples/**"
+  ],
+  "disableTypeChecks": false,
+  "allowConsoleColors": true,
+  "logLevel": "info",
+  "fileLogLevel": "debug",
+  "appendLogFile": "test-output/stryker.log",
+  "cleanTempDir": true,
+  "tempDirName": "test-output/.stryker-tmp",
+  "mutationScoreThreshold": {
+    "critical-modules": {
+      "files": [
+        "src/core/command-parser/**/*.ts",
+        "src/core/config-manager/**/*.ts",
+        "src/commands/security-*.ts",
+        "src/services/security/**/*.ts",
+        "src/services/compliance/**/*.ts"
+      ],
+      "threshold": 95
+    },
+    "core-modules": {
+      "files": [
+        "src/core/**/*.ts",
+        "src/services/**/*.ts"
+      ],
+      "threshold": 85
+    },
+    "utility-modules": {
+      "files": [
+        "src/utils/**/*.ts",
+        "src/lib/**/*.ts"
+      ],
+      "threshold": 75
+    }
+  },
+  "incremental": true,
+  "incrementalFile": "test-output/.stryker-incremental.json",
+  "force": false,
+  "dryRunOnly": false,
+  "commandRunner": {
+    "command": "npm run test"
+  },
+  "sandbox": {
+    "excludeFiles": [
+      "test-output/**",
+      "coverage/**",
+      ".stryker-tmp/**"
+    ]
+  }
+}

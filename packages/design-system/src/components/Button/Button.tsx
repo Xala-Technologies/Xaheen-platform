@@ -21,9 +21,7 @@ const buttonVariants = cva(
     'whitespace-nowrap',
     'border',
     // High contrast mode support
-    '@media (prefers-contrast: high)': {
-      'border-2'
-    }
+    'contrast-more:border-2'
   ],
   {
     variants: {
@@ -83,6 +81,12 @@ const buttonVariants = cva(
           'hover:bg-red-700 active:bg-red-800',
           'focus:ring-red-500/20 shadow-md',
           'border-red-600/20'
+        ],
+        nsmSecret: [
+          'bg-gray-800 text-white',
+          'hover:bg-gray-900 active:bg-black',
+          'focus:ring-gray-600/20 shadow-md',
+          'border-gray-800/20'
         ]
       },
       size: {
@@ -149,7 +153,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     // Auto-select NSM variant if classification is provided
     const finalVariant = nsmClassification 
-      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as any
+      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'
       : variant;
     
     // Loading state announcement for screen readers

@@ -1,0 +1,6 @@
+/**
+ * Storybook Global Styles
+ * Import the design system styles and tokens
+ */
+
+@import '../src/styles/globals.css';

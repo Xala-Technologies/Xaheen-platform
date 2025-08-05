@@ -19,9 +19,7 @@ const inputVariants = cva(
     'read-only:cursor-default read-only:focus:ring-0 read-only:bg-muted/50',
     'file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
     // High contrast mode support
-    '@media (prefers-contrast: high)': {
-      'border-2'
-    }
+    'contrast-more:border-2'
   ],
   {
     variants: {
@@ -85,7 +83,7 @@ const inputVariants = cva(
 );
 
 export interface InputProps extends 
-  React.InputHTMLAttributes<HTMLInputElement>,
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
   VariantProps<typeof inputVariants> {
   readonly leftIcon?: React.ReactNode;
   readonly rightIcon?: React.ReactNode;
@@ -116,7 +114,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     'aria-invalid': ariaInvalid,
     ...props 
   }, ref) => {
-    const inputId = id || React.useId();
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
     const errorId = error ? `${inputId}-error` : undefined;
     const helperId = helperText ? `${inputId}-helper` : undefined;
     const labelId = label ? `${inputId}-label` : undefined;
@@ -250,8 +249,14 @@ Input.displayName = 'Input';
 
 // Textarea Component (extends Input styling)
 export interface TextareaProps extends 
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
-  Omit<InputProps, 'leftIcon' | 'rightIcon' | 'type'> {
+  Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'>,
+  VariantProps<typeof inputVariants> {
+  readonly error?: string;
+  readonly helperText?: string;
+  readonly label?: string;
+  readonly required?: boolean;
+  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';
+  readonly norwegianOptimized?: boolean;
   readonly minRows?: number;
   readonly maxRows?: number;
   readonly resize?: 'none' | 'vertical' | 'horizontal' | 'both';
@@ -270,14 +275,15 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     nsmClassification,
     norwegianOptimized = false,
     minRows = 3,
-    maxRows,
+    maxRows: _maxRows,
     resize = 'vertical',
     id,
     'aria-describedby': ariaDescribedBy,
     'aria-invalid': ariaInvalid,
     ...props 
   }, ref) => {
-    const textareaId = id || React.useId();
+    const generatedId = React.useId();
+    const textareaId = id || generatedId;
     const errorId = error ? `${textareaId}-error` : undefined;
     const helperId = helperText ? `${textareaId}-helper` : undefined;
     const labelId = label ? `${textareaId}-label` : undefined;
