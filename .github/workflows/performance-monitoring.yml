@@ -43,12 +43,12 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build CLI
         run: |
           cd packages/xaheen-cli
-          bun run build
+          pnpm run build
 
       - name: Performance testing for ${{ matrix.framework }}
         run: |
@@ -136,12 +136,12 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build CLI
         run: |
           cd packages/xaheen-cli
-          bun run build
+          pnpm run build
 
       - name: Memory profiling
         run: |

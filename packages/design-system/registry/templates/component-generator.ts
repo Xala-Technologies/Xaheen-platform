@@ -908,6 +908,74 @@ export default ${spec.name}Element;`;
 };
 
 // =============================================================================
+// IONIC TEMPLATE
+// =============================================================================
+
+export const IonicTemplate: PlatformTemplate = {
+  platform: 'ionic',
+  fileExtension: '.tsx',
+  
+  generateComponent: (context) => {
+    const { spec } = context;
+    
+    const content = `/**
+ * ${spec.name} Component - Ionic Implementation
+ * Generated from universal ${spec.id} specification
+ */
+
+import React, { forwardRef } from 'react';
+import { IonButton, IonSpinner } from '@ionic/react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
+
+const ionic${spec.name}Variants = cva(
+  ['ion-activatable', 'ion-focusable'],
+  {
+    variants: {
+      variant: {
+        ${spec.variants ? spec.variants.map(variant => `${variant.name}: ['ion-color-${variant.name === 'destructive' ? 'danger' : variant.name}']`).join(',\n        ') : ''}
+      }
+    }
+  }
+);
+
+export interface Ionic${spec.name}Props
+  extends Omit<React.ComponentProps<typeof IonButton>, 'size'>,
+    VariantProps<typeof ionic${spec.name}Variants> {
+  readonly loading?: boolean;
+  readonly haptic?: 'light' | 'medium' | 'heavy';
+  ${spec.props.map(prop => `readonly ${prop.name}?: ${prop.type};`).join('\n  ')}
+}
+
+export const ${spec.name} = forwardRef<HTMLIonButtonElement, Ionic${spec.name}Props>(
+  ({ className, loading, haptic, ...props }, ref) => {
+    return (
+      <IonButton
+        ref={ref}
+        disabled={loading}
+        className={cn(ionic${spec.name}Variants({ className }))}
+        {...props}
+      >
+        {loading && <IonSpinner slot="start" />}
+        {props.children}
+      </IonButton>
+    );
+  }
+);
+
+${spec.name}.displayName = 'Ionic${spec.name}';
+
+export default ${spec.name};`;
+
+    return {
+      path: `${spec.id}.tsx`,
+      content,
+      type: 'component'
+    };
+  }
+};
+
+// =============================================================================
 // PLATFORM TEMPLATE REGISTRY
 // =============================================================================
 
@@ -922,7 +990,7 @@ export const PlatformTemplates: Record<Platform, PlatformTemplate> = {
   nuxt: VueTemplate,           // Uses Vue
   sveltekit: SvelteTemplate,   // Uses Svelte
   expo: ReactNativeTemplate,   // Uses React Native
-  ionic: ReactTemplate,        // Placeholder - would need Ionic-specific template
+  ionic: IonicTemplate,        // Complete Ionic implementation
   radix: RadixTemplate,        // Enhanced React with Radix UI
   'headless-ui': HeadlessUITemplate, // Enhanced React with Headless UI
   vanilla: VanillaTemplate     // Complete Web Components implementation

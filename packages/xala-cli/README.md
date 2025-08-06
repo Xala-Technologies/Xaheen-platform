@@ -15,7 +15,7 @@ The revolutionary AI-powered CLI for enterprise-grade, multi-platform component 
 ### Global Installation (Recommended)
 
 ```bash
-bun add -g @xala-technologies/xala-cli
+pnpm add -g @xala-technologies/xala-cli
 ```
 
 ### Alternative Installation Methods
@@ -491,19 +491,19 @@ git clone https://github.com/xala-technologies/xala-cli.git
 cd xala-cli
 
 # Install dependencies
-bun install
+pnpm install
 
 # Build the CLI
-bun run build
+pnpm run build
 
 # Link for local development
-bun link
+pnpm link
 
 # Run tests
-bun test
+pnpm test
 
 # Validate code quality
-bun run validate
+pnpm run validate
 ```
 
 ## License

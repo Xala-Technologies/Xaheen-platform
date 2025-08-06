@@ -10,7 +10,7 @@
 
 ```bash
 # Create a new project (recommended)
-bun create xaheen@latest my-app
+pnpm create xaheen@latest my-app
 
 # Alternative package managers
 npx xaheen@latest my-app
@@ -138,16 +138,16 @@ xaheen model User --db=postgresql --validation=zod
 ### **3. Development Workflow**
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Start development
-bun dev
+pnpm dev
 
 # Run compliance checks
-bun check:compliance
+pnpm check:compliance
 
 # Build for production
-bun build
+pnpm build
 ```
 
 ## 📚 Documentation
@@ -172,27 +172,27 @@ git clone https://github.com/XaheenEnterprise/xaheen.git
 cd xaheen
 
 # Install dependencies
-bun install
+pnpm install
 
 # Start CLI development
-bun dev:cli
+pnpm dev:cli
 
 # Start web development
-bun dev:web
+pnpm dev:web
 
 # Run tests
-bun test
+pnpm test
 
 # Build all packages
-bun build
+pnpm build
 ```
 
 ### **Project Scripts**
 ```bash
-bun dev:cli          # CLI development with hot reload
-bun dev:web          # Website development server
-bun build:cli        # Build CLI for production
-bun build:web        # Build website for deployment
+pnpm dev:cli          # CLI development with hot reload
+pnpm dev:web          # Website development server
+pnpm build:cli        # Build CLI for production
+pnpm build:web        # Build website for deployment
 bun check            # Type checking across all packages
 bun format           # Code formatting with Biome
 bun publish-packages # Publish CLI to npm

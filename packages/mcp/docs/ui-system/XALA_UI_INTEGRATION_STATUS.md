@@ -38,7 +38,7 @@ To access the Xala UI System package, we need:
    ```
 3. **Package Installation**:
    ```bash
-   bun add @xala-technologies/ui-system@^6.0.0
+   pnpm add @xala-technologies/ui-system@^6.0.0
    ```
 
 ### **Integration Plan**

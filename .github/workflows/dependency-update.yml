@@ -41,7 +41,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Check for outdated dependencies
         id: outdated
@@ -124,7 +124,7 @@ jobs:
           echo "Running tests after dependency updates..."
           
           # Reinstall all dependencies
-          bun install
+          pnpm install
           
           # Run tests for each package
           for package in packages/*/; do
@@ -135,13 +135,13 @@ jobs:
               # Build if build script exists
               if grep -q "build" package.json; then
                 echo "Building $package_name..."
-                bun run build || echo "Build completed for $package_name"
+                pnpm run build || echo "Build completed for $package_name"
               fi
               
               # Test if test script exists
               if grep -q "test" package.json; then
                 echo "Testing $package_name..."
-                bun test || echo "Tests completed for $package_name"
+                pnpm test || echo "Tests completed for $package_name"
               fi
               
               cd - > /dev/null
@@ -209,7 +209,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run security audit
         run: |

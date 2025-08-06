@@ -27,7 +27,7 @@ This repository is organized as a monorepo containing:
 
 2. **Install dependencies**
    ```bash
-   bun install
+   pnpm install
    ```
 
 ### CLI Development
@@ -39,13 +39,13 @@ This repository is organized as a monorepo containing:
 
 2. **Link the CLI globally** (optional, for testing anywhere in your system)
    ```bash
-   bun link
+   pnpm link
    ```
    Now you can use `xaheen` from anywhere in your system.
 
 3. **Start development server**
    ```bash
-   bun dev:cli
+   pnpm dev:cli
    ```
    This runs the CLI in watch mode, automatically rebuilding on changes.
 
@@ -53,7 +53,7 @@ This repository is organized as a monorepo containing:
 
 1. **Start the documentation website**
    ```bash
-   bun dev:web
+   pnpm dev:web
    ```
    This starts the Next.js development server for the documentation site.
 
@@ -87,21 +87,21 @@ This repository is organized as a monorepo containing:
    ```bash
    # For CLI changes
    cd apps/cli
-   bun dev:cli
+   pnpm dev:cli
    
    # For web changes
-   bun dev:web
+   pnpm dev:web
    
    # Format files
-   bun run format
+   pnpm run format
    
    # Run type checks
-   bun check
+   pnpm check
    ```
 
 6. **Add changeset** (for CLI-related changes)
    ```bash
-   bunx changeset select xaheen
+   pnpm exec changeset select xaheen
    # Choose 'patch' for small fixes, 'minor' for features
    # Never choose 'major'
    ```

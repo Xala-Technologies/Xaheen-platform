@@ -32,7 +32,7 @@ yarn global add @xala-technologies/xaheen-cli
 # or
 pnpm add -g @xala-technologies/xaheen-cli
 # or
-bun add -g @xala-technologies/xaheen-cli
+pnpm add -g @xala-technologies/xaheen-cli
 ```
 
 ## 🎯 Quick Start
@@ -290,23 +290,23 @@ xaheen migrate --from xala-cli
 ```bash
 git clone https://github.com/Xala-Technologies/xaheen.git
 cd xaheen/packages/xaheen-cli
-bun install
-bun run build
+pnpm install
+pnpm run build
 ```
 
 ### Running Tests
 
 ```bash
-bun test                         # Run all tests
-bun test --watch                 # Watch mode
-bun test --coverage              # With coverage
+pnpm test                         # Run all tests
+pnpm test --watch                 # Watch mode
+pnpm test --coverage              # With coverage
 ```
 
 ### Local Development
 
 ```bash
-bun run dev                      # Build with watch mode
-bun run build && npm link       # Link globally for testing
+pnpm run dev                      # Build with watch mode
+pnpm run build && npm link       # Link globally for testing
 ```
 
 ## 🎨 Service Bundles
@@ -438,10 +438,10 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Development Setup
 1. Fork the repository
 2. Clone your fork
-3. Install dependencies: `bun install`
+3. Install dependencies: `pnpm install`
 4. Create a feature branch
 5. Make your changes
-6. Run tests: `bun test`
+6. Run tests: `pnpm test`
 7. Submit a pull request
 
 ## 📝 License

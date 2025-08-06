@@ -283,8 +283,8 @@ echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
 
 # Install the package
 npm install @xala-technologies/xala-mcp@6.1.10
-# or with bun
-bun add @xala-technologies/xala-mcp@6.1.10
+# or with pnpm
+pnpm add @xala-technologies/xala-mcp@6.1.10
 ```
 
 **Note**: You'll need a GitHub Personal Access Token with `read:packages` scope. [Create one here](https://github.com/settings/tokens/new?scopes=read:packages).
@@ -990,19 +990,19 @@ Our MCP server combines the best of both worlds - comprehensive generation capab
 ### Building
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 ### Testing
 
 ```bash
-bun test
+pnpm test
 ```
 
 ### Linting
 
 ```bash
-bun run lint
+pnpm run lint
 ```
 
 ## Architecture

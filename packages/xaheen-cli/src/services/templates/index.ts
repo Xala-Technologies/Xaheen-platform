@@ -57,18 +57,18 @@ export {
 //   type QAGenerationResult
 // } from './quality-assurance-templates.js';
 
-// Main orchestration system
-export {
-  TemplateOrchestrator,
-  templateOrchestrator,
-  type TemplateVersion,
-  type TemplateRegistry,
-  type VersionedTemplate,
-  type TemplateMigration,
-  type AdvancedGenerationRequest,
-  type GenerationResult,
-  type QualityCheckResult
-} from './template-orchestrator.js';
+// Main orchestration system - temporarily disabled
+// export {
+//   TemplateOrchestrator,
+//   templateOrchestrator,
+//   type TemplateVersion,
+//   type TemplateRegistry,
+//   type VersionedTemplate,
+//   type TemplateMigration,
+//   type AdvancedGenerationRequest,
+//   type GenerationResult,
+//   type QualityCheckResult
+// } from './template-orchestrator.js';
 
 // EPIC 15 Story 15.3 - Shared Template Repositories with Versioning
 export {

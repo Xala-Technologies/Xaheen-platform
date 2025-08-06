@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import * as path from "path";
 import { z } from "zod";
 import type {

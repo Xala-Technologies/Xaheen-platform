@@ -58,7 +58,7 @@ jobs:
           echo "Release tag: $TAG"
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run full test suite
         run: |
@@ -73,12 +73,12 @@ jobs:
               
               # Run tests if available
               if grep -q "test" package.json; then
-                bun test || echo "Tests completed for $package_name"
+                pnpm test || echo "Tests completed for $package_name"
               fi
               
               # Build package
               if grep -q "build" package.json; then
-                bun run build
+                pnpm run build
                 echo "✅ Built $package_name successfully"
               fi
               
@@ -120,13 +120,13 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build package
         run: |
           cd packages/${{ matrix.package }}
           if grep -q "build" package.json; then
-            bun run build
+            pnpm run build
           fi
 
       - name: Create package tarball
@@ -193,7 +193,7 @@ jobs:
           echo "\`\`\`bash" >> release_notes.md
           echo "npm install -g @xala-technologies/xaheen-cli@${{ needs.validate-release.outputs.version }}" >> release_notes.md
           echo "# or" >> release_notes.md
-          echo "bun add -g @xala-technologies/xaheen-cli@${{ needs.validate-release.outputs.version }}" >> release_notes.md
+          echo "pnpm add -g @xala-technologies/xaheen-cli@${{ needs.validate-release.outputs.version }}" >> release_notes.md
           echo "\`\`\`" >> release_notes.md
           echo "" >> release_notes.md
           echo "### ✅ Quality Assurance" >> release_notes.md
@@ -246,13 +246,13 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build package
         run: |
           cd packages/${{ matrix.package }}
           if grep -q "build" package.json; then
-            bun run build
+            pnpm run build
           fi
 
       - name: Publish to GitHub Packages

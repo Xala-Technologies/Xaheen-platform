@@ -108,14 +108,14 @@
     "test:phase8:report": "tsx tests/phase8/run-phase8-tests.ts --generate-report",
     "test:phases-7-8": "tsx tests/run-phases-7-8.ts",
     "test:phases-7-8:report": "tsx tests/run-phases-7-8.ts --generate-report",
-    "test:bun": "bun run tests/run-all-tests-bun.ts",
-    "test:bun:quick": "bun run tests/run-available-tests.ts",
-    "test:bun:report": "bun run tests/run-all-tests-bun.ts && open tests/results/bun-test-report.html",
+    "test:pnpm": "pnpm exec tsx tests/run-all-tests-pnpm.ts",
+    "test:pnpm:quick": "pnpm exec tsx tests/run-available-tests.ts",
+    "test:pnpm:report": "pnpm exec tsx tests/run-all-tests-pnpm.ts && open tests/results/pnpm-test-report.html",
     "type-check": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write .",
     "clean": "rm -rf dist .turbo node_modules test-output",
-    "prepack": "bun run build"
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "@clack/prompts": "^0.9.0",
@@ -134,6 +134,7 @@
     "@opentelemetry/winston-transport": "^0.14.0",
     "@trpc/server": "^10.45.2",
     "@xala-technologies/xala-mcp": "file:../mcp",
+    "@xaheen/design-system": "file:../design-system",
     "chokidar": "^3.5.3",
     "codebuff": "1.0.112",
     "commander": "^12.1.0",

@@ -422,9 +422,12 @@ importers:
       '@trpc/server':
         specifier: ^10.45.2
         version: 10.45.2
+      '@xaheen/design-system':
+        specifier: file:../design-system
+        version: link:../design-system
       '@xala-technologies/xala-mcp':
         specifier: file:../mcp
-        version: file:packages/mcp(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(i18next@25.3.2(typescript@5.9.2))(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.2)
+        version: file:packages/mcp(encoding@0.1.13)(i18next@25.3.2(typescript@5.9.2))(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.2)
       chokidar:
         specifier: ^3.5.3
         version: 3.6.0
@@ -16011,11 +16014,11 @@ snapshots:
 
   '@langchain/community@0.0.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-dynamodb@3.859.0)(@aws-sdk/client-lambda@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(@smithy/protocol-http@3.3.0)(@smithy/signature-v4@2.3.0)(@smithy/util-utf8@2.3.0)(encoding@0.1.13)(ioredis@5.7.0)(lodash@4.17.21)(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)':
     dependencies:
-      '@langchain/core': 0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(encoding@0.1.13)(ws@8.18.3)
       expr-eval: 2.0.2
       flat: 5.0.2
-      langsmith: 0.1.68(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      langsmith: 0.1.68(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       uuid: 9.0.1
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
@@ -16036,11 +16039,11 @@ snapshots:
 
   '@langchain/community@0.0.57(@aws-sdk/credential-provider-node@3.859.0)(ioredis@5.7.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)':
     dependencies:
-      '@langchain/core': 0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(encoding@0.1.13)(ws@8.18.3)
       expr-eval: 2.0.2
       flat: 5.0.2
-      langsmith: 0.1.68(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      langsmith: 0.1.68(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       uuid: 9.0.1
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
@@ -16052,13 +16055,13 @@ snapshots:
       - encoding
       - openai
 
-  '@langchain/core@0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))':
+  '@langchain/core@0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))':
     dependencies:
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.20
-      langsmith: 0.1.68(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      langsmith: 0.1.68(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       ml-distance: 4.0.1
       mustache: 4.2.0
       p-queue: 6.6.2
@@ -16071,7 +16074,7 @@ snapshots:
 
   '@langchain/openai@0.0.34(encoding@0.1.13)(ws@8.18.3)':
     dependencies:
-      '@langchain/core': 0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       js-tiktoken: 1.0.20
       openai: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
       zod: 3.25.76
@@ -20486,148 +20489,6 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@xala-technologies/xala-cli@2.0.0(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)':
-    dependencies:
-      boxen: 7.1.1
-      chalk: 5.5.0
-      chokidar: 3.6.0
-      commander: 11.1.0
-      express: 4.21.2
-      fast-xml-parser: 4.5.3
-      fs-extra: 11.3.1
-      glob: 10.4.5
-      handlebars: 4.7.8
-      inquirer: 9.3.7
-      langchain: 0.0.207(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-dynamodb@3.859.0)(@aws-sdk/client-lambda@3.859.0)(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(@smithy/protocol-http@3.3.0)(@smithy/signature-v4@2.3.0)(@smithy/util-utf8@2.3.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(fast-xml-parser@4.5.3)(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(playwright@1.54.2)(ws@8.18.3)
-      open: 9.1.0
-      openai: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
-      ora: 7.0.1
-      semver: 7.7.2
-      ws: 8.18.3
-      yaml: 2.8.1
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - '@aws-crypto/sha256-js'
-      - '@aws-sdk/client-bedrock-agent-runtime'
-      - '@aws-sdk/client-bedrock-runtime'
-      - '@aws-sdk/client-dynamodb'
-      - '@aws-sdk/client-kendra'
-      - '@aws-sdk/client-lambda'
-      - '@aws-sdk/client-s3'
-      - '@aws-sdk/client-sagemaker-runtime'
-      - '@aws-sdk/client-sfn'
-      - '@aws-sdk/credential-provider-node'
-      - '@azure/search-documents'
-      - '@azure/storage-blob'
-      - '@clickhouse/client'
-      - '@cloudflare/ai'
-      - '@datastax/astra-db-ts'
-      - '@elastic/elasticsearch'
-      - '@getmetal/metal-sdk'
-      - '@getzep/zep-js'
-      - '@gomomento/sdk'
-      - '@gomomento/sdk-core'
-      - '@gomomento/sdk-web'
-      - '@google-ai/generativelanguage'
-      - '@google-cloud/storage'
-      - '@gradientai/nodejs-sdk'
-      - '@huggingface/inference'
-      - '@mlc-ai/web-llm'
-      - '@mozilla/readability'
-      - '@neondatabase/serverless'
-      - '@notionhq/client'
-      - '@opensearch-project/opensearch'
-      - '@pinecone-database/pinecone'
-      - '@planetscale/database'
-      - '@premai/prem-sdk'
-      - '@qdrant/js-client-rest'
-      - '@raycast/api'
-      - '@rockset/client'
-      - '@smithy/eventstream-codec'
-      - '@smithy/protocol-http'
-      - '@smithy/signature-v4'
-      - '@smithy/util-utf8'
-      - '@supabase/postgrest-js'
-      - '@supabase/supabase-js'
-      - '@tensorflow-models/universal-sentence-encoder'
-      - '@tensorflow/tfjs-converter'
-      - '@tensorflow/tfjs-core'
-      - '@upstash/redis'
-      - '@upstash/vector'
-      - '@vercel/kv'
-      - '@vercel/postgres'
-      - '@writerai/writer-sdk'
-      - '@xata.io/client'
-      - '@xenova/transformers'
-      - '@zilliz/milvus2-sdk-node'
-      - apify-client
-      - assemblyai
-      - axios
-      - better-sqlite3
-      - bufferutil
-      - cassandra-driver
-      - cborg
-      - cheerio
-      - chromadb
-      - closevector-common
-      - closevector-node
-      - closevector-web
-      - cohere-ai
-      - convex
-      - couchbase
-      - d3-dsv
-      - discord.js
-      - dria
-      - duck-duck-scrape
-      - encoding
-      - epub2
-      - faiss-node
-      - firebase-admin
-      - google-auth-library
-      - googleapis
-      - hnswlib-node
-      - html-to-text
-      - ignore
-      - interface-datastore
-      - ioredis
-      - it-all
-      - jsdom
-      - jsonwebtoken
-      - llmonitor
-      - lodash
-      - lunary
-      - mammoth
-      - mongodb
-      - mysql2
-      - neo4j-driver
-      - node-llama-cpp
-      - notion-to-md
-      - officeparser
-      - pdf-parse
-      - peggy
-      - pg
-      - pg-copy-streams
-      - pickleparser
-      - playwright
-      - portkey-ai
-      - puppeteer
-      - pyodide
-      - redis
-      - replicate
-      - sonix-speech-recognition
-      - srt-parser-2
-      - supports-color
-      - typeorm
-      - typesense
-      - usearch
-      - utf-8-validate
-      - vectordb
-      - voy-search
-      - weaviate-ts-client
-      - web-auth-library
-      - youtube-transcript
-      - youtubei.js
-
   '@xala-technologies/xala-cli@2.0.0(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(axios@1.11.0)(cheerio@1.0.0)(ignore@5.3.2)(ioredis@5.7.0)(playwright@1.54.2)':
     dependencies:
       boxen: 7.1.1
@@ -20770,7 +20631,149 @@ snapshots:
       - youtube-transcript
       - youtubei.js
 
-  '@xala-technologies/xala-mcp@file:packages/mcp(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(i18next@25.3.2(typescript@5.9.2))(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.2)':
+  '@xala-technologies/xala-cli@2.0.0(encoding@0.1.13)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)':
+    dependencies:
+      boxen: 7.1.1
+      chalk: 5.5.0
+      chokidar: 3.6.0
+      commander: 11.1.0
+      express: 4.21.2
+      fast-xml-parser: 4.5.3
+      fs-extra: 11.3.1
+      glob: 10.4.5
+      handlebars: 4.7.8
+      inquirer: 9.3.7
+      langchain: 0.0.207(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-dynamodb@3.859.0)(@aws-sdk/client-lambda@3.859.0)(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(@smithy/protocol-http@3.3.0)(@smithy/signature-v4@2.3.0)(@smithy/util-utf8@2.3.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(fast-xml-parser@4.5.3)(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(playwright@1.54.2)(ws@8.18.3)
+      open: 9.1.0
+      openai: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
+      ora: 7.0.1
+      semver: 7.7.2
+      ws: 8.18.3
+      yaml: 2.8.1
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - '@aws-crypto/sha256-js'
+      - '@aws-sdk/client-bedrock-agent-runtime'
+      - '@aws-sdk/client-bedrock-runtime'
+      - '@aws-sdk/client-dynamodb'
+      - '@aws-sdk/client-kendra'
+      - '@aws-sdk/client-lambda'
+      - '@aws-sdk/client-s3'
+      - '@aws-sdk/client-sagemaker-runtime'
+      - '@aws-sdk/client-sfn'
+      - '@aws-sdk/credential-provider-node'
+      - '@azure/search-documents'
+      - '@azure/storage-blob'
+      - '@clickhouse/client'
+      - '@cloudflare/ai'
+      - '@datastax/astra-db-ts'
+      - '@elastic/elasticsearch'
+      - '@getmetal/metal-sdk'
+      - '@getzep/zep-js'
+      - '@gomomento/sdk'
+      - '@gomomento/sdk-core'
+      - '@gomomento/sdk-web'
+      - '@google-ai/generativelanguage'
+      - '@google-cloud/storage'
+      - '@gradientai/nodejs-sdk'
+      - '@huggingface/inference'
+      - '@mlc-ai/web-llm'
+      - '@mozilla/readability'
+      - '@neondatabase/serverless'
+      - '@notionhq/client'
+      - '@opensearch-project/opensearch'
+      - '@pinecone-database/pinecone'
+      - '@planetscale/database'
+      - '@premai/prem-sdk'
+      - '@qdrant/js-client-rest'
+      - '@raycast/api'
+      - '@rockset/client'
+      - '@smithy/eventstream-codec'
+      - '@smithy/protocol-http'
+      - '@smithy/signature-v4'
+      - '@smithy/util-utf8'
+      - '@supabase/postgrest-js'
+      - '@supabase/supabase-js'
+      - '@tensorflow-models/universal-sentence-encoder'
+      - '@tensorflow/tfjs-converter'
+      - '@tensorflow/tfjs-core'
+      - '@upstash/redis'
+      - '@upstash/vector'
+      - '@vercel/kv'
+      - '@vercel/postgres'
+      - '@writerai/writer-sdk'
+      - '@xata.io/client'
+      - '@xenova/transformers'
+      - '@zilliz/milvus2-sdk-node'
+      - apify-client
+      - assemblyai
+      - axios
+      - better-sqlite3
+      - bufferutil
+      - cassandra-driver
+      - cborg
+      - cheerio
+      - chromadb
+      - closevector-common
+      - closevector-node
+      - closevector-web
+      - cohere-ai
+      - convex
+      - couchbase
+      - d3-dsv
+      - discord.js
+      - dria
+      - duck-duck-scrape
+      - encoding
+      - epub2
+      - faiss-node
+      - firebase-admin
+      - google-auth-library
+      - googleapis
+      - hnswlib-node
+      - html-to-text
+      - ignore
+      - interface-datastore
+      - ioredis
+      - it-all
+      - jsdom
+      - jsonwebtoken
+      - llmonitor
+      - lodash
+      - lunary
+      - mammoth
+      - mongodb
+      - mysql2
+      - neo4j-driver
+      - node-llama-cpp
+      - notion-to-md
+      - officeparser
+      - pdf-parse
+      - peggy
+      - pg
+      - pg-copy-streams
+      - pickleparser
+      - playwright
+      - portkey-ai
+      - puppeteer
+      - pyodide
+      - redis
+      - replicate
+      - sonix-speech-recognition
+      - srt-parser-2
+      - supports-color
+      - typeorm
+      - typesense
+      - usearch
+      - utf-8-validate
+      - vectordb
+      - voy-search
+      - weaviate-ts-client
+      - web-auth-library
+      - youtube-transcript
+      - youtubei.js
+
+  '@xala-technologies/xala-mcp@file:packages/mcp(encoding@0.1.13)(i18next@25.3.2(typescript@5.9.2))(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.2)':
     dependencies:
       '@babel/generator': 7.28.0
       '@babel/parser': 7.28.0
@@ -20778,7 +20781,7 @@ snapshots:
       '@babel/types': 7.28.2
       '@modelcontextprotocol/sdk': 1.17.1
       '@xala-technologies/ui-system': 6.3.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@xala-technologies/xala-cli': 2.0.0(@aws-sdk/client-s3@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(axios@1.11.0)(cheerio@1.0.0)(encoding@0.1.13)(ignore@5.3.2)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)
+      '@xala-technologies/xala-cli': 2.0.0(encoding@0.1.13)(ioredis@5.7.0)(lodash@4.17.21)(playwright@1.54.2)
       commander: 12.1.0
       fs-extra: 11.3.1
       glob: 11.0.3
@@ -22619,8 +22622,8 @@ snapshots:
       '@typescript-eslint/parser': 6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
       eslint: 9.32.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.32.0(jiti@2.5.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.32.0(jiti@2.5.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-react: 7.37.5(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-react-hooks: 4.6.2(eslint@9.32.0(jiti@2.5.1))
@@ -22639,7 +22642,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.32.0(jiti@2.5.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.1
@@ -22650,22 +22653,22 @@ snapshots:
       tinyglobby: 0.2.14
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.32.0(jiti@2.5.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.32.0(jiti@2.5.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
       eslint: 9.32.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.32.0(jiti@2.5.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.32.0(jiti@2.5.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -22676,7 +22679,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.32.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.32.0(jiti@2.5.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -24838,7 +24841,7 @@ snapshots:
     dependencies:
       '@anthropic-ai/sdk': 0.9.1(encoding@0.1.13)
       '@langchain/community': 0.0.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-dynamodb@3.859.0)(@aws-sdk/client-lambda@3.859.0)(@aws-sdk/credential-provider-node@3.859.0)(@smithy/protocol-http@3.3.0)(@smithy/signature-v4@2.3.0)(@smithy/util-utf8@2.3.0)(encoding@0.1.13)(ioredis@5.7.0)(lodash@4.17.21)(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
-      '@langchain/core': 0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(encoding@0.1.13)(ws@8.18.3)
       binary-extensions: 2.3.0
       expr-eval: 2.0.2
@@ -24939,7 +24942,7 @@ snapshots:
     dependencies:
       '@anthropic-ai/sdk': 0.9.1(encoding@0.1.13)
       '@langchain/community': 0.0.57(@aws-sdk/credential-provider-node@3.859.0)(ioredis@5.7.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
-      '@langchain/core': 0.1.63(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))
+      '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(encoding@0.1.13)(ws@8.18.3)
       binary-extensions: 2.3.0
       expr-eval: 2.0.2
@@ -25046,7 +25049,7 @@ snapshots:
       p-retry: 4.6.2
       uuid: 9.0.1
 
-  langsmith@0.1.68(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)):
+  langsmith@0.1.68(openai@4.104.0(ws@8.18.3)(zod@3.25.76)):
     dependencies:
       '@types/uuid': 10.0.0
       commander: 10.0.1

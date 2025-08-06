@@ -135,7 +135,7 @@ export const ButtonSpec: BaseComponentSpec = {
   name: 'Button',
   description: 'Interactive button element with multiple variants and sizes',
   category: 'atom',
-  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'radix', 'headless-ui', 'vanilla'],
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'ionic', 'radix', 'headless-ui', 'vanilla'],
   
   accessibility: {
     wcagLevel: 'AAA',
@@ -522,7 +522,7 @@ export const CardSpec: BaseComponentSpec = {
   name: 'Card',
   description: 'Flexible container for grouping related content with optional header, body, and footer',
   category: 'molecule',
-  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'radix', 'headless-ui', 'vanilla'],
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'ionic', 'radix', 'headless-ui', 'vanilla'],
   
   accessibility: {
     wcagLevel: 'AAA',
@@ -731,7 +731,7 @@ export const TextareaSpec: BaseComponentSpec = {
   name: 'Textarea',
   description: 'Multi-line text input with automatic resizing and validation',
   category: 'atom',
-  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'radix', 'headless-ui', 'vanilla'],
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'react-native', 'expo', 'ionic', 'radix', 'headless-ui', 'vanilla'],
   
   accessibility: {
     wcagLevel: 'AAA',
@@ -833,6 +833,399 @@ export const TextareaSpec: BaseComponentSpec = {
 };
 
 // =============================================================================
+// NAVIGATION COMPONENT SPECIFICATION
+// =============================================================================
+
+export const NavigationSpec: BaseComponentSpec = {
+  id: 'navigation',
+  name: 'Navigation',
+  description: 'Flexible navigation component with multiple layouts and responsive behavior',
+  category: 'organism',
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'ionic', 'radix', 'headless-ui', 'vanilla'],
+  
+  accessibility: {
+    wcagLevel: 'AAA',
+    roles: ['navigation', 'menubar', 'menu'],
+    ariaAttributes: ['aria-label', 'aria-current', 'aria-expanded', 'aria-controls'],
+    keyboardNavigation: true,
+    screenReaderSupport: true,
+    colorContrast: 'AAA'
+  },
+
+  styling: {
+    baseClasses: ['flex', 'items-center', 'w-full'],
+    responsiveDesign: true,
+    darkModeSupport: true,
+    customizableSpacing: true
+  },
+
+  props: [
+    {
+      name: 'layout',
+      type: "'horizontal' | 'vertical' | 'sidebar' | 'tabs' | 'breadcrumb'",
+      required: false,
+      default: 'horizontal',
+      description: 'Navigation layout type'
+    },
+    {
+      name: 'items',
+      type: 'NavigationItem[]',
+      required: true,
+      description: 'Array of navigation items'
+    },
+    {
+      name: 'variant',
+      type: "'primary' | 'secondary' | 'minimal'",
+      required: false,
+      default: 'primary',
+      description: 'Visual style variant'
+    },
+    {
+      name: 'collapsible',
+      type: 'boolean',
+      required: false,
+      default: false,
+      description: 'Whether navigation can be collapsed on mobile'
+    },
+    {
+      name: 'sticky',
+      type: 'boolean',
+      required: false,
+      default: false,
+      description: 'Whether navigation should stick to top when scrolling'
+    },
+    {
+      name: 'showIcons',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether to show icons in navigation items'
+    },
+    {
+      name: 'showLabels',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether to show labels in navigation items'
+    },
+    {
+      name: 'activeItem',
+      type: 'string',
+      required: false,
+      description: 'ID of the currently active navigation item'
+    },
+    {
+      name: 'onItemClick',
+      type: '(item: NavigationItem, event: Event) => void',
+      required: false,
+      description: 'Callback when navigation item is clicked'
+    }
+  ],
+
+  variants: [
+    {
+      name: 'primary',
+      description: 'Primary navigation with full styling',
+      styling: {
+        background: 'bg-background',
+        border: 'border-b',
+        text: 'text-foreground'
+      }
+    },
+    {
+      name: 'secondary',
+      description: 'Secondary navigation with subtle styling',
+      styling: {
+        background: 'bg-muted',
+        border: 'border-0',
+        text: 'text-muted-foreground'
+      }
+    },
+    {
+      name: 'minimal',
+      description: 'Minimal navigation without background',
+      styling: {
+        background: 'bg-transparent',
+        border: 'border-0',
+        text: 'text-foreground'
+      }
+    }
+  ],
+
+  slots: ['logo', 'start', 'center', 'end', 'mobile-menu'],
+  
+  nsmClassification: 'OPEN',
+  version: '1.0.0'
+};
+
+// =============================================================================
+// MODAL COMPONENT SPECIFICATION
+// =============================================================================
+
+export const ModalSpec: BaseComponentSpec = {
+  id: 'modal',
+  name: 'Modal',
+  description: 'Accessible modal dialog with backdrop, focus management, and animation',
+  category: 'organism',
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'ionic', 'radix', 'headless-ui', 'vanilla'],
+  
+  accessibility: {
+    wcagLevel: 'AAA',
+    roles: ['dialog', 'alertdialog'],
+    ariaAttributes: ['aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-hidden'],
+    keyboardNavigation: true,
+    screenReaderSupport: true,
+    colorContrast: 'AAA'
+  },
+
+  styling: {
+    baseClasses: ['fixed', 'inset-0', 'z-50', 'flex', 'items-center', 'justify-center'],
+    responsiveDesign: true,
+    darkModeSupport: true,
+    customizableSpacing: true
+  },
+
+  props: [
+    {
+      name: 'open',
+      type: 'boolean',
+      required: true,
+      description: 'Whether the modal is open'
+    },
+    {
+      name: 'onClose',
+      type: '() => void',
+      required: true,
+      description: 'Callback when modal should close'
+    },
+    {
+      name: 'size',
+      type: "'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'",
+      required: false,
+      default: 'md',
+      description: 'Size of the modal'
+    },
+    {
+      name: 'title',
+      type: 'string',
+      required: false,
+      description: 'Modal title for accessibility'
+    },
+    {
+      name: 'description',
+      type: 'string',
+      required: false,
+      description: 'Modal description for accessibility'
+    },
+    {
+      name: 'closeOnOverlayClick',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether clicking overlay closes modal'
+    },
+    {
+      name: 'closeOnEscape',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether pressing escape closes modal'
+    },
+    {
+      name: 'showCloseButton',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether to show close button'
+    },
+    {
+      name: 'preventScroll',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether to prevent body scroll when open'
+    },
+    {
+      name: 'animation',
+      type: "'fade' | 'scale' | 'slide' | 'none'",
+      required: false,
+      default: 'scale',
+      description: 'Animation type for modal'
+    }
+  ],
+
+  variants: [
+    {
+      name: 'default',
+      description: 'Standard modal with backdrop',
+      styling: {
+        backdrop: 'bg-black/50',
+        content: 'bg-background',
+        border: 'border',
+        shadow: 'shadow-xl'
+      }
+    },
+    {
+      name: 'alert',
+      description: 'Alert modal for important messages',
+      styling: {
+        backdrop: 'bg-red-900/20',
+        content: 'bg-background',
+        border: 'border-destructive',
+        shadow: 'shadow-xl'
+      }
+    },
+    {
+      name: 'sheet',
+      description: 'Bottom sheet style modal',
+      styling: {
+        backdrop: 'bg-black/30',
+        content: 'bg-background',
+        border: 'border-t',
+        shadow: 'shadow-2xl'
+      }
+    }
+  ],
+
+  slots: ['header', 'default', 'footer'],
+  
+  nsmClassification: 'OPEN',
+  version: '1.0.0'
+};
+
+// =============================================================================
+// DROPDOWN COMPONENT SPECIFICATION  
+// =============================================================================
+
+export const DropdownSpec: BaseComponentSpec = {
+  id: 'dropdown',
+  name: 'Dropdown',
+  description: 'Accessible dropdown menu with keyboard navigation and positioning',
+  category: 'molecule',
+  platforms: ['react', 'vue', 'angular', 'svelte', 'electron', 'nextjs', 'ionic', 'radix', 'headless-ui', 'vanilla'],
+  
+  accessibility: {
+    wcagLevel: 'AAA',
+    roles: ['menu', 'menuitem', 'menuitemradio', 'menuitemcheckbox'],
+    ariaAttributes: ['aria-haspopup', 'aria-expanded', 'aria-controls', 'aria-activedescendant'],
+    keyboardNavigation: true,
+    screenReaderSupport: true,
+    colorContrast: 'AAA'
+  },
+
+  styling: {
+    baseClasses: ['relative', 'inline-block'],
+    responsiveDesign: true,
+    darkModeSupport: true,
+    customizableSpacing: true
+  },
+
+  props: [
+    {
+      name: 'open',
+      type: 'boolean',
+      required: false,
+      description: 'Whether dropdown is open (controlled)'
+    },
+    {
+      name: 'defaultOpen',
+      type: 'boolean',
+      required: false,
+      default: false,
+      description: 'Whether dropdown is open by default (uncontrolled)'
+    },
+    {
+      name: 'onOpenChange',
+      type: '(open: boolean) => void',
+      required: false,
+      description: 'Callback when open state changes'
+    },
+    {
+      name: 'trigger',
+      type: "'click' | 'hover' | 'focus'",
+      required: false,
+      default: 'click',
+      description: 'How to trigger the dropdown'
+    },
+    {
+      name: 'placement',
+      type: "'top' | 'bottom' | 'left' | 'right' | 'auto'",
+      required: false,
+      default: 'bottom',
+      description: 'Preferred placement of dropdown'
+    },
+    {
+      name: 'offset',
+      type: 'number',
+      required: false,
+      default: 8,
+      description: 'Distance between trigger and dropdown'
+    },
+    {
+      name: 'items',
+      type: 'DropdownItem[]',
+      required: true,
+      description: 'Array of dropdown menu items'
+    },
+    {
+      name: 'closeOnSelect',
+      type: 'boolean',
+      required: false,
+      default: true,
+      description: 'Whether to close dropdown when item selected'
+    },
+    {
+      name: 'disabled',
+      type: 'boolean',
+      required: false,
+      default: false,
+      description: 'Whether dropdown is disabled'
+    },
+    {
+      name: 'onItemSelect',
+      type: '(item: DropdownItem, event: Event) => void',
+      required: false,
+      description: 'Callback when item is selected'
+    }
+  ],
+
+  variants: [
+    {
+      name: 'default',
+      description: 'Standard dropdown menu',
+      styling: {
+        content: 'bg-popover',
+        border: 'border',
+        shadow: 'shadow-md'
+      }
+    },
+    {
+      name: 'context',
+      description: 'Context menu style dropdown',
+      styling: {
+        content: 'bg-popover',
+        border: 'border-2',
+        shadow: 'shadow-lg'
+      }
+    },
+    {
+      name: 'minimal',
+      description: 'Minimal dropdown without border',
+      styling: {
+        content: 'bg-popover',
+        border: 'border-0',
+        shadow: 'shadow-sm'
+      }
+    }
+  ],
+
+  slots: ['trigger', 'default'],
+  
+  nsmClassification: 'OPEN',
+  version: '1.0.0'
+};
+
+// =============================================================================
 // COMPONENT REGISTRY
 // =============================================================================
 
@@ -842,6 +1235,9 @@ export const COMPONENT_REGISTRY = {
   textarea: TextareaSpec,
   card: CardSpec,
   form: FormSpec,
+  navigation: NavigationSpec,
+  modal: ModalSpec,
+  dropdown: DropdownSpec,
   'global-search': GlobalSearchSpec
 } as const;
 

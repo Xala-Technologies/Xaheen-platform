@@ -24,7 +24,7 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Publish Preview Package
         run: bunx pkg-pr-new publish './apps/cli' --bin

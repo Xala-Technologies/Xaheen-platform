@@ -217,17 +217,17 @@ key: ${{ runner.os }}-deps-${{ hashFiles('**/bun.lockb', '**/package.json', 'tur
 
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Run unit tests with coverage
 cd packages/xaheen-cli
-bun run test:coverage
+pnpm run test:coverage
 
 # Run integration tests
-bun run test:integration
+pnpm run test:integration
 
 # Run performance benchmarks
-bun run test:performance
+pnpm run test:performance
 ```
 
 ### Pre-commit Validation
@@ -235,12 +235,12 @@ bun run test:performance
 ```bash
 # Lint all packages
 for package in packages/*/; do
-  cd "$package" && bun run lint && cd -
+  cd "$package" && pnpm run lint && cd -
 done
 
 # Type check all packages
 for package in packages/*/; do
-  cd "$package" && bunx tsc --noEmit && cd -
+  cd "$package" && pnpm exec tsc --noEmit && cd -
 done
 
 # Security audit

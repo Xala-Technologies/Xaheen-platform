@@ -167,14 +167,14 @@ timeout-minutes: 30  # Increase as needed
 ```bash
 # Test CLI builds locally
 cd packages/xaheen-cli
-bun run build
+pnpm run build
 node dist/index.js --version
 
 # Test package creation
 npm pack --dry-run
 
 # Run tests with verbose output
-bun test --verbose
+pnpm test --verbose
 ```
 
 #### Workflow Debugging
