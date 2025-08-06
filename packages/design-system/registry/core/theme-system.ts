@@ -825,4 +825,8 @@ export const ThemeUtils = {
   /**
    * Check if theme supports platform
    */
-  supportsPlat
+  supportsPlatform: (themeName: string, platform: string): boolean => {
+    const theme = THEME_REGISTRY[themeName];
+    return theme ? theme.platforms.includes(platform) : false;
+  }
+};

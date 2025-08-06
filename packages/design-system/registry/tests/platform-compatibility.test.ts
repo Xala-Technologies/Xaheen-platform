@@ -477,7 +477,6 @@ describe('Platform Compatibility', () => {
       });
     });
   });
-});
 
 describe('Performance', () => {
   const perfTestPlatforms: Platform[] = [

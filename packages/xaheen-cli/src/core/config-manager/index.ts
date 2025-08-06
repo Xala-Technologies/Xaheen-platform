@@ -532,4 +532,44 @@ export class ConfigManager {
 	public getConfigPaths(): ConfigPaths {
 		return { ...this.configPaths };
 	}
+
+	/**
+	 * Get current configuration synchronously (used by AI services)
+	 */
+	public getConfig(): XaheenConfig {
+		if (this.cachedConfig) {
+			return this.cachedConfig;
+		}
+		
+		// Try to load synchronously for immediate access
+		try {
+			if (existsSync(this.configPaths.unified)) {
+				const configContent = readFileSync(this.configPaths.unified, 'utf-8');
+				const config = JSON.parse(configContent);
+				this.cachedConfig = XaheenConfigSchema.parse(config);
+				return this.cachedConfig;
+			}
+		} catch (error) {
+			logger.warn('Failed to load config synchronously:', error);
+		}
+
+		// Return default config if nothing else works
+		return {
+			version: "3.0.0",
+			project: {
+				name: "my-app",
+				framework: "nextjs",
+				packageManager: "bun",
+			},
+			design: {
+				platform: "react",
+				theme: "default",
+			},
+			compliance: {
+				accessibility: "AAA" as const,
+				norwegian: false,
+				gdpr: false,
+			},
+		};
+	}
 }

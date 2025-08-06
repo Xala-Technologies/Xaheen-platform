@@ -486,10 +486,14 @@ export class RegistryCommandHandler implements ICommandHandler {
     } else {
       // Check for local design system registry
       const localPaths = [
-        join(process.cwd(), 'packages/design-system/dist/registry'),
         join(process.cwd(), 'packages/design-system/public/r'),
+        join(process.cwd(), '../design-system/public/r'),
+        join(process.cwd(), 'packages/design-system/dist/registry'),
+        join(process.cwd(), '../design-system/dist/registry'),
         join(process.cwd(), 'dist/registry'),
-        join(process.cwd(), 'public/r')
+        join(process.cwd(), 'public/r'),
+        // Absolute path as fallback
+        '/Volumes/Development/Xaheen Enterprise/xaheen/packages/design-system/public/r'
       ];
 
       for (const path of localPaths) {

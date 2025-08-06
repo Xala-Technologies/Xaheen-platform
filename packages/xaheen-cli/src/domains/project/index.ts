@@ -201,16 +201,40 @@ export default class ProjectDomain {
 
 		// Interactive prompts
 		const responses = await prompts.group({
-			framework: {
+			projectType: {
 				type: "select",
-				message: "Choose your framework:",
+				message: "What type of project are you creating?",
 				options: [
-					{ value: "nextjs", label: "Next.js (Recommended)" },
-					{ value: "react", label: "React with Vite" },
-					{ value: "vue", label: "Vue.js" },
-					{ value: "angular", label: "Angular" },
-					{ value: "svelte", label: "SvelteKit" },
+					{ value: "frontend", label: "Frontend Application" },
+					{ value: "backend", label: "Backend API" },
+					{ value: "fullstack", label: "Full-Stack Application" },
 				],
+			},
+			framework: ({ results }) => {
+				if (results.projectType === "backend") {
+					return {
+						type: "select",
+						message: "Choose your backend framework:",
+						options: [
+							{ value: "nestjs", label: "NestJS (Recommended)" },
+							{ value: "express", label: "Express.js" },
+							{ value: "fastify", label: "Fastify" },
+							{ value: "nodejs", label: "Node.js (Vanilla)" },
+						],
+					};
+				} else {
+					return {
+						type: "select",
+						message: "Choose your frontend framework:",
+						options: [
+							{ value: "nextjs", label: "Next.js (Recommended)" },
+							{ value: "react", label: "React with Vite" },
+							{ value: "vue", label: "Vue.js" },
+							{ value: "angular", label: "Angular" },
+							{ value: "svelte", label: "SvelteKit" },
+						],
+					};
+				}
 			},
 			packageManager: {
 				type: "select",
@@ -246,8 +270,9 @@ export default class ProjectDomain {
 		});
 
 		return {
+			projectType: responses.projectType as string,
 			framework: responses.framework as string,
-			platform: this.getPlatformFromFramework(responses.framework as string),
+			platform: this.getPlatformFromFramework(responses.framework as string, responses.projectType as string),
 			packageManager: responses.packageManager as string,
 			theme: "default",
 			bundle: (responses.bundle as string) || undefined,
@@ -318,23 +343,18 @@ export default class ProjectDomain {
 
 		await fs.writeFile(path.join(projectPath, "turbo.json"), JSON.stringify(turboJson, null, 2), 'utf-8');
 
-		cliLogger.step(3, 4, "Creating initial web application...");
+		cliLogger.step(3, 4, "Creating application structure...");
 
-		// Generate web app from template using the new app template registry
-		await appTemplateRegistry.generateAppFromTemplate(
-			path.join(projectPath, "apps", "web"),
-			config.framework === "nextjs" ? "nextjs" : config.framework,
-			{
-				name: "web",
-				title: projectName,
-				description: `Web application for ${projectName}`,
-				appName: "web",
-				port: 3000,
-				features: ["dashboard", "navbar"],
-				framework: config.framework,
-				packageManager: config.packageManager,
-			},
-		);
+		if (config.projectType === "backend") {
+			// Create backend API structure
+			await this.createBackendStructure(projectPath, projectName, config);
+		} else if (config.projectType === "fullstack") {
+			// Create both frontend and backend
+			await this.createFullstackStructure(projectPath, projectName, config);
+		} else {
+			// Create frontend only
+			await this.createFrontendStructure(projectPath, projectName, config);
+		}
 
 		cliLogger.step(4, 4, "Finalizing project setup...");
 
@@ -427,13 +447,63 @@ This is a monorepo project created with Xaheen CLI v3.0.0.
 		return issues;
 	}
 
-	private getPlatformFromFramework(framework: string): string {
+	private async createFrontendStructure(projectPath: string, projectName: string, config: any): Promise<void> {
+		// Generate web app from template using the app template registry
+		await appTemplateRegistry.generateAppFromTemplate(
+			path.join(projectPath, "apps", "web"),
+			config.framework,
+			{
+				name: "web",
+				title: projectName,
+				description: `Web application for ${projectName}`,
+				appName: "web",
+				port: 3000,
+				features: ["dashboard", "navbar"],
+				framework: config.framework,
+				packageManager: config.packageManager,
+			},
+		);
+	}
+
+	private async createBackendStructure(projectPath: string, projectName: string, config: any): Promise<void> {
+		// Create backend API from template
+		const backendRegistry = new (await import("../../services/registry/backend-template-registry")).BackendTemplateRegistry();
+		await backendRegistry.generateBackendFromTemplate(
+			path.join(projectPath, "apps", "api"),
+			config.framework,
+			{
+				name: "api",
+				title: `${projectName} API`,
+				description: `Backend API for ${projectName}`,
+				appName: "api",
+				port: 3001,
+				framework: config.framework,
+				packageManager: config.packageManager,
+			},
+		);
+	}
+
+	private async createFullstackStructure(projectPath: string, projectName: string, config: any): Promise<void> {
+		// Create both frontend and backend
+		await this.createFrontendStructure(projectPath, projectName, config);
+		await this.createBackendStructure(projectPath, projectName, config);
+	}
+
+	private getPlatformFromFramework(framework: string, projectType: string = "frontend"): string {
+		if (projectType === "backend") {
+			return "backend";
+		}
+
 		const platformMap: Record<string, string> = {
 			nextjs: "react",
 			react: "react",
 			vue: "vue",
 			angular: "angular",
 			svelte: "svelte",
+			nestjs: "backend",
+			express: "backend",
+			fastify: "backend",
+			nodejs: "backend",
 		};
 
 		return platformMap[framework] || "react";

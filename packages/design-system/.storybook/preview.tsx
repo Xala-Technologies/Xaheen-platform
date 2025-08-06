@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
+import { withTheme } from './ThemeDecorator';
 import './styles.css';
 
 const preview: Preview = {
@@ -119,6 +120,7 @@ const preview: Preview = {
 
   // Global decorators
   decorators: [
+    withTheme,
     (Story, context) => {
       // Apply theme class to enable CSS custom properties
       const theme = context.globals.theme || 'light';
@@ -267,6 +269,25 @@ const preview: Preview = {
         items: [
           { value: 'wcag-aa', title: 'WCAG AA' },
           { value: 'wcag-aaa', title: 'WCAG AAA' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+
+    // Industry Theme Selector
+    industryTheme: {
+      description: 'Industry-specific theme',
+      defaultValue: 'enterprise',
+      toolbar: {
+        title: 'Industry Theme',
+        icon: 'paintbrush',
+        items: [
+          { value: 'enterprise', title: '🏢 Enterprise' },
+          { value: 'finance', title: '💰 Finance' },
+          { value: 'healthcare', title: '🏥 Healthcare' },
+          { value: 'education', title: '🎓 Education' },
+          { value: 'ecommerce', title: '🛒 E-commerce' },
+          { value: 'productivity', title: '⚡ Productivity' },
         ],
         dynamicTitle: true,
       },

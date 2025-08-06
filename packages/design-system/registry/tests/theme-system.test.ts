@@ -3,7 +3,7 @@
  * Comprehensive test suite for the universal theme system
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { 
   LightTheme, 
   DarkTheme, 
@@ -313,7 +313,7 @@ describe('Theme Generator', () => {
 
   test('should handle unsupported platforms', () => {
     expect(() => {
-      // @ts-ignore - Testing error case
+      // @ts-expect-error - Testing error case
       ThemeGenerator.generateThemeForPlatform(LightTheme, 'unsupported');
     }).toThrow('Unsupported platform: unsupported');
   });

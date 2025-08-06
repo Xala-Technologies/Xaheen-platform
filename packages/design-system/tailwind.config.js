@@ -13,31 +13,14 @@ const loadModule = (modulePath) => {
   return require(modulePath);
 };
 
-// Try to load from dist first, fallback to loading source files
-let colorTokens, cssColorTokens, typographyTokens, spacingTokens;
-
-try {
-  const colors = loadModule('./dist/tokens/colors');
-  colorTokens = colors.colorTokens;
-  cssColorTokens = colors.cssColorTokens;
-  
-  const typography = loadModule('./dist/tokens/typography');
-  typographyTokens = typography.typographyTokens;
-  
-  const spacing = loadModule('./dist/tokens/spacing');
-  spacingTokens = spacing.spacingTokens;
-} catch (e) {
-  // Fallback: Import token values directly for development
-  colorTokens = require('./src/tokens/colors').colorTokens;
-  cssColorTokens = require('./src/tokens/colors').cssColorTokens;
-  typographyTokens = require('./src/tokens/typography').typographyTokens;
-  spacingTokens = require('./src/tokens/spacing').spacingTokens;
-}
+// Load design tokens from CommonJS file
+const { colorTokens, cssColorTokens, typographyTokens, spacingTokens } = require('./tailwind-tokens');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './src/**/*.{ts,tsx}',
+    './registry/**/*.{ts,tsx}',
     './stories/**/*.{ts,tsx}',
   ],
   darkMode: 'class',

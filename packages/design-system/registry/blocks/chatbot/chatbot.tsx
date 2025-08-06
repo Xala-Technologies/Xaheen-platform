@@ -13,13 +13,28 @@ import { Card, CardContent } from '../../components/card/card';
 // import { useAccessibility } from '@/hooks/use-accessibility';
 // import { useResponsive } from '@/hooks/use-responsive';
 
+export interface ChatbotCardData {
+  readonly image?: string;
+  readonly title?: string;
+  readonly link?: string;
+}
+
+export interface ChatbotOptionsData {
+  readonly options?: Array<{
+    readonly id: string;
+    readonly label: string;
+    readonly value: string;
+    readonly description?: string;
+  }>;
+}
+
 export interface ChatbotMessage {
   readonly id: string;
   readonly content: string;
   readonly sender: 'user' | 'bot';
   readonly timestamp: Date;
   readonly type?: 'text' | 'card' | 'options' | 'form' | 'image' | 'chart';
-  readonly data?: any;
+  readonly data?: ChatbotCardData | ChatbotOptionsData | Record<string, unknown>;
   readonly actions?: ChatbotAction[];
   readonly feedback?: 'positive' | 'negative';
   readonly loading?: boolean;
@@ -164,18 +179,18 @@ export const Chatbot: React.FC<ChatbotProps> = ({
         return (
           <Card className="max-w-sm">
             <CardContent className="p-4">
-              {message.data?.image && (
+              {(message.data as ChatbotCardData)?.image && (
                 <img 
-                  src={message.data.image} 
-                  alt={message.data.title || ''} 
+                  src={(message.data as ChatbotCardData).image!} 
+                  alt={(message.data as ChatbotCardData).title || ''} 
                   className="w-full h-32 object-cover rounded mb-3"
                 />
               )}
-              {message.data?.title && (
-                <h4 className="font-semibold mb-2">{message.data.title}</h4>
+              {(message.data as ChatbotCardData)?.title && (
+                <h4 className="font-semibold mb-2">{(message.data as ChatbotCardData).title}</h4>
               )}
               <p className="text-sm">{message.content}</p>
-              {message.data?.link && (
+              {(message.data as ChatbotCardData)?.link && (
                 <Button variant="ghost" size="md" className="mt-3 p-0">
                   Les mer →
                 </Button>
@@ -189,7 +204,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({
           <div>
             <p className="mb-3">{message.content}</p>
             <div className="space-y-2">
-              {message.data?.options?.map((option: any) => (
+              {(message.data as ChatbotOptionsData)?.options?.map((option) => (
                 <button
                   key={option.id}
                   onClick={() => onActionClick?.({ 

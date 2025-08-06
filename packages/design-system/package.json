@@ -6,174 +6,174 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./registry": {
+      "types": "./registry/index.ts",
       "import": "./registry/index.ts",
-      "require": "./registry/index.ts",
-      "types": "./registry/index.ts"
+      "require": "./registry/index.ts"
     },
     "./registry/universal": {
+      "types": "./registry/universal-index.ts",
       "import": "./registry/universal-index.ts",
-      "require": "./registry/universal-index.ts",
-      "types": "./registry/universal-index.ts"
+      "require": "./registry/universal-index.ts"
     },
     "./react": {
+      "types": "./registry/platforms/react/index.ts",
       "import": "./registry/platforms/react/index.ts",
-      "require": "./registry/platforms/react/index.ts",
-      "types": "./registry/platforms/react/index.ts"
+      "require": "./registry/platforms/react/index.ts"
     },
     "./react/*": {
+      "types": "./registry/platforms/react/*.tsx",
       "import": "./registry/platforms/react/*.tsx",
-      "require": "./registry/platforms/react/*.tsx",
-      "types": "./registry/platforms/react/*.tsx"
+      "require": "./registry/platforms/react/*.tsx"
     },
     "./vue": {
+      "types": "./registry/platforms/vue/index.ts",
       "import": "./registry/platforms/vue/index.ts",
-      "require": "./registry/platforms/vue/index.ts",
-      "types": "./registry/platforms/vue/index.ts"
+      "require": "./registry/platforms/vue/index.ts"
     },
     "./vue/*": {
+      "types": "./registry/platforms/vue/*.vue",
       "import": "./registry/platforms/vue/*.vue",
-      "require": "./registry/platforms/vue/*.vue",
-      "types": "./registry/platforms/vue/*.vue"
+      "require": "./registry/platforms/vue/*.vue"
     },
     "./angular": {
+      "types": "./registry/platforms/angular/index.ts",
       "import": "./registry/platforms/angular/index.ts",
-      "require": "./registry/platforms/angular/index.ts",
-      "types": "./registry/platforms/angular/index.ts"
+      "require": "./registry/platforms/angular/index.ts"
     },
     "./angular/*": {
+      "types": "./registry/platforms/angular/*.ts",
       "import": "./registry/platforms/angular/*.ts",
-      "require": "./registry/platforms/angular/*.ts",
-      "types": "./registry/platforms/angular/*.ts"
+      "require": "./registry/platforms/angular/*.ts"
     },
     "./svelte": {
+      "types": "./registry/platforms/svelte/index.ts",
       "import": "./registry/platforms/svelte/index.ts",
-      "require": "./registry/platforms/svelte/index.ts",
-      "types": "./registry/platforms/svelte/index.ts"
+      "require": "./registry/platforms/svelte/index.ts"
     },
     "./svelte/*": {
+      "types": "./registry/platforms/svelte/*.svelte",
       "import": "./registry/platforms/svelte/*.svelte",
-      "require": "./registry/platforms/svelte/*.svelte",
-      "types": "./registry/platforms/svelte/*.svelte"
+      "require": "./registry/platforms/svelte/*.svelte"
     },
     "./react-native": {
+      "types": "./registry/platforms/react-native/index.ts",
       "import": "./registry/platforms/react-native/index.ts",
-      "require": "./registry/platforms/react-native/index.ts",
-      "types": "./registry/platforms/react-native/index.ts"
+      "require": "./registry/platforms/react-native/index.ts"
     },
     "./react-native/*": {
+      "types": "./registry/platforms/react-native/*.tsx",
       "import": "./registry/platforms/react-native/*.tsx",
-      "require": "./registry/platforms/react-native/*.tsx",
-      "types": "./registry/platforms/react-native/*.tsx"
+      "require": "./registry/platforms/react-native/*.tsx"
     },
     "./radix": {
+      "types": "./registry/platforms/radix/index.ts",
       "import": "./registry/platforms/radix/index.ts",
-      "require": "./registry/platforms/radix/index.ts",
-      "types": "./registry/platforms/radix/index.ts"
+      "require": "./registry/platforms/radix/index.ts"
     },
     "./radix/*": {
+      "types": "./registry/platforms/radix/*.tsx",
       "import": "./registry/platforms/radix/*.tsx",
-      "require": "./registry/platforms/radix/*.tsx",
-      "types": "./registry/platforms/radix/*.tsx"
+      "require": "./registry/platforms/radix/*.tsx"
     },
     "./headless-ui": {
+      "types": "./registry/platforms/headless-ui/index.ts",
       "import": "./registry/platforms/headless-ui/index.ts",
-      "require": "./registry/platforms/headless-ui/index.ts",
-      "types": "./registry/platforms/headless-ui/index.ts"
+      "require": "./registry/platforms/headless-ui/index.ts"
     },
     "./headless-ui/*": {
+      "types": "./registry/platforms/headless-ui/*.tsx",
       "import": "./registry/platforms/headless-ui/*.tsx",
-      "require": "./registry/platforms/headless-ui/*.tsx",
-      "types": "./registry/platforms/headless-ui/*.tsx"
+      "require": "./registry/platforms/headless-ui/*.tsx"
     },
     "./vanilla": {
+      "types": "./registry/platforms/vanilla/index.ts",
       "import": "./registry/platforms/vanilla/index.ts",
-      "require": "./registry/platforms/vanilla/index.ts",
-      "types": "./registry/platforms/vanilla/index.ts"
+      "require": "./registry/platforms/vanilla/index.ts"
     },
     "./vanilla/*": {
+      "types": "./registry/platforms/vanilla/*.js",
       "import": "./registry/platforms/vanilla/*.js",
-      "require": "./registry/platforms/vanilla/*.js",
-      "types": "./registry/platforms/vanilla/*.js"
+      "require": "./registry/platforms/vanilla/*.js"
     },
     "./electron": {
+      "types": "./registry/platforms/electron/index.ts",
       "import": "./registry/platforms/electron/index.ts",
-      "require": "./registry/platforms/electron/index.ts",
-      "types": "./registry/platforms/electron/index.ts"
+      "require": "./registry/platforms/electron/index.ts"
     },
     "./electron/*": {
+      "types": "./registry/platforms/electron/*.tsx",
       "import": "./registry/platforms/electron/*.tsx",
-      "require": "./registry/platforms/electron/*.tsx",
-      "types": "./registry/platforms/electron/*.tsx"
+      "require": "./registry/platforms/electron/*.tsx"
     },
     "./ionic": {
+      "types": "./registry/platforms/ionic/index.ts",
       "import": "./registry/platforms/ionic/index.ts",
-      "require": "./registry/platforms/ionic/index.ts",
-      "types": "./registry/platforms/ionic/index.ts"
+      "require": "./registry/platforms/ionic/index.ts"
     },
     "./ionic/*": {
+      "types": "./registry/platforms/ionic/*.tsx",
       "import": "./registry/platforms/ionic/*.tsx",
-      "require": "./registry/platforms/ionic/*.tsx",
-      "types": "./registry/platforms/ionic/*.tsx"
+      "require": "./registry/platforms/ionic/*.tsx"
     },
     "./nextjs": {
+      "types": "./registry/platforms/react/index.ts",
       "import": "./registry/platforms/react/index.ts",
-      "require": "./registry/platforms/react/index.ts",
-      "types": "./registry/platforms/react/index.ts"
+      "require": "./registry/platforms/react/index.ts"
     },
     "./nextjs/*": {
+      "types": "./registry/platforms/react/*.tsx",
       "import": "./registry/platforms/react/*.tsx",
-      "require": "./registry/platforms/react/*.tsx",
-      "types": "./registry/platforms/react/*.tsx"
+      "require": "./registry/platforms/react/*.tsx"
     },
     "./nuxt": {
+      "types": "./registry/platforms/vue/index.ts",
       "import": "./registry/platforms/vue/index.ts",
-      "require": "./registry/platforms/vue/index.ts",
-      "types": "./registry/platforms/vue/index.ts"
+      "require": "./registry/platforms/vue/index.ts"
     },
     "./nuxt/*": {
+      "types": "./registry/platforms/vue/*.vue",
       "import": "./registry/platforms/vue/*.vue",
-      "require": "./registry/platforms/vue/*.vue",
-      "types": "./registry/platforms/vue/*.vue"
+      "require": "./registry/platforms/vue/*.vue"
     },
     "./sveltekit": {
+      "types": "./registry/platforms/svelte/index.ts",
       "import": "./registry/platforms/svelte/index.ts",
-      "require": "./registry/platforms/svelte/index.ts",
-      "types": "./registry/platforms/svelte/index.ts"
+      "require": "./registry/platforms/svelte/index.ts"
     },
     "./sveltekit/*": {
+      "types": "./registry/platforms/svelte/*.svelte",
       "import": "./registry/platforms/svelte/*.svelte",
-      "require": "./registry/platforms/svelte/*.svelte",
-      "types": "./registry/platforms/svelte/*.svelte"
+      "require": "./registry/platforms/svelte/*.svelte"
     },
     "./expo": {
+      "types": "./registry/platforms/react-native/index.ts",
       "import": "./registry/platforms/react-native/index.ts",
-      "require": "./registry/platforms/react-native/index.ts",
-      "types": "./registry/platforms/react-native/index.ts"
+      "require": "./registry/platforms/react-native/index.ts"
     },
     "./expo/*": {
+      "types": "./registry/platforms/react-native/*.tsx",
       "import": "./registry/platforms/react-native/*.tsx",
-      "require": "./registry/platforms/react-native/*.tsx",
-      "types": "./registry/platforms/react-native/*.tsx"
+      "require": "./registry/platforms/react-native/*.tsx"
     },
     "./cli": {
+      "types": "./registry/cli/component-cli.ts",
       "import": "./registry/cli/component-cli.ts",
-      "require": "./registry/cli/component-cli.ts",
-      "types": "./registry/cli/component-cli.ts"
+      "require": "./registry/cli/component-cli.ts"
     },
     "./recipes": {
+      "types": "./registry/recipes/component-recipes.ts",
       "import": "./registry/recipes/component-recipes.ts",
-      "require": "./registry/recipes/component-recipes.ts",
-      "types": "./registry/recipes/component-recipes.ts"
+      "require": "./registry/recipes/component-recipes.ts"
     },
     "./tokens": {
+      "types": "./registry/core/universal-tokens.ts",
       "import": "./registry/core/universal-tokens.ts",
-      "require": "./registry/core/universal-tokens.ts",
-      "types": "./registry/core/universal-tokens.ts"
+      "require": "./registry/core/universal-tokens.ts"
     }
   },
   "files": [

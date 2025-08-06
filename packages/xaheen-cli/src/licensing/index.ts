@@ -54,4 +54,5 @@ export const CLI_LICENSE_CONFIG = {
   telemetryEnabled: process.env.XAHEEN_TELEMETRY !== 'false',
   gracePeriodDays: 7,
   warningThresholdDays: 30,
+  developmentMode: process.env.NODE_ENV === 'development' || process.env.XAHEEN_DEV_MODE === 'true',
 } as const;

@@ -100,6 +100,47 @@ export class LicenseManager {
    * Validate the current license
    */
   public async validateLicense(): Promise<LicenseValidationResult> {
+    // In development mode, bypass license validation
+    if (this.config.developmentMode) {
+      return {
+        valid: true,
+        license: {
+          id: 'dev-license',
+          customerId: 'development',
+          tier: 'enterprise',
+          features: Object.values({
+            // Include all features for development
+            'feature.frontend': 'feature.frontend',
+            'feature.backend': 'feature.backend',
+            'feature.fullstack': 'feature.fullstack',
+            'platform.react': 'platform.react',
+            'platform.nextjs': 'platform.nextjs',
+            'platform.vue': 'platform.vue',
+            'platform.angular': 'platform.angular',
+            'platform.svelte': 'platform.svelte',
+            'platform.electron': 'platform.electron',
+            'platform.react-native': 'platform.react-native',
+            'generator.components': 'generator.components',
+            'generator.layouts': 'generator.layouts',
+            'generator.forms': 'generator.forms',
+            'generator.data-tables': 'generator.data-tables',
+            'generator.charts': 'generator.charts',
+            'generator.auth': 'generator.auth',
+            'generator.api': 'generator.api',
+            'generator.database': 'generator.database',
+          }) as any[],
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+          issuedAt: new Date().toISOString(),
+          metadata: {
+            customerName: 'Development User',
+            customerEmail: 'dev@xaheen.dev',
+            organizationName: 'Development',
+            licenseType: 'development',
+          }
+        }
+      };
+    }
+
     try {
       const signedLicense = await this.loadStoredLicense();
       if (!signedLicense) {

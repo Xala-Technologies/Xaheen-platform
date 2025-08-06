@@ -569,7 +569,60 @@ export default function App() {
 - Form-associated custom elements
 - Framework-agnostic usage
 
-### 8. Ionic Implementation
+### 8. Web Components Implementation
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Components Example</title>
+  <script type="module" src="@xaheen/design-system/vanilla"></script>
+</head>
+<body>
+  <xaheen-card variant="elevated" padding="lg">
+    <h2 slot="header">Welcome to Web Components</h2>
+    
+    <xaheen-input 
+      label="Email"
+      type="email"
+      name="email"
+      required
+    ></xaheen-input>
+    
+    <xaheen-button 
+      variant="primary" 
+      size="lg"
+      type="submit"
+    >
+      Submit Form
+    </xaheen-button>
+  </xaheen-card>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const button = document.querySelector('xaheen-button');
+      const input = document.querySelector('xaheen-input');
+      
+      button.addEventListener('xaheen-click', () => {
+        if (input.value) {
+          console.log('Form submitted:', input.value);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+```
+
+**Web Components Features:**
+- Standards-compliant Custom Elements v1
+- Shadow DOM encapsulation for styling
+- Framework-agnostic usage
+- Zero runtime dependencies
+- Native form integration
+
+### 9. Ionic Implementation
 
 ```tsx
 // App.tsx
@@ -639,6 +692,118 @@ function HomePage() {
 - Haptic feedback integration
 - Capacitor plugin compatibility
 - Mobile-optimized components
+
+### 10. Headless UI Implementation
+
+```tsx
+// App.tsx
+import React, { useState } from 'react';
+import { Menu, Dialog } from '@headlessui/react';
+import {
+  Button,
+  Input,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  ComboboxInput
+} from '@xaheen/design-system/headless-ui';
+
+export default function App() {
+  const [email, setEmail] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
+
+  const countries = ['United States', 'Canada', 'United Kingdom', 'Germany'];
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <Card variant="elevated" className="space-y-4">
+        <CardHeader 
+          title="Accessible Form"
+          subtitle="Built with Headless UI primitives"
+        />
+        
+        <CardContent className="space-y-4">
+          <Input
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            error={!email && 'Email is required'}
+            helperText="We'll never share your email"
+          />
+          
+          <ComboboxInput
+            label="Country"
+            value={selectedCountry}
+            onChange={setSelectedCountry}
+            options={countries}
+            placeholder="Select or type a country"
+            filterFunction={(query, options) =>
+              options.filter(option =>
+                option.toLowerCase().includes(query.toLowerCase())
+              )
+            }
+          />
+
+          {/* Menu with Xaheen button */}
+          <Menu as="div" className="relative">
+            <Menu.Button as={Button} variant="outline">
+              Options
+            </Menu.Button>
+            <Menu.Items className="absolute mt-2 w-56 bg-white border rounded-md shadow-lg">
+              <Menu.Item>
+                {({ active }) => (
+                  <button className={active ? 'bg-gray-100' : ''}>
+                    Edit Profile
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Menu>
+        </CardContent>
+        
+        <CardFooter className="flex justify-end space-x-3">
+          <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+            Preview
+          </Button>
+          <Button variant="primary" disabled={!email}>
+            Submit
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Modal with Xaheen components */}
+      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="fixed inset-0 bg-black/25" />
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Dialog.Panel as={Card} variant="elevated" className="max-w-md">
+              <CardHeader title="Confirm Submission" />
+              <CardContent>
+                <p>Email: {email}</p>
+                <p>Country: {selectedCountry}</p>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={() => setIsModalOpen(false)}>Close</Button>
+              </CardFooter>
+            </Dialog.Panel>
+          </div>
+        </div>
+      </Dialog>
+    </div>
+  );
+}
+```
+
+**Headless UI Features:**
+- WCAG AAA accessibility compliance
+- Complete keyboard navigation support
+- Advanced focus management
+- Render props and compound component patterns
+- Data attribute-based styling hooks
 
 ## Migration Guides
 
@@ -1044,7 +1209,7 @@ Choose the approach that best fits your project:
 - **Platform-specific features** for enhanced user experiences
 
 For detailed platform-specific guides, see:
-- [Electron Guide](../platforms/ELECTRON_GUIDE.md)
-- [Web Components Guide](../platforms/WEB_COMPONENTS_GUIDE.md)
-- [Ionic Guide](../platforms/IONIC_GUIDE.md)
-- [Headless UI Guide](../platforms/HEADLESS_UI_GUIDE.md)
+- [Electron Guide](../platforms/ELECTRON_GUIDE.md) - Desktop applications with native capabilities
+- [Web Components Guide](../platforms/WEB_COMPONENTS_GUIDE.md) - Framework-agnostic custom elements
+- [Ionic Guide](../platforms/IONIC_GUIDE.md) - Mobile-first applications with native feel
+- [Headless UI Guide](../platforms/HEADLESS_UI_GUIDE.md) - Fully accessible, unstyled components

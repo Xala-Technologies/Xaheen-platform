@@ -194,6 +194,8 @@ export class ContextAwareGenerator {
       norwegianCompliant: this.isNorwegianCompliant(pattern.compliance),
       props: this.buildContextProps(pattern, projectContext),
       features: this.buildContextFeatures(pattern, projectContext, options),
+      styling: this.buildStylingOptions(projectContext),
+      dependencies: this.buildDependencies(pattern, projectContext),
       customization: this.buildCustomization(pattern, projectContext)
     };
 
@@ -1405,6 +1407,51 @@ module.exports = {
     }
 
     return optimized;
+  }
+
+  /**
+   * Build styling options for context
+   */
+  private buildStylingOptions(project: ProjectContext): Record<string, any> {
+    return {
+      theme: 'tailwind',
+      responsiveDesign: true,
+      darkModeSupport: project.features?.darkMode || false,
+      customPalette: project.features?.customBranding || false,
+      animations: project.features?.animations !== false
+    };
+  }
+
+  /**
+   * Build dependencies list for pattern and project
+   */
+  private buildDependencies(pattern: BusinessContextPattern, project: ProjectContext): readonly string[] {
+    const deps: string[] = [
+      '@xala-technologies/ui-system',
+      'react',
+      'typescript'
+    ];
+
+    // Add framework-specific dependencies
+    if (project.framework === 'nextjs') {
+      deps.push('next');
+    }
+
+    // Add domain-specific dependencies
+    if (pattern.domain === 'ecommerce') {
+      deps.push('stripe', 'react-query');
+    }
+
+    if (pattern.domain === 'saas') {
+      deps.push('react-query', '@tanstack/react-table');
+    }
+
+    // Add compliance dependencies
+    if (pattern.compliance.some(c => c.standard === 'WCAG')) {
+      deps.push('@axe-core/react');
+    }
+
+    return deps;
   }
 }
 

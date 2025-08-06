@@ -30,8 +30,11 @@ async function main(): Promise<void> {
 		const licenseIntegration = new CLILicenseIntegration(licenseManager);
 		await licenseIntegration.initialize();
 
-		// Display license status
-		await licenseIntegration.displayLicenseStatus();
+		// Display license status (only if not running a command that doesn't need it)
+		const command = process.argv[2];
+		if (!command || !['--help', '-h', 'help', '--version', '-v'].includes(command)) {
+			await licenseIntegration.displayLicenseStatus();
+		}
 
 		// Initialize configuration manager
 		const configManager = new ConfigManager();

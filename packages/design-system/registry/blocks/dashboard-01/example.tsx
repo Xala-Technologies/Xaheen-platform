@@ -177,7 +177,7 @@ export const DashboardExample: React.FC = () => {
   ];
 
   // Search handler
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (_query: string) => {
     // Mock search results
     return [
       {

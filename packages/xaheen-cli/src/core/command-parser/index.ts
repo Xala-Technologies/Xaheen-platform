@@ -955,6 +955,71 @@ export class CommandParser {
 				commandOptions.add('config');
 			}
 
+			// Add project-specific options for project domain commands
+			if (route.domain === "project" && route.action === "create") {
+				const projectOptions = ['framework', 'platform', 'package-manager', 'theme', 'bundle', 'norwegian', 'gdpr', 'backend', 'fullstack'];
+				
+				projectOptions.forEach(option => {
+					if (!commandOptions.has(option)) {
+						switch (option) {
+							case 'framework':
+								command.option("-f, --framework <framework>", "Framework to use (react, nextjs, vue, angular, svelte)", "nextjs");
+								break;
+							case 'platform':
+								command.option("-p, --platform <platform>", "Target platform (web, mobile, desktop)", "web");
+								break;
+							case 'package-manager':
+								command.option("--package-manager <manager>", "Package manager (npm, yarn, pnpm, bun)", "pnpm");
+								break;
+							case 'theme':
+								command.option("--theme <theme>", "UI theme to use", "default");
+								break;
+							case 'bundle':
+								command.option("--bundle <bundle>", "Service bundle (saas-starter, e-commerce, cms, dashboard)");
+								break;
+							case 'norwegian':
+								command.option("--norwegian", "Enable Norwegian compliance features");
+								break;
+							case 'gdpr':
+								command.option("--gdpr", "Enable GDPR compliance features");
+								break;
+							case 'backend':
+								command.option("--backend <backend>", "Backend type (nestjs, express, fastify, nodejs)");
+								break;
+							case 'fullstack':
+								command.option("--fullstack", "Create a full-stack application");
+								break;
+						}
+						commandOptions.add(option);
+					}
+				});
+			}
+
+			// Add app-specific options for app domain commands
+			if (route.domain === "app" && route.action === "create") {
+				const appOptions = ['framework', 'platform', 'package-manager', 'template'];
+				
+				appOptions.forEach(option => {
+					if (!commandOptions.has(option)) {
+						switch (option) {
+							case 'framework':
+								command.option("-f, --framework <framework>", "Framework to use (react, nextjs, vue, angular, svelte)", "nextjs");
+								break;
+							case 'platform':
+								command.option("-p, --platform <platform>", "Target platform (web, mobile, desktop)", "web");
+								break;
+							case 'package-manager':
+								command.option("--package-manager <manager>", "Package manager (npm, yarn, pnpm, bun)", "pnpm");
+								break;
+							case 'template':
+								command.option("--template <template>", "App template to use");
+								break;
+						}
+						commandOptions.add(option);
+					}
+				});
+			}
+
 			// Add make-specific options for AI enhancement
 			if (route.domain === "make") {
 				const makeOptions = ['ai', 'description', 'test', 'withStories', 'accessibility', 'norwegian', 'gdpr', 'styling', 'features', 'migration', 'controller', 'resource', 'factory', 'seeder', 'all', 'api', 'force'];

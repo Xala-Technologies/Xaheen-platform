@@ -3,7 +3,7 @@
  * Generate theme files for different platforms and configurations
  */
 
-import { UniversalTheme, ThemeId } from '../core/theme-system';
+import { UniversalTheme } from '../core/theme-system';
 import { ThemeConverters } from '../core/theme-converters';
 import { Platform } from '../core/component-specs';
 
@@ -80,7 +80,7 @@ export class ThemeGenerator {
    * Generate main theme file
    */
   private static generateMainTheme(context: ThemeGenerationContext): GeneratedThemeFile {
-    const { theme, platform, options } = context;
+    const { platform } = context;
     
     switch (platform) {
       case 'react':

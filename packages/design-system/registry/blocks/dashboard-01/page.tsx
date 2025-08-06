@@ -8,24 +8,18 @@ import React from 'react';
 import { AppSidebar } from './components/app-sidebar';
 import { DashboardHeader } from './components/dashboard-header';
 import { DashboardContent } from './components/dashboard-content';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/card/card';
-import { Button } from '../../components/button/button';
-import { LABELS } from '../../lib/constants';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/card/card';
 // TODO: Replace with context/provider pattern
 // import { useResponsive } from '@/hooks/use-responsive';
 // import { useAccessibility } from '@/hooks/use-accessibility';
 
 export default function DashboardPage(): JSX.Element {
-  // TODO: Replace with proper context/provider
-  const breakpoint = 'lg';
-  const isAtLeast = (bp: string) => window.innerWidth >= 1024;
-  const setTitle = (title: string) => document.title = title;
-  const announce = (message: string) => console.log('Announce:', message);
-
   React.useEffect(() => {
-    setTitle('Dashboard');
-    announce('Dashboard lastet');
-  }, [setTitle, announce]);
+    document.title = 'Dashboard';
+    console.log('Announce:', 'Dashboard lastet');
+  }, []);
+
+  const isAtLeast = (_: string) => window.innerWidth >= 1024;
 
   return (
     <div className="flex h-screen bg-background">

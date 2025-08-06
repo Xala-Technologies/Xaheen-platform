@@ -191,6 +191,14 @@ export class CLILicenseIntegration {
    * Display license status and warnings
    */
   public async displayLicenseStatus(): Promise<void> {
+    // Check if we're in development mode first
+    const validation = await this.licenseManager.validateLicense();
+    if (validation.valid && validation.license?.metadata.licenseType === 'development') {
+      // In development mode, only show a subtle indicator, don't warn about missing license
+      console.log(chalk.gray('🔧 Development Mode - All features unlocked'));
+      return;
+    }
+
     const license = await this.licenseManager.getLicenseInfo();
     
     if (!license) {

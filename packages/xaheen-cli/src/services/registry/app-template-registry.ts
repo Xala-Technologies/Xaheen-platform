@@ -9,7 +9,7 @@
  */
 
 import { fileURLToPath } from "node:url";
-import * as fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 import * as path from "path";
 import { logger } from "../../utils/logger";
 import { templateLoader } from "../templates/template-loader";
@@ -82,7 +82,7 @@ export class AppTemplateRegistry {
 			platform = "web";
 		}
 
-		if (!(await fs.pathExists(templatePath))) {
+		if (!existsSync(templatePath)) {
 			logger.warn(`App template not found: ${framework} at ${templatePath}`);
 			return null;
 		}
@@ -150,11 +150,16 @@ export class AppTemplateRegistry {
 			throw new Error(`App template not found: ${framework}`);
 		}
 
-		await fs.ensureDir(targetPath);
+		if (!existsSync(targetPath)) {
+			mkdirSync(targetPath, { recursive: true });
+		}
 
 		for (const file of template.files) {
 			const filePath = path.join(targetPath, file.path);
-			await fs.ensureDir(path.dirname(filePath));
+			const dirPath = path.dirname(filePath);
+			if (!existsSync(dirPath)) {
+				mkdirSync(dirPath, { recursive: true });
+			}
 
 			let content = file.content;
 			if (file.isTemplate) {
@@ -240,7 +245,7 @@ export class AppTemplateRegistry {
 
 			// Check frontend templates
 			const frontendPath = path.join(this.templatesPath, "frontend");
-			if (await fs.pathExists(frontendPath)) {
+			if (existsSync(frontendPath)) {
 				const frontendEntries = await fs.readdir(frontendPath, {
 					withFileTypes: true,
 				});
@@ -253,7 +258,7 @@ export class AppTemplateRegistry {
 
 			// Check platform templates (includes desktop and mobile)
 			const platformsPath = path.join(this.templatesPath, "platforms");
-			if (await fs.pathExists(platformsPath)) {
+			if (existsSync(platformsPath)) {
 				const platformEntries = await fs.readdir(platformsPath, {
 					withFileTypes: true,
 				});

@@ -4,7 +4,7 @@
  */
 
 import { UniversalTokens } from './core/universal-tokens';
-import { COMPONENT_REGISTRY } from './core/component-specs';
+import { COMPONENT_REGISTRY, Platform, ComponentId } from './core/component-specs';
 
 // =============================================================================
 // CORE EXPORTS (Platform Independent)
@@ -55,7 +55,7 @@ export const detectPlatform = (): Platform => {
     
     // Check for package.json dependencies (simplified)
     try {
-      const pkg = require('../../package.json');
+      const pkg = await import('../../package.json');
       const deps = { ...pkg.dependencies, ...pkg.devDependencies };
       
       if (deps['@angular/core']) return 'angular';
@@ -175,7 +175,7 @@ export const createAutoLoader = () => {
  */
 export class UniversalComponentFactory {
   private platform: Platform;
-  private componentCache = new Map<string, any>();
+  private componentCache = new Map<string, unknown>();
   
   constructor(platform?: Platform) {
     this.platform = platform || detectPlatform();
@@ -184,11 +184,11 @@ export class UniversalComponentFactory {
   /**
    * Get component for current platform
    */
-  async getComponent<T = any>(componentId: ComponentId): Promise<T> {
+  async getComponent<T = unknown>(componentId: ComponentId): Promise<T> {
     const cacheKey = `${this.platform}-${componentId}`;
     
     if (this.componentCache.has(cacheKey)) {
-      return this.componentCache.get(cacheKey);
+      return this.componentCache.get(cacheKey) as T;
     }
     
     const loader = createPlatformLoader(this.platform);
@@ -208,11 +208,11 @@ export class UniversalComponentFactory {
   /**
    * Get all available components for current platform
    */
-  async getAllComponents(): Promise<Record<string, any>> {
+  async getAllComponents(): Promise<Record<string, unknown>> {
     const loader = createPlatformLoader(this.platform);
     const componentLoaders = loader();
     
-    const components: Record<string, any> = {};
+    const components: Record<string, unknown> = {};
     
     for (const [name, loader] of Object.entries(componentLoaders)) {
       try {
@@ -289,19 +289,19 @@ export const PlatformUtils = {
 // Token utilities for all platforms
 export const TokenUtils = {
   // Convert tokens for web (CSS custom properties)
-  toCSS: (tokens: Record<string, any>, prefix = '--xaheen') => 
+  toCSS: (tokens: Record<string, unknown>, prefix = '--xaheen') => 
     UniversalTokens.converters.toCSSVariables(tokens, prefix),
     
   // Convert tokens for React Native
-  toReactNative: (tokens: Record<string, any>) =>
-    UniversalTokens.converters.toReactNative(tokens),
+  toReactNative: (tokens: Record<string, unknown>) =>
+    UniversalTokens.converters.toReactNative(tokens as any),
     
   // Convert tokens to JavaScript object
-  toJS: (tokens: Record<string, any>) =>
-    UniversalTokens.converters.toJSTheme(tokens),
+  toJS: (tokens: Record<string, unknown>) =>
+    UniversalTokens.converters.toJSTheme(tokens as any),
     
   // Get platform-specific token format
-  forPlatform: (platform: Platform, tokens: Record<string, any>) => {
+  forPlatform: (platform: Platform, tokens: Record<string, unknown>) => {
     if (PlatformUtils.isMobileBased(platform)) {
       return TokenUtils.toReactNative(tokens);
     }

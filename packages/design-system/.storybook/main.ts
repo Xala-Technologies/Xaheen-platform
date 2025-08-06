@@ -5,7 +5,10 @@ import type { StorybookConfig } from '@storybook/react-vite';
 const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
+  stories: [
+    '../src/**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    '../stories/**/*.stories.@(js|jsx|ts|tsx|mdx)'
+  ],
   
   addons: [
     getAbsolutePath("@storybook/addon-a11y"),
@@ -28,15 +31,20 @@ const config: StorybookConfig = {
     },
   },
 
-  features: {
-    buildStoriesJson: true,
-  },
 
   docs: {
     defaultName: 'Documentation'
   },
 
   viteFinal: async (config) => {
+    // Add resolve alias for cleaner imports
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        '@': '/Volumes/Development/Xaheen Enterprise/xaheen/packages/design-system',
+      },
+    };
     return config;
   },
 };

@@ -101,7 +101,7 @@ export interface LicenseData {
     customerName: string;
     customerEmail: string;
     organizationName?: string;
-    licenseType: 'trial' | 'paid' | 'enterprise';
+    licenseType: 'trial' | 'paid' | 'enterprise' | 'development';
     billingPeriod?: 'monthly' | 'yearly';
   };
 }
@@ -218,6 +218,9 @@ export interface LicenseConfiguration {
   
   /** Warning threshold before expiration (days) */
   warningThresholdDays: number;
+  
+  /** Enable development mode (bypasses license checks) */
+  developmentMode?: boolean;
 }
 
 // Pre-defined license tiers with their included features
@@ -448,4 +451,5 @@ export const DEFAULT_LICENSE_CONFIG: LicenseConfiguration = {
   telemetryEnabled: true,
   gracePeriodDays: 7,
   warningThresholdDays: 30,
+  developmentMode: false,
 };

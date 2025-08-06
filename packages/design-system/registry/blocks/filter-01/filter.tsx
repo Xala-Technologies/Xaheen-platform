@@ -6,7 +6,10 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { cn } from '../../lib/utils';
-import { LABELS, PLACEHOLDERS, ARIA_LABELS } from '../../lib/constants';
+import { useAccessibility } from '../../hooks/use-accessibility';
+import { Button } from '../../components/button/button';
+import { Input } from '../../components/input/input';
+import { Card } from '../../components/card/card';
 
 export interface FilterOption {
   readonly value: string;
@@ -68,8 +71,7 @@ export const Filter: React.FC<FilterProps> = ({
   );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const [_, { announce, getAriaLabel }] = useAccessibility();
-  const { isAtLeast } = useResponsive();
+  const [_, { announce }] = useAccessibility();
 
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
@@ -465,6 +467,12 @@ export const Filter: React.FC<FilterProps> = ({
             <div
               className="fixed inset-0 z-40"
               onClick={() => setIsDropdownOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setIsDropdownOpen(false);
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Lukk filter dropdown"
             />
             <Card className="absolute top-full mt-2 w-80 z-50 p-4 space-y-4 max-h-[400px] overflow-y-auto">
               {groups.map(renderFilterGroup)}

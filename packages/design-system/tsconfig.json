@@ -6,6 +6,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "verbatimModuleSyntax": false,
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
