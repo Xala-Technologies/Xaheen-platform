@@ -129,8 +129,6 @@ ${chalk.cyan("│")}  ${chalk.green("✓")} Monorepo-ready with apps & packages 
 ${chalk.cyan("│")}  ${chalk.green("✓")} Norwegian compliance & WCAG AAA accessibility        ${chalk.cyan("│")}
 ${chalk.cyan("╰─────────────────────────────────────────────────────────────╯")}
 `;
-
-	console.log(banner);
 }
 
 // Global CLI context interface
