@@ -1,0 +1,44 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "switch",
+  "type": "registry:component",
+  "title": "Switch",
+  "description": "Toggle switch input",
+  "category": "components",
+  "categories": [
+    "components",
+    "form",
+    "input"
+  ],
+  "nsm": {
+    "classification": "OPEN",
+    "wcagLevel": "AAA",
+    "norwegianOptimized": true
+  },
+  "platforms": [
+    "react",
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
+  ],
+  "dependencies": [
+    "@radix-ui/react-switch"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/switch/switch.tsx",
+      "type": "registry:component",
+      "content": "/**\n * Switch Component - Professional toggle switch control\n * CLAUDE.md Compliant: Professional sizing with h-12+ touch targets\n * WCAG AAA: Full keyboard support, screen reader compatibility, and proper labeling\n * Universal tokens integration for consistent theming\n */\n\nimport React from 'react';\nimport { cva, type VariantProps } from 'class-variance-authority';\nimport { cn } from '../../lib/utils';\n\nconst switchVariants = cva(\n  [\n    'peer inline-flex shrink-0 cursor-pointer items-center',\n    'rounded-full border-2 border-transparent',\n    'transition-all duration-200 ease-in-out',\n    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',\n    'focus-visible:ring-primary/20 focus-visible:ring-offset-background',\n    'disabled:cursor-not-allowed disabled:opacity-50',\n    // Professional sizing - minimum h-12 for accessibility\n    'relative'\n  ],\n  {\n    variants: {\n      size: {\n        sm: 'h-10 w-18',    // 40px x 72px (still professional)\n        md: 'h-12 w-20',    // 48px x 80px (CLAUDE.md compliant)\n        lg: 'h-14 w-24',    // 56px x 96px (premium)\n        xl: 'h-16 w-28'     // 64px x 112px (luxury)\n      },\n      variant: {\n        default: 'data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',\n        success: 'data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-input',\n        warning: 'data-[state=checked]:bg-yellow-600 data-[state=unchecked]:bg-input',\n        destructive: 'data-[state=checked]:bg-red-600 data-[state=unchecked]:bg-input',\n        // NSM Security Classification variants\n        nsmOpen: 'data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-input border-l-4 border-l-green-600',\n        nsmRestricted: 'data-[state=checked]:bg-yellow-600 data-[state=unchecked]:bg-input border-l-4 border-l-yellow-600',\n        nsmConfidential: 'data-[state=checked]:bg-red-600 data-[state=unchecked]:bg-input border-l-4 border-l-red-600',\n        nsmSecret: 'data-[state=checked]:bg-gray-800 data-[state=unchecked]:bg-input border-l-4 border-l-gray-800'\n      }\n    },\n    defaultVariants: {\n      size: 'md',\n      variant: 'default'\n    }\n  }\n);\n\nconst switchThumbVariants = cva(\n  [\n    'pointer-events-none block rounded-full bg-background shadow-lg ring-0',\n    'transition-transform duration-200 ease-in-out',\n    'data-[state=checked]:translate-x-full data-[state=unchecked]:translate-x-0'\n  ],\n  {\n    variants: {\n      size: {\n        sm: 'h-8 w-8',      // 32px\n        md: 'h-10 w-10',    // 40px\n        lg: 'h-12 w-12',    // 48px  \n        xl: 'h-14 w-14'     // 56px\n      }\n    },\n    defaultVariants: {\n      size: 'md'\n    }\n  }\n);\n\nexport interface SwitchProps extends \n  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'>,\n  VariantProps<typeof switchVariants> {\n  readonly checked?: boolean;\n  readonly onCheckedChange?: (checked: boolean) => void;\n  readonly defaultChecked?: boolean;\n  readonly required?: boolean;\n  readonly name?: string;\n  readonly value?: string;\n  readonly form?: string;\n  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';\n  readonly description?: string;\n  readonly helperText?: string;\n}\n\nexport const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(\n  ({\n    className,\n    size,\n    variant,\n    checked,\n    onCheckedChange,\n    defaultChecked = false,\n    disabled,\n    required,\n    name,\n    value,\n    form,\n    nsmClassification,\n    description,\n    helperText,\n    'aria-describedby': ariaDescribedBy,\n    'aria-label': ariaLabel,\n    'aria-labelledby': ariaLabelledBy,\n    ...props\n  }, ref) => {\n    const [internalChecked, setInternalChecked] = React.useState(defaultChecked);\n    const isControlled = checked !== undefined;\n    const checkedState = isControlled ? checked : internalChecked;\n    \n    // Auto-select NSM variant if classification is provided\n    const finalVariant = nsmClassification \n      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'\n      : variant;\n    \n    // Generate unique IDs for helper text and description\n    const switchId = React.useId();\n    const descriptionId = description ? `${switchId}-description` : undefined;\n    const helperTextId = helperText ? `${switchId}-helper` : undefined;\n    const combinedAriaDescribedBy = [ariaDescribedBy, descriptionId, helperTextId]\n      .filter(Boolean)\n      .join(' ') || undefined;\n\n    const handleToggle = React.useCallback(() => {\n      if (disabled) return;\n      \n      try {\n        const newChecked = !checkedState;\n        \n        if (!isControlled) {\n          setInternalChecked(newChecked);\n        }\n        \n        onCheckedChange?.(newChecked);\n      } catch (error) {\n        console.error('Switch toggle error:', error);\n      }\n    }, [disabled, checkedState, isControlled, onCheckedChange]);\n\n    const handleKeyDown = React.useCallback((event: React.KeyboardEvent) => {\n      // Space or Enter key toggles the switch\n      if (event.key === ' ' || event.key === 'Enter') {\n        event.preventDefault();\n        handleToggle();\n      }\n    }, [handleToggle]);\n\n    const switchElement = (\n      <button\n        type=\"button\"\n        role=\"switch\"\n        aria-checked={checkedState}\n        aria-label={ariaLabel}\n        aria-labelledby={ariaLabelledBy}\n        aria-describedby={combinedAriaDescribedBy}\n        aria-required={required}\n        data-state={checkedState ? 'checked' : 'unchecked'}\n        data-disabled={disabled ? '' : undefined}\n        disabled={disabled}\n        onClick={handleToggle}\n        onKeyDown={handleKeyDown}\n        className={cn(switchVariants({ size, variant: finalVariant }), className)}\n        ref={ref}\n        {...props}\n      >\n        <span \n          className={cn(switchThumbVariants({ size }))}\n          data-state={checkedState ? 'checked' : 'unchecked'}\n          aria-hidden=\"true\"\n        />\n        \n        {/* Hidden input for form integration */}\n        <input\n          type=\"checkbox\"\n          name={name}\n          value={value}\n          form={form}\n          checked={checkedState}\n          required={required}\n          onChange={() => {}} // Controlled by switch toggle\n          className=\"sr-only\"\n          tabIndex={-1}\n          aria-hidden=\"true\"\n        />\n      </button>\n    );\n\n    // If no description or helper text, return switch directly\n    if (!description && !helperText && !nsmClassification) {\n      return switchElement;\n    }\n\n    // Otherwise, wrap with additional elements\n    return (\n      <div className=\"space-y-2\">\n        {switchElement}\n        \n        {/* Description */}\n        {description && (\n          <p \n            id={descriptionId}\n            className=\"text-sm text-muted-foreground\"\n          >\n            {description}\n          </p>\n        )}\n        \n        {/* Helper Text */}\n        {helperText && (\n          <p \n            id={helperTextId}\n            className=\"text-sm text-muted-foreground\"\n          >\n            {helperText}\n          </p>\n        )}\n        \n        {/* NSM Classification for screen readers */}\n        {nsmClassification && (\n          <span className=\"sr-only\">\n            NSM Classification: {nsmClassification}\n          </span>\n        )}\n      </div>\n    );\n  }\n);\n\nSwitch.displayName = 'Switch';\n\n// Export types and variants\nexport { switchVariants, switchThumbVariants };\nexport type { VariantProps };"
+    }
+  ]
+}

@@ -358,6 +358,725 @@
       }
     },
     {
+      "name": "accordion",
+      "type": "registry:component",
+      "title": "Accordion",
+      "description": "Collapsible content sections with accessibility support",
+      "category": "components",
+      "categories": ["components", "navigation", "disclosure"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-accordion"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/accordion/accordion.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:component",
+      "title": "Alert",
+      "description": "Display important messages with contextual styling",
+      "category": "components",
+      "categories": ["components", "feedback", "display"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/alert/alert.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:component",
+      "title": "Avatar",
+      "description": "User profile image with fallback initials",
+      "category": "components",
+      "categories": ["components", "display", "media"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-avatar"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/avatar/avatar.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:component",
+      "title": "Badge",
+      "description": "Small status indicators and labels",
+      "category": "components",
+      "categories": ["components", "display", "status"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/badge/badge.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:component",
+      "title": "Breadcrumb",
+      "description": "Navigation breadcrumbs showing current location",
+      "category": "components",
+      "categories": ["components", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/breadcrumb/breadcrumb.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:component",
+      "title": "Calendar",
+      "description": "Date selection with Norwegian locale support",
+      "category": "components",
+      "categories": ["components", "form", "date"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["react-day-picker"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "path": "components/calendar/calendar.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:component",
+      "title": "Chart",
+      "description": "Data visualization charts with accessibility",
+      "category": "components",
+      "categories": ["components", "display", "data"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["recharts"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/chart/chart.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:component",
+      "title": "Checkbox",
+      "description": "Binary choice input with indeterminate state",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-checkbox"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/checkbox/checkbox.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:component",
+      "title": "Collapsible",
+      "description": "Expandable content area",
+      "category": "components",
+      "categories": ["components", "disclosure", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-collapsible"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/collapsible/collapsible.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:component",
+      "title": "Combobox",
+      "description": "Searchable select with autocomplete",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-popover"],
+      "registryDependencies": ["utils", "button", "popover"],
+      "files": [
+        {
+          "path": "components/combobox/combobox.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:component",
+      "title": "Dialog",
+      "description": "Modal dialogs with focus management",
+      "category": "components",
+      "categories": ["components", "overlay", "modal"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-dialog"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/dialog/dialog.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:component",
+      "title": "Dropdown Menu",
+      "description": "Contextual action menus",
+      "category": "components",
+      "categories": ["components", "navigation", "overlay"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-dropdown-menu"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/dropdown-menu/dropdown-menu.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "form",
+      "type": "registry:component",
+      "title": "Form",
+      "description": "Form components with validation",
+      "category": "components",
+      "categories": ["components", "form"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-label", "@radix-ui/react-slot", "react-hook-form"],
+      "registryDependencies": ["utils", "label"],
+      "files": [
+        {
+          "path": "components/form/form.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:component",
+      "title": "Hover Card",
+      "description": "Rich hover preview cards",
+      "category": "components",
+      "categories": ["components", "overlay", "display"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-hover-card"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/hover-card/hover-card.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "type": "registry:component",
+      "title": "Label",
+      "description": "Form field labels with accessibility",
+      "category": "components",
+      "categories": ["components", "form"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-label"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/label/label.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:component",
+      "title": "Navigation Menu",
+      "description": "Multi-level navigation menus",
+      "category": "components",
+      "categories": ["components", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-navigation-menu"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/navigation-menu/navigation-menu.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:component",
+      "title": "Pagination",
+      "description": "Navigate through paginated content",
+      "category": "components",
+      "categories": ["components", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "path": "components/pagination/pagination.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:component",
+      "title": "Popover",
+      "description": "Floating content panels",
+      "category": "components",
+      "categories": ["components", "overlay"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-popover"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/popover/popover.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:component",
+      "title": "Progress",
+      "description": "Progress indicators with accessibility",
+      "category": "components",
+      "categories": ["components", "feedback", "display"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-progress"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/progress/progress.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:component",
+      "title": "Radio Group",
+      "description": "Single choice from multiple options",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-radio-group"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/radio-group/radio-group.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:component",
+      "title": "Select",
+      "description": "Dropdown selection input",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-select"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/select/select.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:component",
+      "title": "Separator",
+      "description": "Visual content dividers",
+      "category": "components",
+      "categories": ["components", "layout"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-separator"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/separator/separator.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:component",
+      "title": "Sheet",
+      "description": "Slide-out panels and drawers",
+      "category": "components",
+      "categories": ["components", "overlay", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-dialog", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/sheet/sheet.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:component",
+      "title": "Skeleton",
+      "description": "Loading placeholder components",
+      "category": "components",
+      "categories": ["components", "feedback", "loading"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/skeleton/skeleton.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:component",
+      "title": "Slider",
+      "description": "Range input with keyboard support",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-slider"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/slider/slider.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:component",
+      "title": "Switch",
+      "description": "Toggle switch input",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-switch"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/switch/switch.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:component",
+      "title": "Table",
+      "description": "Data tables with sorting and accessibility",
+      "category": "components",
+      "categories": ["components", "display", "data"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/table/table.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:component",
+      "title": "Tabs",
+      "description": "Tabbed content navigation",
+      "category": "components",
+      "categories": ["components", "navigation"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-tabs"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/tabs/tabs.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:component",
+      "title": "Textarea",
+      "description": "Multi-line text input",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/textarea/textarea.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:component",
+      "title": "Toast",
+      "description": "Temporary notification messages",
+      "category": "components",
+      "categories": ["components", "feedback", "notification"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-toast"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/toast/toast.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:component",
+      "title": "Toggle",
+      "description": "Two-state toggle button",
+      "category": "components",
+      "categories": ["components", "form", "input"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-toggle"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/toggle/toggle.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:component",
+      "title": "Tooltip",
+      "description": "Contextual help text on hover",
+      "category": "components",
+      "categories": ["components", "overlay", "help"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-tooltip"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/tooltip/tooltip.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:component",
+      "title": "Aspect Ratio",
+      "description": "Maintain aspect ratio for content",
+      "category": "components",
+      "categories": ["components", "layout"],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "dependencies": ["@radix-ui/react-aspect-ratio"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/aspect-ratio/aspect-ratio.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
@@ -374,11 +1093,126 @@
         {
           "path": "blocks/login-form/login-form.tsx",
           "type": "registry:component"
-        },
+        }
+      ]
+    },
+    {
+      "name": "authentication-01",
+      "type": "registry:block",
+      "title": "Authentication Form 01",
+      "description": "Complete authentication form with login and signup",
+      "category": "patterns",
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["button", "input", "card", "tabs"],
+      "files": [
         {
-          "path": "blocks/login-form/page.tsx",
-          "type": "registry:page",
-          "target": "app/login/page.tsx"
+          "path": "blocks/authentication-01/authentication-01.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "authentication-02",
+      "type": "registry:block",
+      "title": "Authentication Form 02",
+      "description": "Modern authentication form with social login",
+      "category": "patterns",
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["button", "input", "card", "separator"],
+      "files": [
+        {
+          "path": "blocks/authentication-02/authentication-02.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "command-palette",
+      "type": "registry:block",
+      "title": "Command Palette",
+      "description": "Quick action command interface",
+      "category": "patterns",
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["dialog", "input", "button"],
+      "files": [
+        {
+          "path": "blocks/command-palette/command-palette.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "data-table-advanced",
+      "type": "registry:block",
+      "title": "Advanced Data Table",
+      "description": "Feature-rich data table with sorting, filtering, and pagination",
+      "category": "patterns",
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["table", "button", "input", "select", "pagination"],
+      "files": [
+        {
+          "path": "blocks/data-table-advanced/data-table-advanced.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "profile-01",
+      "type": "registry:block",
+      "title": "Profile Page",
+      "description": "User profile page with editable fields",
+      "category": "patterns",
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["card", "avatar", "button", "input", "form"],
+      "files": [
+        {
+          "path": "blocks/profile-01/profile-01.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "settings-01",
+      "type": "registry:block",
+      "title": "Settings Page",
+      "description": "Application settings with organized sections",
+      "category": "patterns",
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      },
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
+      "registryDependencies": ["card", "switch", "button", "input", "separator"],
+      "files": [
+        {
+          "path": "blocks/settings-01/settings-01.tsx",
+          "type": "registry:component"
         }
       ]
     }

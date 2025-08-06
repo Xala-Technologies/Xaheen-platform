@@ -176,6 +176,731 @@
       ]
     },
     {
+      "name": "accordion",
+      "type": "registry:component",
+      "title": "Accordion",
+      "description": "Collapsible content sections with accessibility support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "alert",
+      "type": "registry:component",
+      "title": "Alert",
+      "description": "Display important messages with contextual styling",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "avatar",
+      "type": "registry:component",
+      "title": "Avatar",
+      "description": "User profile image with fallback initials",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "badge",
+      "type": "registry:component",
+      "title": "Badge",
+      "description": "Small status indicators and labels",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:component",
+      "title": "Breadcrumb",
+      "description": "Navigation breadcrumbs showing current location",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "calendar",
+      "type": "registry:component",
+      "title": "Calendar",
+      "description": "Date selection with Norwegian locale support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:component",
+      "title": "Checkbox",
+      "description": "Binary choice input with indeterminate state",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:component",
+      "title": "Collapsible",
+      "description": "Expandable content area",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "combobox",
+      "type": "registry:component",
+      "title": "Combobox",
+      "description": "Searchable select with autocomplete",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "dialog",
+      "type": "registry:component",
+      "title": "Dialog",
+      "description": "Modal dialogs with focus management",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:component",
+      "title": "Dropdown Menu",
+      "description": "Contextual action menus",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "form",
+      "type": "registry:component",
+      "title": "Form",
+      "description": "Form components with validation",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "label",
+      "type": "registry:component",
+      "title": "Label",
+      "description": "Form field labels with accessibility",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "pagination",
+      "type": "registry:component",
+      "title": "Pagination",
+      "description": "Navigate through paginated content",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "popover",
+      "type": "registry:component",
+      "title": "Popover",
+      "description": "Floating content panels",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "progress",
+      "type": "registry:component",
+      "title": "Progress",
+      "description": "Progress indicators with accessibility",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:component",
+      "title": "Radio Group",
+      "description": "Single choice from multiple options",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "select",
+      "type": "registry:component",
+      "title": "Select",
+      "description": "Dropdown selection input",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "separator",
+      "type": "registry:component",
+      "title": "Separator",
+      "description": "Visual content dividers",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "sheet",
+      "type": "registry:component",
+      "title": "Sheet",
+      "description": "Slide-out panels and drawers",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:component",
+      "title": "Skeleton",
+      "description": "Loading placeholder components",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "slider",
+      "type": "registry:component",
+      "title": "Slider",
+      "description": "Range input with keyboard support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "switch",
+      "type": "registry:component",
+      "title": "Switch",
+      "description": "Toggle switch input",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "table",
+      "type": "registry:component",
+      "title": "Table",
+      "description": "Data tables with sorting and accessibility",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "tabs",
+      "type": "registry:component",
+      "title": "Tabs",
+      "description": "Tabbed content navigation",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "textarea",
+      "type": "registry:component",
+      "title": "Textarea",
+      "description": "Multi-line text input",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "toast",
+      "type": "registry:component",
+      "title": "Toast",
+      "description": "Temporary notification messages",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "toggle",
+      "type": "registry:component",
+      "title": "Toggle",
+      "description": "Two-state toggle button",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:component",
+      "title": "Aspect Ratio",
+      "description": "Maintain aspect ratio for content",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
@@ -196,6 +921,106 @@
       ],
       "nsm": {
         "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "authentication-01",
+      "type": "registry:block",
+      "title": "Authentication Form 01",
+      "description": "Complete authentication form with login and signup",
+      "category": "patterns",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "authentication-02",
+      "type": "registry:block",
+      "title": "Authentication Form 02",
+      "description": "Modern authentication form with social login",
+      "category": "patterns",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "profile-01",
+      "type": "registry:block",
+      "title": "Profile Page",
+      "description": "User profile page with editable fields",
+      "category": "patterns",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "settings-01",
+      "type": "registry:block",
+      "title": "Settings Page",
+      "description": "Application settings with organized sections",
+      "category": "patterns",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
         "wcagLevel": "AAA",
         "norwegianOptimized": true
       }

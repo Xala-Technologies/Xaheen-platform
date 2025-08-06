@@ -60,7 +60,7 @@ export default class ProjectDomain {
 			process.chdir(projectPath);
 
 			const initialConfig: UnifiedConfig = {
-				version: "3.0.0",
+				version: "5.0.0",
 				project: {
 					name: projectName,
 					framework: projectConfig.framework,
@@ -270,15 +270,24 @@ export default class ProjectDomain {
 			},
 		});
 
-		return {
+		console.log("DEBUG: Prompt responses:", {
+			projectType: responses.projectType,
+			framework: responses.framework,
+			packageManager: responses.packageManager
+		});
+
+		const result = {
 			framework: responses.framework as string,
-			platform: this.getPlatformFromFramework(responses.framework as string, responses.projectType as string),
+			platform: responses.framework as string, // Use framework name directly for design.platform
 			packageManager: responses.packageManager as string,
 			theme: "default",
 			bundle: (responses.bundle as string) || undefined,
 			norwegian: responses.norwegian as boolean,
 			gdpr: responses.gdpr as boolean,
 		};
+
+		console.log("DEBUG: Final config:", result);
+		return result;
 	}
 
 	private async createProjectStructure(
@@ -361,7 +370,7 @@ export default class ProjectDomain {
 		// Create basic README
 		const readme = `# ${projectName}
 
-This is a monorepo project created with Xaheen CLI v3.0.0.
+This is a monorepo project created with Xaheen CLI v5.0.0.
 
 ## Getting Started
 
@@ -490,7 +499,10 @@ This is a monorepo project created with Xaheen CLI v3.0.0.
 	}
 
 	private getPlatformFromFramework(framework: string, projectType: string = "frontend"): string {
+		console.log("DEBUG getPlatformFromFramework - Input:", { framework, projectType });
+		
 		if (projectType === "backend") {
+			console.log("DEBUG getPlatformFromFramework - Backend detected, returning 'backend'");
 			return "backend";
 		}
 
@@ -506,7 +518,9 @@ This is a monorepo project created with Xaheen CLI v3.0.0.
 			nodejs: "backend",
 		};
 
-		return platformMap[framework] || "react";
+		const result = platformMap[framework] || "react";
+		console.log("DEBUG getPlatformFromFramework - Result:", result);
+		return result;
 	}
 
 	private showNextSteps(projectName: string, config: any): void {

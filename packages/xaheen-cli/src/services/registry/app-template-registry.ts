@@ -36,7 +36,12 @@ export class AppTemplateRegistry {
 	private templateCache: Map<string, AppTemplate> = new Map();
 
 	constructor() {
-		this.templatesPath = path.resolve(__dirname, "../templates");
+		// In development: src/services/registry -> src/templates
+		// In production (dist): dist -> src/templates
+		const isDist = __dirname.includes("dist");
+		this.templatesPath = isDist 
+			? path.resolve(__dirname, "../src/templates") 
+			: path.resolve(__dirname, "../templates");
 	}
 
 	/**
@@ -78,7 +83,17 @@ export class AppTemplateRegistry {
 			templatePath = path.join(this.templatesPath, "platforms", framework);
 			platform = "mobile";
 		} else {
-			templatePath = path.join(this.templatesPath, "frontend", framework);
+			// Map framework names to actual template directory names
+			const templateMapping: Record<string, string> = {
+				nextjs: "next", // "nextjs" framework uses "next" templates
+				react: "react",
+				vue: "vue", 
+				angular: "angular",
+				svelte: "svelte",
+			};
+			
+			const templateDir = templateMapping[framework] || framework;
+			templatePath = path.join(this.templatesPath, "frontend", templateDir);
 			platform = "web";
 		}
 
@@ -165,20 +180,32 @@ export class AppTemplateRegistry {
 			if (file.isTemplate) {
 				// Use the template loader for proper Handlebars rendering
 				try {
-					// Determine the correct subdirectory for the template
+					// Determine the correct subdirectory and template name for the template
 					let subdir: string;
+					let templateDir: string;
+					
 					if (
 						template.framework === "electron" ||
 						template.framework === "react-native"
 					) {
 						subdir = "platforms";
+						templateDir = template.framework;
 					} else {
 						subdir = "frontend";
+						// Map framework names to actual template directory names
+						const templateMapping: Record<string, string> = {
+							nextjs: "next", // "nextjs" framework uses "next" templates
+							react: "react",
+							vue: "vue", 
+							angular: "angular",
+							svelte: "svelte",
+						};
+						templateDir = templateMapping[template.framework] || template.framework;
 					}
 
 					const relativePath = path.join(
 						subdir,
-						template.framework,
+						templateDir,
 						file.path + ".hbs",
 					);
 					content = await templateLoader.renderTemplate(

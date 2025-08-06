@@ -1,0 +1,50 @@
+✔ Initialized template inheritance system with base templates
+✔ Initialized business context patterns
+
+
+	██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
+	╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
+	 ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║
+	 ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║
+	██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║
+	╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝
+	
+	██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
+	██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
+	██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
+	██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗
+	██████╔╝╚██████╔╝██║███████╗██████╔╝███████╗██║  ██║
+	╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+
+	╭─────────────────────────────────────────────────────────────╮
+	│  Xaheen CLI v5.0.0                                     │
+	│  Service-based architecture and AI-powered components    │
+	│                                                             │
+	│  • Professional, Laravel-inspired command system              │
+	│  • AI-driven component and code generation                   │
+	│  • Multi-platform: web, mobile, desktop                      │
+	│  • Monorepo-ready: apps and packages                         │
+	│  • Norwegian compliance, WCAG 2.2 AAA, NSM, ISO27001         │
+	╰─────────────────────────────────────────────────────────────╯
+	
+⚠️  No license found
+💡 Activate a license: xaheen license activate <key>
+ℹ [1/4] Creating project directory structure...
+ℹ [2/4] Setting up monorepo configuration...
+ℹ [3/4] Creating application structure...
+
+ WARN  App template not found: nextjs at /Volumes/Development/Xaheen Enterprise/xaheen/packages/xaheen-cli/templates/frontend/next
+
+
+ ERROR  Command failed: project create Failed to create project: Error: App template not found: nextjs
+
+    at ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17275:17)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74809:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74372:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75439:7)
+    at async main (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:77139:5)
+
+
+ ERROR  CLI Error [PROJECT_CREATION_FAILED]: Failed to create project: Error: App template not found: nextjs
+

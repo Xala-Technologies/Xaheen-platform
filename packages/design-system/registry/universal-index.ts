@@ -83,30 +83,75 @@ export const detectPlatform = (): Platform => {
 export const createPlatformLoader = (platform: Platform) => {
   const loaders = {
     react: () => ({
+      Accordion: () => import('./platforms/react/accordion').then(m => m.Accordion),
+      Alert: () => import('./components/alert/alert').then(m => m.Alert),
+      AspectRatio: () => import('./components/aspect-ratio/aspect-ratio').then(m => m.AspectRatio),
+      Avatar: () => import('./components/avatar/avatar').then(m => m.Avatar),
+      Badge: () => import('./components/badge/badge').then(m => m.Badge),
+      Breadcrumb: () => import('./components/breadcrumb/breadcrumb').then(m => m.Breadcrumb),
       Button: () => import('./platforms/react/button').then(m => m.Button),
-      Input: () => import('./platforms/react/input').then(m => m.Input),
+      Calendar: () => import('./components/calendar/calendar').then(m => m.Calendar),
       Card: () => import('./platforms/react/card').then(m => m.Card),
+      Chart: () => import('./components/chart/chart').then(m => m.Chart),
+      Checkbox: () => import('./components/checkbox/checkbox').then(m => m.Checkbox),
+      Collapsible: () => import('./components/collapsible/collapsible').then(m => m.Collapsible),
+      Combobox: () => import('./components/combobox/combobox').then(m => m.Combobox),
+      Dialog: () => import('./components/dialog/dialog').then(m => m.Dialog),
+      DropdownMenu: () => import('./components/dropdown-menu/dropdown-menu').then(m => m.DropdownMenu),
+      Form: () => import('./components/form/form').then(m => m.Form),
+      HoverCard: () => import('./components/hover-card/hover-card').then(m => m.HoverCard),
+      Input: () => import('./platforms/react/input').then(m => m.Input),
+      Label: () => import('./components/label/label').then(m => m.Label),
+      NavigationMenu: () => import('./components/navigation-menu/navigation-menu').then(m => m.NavigationMenu),
+      Pagination: () => import('./components/pagination/pagination').then(m => m.Pagination),
+      Popover: () => import('./components/popover/popover').then(m => m.Popover),
+      Progress: () => import('./components/progress/progress').then(m => m.Progress),
+      RadioGroup: () => import('./components/radio-group/radio-group').then(m => m.RadioGroup),
+      Select: () => import('./components/select/select').then(m => m.Select),
+      Separator: () => import('./components/separator/separator').then(m => m.Separator),
+      Sheet: () => import('./components/sheet/sheet').then(m => m.Sheet),
+      Skeleton: () => import('./components/skeleton/skeleton').then(m => m.Skeleton),
+      Slider: () => import('./components/slider/slider').then(m => m.Slider),
+      Switch: () => import('./components/switch/switch').then(m => m.Switch),
+      Table: () => import('./components/table/table').then(m => m.Table),
+      Tabs: () => import('./components/tabs/tabs').then(m => m.Tabs),
+      Textarea: () => import('./components/textarea/textarea').then(m => m.Textarea),
+      Toast: () => import('./components/toast/toast').then(m => m.Toast),
+      Toggle: () => import('./components/toggle/toggle').then(m => m.Toggle),
+      Tooltip: () => import('./components/tooltip/tooltip').then(m => m.Tooltip),
+      // Blocks
+      LoginForm: () => import('./blocks/login-form/login-form').then(m => m.LoginForm),
+      Authentication01: () => import('./blocks/authentication-01/authentication-01').then(m => m.Authentication01),
+      Authentication02: () => import('./blocks/authentication-02/authentication-02').then(m => m.Authentication02),
+      CommandPalette: () => import('./blocks/command-palette/command-palette').then(m => m.CommandPalette),
+      DataTableAdvanced: () => import('./blocks/data-table-advanced/data-table-advanced').then(m => m.DataTableAdvanced),
+      Profile01: () => import('./blocks/profile-01/profile-01').then(m => m.Profile01),
+      Settings01: () => import('./blocks/settings-01/settings-01').then(m => m.Settings01),
     }),
     
     'react-native': () => ({
+      Accordion: () => import('./platforms/react-native/Accordion').then(m => m.Accordion),
       Button: () => import('./platforms/react-native/Button').then(m => m.Button),
       Input: () => import('./platforms/react-native/Input').then(m => m.Input),
       Card: () => import('./platforms/react-native/Card').then(m => m.Card),
     }),
     
     vue: () => ({
+      Accordion: () => import('./platforms/vue/Accordion.vue').then(m => m.default),
       Button: () => import('./platforms/vue/Button.vue').then(m => m.default),
       Input: () => import('./platforms/vue/Input.vue').then(m => m.default),
       Card: () => import('./platforms/vue/Card.vue').then(m => m.default),
     }),
     
     angular: () => ({
+      Accordion: () => import('./platforms/angular/accordion.component').then(m => m.AccordionComponent),
       Button: () => import('./platforms/angular/button.component').then(m => m.ButtonComponent),
       Input: () => import('./platforms/angular/input.component').then(m => m.InputComponent),
       Card: () => import('./platforms/angular/card.component').then(m => m.CardComponent),
     }),
     
     svelte: () => ({
+      Accordion: () => import('./platforms/svelte/Accordion.svelte').then(m => m.default),
       Button: () => import('./platforms/svelte/Button.svelte').then(m => m.default),
       Input: () => import('./platforms/svelte/Input.svelte').then(m => m.default),
       Card: () => import('./platforms/svelte/Card.svelte').then(m => m.default),
@@ -114,6 +159,7 @@ export const createPlatformLoader = (platform: Platform) => {
     
     // Platform-specific implementations
     electron: () => ({
+      Accordion: () => import('./platforms/electron/accordion').then(m => m.Accordion),
       Button: () => import('./platforms/electron/button').then(m => m.Button),
       Input: () => import('./platforms/electron/input').then(m => m.Input),
       Card: () => import('./platforms/electron/card').then(m => m.Card),
@@ -123,6 +169,7 @@ export const createPlatformLoader = (platform: Platform) => {
     }),
     
     ionic: () => ({
+      Accordion: () => import('./platforms/ionic/accordion').then(m => m.Accordion),
       Button: () => import('./platforms/ionic/button').then(m => m.Button),
       Input: () => import('./platforms/ionic/input').then(m => m.Input),
       Card: () => import('./platforms/ionic/card').then(m => m.Card),
@@ -130,18 +177,21 @@ export const createPlatformLoader = (platform: Platform) => {
     }),
     
     vanilla: () => ({
+      Accordion: () => import('./platforms/vanilla/accordion').then(m => m.Accordion),
       Button: () => import('./platforms/vanilla/button').then(m => m.Button),
       Input: () => import('./platforms/vanilla/input').then(m => m.Input),
       Card: () => import('./platforms/vanilla/card').then(m => m.Card),
     }),
     
     'headless-ui': () => ({
+      Accordion: () => import('./platforms/headless-ui/accordion').then(m => m.Accordion),
       Button: () => import('./platforms/headless-ui/button').then(m => m.Button),
       Input: () => import('./platforms/headless-ui/input').then(m => m.Input),
       Card: () => import('./platforms/headless-ui/card').then(m => m.Card),
     }),
     
     radix: () => ({
+      Accordion: () => import('./platforms/radix/accordion').then(m => m.Accordion),
       Button: () => import('./platforms/radix/button').then(m => m.Button),
       Input: () => import('./platforms/radix/input').then(m => m.Input),
       Card: () => import('./platforms/radix/card').then(m => m.Card),

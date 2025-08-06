@@ -1,0 +1,44 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "toggle",
+  "type": "registry:component",
+  "title": "Toggle",
+  "description": "Two-state toggle button",
+  "category": "components",
+  "categories": [
+    "components",
+    "form",
+    "input"
+  ],
+  "nsm": {
+    "classification": "OPEN",
+    "wcagLevel": "AAA",
+    "norwegianOptimized": true
+  },
+  "platforms": [
+    "react",
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
+  ],
+  "dependencies": [
+    "@radix-ui/react-toggle"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/toggle/toggle.tsx",
+      "type": "registry:component",
+      "content": "/**\n * Toggle Component - Professional toggle button control\n * CLAUDE.md Compliant: Professional sizing with h-12+ touch targets\n * WCAG AAA: Full keyboard support, screen reader compatibility, and proper labeling\n * Universal tokens integration for consistent theming\n */\n\nimport React from 'react';\nimport { cva, type VariantProps } from 'class-variance-authority';\nimport { cn } from '../../lib/utils';\n\nconst toggleVariants = cva(\n  [\n    'inline-flex items-center justify-center font-medium',\n    'border-2 border-transparent rounded-lg',\n    'transition-all duration-200 ease-in-out',\n    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',\n    'focus-visible:ring-primary/20 focus-visible:ring-offset-background',\n    'disabled:pointer-events-none disabled:opacity-50',\n    'active:scale-95',\n    'shadow-sm hover:shadow-md'\n  ],\n  {\n    variants: {\n      variant: {\n        default: [\n          'bg-transparent border-input text-foreground',\n          'hover:bg-accent hover:text-accent-foreground',\n          'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',\n          'data-[state=on]:border-primary'\n        ],\n        outline: [\n          'bg-transparent border-2 border-input text-foreground',\n          'hover:bg-accent hover:text-accent-foreground hover:border-accent',\n          'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',\n          'data-[state=on]:border-primary'\n        ],\n        ghost: [\n          'bg-transparent border-transparent text-foreground',\n          'hover:bg-accent hover:text-accent-foreground',\n          'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground'\n        ],\n        success: [\n          'bg-transparent border-input text-foreground',\n          'hover:bg-green-50 hover:border-green-200',\n          'data-[state=on]:bg-green-600 data-[state=on]:text-white data-[state=on]:border-green-600'\n        ],\n        warning: [\n          'bg-transparent border-input text-foreground',\n          'hover:bg-yellow-50 hover:border-yellow-200',\n          'data-[state=on]:bg-yellow-600 data-[state=on]:text-white data-[state=on]:border-yellow-600'\n        ],\n        destructive: [\n          'bg-transparent border-input text-foreground',\n          'hover:bg-red-50 hover:border-red-200',\n          'data-[state=on]:bg-red-600 data-[state=on]:text-white data-[state=on]:border-red-600'\n        ],\n        // NSM Security Classification variants\n        nsmOpen: [\n          'bg-transparent border-input text-foreground border-l-4 border-l-green-600',\n          'hover:bg-green-50',\n          'data-[state=on]:bg-green-600 data-[state=on]:text-white'\n        ],\n        nsmRestricted: [\n          'bg-transparent border-input text-foreground border-l-4 border-l-yellow-600',\n          'hover:bg-yellow-50',\n          'data-[state=on]:bg-yellow-600 data-[state=on]:text-white'\n        ],\n        nsmConfidential: [\n          'bg-transparent border-input text-foreground border-l-4 border-l-red-600',\n          'hover:bg-red-50',\n          'data-[state=on]:bg-red-600 data-[state=on]:text-white'\n        ],\n        nsmSecret: [\n          'bg-transparent border-input text-foreground border-l-4 border-l-gray-800',\n          'hover:bg-gray-50',\n          'data-[state=on]:bg-gray-800 data-[state=on]:text-white'\n        ]\n      },\n      size: {\n        sm: 'h-10 px-3 text-sm',       // 40px (still professional)\n        md: 'h-12 px-4 text-base',     // 48px (CLAUDE.md compliant)\n        lg: 'h-14 px-5 text-lg',       // 56px (premium)\n        xl: 'h-16 px-6 text-xl'        // 64px (luxury)\n      }\n    },\n    defaultVariants: {\n      variant: 'default',\n      size: 'md'\n    }\n  }\n);\n\nexport interface ToggleProps extends \n  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'>,\n  VariantProps<typeof toggleVariants> {\n  readonly pressed?: boolean;\n  readonly onPressedChange?: (pressed: boolean) => void;\n  readonly defaultPressed?: boolean;\n  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';\n  readonly description?: string;\n  readonly helperText?: string;\n}\n\nexport const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(\n  ({\n    className,\n    variant,\n    size,\n    pressed,\n    onPressedChange,\n    defaultPressed = false,\n    disabled,\n    nsmClassification,\n    description,\n    helperText,\n    children,\n    'aria-label': ariaLabel,\n    'aria-labelledby': ariaLabelledBy,\n    'aria-describedby': ariaDescribedBy,\n    ...props\n  }, ref) => {\n    const [internalPressed, setInternalPressed] = React.useState(defaultPressed);\n    const isControlled = pressed !== undefined;\n    const pressedState = isControlled ? pressed : internalPressed;\n    \n    // Auto-select NSM variant if classification is provided\n    const finalVariant = nsmClassification \n      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'\n      : variant;\n    \n    // Generate unique IDs\n    const toggleId = React.useId();\n    const descriptionId = description ? `${toggleId}-description` : undefined;\n    const helperTextId = helperText ? `${toggleId}-helper` : undefined;\n    const combinedAriaDescribedBy = [ariaDescribedBy, descriptionId, helperTextId]\n      .filter(Boolean)\n      .join(' ') || undefined;\n\n    const handleToggle = React.useCallback(() => {\n      if (disabled) return;\n      \n      try {\n        const newPressed = !pressedState;\n        \n        if (!isControlled) {\n          setInternalPressed(newPressed);\n        }\n        \n        onPressedChange?.(newPressed);\n      } catch (error) {\n        console.error('Toggle error:', error);\n      }\n    }, [disabled, pressedState, isControlled, onPressedChange]);\n\n    const handleKeyDown = React.useCallback((event: React.KeyboardEvent) => {\n      // Space key toggles the button (Enter is handled by default button behavior)\n      if (event.key === ' ') {\n        event.preventDefault();\n        handleToggle();\n      }\n    }, [handleToggle]);\n\n    const toggleElement = (\n      <button\n        type=\"button\"\n        role=\"button\"\n        aria-pressed={pressedState}\n        aria-label={ariaLabel}\n        aria-labelledby={ariaLabelledBy}\n        aria-describedby={combinedAriaDescribedBy}\n        data-state={pressedState ? 'on' : 'off'}\n        data-disabled={disabled ? '' : undefined}\n        disabled={disabled}\n        onClick={handleToggle}\n        onKeyDown={handleKeyDown}\n        className={cn(toggleVariants({ variant: finalVariant, size }), className)}\n        ref={ref}\n        {...props}\n      >\n        {children}\n      </button>\n    );\n\n    // If no description, helper text, or NSM classification, return toggle directly\n    if (!description && !helperText && !nsmClassification) {\n      return toggleElement;\n    }\n\n    // Otherwise, wrap with additional elements\n    return (\n      <div className=\"space-y-2\">\n        {toggleElement}\n        \n        {/* Description */}\n        {description && (\n          <p \n            id={descriptionId}\n            className=\"text-sm text-muted-foreground\"\n          >\n            {description}\n          </p>\n        )}\n        \n        {/* Helper Text */}\n        {helperText && (\n          <p \n            id={helperTextId}\n            className=\"text-sm text-muted-foreground\"\n          >\n            {helperText}\n          </p>\n        )}\n        \n        {/* NSM Classification for screen readers */}\n        {nsmClassification && (\n          <span className=\"sr-only\">\n            NSM Classification: {nsmClassification}\n          </span>\n        )}\n      </div>\n    );\n  }\n);\n\nToggle.displayName = 'Toggle';\n\n// Export types and variants\nexport { toggleVariants };\nexport type { VariantProps };"
+    }
+  ]
+}

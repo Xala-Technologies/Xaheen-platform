@@ -1,0 +1,255 @@
+✔ Initialized template inheritance system with base templates
+✔ Initialized business context patterns
+
+
+	██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗
+	╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║
+	 ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║
+	 ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║
+	██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║
+	╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝
+	
+	██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗
+	██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
+	██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
+	██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗
+	██████╔╝╚██████╔╝██║███████╗██████╔╝███████╗██║  ██║
+	╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+
+	╭─────────────────────────────────────────────────────────────╮
+	│  Xaheen CLI v5.0.0                                     │
+	│  Service-based architecture and AI-powered components    │
+	│                                                             │
+	│  • Professional, Laravel-inspired command system              │
+	│  • AI-driven component and code generation                   │
+	│  • Multi-platform: web, mobile, desktop                      │
+	│  • Monorepo-ready: apps and packages                         │
+	│  • Norwegian compliance, WCAG 2.2 AAA, NSM, ISO27001         │
+	╰─────────────────────────────────────────────────────────────╯
+	
+⚠️  No license found
+💡 Activate a license: xaheen license activate <key>
+ℹ [1/4] Creating project directory structure...
+ℹ [2/4] Setting up monorepo configuration...
+ℹ [3/4] Creating application structure...
+
+ WARN  Failed to render template .eslintrc.json, using simple replacement: Template not found: frontend/nextjs/.eslintrc.json.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template README.md, using simple replacement: Template not found: frontend/nextjs/README.md.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template next.config.js, using simple replacement: Template not found: frontend/nextjs/next.config.js.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template package.json, using simple replacement: Template not found: frontend/nextjs/package.json.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template postcss.config.js, using simple replacement: Template not found: frontend/nextjs/postcss.config.js.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template src/app/globals.css, using simple replacement: Template not found: frontend/nextjs/src/app/globals.css.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template src/app/layout.tsx, using simple replacement: Template not found: frontend/nextjs/src/app/layout.tsx.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template src/app/page.tsx, using simple replacement: Template not found: frontend/nextjs/src/app/page.tsx.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template tailwind.config.js, using simple replacement: Template not found: frontend/nextjs/tailwind.config.js.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+
+ WARN  Failed to render template tsconfig.json, using simple replacement: Template not found: frontend/nextjs/tsconfig.json.hbs
+
+    at TemplateLoader.loadTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15768:17)
+    at TemplateLoader.renderTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:15788:37)
+    at AppTemplateRegistry.generateAppFromTemplate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:16782:46)
+    at async ProjectDomain.createFrontendStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17544:9)
+    at async ProjectDomain.createProjectStructure (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17469:11)
+    at async ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17220:11)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+
+ℹ [4/4] Finalizing project setup...
+
+ ERROR  Failed to save configuration: [
+  {
+    "received": "web",
+    "code": "invalid_enum_value",
+    "options": [
+      "react",
+      "vue",
+      "angular",
+      "svelte",
+      "flutter",
+      "react-native"
+    ],
+    "path": [
+      "design",
+      "platform"
+    ],
+    "message": "Invalid enum value. Expected 'react' | 'vue' | 'angular' | 'svelte' | 'flutter' | 'react-native', received 'web'"
+  }
+]
+
+    at get error (/Volumes/Development/Xaheen%20Enterprise/xaheen/node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/types.js:39:31)
+    at ZodObject.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/types.js:114:22)
+    at ConfigManager.saveConfig (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:23314:54)
+    at ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17245:31)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+    at async main (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:77118:5)
+
+
+ ERROR  Command failed: project create Failed to create project: [
+  {
+    "received": "web",
+    "code": "invalid_enum_value",
+    "options": [
+      "react",
+      "vue",
+      "angular",
+      "svelte",
+      "flutter",
+      "react-native"
+    ],
+    "path": [
+      "design",
+      "platform"
+    ],
+    "message": "Invalid enum value. Expected 'react' | 'vue' | 'angular' | 'svelte' | 'flutter' | 'react-native', received 'web'"
+  }
+]
+
+    at ProjectDomain.create (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:17255:17)
+    at async _CommandParser.handleProjectCreate (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74788:5)
+    at async Command.<anonymous> (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:74351:15)
+    at async Command.parseAsync (/Volumes/Development/Xaheen Enterprise/xaheen/node_modules/.pnpm/commander@12.1.0/node_modules/commander/lib/command.js:1092:5)
+    at async _CommandParser.parse (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:75418:7)
+    at async main (/Volumes/Development/Xaheen%20Enterprise/xaheen/packages/xaheen-cli/dist/index.js:77118:5)
+
+
+ ERROR  CLI Error [PROJECT_CREATION_FAILED]: Failed to create project: [
+  {
+    "received": "web",
+    "code": "invalid_enum_value",
+    "options": [
+      "react",
+      "vue",
+      "angular",
+      "svelte",
+      "flutter",
+      "react-native"
+    ],
+    "path": [
+      "design",
+      "platform"
+    ],
+    "message": "Invalid enum value. Expected 'react' | 'vue' | 'angular' | 'svelte' | 'flutter' | 'react-native', received 'web'"
+  }
+]
+

@@ -142,7 +142,7 @@ export const XaheenConfigSchema = z.object({
 	design: z
 		.object({
 			platform: z
-				.enum(["react", "vue", "angular", "svelte", "flutter", "react-native"])
+				.enum(["react", "nextjs", "vue", "angular", "svelte", "flutter", "react-native"])
 				.optional(),
 			theme: z.string().optional(),
 			tokens: z.string().optional(),

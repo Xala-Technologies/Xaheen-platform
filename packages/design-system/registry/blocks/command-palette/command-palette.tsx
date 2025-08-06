@@ -317,7 +317,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     updateState({ query: newQuery });
   }, [callbacks, updateState]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback(async (e: React.KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();

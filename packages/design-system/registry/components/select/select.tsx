@@ -571,7 +571,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
 Select.displayName = 'Select';
 
 // Select Option Component
-interface SelectOptionProps {
+export interface SelectOptionProps {
   option: SelectOption;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   selected: boolean;

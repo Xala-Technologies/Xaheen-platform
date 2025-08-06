@@ -3,15 +3,21 @@
  * Exports all React Native components
  */
 
-export { Button } from './Button';
-export { Input } from './Input';
-export { Card, CardHeader, CardContent, CardFooter } from './Card';
+// Core components
 export { 
   Accordion, 
   AccordionItem, 
   AccordionTrigger, 
   AccordionContent 
 } from './Accordion';
+export { Alert, AlertTitle, AlertDescription } from './Alert';
+export { Badge } from './Badge';
+export { Button } from './Button';
+export { Card, CardHeader, CardContent, CardFooter } from './Card';
+export { Checkbox } from './Checkbox';
+export { Input } from './Input';
+export { Label } from './Label';
+export { Select, type SelectOption } from './Select';
 
 // Platform utilities
 export const PlatformInfo = {

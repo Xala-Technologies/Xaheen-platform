@@ -174,6 +174,26 @@
       "types": "./registry/core/universal-tokens.ts",
       "import": "./registry/core/universal-tokens.ts",
       "require": "./registry/core/universal-tokens.ts"
+    },
+    "./components": {
+      "types": "./registry/components/*/index.ts",
+      "import": "./registry/components/*/index.ts",
+      "require": "./registry/components/*/index.ts"
+    },
+    "./components/*": {
+      "types": "./registry/components/*/*.tsx",
+      "import": "./registry/components/*/*.tsx",
+      "require": "./registry/components/*/*.tsx"
+    },
+    "./blocks": {
+      "types": "./registry/blocks/*/index.ts",
+      "import": "./registry/blocks/*/index.ts",
+      "require": "./registry/blocks/*/index.ts"
+    },
+    "./blocks/*": {
+      "types": "./registry/blocks/*/*.tsx",
+      "import": "./registry/blocks/*/*.tsx",
+      "require": "./registry/blocks/*/*.tsx"
     }
   },
   "files": [
