@@ -8,10 +8,10 @@
 import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { ConfigManager } from "../../core/config-manager/index.js";
-import { AIGeneratorService } from "../../services/generators/ai-generator.service.js";
-import type { CLICommand } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import { ConfigManager } from "../../core/config-manager/index";
+import { AIGeneratorService } from "../../services/generators/ai-generator.service";
+import type { CLICommand } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 interface MakeOptions {
 	migration?: boolean;

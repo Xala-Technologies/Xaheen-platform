@@ -8,9 +8,9 @@
 import { promises as fs } from "fs";
 import { join, resolve } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import { mcpClientService } from "../mcp/mcp-client.service.js";
-import type { ProjectContext, ContextItem } from "../mcp/mcp-client.service.js";
+import { logger } from "../../utils/logger";
+import { mcpClientService } from "../mcp/mcp-client.service";
+import type { ProjectContext, ContextItem } from "../mcp/mcp-client.service";
 
 // Schema definitions for pattern recommendations
 const PatternRecommendationSchema = z.object({

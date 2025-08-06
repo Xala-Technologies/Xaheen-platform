@@ -7,7 +7,7 @@
  * @author CLI Template Generator Agent
  * @since 2025-01-03
  */
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import type { NSMClassification } from "../compliance/nsm-classifier";
 export interface AccessibilityValidationResult {
     readonly isValid: boolean;
     readonly score: number;

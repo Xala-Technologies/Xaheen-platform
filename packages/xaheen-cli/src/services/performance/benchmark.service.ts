@@ -9,7 +9,7 @@ import { execSync } from "child_process";
 import { existsSync, writeFileSync, readFileSync } from "fs";
 import { join } from "path";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 export interface PerformanceMetrics {
 	readonly commandName: string;

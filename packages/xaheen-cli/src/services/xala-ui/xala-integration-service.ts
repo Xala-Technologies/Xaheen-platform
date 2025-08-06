@@ -18,7 +18,7 @@ import type {
 	XalaUIConfig,
 	XalaValidationResult,
 } from "../../types/index.js";
-import { PlatformManager } from "./platform-manager.js";
+import { PlatformManager } from "./platform-manager";
 
 export class XalaIntegrationService {
 	private projectPath: string;

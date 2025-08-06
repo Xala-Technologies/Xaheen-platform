@@ -10,7 +10,7 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import tmp from "tmp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { testUtils } from "../test-helpers.js";
+import { testUtils } from "../test-helpers";
 
 describe("CLI Performance Tests", () => {
 	let testDir: string;

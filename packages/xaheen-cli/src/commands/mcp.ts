@@ -9,9 +9,9 @@ import { intro, outro, select, spinner, text, confirm, isCancel, cancel } from "
 import chalk from "chalk";
 import { Command } from "commander";
 import consola from "consola";
-import { mcpClientService } from "../services/mcp/mcp-client.service.js";
-import { mcpContextIndexerService } from "../services/mcp/mcp-context-indexer.service.js";
-import type { IndexingOptions } from "../services/mcp/mcp-context-indexer.service.js";
+import { mcpClientService } from "../services/mcp/mcp-client.service";
+import { mcpContextIndexerService } from "../services/mcp/mcp-context-indexer.service";
+import type { IndexingOptions } from "../services/mcp/mcp-context-indexer.service";
 
 /**
  * Create MCP command with subcommands

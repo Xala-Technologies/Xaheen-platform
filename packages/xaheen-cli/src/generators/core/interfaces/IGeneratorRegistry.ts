@@ -4,7 +4,7 @@
  * Single Responsibility: Maintain a registry of available generators
  */
 
-import type { IGenerator } from './IGenerator.js';
+import type { IGenerator } from "./IGenerator";
 
 /**
  * Registry interface for managing generator registrations

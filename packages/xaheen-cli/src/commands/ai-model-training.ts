@@ -6,7 +6,7 @@
  */
 
 import { Command } from 'commander';
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger";
 import { 
 	customModelTrainer,
 	continuousImprovementEngine,
@@ -171,7 +171,7 @@ export const aiModelTrainingCommand = new Command('ai-model-training')
 						logger.info(`   Security risk: ${(prediction.security_vulnerability_risk.overall_risk * 100).toFixed(1)}%`);
 						
 						// Norwegian compliance adjustments
-						const norwegian_prediction = (await import('../services/ai/predictive-analytics-engine.js'))
+						const norwegian_prediction = (await import("../services/ai/predictive-analytics-engine"))
 							.NorwegianDevelopmentStandards.applyNorwegianStandards(prediction);
 						
 						logger.info('🇳🇴 Norwegian Compliance Adjustments Applied');

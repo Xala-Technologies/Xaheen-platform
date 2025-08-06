@@ -8,10 +8,10 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { join } from 'path';
 import fs from 'fs-extra';
-import { ComponentGenerator } from '../../generators/component.generator.js';
-import { MCPClientService } from '../../services/mcp/mcp-client.service.js';
-import { TestEnvironmentManager, TestScenarioBuilder, TestDataValidator } from '../utils/enhanced-test-helpers.js';
-import { Factories } from '../factories/test-data-factories.js';
+import { ComponentGenerator } from "../../generators/component.generator";
+import { MCPClientService } from "../../services/mcp/mcp-client.service";
+import { TestEnvironmentManager, TestScenarioBuilder, TestDataValidator } from "../utils/enhanced-test-helpers";
+import { Factories } from "../factories/test-data-factories";
 
 // Error simulation utilities
 const ErrorSimulator = {

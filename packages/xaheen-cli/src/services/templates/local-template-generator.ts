@@ -13,7 +13,7 @@ import path from 'node:path';
 import { consola } from 'consola';
 import chalk from 'chalk';
 import { select, text, confirm, multiselect } from '@clack/prompts';
-import type { BaseTemplate, TemplateSlot } from './template-inheritance.service.js';
+import type { BaseTemplate, TemplateSlot } from "./template-inheritance.service";
 
 export interface LocalTemplateConfig {
   readonly name: string;

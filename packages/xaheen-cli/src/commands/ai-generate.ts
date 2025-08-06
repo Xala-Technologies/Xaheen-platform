@@ -7,8 +7,8 @@
 
 import { Command } from "commander";
 import { z } from "zod";
-import { logger } from "../utils/logger.js";
-import { aiNativeTemplateSystem, type AITemplateRequest, type AITemplateResult } from "../services/ai/ai-native-template-system.js";
+import { logger } from "../utils/logger";
+import { aiNativeTemplateSystem, type AITemplateRequest, type AITemplateResult } from "../services/ai/ai-native-template-system";
 import { writeFile } from "fs/promises";
 import { join, dirname } from "path";
 import { mkdirSync } from "fs";

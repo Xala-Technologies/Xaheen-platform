@@ -3,7 +3,7 @@
  * Generates integration code for Norwegian banks and financial services
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface BankingIntegrationOptions {
 	name: string;

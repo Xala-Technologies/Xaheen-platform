@@ -12,7 +12,7 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import Handlebars from 'handlebars';
 import { consola } from 'consola';
-import type { BaseTemplate, TemplateComposition, InheritanceResult } from './template-inheritance.js';
+import type { BaseTemplate, TemplateComposition, InheritanceResult } from "./template-inheritance";
 
 export interface TemplatePartial {
   readonly id: string;

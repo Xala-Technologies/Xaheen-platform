@@ -15,7 +15,7 @@ import {
 	createMockProjectInfo,
 	createMockServiceRegistry,
 } from "../../test/utils/test-helpers.js";
-import { ProjectValidator } from "./project-validator.js";
+import { ProjectValidator } from "./project-validator";
 
 describe("ProjectValidator", () => {
 	let validator: ProjectValidator;

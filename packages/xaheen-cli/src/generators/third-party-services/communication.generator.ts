@@ -735,7 +735,7 @@ export class SendGridWebhookHandler {
  * Enterprise-grade Mailgun integration with tracking, analytics, and error handling
  */
 
-import Mailgun from 'mailgun.js';
+import Mailgun from "mailgun";
 import formData from 'form-data';
 import { CommunicationService, EmailMessage, CommunicationResult } from '../types/communication.types';
 import { communicationConfig, serviceConfigs } from '../../config/communication.config';

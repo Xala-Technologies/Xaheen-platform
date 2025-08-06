@@ -3,7 +3,7 @@
  * Generates comprehensive Digipost document delivery integration with Norwegian compliance
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface DigipostIntegrationOptions {
 	name: string;

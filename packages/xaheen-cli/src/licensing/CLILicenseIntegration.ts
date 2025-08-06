@@ -4,8 +4,8 @@
  */
 
 import chalk from 'chalk';
-import { LicenseManager } from './LicenseManager.js';
-import { FeatureFlag, FeatureCheckResult, LicenseInfo } from './types.js';
+import { LicenseManager } from "./LicenseManager";
+import { FeatureFlag, FeatureCheckResult, LicenseInfo } from "./types";
 
 export interface CLICommand {
   name: string;

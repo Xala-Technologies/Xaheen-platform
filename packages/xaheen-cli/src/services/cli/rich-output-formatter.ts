@@ -8,7 +8,7 @@ import { readFileSync } from "fs";
 import chalk from "chalk";
 import Table from "cli-table3";
 import { diffLines, diffChars, Change } from "diff";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Output formatting options

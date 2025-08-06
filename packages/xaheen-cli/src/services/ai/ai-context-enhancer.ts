@@ -9,7 +9,7 @@
  */
 
 import { consola } from "consola";
-import type { NSMClassification } from "../compliance/nsm-classifier.js";
+import type { NSMClassification } from "../compliance/nsm-classifier";
 
 export interface AIContextEnhancement {
 	readonly complexity: ComplexityMetrics;

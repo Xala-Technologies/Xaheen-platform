@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { IFileSystem, ILogger } from '../interfaces/index.js';
+import type { IFileSystem, ILogger } from "../interfaces/index";
 
 export class FileSystemService implements IFileSystem {
   constructor(private readonly logger: ILogger) {}

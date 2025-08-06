@@ -5,8 +5,8 @@
  * Single Responsibility: Frontend framework templates only.
  */
 
-import type { ServiceTemplate } from "../../../types/index.js";
-import { BaseTemplateProvider } from "./base-template-provider.js";
+import type { ServiceTemplate } from "../../../types/index";
+import { BaseTemplateProvider } from "./base-template-provider";
 
 export class NextJSTemplateProvider extends BaseTemplateProvider {
 	constructor() {

@@ -10,7 +10,7 @@
 import { promises as fs } from "fs";
 import Handlebars from "handlebars";
 import path from "path";
-import { BaseGenerator } from "./base.generator.js";
+import { BaseGenerator } from "./base.generator";
 
 // Register Handlebars helpers
 Handlebars.registerHelper("eq", (a, b) => a === b);

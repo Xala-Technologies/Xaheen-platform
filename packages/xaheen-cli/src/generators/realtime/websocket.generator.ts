@@ -3,7 +3,7 @@
  * Generates WebSocket servers with real-time notifications, chat systems, and live updates
  */
 
-import type { GeneratedFile } from "../types.js";
+import type { GeneratedFile } from "../types";
 
 export interface WebSocketOptions {
 	readonly name: string;

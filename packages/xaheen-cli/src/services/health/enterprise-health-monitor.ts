@@ -10,9 +10,9 @@ import { execSync } from 'child_process';
 import { readdir, stat, access } from 'fs/promises';
 import { join } from 'path';
 import { z } from 'zod';
-import { logger } from '../../utils/logger.js';
-import { telemetryService } from '../telemetry/enterprise-telemetry.service.js';
-import { analyticsService } from '../analytics/enterprise-analytics.service.js';
+import { logger } from "../../utils/logger";
+import { telemetryService } from "../telemetry/enterprise-telemetry.service";
+import { analyticsService } from "../analytics/enterprise-analytics.service";
 
 /**
  * Health monitoring configuration schema

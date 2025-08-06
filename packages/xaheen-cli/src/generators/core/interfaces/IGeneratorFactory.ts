@@ -4,7 +4,7 @@
  * Single Responsibility: Create generator instances by type
  */
 
-import type { IGenerator } from './IGenerator.js';
+import type { IGenerator } from "./IGenerator";
 
 /**
  * Factory interface for creating generator instances

@@ -8,9 +8,9 @@
 import { promises as fs } from "fs";
 import { join, resolve } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import { mcpClientService } from "../mcp/mcp-client.service.js";
-import type { AIProvider } from "./ai-service.js";
+import { logger } from "../../utils/logger";
+import { mcpClientService } from "../mcp/mcp-client.service";
+import type { AIProvider } from "./ai-service";
 
 // Schema definitions for quality assurance
 const AccessibilityIssueSchema = z.object({

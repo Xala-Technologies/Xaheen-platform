@@ -6,7 +6,7 @@
  */
 
 import { performance } from "perf_hooks";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 // Mock all dependencies
 vi.mock("./core/command-parser/index", () => ({
@@ -69,7 +69,7 @@ describe("Main CLI Entry Point", () => {
 	describe("Banner Display", () => {
 		it("should display banner by default", async () => {
 			// Import and run main after setting up mocks
-			await import("./index.js");
+			await import("./index");
 
 			// Give time for async operations
 			await new Promise((resolve) => setTimeout(resolve, 100));
@@ -87,7 +87,7 @@ describe("Main CLI Entry Point", () => {
 			// Reset modules to ensure fresh import
 			vi.resetModules();
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const bannerCall = consoleSpy.mock.calls.find(
@@ -99,13 +99,11 @@ describe("Main CLI Entry Point", () => {
 
 	describe("Initialization", () => {
 		it("should initialize core systems in correct order", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { ConfigManager } = await import("./core/config-manager/index.js");
-			const { StackAdapterRegistry } = await import(
-				"./core/stack-adapters/index.js"
-			);
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { ConfigManager } = await import("./core/config-manager/index");
+			const { StackAdapterRegistry } = await import("./core/stack-adapters/index");
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(ConfigManager).toHaveBeenCalled();
@@ -114,22 +112,20 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should detect stack correctly", async () => {
-			const { StackAdapterRegistry } = await import(
-				"./core/stack-adapters/index.js"
-			);
+			const { StackAdapterRegistry } = await import("./core/stack-adapters/index");
 			const mockRegistry = {
 				detectStack: vi.fn().mockResolvedValue("react"),
 			};
 			(StackAdapterRegistry.getInstance as Mock).mockReturnValue(mockRegistry);
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(mockRegistry.detectStack).toHaveBeenCalled();
 		});
 
 		it("should set up global CLI context", async () => {
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			// Check if global context is available
@@ -142,22 +138,22 @@ describe("Main CLI Entry Point", () => {
 
 	describe("Command Execution", () => {
 		it("should parse command line arguments", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
+			const { CommandParser } = await import("./core/command-parser/index");
 			const mockParser = {
 				parse: vi.fn().mockResolvedValue(undefined),
 			};
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(mockParser.parse).toHaveBeenCalledWith(process.argv);
 		});
 
 		it("should measure command execution time", async () => {
-			const { logger } = await import("./utils/logger.js");
+			const { logger } = await import("./utils/logger");
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(logger.debug).toHaveBeenCalledWith(
@@ -168,9 +164,9 @@ describe("Main CLI Entry Point", () => {
 
 	describe("Error Handling", () => {
 		it("should handle CLIError correctly", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { CLIError } = await import("./types/index.js");
-			const { cliLogger } = await import("./utils/logger.js");
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { CLIError } = await import("./types/index");
+			const { cliLogger } = await import("./utils/logger");
 
 			const error = new CLIError("Test error", "TEST_ERROR");
 			const mockParser = {
@@ -179,7 +175,7 @@ describe("Main CLI Entry Point", () => {
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
 			vi.resetModules();
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(cliLogger.error).toHaveBeenCalledWith(
@@ -189,9 +185,9 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should handle COMMAND_NOT_FOUND error with help message", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { CLIError } = await import("./types/index.js");
-			const { cliLogger } = await import("./utils/logger.js");
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { CLIError } = await import("./types/index");
+			const { cliLogger } = await import("./utils/logger");
 
 			const error = new CLIError("Command not found", "COMMAND_NOT_FOUND");
 			const mockParser = {
@@ -200,7 +196,7 @@ describe("Main CLI Entry Point", () => {
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
 			vi.resetModules();
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(cliLogger.info).toHaveBeenCalledWith(
@@ -209,8 +205,8 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should handle unexpected errors", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { cliLogger } = await import("./utils/logger.js");
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { cliLogger } = await import("./utils/logger");
 
 			const error = new Error("Unexpected error");
 			const mockParser = {
@@ -219,7 +215,7 @@ describe("Main CLI Entry Point", () => {
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
 			vi.resetModules();
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(cliLogger.error).toHaveBeenCalledWith(
@@ -229,8 +225,8 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should handle unknown error types", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { cliLogger } = await import("./utils/logger.js");
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { cliLogger } = await import("./utils/logger");
 
 			const mockParser = {
 				parse: vi.fn().mockRejectedValue("string error"),
@@ -238,7 +234,7 @@ describe("Main CLI Entry Point", () => {
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
 			vi.resetModules();
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(cliLogger.error).toHaveBeenCalledWith(
@@ -250,9 +246,9 @@ describe("Main CLI Entry Point", () => {
 
 	describe("Signal Handling", () => {
 		it("should handle SIGINT gracefully", async () => {
-			const { cliLogger } = await import("./utils/logger.js");
+			const { cliLogger } = await import("./utils/logger");
 
-			await import("./index.js");
+			await import("./index");
 
 			// Simulate SIGINT
 			process.emit("SIGINT", "SIGINT");
@@ -262,9 +258,9 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should handle SIGTERM gracefully", async () => {
-			const { cliLogger } = await import("./utils/logger.js");
+			const { cliLogger } = await import("./utils/logger");
 
-			await import("./index.js");
+			await import("./index");
 
 			// Simulate SIGTERM
 			process.emit("SIGTERM", "SIGTERM");
@@ -276,9 +272,9 @@ describe("Main CLI Entry Point", () => {
 
 	describe("Performance Tracking", () => {
 		it("should track command execution time on success", async () => {
-			const { logger } = await import("./utils/logger.js");
+			const { logger } = await import("./utils/logger");
 
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const debugCalls = (logger.debug as Mock).mock.calls;
@@ -290,9 +286,9 @@ describe("Main CLI Entry Point", () => {
 		});
 
 		it("should track command execution time on error", async () => {
-			const { CommandParser } = await import("./core/command-parser/index.js");
-			const { CLIError } = await import("./types/index.js");
-			const { cliLogger } = await import("./utils/logger.js");
+			const { CommandParser } = await import("./core/command-parser/index");
+			const { CLIError } = await import("./types/index");
+			const { cliLogger } = await import("./utils/logger");
 
 			const error = new CLIError("Test error", "TEST_ERROR");
 			const mockParser = {
@@ -301,7 +297,7 @@ describe("Main CLI Entry Point", () => {
 			(CommandParser as Mock).mockImplementation(() => mockParser);
 
 			vi.resetModules();
-			await import("./index.js");
+			await import("./index");
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const errorCalls = (cliLogger.error as Mock).mock.calls;

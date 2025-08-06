@@ -12,7 +12,7 @@ import type {
 	ServiceTemplate,
 	ServiceType,
 } from "../../types/index.js";
-import { TemplateFactory } from "./template-factory.js";
+import { TemplateFactory } from "./template-factory";
 import {
 	type ITemplateRepository,
 	TemplateRepository,
@@ -201,6 +201,6 @@ export class ServiceRegistry implements IServiceRegistry {
 }
 
 // Re-export related modules for convenience
-export { TemplateFactory } from "./template-factory.js";
-export { BaseTemplateProvider } from "./template-providers/base-template-provider.js";
-export { TemplateRepository } from "./template-repository.js";
+export { TemplateFactory } from "./template-factory";
+export { BaseTemplateProvider } from "./template-providers/base-template-provider";
+export { TemplateRepository } from "./template-repository";

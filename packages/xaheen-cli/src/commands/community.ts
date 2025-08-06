@@ -8,8 +8,8 @@ import chalk from "chalk";
 import Table from "cli-table3";
 import { Command } from "commander";
 import inquirer from "inquirer";
-import { createCommunityHubService } from "../services/community/community-hub.service.js";
-import { logger } from "../utils/logger.js";
+import { createCommunityHubService } from "../services/community/community-hub.service";
+import { logger } from "../utils/logger";
 
 /**
  * Community command options interface

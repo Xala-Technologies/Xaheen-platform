@@ -3,7 +3,7 @@
  * AI-powered backend code generation using Model Context Protocol
  */
 
-import type { GeneratedFile } from "../types.js";
+import type { GeneratedFile } from "../types";
 
 export interface MCPBackendOptions {
 	name: string;

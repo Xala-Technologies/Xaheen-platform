@@ -9,8 +9,8 @@ import { existsSync, writeFileSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { homedir } from "os";
-import { logger } from "../../utils/logger.js";
-import AutoCompletionEngine, { type CompletionContext } from "./auto-completion-engine.js";
+import { logger } from "../../utils/logger";
+import AutoCompletionEngine, { type CompletionContext } from "./auto-completion-engine";
 
 /**
  * Shell type enum

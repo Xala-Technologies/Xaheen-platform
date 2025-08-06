@@ -4,10 +4,10 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { PrismaGenerator } from '../database/index.js';
-import { MigrationGenerator } from '../migration.generator.js';
-import { SeedGenerator } from '../seed.generator.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { PrismaGenerator } from "../database/index";
+import { MigrationGenerator } from "../migration.generator";
+import { SeedGenerator } from "../seed.generator";
 // Import other database generators as they become available
 
 /**

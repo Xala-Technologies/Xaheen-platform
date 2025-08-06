@@ -12,9 +12,9 @@ import { confirm, intro, multiselect, outro, spinner } from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
 import { consola } from "consola";
-import { ProjectAnalyzer } from "../services/analysis/project-analyzer.js";
-import { ServiceRegistry } from "../services/registry/service-registry.js";
-import { ServiceRemover } from "../services/removal/service-remover.js";
+import { ProjectAnalyzer } from "../services/analysis/project-analyzer";
+import { ServiceRegistry } from "../services/registry/service-registry";
+import { ServiceRemover } from "../services/removal/service-remover";
 
 export const removeCommand = new Command("remove")
 	.description("Remove services from existing project")

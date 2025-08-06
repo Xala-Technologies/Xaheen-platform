@@ -288,7 +288,7 @@ export class PerformanceBenchmarkingGenerator extends BaseGenerator {
 import { check, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
 import { SharedArray } from 'k6/data';
-import { randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+import { randomItem } from "https://jslib.k6.io/k6-utils/1.2.0/index";
 
 // Custom metrics
 const errorRate = new Rate('errors');
@@ -532,7 +532,7 @@ ${options.scenarios
 	private generateK6Helpers(options: PerformanceBenchmarkingOptions): string {
 		return `import { check } from 'k6';
 import http from 'k6/http';
-import { randomIntBetween, randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+import { randomIntBetween, randomString } from "https://jslib.k6.io/k6-utils/1.2.0/index";
 
 // Authentication helper
 export function authenticate(credentials) {
@@ -695,8 +695,8 @@ export class CircuitBreaker {
 	}
 
 	private generateK6DataGenerator(options: PerformanceBenchmarkingOptions): string {
-		return `import { randomString, randomIntBetween, randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
-import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
+		return `import { randomString, randomIntBetween, randomItem } from "https://jslib.k6.io/k6-utils/1.2.0/index";
+import Papa from "https://jslib.k6.io/papaparse/5.1.1/index";
 
 // Generate test data for different scenarios
 export function generateTestData(scenario, count = 100) {

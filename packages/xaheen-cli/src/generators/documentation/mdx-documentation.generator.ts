@@ -8,7 +8,7 @@
 import { BaseGenerator } from "../base.generator";
 import { promises as fs } from "fs";
 import { join, resolve, dirname, extname, basename } from "path";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import type { DocumentationGeneratorOptions, DocumentationResult } from "./index";
 
 export interface MDXDocumentationOptions extends DocumentationGeneratorOptions {

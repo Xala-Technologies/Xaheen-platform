@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import yaml from 'yaml';
-import { KubernetesConfig, KubernetesService } from './kubernetes.service.js';
+import { KubernetesConfig, KubernetesService } from "./kubernetes.service";
 
 const execAsync = promisify(exec);
 

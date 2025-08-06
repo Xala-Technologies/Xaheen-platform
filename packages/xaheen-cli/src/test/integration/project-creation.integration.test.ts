@@ -10,7 +10,7 @@ import path from "node:path";
 import fs from "fs-extra";
 import tmp from "tmp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { testUtils } from "../test-helpers.js";
+import { testUtils } from "../test-helpers";
 
 describe("Project Creation Integration", () => {
 	let testDir: string;
@@ -230,7 +230,7 @@ export class AuthService {
 			await fs.ensureDir(path.join(projectPath, "src", "middleware"));
 			await fs.writeFile(
 				path.join(projectPath, "src", "middleware", "auth.ts"),
-				`import type { User } from '../services/auth.js';
+				`import type { User } from "../services/auth";
 
 export interface AuthenticatedRequest extends Request {
   user?: User;

@@ -3,7 +3,7 @@
  * Following SOLID principles with modular service architecture
  */
 
-import { GeneratedInfrastructureFile, InfrastructureGenerator, InfrastructureGeneratorOptions, InfrastructureGeneratorResult } from "../../infrastructure/index.js";
+import { GeneratedInfrastructureFile, InfrastructureGenerator, InfrastructureGeneratorOptions, InfrastructureGeneratorResult } from "../../infrastructure/index";
 import { 
   GCPBaseConfig,
   GCPComputeConfig,
@@ -19,9 +19,9 @@ import {
   IGCPCostCalculator,
   IGCPSecurityAnalyzer
 } from "./interfaces/service-interfaces.js";
-import { GCPServiceFactory } from "./factories/service-factory.js";
-import { GCPCostCalculator } from "./services/cost-calculator.js";
-import { GCPSecurityAnalyzer } from "./services/security-analyzer.js";
+import { GCPServiceFactory } from "./factories/service-factory";
+import { GCPCostCalculator } from "./services/cost-calculator";
+import { GCPSecurityAnalyzer } from "./services/security-analyzer";
 
 export interface GCPCloudOptions extends InfrastructureGeneratorOptions {
   readonly projectId: string;

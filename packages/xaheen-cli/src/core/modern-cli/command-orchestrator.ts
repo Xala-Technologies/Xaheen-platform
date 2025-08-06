@@ -15,10 +15,10 @@ import chalk from "chalk";
 import { performance } from "perf_hooks";
 import { EventEmitter } from "events";
 import type { Command } from "commander";
-import type { CLICommand, CommandRoute } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { logger, cliLogger } from "../../utils/logger.js";
-import { PluginManager } from "../../services/plugins/plugin-manager.js";
+import type { CLICommand, CommandRoute } from "../../types/index";
+import { CLIError } from "../../types/index";
+import { logger, cliLogger } from "../../utils/logger";
+import { PluginManager } from "../../services/plugins/plugin-manager";
 
 export interface CommandMetrics {
 	readonly commandName: string;

@@ -4,16 +4,16 @@
  */
 
 // Export interfaces
-export * from './interfaces/IGenerator.js';
-export * from './interfaces/IGeneratorFactory.js';
-export * from './interfaces/IGeneratorRegistry.js';
+export * from "./interfaces/IGenerator";
+export * from "./interfaces/IGeneratorFactory";
+export * from "./interfaces/IGeneratorRegistry";
 
 // Export base implementation
-export * from './base/BaseGenerator.js';
+export * from "./base/BaseGenerator";
 
 // Export registry and factory
-export * from './registry/GeneratorRegistry.js';
-export * from './factory/GeneratorFactory.js';
+export * from "./registry/GeneratorRegistry";
+export * from "./factory/GeneratorFactory";
 
 // Export types
-export * from './types/index.js';
+export * from "./types/index";

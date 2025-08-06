@@ -19,7 +19,7 @@ import type {
 	ValidationIssue,
 	ValidationResult,
 } from "../../types/index.js";
-import type { ProjectInfo } from "../analysis/project-analyzer.js";
+import type { ProjectInfo } from "../analysis/project-analyzer";
 
 export interface ValidationOptions {
 	validateServices: boolean;

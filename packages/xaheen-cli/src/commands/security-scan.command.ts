@@ -18,7 +18,7 @@ import {
 	aiSecurityScanner,
 	type SecurityScanOptions,
 } from "../services/ai/ai-security-scanner.js";
-import { logger } from "../utils/logger.js";
+import { logger } from "../utils/logger";
 
 export const securityScanCommand = new Command("security-scan")
 	.alias("scan")

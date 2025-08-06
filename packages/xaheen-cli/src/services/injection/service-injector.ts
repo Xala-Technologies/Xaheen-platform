@@ -18,7 +18,7 @@ import type {
 	ServiceInjectionResult,
 	ServiceTemplate,
 } from "../../types/index.js";
-import { templateLoader } from "../templates/template-loader.js";
+import { templateLoader } from "../templates/template-loader";
 
 export class ServiceInjector implements IServiceInjector {
 	private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();

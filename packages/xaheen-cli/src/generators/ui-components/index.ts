@@ -3,7 +3,7 @@
  * Generates UI components for multiple platforms with shared business logic
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface UIComponentOptions {
 	name: string;

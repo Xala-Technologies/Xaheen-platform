@@ -15,7 +15,7 @@ import type {
 	ServiceConfiguration,
 	ServiceTemplate,
 } from "../../types/index.js";
-import { ServiceInjector } from "./service-injector.js";
+import { ServiceInjector } from "./service-injector";
 
 describe("ServiceInjector", () => {
 	let serviceInjector: ServiceInjector;

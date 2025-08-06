@@ -8,8 +8,8 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { join } from 'path';
 import fs from 'fs-extra';
-import { MCPClientService } from '../../services/mcp/mcp-client.service.js';
-import { TestFileSystem, CLITestRunner, PerformanceTracker } from '../test-helpers.js';
+import { MCPClientService } from "../../services/mcp/mcp-client.service";
+import { TestFileSystem, CLITestRunner, PerformanceTracker } from "../test-helpers";
 
 // Mock xala-mcp with realistic integration behavior
 vi.mock('xala-mcp', () => ({

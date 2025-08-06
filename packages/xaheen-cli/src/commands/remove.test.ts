@@ -8,7 +8,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { removeCommand } from "./remove.js";
+import { removeCommand } from "./remove";
 
 describe("Remove Command", () => {
 	beforeEach(() => {

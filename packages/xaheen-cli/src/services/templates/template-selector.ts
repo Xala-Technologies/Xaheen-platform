@@ -7,8 +7,8 @@
  * @since 2025-01-03
  */
 
-import { mcpClient } from '../mcp/mcp-client.js';
-import { patternMapper } from './pattern-mapper.js';
+import { mcpClient } from "../mcp/mcp-client";
+import { patternMapper } from "./pattern-mapper";
 import { consola } from 'consola';
 
 export interface TemplateSelectionContext {

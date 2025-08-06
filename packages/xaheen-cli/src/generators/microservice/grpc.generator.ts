@@ -3,7 +3,7 @@
  * Generates gRPC service definitions and implementations
  */
 
-import type { GeneratedFile, MicroserviceOptions } from "./types.js";
+import type { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class GrpcGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

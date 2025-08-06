@@ -8,8 +8,8 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { EventEmitter } from "events";
-import type { CommandRoute, CLICommand } from "../../types/index.js";
-import { cliLogger } from "../../utils/logger.js";
+import type { CommandRoute, CLICommand } from "../../types/index";
+import { cliLogger } from "../../utils/logger";
 
 export interface HelpContext {
 	readonly currentCommand?: string;

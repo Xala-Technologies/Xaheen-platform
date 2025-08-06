@@ -3,7 +3,7 @@
  * Implements Dependency Inversion Principle with constructor injection
  */
 
-import type { IDependencyInjector } from '../interfaces/index.js';
+import type { IDependencyInjector } from "../interfaces/index";
 
 export interface ServiceDescriptor {
   readonly token: string | symbol;

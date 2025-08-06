@@ -8,8 +8,8 @@
 import { promises as fs } from "fs";
 import { join, resolve } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import type { PatternRecommendation } from "./ai-pattern-recommender.js";
+import { logger } from "../../utils/logger";
+import type { PatternRecommendation } from "./ai-pattern-recommender";
 
 // Schema definitions for token cost analysis
 const TokenUsageEstimateSchema = z.object({

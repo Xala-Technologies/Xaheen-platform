@@ -4,9 +4,9 @@
  * Follows Single Responsibility Principle (SRP)
  */
 
-import type { CommandRoute } from '../../../types/index.js';
-import type { IRouteRegistry } from '../interfaces/IRouteRegistrar.js';
-import { logger } from '../../../utils/logger.js';
+import type { CommandRoute } from "../../../types/index";
+import type { IRouteRegistry } from "../interfaces/IRouteRegistrar";
+import { logger } from "../../../utils/logger";
 
 export class RouteRegistry implements IRouteRegistry {
   private routes: Map<string, CommandRoute> = new Map();

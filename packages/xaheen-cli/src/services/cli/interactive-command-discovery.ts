@@ -10,9 +10,9 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { EventEmitter } from "events";
-import type { CommandRoute, CLICommand } from "../../types/index.js";
-import { cliLogger } from "../../utils/logger.js";
-import { FuzzyCommandMatcher, type CommandSuggestion, type CommandContext } from "../../core/modern-cli/fuzzy-command-matcher.js";
+import type { CommandRoute, CLICommand } from "../../types/index";
+import { cliLogger } from "../../utils/logger";
+import { FuzzyCommandMatcher, type CommandSuggestion, type CommandContext } from "../../core/modern-cli/fuzzy-command-matcher";
 
 export interface CommandDiscoveryOptions {
 	readonly showCategories?: boolean;

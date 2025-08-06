@@ -32,7 +32,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
 import { z } from 'zod';
-import { logger } from '../../utils/logger.js';
+import { logger } from "../../utils/logger";
 
 /**
  * Enterprise telemetry configuration schema

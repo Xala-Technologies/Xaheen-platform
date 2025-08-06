@@ -19,8 +19,8 @@ import {
   type ChildTemplate,
   type TemplateSlot
 } from '../services/templates/template-inheritance.service.js';
-import { LocalTemplateGenerator } from '../services/templates/local-template-generator.js';
-import { BaseGeneratorOptions } from '../generators/base.generator.js';
+import { LocalTemplateGenerator } from "../services/templates/local-template-generator";
+import { BaseGeneratorOptions } from "../generators/base.generator";
 
 interface TemplateCommandOptions extends BaseGeneratorOptions {
   readonly list?: boolean;

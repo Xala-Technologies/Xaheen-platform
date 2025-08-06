@@ -6,15 +6,15 @@
  */
 
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import { aiPatternRecommender, type RecommendationRequest, type RecommendationResult } from "./ai-pattern-recommender.js";
-import { tokenCostAnalyzer, type CostAnalysisRequest, type CostAnalysisResult } from "./token-cost-analyzer.js";
-import { aiQualityAssurance, type QualityAssuranceRequest, type QualityAssuranceReport } from "./ai-quality-assurance.js";
-import { recommendationScoringEngine, type ScoringContext, type RankingConfig, type RankingResult } from "./recommendation-scoring-engine.js";
-import { costOptimizationEngine, type OptimizationContext, type CostOptimizationResult } from "./cost-optimization-engine.js";
-import { performanceOptimizationAnalyzer, type PerformanceAnalysisRequest, type PerformanceAnalysisResult } from "./performance-optimization-analyzer.js";
-import { mcpClientService } from "../mcp/mcp-client.service.js";
-import { mcpGenerationOrchestrator } from "../mcp/mcp-generation-orchestrator.js";
+import { logger } from "../../utils/logger";
+import { aiPatternRecommender, type RecommendationRequest, type RecommendationResult } from "./ai-pattern-recommender";
+import { tokenCostAnalyzer, type CostAnalysisRequest, type CostAnalysisResult } from "./token-cost-analyzer";
+import { aiQualityAssurance, type QualityAssuranceRequest, type QualityAssuranceReport } from "./ai-quality-assurance";
+import { recommendationScoringEngine, type ScoringContext, type RankingConfig, type RankingResult } from "./recommendation-scoring-engine";
+import { costOptimizationEngine, type OptimizationContext, type CostOptimizationResult } from "./cost-optimization-engine";
+import { performanceOptimizationAnalyzer, type PerformanceAnalysisRequest, type PerformanceAnalysisResult } from "./performance-optimization-analyzer";
+import { mcpClientService } from "../mcp/mcp-client.service";
+import { mcpGenerationOrchestrator } from "../mcp/mcp-generation-orchestrator";
 
 // Schema definitions for the main system
 const AITemplateRequestSchema = z.object({

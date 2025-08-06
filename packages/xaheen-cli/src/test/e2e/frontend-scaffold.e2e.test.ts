@@ -9,7 +9,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { join } from 'path';
 import fs from 'fs-extra';
 import { execSync } from 'child_process';
-import { TestFileSystem, CLITestRunner, PerformanceTracker } from '../test-helpers.js';
+import { TestFileSystem, CLITestRunner, PerformanceTracker } from "../test-helpers";
 
 // Mock external CLI dependencies
 vi.mock('execa', async () => {

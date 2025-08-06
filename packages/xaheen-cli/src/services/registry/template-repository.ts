@@ -5,8 +5,8 @@
  * Interface Segregation Principle: Specific interfaces for different operations.
  */
 
-import type { ServiceTemplate, ServiceType } from "../../types/index.js";
-import { TemplateFactory } from "./template-factory.js";
+import type { ServiceTemplate, ServiceType } from "../../types/index";
+import { TemplateFactory } from "./template-factory";
 
 export interface ITemplateReader {
 	getTemplate(

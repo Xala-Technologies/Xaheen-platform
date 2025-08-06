@@ -10,7 +10,7 @@ import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import type { ModelVersion } from './custom-model-trainer.js';
+import type { ModelVersion } from "./custom-model-trainer";
 
 // Types
 export interface ModelDeploymentConfig {

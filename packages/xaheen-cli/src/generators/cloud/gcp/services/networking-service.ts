@@ -3,7 +3,7 @@
  * Handles VPC, Load Balancer, and Firewall following Single Responsibility Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPNetworkingService, 
   ValidationResult,
@@ -14,7 +14,7 @@ import {
   GCPBaseConfig, 
   GCPNetworkingConfig
 } from "../interfaces/index.js";
-import { BaseGCPService } from "./base-service.js";
+import { BaseGCPService } from "./base-service";
 
 export class GCPNetworkingService extends BaseGCPService implements IGCPNetworkingService {
   private readonly networkingConfig: GCPNetworkingConfig;

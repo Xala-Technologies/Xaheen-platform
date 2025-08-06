@@ -7,8 +7,8 @@ import type {
 	XaheenConfig,
 	XalaConfig,
 } from "../../types/index.js";
-import { XaheenConfigSchema } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import { XaheenConfigSchema } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 export interface ConfigPaths {
 	unified: string;

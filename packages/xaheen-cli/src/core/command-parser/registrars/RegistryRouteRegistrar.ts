@@ -3,8 +3,8 @@
  * Registers registry-related routes and command mappings
  */
 
-import type { CommandRoute } from '../../../types/index.js';
-import { RegistryCommandHandler } from '../handlers/RegistryCommandHandler.js';
+import type { CommandRoute } from "../../../types/index";
+import { RegistryCommandHandler } from "../handlers/RegistryCommandHandler";
 
 export class RegistryRouteRegistrar {
   private handler = new RegistryCommandHandler();

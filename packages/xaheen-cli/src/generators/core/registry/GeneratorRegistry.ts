@@ -4,9 +4,9 @@
  * Implements the IGeneratorRegistry interface
  */
 
-import { IGenerator } from '../interfaces/IGenerator.js';
-import { IGeneratorRegistry } from '../interfaces/IGeneratorRegistry.js';
-import { logger } from '../../../utils/logger.js';
+import { IGenerator } from "../interfaces/IGenerator";
+import { IGeneratorRegistry } from "../interfaces/IGeneratorRegistry";
+import { logger } from "../../../utils/logger";
 
 /**
  * Registry implementation for managing generator registrations

@@ -8,7 +8,7 @@
 import { join } from 'path';
 import fs from 'fs-extra';
 import { type MockedFunction, vi } from 'vitest';
-import { TestFileSystem, CLITestRunner, PerformanceTracker } from '../test-helpers.js';
+import { TestFileSystem, CLITestRunner, PerformanceTracker } from "../test-helpers";
 
 /**
  * Enhanced Mock Builder with additional utilities

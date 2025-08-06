@@ -6,19 +6,19 @@
  * ensuring that all generators are properly registered with the central GeneratorRegistry.
  */
 
-import { GeneratorRegistry, IGeneratorRegistry } from '../core/index.js';
+import { GeneratorRegistry, IGeneratorRegistry } from "../core/index";
 
 // Import all domain registrars
-import { registerFrontendGenerators } from './frontend.registrar.js';
-import { registerBackendGenerators } from './backend.registrar.js';
-import { registerDatabaseGenerators } from './database.registrar.js';
-import { registerFullStackGenerators } from './fullstack.registrar.js';
-import { registerInfrastructureGenerators } from './infrastructure.registrar.js';
-import { registerTestingGenerators } from './testing.registrar.js';
-import { registerPatternsGenerators } from './patterns.registrar.js';
-import { registerComplianceGenerators } from './compliance.registrar.js';
-import { registerDevOpsGenerators } from './devops.registrar.js';
-import { registerMetaGenerators } from './meta.registrar.js';
+import { registerFrontendGenerators } from "./frontend.registrar";
+import { registerBackendGenerators } from "./backend.registrar";
+import { registerDatabaseGenerators } from "./database.registrar";
+import { registerFullStackGenerators } from "./fullstack.registrar";
+import { registerInfrastructureGenerators } from "./infrastructure.registrar";
+import { registerTestingGenerators } from "./testing.registrar";
+import { registerPatternsGenerators } from "./patterns.registrar";
+import { registerComplianceGenerators } from "./compliance.registrar";
+import { registerDevOpsGenerators } from "./devops.registrar";
+import { registerMetaGenerators } from "./meta.registrar";
 
 /**
  * Initialize all registrars

@@ -8,8 +8,8 @@
 import { Command } from "commander";
 import { join } from "path";
 import { promises as fs } from "fs";
-import { logger } from "../utils/logger.js";
-import { EnterpriseAuthGenerator } from "../generators/authentication/enterprise-auth.generator.js";
+import { logger } from "../utils/logger";
+import { EnterpriseAuthGenerator } from "../generators/authentication/enterprise-auth.generator";
 import {
 	AuthenticationMethod,
 	MFAType,

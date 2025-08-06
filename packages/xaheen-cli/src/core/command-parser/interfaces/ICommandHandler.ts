@@ -4,7 +4,7 @@
  * Follows Interface Segregation Principle (ISP)
  */
 
-import type { CLICommand } from '../../../types/index.js';
+import type { CLICommand } from "../../../types/index";
 
 export interface ICommandHandler {
   /**

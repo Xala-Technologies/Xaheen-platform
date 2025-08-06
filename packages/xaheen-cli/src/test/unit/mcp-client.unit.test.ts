@@ -8,8 +8,8 @@
 import { beforeEach, afterEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 import { join } from 'path';
 import fs from 'fs-extra';
-import { MCPClientService, type MCPConfig, type ProjectContext, type ContextItem } from '../../services/mcp/mcp-client.service.js';
-import { TestFileSystem, MockBuilder } from '../test-helpers.js';
+import { MCPClientService, type MCPConfig, type ProjectContext, type ContextItem } from "../../services/mcp/mcp-client.service";
+import { TestFileSystem, MockBuilder } from "../test-helpers";
 
 // Mock external dependencies
 vi.mock('xala-mcp', () => ({

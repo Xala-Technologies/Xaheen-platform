@@ -8,14 +8,14 @@
  * - Integrates with MCP for enhanced suggestions
  */
 
-import { logger } from "../../utils/logger.js";
-import { mcpClient } from "../mcp/mcp-client.js";
+import { logger } from "../../utils/logger";
+import { mcpClient } from "../mcp/mcp-client";
 import {
 	AIContextIndexer,
 	type CodebaseIndex,
 	type ComponentIndex,
 } from "./ai-context-indexer.js";
-import { AIService, type ComponentContext } from "./ai-service.js";
+import { AIService, type ComponentContext } from "./ai-service";
 
 export interface ComponentSuggestion {
 	type:

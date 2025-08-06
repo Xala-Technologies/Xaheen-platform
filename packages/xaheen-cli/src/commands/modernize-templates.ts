@@ -12,8 +12,8 @@ import { glob } from "glob";
 import inquirer from "inquirer";
 import ora from "ora";
 import { join, relative } from "path";
-import { templateModernizationService } from "../services/templates/template-modernization-service.js";
-import { logger } from "../utils/logger.js";
+import { templateModernizationService } from "../services/templates/template-modernization-service";
+import { logger } from "../utils/logger";
 
 interface ModernizeCommandOptions {
 	readonly target?: string;

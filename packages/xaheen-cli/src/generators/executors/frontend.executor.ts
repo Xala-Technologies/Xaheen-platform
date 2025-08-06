@@ -5,13 +5,13 @@
  * @version 1.0.0
  */
 
-import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from './index.js';
-import type { GeneratorType } from '../../types/index.js';
+import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from "./index";
+import type { GeneratorType } from "../../types/index";
 
 // Import frontend generators
-import { PageGenerator } from '../page.generator.js';
-import { LayoutGenerator } from '../layout.generator.js';
-import { MiddlewareGenerator } from '../middleware.generator.js';
+import { PageGenerator } from "../page.generator";
+import { LayoutGenerator } from "../layout.generator";
+import { MiddlewareGenerator } from "../middleware.generator";
 
 /**
  * Frontend Generator Executor

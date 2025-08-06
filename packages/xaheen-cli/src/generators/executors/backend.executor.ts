@@ -5,13 +5,13 @@
  * @version 1.0.0
  */
 
-import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from './index.js';
-import type { GeneratorType } from '../../types/index.js';
+import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from "./index";
+import type { GeneratorType } from "../../types/index";
 
 // Import backend generators
-import { BackendGenerator } from '../backend/index.js';
-import { RESTAPIGenerator } from '../api/index.js';
-import { PrismaGenerator } from '../database/index.js';
+import { BackendGenerator } from "../backend/index";
+import { RESTAPIGenerator } from "../api/index";
+import { PrismaGenerator } from "../database/index";
 
 /**
  * Backend Generator Executor

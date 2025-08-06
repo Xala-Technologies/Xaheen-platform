@@ -3,7 +3,7 @@
  * Following Single Responsibility and Open/Closed Principles
  */
 
-import { GeneratedInfrastructureFile } from "../../index.js";
+import { GeneratedInfrastructureFile } from "../../index";
 import { 
   ITerraformService, 
   TerraformValidationResult, 
@@ -12,7 +12,7 @@ import {
   ITerraformTemplateGenerator,
   ITerraformConfigurationManager
 } from "../interfaces/service-interfaces.js";
-import { TerraformBaseConfig } from "../interfaces/index.js";
+import { TerraformBaseConfig } from "../interfaces/index";
 
 export abstract class BaseTerraformService implements ITerraformService {
   protected readonly config: TerraformBaseConfig;

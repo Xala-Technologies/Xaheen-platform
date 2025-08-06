@@ -3,7 +3,7 @@
  * Handles VPC, Subnets, Routing, and Security Groups following SRP
  */
 
-import { GeneratedInfrastructureFile } from "../../index.js";
+import { GeneratedInfrastructureFile } from "../../index";
 import { 
   ITerraformNetworkingService, 
   TerraformValidationResult,
@@ -18,7 +18,7 @@ import {
   TerraformSubnetsConfig,
   TerraformSecurityGroup
 } from "../interfaces/index.js";
-import { BaseTerraformService } from "./base-terraform-service.js";
+import { BaseTerraformService } from "./base-terraform-service";
 
 export class TerraformNetworkingService extends BaseTerraformService implements ITerraformNetworkingService {
   private readonly networkingConfig: TerraformNetworkingConfig;

@@ -8,8 +8,8 @@
 import { promises as fs } from "fs";
 import { join, resolve } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import { mcpClientService } from "./mcp-client.service.js";
+import { logger } from "../../utils/logger";
+import { mcpClientService } from "./mcp-client.service";
 
 // Schemas for MCP orchestration
 const GenerationRequestSchema = z.object({

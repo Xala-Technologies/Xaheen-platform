@@ -7,8 +7,8 @@
 
 import { join } from "path";
 import { promises as fs } from "fs";
-import { BaseGenerator } from "../base.generator.js";
-import { logger } from "../../utils/logger.js";
+import { BaseGenerator } from "../base.generator";
+import { logger } from "../../utils/logger";
 import {
 	AuthenticationMethod,
 	MFAType,
@@ -403,7 +403,7 @@ export class EnterpriseAuthGenerator extends BaseGenerator<EnterpriseAuthGenerat
  */
 
 import express from 'express';
-import { EnterpriseAuthenticationService } from '../services/authentication/index.js';
+import { EnterpriseAuthenticationService } from "../services/authentication/index";
 
 export function createExpressAuthMiddleware(authService: EnterpriseAuthenticationService) {
   return {
@@ -467,7 +467,7 @@ export function createExpressAuthMiddleware(authService: EnterpriseAuthenticatio
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { EnterpriseAuthenticationService } from '../services/authentication/index.js';
+import { EnterpriseAuthenticationService } from "../services/authentication/index";
 
 export function registerFastifyAuth(
   fastify: FastifyInstance,
@@ -537,7 +537,7 @@ export function registerFastifyAuth(
 
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EnterpriseAuthenticationService } from '../services/authentication/index.js';
+import { EnterpriseAuthenticationService } from "../services/authentication/index";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -628,7 +628,7 @@ export const RequirePermission = (permission: string) => {
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { EnterpriseAuthenticationService } from '../services/authentication/index.js';
+import { EnterpriseAuthenticationService } from "../services/authentication/index";
 
 export function createNextJSAuthMiddleware(authService: EnterpriseAuthenticationService) {
   return {
@@ -713,7 +713,7 @@ export function createNextJSAuthMiddleware(authService: EnterpriseAuthentication
  */
 
 import { IncomingMessage, ServerResponse } from 'http';
-import { EnterpriseAuthenticationService } from '../services/authentication/index.js';
+import { EnterpriseAuthenticationService } from "../services/authentication/index";
 
 export function createNodeAuthMiddleware(authService: EnterpriseAuthenticationService) {
   return {

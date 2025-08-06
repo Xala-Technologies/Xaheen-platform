@@ -11,14 +11,14 @@ import {
 	StackAdapter,
 	StackType,
 } from "../../types/index.js";
-import { NestJsAdapter } from "./adapters/nestjs.adapter.js";
-import { NextJsAdapter } from "./adapters/nextjs.adapter.js";
+import { NestJsAdapter } from "./adapters/nestjs.adapter";
+import { NextJsAdapter } from "./adapters/nextjs.adapter";
 // Future adapters
-// import { DjangoAdapter } from './adapters/django.adapter.js';
-// import { DotNetAdapter } from './adapters/dotnet.adapter.js';
-// import { AngularAdapter } from './adapters/angular.adapter.js';
-// import { VueAdapter } from './adapters/vue.adapter.js';
-// import { LaravelAdapter } from './adapters/laravel.adapter.js';
+// import { DjangoAdapter } from "./adapters/django.adapter";
+// import { DotNetAdapter } from "./adapters/dotnet.adapter";
+// import { AngularAdapter } from "./adapters/angular.adapter";
+// import { VueAdapter } from "./adapters/vue.adapter";
+// import { LaravelAdapter } from "./adapters/laravel.adapter";
 
 export class StackAdapterRegistry {
 	private static instance: StackAdapterRegistry;

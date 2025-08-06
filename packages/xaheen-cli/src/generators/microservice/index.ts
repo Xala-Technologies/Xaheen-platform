@@ -5,14 +5,14 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { CICDGenerator } from "./cicd.generator.js";
-import { DockerGenerator } from "./docker.generator.js";
-import { GrpcGenerator } from "./grpc.generator.js";
-import { HealthCheckGenerator } from "./health-check.generator.js";
-import { KubernetesGenerator } from "./kubernetes.generator.js";
-import { MessagingGenerator } from "./messaging.generator.js";
-import { MetricsGenerator } from "./metrics.generator.js";
-import { MonitoringGenerator } from "./monitoring.generator.js";
+import { CICDGenerator } from "./cicd.generator";
+import { DockerGenerator } from "./docker.generator";
+import { GrpcGenerator } from "./grpc.generator";
+import { HealthCheckGenerator } from "./health-check.generator";
+import { KubernetesGenerator } from "./kubernetes.generator";
+import { MessagingGenerator } from "./messaging.generator";
+import { MetricsGenerator } from "./metrics.generator";
+import { MonitoringGenerator } from "./monitoring.generator";
 import {
 	GeneratedFile,
 	GrpcServiceConfig,

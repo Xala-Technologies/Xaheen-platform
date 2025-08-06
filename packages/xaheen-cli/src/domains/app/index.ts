@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { appTemplateRegistry } from "../../services/registry/app-template-registry.js";
-import type { CLICommand } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import { appTemplateRegistry } from "../../services/registry/app-template-registry";
+import type { CLICommand } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 interface AppTemplate {
 	name: string;

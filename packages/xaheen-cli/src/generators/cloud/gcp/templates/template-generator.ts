@@ -3,7 +3,7 @@
  * Following Template Method Pattern
  */
 
-import { IGCPTemplateGenerator } from "../interfaces/service-interfaces.js";
+import { IGCPTemplateGenerator } from "../interfaces/service-interfaces";
 
 export class GCPTemplateGenerator implements IGCPTemplateGenerator {
   generateTerraformTemplate(config: unknown): string {

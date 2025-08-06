@@ -9,7 +9,7 @@ import { EventEmitter } from 'node:events';
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import type { DevelopmentInsights, HistoricalProjectData } from './predictive-analytics-engine.js';
+import type { DevelopmentInsights, HistoricalProjectData } from "./predictive-analytics-engine";
 
 // Types
 export interface MaintenanceCostModel {

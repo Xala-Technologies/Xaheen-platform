@@ -9,8 +9,8 @@ import { promises as fs } from "fs";
 import { join } from "path";
 import { z } from "zod";
 import { performance } from "perf_hooks";
-import { logger } from "../../utils/logger.js";
-import type { MCPConfig } from "./mcp-config.service.js";
+import { logger } from "../../utils/logger";
+import type { MCPConfig } from "./mcp-config.service";
 import type { XalaMCPClient } from "@xala-technologies/xala-mcp";
 
 // Test configuration schema

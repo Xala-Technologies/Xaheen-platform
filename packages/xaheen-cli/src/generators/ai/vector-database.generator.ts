@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { BaseGenerator } from '../base.generator.js';
-import type { VectorDatabaseOptions } from './types.js';
+import { BaseGenerator } from "../base.generator";
+import type { VectorDatabaseOptions } from "./types";
 
 export class VectorDatabaseGenerator extends BaseGenerator<VectorDatabaseOptions> {
   async generate(options: VectorDatabaseOptions): Promise<void> {
@@ -82,9 +82,9 @@ export class VectorDatabaseGenerator extends BaseGenerator<VectorDatabaseOptions
   IndexStats,
   ${options.name}Config 
 } from './types.js';
-import { ${this.getProviderClass(options.provider)} } from './providers/${options.provider}.provider.js';
-import { VectorUtils } from './utils/vector-utils.js';
-import { SearchOptimizer } from './utils/search-optimizer.js';
+import { ${this.getProviderClass(options.provider)} } from "./providers/${options.provider}.provider";
+import { VectorUtils } from "./utils/vector-utils";
+import { SearchOptimizer } from "./utils/search-optimizer";
 
 export class ${options.name}VectorService {
   private readonly provider: ${this.getProviderClass(options.provider)};
@@ -1381,7 +1381,7 @@ export interface QueryPerformance {
   }
 
   private async generateVectorUtils(options: VectorDatabaseOptions): Promise<void> {
-    const vectorUtilsContent = `import type { VectorRecord } from '../types.js';
+    const vectorUtilsContent = `import type { VectorRecord } from "../types";
 
 export class VectorUtils {
   /**
@@ -1552,7 +1552,7 @@ export class VectorUtils {
   }
 
   private async generateSearchOptimizer(options: VectorDatabaseOptions): Promise<void> {
-    const searchOptimizerContent = `import type { SearchResult, QueryOptions } from '../types.js';
+    const searchOptimizerContent = `import type { SearchResult, QueryOptions } from "../types";
 
 export class SearchOptimizer {
   /**
@@ -1765,8 +1765,8 @@ export class SearchOptimizer {
 
   private async generateTests(options: VectorDatabaseOptions): Promise<void> {
     const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ${options.name}VectorService } from '../${options.name.toLowerCase()}-vector.service.js';
-import type { ${options.name}Config, VectorRecord } from '../types.js';
+import { ${options.name}VectorService } from "../${options.name.toLowerCase()}-vector.service";
+import type { ${options.name}Config, VectorRecord } from "../types";
 
 describe('${options.name}VectorService', () => {
   let service: ${options.name}VectorService;
@@ -1977,7 +1977,7 @@ describe('${options.name}VectorService', () => {
   }
 
   private async generateConfig(options: VectorDatabaseOptions): Promise<void> {
-    const configContent = `import type { ${options.name}Config } from './types.js';
+    const configContent = `import type { ${options.name}Config } from "./types";
 
 export const default${options.name}Config: Partial<${options.name}Config> = {
   // Default configuration will vary by provider

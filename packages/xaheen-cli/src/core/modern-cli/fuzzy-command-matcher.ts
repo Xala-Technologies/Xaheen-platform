@@ -8,8 +8,8 @@
  */
 
 import chalk from "chalk";
-import type { CommandRoute } from "../../types/index.js";
-import { cliLogger } from "../../utils/logger.js";
+import type { CommandRoute } from "../../types/index";
+import { cliLogger } from "../../utils/logger";
 
 export interface CommandSuggestion {
 	readonly command: string;

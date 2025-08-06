@@ -9,8 +9,8 @@ import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import type { PluginMetadata } from "./plugin-manager.js";
+import { logger } from "../../utils/logger";
+import type { PluginMetadata } from "./plugin-manager";
 
 /**
  * Plugin lifecycle state schema

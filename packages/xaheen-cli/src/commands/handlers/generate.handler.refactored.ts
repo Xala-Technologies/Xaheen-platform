@@ -11,7 +11,7 @@ import type {
   CommandResult,
   CommandHelp,
 } from '../../core/interfaces/index.js';
-import type { ComponentGenerator } from '../../generators/component/component.generator.refactored.js';
+import type { ComponentGenerator } from "../../generators/component/component.generator.refactored";
 
 export interface GenerateCommandOptions {
   readonly type: string;

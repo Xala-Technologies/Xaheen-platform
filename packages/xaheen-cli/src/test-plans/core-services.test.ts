@@ -16,12 +16,12 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ProjectAnalyzer } from "../services/analysis/project-analyzer.js";
-import { BundleResolver } from "../services/bundles/bundle-resolver.js";
-import { ServiceRegistry } from "../services/registry/service-registry.js";
-import { ServiceRemover } from "../services/removal/service-remover.js";
-import { ProjectScaffolder } from "../services/scaffolding/project-scaffolder.js";
-import { ProjectValidator } from "../services/validation/project-validator.js";
+import { ProjectAnalyzer } from "../services/analysis/project-analyzer";
+import { BundleResolver } from "../services/bundles/bundle-resolver";
+import { ServiceRegistry } from "../services/registry/service-registry";
+import { ServiceRemover } from "../services/removal/service-remover";
+import { ProjectScaffolder } from "../services/scaffolding/project-scaffolder";
+import { ProjectValidator } from "../services/validation/project-validator";
 import type {
 	ProjectContext,
 	ServiceBundle,

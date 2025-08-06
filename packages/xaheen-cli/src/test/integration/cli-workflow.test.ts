@@ -10,11 +10,11 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ProjectAnalyzer } from "../../services/analysis/project-analyzer.js";
-import { ServiceRegistry } from "../../services/registry/service-registry.js";
-import { ServiceRemover } from "../../services/removal/service-remover.js";
-import { ProjectValidator } from "../../services/validation/project-validator.js";
-import { createMockProject } from "../utils/test-helpers.js";
+import { ProjectAnalyzer } from "../../services/analysis/project-analyzer";
+import { ServiceRegistry } from "../../services/registry/service-registry";
+import { ServiceRemover } from "../../services/removal/service-remover";
+import { ProjectValidator } from "../../services/validation/project-validator";
+import { createMockProject } from "../utils/test-helpers";
 
 describe("CLI Workflow Integration", () => {
 	let registry: ServiceRegistry;

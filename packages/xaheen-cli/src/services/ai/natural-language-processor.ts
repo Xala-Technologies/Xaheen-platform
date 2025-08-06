@@ -8,8 +8,8 @@
  * - Integrates with AI service for enhanced generation
  */
 
-import { logger } from "../../utils/logger.js";
-import { mcpClient } from "../mcp/mcp-client.js";
+import { logger } from "../../utils/logger";
+import { mcpClient } from "../mcp/mcp-client";
 import {
 	AIService,
 	type ComponentContext,

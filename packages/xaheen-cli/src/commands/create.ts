@@ -24,11 +24,11 @@ import chalk from "chalk";
 import { Command } from "commander";
 import { consola } from "consola";
 import fs from "fs-extra";
-import { BundleResolver } from "../services/bundles/bundle-resolver.js";
-import { ServiceInjector } from "../services/injection/service-injector.js";
-import { ServiceRegistry } from "../services/registry/service-registry.js";
-import { ProjectScaffolder } from "../services/scaffolding/project-scaffolder.js";
-import type { ProjectConfig, ServiceBundle } from "../types/index.js";
+import { BundleResolver } from "../services/bundles/bundle-resolver";
+import { ServiceInjector } from "../services/injection/service-injector";
+import { ServiceRegistry } from "../services/registry/service-registry";
+import { ProjectScaffolder } from "../services/scaffolding/project-scaffolder";
+import type { ProjectConfig, ServiceBundle } from "../types/index";
 
 export const createCommand = new Command("create")
 	.alias("new")

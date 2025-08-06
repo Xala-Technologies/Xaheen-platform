@@ -4,10 +4,10 @@
  * Follows Dependency Inversion Principle (DIP) and Factory Pattern
  */
 
-import type { CLIDomain } from '../../../types/index.js';
-import type { ICommandHandler, IInitializableCommandHandler } from '../interfaces/ICommandHandler.js';
-import type { ICommandHandlerFactory } from '../interfaces/CommandTypes.js';
-import { logger } from '../../../utils/logger.js';
+import type { CLIDomain } from "../../../types/index";
+import type { ICommandHandler, IInitializableCommandHandler } from "../interfaces/ICommandHandler";
+import type { ICommandHandlerFactory } from "../interfaces/CommandTypes";
+import { logger } from "../../../utils/logger";
 
 export class CommandHandlerFactory implements ICommandHandlerFactory {
   private handlerClasses: Map<CLIDomain, new (...args: any[]) => ICommandHandler> = new Map();

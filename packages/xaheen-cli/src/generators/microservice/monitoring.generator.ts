@@ -3,7 +3,7 @@
  * Generates monitoring, logging, and observability configurations
  */
 
-import type { GeneratedFile, MicroserviceOptions } from "./types.js";
+import type { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class MonitoringGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

@@ -8,9 +8,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createMockProject } from "../../test/utils/test-helpers.js";
-import type { ServiceTemplate } from "../../types/index.js";
-import { ServiceRegistry } from "./service-registry.js";
+import { createMockProject } from "../../test/utils/test-helpers";
+import type { ServiceTemplate } from "../../types/index";
+import { ServiceRegistry } from "./service-registry";
 
 describe("ServiceRegistry", () => {
 	let serviceRegistry: ServiceRegistry;

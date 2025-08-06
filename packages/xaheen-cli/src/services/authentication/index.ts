@@ -5,7 +5,7 @@
  * @compliance Norwegian NSM Standards, Enterprise Security, GDPR
  */
 
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import {
 	EnterpriseAuthConfig,
 	EnterpriseAuthConfigSchema,
@@ -21,12 +21,12 @@ import {
 } from "./types.js";
 
 // Import all services
-import { SAML2Service } from "./saml2.service.js";
-import { OAuth2Service } from "./oauth2.service.js";
-import { MFAService } from "./mfa.service.js";
-import { RBACService } from "./rbac.service.js";
-import { SessionService } from "./session.service.js";
-import { AuditService } from "./audit.service.js";
+import { SAML2Service } from "./saml2.service";
+import { OAuth2Service } from "./oauth2.service";
+import { MFAService } from "./mfa.service";
+import { RBACService } from "./rbac.service";
+import { SessionService } from "./session.service";
+import { AuditService } from "./audit.service";
 
 /**
  * Enterprise Authentication Orchestrator
@@ -620,13 +620,13 @@ export class EnterpriseAuthenticationService {
 }
 
 // Export all types and services
-export * from "./types.js";
-export { SAML2Service } from "./saml2.service.js";
-export { OAuth2Service } from "./oauth2.service.js";
-export { MFAService } from "./mfa.service.js";
-export { RBACService } from "./rbac.service.js";
-export { SessionService } from "./session.service.js";
-export { AuditService } from "./audit.service.js";
+export * from "./types";
+export { SAML2Service } from "./saml2.service";
+export { OAuth2Service } from "./oauth2.service";
+export { MFAService } from "./mfa.service";
+export { RBACService } from "./rbac.service";
+export { SessionService } from "./session.service";
+export { AuditService } from "./audit.service";
 
 /**
  * Factory function to create enterprise authentication service

@@ -8,16 +8,16 @@ import { existsSync } from "fs";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 // Import all community services
-import { PluginRegistryService, createPluginRegistryService } from "./plugin-registry.service.js";
-import { PluginSecurityService, createPluginSecurityService } from "./plugin-security.service.js";
-import { PluginDevToolkitService, createPluginDevToolkitService } from "./plugin-dev-toolkit.service.js";
-import { PluginTestingService, createPluginTestingService } from "./plugin-testing.service.js";
-import { TemplateSharingService, createTemplateSharingService } from "./template-sharing.service.js";
-import { InteractiveTutorialsService, createInteractiveTutorialsService } from "./interactive-tutorials.service.js";
-import { CLIHelpService, createCLIHelpService } from "./cli-help.service.js";
+import { PluginRegistryService, createPluginRegistryService } from "./plugin-registry.service";
+import { PluginSecurityService, createPluginSecurityService } from "./plugin-security.service";
+import { PluginDevToolkitService, createPluginDevToolkitService } from "./plugin-dev-toolkit.service";
+import { PluginTestingService, createPluginTestingService } from "./plugin-testing.service";
+import { TemplateSharingService, createTemplateSharingService } from "./template-sharing.service";
+import { InteractiveTutorialsService, createInteractiveTutorialsService } from "./interactive-tutorials.service";
+import { CLIHelpService, createCLIHelpService } from "./cli-help.service";
 
 /**
  * Community dashboard data

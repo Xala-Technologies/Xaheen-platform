@@ -3,7 +3,7 @@
  * Generates message queue integration and event-driven patterns
  */
 
-import type { GeneratedFile, MicroserviceOptions } from "./types.js";
+import type { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class MessagingGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

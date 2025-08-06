@@ -5,9 +5,9 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { LicenseManager } from './LicenseManager.js';
-import { CLILicenseIntegration } from './CLILicenseIntegration.js';
-import { FeatureFlag, LicenseTier } from './types.js';
+import { LicenseManager } from "./LicenseManager";
+import { CLILicenseIntegration } from "./CLILicenseIntegration";
+import { FeatureFlag, LicenseTier } from "./types";
 
 export class LicenseCommands {
   private licenseManager: LicenseManager;

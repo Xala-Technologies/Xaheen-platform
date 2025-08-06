@@ -1,7 +1,7 @@
 import chalk from "chalk";
-import type { CLICommand } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { cliLogger } from "../../utils/logger.js";
+import type { CLICommand } from "../../types/index";
+import { CLIError } from "../../types/index";
+import { cliLogger } from "../../utils/logger";
 
 export default class ComponentDomain {
 	private get configManager() {

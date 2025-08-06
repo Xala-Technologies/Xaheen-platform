@@ -4,8 +4,8 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { ScaffoldGenerator } from '../scaffold.generator.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { ScaffoldGenerator } from "../scaffold.generator";
 // Import other fullstack generators as they become available
 
 /**

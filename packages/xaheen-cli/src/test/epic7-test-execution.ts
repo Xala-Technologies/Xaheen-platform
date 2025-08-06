@@ -21,7 +21,7 @@ import { performance } from 'perf_hooks';
 import path from 'node:path';
 import fs from 'fs-extra';
 
-import Epic7TestRunner, { TestSuite } from './epic7-integration-test-runner.js';
+import Epic7TestRunner, { TestSuite } from "./epic7-integration-test-runner";
 
 interface ExecutionOptions {
   categories?: string[];

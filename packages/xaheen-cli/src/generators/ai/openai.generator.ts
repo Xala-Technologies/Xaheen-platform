@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { join } from "path";
-import { BaseGenerator } from "../base.generator.js";
-import type { OpenAIOptions } from "./types.js";
+import { BaseGenerator } from "../base.generator";
+import type { OpenAIOptions } from "./types";
 
 export class OpenAIGenerator extends BaseGenerator<OpenAIOptions> {
 	async generate(options: OpenAIOptions): Promise<void> {
@@ -79,9 +79,9 @@ import type {
   AudioSpeechCreateParams,
   AudioTranscriptionCreateParams
 } from 'openai/resources/index.js';
-import { RateLimiter } from './utils/rate-limiter.js';
-import { CacheManager } from './utils/cache-manager.js';
-import { ErrorHandler } from './utils/error-handler.js';
+import { RateLimiter } from "./utils/rate-limiter";
+import { CacheManager } from "./utils/cache-manager";
+import { ErrorHandler } from "./utils/error-handler";
 import type { 
   ${options.name}Config, 
   ChatOptions, 
@@ -481,7 +481,7 @@ export class ${options.name}Service {
   ChatCompletionTool,
   ChatCompletionToolChoiceOption 
 } from 'openai/resources/index.js';
-import type { RateLimitConfig, CacheConfig, ErrorHandlingConfig } from '../utils/types.js';
+import type { RateLimitConfig, CacheConfig, ErrorHandlingConfig } from "../utils/types";
 
 export interface ${options.name}Config {
   readonly apiKey: string;
@@ -585,7 +585,7 @@ export interface HealthStatus {
 	}
 
 	private async generateRateLimiter(options: OpenAIOptions): Promise<void> {
-		const rateLimiterContent = `import type { RateLimitConfig } from '../types.js';
+		const rateLimiterContent = `import type { RateLimitConfig } from "../types";
 
 export class RateLimiter {
   private requests: number = 0;
@@ -668,7 +668,7 @@ export class RateLimiter {
 	}
 
 	private async generateCacheManager(options: OpenAIOptions): Promise<void> {
-		const cacheManagerContent = `import type { CacheConfig } from '../types.js';
+		const cacheManagerContent = `import type { CacheConfig } from "../types";
 import { createHash } from 'crypto';
 
 export class CacheManager {
@@ -748,7 +748,7 @@ export class CacheManager {
 	}
 
 	private async generateErrorHandler(options: OpenAIOptions): Promise<void> {
-		const errorHandlerContent = `import type { ErrorHandlingConfig } from '../types.js';
+		const errorHandlerContent = `import type { ErrorHandlingConfig } from "../types";
 
 export class ErrorHandler {
   private errorCount = 0;
@@ -863,7 +863,7 @@ export class ErrorHandler {
 	}
 
 	private async generateConfig(options: OpenAIOptions): Promise<void> {
-		const configContent = `import type { ${options.name}Config } from './types.js';
+		const configContent = `import type { ${options.name}Config } from "./types";
 
 export const default${options.name}Config: Partial<${options.name}Config> = {
   timeout: 30000,
@@ -903,8 +903,8 @@ export function create${options.name}Config(
 
 	private async generateTests(options: OpenAIOptions): Promise<void> {
 		const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ${options.name}Service } from '../${options.name.toLowerCase()}.service.js';
-import type { ${options.name}Config } from '../types.js';
+import { ${options.name}Service } from "../${options.name.toLowerCase()}.service";
+import type { ${options.name}Config } from "../types";
 
 describe('${options.name}Service', () => {
   let service: ${options.name}Service;

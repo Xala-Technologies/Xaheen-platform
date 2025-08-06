@@ -6,8 +6,8 @@
  * enabling Rails-style meta-programming capabilities within the Xaheen CLI.
  */
 
-import { GeneratorRegistry, IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { IGenerator } from '../core/interfaces/IGenerator.js';
+import { GeneratorRegistry, IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { IGenerator } from "../core/interfaces/IGenerator";
 
 // Generic result type for all generators
 type GeneratorResult = { success: boolean; message: string; error?: string };

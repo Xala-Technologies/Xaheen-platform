@@ -6,8 +6,8 @@
  */
 
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { testUtils } from "../test/test-helpers.js";
-import { createCommand } from "./create.js";
+import { testUtils } from "../test/test-helpers";
+import { createCommand } from "./create";
 
 // Mock all dependencies
 vi.mock("@clack/prompts");
@@ -29,18 +29,10 @@ describe("Create Command", () => {
 		vi.clearAllMocks();
 
 		// Setup mock implementations
-		const { BundleResolver } = await import(
-			"../services/bundles/bundle-resolver.js"
-		);
-		const { ServiceInjector } = await import(
-			"../services/injection/service-injector.js"
-		);
-		const { ServiceRegistry } = await import(
-			"../services/registry/service-registry.js"
-		);
-		const { ProjectScaffolder } = await import(
-			"../services/scaffolding/project-scaffolder.js"
-		);
+		const { BundleResolver } = await import("../services/bundles/bundle-resolver");
+		const { ServiceInjector } = await import("../services/injection/service-injector");
+		const { ServiceRegistry } = await import("../services/registry/service-registry");
+		const { ProjectScaffolder } = await import("../services/scaffolding/project-scaffolder");
 		const prompts = await import("@clack/prompts");
 		const fs = await import("fs-extra");
 

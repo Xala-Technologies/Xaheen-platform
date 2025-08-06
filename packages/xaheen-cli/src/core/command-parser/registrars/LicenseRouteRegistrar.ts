@@ -5,10 +5,10 @@
  */
 
 import type { Command } from 'commander';
-import type { CLICommand } from '../../../types/index.js';
-import type { CommandRoute } from '../interfaces/CommandTypes.js';
-import type { IRouteRegistrar, IRouteRegistry, CommandOptionConfig } from '../interfaces/IRouteRegistrar.js';
-import { logger } from '../../../utils/logger.js';
+import type { CLICommand } from "../../../types/index";
+import type { CommandRoute } from "../interfaces/CommandTypes";
+import type { IRouteRegistrar, IRouteRegistry, CommandOptionConfig } from "../interfaces/IRouteRegistrar";
+import { logger } from "../../../utils/logger";
 
 export class LicenseRouteRegistrar implements IRouteRegistrar {
   public readonly domain = 'license';

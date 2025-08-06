@@ -1,0 +1,3077 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="49" failures="28" errors="0" time="1.243">
+    <testsuite name="src/commands/ai.unit.test.ts" timestamp="2025-08-06T10:10:31.251Z" hostname="IBRAHIM-sin-MacBook-Pro-3.local" tests="17" failures="17" errors="0" skipped="0" time="0.139254375">
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; runCodebuffCLI &gt; should execute codebuff with correct arguments" time="0.118578208">
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:86:25
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:86:25
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:86:25
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; runCodebuffCLI &gt; should handle codebuff execution errors" time="0.00070525">
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:126:5
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:126:5
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:126:5
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; runCodebuffCLI &gt; should set model environment variable" time="0.000589125">
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:147:10
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:147:10
+            </failure>
+            <failure message="runCodebuffCLI is not a function" type="TypeError">
+TypeError: runCodebuffCLI is not a function
+ ❯ src/commands/ai.unit.test.ts:147:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should validate git repository before executing" time="0.006248917">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Not a git repository
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+            <failure message="expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Not a git repository
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+            <failure message="expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Not a git repository&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Not a git repository
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should check for uncommitted changes" time="0.0015895">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Uncommitted changes detected
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+            <failure message="expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Uncommitted changes detected
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+            <failure message="expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;" type="AssertionError">
+AssertionError: expected [Function] to throw error including &apos;Uncommitted changes detected&apos; but got &apos;[vitest] No &quot;default&quot; export is defin…&apos;
+
+- Expected
++ Received
+
+- Uncommitted changes detected
++ [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
++ If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
++
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should create codebuff index when index option is true" time="0.001541292">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:202:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:202:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:202:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should show diff preview in interactive mode" time="0.000813208">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:232:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:232:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:232:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should apply patch when confirmed" time="0.000598958">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:267:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:267:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:267:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; codebuffCommand &gt; should skip patch application in dry run mode" time="0.000579458">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:293:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:293:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:293:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; fixTestsCommand &gt; should execute test fixing logic" time="0.001459458">
+            <system-out>
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+
+            </system-out>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+ ❯ src/commands/ai.unit.test.ts:331:22
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+ ❯ src/commands/ai.unit.test.ts:331:22
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ Array(3) ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+ ❯ src/commands/ai.unit.test.ts:331:22
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; fixTestsCommand &gt; should handle test fixing errors" time="0.001072916">
+            <system-out>
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+🧪 AI Test Fixer
+
+🔍 Running tests to identify failures...
+✅ All tests are already passing!
+
+            </system-out>
+            <failure message="promise resolved &quot;undefined&quot; instead of rejecting" type="AssertionError">
+AssertionError: promise resolved &quot;undefined&quot; instead of rejecting
+
+- Expected: 
+[Error: rejected promise]
+
++ Received: 
+undefined
+
+ ❯ src/commands/ai.unit.test.ts:359:41
+            </failure>
+            <failure message="promise resolved &quot;undefined&quot; instead of rejecting" type="AssertionError">
+AssertionError: promise resolved &quot;undefined&quot; instead of rejecting
+
+- Expected: 
+[Error: rejected promise]
+
++ Received: 
+undefined
+
+ ❯ src/commands/ai.unit.test.ts:359:41
+            </failure>
+            <failure message="promise resolved &quot;undefined&quot; instead of rejecting" type="AssertionError">
+AssertionError: promise resolved &quot;undefined&quot; instead of rejecting
+
+- Expected: 
+[Error: rejected promise]
+
++ Received: 
+undefined
+
+ ❯ src/commands/ai.unit.test.ts:359:41
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; norwegianComplianceCommand &gt; should execute Norwegian compliance checking" time="0.001966291">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:393:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:393:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:393:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; norwegianComplianceCommand &gt; should include Norwegian regulations in prompt" time="0.000672959">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:427:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:427:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ norwegianComplianceCommand src/commands/ai.ts:259:8
+ ❯ src/commands/ai.unit.test.ts:427:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; AI Refactoring Integration &gt; should use AI refactoring generator for complex operations" time="0.000403167">
+            <failure message="mockRefactoringGenerator.generate is not a function" type="TypeError">
+TypeError: mockRefactoringGenerator.generate is not a function
+ ❯ src/commands/ai.unit.test.ts:446:35
+            </failure>
+            <failure message="mockRefactoringGenerator.generate is not a function" type="TypeError">
+TypeError: mockRefactoringGenerator.generate is not a function
+ ❯ src/commands/ai.unit.test.ts:446:35
+            </failure>
+            <failure message="mockRefactoringGenerator.generate is not a function" type="TypeError">
+TypeError: mockRefactoringGenerator.generate is not a function
+ ❯ src/commands/ai.unit.test.ts:446:35
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; AI Refactoring Integration &gt; should handle refactoring generator errors" time="0.000387209">
+            <failure message="Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)" type="TypeError">
+TypeError: Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)
+ ❯ src/commands/ai.unit.test.ts:452:38
+            </failure>
+            <failure message="Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)" type="TypeError">
+TypeError: Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)
+ ❯ src/commands/ai.unit.test.ts:452:38
+            </failure>
+            <failure message="Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)" type="TypeError">
+TypeError: Cannot read properties of undefined (reading &apos;mockRejectedValue&apos;)
+ ❯ src/commands/ai.unit.test.ts:452:38
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; Git Integration &gt; should validate git repository before operations" time="0.000569167">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:487:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:487:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:487:10
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/ai.unit.test.ts" name="AI Command &gt; Git Integration &gt; should handle auto-commit when enabled" time="0.000582583">
+            <system-out>
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+🤖 Xaheen AI - Context-Aware Code Generation
+
+
+            </system-out>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:525:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:525:10
+            </failure>
+            <failure message="[vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+" type="Error">
+Error: [vitest] No &quot;default&quot; export is defined on the &quot;inquirer&quot; mock. Did you forget to return it from &quot;vi.mock&quot;?
+If you need to partially mock a module, you can use &quot;importOriginal&quot; helper inside:
+
+vi.mock(import(&quot;inquirer&quot;), async (importOriginal) =&gt; {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ codebuffCommand src/commands/ai.ts:109:29
+ ❯ src/commands/ai.unit.test.ts:525:10
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/commands/create.unit.test.ts" timestamp="2025-08-06T10:10:31.281Z" hostname="IBRAHIM-sin-MacBook-Pro-3.local" tests="15" failures="9" errors="0" skipped="0" time="0.048084917">
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Command Configuration &gt; should have correct command configuration" time="0.005075916">
+            <failure message="expected [ undefined ] to include &apos;new&apos;" type="AssertionError">
+AssertionError: expected [ undefined ] to include &apos;new&apos;
+ ❯ src/commands/create.unit.test.ts:117:34
+            </failure>
+            <failure message="expected [ undefined ] to include &apos;new&apos;" type="AssertionError">
+AssertionError: expected [ undefined ] to include &apos;new&apos;
+ ❯ src/commands/create.unit.test.ts:117:34
+            </failure>
+            <failure message="expected [ undefined ] to include &apos;new&apos;" type="AssertionError">
+AssertionError: expected [ undefined ] to include &apos;new&apos;
+ ❯ src/commands/create.unit.test.ts:117:34
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Command Configuration &gt; should have all expected options" time="0.001356916">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Argument Parsing &gt; should parse project name argument" time="0.008517583">
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:147:21
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:147:21
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++   },
++   Command {
++     &quot;_actionHandler&quot;: [Function listener],
++     &quot;_addImplicitHelpCommand&quot;: undefined,
++     &quot;_aliases&quot;: Array [
++       &quot;new&quot;,
++     ],
++     &quot;_allowExcessArguments&quot;: true,
++     &quot;_allowUnknownOption&quot;: false,
++     &quot;_args&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;_argsDescription&quot;: undefined,
++     &quot;_combineFlagAndOptionalValue&quot;: true,
++     &quot;_defaultCommandName&quot;: null,
++     &quot;_description&quot;: &quot;Create a new project&quot;,
++     &quot;_enablePositionalOptions&quot;: false,
++     &quot;_events&quot;: Object {
++       &quot;option:backend&quot;: [Function anonymous],
++       &quot;option:bundles&quot;: [Function anonymous],
++       &quot;option:database&quot;: [Function anonymous],
++       &quot;option:dry-run&quot;: [Function anonymous],
++       &quot;option:framework&quot;: [Function anonymous],
++       &quot;option:no-git&quot;: [Function anonymous],
++       &quot;option:no-install&quot;: [Function anonymous],
++       &quot;option:preset&quot;: [Function anonymous],
++     },
++     &quot;_eventsCount&quot;: 8,
++     &quot;_executableDir&quot;: null,
++     &quot;_executableFile&quot;: null,
++     &quot;_executableHandler&quot;: false,
++     &quot;_exitCallback&quot;: null,
++     &quot;_helpCommand&quot;: undefined,
++     &quot;_helpConfiguration&quot;: Object {},
++     &quot;_helpOption&quot;: Option {
++       &quot;argChoices&quot;: undefined,
++       &quot;conflictsWith&quot;: Array [],
++       &quot;defaultValue&quot;: undefined,
++       &quot;defaultValueDescription&quot;: undefined,
++       &quot;description&quot;: &quot;display help for command&quot;,
++       &quot;envVar&quot;: undefined,
++       &quot;flags&quot;: &quot;-h, --help&quot;,
++       &quot;hidden&quot;: false,
++       &quot;implied&quot;: undefined,
++       &quot;long&quot;: &quot;--help&quot;,
++       &quot;mandatory&quot;: false,
++       &quot;negate&quot;: false,
++       &quot;optional&quot;: false,
++       &quot;parseArg&quot;: undefined,
++       &quot;presetArg&quot;: undefined,
++       &quot;required&quot;: false,
++       &quot;short&quot;: &quot;-h&quot;,
++       &quot;variadic&quot;: false,
++     },
++     &quot;_hidden&quot;: false,
++     &quot;_lifeCycleHooks&quot;: Object {},
++     &quot;_maxListeners&quot;: undefined,
++     &quot;_name&quot;: &quot;create&quot;,
++     &quot;_optionValueSources&quot;: Object {
++       &quot;git&quot;: &quot;default&quot;,
++       &quot;install&quot;: &quot;default&quot;,
++     },
++     &quot;_optionValues&quot;: Object {
++       &quot;git&quot;: true,
++       &quot;install&quot;: true,
++     },
++     &quot;_outputConfiguration&quot;: Object {
++       &quot;getErrHelpWidth&quot;: [Function getErrHelpWidth],
++       &quot;getOutHelpWidth&quot;: [Function getOutHelpWidth],
++       &quot;outputError&quot;: [Function outputError],
++       &quot;writeErr&quot;: [Function writeErr],
++       &quot;writeOut&quot;: [Function writeOut],
++     },
++     &quot;_passThroughOptions&quot;: false,
++     &quot;_scriptPath&quot;: null,
++     &quot;_showHelpAfterError&quot;: false,
++     &quot;_showSuggestionAfterError&quot;: true,
++     &quot;_storeOptionsAsProperties&quot;: false,
++     &quot;_summary&quot;: &quot;&quot;,
++     &quot;args&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
+        &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++     ],
++     &quot;commands&quot;: Array [],
++     &quot;options&quot;: Array [
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Use a preset bundle (e.g., saas-starter, saas-enterprise)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-p, --preset &lt;preset&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--preset&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-p&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Frontend framework (next, nuxt, remix, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-f, --framework &lt;framework&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--framework&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-f&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Backend framework (hono, express, fastify, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-b, --backend &lt;backend&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--backend&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-b&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Database (postgresql, mysql, mongodb, etc.)&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;-d, --database &lt;database&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--database&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: &quot;-d&quot;,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Service bundles to include&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--bundles &lt;bundles...&gt;&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--bundles&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: true,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: true,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip dependency installation&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-install&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-install&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Skip git initialization&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--no-git&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--no-git&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: true,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++       Option {
++         &quot;argChoices&quot;: undefined,
++         &quot;conflictsWith&quot;: Array [],
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Preview what would be created&quot;,
++         &quot;envVar&quot;: undefined,
++         &quot;flags&quot;: &quot;--dry-run&quot;,
++         &quot;hidden&quot;: false,
++         &quot;implied&quot;: undefined,
++         &quot;long&quot;: &quot;--dry-run&quot;,
++         &quot;mandatory&quot;: false,
++         &quot;negate&quot;: false,
++         &quot;optional&quot;: false,
++         &quot;parseArg&quot;: undefined,
++         &quot;presetArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;short&quot;: undefined,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     &quot;parent&quot;: null,
++     &quot;processedArgs&quot;: Array [
++       &quot;node&quot;,
++     ],
++     &quot;rawArgs&quot;: Array [
++       &quot;node&quot;,
++       &quot;xaheen&quot;,
++       &quot;create&quot;,
++       &quot;test-project&quot;,
++     ],
++     &quot;registeredArguments&quot;: Array [
++       Argument {
++         &quot;_name&quot;: &quot;name&quot;,
++         &quot;argChoices&quot;: undefined,
++         &quot;defaultValue&quot;: undefined,
++         &quot;defaultValueDescription&quot;: undefined,
++         &quot;description&quot;: &quot;Project name&quot;,
++         &quot;parseArg&quot;: undefined,
++         &quot;required&quot;: false,
++         &quot;variadic&quot;: false,
++       },
++     ],
++     Symbol(shapeMode): false,
++     Symbol(kCapture): false,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:147:21
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Argument Parsing &gt; should handle missing project name with interactive prompt" time="0.003063167">
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:167:29
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:167:29
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:167:29
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Preset Handling &gt; should use preset when provided" time="0.000932625">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Preset Handling &gt; should prompt for preset when not provided" time="0.004016458">
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:217:31
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:217:31
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:217:31
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Project Scaffolding &gt; should validate project name" time="0.002609584">
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:236:54
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:236:54
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;invalid-name&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;invalid-name&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:236:54
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Project Scaffolding &gt; should create project structure" time="0.002811833">
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:252:57
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:252:57
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;test-project&apos;, Any&lt;Object&gt; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;test-project&quot;,
+-   Any&lt;Object&gt;,
++   &quot;node&quot;,
++   Object {
++     &quot;git&quot;: true,
++     &quot;install&quot;: true,
++     &quot;preset&quot;: &quot;saas-starter&quot;,
++   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:252:57
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Project Scaffolding &gt; should handle existing directory" time="0.003218375">
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:278:30
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:278:30
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called with arguments: [ &apos;existing-project&apos; ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+-   &quot;existing-project&quot;,
++   &quot;node&quot;,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/commands/create.unit.test.ts:278:30
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Service Selection &gt; should select services based on preset" time="0.002757167">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Service Selection &gt; should allow custom service selection" time="0.003368791">
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:333:36
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:333:36
+            </failure>
+            <failure message="expected &quot;spy&quot; to be called at least once" type="AssertionError">
+AssertionError: expected &quot;spy&quot; to be called at least once
+ ❯ src/commands/create.unit.test.ts:333:36
+            </failure>
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Error Handling &gt; should handle bundle resolution errors" time="0.001137792">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Error Handling &gt; should handle project scaffolding errors" time="0.001376041">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Error Handling &gt; should handle user cancellation" time="0.002372959">
+        </testcase>
+        <testcase classname="src/commands/create.unit.test.ts" name="Create Command &gt; Interactive Flow &gt; should complete full interactive project creation" time="0.004640417">
+            <failure message="expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality
+
+Expected: &quot;my-awesome-project&quot;
+Received: &quot;node&quot;
+
+ ❯ Command.&lt;anonymous&gt; src/commands/create.unit.test.ts:436:18
+            </failure>
+            <failure message="expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality
+
+Expected: &quot;my-awesome-project&quot;
+Received: &quot;node&quot;
+
+ ❯ Command.&lt;anonymous&gt; src/commands/create.unit.test.ts:436:18
+            </failure>
+            <failure message="expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;node&apos; to be &apos;my-awesome-project&apos; // Object.is equality
+
+Expected: &quot;my-awesome-project&quot;
+Received: &quot;node&quot;
+
+ ❯ Command.&lt;anonymous&gt; src/commands/create.unit.test.ts:436:18
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/core/command-parser/index.unit.test.ts" timestamp="2025-08-06T10:10:31.291Z" hostname="IBRAHIM-sin-MacBook-Pro-3.local" tests="17" failures="2" errors="0" skipped="0" time="0.255245666">
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Constructor and Setup &gt; should initialize with correct program name and version" time="0.007528208">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Constructor and Setup &gt; should register all expected routes" time="0.016222125">
+            <failure message="expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;" type="AssertionError">
+AssertionError: expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;
+ ❯ src/core/command-parser/index.unit.test.ts:66:38
+            </failure>
+            <failure message="expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;" type="AssertionError">
+AssertionError: expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;
+ ❯ src/core/command-parser/index.unit.test.ts:66:38
+            </failure>
+            <failure message="expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;" type="AssertionError">
+AssertionError: expected [ &apos;project create &lt;name&gt;&apos;, …(27) ] to include &apos;ai code &lt;prompt&gt;&apos;
+ ❯ src/core/command-parser/index.unit.test.ts:66:38
+            </failure>
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Command Parsing &gt; should parse project create command correctly" time="0.0323185">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Command Parsing &gt; should parse service add command with options" time="0.027595792">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Command Parsing &gt; should handle AI code command" time="0.003693125">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Make Commands (Laravel-style) &gt; should parse make:model command" time="0.008761417">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Make Commands (Laravel-style) &gt; should parse make:component with AI options" time="0.029203208">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Security Commands &gt; should parse security audit command with options" time="0.023344959">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Security Commands &gt; should parse compliance report command" time="0.024089042">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Error Handling &gt; should handle unknown commands gracefully" time="0.005863291">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Error Handling &gt; should handle missing required arguments" time="0.003191042">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Help Commands &gt; should handle help command" time="0.003637917">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Help Commands &gt; should handle aliases command" time="0.003419">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Option Parsing &gt; should parse common options correctly" time="0.023778083">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Option Parsing &gt; should handle boolean flags correctly" time="0.027555792">
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Route Management &gt; should register routes correctly" time="0.010936083">
+            <failure message="expected false to be true // Object.is equality" type="AssertionError">
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/core/command-parser/index.unit.test.ts:443:39
+            </failure>
+            <failure message="expected false to be true // Object.is equality" type="AssertionError">
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/core/command-parser/index.unit.test.ts:443:39
+            </failure>
+            <failure message="expected false to be true // Object.is equality" type="AssertionError">
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/core/command-parser/index.unit.test.ts:443:39
+            </failure>
+        </testcase>
+        <testcase classname="src/core/command-parser/index.unit.test.ts" name="CommandParser &gt; Route Management &gt; should have correct route metadata" time="0.003127792">
+        </testcase>
+    </testsuite>
+</testsuites>

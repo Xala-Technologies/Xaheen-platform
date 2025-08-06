@@ -11,8 +11,8 @@ import type {
   IProjectAnalyzer,
   GeneratorResult,
 } from '../../core/interfaces/index.js';
-import { BaseGenerator } from '../../core/generators/base-generator.refactored.js';
-import type { ITemplateEngine } from '../../core/interfaces/index.js';
+import { BaseGenerator } from "../../core/generators/base-generator.refactored";
+import type { ITemplateEngine } from "../../core/interfaces/index";
 
 export interface ComponentGeneratorOptions {
   readonly name: string;

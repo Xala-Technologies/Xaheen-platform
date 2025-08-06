@@ -22,10 +22,10 @@ import { Command } from "commander";
 import { consola } from "consola";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ProjectAnalyzer } from "../services/analysis/project-analyzer.js";
-import { ServiceInjector } from "../services/injection/service-injector.js";
-import { ServiceRegistry } from "../services/registry/service-registry.js";
-import { XalaIntegrationService } from "../services/xala-ui/xala-integration-service.js";
+import { ProjectAnalyzer } from "../services/analysis/project-analyzer";
+import { ServiceInjector } from "../services/injection/service-injector";
+import { ServiceRegistry } from "../services/registry/service-registry";
+import { XalaIntegrationService } from "../services/xala-ui/xala-integration-service";
 import type {
 	ProjectContext,
 	ServiceConfiguration,

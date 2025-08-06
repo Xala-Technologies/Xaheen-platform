@@ -4,10 +4,10 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { PageGenerator } from '../page.generator.js';
-import { LayoutGenerator } from '../layout.generator.js';
-import { ComponentGenerator } from '../component.generator.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { PageGenerator } from "../page.generator";
+import { LayoutGenerator } from "../layout.generator";
+import { ComponentGenerator } from "../component.generator";
 // Import other frontend generators as they become available
 
 /**

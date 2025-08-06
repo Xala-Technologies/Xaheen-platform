@@ -15,7 +15,7 @@ import {
 	createMockProjectInfo,
 	createMockServiceRegistry,
 } from "../../test/utils/test-helpers.js";
-import { ServiceRemover } from "./service-remover.js";
+import { ServiceRemover } from "./service-remover";
 
 describe("ServiceRemover", () => {
 	let remover: ServiceRemover;

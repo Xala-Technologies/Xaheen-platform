@@ -3,7 +3,7 @@
  * Generates continuous integration and deployment pipelines
  */
 
-import { GeneratedFile, MicroserviceOptions } from "./types.js";
+import { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class CICDGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

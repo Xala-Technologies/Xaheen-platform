@@ -9,7 +9,7 @@ import { existsSync } from "fs";
 import { mkdir, readdir, readFile, stat, writeFile } from "fs/promises";
 import { dirname, join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Plugin metadata schema

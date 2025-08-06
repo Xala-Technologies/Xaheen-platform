@@ -3,22 +3,22 @@
  * Configures dependency injection container and registers all services
  */
 
-import type { IDependencyInjector } from '../interfaces/index.js';
-import { SERVICE_TOKENS } from '../interfaces/index.js';
-import { DependencyInjector } from '../container/dependency-injector.js';
+import type { IDependencyInjector } from "../interfaces/index";
+import { SERVICE_TOKENS } from "../interfaces/index";
+import { DependencyInjector } from "../container/dependency-injector";
 
 // Service implementations
-import { LoggerService } from '../services/logger.service.js';
-import { FileSystemService } from '../services/file-system.service.js';
-import { NamingService } from '../services/naming.service.js';
-import { ProjectAnalyzer } from '../services/project-analyzer.service.js';
-import { TemplateEngine } from '../services/template-engine.service.js';
+import { LoggerService } from "../services/logger.service";
+import { FileSystemService } from "../services/file-system.service";
+import { NamingService } from "../services/naming.service";
+import { ProjectAnalyzer } from "../services/project-analyzer.service";
+import { TemplateEngine } from "../services/template-engine.service";
 
 // Generators
-import { ComponentGenerator } from '../../generators/component/component.generator.refactored.js';
+import { ComponentGenerator } from "../../generators/component/component.generator.refactored";
 
 // Command handlers
-import { GenerateCommandHandler } from '../../commands/handlers/generate.handler.refactored.js';
+import { GenerateCommandHandler } from "../../commands/handlers/generate.handler.refactored";
 
 export class ServiceConfigurator {
   private readonly container = new DependencyInjector();

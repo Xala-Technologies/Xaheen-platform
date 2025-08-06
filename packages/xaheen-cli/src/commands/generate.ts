@@ -21,15 +21,15 @@ import {
 import chalk from "chalk";
 import { Command } from "commander";
 import consola from "consola";
-import { ComponentGenerator } from "../generators/component.generator.js";
-import { ControllerGenerator } from "../generators/controller.generator.js";
+import { ComponentGenerator } from "../generators/component.generator";
+import { ControllerGenerator } from "../generators/controller.generator";
 import {
 	executeFullStackGenerator,
 	getGeneratorHelp,
 } from "../generators/index.js";
-import { ModelGenerator } from "../generators/model.generator.js";
-import { ServiceGenerator } from "../generators/service.generator.js";
-import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator.js";
+import { ModelGenerator } from "../generators/model.generator";
+import { ServiceGenerator } from "../generators/service.generator";
+import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator";
 import type {
 	GeneratorOptions,
 	GeneratorResult,

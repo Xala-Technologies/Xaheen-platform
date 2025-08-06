@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
 import { consola } from 'consola';
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import type { NSMClassification } from "../compliance/nsm-classifier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

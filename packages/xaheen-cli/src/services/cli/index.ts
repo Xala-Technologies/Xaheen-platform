@@ -5,8 +5,8 @@
  */
 
 // Plugin Architecture
-export { default as PluginLifecycleManager } from "../plugins/plugin-lifecycle-manager.js";
-export { default as PluginRegistry } from "../plugins/plugin-registry.js";
+export { default as PluginLifecycleManager } from "../plugins/plugin-lifecycle-manager";
+export { default as PluginRegistry } from "../plugins/plugin-registry";
 export type {
 	PluginState,
 	PluginLifecycleResult,
@@ -20,8 +20,8 @@ export type {
 } from "../plugins/plugin-registry.js";
 
 // Auto-Completion System
-export { default as AutoCompletionEngine } from "./auto-completion-engine.js";
-export { default as CommandAutoCompletion, ShellType } from "./command-auto-completion.js";
+export { default as AutoCompletionEngine } from "./auto-completion-engine";
+export { default as CommandAutoCompletion, ShellType } from "./command-auto-completion";
 export type {
 	CompletionItem,
 	CompletionContext,
@@ -35,7 +35,7 @@ export type {
 } from "./command-auto-completion.js";
 
 // Contextual Help System
-export { default as ContextualHelpSystem } from "./contextual-help-system.js";
+export { default as ContextualHelpSystem } from "./contextual-help-system";
 export type {
 	HelpContent,
 	HelpContext,
@@ -44,7 +44,7 @@ export type {
 } from "./contextual-help-system.js";
 
 // Undo/Rollback System
-export { default as UndoRollbackManager, FileOperationType } from "./undo-rollback-manager.js";
+export { default as UndoRollbackManager, FileOperationType } from "./undo-rollback-manager";
 export type {
 	FileOperation,
 	Transaction,
@@ -68,7 +68,7 @@ export type {
 } from "./progress-indicator.js";
 
 // Rich Output Formatting
-export { default as RichOutputFormatter } from "./rich-output-formatter.js";
+export { default as RichOutputFormatter } from "./rich-output-formatter";
 export type {
 	OutputFormattingOptions,
 	OutputTheme,
@@ -78,7 +78,7 @@ export type {
 } from "./rich-output-formatter.js";
 
 // Interactive CLI Output
-export { default as InteractiveCLIOutput, AnimationType, NotificationType } from "./interactive-cli-output.js";
+export { default as InteractiveCLIOutput, AnimationType, NotificationType } from "./interactive-cli-output";
 export type {
 	AnimationOptions,
 	InteractiveOptions,

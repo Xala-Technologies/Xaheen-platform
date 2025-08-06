@@ -14,13 +14,13 @@
 import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { ConfigManager } from "../../core/config-manager/index.js";
+import { ConfigManager } from "../../core/config-manager/index";
 import {
 	StackAdapterRegistry,
 	UniversalGenerator,
 } from "../../core/stack-adapters/index.js";
-import type { Field, GeneratedFile, XaheenConfig } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import type { Field, GeneratedFile, XaheenConfig } from "../../types/index";
+import { logger } from "../../utils/logger";
 import {
 	aiSecurityScanner,
 	type SecurityScanOptions,
@@ -31,8 +31,8 @@ import {
 	GenerationContext,
 	ServiceContext,
 } from "../ai/ai-service.js";
-import { ProjectAnalyzer } from "../analysis/project-analyzer.js";
-import { type ComponentSpecification, mcpClient } from "../mcp/mcp-client.js";
+import { ProjectAnalyzer } from "../analysis/project-analyzer";
+import { type ComponentSpecification, mcpClient } from "../mcp/mcp-client";
 
 interface AIGenerationOptions {
 	description?: string;

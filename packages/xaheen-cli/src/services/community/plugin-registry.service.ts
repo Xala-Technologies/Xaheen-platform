@@ -8,8 +8,8 @@ import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
-import type { PluginMetadata, PluginRegistryEntry, PluginSearchFilters } from "../plugins/plugin-manager.js";
-import { logger } from "../../utils/logger.js";
+import type { PluginMetadata, PluginRegistryEntry, PluginSearchFilters } from "../plugins/plugin-manager";
+import { logger } from "../../utils/logger";
 
 /**
  * Plugin marketplace statistics

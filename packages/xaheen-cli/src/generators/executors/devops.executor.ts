@@ -107,7 +107,7 @@ export class DevOpsExecutor implements IGeneratorExecutor {
 		const { name, options } = context;
 
 		try {
-			const { DevOpsGeneratorFactory } = await import('../devops/index.js');
+			const { DevOpsGeneratorFactory } = await import("../devops/index");
 			const dockerGenerator = DevOpsGeneratorFactory.createDockerGenerator();
 			
 			await dockerGenerator.generate({
@@ -176,7 +176,7 @@ export class DevOpsExecutor implements IGeneratorExecutor {
 		const { name, options } = context;
 
 		try {
-			const { DevOpsGeneratorFactory } = await import('../devops/index.js');
+			const { DevOpsGeneratorFactory } = await import("../devops/index");
 			const k8sGenerator = DevOpsGeneratorFactory.createKubernetesGenerator();
 			
 			await k8sGenerator.generate({
@@ -258,7 +258,7 @@ export class DevOpsExecutor implements IGeneratorExecutor {
 		const { name, options } = context;
 
 		try {
-			const { DevOpsGeneratorFactory } = await import('../devops/index.js');
+			const { DevOpsGeneratorFactory } = await import("../devops/index");
 			const ghGenerator = DevOpsGeneratorFactory.createGitHubActionsGenerator();
 			
 			await ghGenerator.generate({

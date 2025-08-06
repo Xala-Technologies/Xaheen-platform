@@ -3,8 +3,8 @@
  * Common types used across the command parser system
  */
 
-import type { CLICommand, CLIDomain, CLIAction } from '../../../types/index.js';
-import type { ICommandHandler } from './ICommandHandler.js';
+import type { CLICommand, CLIDomain, CLIAction } from "../../../types/index";
+import type { ICommandHandler } from "./ICommandHandler";
 
 /**
  * Command route definition
@@ -107,6 +107,6 @@ export interface CommandParserConfig {
 export interface DomainRegistration {
   domain: CLIDomain;
   handlerClass: new (...args: any[]) => ICommandHandler;
-  registrarClass: new (...args: any[]) => import('./IRouteRegistrar.js').IRouteRegistrar;
+  registrarClass: new (...args: any[]) => import("./IRouteRegistrar").IRouteRegistrar;
   dependencies?: Record<string, any>;
 }

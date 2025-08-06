@@ -8,8 +8,8 @@ import { execSync } from "child_process";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import chalk from "chalk";
-import { logger } from "../utils/logger.js";
-import type { ProjectConfig } from "../commands/init-interactive.js";
+import { logger } from "../utils/logger";
+import type { ProjectConfig } from "../commands/init-interactive";
 
 export interface ProjectCreationOptions {
 	name: string;

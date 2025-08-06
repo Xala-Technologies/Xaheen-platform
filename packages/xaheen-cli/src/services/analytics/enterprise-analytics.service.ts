@@ -10,8 +10,8 @@ import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { z } from 'zod';
 import { createHash } from 'crypto';
-import { logger } from '../../utils/logger.js';
-import { telemetryService } from '../telemetry/enterprise-telemetry.service.js';
+import { logger } from "../../utils/logger";
+import { telemetryService } from "../telemetry/enterprise-telemetry.service";
 
 /**
  * Analytics configuration schema

@@ -9,11 +9,11 @@
  */
 
 import { consola } from 'consola';
-import { templateInheritance, type BaseTemplate, type TemplateComposition } from './template-inheritance.js';
-import { patternMapper, type PatternMatch } from './pattern-mapper.js';
-import { templateSelector, type TemplateSelectionContext } from './template-selector.js';
-import { mcpClient } from '../mcp/mcp-client.js';
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import { templateInheritance, type BaseTemplate, type TemplateComposition } from "./template-inheritance";
+import { patternMapper, type PatternMatch } from "./pattern-mapper";
+import { templateSelector, type TemplateSelectionContext } from "./template-selector";
+import { mcpClient } from "../mcp/mcp-client";
+import type { NSMClassification } from "../compliance/nsm-classifier";
 
 export interface CompositionRequest {
   readonly description: string;

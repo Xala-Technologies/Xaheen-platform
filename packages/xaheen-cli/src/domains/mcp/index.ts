@@ -1,13 +1,13 @@
 import chalk from "chalk";
-import { ConfigManager } from "../../core/config-manager/index.js";
-import { MCPClientService } from "../../services/mcp/mcp-client.service.js";
-import { mcpContextIndexer } from "../../services/mcp/mcp-context-indexer.service.js";
-import { mcpConfigService } from "../../services/mcp/mcp-config.service.js";
-import { mcpPluginManager } from "../../services/mcp/mcp-plugin-manager.service.js";
-import { mcpTestService } from "../../services/mcp/mcp-test.service.js";
-import type { CLICommand } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { cliLogger, logger } from "../../utils/logger.js";
+import { ConfigManager } from "../../core/config-manager/index";
+import { MCPClientService } from "../../services/mcp/mcp-client.service";
+import { mcpContextIndexer } from "../../services/mcp/mcp-context-indexer.service";
+import { mcpConfigService } from "../../services/mcp/mcp-config.service";
+import { mcpPluginManager } from "../../services/mcp/mcp-plugin-manager.service";
+import { mcpTestService } from "../../services/mcp/mcp-test.service";
+import type { CLICommand } from "../../types/index";
+import { CLIError } from "../../types/index";
+import { cliLogger, logger } from "../../utils/logger";
 
 export default class MCPDomain {
 	private mcpClient: MCPClientService;

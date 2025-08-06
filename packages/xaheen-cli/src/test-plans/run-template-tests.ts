@@ -418,9 +418,7 @@ class TemplateTestRunner {
 
 	private async checkTemplateLoader(): Promise<boolean> {
 		try {
-			const { TemplateLoader } = await import(
-				"../services/templates/template-loader.js"
-			);
+			const { TemplateLoader } = await import("../services/templates/template-loader");
 			const loader = new TemplateLoader();
 			return loader !== null;
 		} catch {
@@ -430,9 +428,7 @@ class TemplateTestRunner {
 
 	private async checkServiceInjector(): Promise<boolean> {
 		try {
-			const { ServiceInjector } = await import(
-				"../services/injection/service-injector.js"
-			);
+			const { ServiceInjector } = await import("../services/injection/service-injector");
 			const injector = new ServiceInjector();
 			return injector !== null;
 		} catch {
@@ -442,9 +438,7 @@ class TemplateTestRunner {
 
 	private async checkTemplateRegistry(): Promise<boolean> {
 		try {
-			const { getServiceTemplates } = await import(
-				"../services/templates/template-registry.js"
-			);
+			const { getServiceTemplates } = await import("../services/templates/template-registry");
 			const templates = getServiceTemplates("frontend", "next");
 			return templates !== null;
 		} catch {

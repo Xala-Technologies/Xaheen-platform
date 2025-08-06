@@ -5,7 +5,7 @@
  * Follows Single Responsibility Principle - only responsible for template structure.
  */
 
-import type { ServiceTemplate, ServiceType } from "../../../types/index.js";
+import type { ServiceTemplate, ServiceType } from "../../../types/index";
 
 export abstract class BaseTemplateProvider {
 	protected readonly serviceType: ServiceType;

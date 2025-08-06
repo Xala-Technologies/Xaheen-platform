@@ -7,7 +7,7 @@
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
 import { z } from 'zod';
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger";
 
 // Import all enterprise services
 import { 

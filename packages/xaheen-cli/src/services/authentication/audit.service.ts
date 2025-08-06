@@ -10,7 +10,7 @@ import { promises as fs } from "fs";
 import { join, dirname } from "path";
 import { homedir } from "os";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import {
 	AuditConfig,
 	AuthenticationEvent,

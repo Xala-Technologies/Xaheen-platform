@@ -4,7 +4,7 @@
  * Single Responsibility: Generate code artifacts based on options
  */
 
-import type { GeneratorResult } from '../../../types/index.js';
+import type { GeneratorResult } from "../../../types/index";
 
 /**
  * Generator interface for creating code artifacts

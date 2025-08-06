@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { TemplateLoader } from './template-loader.js';
+import { TemplateLoader } from "./template-loader";
 
 describe('TemplateLoader', () => {
   let templateLoader: TemplateLoader;

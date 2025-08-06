@@ -5,10 +5,10 @@
  * @compliance WCAG AAA, Norwegian Government Standards, NSM Classification
  */
 
-import { semanticComponentMapper, SemanticComponentMapper } from './semantic-component-mapper.js';
-import { accessibilityLinter, AccessibilityLinter } from './accessibility-linter.js';
-import { templateContextEnhancer, TemplateContextEnhancer } from './template-context-enhancer.js';
-import { norwegianComplianceValidator, NorwegianComplianceValidator } from './norwegian-compliance-validator.js';
+import { semanticComponentMapper, SemanticComponentMapper } from "./semantic-component-mapper";
+import { accessibilityLinter, AccessibilityLinter } from "./accessibility-linter";
+import { templateContextEnhancer, TemplateContextEnhancer } from "./template-context-enhancer";
+import { norwegianComplianceValidator, NorwegianComplianceValidator } from "./norwegian-compliance-validator";
 import { z } from 'zod';
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';

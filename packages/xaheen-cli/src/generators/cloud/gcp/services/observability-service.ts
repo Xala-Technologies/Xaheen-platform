@@ -3,7 +3,7 @@
  * Handles Monitoring, Logging, and Tracing following Single Responsibility Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPObservabilityService, 
   ValidationResult,
@@ -14,7 +14,7 @@ import {
   GCPBaseConfig, 
   GCPObservabilityConfig
 } from "../interfaces/index.js";
-import { BaseGCPService } from "./base-service.js";
+import { BaseGCPService } from "./base-service";
 
 export class GCPObservabilityService extends BaseGCPService implements IGCPObservabilityService {
   private readonly observabilityConfig: GCPObservabilityConfig;

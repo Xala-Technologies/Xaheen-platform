@@ -9,7 +9,7 @@ import { EventEmitter } from 'node:events';
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import type { FeedbackEntry, ModelVersion, CodePattern } from './custom-model-trainer.js';
+import type { FeedbackEntry, ModelVersion, CodePattern } from "./custom-model-trainer";
 
 // Types
 export interface FeedbackCollectionConfig {

@@ -8,11 +8,11 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { join } from 'path';
 import fs from 'fs-extra';
-import { ComponentGenerator } from '../../generators/component.generator.js';
-import { LayoutGenerator } from '../../generators/layout.generator.js';
-import { PageGenerator } from '../../generators/page.generator.js';
-import { BaseGenerator } from '../../generators/base.generator.js';
-import { TestFileSystem, MockBuilder } from '../test-helpers.js';
+import { ComponentGenerator } from "../../generators/component.generator";
+import { LayoutGenerator } from "../../generators/layout.generator";
+import { PageGenerator } from "../../generators/page.generator";
+import { BaseGenerator } from "../../generators/base.generator";
+import { TestFileSystem, MockBuilder } from "../test-helpers";
 
 // Mock filesystem operations
 vi.mock('fs-extra', async () => {

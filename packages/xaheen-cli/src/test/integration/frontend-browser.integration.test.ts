@@ -9,10 +9,10 @@ import { beforeAll, afterAll, beforeEach, afterEach, describe, expect, it, vi } 
 import { chromium, firefox, webkit, type Browser, type BrowserContext, type Page } from 'playwright';
 import { join } from 'path';
 import fs from 'fs-extra';
-import { ComponentGenerator } from '../../generators/component.generator.js';
-import { LayoutGenerator } from '../../generators/layout.generator.js';
-import { PageGenerator } from '../../generators/page.generator.js';
-import { TestFileSystem, PerformanceTracker } from '../test-helpers.js';
+import { ComponentGenerator } from "../../generators/component.generator";
+import { LayoutGenerator } from "../../generators/layout.generator";
+import { PageGenerator } from "../../generators/page.generator";
+import { TestFileSystem, PerformanceTracker } from "../test-helpers";
 
 // Mock template files for testing
 const MOCK_TEMPLATES = {

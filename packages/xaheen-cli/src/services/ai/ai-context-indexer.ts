@@ -10,8 +10,8 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { logger } from "../../utils/logger.js";
-import { ProjectAnalyzer } from "../analysis/project-analyzer.js";
+import { logger } from "../../utils/logger";
+import { ProjectAnalyzer } from "../analysis/project-analyzer";
 
 export interface CodebaseIndex {
 	components: ComponentIndex[];

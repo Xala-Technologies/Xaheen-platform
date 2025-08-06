@@ -9,7 +9,7 @@ import { randomBytes, createHash } from "crypto";
 import { URLSearchParams } from "url";
 import { promisify } from "util";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import {
 	OAuth2Config,
 	User,

@@ -3,7 +3,7 @@
  * Handles Cloud Functions and Cloud Run following Single Responsibility Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPComputeService, 
   ValidationResult,
@@ -17,7 +17,7 @@ import {
   GCPCloudFunctionsConfig,
   GCPCloudRunConfig
 } from "../interfaces/index.js";
-import { BaseGCPService } from "./base-service.js";
+import { BaseGCPService } from "./base-service";
 
 export class GCPComputeService extends BaseGCPService implements IGCPComputeService {
   private readonly computeConfig: GCPComputeConfig;

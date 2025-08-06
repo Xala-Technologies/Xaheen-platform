@@ -3,7 +3,7 @@
  * Generates comprehensive Vipps payment integration with Norwegian compliance
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface VippsIntegrationOptions {
 	name: string;

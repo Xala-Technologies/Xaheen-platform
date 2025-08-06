@@ -5,11 +5,11 @@
  * This includes security, privacy, accessibility, and regulatory compliance generators.
  */
 
-import { GeneratorRegistry, IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
+import { GeneratorRegistry, IGeneratorRegistry, GeneratorDomain } from "../core/index";
 
 // Import mock classes for now - replace these with actual implementations once created
 // These are placeholder classes until the actual implementation is complete
-import { IGenerator } from '../core/interfaces/IGenerator.js';
+import { IGenerator } from "../core/interfaces/IGenerator";
 
 // Generic result type for all generators
 type GeneratorResult = { success: boolean; message: string; error?: string };

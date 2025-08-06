@@ -3,7 +3,7 @@
  * Following Single Responsibility and Open/Closed Principles
  */
 
-import { GeneratedFile } from "../../../types/generator.types.js";
+import { GeneratedFile } from "../../../types/generator.types";
 import { 
   ISSEService, 
   SSEValidationResult, 
@@ -12,7 +12,7 @@ import {
   ISSETemplateGenerator,
   ISSEConfigurationManager
 } from "../interfaces/service-interfaces.js";
-import { SSEBaseConfig } from "../interfaces/index.js";
+import { SSEBaseConfig } from "../interfaces/index";
 
 export abstract class BaseSSEService implements ISSEService {
   protected readonly config: SSEBaseConfig;

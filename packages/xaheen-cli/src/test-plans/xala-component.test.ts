@@ -9,8 +9,8 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { TemplateLoader } from "../services/templates/template-loader.js";
-import type { ProjectContext } from "../types/index.js";
+import { TemplateLoader } from "../services/templates/template-loader";
+import type { ProjectContext } from "../types/index";
 
 describe("Xala Component Template Tests", () => {
 	let templateLoader: TemplateLoader;

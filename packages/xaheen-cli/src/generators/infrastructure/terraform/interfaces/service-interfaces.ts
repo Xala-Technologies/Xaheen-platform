@@ -3,7 +3,7 @@
  * Following Interface Segregation Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../index.js";
+import { GeneratedInfrastructureFile } from "../../index";
 
 // Base service interface
 export interface ITerraformService {

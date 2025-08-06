@@ -13,8 +13,8 @@ import { consola } from "consola";
 import { execa } from "execa";
 import fs from "fs-extra";
 
-import type { IServiceRegistry } from "../../types/index.js";
-import type { ProjectInfo } from "../analysis/project-analyzer.js";
+import type { IServiceRegistry } from "../../types/index";
+import type { ProjectInfo } from "../analysis/project-analyzer";
 
 export interface DependencyAnalysis {
 	blockers: Array<{

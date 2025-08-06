@@ -12,9 +12,9 @@ import path from "node:path";
 import fs from "fs-extra";
 import * as ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ServiceInjector } from "../services/injection/service-injector.js";
-import { TemplateLoader } from "../services/templates/template-loader.js";
-import { getServiceTemplates } from "../services/templates/template-registry.js";
+import { ServiceInjector } from "../services/injection/service-injector";
+import { TemplateLoader } from "../services/templates/template-loader";
+import { getServiceTemplates } from "../services/templates/template-registry";
 import type {
 	ProjectContext,
 	ServiceConfiguration,

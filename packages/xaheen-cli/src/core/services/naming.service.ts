@@ -3,7 +3,7 @@
  * Single Responsibility: Handles all naming convention transformations
  */
 
-import type { INamingService, NamingConvention } from '../interfaces/index.js';
+import type { INamingService, NamingConvention } from "../interfaces/index";
 
 export class NamingService implements INamingService {
   public toPascalCase(str: string): string {

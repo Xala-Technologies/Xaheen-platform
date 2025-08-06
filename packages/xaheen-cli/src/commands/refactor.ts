@@ -13,8 +13,8 @@ import {
 	createRefactoringAssistant,
 	RefactoringSuggestion,
 } from "../services/ai/refactoring-assistant.js";
-import { logger } from "../utils/logger.js";
-import { validateProject } from "../utils/project-validator.js";
+import { logger } from "../utils/logger";
+import { validateProject } from "../utils/project-validator";
 
 /**
  * Refactor command options interface

@@ -8,7 +8,7 @@
 import { promises as fs } from "fs";
 import { join, relative, extname, dirname } from "path";
 import { EventEmitter } from "events";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import { mcpExecutionLogger } from "../../services/mcp/mcp-execution-logger.service";
 import { documentationOrchestrator, type DocumentationOrchestrationOptions } from "./documentation-orchestrator.generator";
 

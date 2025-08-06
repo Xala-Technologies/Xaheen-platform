@@ -8,8 +8,8 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import type { AIProvider } from "./ai-service.js";
+import { logger } from "../../utils/logger";
+import type { AIProvider } from "./ai-service";
 
 // Schema definitions for performance analysis
 const PerformanceIssueSchema = z.object({

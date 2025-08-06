@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { tmpdir } from 'os';
-import { DeploymentGenerator, DeploymentGeneratorConfig } from '../../generators/deployment/deployment.generator.js';
-import { VersioningService } from '../../services/deployment/versioning.service.js';
-import { DockerService } from '../../services/deployment/docker.service.js';
-import { KubernetesService } from '../../services/deployment/kubernetes.service.js';
-import { HelmService } from '../../services/deployment/helm.service.js';
-import { ZeroDowntimeService } from '../../services/deployment/zero-downtime.service.js';
-import { MonitoringService } from '../../services/deployment/monitoring.service.js';
-import { NorwegianComplianceService } from '../../services/deployment/norwegian-compliance.service.js';
+import { DeploymentGenerator, DeploymentGeneratorConfig } from "../../generators/deployment/deployment.generator";
+import { VersioningService } from "../../services/deployment/versioning.service";
+import { DockerService } from "../../services/deployment/docker.service";
+import { KubernetesService } from "../../services/deployment/kubernetes.service";
+import { HelmService } from "../../services/deployment/helm.service";
+import { ZeroDowntimeService } from "../../services/deployment/zero-downtime.service";
+import { MonitoringService } from "../../services/deployment/monitoring.service";
+import { NorwegianComplianceService } from "../../services/deployment/norwegian-compliance.service";
 
 describe('Deployment System', () => {
   let tempDir: string;

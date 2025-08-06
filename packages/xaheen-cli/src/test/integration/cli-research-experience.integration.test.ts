@@ -11,15 +11,15 @@ import { join } from "path";
 import { execSync } from "child_process";
 
 // Import services to test
-import PluginLifecycleManager from "../../services/plugins/plugin-lifecycle-manager.js";
-import PluginRegistry from "../../services/plugins/plugin-registry.js";
-import AutoCompletionEngine from "../../services/cli/auto-completion-engine.js";
-import CommandAutoCompletion from "../../services/cli/command-auto-completion.js";
-import ContextualHelpSystem from "../../services/cli/contextual-help-system.js";
-import UndoRollbackManager from "../../services/cli/undo-rollback-manager.js";
-import ProgressIndicatorFactory from "../../services/cli/progress-indicator.js";
-import RichOutputFormatter from "../../services/cli/rich-output-formatter.js";
-import InteractiveCLIOutput from "../../services/cli/interactive-cli-output.js";
+import PluginLifecycleManager from "../../services/plugins/plugin-lifecycle-manager";
+import PluginRegistry from "../../services/plugins/plugin-registry";
+import AutoCompletionEngine from "../../services/cli/auto-completion-engine";
+import CommandAutoCompletion from "../../services/cli/command-auto-completion";
+import ContextualHelpSystem from "../../services/cli/contextual-help-system";
+import UndoRollbackManager from "../../services/cli/undo-rollback-manager";
+import ProgressIndicatorFactory from "../../services/cli/progress-indicator";
+import RichOutputFormatter from "../../services/cli/rich-output-formatter";
+import InteractiveCLIOutput from "../../services/cli/interactive-cli-output";
 
 describe("CLI Research-Driven Developer Experience", () => {
 	let testProjectPath: string;

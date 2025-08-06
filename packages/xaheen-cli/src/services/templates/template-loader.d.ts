@@ -6,7 +6,7 @@
  * @author CLI Template Generator Agent
  * @since 2025-01-03
  */
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import type { NSMClassification } from "../compliance/nsm-classifier";
 export interface TemplateMetadata {
     path: string;
     category: string;
@@ -59,7 +59,7 @@ export declare class TemplateLoader {
         nsmClassification?: NSMClassification;
         norwegianCompliance?: boolean;
         platform?: string;
-    }): Promise<import("./accessibility-validator.js").AccessibilityValidationResult>;
+    }): Promise<import("./accessibility-validator").AccessibilityValidationResult>;
     /**
      * Register Handlebars helpers
      */

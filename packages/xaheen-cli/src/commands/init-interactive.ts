@@ -7,11 +7,11 @@
 import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync, readFileSync } from "fs";
-import { createProject } from '../services/project-creator.js';
+import { createProject } from "../services/project-creator";
 import inquirer from "inquirer";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../utils/logger.js";
+import { logger } from "../utils/logger";
 
 /**
  * Project configuration schema

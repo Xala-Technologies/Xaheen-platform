@@ -3,9 +3,9 @@
  * Main exports for the feature-gated licensing system
  */
 
-export { LicenseManager } from './LicenseManager.js';
-export { CLILicenseIntegration } from './CLILicenseIntegration.js';
-export { LicenseCommands } from './LicenseCommands.js';
+export { LicenseManager } from "./LicenseManager";
+export { CLILicenseIntegration } from "./CLILicenseIntegration";
+export { LicenseCommands } from "./LicenseCommands";
 
 export type {
   LicenseTier,
@@ -35,15 +35,15 @@ export type {
 } from './CLILicenseIntegration.js';
 
 // Utility functions for easy integration
-export const createLicenseManager = (config?: Partial<import('./types.js').LicenseConfiguration>): import('./LicenseManager.js').LicenseManager => {
-  return new (require('./LicenseManager.js').LicenseManager)(config);
+export const createLicenseManager = (config?: Partial<import("./types.js').LicenseConfiguration>): import('./LicenseManager").LicenseManager => {
+  return new (require("./LicenseManager").LicenseManager)(config);
 };
 
 export const createLicenseIntegration = (
-  licenseManager: import('./LicenseManager.js').LicenseManager,
-  options?: Partial<import('./CLILicenseIntegration.js').LicenseEnforcementOptions>
-): import('./CLILicenseIntegration.js').CLILicenseIntegration => {
-  return new (require('./CLILicenseIntegration.js').CLILicenseIntegration)(licenseManager, options);
+  licenseManager: import("./LicenseManager").LicenseManager,
+  options?: Partial<import("./CLILicenseIntegration").LicenseEnforcementOptions>
+): import("./CLILicenseIntegration").CLILicenseIntegration => {
+  return new (require("./CLILicenseIntegration").CLILicenseIntegration)(licenseManager, options);
 };
 
 // Default configuration for CLI usage

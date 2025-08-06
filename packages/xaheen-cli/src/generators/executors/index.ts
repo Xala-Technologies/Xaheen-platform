@@ -85,7 +85,7 @@ export interface IGeneratorExecutor {
 }
 
 // Export domain-specific executors
-export { FrontendExecutor } from './frontend.executor.js';
-export { BackendExecutor } from './backend.executor.js';
-export { ComplianceExecutor } from './compliance.executor.js';
-export { DevOpsExecutor } from './devops.executor.js';
+export { FrontendExecutor } from "./frontend.executor";
+export { BackendExecutor } from "./backend.executor";
+export { ComplianceExecutor } from "./compliance.executor";
+export { DevOpsExecutor } from "./devops.executor";

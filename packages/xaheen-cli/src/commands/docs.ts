@@ -21,19 +21,19 @@ import { Command } from "commander";
 import consola from "consola";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { DocusaurusPortalGenerator } from "../generators/documentation/docusaurus-portal.generator.js";
+import { DocusaurusPortalGenerator } from "../generators/documentation/docusaurus-portal.generator";
 import {
 	DocumentationGeneratorFactory,
 	type DocumentationGeneratorOptions,
 	type DocumentationPortalOptions,
 	type OnboardingGuideOptions,
 } from "../generators/documentation/index.js";
-import { OnboardingGuideGenerator } from "../generators/documentation/onboarding-guide.generator.js";
+import { OnboardingGuideGenerator } from "../generators/documentation/onboarding-guide.generator";
 import {
 	createDocumentationSyncService,
 	DocumentationSyncService,
 } from "../generators/documentation/sync.service.js";
-import { DocumentationWatcherService } from "../generators/documentation/watcher.service.js";
+import { DocumentationWatcherService } from "../generators/documentation/watcher.service";
 
 interface DocsCommandOptions {
 	readonly type?: string;

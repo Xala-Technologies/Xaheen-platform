@@ -10,7 +10,7 @@ import { join } from "path";
 import { randomBytes, createHash, createSign, createVerify } from "crypto";
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import {
 	SAML2Config,
 	User,

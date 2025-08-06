@@ -4,12 +4,12 @@
  * Follows Single Responsibility Principle (SRP)
  */
 
-import type { CLICommand } from '../../../types/index.js';
-import type { CommandExecutionResult } from '../interfaces/ICommandHandler.js';
-import { BaseCommandHandler } from './BaseCommandHandler.js';
-import { LicenseCommands } from '../../../licensing/LicenseCommands.js';
-import type { LicenseManager } from '../../../licensing/LicenseManager.js';
-import { logger } from '../../../utils/logger.js';
+import type { CLICommand } from "../../../types/index";
+import type { CommandExecutionResult } from "../interfaces/ICommandHandler";
+import { BaseCommandHandler } from "./BaseCommandHandler";
+import { LicenseCommands } from "../../../licensing/LicenseCommands";
+import type { LicenseManager } from "../../../licensing/LicenseManager";
+import { logger } from "../../../utils/logger";
 
 export class LicenseCommandHandler extends BaseCommandHandler {
   public readonly domain = 'license';

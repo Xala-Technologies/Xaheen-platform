@@ -4,12 +4,12 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { BackendGenerator } from '../backend/index.js';
-import { ServiceGenerator } from '../service.generator.js';
-import { ControllerGenerator } from '../controller.generator.js';
-import { ModelGenerator } from '../model.generator.js';
-import { MiddlewareGenerator } from '../middleware.generator.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { BackendGenerator } from "../backend/index";
+import { ServiceGenerator } from "../service.generator";
+import { ControllerGenerator } from "../controller.generator";
+import { ModelGenerator } from "../model.generator";
+import { MiddlewareGenerator } from "../middleware.generator";
 // Import other backend generators as they become available
 
 /**

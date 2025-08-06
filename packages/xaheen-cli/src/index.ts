@@ -2,18 +2,18 @@
 
 import chalk from "chalk";
 import { performance } from "perf_hooks";
-import { CommandParser } from "./core/command-parser/index.js";
-import { ConfigManager } from "./core/config-manager/index.js";
-import { StackAdapterRegistry } from "./core/stack-adapters/index.js";
-import { CLIError } from "./types/index.js";
-import { cliLogger, logger } from "./utils/logger.js";
-import { LicenseManager, CLILicenseIntegration, CLI_LICENSE_CONFIG } from "./licensing/index.js";
-import { CommandHandlerFactory } from "./core/command-parser/factories/CommandHandlerFactory.js";
-import { RouteRegistry } from "./core/command-parser/registry/RouteRegistry.js";
-import { LicenseCommandHandler } from "./core/command-parser/handlers/LicenseCommandHandler.js";
-import { LicenseRouteRegistrar } from "./core/command-parser/registrars/LicenseRouteRegistrar.js";
-import { RegistryCommandHandler } from "./core/command-parser/handlers/RegistryCommandHandler.js";
-import { RegistryRouteRegistrar } from "./core/command-parser/registrars/RegistryRouteRegistrar.js";
+import { CommandParser } from "./core/command-parser/index";
+import { ConfigManager } from "./core/config-manager/index";
+import { StackAdapterRegistry } from "./core/stack-adapters/index";
+import { CLIError } from "./types/index";
+import { cliLogger, logger } from "./utils/logger";
+import { LicenseManager, CLILicenseIntegration, CLI_LICENSE_CONFIG } from "./licensing/index";
+import { CommandHandlerFactory } from "./core/command-parser/factories/CommandHandlerFactory";
+import { RouteRegistry } from "./core/command-parser/registry/RouteRegistry";
+import { LicenseCommandHandler } from "./core/command-parser/handlers/LicenseCommandHandler";
+import { LicenseRouteRegistrar } from "./core/command-parser/registrars/LicenseRouteRegistrar";
+import { RegistryCommandHandler } from "./core/command-parser/handlers/RegistryCommandHandler";
+import { RegistryRouteRegistrar } from "./core/command-parser/registrars/RegistryRouteRegistrar";
 
 async function main(): Promise<void> {
 	const startTime = performance.now();

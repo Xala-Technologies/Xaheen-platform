@@ -8,7 +8,7 @@ import { readdir, readFile, stat } from "fs/promises";
 import { existsSync } from "fs";
 import { join, basename, dirname } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Completion item schema

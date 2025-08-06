@@ -4,7 +4,7 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
 import { 
   createInfrastructureGenerator,
   DockerGenerator 

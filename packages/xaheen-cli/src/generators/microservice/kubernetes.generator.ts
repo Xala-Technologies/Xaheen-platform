@@ -3,7 +3,7 @@
  * Generates Kubernetes manifests for microservice deployment
  */
 
-import type { GeneratedFile, MicroserviceOptions } from "./types.js";
+import type { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class KubernetesGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

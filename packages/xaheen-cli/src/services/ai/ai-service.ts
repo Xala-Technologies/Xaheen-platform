@@ -4,8 +4,8 @@
  * Provides natural language to code generation capabilities using various AI providers
  */
 
-import type { XaheenConfig } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import type { XaheenConfig } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 export interface AIProvider {
 	name: string;

@@ -8,10 +8,10 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import type { PatternRecommendation, ProjectAnalysis } from "./ai-pattern-recommender.js";
-import type { CostAnalysisResult } from "./token-cost-analyzer.js";
-import type { QualityAssuranceReport } from "./ai-quality-assurance.js";
+import { logger } from "../../utils/logger";
+import type { PatternRecommendation, ProjectAnalysis } from "./ai-pattern-recommender";
+import type { CostAnalysisResult } from "./token-cost-analyzer";
+import type { QualityAssuranceReport } from "./ai-quality-assurance";
 
 // Schema definitions for scoring system
 const ScoringCriteriaSchema = z.object({

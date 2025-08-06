@@ -8,7 +8,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { validateCommand } from "./validate.js";
+import { validateCommand } from "./validate";
 
 describe("Validate Command", () => {
 	beforeEach(() => {

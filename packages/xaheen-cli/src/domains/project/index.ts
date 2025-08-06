@@ -2,10 +2,10 @@ import * as prompts from "@clack/prompts";
 import chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { appTemplateRegistry } from "../../services/registry/app-template-registry.js";
-import type { CLICommand, UnifiedConfig } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { cliLogger } from "../../utils/logger.js";
+import { appTemplateRegistry } from "../../services/registry/app-template-registry";
+import type { CLICommand, UnifiedConfig } from "../../types/index";
+import { CLIError } from "../../types/index";
+import { cliLogger } from "../../utils/logger";
 
 export default class ProjectDomain {
 	private get configManager() {

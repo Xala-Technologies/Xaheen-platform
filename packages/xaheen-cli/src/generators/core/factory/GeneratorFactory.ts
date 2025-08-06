@@ -4,10 +4,10 @@
  * Implements the IGeneratorFactory interface
  */
 
-import { IGenerator } from '../interfaces/IGenerator.js';
-import { IGeneratorFactory } from '../interfaces/IGeneratorFactory.js';
-import { IGeneratorRegistry } from '../interfaces/IGeneratorRegistry.js';
-import { logger } from '../../../utils/logger.js';
+import { IGenerator } from "../interfaces/IGenerator";
+import { IGeneratorFactory } from "../interfaces/IGeneratorFactory";
+import { IGeneratorRegistry } from "../interfaces/IGeneratorRegistry";
+import { logger } from "../../../utils/logger";
 
 /**
  * Factory implementation for creating generator instances

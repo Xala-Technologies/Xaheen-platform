@@ -13,15 +13,15 @@ import { consola } from 'consola';
 import { select, text, confirm, multiselect } from '@clack/prompts';
 import fs from 'fs-extra';
 import path from 'node:path';
-import type { CLIAction, CLICommand } from '../../types/index.js';
+import type { CLIAction, CLICommand } from "../../types/index";
 import { 
   templateInheritanceService,
   type BaseTemplate,
   type ChildTemplate,
   type TemplateSlot
 } from '../../services/templates/template-inheritance.service.js';
-import { LocalTemplateGenerator } from '../../services/templates/local-template-generator.js';
-import { BaseGeneratorOptions } from '../../generators/base.generator.js';
+import { LocalTemplateGenerator } from "../../services/templates/local-template-generator";
+import { BaseGeneratorOptions } from "../../generators/base.generator";
 
 export default class TemplateDomain {
   async handle(action: CLIAction, command: CLICommand): Promise<void> {

@@ -4,8 +4,8 @@
  * @author Xala Technologies
  */
 
-import { IGeneratorRegistry, GeneratorDomain } from '../core/index.js';
-import { TestGenerator } from '../test.generator.js';
+import { IGeneratorRegistry, GeneratorDomain } from "../core/index";
+import { TestGenerator } from "../test.generator";
 // Import other testing generators as they become available
 
 /**

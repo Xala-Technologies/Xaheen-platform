@@ -8,8 +8,8 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createMockCommand } from "../test/utils/test-helpers.js";
-import { createCommand } from "./create.js";
+import { createMockCommand } from "../test/utils/test-helpers";
+import { createCommand } from "./create";
 
 describe("Create Command", () => {
 	let mockCmd: ReturnType<typeof createMockCommand>;

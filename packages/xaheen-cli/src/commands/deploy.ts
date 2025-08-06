@@ -4,13 +4,13 @@ import * as path from 'path';
 import { z } from 'zod';
 import chalk from 'chalk';
 import { select, text, confirm, multiselect } from '@clack/prompts';
-import { DeploymentGenerator, DeploymentGeneratorConfig } from '../generators/deployment/deployment.generator.js';
-import { VersioningService } from '../services/deployment/versioning.service.js';
-import { DockerService } from '../services/deployment/docker.service.js';
-import { KubernetesService } from '../services/deployment/kubernetes.service.js';
-import { HelmService } from '../services/deployment/helm.service.js';
-import { ZeroDowntimeService } from '../services/deployment/zero-downtime.service.js';
-import { MonitoringService } from '../services/deployment/monitoring.service.js';
+import { DeploymentGenerator, DeploymentGeneratorConfig } from "../generators/deployment/deployment.generator";
+import { VersioningService } from "../services/deployment/versioning.service";
+import { DockerService } from "../services/deployment/docker.service";
+import { KubernetesService } from "../services/deployment/kubernetes.service";
+import { HelmService } from "../services/deployment/helm.service";
+import { ZeroDowntimeService } from "../services/deployment/zero-downtime.service";
+import { MonitoringService } from "../services/deployment/monitoring.service";
 
 // Schema for CLI options
 const DeployCommandOptionsSchema = z.object({

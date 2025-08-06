@@ -3,7 +3,7 @@
  * Generates Docker configuration for microservices
  */
 
-import { GeneratedFile, MicroserviceOptions } from "./types.js";
+import { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class DockerGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

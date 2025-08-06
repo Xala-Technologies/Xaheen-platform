@@ -3,7 +3,7 @@
  * Handles Firebase Auth, IAM, and Secret Manager following Single Responsibility Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPSecurityService, 
   ValidationResult,
@@ -14,7 +14,7 @@ import {
   GCPBaseConfig, 
   GCPSecurityConfig
 } from "../interfaces/index.js";
-import { BaseGCPService } from "./base-service.js";
+import { BaseGCPService } from "./base-service";
 
 export class GCPSecurityService extends BaseGCPService implements IGCPSecurityService {
   private readonly securityConfig: GCPSecurityConfig;

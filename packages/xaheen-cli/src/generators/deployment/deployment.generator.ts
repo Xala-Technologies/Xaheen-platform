@@ -1,13 +1,13 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { z } from 'zod';
-import { BaseGenerator } from '../base.generator.js';
-import { VersioningService, VersioningConfig } from '../../services/deployment/versioning.service.js';
-import { DockerService, DockerConfig } from '../../services/deployment/docker.service.js';
-import { KubernetesService, KubernetesConfig } from '../../services/deployment/kubernetes.service.js';
-import { HelmService, HelmConfig } from '../../services/deployment/helm.service.js';
-import { ZeroDowntimeService, ZeroDowntimeConfig } from '../../services/deployment/zero-downtime.service.js';
-import { MonitoringService, MonitoringConfig } from '../../services/deployment/monitoring.service.js';
+import { BaseGenerator } from "../base.generator";
+import { VersioningService, VersioningConfig } from "../../services/deployment/versioning.service";
+import { DockerService, DockerConfig } from "../../services/deployment/docker.service";
+import { KubernetesService, KubernetesConfig } from "../../services/deployment/kubernetes.service";
+import { HelmService, HelmConfig } from "../../services/deployment/helm.service";
+import { ZeroDowntimeService, ZeroDowntimeConfig } from "../../services/deployment/zero-downtime.service";
+import { MonitoringService, MonitoringConfig } from "../../services/deployment/monitoring.service";
 
 // Schema for deployment generator configuration
 const DeploymentGeneratorConfigSchema = z.object({

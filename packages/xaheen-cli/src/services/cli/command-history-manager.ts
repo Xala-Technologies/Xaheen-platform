@@ -12,8 +12,8 @@ import { promises as fs } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import { EventEmitter } from "events";
-import type { CLICommand } from "../../types/index.js";
-import { logger, cliLogger } from "../../utils/logger.js";
+import type { CLICommand } from "../../types/index";
+import { logger, cliLogger } from "../../utils/logger";
 
 export interface CommandHistoryEntry {
 	readonly id: string;

@@ -15,9 +15,9 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BundleResolver } from "../services/bundles/bundle-resolver.js";
-import { ServiceRegistry } from "../services/registry/service-registry.js";
-import type { ServiceBundle } from "../types/index.js";
+import { BundleResolver } from "../services/bundles/bundle-resolver";
+import { ServiceRegistry } from "../services/registry/service-registry";
+import type { ServiceBundle } from "../types/index";
 
 describe("Bundle System Testing Suite", () => {
 	let bundleResolver: BundleResolver;

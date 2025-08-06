@@ -21,13 +21,13 @@ import {
   GCPNetworkingConfig,
   GCPObservabilityConfig
 } from "../interfaces/index.js";
-import { GCPComputeService } from "../services/compute-service.js";
-import { GCPStorageService } from "../services/storage-service.js";
-import { GCPSecurityService } from "../services/security-service.js";
-import { GCPNetworkingService } from "../services/networking-service.js";
-import { GCPObservabilityService } from "../services/observability-service.js";
-import { GCPTemplateGenerator } from "../templates/template-generator.js";
-import { GCPConfigurationManager } from "../config/configuration-manager.js";
+import { GCPComputeService } from "../services/compute-service";
+import { GCPStorageService } from "../services/storage-service";
+import { GCPSecurityService } from "../services/security-service";
+import { GCPNetworkingService } from "../services/networking-service";
+import { GCPObservabilityService } from "../services/observability-service";
+import { GCPTemplateGenerator } from "../templates/template-generator";
+import { GCPConfigurationManager } from "../config/configuration-manager";
 
 export class GCPServiceFactory implements IGCPServiceFactory {
   private readonly baseConfig: GCPBaseConfig;

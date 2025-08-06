@@ -12,9 +12,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
 import { consola } from 'consola';
-import { mcpClient } from '../mcp/mcp-client.js';
-import { accessibilityValidator, type TemplateAccessibilityContext } from './accessibility-validator.js';
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import { mcpClient } from "../mcp/mcp-client";
+import { accessibilityValidator, type TemplateAccessibilityContext } from "./accessibility-validator";
+import type { NSMClassification } from "../compliance/nsm-classifier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -6,7 +6,7 @@
  */
 
 import chalk from "chalk";
-import { cliLogger } from "../../utils/logger.js";
+import { cliLogger } from "../../utils/logger";
 
 export interface HelpSection {
 	title: string;

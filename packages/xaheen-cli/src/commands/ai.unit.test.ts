@@ -6,8 +6,8 @@
  */
 
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { testUtils } from "../test/test-helpers.js";
-import type { AICommandOptions } from "./ai.js";
+import { testUtils } from "../test/test-helpers";
+import type { AICommandOptions } from "./ai";
 
 // Move mock declarations to top
 const mockSpawn = vi.fn();
@@ -81,7 +81,7 @@ describe("AI Command", () => {
 
 			mockSpawn.mockReturnValue(mockProcess as any);
 
-			const { runCodebuffCLI } = await import("./ai.js");
+			const { runCodebuffCLI } = await import("./ai");
 
 			const result = await runCodebuffCLI(
 				"/test/project",
@@ -120,7 +120,7 @@ describe("AI Command", () => {
 
 			mockSpawn.mockReturnValue(mockProcess as any);
 
-			const { runCodebuffCLI } = await import("./ai.js");
+			const { runCodebuffCLI } = await import("./ai");
 
 			await expect(
 				runCodebuffCLI("/test/project", "invalid prompt"),
@@ -140,7 +140,7 @@ describe("AI Command", () => {
 
 			mockSpawn.mockReturnValue(mockProcess as any);
 
-			const { runCodebuffCLI } = await import("./ai.js");
+			const { runCodebuffCLI } = await import("./ai");
 
 			const originalModel = process.env.OPENAI_MODEL;
 
@@ -163,7 +163,7 @@ describe("AI Command", () => {
 		let codebuffCommand: any;
 
 		beforeEach(async () => {
-			const aiModule = await import("./ai.js");
+			const aiModule = await import("./ai");
 			codebuffCommand = aiModule.codebuffCommand;
 		});
 
@@ -301,7 +301,7 @@ describe("AI Command", () => {
 		let fixTestsCommand: any;
 
 		beforeEach(async () => {
-			const aiModule = await import("./ai.js");
+			const aiModule = await import("./ai");
 			fixTestsCommand = aiModule.fixTestsCommand;
 		});
 
@@ -364,7 +364,7 @@ describe("AI Command", () => {
 		let norwegianComplianceCommand: any;
 
 		beforeEach(async () => {
-			const aiModule = await import("./ai.js");
+			const aiModule = await import("./ai");
 			norwegianComplianceCommand = aiModule.norwegianComplianceCommand;
 		});
 
@@ -464,7 +464,7 @@ describe("AI Command", () => {
 			mockPatchUtils.validateGitRepository.mockResolvedValue(true);
 			mockPatchUtils.getCurrentBranch.mockResolvedValue("feature/ai-changes");
 
-			const { codebuffCommand } = await import("./ai.js");
+			const { codebuffCommand } = await import("./ai");
 
 			// Mock successful codebuff execution
 			const mockProcess = {
@@ -521,7 +521,7 @@ describe("AI Command", () => {
 			};
 			mockSpawn.mockReturnValue(mockProcess as any);
 
-			const { codebuffCommand } = await import("./ai.js");
+			const { codebuffCommand } = await import("./ai");
 			await codebuffCommand("test prompt", options);
 
 			// Verify patch was applied (auto-commit would happen after)

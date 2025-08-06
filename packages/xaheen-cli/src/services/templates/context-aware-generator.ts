@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { consola } from 'consola';
-// import { templateComposer, type CompositionContext } from './template-composition.js';
+// import { templateComposer, type CompositionContext } from "./template-composition";
 
 // Temporary type definition for CompositionContext
 export interface CompositionContext {
@@ -29,7 +29,7 @@ export interface CompositionContext {
   // Allow any additional properties
   [key: string]: any;
 }
-import { templateInheritance } from './template-inheritance.js';
+import { templateInheritance } from "./template-inheritance";
 
 export interface BusinessContextPattern {
   readonly id: string;

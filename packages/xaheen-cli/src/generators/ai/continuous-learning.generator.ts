@@ -7,7 +7,7 @@
 
 import { promises as fs } from "fs";
 import { dirname, join } from "path";
-import { BaseGenerator } from "../base.generator.js";
+import { BaseGenerator } from "../base.generator";
 import type {
 	ABTestingConfig,
 	AnalyticsConfig,

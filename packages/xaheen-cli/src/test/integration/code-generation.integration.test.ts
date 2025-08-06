@@ -9,7 +9,7 @@ import path from "node:path";
 import fs from "fs-extra";
 import tmp from "tmp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { testUtils } from "../test-helpers.js";
+import { testUtils } from "../test-helpers";
 
 describe("Code Generation Integration", () => {
 	let testDir: string;

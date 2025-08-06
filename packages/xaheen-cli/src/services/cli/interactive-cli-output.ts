@@ -7,9 +7,9 @@
 import { EventEmitter } from "events";
 import { stdin, stdout } from "process";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
-import { Spinner } from "./progress-indicator.js";
-import RichOutputFormatter from "./rich-output-formatter.js";
+import { logger } from "../../utils/logger";
+import { Spinner } from "./progress-indicator";
+import RichOutputFormatter from "./rich-output-formatter";
 
 /**
  * Animation types

@@ -8,9 +8,9 @@
 import { promises as fs } from "fs";
 import { join, resolve, dirname } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "@xala-technologies/xala-mcp";
-import { mcpConfigService, type MCPConfig } from "./mcp-config.service.js";
+import { mcpConfigService, type MCPConfig } from "./mcp-config.service";
 
 // Telemetry interfaces
 export interface TelemetryEvent {

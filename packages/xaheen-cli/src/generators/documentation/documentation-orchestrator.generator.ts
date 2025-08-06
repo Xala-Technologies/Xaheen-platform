@@ -8,7 +8,7 @@
 import { BaseGenerator } from "../base.generator";
 import { promises as fs } from "fs";
 import { join, resolve, dirname } from "path";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import type { DocumentationGeneratorOptions, DocumentationResult } from "./index";
 
 // Import all documentation generators

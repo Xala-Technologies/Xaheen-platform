@@ -10,8 +10,8 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createMockProject } from "../../test/utils/test-helpers.js";
-import { ProjectAnalyzer } from "./project-analyzer.js";
+import { createMockProject } from "../../test/utils/test-helpers";
+import { ProjectAnalyzer } from "./project-analyzer";
 
 describe("ProjectAnalyzer", () => {
 	let analyzer: ProjectAnalyzer;

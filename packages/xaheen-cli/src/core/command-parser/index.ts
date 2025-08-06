@@ -1,25 +1,33 @@
 import { Command } from "commander";
-import { AliasResolverMiddleware } from "../../middleware/alias-resolver.middleware.js";
+import { AliasResolverMiddleware } from "../../middleware/alias-resolver.middleware";
 import type {
 	CLIAction,
 	CLICommand,
 	CLIDomain,
 	CommandRoute,
 } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
-import { aiGenerateCommand } from "../../commands/ai-generate.js";
-import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler.js";
+import { CLIError } from "../../types/index";
+import { logger } from "../../utils/logger";
+import { aiGenerateCommand } from "../../commands/ai-generate";
+import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler";
 
 export class CommandParser {
+	private static instance: CommandParser;
 	private program: Command;
 	private routes: Map<string, CommandRoute> = new Map();
 	private legacyMappings: Map<string, CommandRoute> = new Map();
 	private registeredCommands: Set<string> = new Set();
+	private isInitialized: boolean = false;
 	private aliasResolver: AliasResolverMiddleware;
 	private registryHandler: RegistryCommandHandler;
 
 	constructor() {
+		if (CommandParser.instance) {
+			return CommandParser.instance;
+		}
+		if (this.isInitialized) {
+			return;
+		}
 		this.program = new Command();
 		this.aliasResolver = new AliasResolverMiddleware();
 		this.registryHandler = new RegistryCommandHandler();
@@ -27,6 +35,19 @@ export class CommandParser {
 		this.setupRoutes();
 		this.setupAliasCommands();
 		this.setupAICommands();
+		this.isInitialized = true;
+		CommandParser.instance = this;
+	}
+
+	public static getInstance(): CommandParser {
+		if (!CommandParser.instance) {
+			CommandParser.instance = new CommandParser();
+		}
+		return CommandParser.instance;
+	}
+
+	public static reset(): void {
+		CommandParser.instance = undefined;
 	}
 
 	private setupProgram(): void {
@@ -339,6 +360,12 @@ export class CommandParser {
 				legacy: {
 					xala: ["ai generate"],
 				},
+			},
+			{
+				pattern: "ai code <prompt>",
+				domain: "ai",
+				action: "code",
+				handler: this.handleAICode.bind(this),
 			},
 			{
 				pattern: "ai service <description>",
@@ -793,6 +820,13 @@ export class CommandParser {
 				return;
 			}
 
+			// Check if command conflicts with existing commands
+			const existingCommand = this.program.commands.find(cmd => cmd.name() === route.pattern.split(' ')[0]);
+			if (existingCommand && route.pattern.startsWith(existingCommand.name())) {
+				logger.debug(`Command pattern conflicts with existing command: ${route.pattern}`);
+				return;
+			}
+
 			const command = this.program
 				.command(route.pattern)
 				.description(`Execute ${route.domain} ${route.action}`)
@@ -1199,314 +1233,268 @@ export class CommandParser {
 
 	// Command handlers - these will delegate to domain-specific handlers
 	private async handleProjectCreate(command: CLICommand): Promise<void> {
-		const { default: ProjectDomain } = await import(
-			"../../domains/project/index.js"
-		);
+		const { default: ProjectDomain } = await import("../../domains/project/index");
 		const domain = new ProjectDomain();
 		await domain.create(command);
 	}
 
 	private async handleProjectValidate(command: CLICommand): Promise<void> {
-		const { default: ProjectDomain } = await import(
-			"../../domains/project/index.js"
-		);
+		const { default: ProjectDomain } = await import("../../domains/project/index");
 		const domain = new ProjectDomain();
 		await domain.validate(command);
 	}
 
 	private async handleAppCreate(command: CLICommand): Promise<void> {
-		const { default: AppDomain } = await import("../../domains/app/index.js");
+		const { default: AppDomain } = await import("../../domains/app/index");
 		const domain = new AppDomain();
 		await domain.create(command);
 	}
 
 	private async handleAppList(command: CLICommand): Promise<void> {
-		const { default: AppDomain } = await import("../../domains/app/index.js");
+		const { default: AppDomain } = await import("../../domains/app/index");
 		const domain = new AppDomain();
 		await domain.list(command);
 	}
 
 	private async handleAppAdd(command: CLICommand): Promise<void> {
-		const { default: AppDomain } = await import("../../domains/app/index.js");
+		const { default: AppDomain } = await import("../../domains/app/index");
 		const domain = new AppDomain();
 		await domain.add(command);
 	}
 
 	private async handlePackageCreate(command: CLICommand): Promise<void> {
-		const { default: PackageDomain } = await import(
-			"../../domains/package/index.js"
-		);
+		const { default: PackageDomain } = await import("../../domains/package/index");
 		const domain = new PackageDomain();
 		await domain.create(command);
 	}
 
 	private async handlePackageList(command: CLICommand): Promise<void> {
-		const { default: PackageDomain } = await import(
-			"../../domains/package/index.js"
-		);
+		const { default: PackageDomain } = await import("../../domains/package/index");
 		const domain = new PackageDomain();
 		await domain.list(command);
 	}
 
 	private async handlePackageAdd(command: CLICommand): Promise<void> {
-		const { default: PackageDomain } = await import(
-			"../../domains/package/index.js"
-		);
+		const { default: PackageDomain } = await import("../../domains/package/index");
 		const domain = new PackageDomain();
 		await domain.add(command);
 	}
 
 	private async handleServiceAdd(command: CLICommand): Promise<void> {
-		const { default: ServiceDomain } = await import(
-			"../../domains/service/index.js"
-		);
+		const { default: ServiceDomain } = await import("../../domains/service/index");
 		const domain = new ServiceDomain();
 		await domain.add(command);
 	}
 
 	private async handleServiceRemove(command: CLICommand): Promise<void> {
-		const { default: ServiceDomain } = await import(
-			"../../domains/service/index.js"
-		);
+		const { default: ServiceDomain } = await import("../../domains/service/index");
 		const domain = new ServiceDomain();
 		await domain.remove(command);
 	}
 
 	private async handleServiceList(command: CLICommand): Promise<void> {
-		const { default: ServiceDomain } = await import(
-			"../../domains/service/index.js"
-		);
+		const { default: ServiceDomain } = await import("../../domains/service/index");
 		const domain = new ServiceDomain();
 		await domain.list(command);
 	}
 
 	private async handleComponentGenerate(command: CLICommand): Promise<void> {
-		const { default: ComponentDomain } = await import(
-			"../../domains/component/index.js"
-		);
+		const { default: ComponentDomain } = await import("../../domains/component/index");
 		const domain = new ComponentDomain();
 		await domain.generate(command);
 	}
 
 	private async handleComponentCreate(command: CLICommand): Promise<void> {
-		const { default: ComponentDomain } = await import(
-			"../../domains/component/index.js"
-		);
+		const { default: ComponentDomain } = await import("../../domains/component/index");
 		const domain = new ComponentDomain();
 		await domain.create(command);
 	}
 
 	private async handlePageGenerate(command: CLICommand): Promise<void> {
-		const { default: PageDomain } = await import("../../domains/page/index.js");
+		const { default: PageDomain } = await import("../../domains/page/index");
 		const domain = new PageDomain();
 		await domain.generate(command);
 	}
 
 	private async handlePageCreate(command: CLICommand): Promise<void> {
-		const { default: PageDomain } = await import("../../domains/page/index.js");
+		const { default: PageDomain } = await import("../../domains/page/index");
 		const domain = new PageDomain();
 		await domain.create(command);
 	}
 
 	private async handlePageList(command: CLICommand): Promise<void> {
-		const { default: PageDomain } = await import("../../domains/page/index.js");
+		const { default: PageDomain } = await import("../../domains/page/index");
 		const domain = new PageDomain();
 		await domain.list(command);
 	}
 
 	private async handleModelGenerate(command: CLICommand): Promise<void> {
-		const { default: ModelDomain } = await import(
-			"../../domains/model/index.js"
-		);
+		const { default: ModelDomain } = await import("../../domains/model/index");
 		const domain = new ModelDomain();
 		await domain.generate(command);
 	}
 
 	private async handleModelCreate(command: CLICommand): Promise<void> {
-		const { default: ModelDomain } = await import(
-			"../../domains/model/index.js"
-		);
+		const { default: ModelDomain } = await import("../../domains/model/index");
 		const domain = new ModelDomain();
 		await domain.create(command);
 	}
 
 	private async handleModelScaffold(command: CLICommand): Promise<void> {
-		const { default: ModelDomain } = await import(
-			"../../domains/model/index.js"
-		);
+		const { default: ModelDomain } = await import("../../domains/model/index");
 		const domain = new ModelDomain();
 		await domain.scaffold(command);
 	}
 
 	private async handleModelMigrate(command: CLICommand): Promise<void> {
-		const { default: ModelDomain } = await import(
-			"../../domains/model/index.js"
-		);
+		const { default: ModelDomain } = await import("../../domains/model/index");
 		const domain = new ModelDomain();
 		await domain.migrate(command);
 	}
 
 	private async handleThemeCreate(command: CLICommand): Promise<void> {
-		const { default: ThemeDomain } = await import(
-			"../../domains/theme/index.js"
-		);
+		const { default: ThemeDomain } = await import("../../domains/theme/index");
 		const domain = new ThemeDomain();
 		await domain.create(command);
 	}
 
 	private async handleThemeList(command: CLICommand): Promise<void> {
-		const { default: ThemeDomain } = await import(
-			"../../domains/theme/index.js"
-		);
+		const { default: ThemeDomain } = await import("../../domains/theme/index");
 		const domain = new ThemeDomain();
 		await domain.list(command);
 	}
 
 	// Template domain handlers
 	private async handleTemplateList(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.list(command);
 	}
 	private async handleTemplateCreate(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.create(command);
 	}
 	private async handleTemplateExtend(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.extend(command);
 	}
 	private async handleTemplateCompose(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.compose(command);
 	}
 	private async handleTemplateInit(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.init(command);
 	}
 	private async handleTemplateGenerate(command: CLICommand): Promise<void> {
-		const { default: TemplateDomain } = await import(
-			"../../domains/template/index.js"
-		);
+		const { default: TemplateDomain } = await import("../../domains/template/index");
 		const domain = new TemplateDomain();
 		await domain.generate(command);
 	}
 
 	private async handleAIGenerate(command: CLICommand): Promise<void> {
-		const { default: AIDomain } = await import("../../domains/ai/index.js");
+		const { default: AIDomain } = await import("../../domains/ai/index");
 		const domain = new AIDomain();
 		await domain.generate(command);
 	}
 
 	private async handleAIService(command: CLICommand): Promise<void> {
-		const { default: AIDomain } = await import("../../domains/ai/index.js");
+		const { default: AIDomain } = await import("../../domains/ai/index");
 		const domain = new AIDomain();
 		await domain.generateService(command);
 	}
 
 	private async handleBuild(command: CLICommand): Promise<void> {
 		// For now, delegate to component domain for build
-		const { default: ComponentDomain } = await import(
-			"../../domains/component/index.js"
-		);
+		const { default: ComponentDomain } = await import("../../domains/component/index");
 		const domain = new ComponentDomain();
 		await domain.build(command);
 	}
 
 	private async handleMCPConnect(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.connect(command);
 	}
 
 	private async handleMCPIndex(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.index(command);
 	}
 
 	private async handleMCPDeploy(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.deploy(command);
 	}
 
 	private async handleMCPAnalyze(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.analyze(command);
 	}
 
 	private async handleMCPSuggestions(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.suggestions(command);
 	}
 
 	private async handleMCPContext(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.context(command);
 	}
 
 	private async handleMCPGenerate(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.generate(command);
 	}
 
 	private async handleMCPList(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.list(command);
 	}
 
 	private async handleMCPInfo(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.info(command);
 	}
 
 	private async handleMCPDisconnect(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.disconnect(command);
 	}
 
 	private async handleHelp(command: CLICommand): Promise<void> {
-		const { default: HelpDomain } = await import("../../domains/help/index.js");
+		const { default: HelpDomain } = await import("../../domains/help/index");
 		const domain = new HelpDomain();
 		await domain.show(command);
 	}
 
 	private async handleHelpSearch(command: CLICommand): Promise<void> {
-		const { default: HelpDomain } = await import("../../domains/help/index.js");
+		const { default: HelpDomain } = await import("../../domains/help/index");
 		const domain = new HelpDomain();
 		await domain.search(command);
 	}
 
 	private async handleHelpExamples(command: CLICommand): Promise<void> {
-		const { default: HelpDomain } = await import("../../domains/help/index.js");
+		const { default: HelpDomain } = await import("../../domains/help/index");
 		const domain = new HelpDomain();
 		await domain.examples(command);
 	}
 
 	private async handleAliases(command: CLICommand): Promise<void> {
-		const { cliLogger } = await import("../../utils/logger.js");
+		const { cliLogger } = await import("../../utils/logger");
 		const chalk = await import("chalk");
 
 		const helpText = this.aliasResolver.showAliasHelp();
@@ -1515,14 +1503,14 @@ export class CommandParser {
 	}
 
 	private async handleMakeCommand(command: CLICommand): Promise<void> {
-		const { default: MakeDomain } = await import("../../domains/make/index.js");
+		const { default: MakeDomain } = await import("../../domains/make/index");
 		const domain = new MakeDomain();
 		await domain.execute(command);
 	}
 
 	// AI Command Handlers (Codebuff integration)
 	private async handleAICode(command: CLICommand): Promise<void> {
-		const { codebuffCommand } = await import("../../commands/ai.js");
+		const { codebuffCommand } = await import("../../commands/ai");
 		const prompt = command.target || "";
 		await codebuffCommand(prompt, {
 			model: command.options.model,
@@ -1534,7 +1522,7 @@ export class CommandParser {
 	}
 
 	private async handleAIFixTests(command: CLICommand): Promise<void> {
-		const { fixTestsCommand } = await import("../../commands/ai.js");
+		const { fixTestsCommand } = await import("../../commands/ai");
 		await fixTestsCommand({
 			model: command.options.model,
 			dryRun: command.options.dryRun,
@@ -1544,7 +1532,7 @@ export class CommandParser {
 	}
 
 	private async handleAINorwegian(command: CLICommand): Promise<void> {
-		const { norwegianComplianceCommand } = await import("../../commands/ai.js");
+		const { norwegianComplianceCommand } = await import("../../commands/ai");
 		const prompt = command.target || "";
 		await norwegianComplianceCommand(prompt, {
 			model: command.options.model,
@@ -1556,14 +1544,12 @@ export class CommandParser {
 	}
 
 	private async handleAIIndex(command: CLICommand): Promise<void> {
-		const { createCodebuffIndex } = await import("../../lib/patch-utils.js");
+		const { createCodebuffIndex } = await import("../../lib/patch-utils");
 		await createCodebuffIndex(process.cwd());
 	}
 
 	private async handleSecurityAudit(command: CLICommand): Promise<void> {
-		const { securityAuditCommand } = await import(
-			"../../commands/security-audit.js"
-		);
+		const { securityAuditCommand } = await import("../../commands/security-audit");
 		// Create a mock argv array for the security audit command
 		const argv = ["node", "xaheen", "security-audit"];
 
@@ -1583,9 +1569,7 @@ export class CommandParser {
 	}
 
 	private async handleComplianceReport(command: CLICommand): Promise<void> {
-		const { complianceReportCommand } = await import(
-			"../../commands/compliance-report.js"
-		);
+		const { complianceReportCommand } = await import("../../commands/compliance-report");
 		// Create a mock argv array for the compliance report command
 		const argv = ["node", "xaheen", "compliance-report"];
 
@@ -1605,9 +1589,7 @@ export class CommandParser {
 	}
 
 	private async handleLicenseCompliance(command: CLICommand): Promise<void> {
-		const { createLicenseComplianceCommand } = await import(
-			"../../commands/license-compliance.js"
-		);
+		const { createLicenseComplianceCommand } = await import("../../commands/license-compliance");
 		
 		// Create the license compliance command
 		const licenseComplianceCommand = createLicenseComplianceCommand();
@@ -1636,9 +1618,7 @@ export class CommandParser {
 	}
 
 	private async handleSecurityScan(command: CLICommand): Promise<void> {
-		const { securityScanCommand } = await import(
-			"../../commands/security-scan.command.js"
-		);
+		const { securityScanCommand } = await import("../../commands/security-scan.command");
 		// Create a mock argv array for the security scan command
 		const argv = ["node", "xaheen", "security-scan"];
 
@@ -1664,9 +1644,7 @@ export class CommandParser {
 
 	// Template Modernization handler
 	private async handleTemplateModernize(command: CLICommand): Promise<void> {
-		const { modernizeTemplatesCommand } = await import(
-			"../../commands/modernize-templates.js"
-		);
+		const { modernizeTemplatesCommand } = await import("../../commands/modernize-templates");
 		// Create a mock argv array for the modernize templates command
 		const argv = ["node", "xaheen", "modernize"];
 
@@ -1692,7 +1670,7 @@ export class CommandParser {
 
 	// Documentation domain handlers
 	private async handleDocsGenerate(command: CLICommand): Promise<void> {
-		const { docsCommand } = await import("../../commands/docs.js");
+		const { docsCommand } = await import("../../commands/docs");
 		// Create a mock argv array for the docs generate command
 		const argv = ["node", "xaheen", "docs"];
 
@@ -1717,7 +1695,7 @@ export class CommandParser {
 	}
 
 	private async handleDocsPortal(command: CLICommand): Promise<void> {
-		const { docsCommand } = await import("../../commands/docs.js");
+		const { docsCommand } = await import("../../commands/docs");
 		// Create a mock argv array for the docs portal command
 		const argv = ["node", "xaheen", "docs", "--portal"];
 
@@ -1737,7 +1715,7 @@ export class CommandParser {
 	}
 
 	private async handleDocsOnboarding(command: CLICommand): Promise<void> {
-		const { docsCommand } = await import("../../commands/docs.js");
+		const { docsCommand } = await import("../../commands/docs");
 		// Create a mock argv array for the docs onboarding command
 		const argv = ["node", "xaheen", "docs", "--onboarding"];
 
@@ -1757,7 +1735,7 @@ export class CommandParser {
 	}
 
 	private async handleDocsSync(command: CLICommand): Promise<void> {
-		const { docsCommand } = await import("../../commands/docs.js");
+		const { docsCommand } = await import("../../commands/docs");
 		// Create a mock argv array for the docs sync command
 		const argv = ["node", "xaheen", "docs", "--sync"];
 
@@ -1777,7 +1755,7 @@ export class CommandParser {
 	}
 
 	private async handleDocsWatch(command: CLICommand): Promise<void> {
-		const { docsCommand } = await import("../../commands/docs.js");
+		const { docsCommand } = await import("../../commands/docs");
 		// Create a mock argv array for the docs watch command
 		const argv = ["node", "xaheen", "docs", "--watch"];
 
@@ -1799,56 +1777,56 @@ export class CommandParser {
 	// MCP Command Handlers
 
 	private async handleMCPTest(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.test(command);
 	}
 
 	private async handleMCPConfigInit(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.configInit(command);
 	}
 
 	private async handleMCPConfigShow(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.configShow(command);
 	}
 
 	private async handleMCPPluginList(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.pluginList(command);
 	}
 
 	private async handleMCPPluginRegister(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.pluginRegister(command);
 	}
 
 	private async handleMCPPluginUnregister(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.pluginUnregister(command);
 	}
 
 	private async handleMCPPluginEnable(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.pluginEnable(command);
 	}
 
 	private async handleMCPPluginDisable(command: CLICommand): Promise<void> {
-		const { default: MCPDomain } = await import("../../domains/mcp/index.js");
+		const { default: MCPDomain } = await import("../../domains/mcp/index");
 		const domain = new MCPDomain();
 		await domain.pluginDisable(command);
 	}
 
 	// Deployment Command Handlers
 	private async handleDeploy(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy command
@@ -1870,7 +1848,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployVersion(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy version subcommand
@@ -1892,7 +1870,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployDocker(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy docker subcommand
@@ -1914,7 +1892,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployKubernetes(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy kubernetes subcommand
@@ -1936,7 +1914,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployHelm(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy helm subcommand
@@ -1958,7 +1936,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployMonitoring(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy monitoring subcommand
@@ -1980,7 +1958,7 @@ export class CommandParser {
 	}
 
 	private async handleDeployStatus(command: CLICommand): Promise<void> {
-		const { createDeployCommand } = await import("../../commands/deploy.js");
+		const { createDeployCommand } = await import("../../commands/deploy");
 		const deployCommand = createDeployCommand();
 		
 		// Create a mock argv array for the deploy status subcommand
@@ -2003,38 +1981,68 @@ export class CommandParser {
 
 	// Registry Command Handlers
 	private async handleRegistryAdd(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({
-			...command,
-			arguments: { components: command.target ? [command.target] : [] }
-		});
+		try {
+			await this.registryHandler.execute({
+				...command,
+				arguments: { components: command.target ? [command.target] : [] }
+			});
+		} catch (error) {
+			logger.error('Registry add command failed:', error);
+			throw error;
+		}
 	}
 
 	private async handleRegistryList(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({ ...command, action: 'list' });
+		try {
+			await this.registryHandler.execute({ ...command, action: 'list' });
+		} catch (error) {
+			logger.error('Registry list command failed:', error);
+			throw error;
+		}
 	}
 
 	private async handleRegistryInfo(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({
-			...command,
-			action: 'info',
-			arguments: { component: command.target }
-		});
+		try {
+			await this.registryHandler.execute({
+				...command,
+				action: 'info',
+				arguments: { component: command.target }
+			});
+		} catch (error) {
+			logger.error('Registry info command failed:', error);
+			throw error;
+		}
 	}
 
 	private async handleRegistrySearch(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({
-			...command,
-			action: 'search', 
-			arguments: { query: command.target }
-		});
+		try {
+			await this.registryHandler.execute({
+				...command,
+				action: 'search', 
+				arguments: { query: command.target }
+			});
+		} catch (error) {
+			logger.error('Registry search command failed:', error);
+			throw error;
+		}
 	}
 
 	private async handleRegistryBuild(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({ ...command, action: 'build' });
+		try {
+			await this.registryHandler.execute({ ...command, action: 'build' });
+		} catch (error) {
+			logger.error('Registry build command failed:', error);
+			throw error;
+		}
 	}
 
 	private async handleRegistryServe(command: CLICommand): Promise<void> {
-		await this.registryHandler.execute({ ...command, action: 'serve' });
+		try {
+			await this.registryHandler.execute({ ...command, action: 'serve' });
+		} catch (error) {
+			logger.error('Registry serve command failed:', error);
+			throw error;
+		}
 	}
 
 	public async parse(args?: string[]): Promise<void> {
@@ -2064,6 +2072,13 @@ export class CommandParser {
 	 */
 	private setupAICommands(): void {
 		try {
+			// Check if AI command is already registered
+			const existingAiCommand = this.program.commands.find(cmd => cmd.name() === 'ai-generate');
+			if (existingAiCommand) {
+				logger.debug("AI command already registered, skipping");
+				return;
+			}
+
 			// Add the AI generate command to the program
 			this.program.addCommand(aiGenerateCommand.getCommand());
 			logger.debug("Registered AI-Native Template System commands");

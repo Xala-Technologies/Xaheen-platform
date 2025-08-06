@@ -1,166 +1,231 @@
-# Xaheen CLI Web Interface - Detailed Wireframes
+# Xaheen CLI Web Interface - Universal Design System Wireframes
 
-## 📋 Analysis of Current Web App Structure
+## 📋 Universal Design System Integration
 
-### Current Architecture Analysis:
+### Xaheen Universal Design System Architecture:
 ```
-apps/web/src/
-├── app/                           # Next.js App Router
-│   ├── (home)/                   # Main homepage group
-│   │   ├── _components/          # Private components for home
-│   │   │   ├── stack-builder/    # Core stack configuration UI
-│   │   │   ├── navbar.tsx        # Navigation component
-│   │   │   └── footer.tsx        # Footer component
-│   │   ├── analytics/            # Analytics dashboard page
-│   │   ├── new/                  # Project creation page
-│   │   └── showcase/             # Project showcase
-│   └── docs/                     # Documentation pages
-├── components/
-│   ├── agent-dashboard/          # AI agent interface components
-│   ├── homepage/                 # Homepage-specific components
-│   ├── layout/                   # Layout components
-│   └── ui/                       # Reusable UI components
-├── lib/
-│   ├── services/                 # Business logic services
-│   ├── tech-stack/              # Technology stack configurations
-│   └── types/                   # TypeScript type definitions
-└── data/                        # Static configuration data
+packages/design-system/
+├── registry/                     # Shadcn-UI inspired registry
+│   ├── components/              # Universal components for all platforms
+│   │   ├── button/             # Button component for React, Vue, Angular, Svelte
+│   │   ├── input/              # Input component with Norwegian optimization
+│   │   ├── card/               # Card with NSM classifications
+│   │   └── theme-switcher/     # Multi-platform theme switching
+│   ├── blocks/                 # Composite UI blocks
+│   │   ├── chat-interface/     # AI assistant interface
+│   │   ├── global-search/      # Universal search component
+│   │   ├── sidebar/            # Navigation sidebar
+│   │   └── dashboard-01/       # Dashboard layout block
+│   ├── platforms/              # Platform-specific implementations
+│   │   ├── react/              # React components
+│   │   ├── vue/                # Vue components  
+│   │   ├── angular/            # Angular components
+│   │   ├── svelte/             # Svelte components
+│   │   ├── react-native/       # React Native components
+│   │   └── vanilla/            # Web Components
+│   └── tokens/                 # Universal design tokens
+│       ├── colors.ts           # WCAG AAA compliant colors
+│       ├── spacing.ts          # Enhanced 8pt grid system
+│       └── typography.ts       # Norwegian-optimized typography
 ```
 
-### Key Components Currently Implemented:
-- ✅ **NavigationHeader**: CVA-compliant navbar with theme switching
-- ✅ **AgentDashboard**: AI agent integration interface
-- ✅ **StackBuilder**: Multi-technology stack configuration
-- ✅ **CommandDisplay**: Generated CLI commands visualization
-- ✅ **ProjectIdeaSection**: Natural language project input
+### Key Features of the Universal Design System:
+- 🌍 **Universal Components**: Write once, use in React, Vue, Angular, Svelte, React Native
+- 🎨 **Design Tokens**: Platform-agnostic tokens that convert to CSS, StyleSheet, or JS objects
+- ♿ **WCAG AAA Compliance**: Built-in accessibility for all platforms
+- 🇳🇴 **Norwegian Compliance**: NSM classifications and Norwegian language optimization
+- 📱 **Multi-Platform**: Native implementations for 11+ platforms and frameworks
 
 ---
 
 ## 🎨 Comprehensive Wireframe Specifications
 
-### 1. Navigation Header (`xala-mcp get_component('navbar-primary')`)
+### 1. Universal Navigation Header (`@xaheen/design-system/blocks/navbar`)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ [Xaheen Logo] [Project Wizard] [Docs] [Showcase]  [🔍 Search] [🌙] [👤] │
+│ [Xaheen Logo] [Component Gen] [Docs] [Registry]  [🔍 Search] [🌙] [👤] │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Component Structure:**
+**Universal Component Structure:**
 ```typescript
-// xala-mcp get_component('navbar-primary')
+// React Implementation
+import { Button, Input, Container, Stack } from '@xaheen/design-system/react';
+import { GlobalSearch, ThemeSwitcher, UserMenu } from '@xaheen/design-system/blocks';
+
 <WebNavbar variant="primary" size="lg" sticky>
   <Container maxWidth="7xl">
     <Stack direction="row" spacing="md" align="center" justify="between">
       <!-- Left Side -->
       <Stack direction="row" spacing="lg" align="center">
-        <Brand logo="/logo.svg" href="/" />
+        <Brand logo="/xaheen-logo.svg" href="/" />
         <Navigation items={navItems} variant="horizontal" />
       </Stack>
       
       <!-- Right Side -->
       <Stack direction="row" spacing="md" align="center">
-        <GlobalSearch placeholder="Search projects, templates..." />
-        <ThemeSwitcher />
-        <NotificationBell count={3} />
+        <GlobalSearch 
+          placeholder="Search components, platforms, docs..." 
+          multiPlatform={true}
+        />
+        <ThemeSwitcher platforms={['react', 'vue', 'angular', 'svelte']} />
         <UserMenu avatar="/avatar.jpg" />
       </Stack>
     </Stack>
   </Container>
 </WebNavbar>
+
+// Vue Implementation  
+<script setup lang="ts">
+import { Button, Input, Container, Stack } from '@xaheen/design-system/vue';
+</script>
+
+// Angular Implementation
+import { ButtonComponent, InputComponent } from '@xaheen/design-system/angular';
+
+// Svelte Implementation  
+import { Button, Input } from '@xaheen/design-system/svelte';
 ```
 
-**Xala-MCP Integration:**
+**Universal Registry Integration:**
 ```javascript
-// Component retrieval
-const navbar = await xala-mcp get_component('navbar-primary');
-const searchComponent = await xala-mcp get_component('global-search');
-const themeToggle = await xala-mcp get_component('theme-switcher');
+// Auto-platform detection
+import { componentFactory } from '@xaheen/design-system';
+const Navbar = await componentFactory.getComponent('navbar-primary');
+const GlobalSearch = await componentFactory.getBlock('global-search');
+const ThemeSwitcher = await componentFactory.getComponent('theme-switcher');
 
-// Navigation items
-const navItems = await xala-mcp list_assets('navigation');
+// Platform-specific imports
+import { Button } from '@xaheen/design-system/react';        // React
+import Button from '@xaheen/design-system/vue/Button.vue';   // Vue
+import { ButtonComponent } from '@xaheen/design-system/angular'; // Angular
 ```
 
 ---
 
-### 2. Main Landing Page Layout (`xala-mcp get_layout('homepage-hero')`)
+### 2. Universal Landing Page Layout (`@xaheen/design-system/blocks/hero-section`)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                              NAVBAR                                     │
+│                         UNIVERSAL NAVBAR                               │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                         HERO SECTION                                   │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │              🚀 Xaheen CLI v3.0.0                               │   │
-│  │        AI-Native Full-Stack Development Toolkit                 │   │
+│  │        🌍 Xaheen Universal Design System v5.0                  │   │
+│  │     Write Once, Run Everywhere - 11+ Platform Support          │   │
 │  │                                                                 │   │
-│  │  [Get Started] [Watch Demo] [View Docs] [GitHub ⭐]           │   │
+│  │  [🚀 Get Started] [📖 Registry] [🎨 Components] [⭐ GitHub]   │   │
+│  │                                                                 │   │
+│  │  📱 React • Vue • Angular • Svelte • React Native • Electron   │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                    PROJECT CREATION WIZARD                             │
+│                    COMPONENT GENERATION WIZARD                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │ 📝 Describe your project in natural language:                  │   │
+│  │ 🎯 Generate components for your platform:                      │   │
 │  │ ┌─────────────────────────────────────────────────────────────┐ │   │
-│  │ │ "Create a SaaS dashboard with user auth, payments, and     │ │   │
-│  │ │  real-time notifications using React and Node.js"          │ │   │  
+│  │ │ "Create a user dashboard with data tables, charts, and     │ │   │
+│  │ │  authentication for React with TypeScript"                 │ │   │  
 │  │ └─────────────────────────────────────────────────────────────┘ │   │
 │  │                                                                 │   │
-│  │                    [✨ Generate Project]                        │   │
+│  │         Platform: [React ▼] [🔧 Advanced Options]              │   │
+│  │                                                                 │   │
+│  │                  [✨ Generate Components]                       │   │
 │  │                                                                 │   │
 │  │                          OR                                     │   │
 │  │                                                                 │   │
-│  │               [⚙️ Advanced Configuration]                        │   │
+│  │              [📚 Browse Component Registry]                     │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                       QUICK START TEMPLATES                            │
+│                      PLATFORM TEMPLATES                                │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
-│  │ [📱]    │ │ [🌐]    │ │ [⚡]    │ │ [🛒]    │ │ [📊]    │         │
-│  │ Mobile  │ │ Web App │ │ API     │ │ E-comm  │ │ Dashboard│         │
-│  │ App     │ │         │ │ Service │ │ Store   │ │          │         │
+│  │ [⚛️]    │ │ [🟢]    │ │ [🔴]    │ │ [🟠]    │ │ [📱]    │         │
+│  │ React   │ │ Vue.js  │ │ Angular │ │ Svelte  │ │ React   │         │
+│  │ + Next  │ │ + Nuxt  │ │ + Ionic │ │ + Kit   │ │ Native  │         │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
+│  │ [🖥️]    │ │ [📦]    │ │ [🎨]    │ │ [🔧]    │ │ [🌐]    │         │
+│  │ Electron│ │ Web     │ │ Radix   │ │ Headless│ │ Vanilla │         │
+│  │ Desktop │ │ Components│ │ UI      │ │ UI      │ │ JS      │         │
 │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Component Structure:**
+**Universal Component Structure:**
 ```typescript
-// xala-mcp get_layout('homepage-hero')
+// React Implementation
+import { Container, HeroSection, Typography, ButtonGroup, Button, Card } from '@xaheen/design-system/react';
+import { ComponentWizard, PlatformSelector, TemplateGrid } from '@xaheen/design-system/blocks';
+
 <Container maxWidth="7xl" spacing="xl">
   <!-- Hero Section -->
   <HeroSection variant="primary" align="center">
     <Typography variant="h1" size="4xl">
-      Xaheen CLI v3.0.0
+      Xaheen Universal Design System v5.0
     </Typography>
     <Typography variant="subtitle" size="xl" color="muted">
-      AI-Native Full-Stack Development Toolkit
+      Write Once, Run Everywhere - 11+ Platform Support
     </Typography>
     <ButtonGroup spacing="md">
-      <Button variant="primary" size="lg">Get Started</Button>
-      <Button variant="outline" size="lg">Watch Demo</Button>
-      <Button variant="ghost" size="lg">View Docs</Button>
+      <Button variant="primary" size="lg">🚀 Get Started</Button>
+      <Button variant="outline" size="lg">📖 Registry</Button>
+      <Button variant="outline" size="lg">🎨 Components</Button>
+      <Button variant="ghost" size="lg">⭐ GitHub</Button>
     </ButtonGroup>
+    
+    <!-- Platform Support Badge -->
+    <PlatformSupportBadge platforms={['react', 'vue', 'angular', 'svelte', 'react-native', 'electron']} />
   </HeroSection>
 
-  <!-- Project Creation Wizard -->
+  <!-- Component Generation Wizard -->
   <Card variant="elevated" padding="xl">
-    <ProjectWizard>
+    <ComponentWizard>
       <NaturalLanguageInput 
-        placeholder="Describe your project in natural language..."
-        onGenerate={handleAIGeneration}
+        placeholder="Create a user dashboard with data tables, charts, and authentication for React with TypeScript"
+        onGenerate={handleComponentGeneration}
+        multiPlatform={true}
       />
-      <Divider text="OR" />
-      <Button variant="outline" fullWidth>
-        Advanced Configuration
-      </Button>
-    </ProjectWizard>
+      <PlatformSelector 
+        selected="react"
+        platforms={availablePlatforms}
+        onChange={handlePlatformChange}
+      />
+      <ButtonGroup spacing="md">
+        <Button variant="primary" size="lg" fullWidth>✨ Generate Components</Button>
+        <Button variant="outline" size="lg" fullWidth>📚 Browse Component Registry</Button>
+      </ButtonGroup>
+    </ComponentWizard>
   </Card>
 
-  <!-- Quick Start Templates -->
-  <TemplateGrid columns={5} spacing="lg">
-    {templates.map(template => (
-      <TemplateCard key={template.id} {...template} />
+  <!-- Platform Template Grid -->
+  <PlatformTemplateGrid columns={5} spacing="lg">
+    {platformTemplates.map(template => (
+      <PlatformTemplateCard 
+        key={template.platform} 
+        platform={template.platform}
+        framework={template.framework}
+        icon={template.icon}
+        status={template.status}
+        components={template.componentCount}
+      />
     ))}
-  </TemplateGrid>
+  </PlatformTemplateGrid>
 </Container>
+
+// Vue Implementation (Same structure, Vue syntax)
+<script setup lang="ts">
+import { Container, HeroSection, Typography } from '@xaheen/design-system/vue';
+// Auto-generates Vue-specific implementation
+</script>
+
+// Angular Implementation  
+import { HeroSectionComponent, TypographyComponent } from '@xaheen/design-system/angular';
+// Auto-generates Angular standalone components
+
+// Universal Factory (Auto-Detection)
+import { componentFactory } from '@xaheen/design-system';
+const HeroSection = await componentFactory.getBlock('hero-section');
+const ComponentWizard = await componentFactory.getBlock('component-wizard');
 ```
 
 ---

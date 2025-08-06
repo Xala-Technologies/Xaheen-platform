@@ -9,13 +9,13 @@ import { join, resolve } from 'path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import fetch from 'node-fetch';
 import { z } from 'zod';
-import { logger } from '../../../utils/logger.js';
-import { CLIError, CLICommand } from '../../../types/index.js';
+import { logger } from "../../../utils/logger";
+import { CLIError, CLICommand } from "../../../types/index";
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import express from 'express';
 import cors from 'cors';
-import { ICommandHandler } from '../interfaces/ICommandHandler.js';
+import { ICommandHandler } from "../interfaces/ICommandHandler";
 
 const execAsync = promisify(exec);
 

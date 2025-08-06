@@ -4,9 +4,9 @@
  * Provides common functionality and implements the IGenerator interface
  */
 
-import type { GeneratorResult } from '../../../types/index.js';
-import { IGenerator } from '../interfaces/IGenerator.js';
-import { logger } from '../../../utils/logger.js';
+import type { GeneratorResult } from "../../../types/index";
+import { IGenerator } from "../interfaces/IGenerator";
+import { logger } from "../../../utils/logger";
 
 /**
  * Common options shared across all generators

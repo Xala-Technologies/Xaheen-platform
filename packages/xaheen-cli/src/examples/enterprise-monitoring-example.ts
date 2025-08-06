@@ -8,7 +8,7 @@ import {
   enterpriseOrchestrator, 
   enterpriseMonitored 
 } from '../services/enterprise-monitoring-orchestrator.js';
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger";
 
 /**
  * Example CLI command class with enterprise monitoring

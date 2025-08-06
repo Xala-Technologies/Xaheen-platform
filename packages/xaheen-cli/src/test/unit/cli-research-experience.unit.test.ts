@@ -10,9 +10,9 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 // Import components to test
-import AutoCompletionEngine, { type CompletionItem } from "../../services/cli/auto-completion-engine.js";
-import RichOutputFormatter from "../../services/cli/rich-output-formatter.js";
-import { ProgressBar, Spinner } from "../../services/cli/progress-indicator.js";
+import AutoCompletionEngine, { type CompletionItem } from "../../services/cli/auto-completion-engine";
+import RichOutputFormatter from "../../services/cli/rich-output-formatter";
+import { ProgressBar, Spinner } from "../../services/cli/progress-indicator";
 
 describe("CLI Research-Driven Developer Experience - Unit Tests", () => {
 	let testDir: string;

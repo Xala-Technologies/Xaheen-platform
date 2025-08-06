@@ -176,7 +176,7 @@ export async function generateAdvancedComponent(request: {
     readonly dryRun?: boolean;
   };
 }) {
-  const { templateOrchestrator } = await import('./template-orchestrator.js');
+  const { templateOrchestrator } = await import("./template-orchestrator");
   
   const advancedRequest = {
     componentName: request.componentName,
@@ -371,7 +371,7 @@ export async function registerSharedRepository(
 
 // Template system status and health check
 export async function getTemplateSystemStatus() {
-  const { templateOrchestrator } = await import('./template-orchestrator.js');
+  const { templateOrchestrator } = await import("./template-orchestrator");
   
   const availableTemplates = templateOrchestrator.getAvailableTemplates();
   const availableContexts = templateOrchestrator.getAvailableContexts();

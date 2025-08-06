@@ -8,7 +8,7 @@
 import { promises as fs } from "fs";
 import { join, relative, resolve } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 // Context indexing schemas
 const CodeElementSchema = z.object({

@@ -7,8 +7,8 @@
 
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { join } from 'path';
-import { MCPClientService } from '../../services/mcp/mcp-client.service.js';
-import { TestFileSystem, PerformanceTracker } from '../test-helpers.js';
+import { MCPClientService } from "../../services/mcp/mcp-client.service";
+import { TestFileSystem, PerformanceTracker } from "../test-helpers";
 
 // Mock network conditions and server responses
 const mockNetworkConditions = {

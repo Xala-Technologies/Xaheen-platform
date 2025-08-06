@@ -5,8 +5,8 @@
  * @version 1.0.0
  */
 
-import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from './index.js';
-import type { GeneratorType } from '../../types/index.js';
+import type { GeneratorContext, GeneratorResult, IGeneratorExecutor } from "./index";
+import type { GeneratorType } from "../../types/index";
 
 /**
  * Compliance Generator Executor
@@ -95,7 +95,7 @@ export class ComplianceExecutor implements IGeneratorExecutor {
    * @private
    */
   private async executeNSMSecurityGenerator(name: string, options: Record<string, any>): Promise<GeneratorResult> {
-    const { generateNSMSecurity } = await import('../compliance/nsm-security.generator.js');
+    const { generateNSMSecurity } = await import("../compliance/nsm-security.generator");
     
     await generateNSMSecurity({
       projectName: name,
@@ -143,7 +143,7 @@ export class ComplianceExecutor implements IGeneratorExecutor {
    * @private
    */
   private async executeGDPRComplianceGenerator(name: string, options: Record<string, any>): Promise<GeneratorResult> {
-    const { generateGDPRCompliance } = await import('../compliance/gdpr.generator.js');
+    const { generateGDPRCompliance } = await import("../compliance/gdpr.generator");
     
     await generateGDPRCompliance({
       projectName: name,

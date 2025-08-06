@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import { join } from "path";
-import { BaseGenerator } from "../base.generator.js";
+import { BaseGenerator } from "../base.generator";
 
 export interface AIRefactoringOptions {
 	readonly name: string;
@@ -127,16 +127,16 @@ export class AIRefactoringGenerator extends BaseGenerator<AIRefactoringOptions> 
   RefactoringOptions,
   AnalysisContext
 } from './types.js';
-import { ${this.getFrameworkAnalyzer(options.framework)} } from './analyzers/${options.framework}-analyzer.js';
+import { ${this.getFrameworkAnalyzer(options.framework)} } from "./analyzers/${options.framework}-analyzer";
 ${options.aiProviders
 	.map(
 		(provider) =>
-			`import { ${this.getProviderClass(provider)} } from './providers/${provider}-provider.js';`,
+			`import { ${this.getProviderClass(provider)} } from "./providers/${provider}-provider";`,
 	)
 	.join("\n")}
-import { RefactoringEngine } from './engine/refactoring-engine.js';
-import { FeedbackManager } from './feedback/feedback-manager.js';
-${options.includeGitIntegration ? "import { GitIntegration } from './git/git-integration.js';" : ""}
+import { RefactoringEngine } from "./engine/refactoring-engine";
+import { FeedbackManager } from "./feedback/feedback-manager";
+${options.includeGitIntegration ? "import { GitIntegration } from "./git/git-integration";" : ""}
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -433,7 +433,7 @@ export default ${options.name}RefactoringAssistant;`;
 		await this.ensureDirectoryExists(engineDir);
 
 		// Generate the main refactoring engine
-		const engineContent = `import type { RefactoringSuggestion } from '../types.js';
+		const engineContent = `import type { RefactoringSuggestion } from "../types";
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -709,7 +709,7 @@ class ${this.getStrategyClassName(feature)} implements RefactoringStrategy {
 
 		const interactiveUIContent = `import inquirer from 'inquirer';
 import chalk from 'chalk';
-import type { RefactoringSuggestion, RefactoringResult } from '../types.js';
+import type { RefactoringSuggestion, RefactoringResult } from "../types";
 
 export class InteractiveUI {
   async promptForApproval(suggestion: RefactoringSuggestion): Promise<boolean> {
@@ -925,9 +925,9 @@ export class InteractiveUI {
 		const cliContent = `#!/usr/bin/env node
 
 import { Command } from 'commander';
-import { ${options.name}RefactoringAssistant } from '../${options.name.toLowerCase()}-refactoring.service.js';
-import { InteractiveUI } from '../ui/interactive-ui.js';
-import { loadConfig } from '../config/config.js';
+import { ${options.name}RefactoringAssistant } from "../${options.name.toLowerCase()}-refactoring.service";
+import { InteractiveUI } from "../ui/interactive-ui";
+import { loadConfig } from "../config/config";
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -1120,7 +1120,7 @@ export { program };`;
 
 		// Generate package.json bin entry helper
 		const binContent = `#!/usr/bin/env node
-import('./cli.js');`;
+import("./cli");`;
 
 		await fs.writeFile(join(cliDir, "bin.js"), binContent);
 	}
@@ -1132,7 +1132,7 @@ import('./cli.js');`;
 		await this.ensureDirectoryExists(gitDir);
 
 		const gitIntegrationContent = `import { execSync } from 'child_process';
-import type { RefactoringSuggestion } from '../types.js';
+import type { RefactoringSuggestion } from "../types";
 import chalk from 'chalk';
 
 export class GitIntegration {
@@ -1310,7 +1310,7 @@ export class GitIntegration {
 		const configDir = join(options.outputPath, "config");
 		await this.ensureDirectoryExists(configDir);
 
-		const configContent = `import type { ${options.name}Config } from '../types.js';
+		const configContent = `import type { ${options.name}Config } from "../types";
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -1557,7 +1557,7 @@ export const defaultConfigTemplate = \`export default {
 		await this.ensureDirectoryExists(utilsDir);
 
 		// Generate feedback manager
-		const feedbackManagerContent = `import type { DeveloperFeedback } from '../types.js';
+		const feedbackManagerContent = `import type { DeveloperFeedback } from "../types";
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -1919,7 +1919,7 @@ export interface GitIntegration {
 
 	private generateOpenAIProvider(options: AIRefactoringOptions): string {
 		return `import OpenAI from 'openai';
-import type { AIProvider, AnalysisContext, RefactoringSuggestion, OpenAIProviderConfig } from '../types.js';
+import type { AIProvider, AnalysisContext, RefactoringSuggestion, OpenAIProviderConfig } from "../types";
 
 export class OpenAIProvider implements AIProvider {
   private client: OpenAI;
@@ -2059,7 +2059,7 @@ Focus on actionable, specific suggestions with high confidence scores.
 
 	private generateAnthropicProvider(options: AIRefactoringOptions): string {
 		return `import Anthropic from '@anthropic-ai/sdk';
-import type { AIProvider, AnalysisContext, RefactoringSuggestion, AnthropicProviderConfig } from '../types.js';
+import type { AIProvider, AnalysisContext, RefactoringSuggestion, AnthropicProviderConfig } from "../types";
 
 export class AnthropicProvider implements AIProvider {
   private client: Anthropic;
@@ -2216,7 +2216,7 @@ Requirements:
 	}
 
 	private generateLocalLLMProvider(options: AIRefactoringOptions): string {
-		return `import type { AIProvider, AnalysisContext, RefactoringSuggestion, LocalLLMProviderConfig } from '../types.js';
+		return `import type { AIProvider, AnalysisContext, RefactoringSuggestion, LocalLLMProviderConfig } from "../types";
 
 export class LocalLLMProvider implements AIProvider {
   constructor(private config: LocalLLMProviderConfig) {}
@@ -2362,7 +2362,7 @@ Provide suggestions in JSON format:
 		provider: string,
 		options: AIRefactoringOptions,
 	): string {
-		return `import type { AIProvider, AnalysisContext, RefactoringSuggestion } from '../types.js';
+		return `import type { AIProvider, AnalysisContext, RefactoringSuggestion } from "../types";
 
 export class ${this.getProviderClass(provider)} implements AIProvider {
   constructor(private config: any) {}
@@ -2453,7 +2453,7 @@ export class ${this.getProviderClass(provider)} implements AIProvider {
 
 		switch (framework) {
 			case "react":
-				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from '../types.js';
+				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from "../types";
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -2666,7 +2666,7 @@ export class ReactAnalyzer implements FrameworkAnalyzer {
 }`;
 
 			case "nestjs":
-				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from '../types.js';
+				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from "../types";
 
 export class NestJSAnalyzer implements FrameworkAnalyzer {
   constructor(
@@ -2800,7 +2800,7 @@ export class NestJSAnalyzer implements FrameworkAnalyzer {
 }`;
 
 			default:
-				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from '../types.js';
+				return `import type { FrameworkAnalyzer, AnalysisContext, RefactoringSuggestion } from "../types";
 
 export class GenericAnalyzer implements FrameworkAnalyzer {
   constructor(
@@ -2869,8 +2869,8 @@ export class GenericAnalyzer implements FrameworkAnalyzer {
 		await this.ensureDirectoryExists(testsDir);
 
 		const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ${options.name}RefactoringAssistant } from '../${options.name.toLowerCase()}-refactoring.service.js';
-import type { ${options.name}Config, RefactoringSuggestion } from '../types.js';
+import { ${options.name}RefactoringAssistant } from "../${options.name.toLowerCase()}-refactoring.service";
+import type { ${options.name}Config, RefactoringSuggestion } from "../types";
 import { join } from 'path';
 import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 
@@ -3101,7 +3101,7 @@ describe('${options.name}RefactoringAssistant', () => {
 // Helper test for framework analyzer
 describe('${this.getFrameworkAnalyzer(options.framework)}', () => {
   it('should analyze ${options.framework} specific patterns', async () => {
-    const analyzer = new (await import('../analyzers/${options.framework}-analyzer.js')).${this.getFrameworkAnalyzer(options.framework)}(
+    const analyzer = new (await import("../analyzers/${options.framework}-analyzer")).${this.getFrameworkAnalyzer(options.framework)}(
       process.cwd(),
       {}
     );

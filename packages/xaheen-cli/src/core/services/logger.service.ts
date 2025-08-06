@@ -4,7 +4,7 @@
  */
 
 import chalk from 'chalk';
-import type { ILogger } from '../interfaces/index.js';
+import type { ILogger } from "../interfaces/index";
 
 export class LoggerService implements ILogger {
   private readonly prefix: string;

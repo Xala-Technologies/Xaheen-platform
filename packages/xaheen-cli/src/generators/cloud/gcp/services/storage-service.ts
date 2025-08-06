@@ -3,7 +3,7 @@
  * Handles Cloud Storage and Firestore following Single Responsibility Principle
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPStorageService, 
   ValidationResult,
@@ -19,7 +19,7 @@ import {
   GCPStorageBucket,
   GCPFirestoreCollection
 } from "../interfaces/index.js";
-import { BaseGCPService } from "./base-service.js";
+import { BaseGCPService } from "./base-service";
 
 export class GCPStorageService extends BaseGCPService implements IGCPStorageService {
   private readonly storageConfig: GCPStorageConfig;

@@ -8,7 +8,7 @@ import { execSync } from "child_process";
 import { existsSync, readFileSync, statSync } from "fs";
 import { join, resolve } from "path";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 export interface SecurityVulnerability {
 	readonly id: string;

@@ -1,7 +1,7 @@
-import { HelpSystemService } from "../../services/help/help-system.service.js";
-import type { CLICommand } from "../../types/index.js";
-import { CLIError } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import { HelpSystemService } from "../../services/help/help-system.service";
+import type { CLICommand } from "../../types/index";
+import { CLIError } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 export default class HelpDomain {
 	private helpSystem: HelpSystemService;

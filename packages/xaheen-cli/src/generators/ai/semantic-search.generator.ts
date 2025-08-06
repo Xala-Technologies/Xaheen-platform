@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { BaseGenerator } from '../base.generator.js';
-import type { SemanticSearchOptions } from './types.js';
+import { BaseGenerator } from "../base.generator";
+import type { SemanticSearchOptions } from "./types";
 
 export class SemanticSearchGenerator extends BaseGenerator<SemanticSearchOptions> {
   async generate(options: SemanticSearchOptions): Promise<void> {
@@ -74,13 +74,13 @@ export class SemanticSearchGenerator extends BaseGenerator<SemanticSearchOptions
   SemanticSearchConfig,
   SearchAnalytics
 } from './types.js';
-import { DocumentProcessor } from './document-processor.js';
-import { EmbeddingService } from './embedding.service.js';
-import { VectorSearchService } from './vector-search.service.js';
-${options.includeReranking ? "import { RerankerService } from './reranker.service.js';" : ''}
-${options.includeFiltering ? "import { FilterService } from './filter.service.js';" : ''}
-import { SearchAnalyzer } from './utils/search-analyzer.js';
-import { QueryOptimizer } from './utils/query-optimizer.js';
+import { DocumentProcessor } from "./document-processor";
+import { EmbeddingService } from "./embedding.service";
+import { VectorSearchService } from "./vector-search.service";
+${options.includeReranking ? "import { RerankerService } from "./reranker.service";" : ''}
+${options.includeFiltering ? "import { FilterService } from "./filter.service";" : ''}
+import { SearchAnalyzer } from "./utils/search-analyzer";
+import { QueryOptimizer } from "./utils/query-optimizer";
 
 export class ${options.name}Service {
   private readonly documentProcessor: DocumentProcessor;
@@ -777,7 +777,7 @@ export interface AutocompleteOptions {
   }
 
   private async generateDocumentProcessor(options: SemanticSearchOptions): Promise<void> {
-    const processorContent = `import type { DocumentChunk, DocumentProcessingConfig } from './types.js';
+    const processorContent = `import type { DocumentChunk, DocumentProcessingConfig } from "./types";
 
 export class DocumentProcessor {
   private readonly config: DocumentProcessingConfig;
@@ -1101,7 +1101,7 @@ export class DocumentProcessor {
   }
 
   private async generateEmbeddingService(options: SemanticSearchOptions): Promise<void> {
-    const embeddingContent = `import type { EmbeddingConfig } from './types.js';
+    const embeddingContent = `import type { EmbeddingConfig } from "./types";
 
 export class EmbeddingService {
   private client: any;
@@ -1335,7 +1335,7 @@ export class EmbeddingService {
   }
 
   private async generateSearchAnalyzer(options: SemanticSearchOptions): Promise<void> {
-    const analyzerContent = `import type { SearchEvent, SearchAnalytics, AnalyticsConfig } from '../types.js';
+    const analyzerContent = `import type { SearchEvent, SearchAnalytics, AnalyticsConfig } from "../types";
 
 export class SearchAnalyzer {
   private events: SearchEvent[] = [];
@@ -1471,7 +1471,7 @@ export class SearchAnalyzer {
   }
 
   private async generateQueryOptimizer(options: SemanticSearchOptions): Promise<void> {
-    const optimizerContent = `import type { SearchQuery, SearchOptions, QueryOptimizationConfig } from '../types.js';
+    const optimizerContent = `import type { SearchQuery, SearchOptions, QueryOptimizationConfig } from "../types";
 
 export class QueryOptimizer {
   private readonly config: QueryOptimizationConfig;
@@ -1630,8 +1630,8 @@ export class QueryOptimizer {
 
   private async generateTests(options: SemanticSearchOptions): Promise<void> {
     const testContent = `import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ${options.name}Service } from '../${options.name.toLowerCase()}.service.js';
-import type { SemanticSearchConfig, SearchQuery, SearchOptions } from '../types.js';
+import { ${options.name}Service } from "../${options.name.toLowerCase()}.service";
+import type { SemanticSearchConfig, SearchQuery, SearchOptions } from "../types";
 
 describe('${options.name}Service', () => {
   let service: ${options.name}Service;
@@ -1887,7 +1887,7 @@ describe('${options.name}Service', () => {
   }
 
   private async generateConfig(options: SemanticSearchOptions): Promise<void> {
-    const configContent = `import type { SemanticSearchConfig } from './types.js';
+    const configContent = `import type { SemanticSearchConfig } from "./types";
 
 export const default${options.name}Config: Partial<SemanticSearchConfig> = {
   documentProcessing: {

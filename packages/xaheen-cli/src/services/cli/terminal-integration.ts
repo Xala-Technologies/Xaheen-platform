@@ -7,7 +7,7 @@
 import { EventEmitter } from "events";
 import { execSync } from "child_process";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Terminal capabilities

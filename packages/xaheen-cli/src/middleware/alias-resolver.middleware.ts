@@ -5,9 +5,9 @@
  * before passing to the main command parser.
  */
 
-import { AliasManagerService } from "../services/aliases/alias-manager.service.js";
-import type { CLICommand } from "../types/index.js";
-import { logger } from "../utils/logger.js";
+import { AliasManagerService } from "../services/aliases/alias-manager.service";
+import type { CLICommand } from "../types/index";
+import { logger } from "../utils/logger";
 
 export class AliasResolverMiddleware {
 	private aliasManager: AliasManagerService;

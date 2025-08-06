@@ -5,7 +5,7 @@
  */
 
 import type { Command } from 'commander';
-import type { CommandRoute } from '../../../types/index.js';
+import type { CommandRoute } from "../../../types/index";
 
 export interface IRouteRegistrar {
   /**

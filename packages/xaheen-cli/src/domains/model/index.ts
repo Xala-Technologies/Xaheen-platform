@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import * as fs from "fs/promises";
 import * as path from "path";
-import type { CLICommand } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import type { CLICommand } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 interface ModelField {
 	name: string;

@@ -3,7 +3,7 @@
  * Handles connection management following Single Responsibility Principle
  */
 
-import { GeneratedFile } from "../../../types/generator.types.js";
+import { GeneratedFile } from "../../../types/generator.types";
 import { 
   ISSEConnectionService, 
   SSEValidationResult,
@@ -18,7 +18,7 @@ import {
   SSEHeartbeatConfig,
   SSEReconnectionConfig
 } from "../interfaces/index.js";
-import { BaseSSEService } from "./base-sse-service.js";
+import { BaseSSEService } from "./base-sse-service";
 
 export class SSEConnectionService extends BaseSSEService implements ISSEConnectionService {
   private readonly connectionConfig: SSEConnectionConfig;

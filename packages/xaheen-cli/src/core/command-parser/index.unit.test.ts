@@ -6,9 +6,9 @@
  */
 
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { testUtils } from "../../test/test-helpers.js";
-import type { CLICommand, CommandRoute } from "../../types/index.js";
-import { CommandParser } from "./index.js";
+import { testUtils } from "../../test/test-helpers";
+import type { CLICommand, CommandRoute } from "../../types/index";
+import { CommandParser } from "./index";
 
 // Mock all domain handlers
 vi.mock("../../domains/project/index.js", () => ({
@@ -44,9 +44,16 @@ describe("CommandParser", () => {
 	let mockExit: Mock;
 
 	beforeEach(() => {
-		parser = new CommandParser();
+		// Reset singleton instance between tests
+		CommandParser.reset();
+		parser = CommandParser.getInstance();
 		mockExit = globalThis.__TEST_UTILS__.mockExit;
 		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		// Clean up after each test
+		CommandParser.reset();
 	});
 
 	describe("Constructor and Setup", () => {

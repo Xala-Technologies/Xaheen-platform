@@ -151,5 +151,5 @@ export function getAllGeneratorTypes(): GeneratorType[] {
 export const executeFullStackGenerator = executeGenerator;
 
 // Re-export types and interfaces for external use
-export type { GeneratorContext, ProjectInfo, IGeneratorExecutor } from "./executors/index.js";
-export type { GeneratorOptions, GeneratorResult, GeneratorType } from "../types/index.js";
+export type { GeneratorContext, ProjectInfo, IGeneratorExecutor } from "./executors/index";
+export type { GeneratorOptions, GeneratorResult, GeneratorType } from "../types/index";

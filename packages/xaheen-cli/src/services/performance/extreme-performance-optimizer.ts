@@ -14,8 +14,8 @@ import { readFile, writeFile, stat, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { z } from 'zod';
 import Redis from 'ioredis';
-import { logger } from '../../utils/logger.js';
-import { telemetryService } from '../telemetry/enterprise-telemetry.service.js';
+import { logger } from "../../utils/logger";
+import { telemetryService } from "../telemetry/enterprise-telemetry.service";
 
 /**
  * Performance optimization configuration

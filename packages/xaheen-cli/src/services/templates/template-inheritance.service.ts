@@ -12,8 +12,8 @@ import path from 'node:path';
 import Handlebars from 'handlebars';
 import { consola } from 'consola';
 import yaml from 'yaml';
-import { templateLoader } from './template-loader.js';
-import type { NSMClassification } from '../compliance/nsm-classifier.js';
+import { templateLoader } from "./template-loader";
+import type { NSMClassification } from "../compliance/nsm-classifier";
 
 export interface TemplateSlot {
   readonly name: string;

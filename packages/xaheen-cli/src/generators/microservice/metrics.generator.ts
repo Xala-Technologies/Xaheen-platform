@@ -3,7 +3,7 @@
  * Generates Prometheus metrics and monitoring endpoints
  */
 
-import type { GeneratedFile, MicroserviceOptions } from "./types.js";
+import type { GeneratedFile, MicroserviceOptions } from "./types";
 
 export class MetricsGenerator {
 	async generate(options: MicroserviceOptions): Promise<GeneratedFile[]> {

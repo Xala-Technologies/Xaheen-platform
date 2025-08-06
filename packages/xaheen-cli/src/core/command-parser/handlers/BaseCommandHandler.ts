@@ -4,9 +4,9 @@
  * Follows Template Method Pattern and DRY principle
  */
 
-import type { CLICommand } from '../../../types/index.js';
-import type { ICommandHandler, CommandExecutionResult } from '../interfaces/ICommandHandler.js';
-import { logger } from '../../../utils/logger.js';
+import type { CLICommand } from "../../../types/index";
+import type { ICommandHandler, CommandExecutionResult } from "../interfaces/ICommandHandler";
+import { logger } from "../../../utils/logger";
 import { performance } from 'perf_hooks';
 
 export abstract class BaseCommandHandler implements ICommandHandler {

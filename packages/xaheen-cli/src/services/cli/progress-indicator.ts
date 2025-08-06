@@ -6,7 +6,7 @@
 
 import { EventEmitter } from "events";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Progress bar style options

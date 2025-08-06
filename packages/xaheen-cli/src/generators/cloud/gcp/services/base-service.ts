@@ -3,7 +3,7 @@
  * Following Single Responsibility and Open/Closed Principles
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 import { 
   IGCPService, 
   ValidationResult, 
@@ -12,7 +12,7 @@ import {
   IGCPTemplateGenerator,
   IGCPConfigurationManager
 } from "../interfaces/service-interfaces.js";
-import { GCPBaseConfig } from "../interfaces/index.js";
+import { GCPBaseConfig } from "../interfaces/index";
 
 export abstract class BaseGCPService implements IGCPService {
   protected readonly config: GCPBaseConfig;

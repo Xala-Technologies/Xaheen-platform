@@ -7,7 +7,7 @@ import { VulnerabilityScanner } from '../security/vulnerability-scanner.service'
 import { LicenseComplianceService } from './license-compliance.service';
 import * as Handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { ChartConfiguration } from 'chart.js';
+import { ChartConfiguration } from "chart";
 
 export interface ComplianceDashboardConfig {
   readonly type: 'executive' | 'technical' | 'compliance-officer' | 'developer';

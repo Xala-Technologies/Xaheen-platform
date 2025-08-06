@@ -11,8 +11,8 @@
 import { fileURLToPath } from "node:url";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { logger } from "../../utils/logger.js";
-import { templateLoader } from "../templates/template-loader.js";
+import { logger } from "../../utils/logger";
+import { templateLoader } from "../templates/template-loader";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

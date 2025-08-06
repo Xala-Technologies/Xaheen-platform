@@ -10,7 +10,7 @@ import { promisify } from "util";
 import * as speakeasy from "speakeasy";
 import * as qrcode from "qrcode";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 import {
 	MFAConfig,
 	MFAType,

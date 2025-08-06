@@ -8,8 +8,8 @@ import chalk from "chalk";
 import { execSync, spawn } from "child_process";
 import { Command } from "commander";
 import inquirer from "inquirer";
-import type { AIRefactoringOptions } from "../generators/ai/refactoring.generator.js";
-import { AIRefactoringGenerator } from "../generators/ai/refactoring.generator.js";
+import type { AIRefactoringOptions } from "../generators/ai/refactoring.generator";
+import { AIRefactoringGenerator } from "../generators/ai/refactoring.generator";
 import {
 	applyPatch,
 	createCodebuffIndex,
@@ -18,7 +18,7 @@ import {
 	hasUncommittedChanges,
 	validateGitRepository,
 } from "../lib/patch-utils.js";
-import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator.js";
+import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator";
 
 export interface AICommandOptions {
 	readonly model?: string;

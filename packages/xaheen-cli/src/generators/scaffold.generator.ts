@@ -19,13 +19,13 @@ import {
 } from './base.generator.js';
 
 // Import other generators
-import { ComponentGenerator } from './component.generator.js';
-import { PageGenerator } from './page.generator.js';
-import { ModelGenerator } from './model.generator.js';
-import { ServiceGenerator } from './service.generator.js';
-import { ControllerGenerator } from './controller.generator.js';
-import { MigrationGenerator } from './migration.generator.js';
-import { TestGenerator } from './test.generator.js';
+import { ComponentGenerator } from "./component.generator";
+import { PageGenerator } from "./page.generator";
+import { ModelGenerator } from "./model.generator";
+import { ServiceGenerator } from "./service.generator";
+import { ControllerGenerator } from "./controller.generator";
+import { MigrationGenerator } from "./migration.generator";
+import { TestGenerator } from "./test.generator";
 
 // Register Handlebars helpers
 Handlebars.registerHelper('eq', (a, b) => a === b);

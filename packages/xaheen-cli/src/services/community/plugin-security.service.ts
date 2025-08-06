@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from "fs";
 import { readFile, stat, readdir } from "fs/promises";
 import { join, extname, basename } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Security risk levels

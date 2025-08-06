@@ -3,7 +3,7 @@
  * Generates integration code for payment providers and systems
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface PaymentSystemOptions {
 	name: string;

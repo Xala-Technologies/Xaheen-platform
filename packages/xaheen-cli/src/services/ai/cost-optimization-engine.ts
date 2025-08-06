@@ -8,9 +8,9 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
-import type { TokenUsageEstimate, CostBreakdown, BudgetConstraint } from "./token-cost-analyzer.js";
-import type { PatternRecommendation } from "./ai-pattern-recommender.js";
+import { logger } from "../../utils/logger";
+import type { TokenUsageEstimate, CostBreakdown, BudgetConstraint } from "./token-cost-analyzer";
+import type { PatternRecommendation } from "./ai-pattern-recommender";
 
 // Schema definitions for cost optimization
 const CostOptimizationStrategy = z.object({

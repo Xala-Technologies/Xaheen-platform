@@ -9,7 +9,7 @@ import { readFile, writeFile, existsSync } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * Completion types

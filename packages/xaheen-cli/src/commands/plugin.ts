@@ -12,8 +12,8 @@ import {
 	createPluginManager,
 	PluginSearchFilters,
 } from "../services/plugins/plugin-manager.js";
-import { logger } from "../utils/logger.js";
-import { validateProject } from "../utils/project-validator.js";
+import { logger } from "../utils/logger";
+import { validateProject } from "../utils/project-validator";
 
 /**
  * Plugin command options interface

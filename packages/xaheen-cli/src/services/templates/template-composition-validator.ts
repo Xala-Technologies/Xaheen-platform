@@ -16,7 +16,7 @@ import type {
   TemplateProp,
   TemplateMetadata 
 } from './template-inheritance.js';
-import { templateInheritance } from './template-inheritance.js';
+import { templateInheritance } from "./template-inheritance";
 
 export interface ValidationResult {
   readonly isValid: boolean;

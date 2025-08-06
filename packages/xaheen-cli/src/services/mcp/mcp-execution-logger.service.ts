@@ -8,7 +8,7 @@
 import { promises as fs } from "fs";
 import { join, resolve, dirname } from "path";
 import { z } from "zod";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 // Core logging schemas
 const LogLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);

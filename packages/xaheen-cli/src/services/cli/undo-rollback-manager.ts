@@ -12,7 +12,7 @@ import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { z } from "zod";
 import chalk from "chalk";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 /**
  * File operation types

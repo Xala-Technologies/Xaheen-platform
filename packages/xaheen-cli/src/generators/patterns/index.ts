@@ -15,7 +15,7 @@ export type {
 	UseCaseSpec,
 } from "./clean-architecture.generator.js";
 // Clean Architecture Patterns
-export { CleanArchitectureGenerator } from "./clean-architecture.generator.js";
+export { CleanArchitectureGenerator } from "./clean-architecture.generator";
 export type {
 	CommandSpec,
 	CQRSGeneratorOptions,
@@ -27,7 +27,7 @@ export type {
 	SagaSpec,
 } from "./cqrs-event-sourcing.generator.js";
 // CQRS and Event Sourcing Patterns
-export { CQRSEventSourcingGenerator } from "./cqrs-event-sourcing.generator.js";
+export { CQRSEventSourcingGenerator } from "./cqrs-event-sourcing.generator";
 export type {
 	BusinessRule,
 	DDDGeneratorOptions,
@@ -37,7 +37,7 @@ export type {
 	DomainRelationship,
 } from "./ddd.generator.js";
 // Domain-Driven Design Patterns
-export { DDDPatternGenerator } from "./ddd.generator.js";
+export { DDDPatternGenerator } from "./ddd.generator";
 export type {
 	AdapterDefinition,
 	AdapterPatternType,
@@ -50,7 +50,7 @@ export type {
 	ServiceDefinition,
 } from "./dependency-injection.generator.js";
 // Dependency Injection and Adapter Patterns
-export { DependencyInjectionGenerator } from "./dependency-injection.generator.js";
+export { DependencyInjectionGenerator } from "./dependency-injection.generator";
 
 /**
  * Pattern Generator Registry

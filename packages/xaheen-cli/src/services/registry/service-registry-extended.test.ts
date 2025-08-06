@@ -8,7 +8,7 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
-import { ServiceRegistry } from "./service-registry.js";
+import { ServiceRegistry } from "./service-registry";
 
 describe("ServiceRegistry - Extended Templates", () => {
 	let serviceRegistry: ServiceRegistry;

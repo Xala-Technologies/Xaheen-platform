@@ -3,7 +3,7 @@
  * Following Interface Segregation Principle
  */
 
-import { GeneratedFile } from "../../../types/generator.types.js";
+import { GeneratedFile } from "../../../types/generator.types";
 import { 
   SSEConnection, 
   SSEEvent, 

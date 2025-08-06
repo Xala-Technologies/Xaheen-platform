@@ -3,7 +3,7 @@
  * Following Interface Segregation Principle - small, focused interfaces
  */
 
-import { GeneratedInfrastructureFile } from "../../../infrastructure/index.js";
+import { GeneratedInfrastructureFile } from "../../../infrastructure/index";
 
 // Base service interface following Single Responsibility Principle
 export interface IGCPService {

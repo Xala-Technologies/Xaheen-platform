@@ -10,8 +10,8 @@ import { join, resolve, dirname, basename, extname } from "path";
 import { homedir } from "os";
 import { z } from "zod";
 import { EventEmitter } from "events";
-import { logger } from "../../utils/logger.js";
-import type { MCPConfig, MCPPluginConfig } from "./mcp-config.service.js";
+import { logger } from "../../utils/logger";
+import type { MCPConfig, MCPPluginConfig } from "./mcp-config.service";
 
 // Plugin manifest schema
 const PluginManifestSchema = z.object({

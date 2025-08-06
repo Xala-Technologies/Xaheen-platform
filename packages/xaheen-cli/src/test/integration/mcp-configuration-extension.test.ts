@@ -7,9 +7,9 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { promises as fs } from "fs";
 import { join, dirname } from "path";
 import { tmpdir } from "os";
-import { mcpConfigService } from "../../services/mcp/mcp-config.service.js";
-import { mcpPluginManager } from "../../services/mcp/mcp-plugin-manager.service.js";
-import { mcpTestService } from "../../services/mcp/mcp-test.service.js";
+import { mcpConfigService } from "../../services/mcp/mcp-config.service";
+import { mcpPluginManager } from "../../services/mcp/mcp-plugin-manager.service";
+import { mcpTestService } from "../../services/mcp/mcp-test.service";
 
 describe("MCP Configuration & Extension System", () => {
 	let tempDir: string;
@@ -310,7 +310,7 @@ describe("MCP Configuration & Extension System", () => {
 			};
 
 			// Create test service with dry-run mode
-			const testService = new (await import("../../services/mcp/mcp-test.service.js")).MCPTestService({
+			const testService = new (await import("../../services/mcp/mcp-test.service")).MCPTestService({
 				dryRun: true,
 			});
 

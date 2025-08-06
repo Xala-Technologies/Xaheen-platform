@@ -4,7 +4,7 @@
  * Supports Docker, Kubernetes, CI/CD, Terraform, and cloud platforms
  */
 
-import { TerraformGenerator } from "./terraform.generator.js";
+import { TerraformGenerator } from "./terraform.generator";
 
 // Export all generators
 export { TerraformGenerator };

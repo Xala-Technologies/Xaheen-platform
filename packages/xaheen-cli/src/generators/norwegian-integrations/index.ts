@@ -3,7 +3,7 @@
  * Generates integration code for Norwegian government and enterprise services
  */
 
-import type { GeneratedFile } from "../../types/index.js";
+import type { GeneratedFile } from "../../types/index";
 
 export interface NorwegianIntegrationOptions {
 	name: string;

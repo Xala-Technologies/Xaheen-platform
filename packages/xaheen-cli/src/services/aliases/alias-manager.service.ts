@@ -5,8 +5,8 @@
  * Provides Laravel Artisan-style shortcuts and common abbreviations.
  */
 
-import type { CLIAction, CLICommand, CLIDomain } from "../../types/index.js";
-import { logger } from "../../utils/logger.js";
+import type { CLIAction, CLICommand, CLIDomain } from "../../types/index";
+import { logger } from "../../utils/logger";
 
 export interface CommandAlias {
 	alias: string;

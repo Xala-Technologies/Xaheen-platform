@@ -5,13 +5,13 @@
  * Open/Closed Principle: Open for extension (new providers), closed for modification.
  */
 
-import type { ServiceTemplate, ServiceType } from "../../types/index.js";
+import type { ServiceTemplate, ServiceType } from "../../types/index";
 import {
 	Auth0TemplateProvider,
 	BetterAuthTemplateProvider,
 	ClerkTemplateProvider,
 } from "./template-providers/auth-template-provider.js";
-import { BaseTemplateProvider } from "./template-providers/base-template-provider.js";
+import { BaseTemplateProvider } from "./template-providers/base-template-provider";
 import {
 	NextJSTemplateProvider,
 	NuxtTemplateProvider,
