@@ -9,8 +9,13 @@ import { promises as fs } from "fs";
 import { join, resolve, dirname } from "path";
 import { z } from "zod";
 import { logger } from "../../utils/logger";
-import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "@xala-technologies/xala-mcp";
+// import { XalaMCPClient, type MCPClientConfig, type MCPConnectionOptions } from "@xala-technologies/xala-mcp"; // Disabled for now
 import { mcpConfigService, type MCPConfig } from "./mcp-config.service";
+
+// Stub types for disabled MCP functionality
+type XalaMCPClient = any;
+type MCPClientConfig = any;
+type MCPConnectionOptions = any;
 
 // Telemetry interfaces
 export interface TelemetryEvent {
