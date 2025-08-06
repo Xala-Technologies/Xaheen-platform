@@ -118,17 +118,32 @@ function displayBanner(): void {
 	const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 	const version = packageJson.version;
 	const banner = `
-${chalk.cyan("╭─────────────────────────────────────────────────────────────╮")}
-${chalk.cyan("│")}  ${chalk.bold.white("Xaheen CLI")} ${chalk.gray(`v${version}`)}                                     ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.gray("Service-based architecture + AI-powered components")}     ${chalk.cyan("│")}
-${chalk.cyan("│")}                                                             ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.green("✓")} Laravel Artisan-inspired commands                        ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.green("✓")} AI-powered component generation                       ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.green("✓")} Multi-platform support (web, mobile, desktop)        ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.green("✓")} Monorepo-ready with apps & packages                  ${chalk.cyan("│")}
-${chalk.cyan("│")}  ${chalk.green("✓")} Norwegian compliance & WCAG AAA accessibility        ${chalk.cyan("│")}
-${chalk.cyan("╰─────────────────────────────────────────────────────────────╯")}
-`;
+
+	${chalk.cyan("██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗")}
+	${chalk.cyan("╚██╗██╔╝██╔══██╗██║  ██║██╔════╝██╔════╝████╗  ██║")}
+	${chalk.cyan(" ╚███╔╝ ███████║███████║█████╗  █████╗  ██╔██╗ ██║")}
+	${chalk.cyan(" ██╔██╗ ██╔══██║██╔══██║██╔══╝  ██╔══╝  ██║╚██╗██║")}
+	${chalk.cyan("██╔╝ ██╗██║  ██║██║  ██║███████╗███████╗██║ ╚████║")}
+	${chalk.cyan("╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝")}
+	
+	${chalk.cyan("██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗")}
+	${chalk.cyan("██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗")}
+	${chalk.cyan("██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝")}
+	${chalk.cyan("██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗")}
+	${chalk.cyan("██████╔╝╚██████╔╝██║███████╗██████╔╝███████╗██║  ██║")}
+	${chalk.cyan("╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝")}
+
+	${chalk.cyan("╭─────────────────────────────────────────────────────────────╮")}
+	${chalk.cyan("│")}  ${chalk.bold.white("Xaheen CLI")} ${chalk.gray(`v${version}`)}                                     ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.gray("Service-based architecture and AI-powered components")}    ${chalk.cyan("│")}
+	${chalk.cyan("│")}                                                             ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.green("•")} Professional, Laravel-inspired command system              ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.green("•")} AI-driven component and code generation                   ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.green("•")} Multi-platform: web, mobile, desktop                      ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.green("•")} Monorepo-ready: apps and packages                         ${chalk.cyan("│")}
+	${chalk.cyan("│")}  ${chalk.green("•")} Norwegian compliance, WCAG 2.2 AAA, NSM, ISO27001         ${chalk.cyan("│")}
+	${chalk.cyan("╰─────────────────────────────────────────────────────────────╯")}
+	`;
 }
 
 // Global CLI context interface
