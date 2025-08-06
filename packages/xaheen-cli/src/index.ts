@@ -2,6 +2,9 @@
 
 import chalk from "chalk";
 import { performance } from "perf_hooks";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { CommandParser } from "./core/command-parser/index";
 import { ConfigManager } from "./core/config-manager/index";
 import { StackAdapterRegistry } from "./core/stack-adapters/index";
@@ -108,7 +111,12 @@ async function main(): Promise<void> {
 function displayBanner(): void {
 	if (process.env.XAHEEN_NO_BANNER === "true") return;
 
-	const version = "3.0.0";
+	// Dynamically read version from package.json
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = dirname(__filename);
+	const packageJsonPath = join(__dirname, "../package.json");
+	const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+	const version = packageJson.version;
 	const banner = `
 ${chalk.cyan("╭─────────────────────────────────────────────────────────────╮")}
 ${chalk.cyan("│")}  ${chalk.bold.white("Xaheen CLI")} ${chalk.gray(`v${version}`)}                                     ${chalk.cyan("│")}
