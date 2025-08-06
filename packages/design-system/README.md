@@ -1,412 +1,384 @@
-# 🧱 Xaheen Design System
+# 🌍 Xaheen Universal Design System
 
-A **LEGO block architecture** design system with 100% pure components, props-based localization, and perfect AI tool integration. Built for professional applications with WCAG AAA compliance and Norwegian standards.
+**The world's first truly universal design system - write once, run everywhere!**
 
-## 📚 **[Complete Documentation →](./docs/README.md)**
+[![NPM Version](https://img.shields.io/npm/v/@xaheen/design-system)](https://npmjs.com/package/@xaheen/design-system)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
+[![WCAG AAA](https://img.shields.io/badge/WCAG-AAA-green.svg)](https://www.w3.org/WAI/WCAG21/quickref/)
 
-All documentation has been organized in the `docs/` folder:
-- **Architecture Guides**: LEGO block principles, registry system
-- **Implementation Guides**: Usage patterns, integration examples  
-- **API Reference**: Component interfaces, token system
+## ✨ What Makes It Universal?
 
-## 🚀 Features
+The Xaheen Design System is built on a **revolutionary 3-layer architecture** that generates native components for **any platform or framework**:
 
-### Professional Standards
-- **WCAG 2.2 AAA Compliance**: 7:1 contrast ratios and full accessibility support
-- **CLAUDE.md Compliant**: Professional sizing (h-12+ buttons, h-14+ inputs)
-- **Enhanced 8pt Grid**: Consistent spacing system with professional proportions
-- **NSM Security Classifications**: Norwegian security level indicators (OPEN, RESTRICTED, CONFIDENTIAL, SECRET)
+```
+📱 Your App (React, Vue, Angular, Svelte, React Native...)
+    ↓
+🔄 Generation Layer (Platform Templates & Converters)
+    ↓  
+🎯 Universal Core (Framework-Agnostic Specifications)
+```
 
-### Technical Excellence
-- **TypeScript First**: Strict type safety with readonly interfaces
-- **CVA Architecture**: Class Variance Authority for consistent styling
-- **Multi-Platform**: React, Next.js, Vue, Angular, Svelte, Electron, React Native
-- **Responsive Design**: Mobile-first with touch optimization (44px+ targets)
+**One component definition → 14+ platform implementations**
 
-### Norwegian Compliance
-- **Language Support**: Optimized for Norwegian characters (æ, ø, å)
-- **Government Integration**: BankID and Altinn ready
-- **GDPR Compliant**: Privacy-first design patterns
-- **Accessibility Standards**: Norwegian accessibility requirements
+## 🚀 Supported Platforms
 
-## 📦 Installation
+| Platform | Status | Components | Features |
+|----------|--------|------------|----------|
+| **React** | ✅ Complete | All | Hooks, forwardRef, TypeScript |
+| **Vue 3** | ✅ Complete | All | Composition API, SFC, Reactivity |
+| **Angular** | ✅ Complete | All | Standalone, Signals, DI |
+| **Svelte** | ✅ Complete | All | Reactive, Compile-time |
+| **React Native** | ✅ Complete | All | StyleSheet, TouchableOpacity |
+| **Next.js** | ✅ Complete | All | Uses React implementation |
+| **Nuxt** | ✅ Complete | All | Uses Vue implementation |
+| **SvelteKit** | ✅ Complete | All | Uses Svelte implementation |
+| **Expo** | ✅ Complete | All | Uses React Native implementation |
+| **Electron** | ✅ Complete | All | Uses React implementation |
+| **Radix UI** | ✅ Enhanced | All | Primitives, asChild, Composition |
+| **Headless UI** | ✅ Enhanced | All | Data attributes, State management |
+| **Web Components** | ✅ Complete | All | Custom Elements, Shadow DOM |
+| **Ionic** | 🔄 In Progress | - | React/Angular variants |
+
+## 🎯 Quick Start
+
+### Installation
 
 ```bash
 npm install @xaheen/design-system
-# or
-yarn add @xaheen/design-system
-# or
-pnpm add @xaheen/design-system
 ```
 
-## 🎨 Quick Start
+### Automatic Platform Detection (Recommended)
 
-```tsx
-import { Button, Input, Card } from '@xaheen/design-system';
+```typescript
+import { componentFactory } from '@xaheen/design-system';
 
-function App() {
-  return (
-    <Card padding="md" nsmClassification="RESTRICTED">
-      <h2>User Registration</h2>
-      <Input 
-        label="Full Name" 
-        size="md" 
-        norwegianOptimized 
-        required 
-      />
-      <Button 
-        variant="primary" 
-        size="lg" 
-        nsmClassification="RESTRICTED"
-      >
-        Register with BankID
-      </Button>
-    </Card>
-  );
-}
+// Automatically detects your framework and loads appropriate components
+const Button = await componentFactory.getComponent('button');
 ```
 
-## 🎯 Design Tokens
+### Platform-Specific Imports
 
-### Colors
-Professional color system with WCAG AAA compliance and NSM classifications:
+```typescript
+// React
+import { Button } from '@xaheen/design-system/react';
 
-```tsx
-import { colorTokens, getNSMColor } from '@xaheen/design-system';
+// Vue
+import Button from '@xaheen/design-system/vue/Button.vue';
 
-// Primary brand colors
-const primaryColor = colorTokens.primary[600]; // 7:1 contrast ratio
+// Angular
+import { ButtonComponent } from '@xaheen/design-system/angular';
 
-// NSM Security classifications
-const openColor = getNSMColor('OPEN');         // Green
-const restrictedColor = getNSMColor('RESTRICTED'); // Yellow
-const confidentialColor = getNSMColor('CONFIDENTIAL'); // Red
-const secretColor = getNSMColor('SECRET');     // Gray
+// Svelte
+import Button from '@xaheen/design-system/svelte/Button.svelte';
+
+// React Native
+import { Button } from '@xaheen/design-system/react-native';
+
+// Radix UI (Enhanced React)
+import { Button } from '@xaheen/design-system/radix';
+
+// Headless UI (Enhanced React)
+import { Button } from '@xaheen/design-system/headless-ui';
+
+// Web Components
+import '@xaheen/design-system/vanilla/button.js';
+// Use: <xaheen-button>Click me</xaheen-button>
 ```
 
-### Spacing
-Enhanced 8pt grid system with professional component sizing:
+## 🧩 Available Components
 
-```tsx
-import { spacingTokens, getButtonHeight } from '@xaheen/design-system';
+| Component | Description | Platforms | Status |
+|-----------|-------------|-----------|--------|
+| **Button** | Interactive button with variants and loading states | 11+ | ✅ Complete |
+| **Input** | Text input with validation and error states | 11+ | ✅ Complete |
+| **Textarea** | Multi-line text input with auto-resize | 11+ | ✅ Complete |
+| **Card** | Container with header, body, footer slots | 11+ | ✅ Complete |
+| **Form** | Form container with validation | 9+ | ✅ Complete |
+| **GlobalSearch** | Search component with autocomplete | 6+ | ✅ Complete |
 
-// Professional button heights
-const buttonHeight = getButtonHeight('lg'); // 56px (professional standard)
-const inputHeight = getInputHeight('md');   // 56px (CLAUDE.md minimum)
-const cardPadding = getCardPadding('md');   // 32px (professional standard)
+## 🎨 Universal Design Tokens
+
+Design tokens that work across ALL platforms:
+
+```typescript
+import { UniversalTokens, TokenUtils } from '@xaheen/design-system/tokens';
+
+// Tokens automatically convert to the right format for each platform:
+
+// Web (CSS Custom Properties)
+const cssTokens = TokenUtils.toCSS(UniversalTokens.colors);
+// Result: { '--color-primary-500': '#3b82f6' }
+
+// React Native (StyleSheet values)
+const nativeTokens = TokenUtils.toReactNative(UniversalTokens.spacing);
+// Result: { spacing4: 16, spacing12: 48 }
+
+// JavaScript (Theme objects)
+const jsTokens = TokenUtils.toJS(UniversalTokens);
+// Result: { colors: { primary: { 500: '#3b82f6' } } }
 ```
 
-### Typography
-Fluid typography with Norwegian language support:
+## 🎭 Component Recipes
 
-```tsx
-import { typographyTokens, getFontSize } from '@xaheen/design-system';
+High-level patterns for common use cases:
 
-// Fluid scaling typography
-const headingSize = typographyTokens.fontSize['2xl']; // clamp(1.5rem, 1.3rem + 1vw, 1.875rem)
-const bodySize = typographyTokens.fontSize.base;      // clamp(1rem, 0.9rem + 0.5vw, 1.125rem)
+```typescript
+import { RecipeGenerator } from '@xaheen/design-system/recipes';
 
-// Norwegian optimized
-const norwegianBody = typographyTokens.norwegian.bodyOptimized;
+// Generate a complete contact form
+const contactForm = RecipeGenerator.generateFromRecipe('contact-form', 'react');
+
+// Generate a dashboard layout
+const dashboard = RecipeGenerator.generateFromRecipe('app-header', 'vue');
+
+// Generate icon button group
+const toolbar = RecipeGenerator.generateFromRecipe('icon-button-group', 'angular');
 ```
 
-## 🧩 Components
+## 🛠️ CLI Integration
 
-### Button
-Professional button component with NSM classification support:
+Generate components from command line:
 
-```tsx
-<Button 
-  variant="primary"           // primary | secondary | outline | ghost | destructive
-  size="lg"                   // md | lg | xl | 2xl (no small sizes)
-  loading={isLoading}
-  leftIcon={<UserIcon />}
-  nsmClassification="RESTRICTED"
-  loadingText="Authenticating..."
->
-  Sign in with BankID
-</Button>
+```bash
+# Generate button for all platforms
+npx xaheen generate button --platform all --output ./components
+
+# Generate for specific platform with tests and stories
+npx xaheen generate card --platform react --include-tests --include-stories
+
+# Generate recipe
+npx xaheen recipe contact-form --platform vue --output ./forms
+
+# List available components
+npx xaheen list components
+
+# Get component information
+npx xaheen info button
+
+# Test platform compatibility
+npx xaheen test react
 ```
 
-### Input
-Accessible input with Norwegian optimization:
+## 🏗️ Architecture Deep Dive
 
-```tsx
-<Input 
-  label="E-post adresse"
-  size="md"                   // md | lg | xl | 2xl (professional sizing)
-  variant="default"           // default | filled | outline | search | official
-  error={errors.email}
-  helperText="Vi sender aldri spam"
-  norwegianOptimized          // Optimized for Norwegian characters
-  nsmClassification="RESTRICTED"
-  required
-/>
-```
+### 1. Universal Core Layer
 
-### Card
-Flexible card component with security classifications:
+**Framework-agnostic specifications** that describe components:
 
-```tsx
-<Card 
-  variant="elevated"          // default | elevated | outline | ghost
-  padding="md"                // xs | sm | md | lg | xl | 2xl
-  interactive                 // Makes card clickable
-  nsmClassification="CONFIDENTIAL"
-  classificationVisible
->
-  <CardHeader>
-    <CardTitle>Sensitive Data</CardTitle>
-    <CardDescription>This card contains confidential information</CardDescription>
-  </CardHeader>
-  <CardContent>
-    {/* Content */}
-  </CardContent>
-</Card>
-```
-
-## 📱 Responsive Design
-
-Mobile-first responsive utilities with touch optimization:
-
-```tsx
-import { useBreakpoint, useResponsiveValue } from '@xaheen/design-system';
-
-function ResponsiveComponent() {
-  const { isMobile, isTablet, isDesktop } = useBreakpoint();
+```typescript
+export const ButtonSpec: BaseComponentSpec = {
+  id: 'button',
+  name: 'Button',
+  category: 'atom',
+  platforms: ['react', 'vue', 'angular', 'svelte', /* ... */],
   
-  const columns = useResponsiveValue({
-    xs: 1,        // Mobile: single column
-    md: 2,        // Tablet: two columns  
-    lg: 3,        // Desktop: three columns
-    default: 1
-  });
+  // Universal properties work everywhere
+  props: [
+    {
+      name: 'variant',
+      type: "'primary' | 'secondary' | 'outline'",
+      default: 'primary'
+    }
+  ],
   
-  return <div className={`grid grid-cols-${columns} gap-6`} />;
-}
+  // Accessibility requirements
+  accessibility: {
+    wcagLevel: 'AAA',
+    roles: ['button'],
+    keyboardNavigation: true
+  }
+};
 ```
 
-## ♿ Accessibility
+### 2. Generation Layer
 
-WCAG AAA compliance with Norwegian accessibility standards:
+**Platform templates** that generate native code:
 
-```tsx
-import { 
-  useFocusTrap, 
-  useAriaLive, 
-  useKeyboardNavigation,
-  useNorwegianA11y 
-} from '@xaheen/design-system';
+```typescript
+// React generates .tsx with hooks
+ReactTemplate.generateComponent(ButtonSpec) →
+  export const Button = forwardRef<HTMLButtonElement>(...);
 
-function AccessibleModal({ isOpen, onClose }) {
-  const focusTrapRef = useFocusTrap(isOpen);
-  const { announce } = useAriaLive();
-  const { getAriaLabel } = useNorwegianA11y();
-  
-  return (
-    <div ref={focusTrapRef} role="dialog" aria-modal="true">
-      <button 
-        onClick={onClose}
-        aria-label={getAriaLabel('Close', 'Lukk')}
-      >
-        ×
-      </button>
-      {/* Modal content */}
-    </div>
-  );
-}
+// Vue generates .vue with Composition API
+VueTemplate.generateComponent(ButtonSpec) →
+  <template><button :class="buttonClasses">...</template>
+
+// Angular generates .component.ts with decorators
+AngularTemplate.generateComponent(ButtonSpec) →
+  @Component({ selector: 'xaheen-button' })
 ```
 
-## 🎭 Animations
+### 3. Platform Layer
 
-Professional micro-interactions with reduced motion support:
+**Native implementations** optimized for each platform:
 
-```tsx
-import { microInteractions, animationUtils } from '@xaheen/design-system';
+- **React**: Hooks, forwardRef, TypeScript interfaces
+- **Vue**: Composition API, reactive props, SFC
+- **Angular**: Standalone components, signals, dependency injection
+- **Svelte**: Reactive declarations, event dispatchers
+- **React Native**: StyleSheet, TouchableOpacity, platform-specific
+- **Web Components**: Custom elements, shadow DOM, vanilla JS
 
-// CSS-in-JS animations
-const AnimatedButton = styled.button`
-  ${microInteractions.button.hover}
-  ${animationUtils.motionSafe('transform', 'none')}
-`;
+## 🎯 Key Features
 
-// Tailwind classes with motion support
-<div className={cn(
-  'transition-transform duration-200',
-  'hover:scale-105',
-  'motion-reduce:transform-none'
-)} />
+### ✅ Write Once, Run Everywhere
+Single component definition generates native implementations for all platforms.
+
+### ✅ Native Experience
+Each platform gets optimized, idiomatic code - not generic wrappers.
+
+### ✅ Auto-Platform Detection
+Automatically detects your framework and loads appropriate components.
+
+### ✅ Type Safety Everywhere
+Full TypeScript support across all platforms with proper interfaces.
+
+### ✅ Accessibility First
+WCAG AAA compliance built-in with platform-appropriate implementations.
+
+### ✅ Enhanced UI Libraries
+Special implementations for Radix UI and Headless UI with composition patterns.
+
+### ✅ Universal Tokens
+Design tokens that convert to CSS variables, StyleSheet, or JS objects.
+
+### ✅ Tree Shaking Ready
+Only load components for your actual platform and usage.
+
+## 🎨 Design Philosophy
+
+### Pure Components (LEGO Architecture)
+Every component is a **pure, stateless building block**:
+- ✅ 100% controlled via props
+- ✅ No internal state management
+- ✅ Composable and predictable
+- ✅ Easy to test and debug
+
+### Universal Specifications
+Components are defined **once** in a platform-agnostic way:
+- ✅ Props, variants, and accessibility rules
+- ✅ Platform capabilities and constraints
+- ✅ Consistent behavior across all platforms
+
+### Native Code Generation
+Generate **truly native** implementations:
+- ✅ React hooks and forwardRef patterns
+- ✅ Vue 3 Composition API and reactivity
+- ✅ Angular standalone components and signals
+- ✅ Svelte reactive declarations
+- ✅ React Native StyleSheet and platform APIs
+
+## 📚 Advanced Usage
+
+### Custom Component Generation
+
+```typescript
+import { ComponentGenerator } from '@xaheen/design-system';
+
+// Generate for specific platform
+const reactFiles = ComponentGenerator.generateComponent(
+  ButtonSpec, 
+  'react',
+  { includeTests: true, includeStories: true }
+);
+
+// Generate for all platforms
+const allPlatforms = ComponentGenerator.generateForAllPlatforms(ButtonSpec);
 ```
 
-## 🌍 Norwegian Compliance
+### Platform-Specific Features
 
-### NSM Security Classifications
-Automatic styling based on Norwegian security levels:
+```typescript
+// Radix UI - Enhanced with primitives
+import { Button, TooltipButton, DialogTriggerButton } from '@xaheen/design-system/radix';
 
-```tsx
-// Automatic NSM styling
-<Card nsmClassification="SECRET">
-  Top secret government data
-</Card>
+<TooltipButton tooltip="Save changes">Save</TooltipButton>
+<DialogTriggerButton>Open Modal</DialogTriggerButton>
 
-// Manual NSM color application
-import { nsmClassification } from '@xaheen/design-system';
+// Headless UI - Enhanced with state management  
+import { Button, ButtonGroup, ToggleButton } from '@xaheen/design-system/headless-ui';
 
-<div className={nsmClassification('RESTRICTED')}>
-  Restricted content
-</div>
+<ButtonGroup>
+  <Button>Left</Button>
+  <Button>Center</Button>
+  <Button>Right</Button>
+</ButtonGroup>
 ```
 
-### Government Integration Ready
-Components optimized for Norwegian government services:
+### Token Customization
 
-```tsx
-<Input 
-  variant="official"          // Government form styling
-  norwegianOptimized          // æ, ø, å character support
-  lang="nb-NO"               // Norwegian locale
-/>
+```typescript
+import { UniversalTokens } from '@xaheen/design-system/tokens';
 
-<Button variant="primary">
-  Logg inn med BankID
-</Button>
+// Extend tokens
+const customTokens = {
+  ...UniversalTokens,
+  colors: {
+    ...UniversalTokens.colors,
+    brand: {
+      500: '#your-color'
+    }
+  }
+};
 ```
 
 ## 🧪 Testing
 
-Comprehensive testing with accessibility validation:
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import { Button } from '@xaheen/design-system';
-
-expect.extend(toHaveNoViolations);
-
-test('Button meets WCAG AAA standards', async () => {
-  const { container } = render(
-    <Button nsmClassification="RESTRICTED">
-      Test Button
-    </Button>
-  );
-  
-  const results = await axe(container);
-  expect(results).toHaveNoViolations();
-});
-```
-
-## 📚 Storybook
-
-Explore all components in our interactive Storybook:
-
 ```bash
-npm run storybook
+# Run all tests
+npm test
+
+# Test specific platform
+npm test -- --grep "react platform"
+
+# Test component generation
+npm test -- --grep "Component Generation"
+
+# Test platform compatibility
+npm test -- --grep "Platform Compatibility"
 ```
 
-Stories include:
-- All component variants
-- Accessibility demonstrations  
-- Norwegian localization examples
-- NSM classification examples
-- Responsive behavior
-- Dark mode support
+## 📖 Documentation
 
-## 🔧 Configuration
-
-### Tailwind CSS Setup
-
-Add to your `tailwind.config.js`:
-
-```js
-module.exports = {
-  content: [
-    './node_modules/@xaheen/design-system/dist/**/*.{js,ts,jsx,tsx}',
-    // your content paths
-  ],
-  theme: {
-    extend: {
-      // Add Xaheen design tokens
-      colors: {
-        // NSM Classifications
-        'nsm-open': '#10B981',
-        'nsm-restricted': '#F59E0B', 
-        'nsm-confidential': '#EF4444',
-        'nsm-secret': '#7C2D12',
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Monaco', 'monospace'],
-      },
-      spacing: {
-        // Professional component heights
-        '11': '2.75rem', // 44px (WCAG minimum)
-        '12': '3rem',    // 48px (CLAUDE.md minimum)
-        '14': '3.5rem',  // 56px (professional)
-        '16': '4rem',    // 64px (premium)
-        '18': '4.5rem',  // 72px (luxury)
-      }
-    }
-  },
-  plugins: []
-};
-```
-
-### CSS Custom Properties
-
-Include design tokens in your CSS:
-
-```css
-@import '@xaheen/design-system/dist/tokens.css';
-
-:root {
-  /* Color tokens are automatically included */
-  --color-primary: hsl(210, 100%, 45%);
-  --color-nsm-restricted: hsl(38, 92%, 50%);
-  
-  /* Typography tokens */
-  --font-family-sans: 'Inter', system-ui, sans-serif;
-  
-  /* Spacing tokens */
-  --button-height-lg: 3.5rem;
-  --input-height-md: 3.5rem;
-}
-```
+- [🏗️ Architecture Guide](./docs/architecture/MULTI_PLATFORM_ARCHITECTURE.md)
+- [🎯 Component Specifications](./docs/COMPONENT_SPECS.md)
+- [🎨 Design Tokens](./docs/DESIGN_TOKENS.md)
+- [🧩 Recipe System](./docs/RECIPES.md)
+- [🛠️ CLI Usage](./docs/CLI.md)
+- [🔧 Platform Integration](./docs/PLATFORM_INTEGRATION.md)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/xaheen/design-system.git
-cd design-system
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests
-npm test
-
-# Run Storybook
-npm run storybook
-```
+We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-## 🆘 Support
+## 🌟 Why Choose Xaheen Universal Design System?
 
-- **Documentation**: [docs.xaheen.no](https://docs.xaheen.no)
-- **Issues**: [GitHub Issues](https://github.com/xaheen/design-system/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/xaheen/design-system/discussions)
-- **Email**: design-system@xaheen.no
+### For Developers
+- ✅ **One system to learn** instead of multiple design systems
+- ✅ **Native code generation** - no performance compromises  
+- ✅ **Auto-platform detection** - works out of the box
+- ✅ **Type safety everywhere** - full TypeScript support
+- ✅ **Future-proof** - add new platforms without rewriting
+
+### For Teams
+- ✅ **Consistent UX** across all platforms and applications
+- ✅ **Faster development** - reuse components everywhere
+- ✅ **Easier maintenance** - update once, all platforms benefit
+- ✅ **Better quality** - built-in accessibility and standards
+
+### For Organizations
+- ✅ **Cost effective** - one design system instead of many
+- ✅ **Future-proof** - platform-agnostic foundation
+- ✅ **Quality assurance** - professional standards built-in
+- ✅ **Scalable** - works for small apps to enterprise systems
 
 ---
 
-Built with ❤️ by the Xaheen team for the Norwegian developer community.
+**Built with ❤️ by the Xaheen Technologies team**
+
+*The universal design system that adapts to your stack, not the other way around.*

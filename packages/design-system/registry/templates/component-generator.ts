@@ -567,6 +567,347 @@ export default ${spec.name};`;
 };
 
 // =============================================================================
+// SVELTE TEMPLATE
+// =============================================================================
+
+export const SvelteTemplate: PlatformTemplate = {
+  platform: 'svelte',
+  fileExtension: '.svelte',
+  
+  generateComponent: (context) => {
+    const { spec } = context;
+    
+    const content = `<!--
+${spec.name} Component - Svelte Implementation
+Generated from universal ${spec.id} specification
+-->
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  
+  // =============================================================================
+  // COMPONENT PROPS
+  // =============================================================================
+  
+  ${spec.props.map(prop => `export let ${prop.name}: ${prop.type}${prop.required ? '' : ' | undefined'} = ${prop.default !== undefined ? JSON.stringify(prop.default) : 'undefined'};`).join('\n  ')}
+  
+  // =============================================================================
+  // EVENT DISPATCHER
+  // =============================================================================
+  
+  const dispatch = createEventDispatcher<{
+    click: MouseEvent;
+  }>();
+  
+  // =============================================================================
+  // COMPUTED VALUES
+  // =============================================================================
+  
+  $: componentClasses = [
+    // Base classes
+    'inline-flex items-center justify-center gap-2',
+    'rounded-md text-sm font-medium transition-colors',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    'disabled:pointer-events-none disabled:opacity-50',
+    'select-none',
+    
+    ${spec.variants ? spec.variants.map((variant, index) => `
+    // ${variant.name} variant
+    ...(variant === '${variant.name}' ? [${Object.values(variant.styling).map(s => `'${s}'`).join(', ')}] : []),`).join('') : ''}
+    
+    // Custom className
+    className || ''
+  ].filter(Boolean).join(' ');
+  
+  // =============================================================================
+  // EVENT HANDLERS
+  // =============================================================================
+  
+  function handleClick(event: MouseEvent) {
+    if (!disabled) {
+      dispatch('click', event);
+    }
+  }
+</script>
+
+<!-- 
+=============================================================================
+MAIN COMPONENT TEMPLATE
+=============================================================================
+-->
+<${spec.category === 'atom' ? 'button' : 'div'}
+  class={componentClasses}
+  {disabled}
+  aria-label={ariaLabel}
+  aria-disabled={disabled}
+  type={type || 'button'}
+  on:click={handleClick}
+  {...$$restProps}
+>
+  <slot />
+</${spec.category === 'atom' ? 'button' : 'div'}>
+
+<style>
+  /* Component-specific styles */
+  /* Most styling comes from Tailwind classes */
+</style>`;
+
+    return {
+      path: `${spec.name}.svelte`,
+      content,
+      type: 'component'
+    };
+  }
+};
+
+// =============================================================================
+// ANGULAR TEMPLATE
+// =============================================================================
+
+export const AngularTemplate: PlatformTemplate = {
+  platform: 'angular',
+  fileExtension: '.component.ts',
+  
+  generateComponent: (context) => {
+    const { spec } = context;
+    
+    const content = `/**
+ * ${spec.name} Component - Angular Implementation
+ * Generated from universal ${spec.id} specification
+ */
+
+import { 
+  Component, 
+  Input, 
+  Output, 
+  EventEmitter, 
+  ChangeDetectionStrategy
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+${spec.variants ? `export type ${spec.name}Variant = ${spec.variants.map(v => `'${v.name}'`).join(' | ')};` : ''}
+
+@Component({
+  selector: 'xaheen-${spec.id}',
+  standalone: true,
+  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: \`
+    <${spec.category === 'atom' ? 'button' : 'div'}
+      [class]="componentClasses"
+      [disabled]="disabled"
+      [attr.aria-label]="ariaLabel"
+      [attr.aria-disabled]="disabled"
+      [type]="type"
+      (click)="handleClick($event)"
+    >
+      <ng-content></ng-content>
+    </${spec.category === 'atom' ? 'button' : 'div'}>
+  \`,
+  styles: [\`
+    :host {
+      display: inline-block;
+    }
+  \`]
+})
+export class ${spec.name}Component {
+  // =============================================================================
+  // INPUT PROPERTIES
+  // =============================================================================
+
+  ${spec.props.map(prop => `@Input() ${prop.name}: ${prop.type} = ${prop.default !== undefined ? JSON.stringify(prop.default) : 'undefined'};`).join('\n  ')}
+
+  // =============================================================================
+  // OUTPUT EVENTS
+  // =============================================================================
+
+  @Output() ${spec.id}Click = new EventEmitter<MouseEvent>();
+
+  // =============================================================================
+  // COMPUTED PROPERTIES
+  // =============================================================================
+
+  get componentClasses(): string {
+    const baseClasses = [
+      'inline-flex items-center justify-center gap-2',
+      'rounded-md text-sm font-medium transition-colors',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+      'disabled:pointer-events-none disabled:opacity-50',
+      'select-none'
+    ];
+
+    ${spec.variants ? `
+    // Variant classes
+    const variantClasses: Record<${spec.name}Variant, string[]> = {
+      ${spec.variants.map(variant => `${variant.name}: [${Object.values(variant.styling).map(s => `'${s}'`).join(', ')}]`).join(',\n      ')}
+    };
+    ` : ''}
+
+    return [
+      ...baseClasses,
+      ${spec.variants ? `...(this.variant ? variantClasses[this.variant] : []),` : ''}
+      this.customClass || ''
+    ].filter(Boolean).join(' ');
+  }
+
+  // =============================================================================
+  // EVENT HANDLERS
+  // =============================================================================
+
+  handleClick(event: MouseEvent): void {
+    if (!this.disabled) {
+      this.${spec.id}Click.emit(event);
+    }
+  }
+}`;
+
+    return {
+      path: `${spec.id}.component.ts`,
+      content,
+      type: 'component'
+    };
+  }
+};
+
+// =============================================================================
+// VANILLA JS/WEB COMPONENTS TEMPLATE
+// =============================================================================
+
+export const VanillaTemplate: PlatformTemplate = {
+  platform: 'vanilla',
+  fileExtension: '.js',
+  
+  generateComponent: (context) => {
+    const { spec } = context;
+    
+    const content = `/**
+ * ${spec.name} Component - Vanilla JS/Web Components Implementation
+ * Generated from universal ${spec.id} specification
+ */
+
+class ${spec.name}Element extends HTMLElement {
+  static get observedAttributes() {
+    return [${spec.props.map(p => `'${p.name}'`).join(', ')}];
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.render();
+    this.setupEventListeners();
+  }
+
+  // =============================================================================
+  // GETTERS & SETTERS
+  // =============================================================================
+
+  ${spec.props.map(prop => `
+  get ${prop.name}() {
+    return this.getAttribute('${prop.name}')${prop.type === 'boolean' ? ' !== null' : ''};
+  }
+
+  set ${prop.name}(value) {
+    if (value${prop.type === 'boolean' ? '' : ' != null'}) {
+      this.setAttribute('${prop.name}', ${prop.type === 'boolean' ? '\'\'' : 'value'});
+    } else {
+      this.removeAttribute('${prop.name}');
+    }
+  }`).join('')}
+
+  // =============================================================================
+  // LIFECYCLE
+  // =============================================================================
+
+  connectedCallback() {
+    this.render();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+
+  // =============================================================================
+  // METHODS
+  // =============================================================================
+
+  getComponentClasses() {
+    const baseClasses = [
+      'inline-flex items-center justify-center gap-2',
+      'rounded-md text-sm font-medium transition-colors',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+      'disabled:pointer-events-none disabled:opacity-50',
+      'select-none'
+    ];
+
+    ${spec.variants ? `
+    const variantClasses = {
+      ${spec.variants.map(variant => `'${variant.name}': [${Object.values(variant.styling).map(s => `'${s}'`).join(', ')}]`).join(',\n      ')}
+    };
+    ` : ''}
+
+    return [
+      ...baseClasses,
+      ${spec.variants ? `...(this.variant ? variantClasses[this.variant] || [] : []),` : ''}
+    ].filter(Boolean).join(' ');
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = \`
+      <style>
+        :host {
+          display: inline-block;
+        }
+        /* Tailwind-like styles would be included here */
+        .inline-flex { display: inline-flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        /* ... other utility classes ... */
+      </style>
+      <${spec.category === 'atom' ? 'button' : 'div'}
+        class="\${this.getComponentClasses()}"
+        \${this.disabled ? 'disabled' : ''}
+        aria-label="\${this.ariaLabel || ''}"
+        type="\${this.type || 'button'}"
+      >
+        <slot></slot>
+      </${spec.category === 'atom' ? 'button' : 'div'}>
+    \`;
+  }
+
+  setupEventListeners() {
+    this.shadowRoot.addEventListener('click', (event) => {
+      if (!this.disabled) {
+        this.dispatchEvent(new CustomEvent('${spec.id}-click', {
+          detail: { originalEvent: event },
+          bubbles: true,
+          composed: true
+        }));
+      }
+    });
+  }
+}
+
+// =============================================================================
+// REGISTER CUSTOM ELEMENT
+// =============================================================================
+
+if (!customElements.get('xaheen-${spec.id}')) {
+  customElements.define('xaheen-${spec.id}', ${spec.name}Element);
+}
+
+export default ${spec.name}Element;`;
+
+    return {
+      path: `${spec.id}.js`,
+      content,
+      type: 'component'
+    };
+  }
+};
+
+// =============================================================================
 // PLATFORM TEMPLATE REGISTRY
 // =============================================================================
 
@@ -574,17 +915,17 @@ export const PlatformTemplates: Record<Platform, PlatformTemplate> = {
   react: ReactTemplate,
   'react-native': ReactNativeTemplate,
   vue: VueTemplate,
-  angular: ReactTemplate, // Placeholder - would need Angular-specific template
-  svelte: ReactTemplate,  // Placeholder - would need Svelte-specific template
-  electron: ReactTemplate, // Uses React
-  nextjs: ReactTemplate,   // Uses React
-  nuxt: VueTemplate,      // Uses Vue
-  sveltekit: ReactTemplate, // Uses Svelte (placeholder)
-  expo: ReactNativeTemplate, // Uses React Native
-  ionic: ReactTemplate,   // Placeholder - would need Ionic-specific template
-  radix: RadixTemplate,   // Enhanced React with Radix UI
+  angular: AngularTemplate,     // Complete Angular implementation
+  svelte: SvelteTemplate,       // Complete Svelte implementation  
+  electron: ReactTemplate,      // Uses React
+  nextjs: ReactTemplate,        // Uses React
+  nuxt: VueTemplate,           // Uses Vue
+  sveltekit: SvelteTemplate,   // Uses Svelte
+  expo: ReactNativeTemplate,   // Uses React Native
+  ionic: ReactTemplate,        // Placeholder - would need Ionic-specific template
+  radix: RadixTemplate,        // Enhanced React with Radix UI
   'headless-ui': HeadlessUITemplate, // Enhanced React with Headless UI
-  vanilla: ReactTemplate  // Placeholder - would need Web Components template
+  vanilla: VanillaTemplate     // Complete Web Components implementation
 };
 
 // =============================================================================

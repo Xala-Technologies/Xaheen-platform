@@ -9,14 +9,14 @@
  * @since 2025-01-03
  */
 
-import fs from 'fs-extra';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { consola } from 'consola';
 import semver from 'semver';
 import { templateInheritance, type BaseTemplate, type TemplateComposition } from './template-inheritance.js';
-import { templateComposer, type CompositionContext, type TemplateSlotConfig } from './template-composition.js';
-import { contextAwareGenerator, type BusinessContextPattern, type ProjectContext } from './context-aware-generator.js';
-import { qualityAssuranceTemplates, type QATemplateConfig } from './quality-assurance-templates.js';
+// import { templateComposer, type CompositionContext, type TemplateSlotConfig } from './template-composition.js';
+import { contextAwareGenerator, type BusinessContextPattern, type ProjectContext, type CompositionContext } from './context-aware-generator.js';
+// import { qualityAssuranceTemplates, type QATemplateConfig } from './quality-assurance-templates.js';
 
 export interface TemplateVersion {
   readonly version: string;

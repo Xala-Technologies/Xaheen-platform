@@ -8,7 +8,7 @@
  * @since 2025-01-03
  */
 
-import fs from 'fs-extra';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
@@ -119,7 +119,7 @@ export class TemplateInheritance {
   /**
    * Compose template with inheritance and mixins
    */
-  async composeTemplate(composition: TemplateComposition): Promise<InheritanceResult> {
+  composeTemplate(composition: TemplateComposition): InheritanceResult {
     consola.info(`Composing template with base: ${composition.baseTemplate}`);
 
     const baseTemplate = this.baseTemplates.get(composition.baseTemplate);
@@ -128,18 +128,14 @@ export class TemplateInheritance {
     }
 
     // Build inheritance chain
-    const inheritanceChain = await this.buildInheritanceChain(baseTemplate.id);
+    const inheritanceChain = this.buildInheritanceChain(baseTemplate.id);
     consola.debug(`Inheritance chain: ${inheritanceChain.join(' -> ')}`);
 
     // Resolve all templates in chain
-    const chainTemplates = await Promise.all(
-      inheritanceChain.map(id => this.resolveTemplate(id))
-    );
+    const chainTemplates = inheritanceChain.map(id => this.resolveTemplate(id));
 
     // Resolve mixins
-    const mixinTemplates = await Promise.all(
-      composition.mixins.map(id => this.resolveTemplate(id))
-    );
+    const mixinTemplates = composition.mixins.map(id => this.resolveTemplate(id));
 
     // Merge templates (base -> parent -> child, then mixins)
     let mergedTemplate = '';
@@ -182,12 +178,12 @@ export class TemplateInheritance {
   /**
    * Create component from template composition
    */
-  async createComponent(
+  createComponent(
     componentName: string,
     composition: TemplateComposition,
     outputPath: string
-  ): Promise<void> {
-    const result = await this.composeTemplate(composition);
+  ): void {
+    const result = this.composeTemplate(composition);
     
     // Compile template with component name
     const template = Handlebars.compile(result.compiledTemplate);
@@ -198,10 +194,12 @@ export class TemplateInheritance {
     });
 
     // Ensure output directory exists
-    await fs.ensureDir(path.dirname(outputPath));
+    if (!existsSync(path.dirname(outputPath))) {
+      mkdirSync(path.dirname(outputPath), { recursive: true });
+    }
     
     // Write component file
-    await fs.writeFile(outputPath, output, 'utf-8');
+    writeFileSync(outputPath, output, 'utf-8');
     
     consola.success(`Created component: ${componentName} at ${outputPath}`);
   }
@@ -209,7 +207,7 @@ export class TemplateInheritance {
   /**
    * Build inheritance chain from child to root
    */
-  private async buildInheritanceChain(templateId: string): Promise<string[]> {
+  private buildInheritanceChain(templateId: string): string[] {
     const chain: string[] = [];
     let currentId = templateId;
 
@@ -229,19 +227,19 @@ export class TemplateInheritance {
   /**
    * Resolve template content and metadata
    */
-  private async resolveTemplate(templateId: string): Promise<{
+  private resolveTemplate(templateId: string): {
     content: string;
     props: TemplateProp[];
     slots: TemplateSlot[];
     metadata: TemplateMetadata;
-  }> {
+  } {
     const template = this.baseTemplates.get(templateId);
     if (!template) {
       throw new Error(`Template not found: ${templateId}`);
     }
 
     const templatePath = path.join(this.templatesPath, template.path);
-    const content = await fs.readFile(templatePath, 'utf-8');
+    const content = readFileSync(templatePath, 'utf-8');
 
     return {
       content,

@@ -48,14 +48,14 @@ export {
   type GenerationOptions
 } from './context-aware-generator.js';
 
-// Quality assurance templates
-export {
-  QualityAssuranceTemplates,
-  qualityAssuranceTemplates,
-  type QATemplateConfig,
-  type QATemplate,
-  type QAGenerationResult
-} from './quality-assurance-templates.js';
+// Quality assurance templates - temporarily disabled
+// export {
+//   QualityAssuranceTemplates,
+//   qualityAssuranceTemplates,
+//   type QATemplateConfig,
+//   type QATemplate,
+//   type QAGenerationResult
+// } from './quality-assurance-templates.js';
 
 // Main orchestration system
 export {

@@ -1,33 +1,161 @@
 {
   "name": "@xaheen/design-system",
   "version": "1.0.0",
-  "description": "Professional design system for Xaheen CLI with WCAG AAA compliance and Norwegian standards",
+  "description": "Universal design system that works across all platforms - React, Vue, Angular, Svelte, React Native, and more",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./registry": {
+      "import": "./registry/index.ts",
+      "require": "./registry/index.ts",
+      "types": "./registry/index.ts"
+    },
+    "./registry/universal": {
+      "import": "./registry/universal-index.ts",
+      "require": "./registry/universal-index.ts",
+      "types": "./registry/universal-index.ts"
+    },
+    "./react": {
+      "import": "./registry/platforms/react/index.ts",
+      "require": "./registry/platforms/react/index.ts",
+      "types": "./registry/platforms/react/index.ts"
+    },
+    "./react/*": {
+      "import": "./registry/platforms/react/*.tsx",
+      "require": "./registry/platforms/react/*.tsx",
+      "types": "./registry/platforms/react/*.tsx"
+    },
+    "./vue": {
+      "import": "./registry/platforms/vue/index.ts",
+      "require": "./registry/platforms/vue/index.ts",
+      "types": "./registry/platforms/vue/index.ts"
+    },
+    "./vue/*": {
+      "import": "./registry/platforms/vue/*.vue",
+      "require": "./registry/platforms/vue/*.vue",
+      "types": "./registry/platforms/vue/*.vue"
+    },
+    "./angular": {
+      "import": "./registry/platforms/angular/index.ts",
+      "require": "./registry/platforms/angular/index.ts",
+      "types": "./registry/platforms/angular/index.ts"
+    },
+    "./angular/*": {
+      "import": "./registry/platforms/angular/*.ts",
+      "require": "./registry/platforms/angular/*.ts",
+      "types": "./registry/platforms/angular/*.ts"
+    },
+    "./svelte": {
+      "import": "./registry/platforms/svelte/index.ts",
+      "require": "./registry/platforms/svelte/index.ts",
+      "types": "./registry/platforms/svelte/index.ts"
+    },
+    "./svelte/*": {
+      "import": "./registry/platforms/svelte/*.svelte",
+      "require": "./registry/platforms/svelte/*.svelte",
+      "types": "./registry/platforms/svelte/*.svelte"
+    },
+    "./react-native": {
+      "import": "./registry/platforms/react-native/index.ts",
+      "require": "./registry/platforms/react-native/index.ts",
+      "types": "./registry/platforms/react-native/index.ts"
+    },
+    "./react-native/*": {
+      "import": "./registry/platforms/react-native/*.tsx",
+      "require": "./registry/platforms/react-native/*.tsx",
+      "types": "./registry/platforms/react-native/*.tsx"
+    },
+    "./radix": {
+      "import": "./registry/platforms/radix/index.ts",
+      "require": "./registry/platforms/radix/index.ts",
+      "types": "./registry/platforms/radix/index.ts"
+    },
+    "./radix/*": {
+      "import": "./registry/platforms/radix/*.tsx",
+      "require": "./registry/platforms/radix/*.tsx",
+      "types": "./registry/platforms/radix/*.tsx"
+    },
+    "./headless-ui": {
+      "import": "./registry/platforms/headless-ui/index.ts",
+      "require": "./registry/platforms/headless-ui/index.ts",
+      "types": "./registry/platforms/headless-ui/index.ts"
+    },
+    "./headless-ui/*": {
+      "import": "./registry/platforms/headless-ui/*.tsx",
+      "require": "./registry/platforms/headless-ui/*.tsx",
+      "types": "./registry/platforms/headless-ui/*.tsx"
+    },
+    "./vanilla": {
+      "import": "./registry/platforms/vanilla/index.ts",
+      "require": "./registry/platforms/vanilla/index.ts",
+      "types": "./registry/platforms/vanilla/index.ts"
+    },
+    "./vanilla/*": {
+      "import": "./registry/platforms/vanilla/*.js",
+      "require": "./registry/platforms/vanilla/*.js",
+      "types": "./registry/platforms/vanilla/*.js"
+    },
+    "./cli": {
+      "import": "./registry/cli/component-cli.ts",
+      "require": "./registry/cli/component-cli.ts",
+      "types": "./registry/cli/component-cli.ts"
+    },
+    "./recipes": {
+      "import": "./registry/recipes/component-recipes.ts",
+      "require": "./registry/recipes/component-recipes.ts",
+      "types": "./registry/recipes/component-recipes.ts"
+    },
+    "./tokens": {
+      "import": "./registry/core/universal-tokens.ts",
+      "require": "./registry/core/universal-tokens.ts",
+      "types": "./registry/core/universal-tokens.ts"
+    }
+  },
   "files": [
     "dist",
+    "registry",
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean && pnpm run build:registry",
+    "build:registry": "pnpm exec tsx scripts/build-registry.ts",
+    "build:components": "pnpm exec tsx scripts/build-components.ts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src registry --ext .ts,.tsx",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
+    "test:platforms": "vitest --run registry/tests/platform-compatibility.test.ts",
+    "test:generation": "vitest --run registry/tests/component-generation.test.ts",
     "prebuild-storybook": "pnpm run build",
     "storybook": "pnpm run build && storybook dev -p 6006",
     "build-storybook": "storybook build",
     "type-check": "tsc --noEmit",
-    "build:registry": "pnpm exec tsx scripts/build-registry.ts",
-    "registry": "pnpm exec tsx scripts/build-registry.ts"
+    "registry": "pnpm exec tsx scripts/build-registry.ts",
+    "generate": "pnpm exec tsx scripts/generate-component.ts",
+    "validate": "pnpm run type-check && pnpm run lint && pnpm run test:platforms",
+    "prepack": "pnpm run build && pnpm run validate"
   },
   "keywords": [
     "design-system",
+    "universal",
+    "multi-platform",
     "react",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
     "typescript",
     "tailwind",
     "accessibility",
     "wcag",
+    "radix-ui",
+    "headless-ui",
+    "web-components",
     "norwegian",
     "nsm"
   ],

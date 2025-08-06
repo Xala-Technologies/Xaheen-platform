@@ -9,10 +9,26 @@
  * @since 2025-01-03
  */
 
-import fs from 'fs-extra';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { consola } from 'consola';
-import { templateComposer, type CompositionContext } from './template-composition.js';
+// import { templateComposer, type CompositionContext } from './template-composition.js';
+
+// Temporary type definition for CompositionContext
+export interface CompositionContext {
+  componentName: string;
+  props: Record<string, any>;
+  features: Record<string, boolean>;
+  styling: Record<string, any>;
+  dependencies: readonly string[];
+  platform?: string;
+  theme?: string;
+  customization?: Record<string, any>;
+  businessContext?: Record<string, any>;
+  accessibility?: any;
+  // Allow any additional properties
+  [key: string]: any;
+}
 import { templateInheritance } from './template-inheritance.js';
 
 export interface BusinessContextPattern {
@@ -94,30 +110,30 @@ export class ContextAwareGenerator {
   /**
    * Detect business context from project structure and configuration
    */
-  async detectBusinessContext(projectPath: string): Promise<{
+  detectBusinessContext(projectPath: string): {
     domain: string;
     confidence: number;
     patterns: readonly string[];
     recommendations: readonly string[];
-  }> {
+  } {
     consola.info(`Detecting business context for project at ${projectPath}`);
 
     const packageJsonPath = path.join(projectPath, 'package.json');
-    const configFiles = await fs.readdir(projectPath).catch(() => []);
+    const configFiles = existsSync(projectPath) ? readdirSync(projectPath).filter(f => f.length > 0) : [];
     
     let packageJson: any = {};
     try {
-      packageJson = await fs.readJson(packageJsonPath);
+      packageJson = existsSync(packageJsonPath) ? JSON.parse(readFileSync(packageJsonPath, 'utf-8')) : {};
     } catch {
       consola.warn('No package.json found, using file-based detection');
     }
 
-    const detectionResults = await Promise.all([
+    const detectionResults = [
       this.detectFromPackageJson(packageJson),
       this.detectFromFileStructure(projectPath, configFiles),
       this.detectFromDependencies(packageJson.dependencies || {}),
       this.detectFromKeywords(packageJson.keywords || [])
-    ]);
+    ];
 
     // Aggregate detection results
     const domainScores = new Map<string, number>();
@@ -155,12 +171,12 @@ export class ContextAwareGenerator {
   /**
    * Generate context-aware component based on business domain
    */
-  async generateContextAwareComponent(
+  generateContextAwareComponent(
     componentName: string,
     businessDomain: string,
     projectContext: ProjectContext,
     options: GenerationOptions
-  ): Promise<void> {
+  ): void {
     consola.info(`Generating context-aware component: ${componentName} for ${businessDomain} domain`);
 
     const pattern = this.businessPatterns.get(businessDomain);
@@ -193,23 +209,27 @@ export class ContextAwareGenerator {
     const appliedPatterns = this.applyContextPatterns(baseTemplate.path, pattern.patterns, compositionContext);
 
     // Generate with template composer
-    const result = await templateComposer.composeTemplate(
-      appliedPatterns.template,
-      appliedPatterns.slots,
-      [...pattern.recommendedMixins], // Convert readonly array to mutable
-      compositionContext
-    );
+    // Temporary fallback - use template inheritance directly
+    const result = templateInheritance.composeTemplate({
+      baseTemplate: pattern.patterns[0]?.template || 'base-component',
+      mixins: [...pattern.recommendedMixins], // Convert readonly array to mutable
+      overrides: {},
+      slots: {},
+      context: compositionContext
+    });
 
     // Write primary component file
     const componentPath = path.join(options.outputPath, `${componentName}.tsx`);
-    await fs.ensureDir(path.dirname(componentPath));
-    await fs.writeFile(componentPath, result.template, 'utf-8');
+    if (!existsSync(path.dirname(componentPath))) {
+      mkdirSync(path.dirname(componentPath), { recursive: true });
+    }
+    writeFileSync(componentPath, result.compiledTemplate, 'utf-8');
 
     // Generate additional files based on options
-    await this.generateAdditionalFiles(componentName, pattern, compositionContext, options);
+    this.generateAdditionalFiles(componentName, pattern, compositionContext, options);
 
     // Generate context-specific configuration files
-    await this.generateContextConfiguration(pattern, projectContext, options.outputPath);
+    this.generateContextConfiguration(pattern, projectContext, options.outputPath);
 
     consola.success(`Generated context-aware component: ${componentName}`);
   }
@@ -217,12 +237,12 @@ export class ContextAwareGenerator {
   /**
    * Detect business context from package.json
    */
-  private async detectFromPackageJson(packageJson: any): Promise<{
+  private detectFromPackageJson(packageJson: any): {
     domain: string;
     confidence: number;
     patterns: readonly string[];
     recommendations: readonly string[];
-  }> {
+  } {
     const keywords = (packageJson.keywords || []).join(' ').toLowerCase();
     const description = (packageJson.description || '').toLowerCase();
     const name = (packageJson.name || '').toLowerCase();
@@ -264,12 +284,12 @@ export class ContextAwareGenerator {
   /**
    * Detect business context from file structure
    */
-  private async detectFromFileStructure(projectPath: string, files: string[]): Promise<{
+  private detectFromFileStructure(projectPath: string, files: string[]): {
     domain: string;
     confidence: number;
     patterns: readonly string[];
     recommendations: readonly string[];
-  }> {
+  } {
     const filePatterns = {
       ecommerce: ['cart', 'product', 'inventory', 'checkout', 'payment'],
       saas: ['dashboard', 'billing', 'subscription', 'tenant', 'admin'],
@@ -304,12 +324,12 @@ export class ContextAwareGenerator {
   /**
    * Detect business context from dependencies
    */
-  private async detectFromDependencies(dependencies: Record<string, string>): Promise<{
+  private detectFromDependencies(dependencies: Record<string, string>): {
     domain: string;
     confidence: number;
     patterns: readonly string[];
     recommendations: readonly string[];
-  }> {
+  } {
     const depNames = Object.keys(dependencies).join(' ').toLowerCase();
 
     const dependencyPatterns = {
@@ -344,12 +364,12 @@ export class ContextAwareGenerator {
   /**
    * Detect business context from keywords
    */
-  private async detectFromKeywords(keywords: string[]): Promise<{
+  private detectFromKeywords(keywords: string[]): {
     domain: string;
     confidence: number;
     patterns: readonly string[];
     recommendations: readonly string[];
-  }> {
+  } {
     const keywordText = keywords.join(' ').toLowerCase();
     
     // Simple keyword matching
@@ -499,29 +519,29 @@ export class ContextAwareGenerator {
   /**
    * Generate additional files based on context
    */
-  private async generateAdditionalFiles(
+  private generateAdditionalFiles(
     componentName: string,
     pattern: BusinessContextPattern,
     context: CompositionContext,
     options: GenerationOptions
-  ): Promise<void> {
+  ): void {
     const basePath = options.outputPath;
 
     // Generate tests if requested
     if (options.generateTests) {
       const testContent = this.generateTestFile(componentName, pattern, context);
-      await fs.writeFile(path.join(basePath, `${componentName}.test.tsx`), testContent, 'utf-8');
+      writeFileSync(path.join(basePath, `${componentName}.test.tsx`), testContent, 'utf-8');
     }
 
     // Generate stories if requested
     if (options.generateStories) {
       const storyContent = this.generateStoryFile(componentName, pattern, context);
-      await fs.writeFile(path.join(basePath, `${componentName}.stories.tsx`), storyContent, 'utf-8');
+      writeFileSync(path.join(basePath, `${componentName}.stories.tsx`), storyContent, 'utf-8');
     }
 
     // Generate localization files if requested
     if (options.includeLocalization) {
-      await this.generateLocalizationFiles(componentName, pattern, basePath);
+      this.generateLocalizationFiles(componentName, pattern, basePath);
     }
   }
 
@@ -584,17 +604,21 @@ export const ${pattern.domain.charAt(0).toUpperCase() + pattern.domain.slice(1)}
   /**
    * Generate localization files
    */
-  private async generateLocalizationFiles(componentName: string, pattern: BusinessContextPattern, basePath: string): Promise<void> {
+  private generateLocalizationFiles(componentName: string, pattern: BusinessContextPattern, basePath: string): void {
     const localeDir = path.join(basePath, 'locales');
-    await fs.ensureDir(localeDir);
+    if (!existsSync(localeDir)) {
+      mkdirSync(localeDir, { recursive: true });
+    }
 
     const locales = ['en', 'nb-NO'];
     for (const locale of locales) {
       const localeFile = path.join(localeDir, locale, `${componentName.toLowerCase()}.json`);
-      await fs.ensureDir(path.dirname(localeFile));
+      if (!existsSync(path.dirname(localeFile))) {
+        mkdirSync(path.dirname(localeFile), { recursive: true });
+      }
       
       const translations = this.generateTranslations(componentName, locale, pattern);
-      await fs.writeFile(localeFile, JSON.stringify(translations, null, 2), 'utf-8');
+      writeFileSync(localeFile, JSON.stringify(translations, null, 2), 'utf-8');
     }
   }
 
@@ -625,21 +649,21 @@ export const ${pattern.domain.charAt(0).toUpperCase() + pattern.domain.slice(1)}
   /**
    * Generate context-specific configuration
    */
-  private async generateContextConfiguration(
+  private generateContextConfiguration(
     pattern: BusinessContextPattern,
     project: ProjectContext,
     outputPath: string
-  ): Promise<void> {
+  ): void {
     // Generate tailwind config for domain
     const tailwindConfigPath = path.join(outputPath, 'tailwind.config.js');
     const tailwindConfig = this.generateTailwindConfig(pattern);
-    await fs.writeFile(tailwindConfigPath, tailwindConfig, 'utf-8');
+    writeFileSync(tailwindConfigPath, tailwindConfig, 'utf-8');
 
     // Generate ESLint config for compliance
     if (pattern.compliance.length > 0) {
       const eslintConfigPath = path.join(outputPath, '.eslintrc.js');
       const eslintConfig = this.generateESLintConfig(pattern);
-      await fs.writeFile(eslintConfigPath, eslintConfig, 'utf-8');
+      writeFileSync(eslintConfigPath, eslintConfig, 'utf-8');
     }
   }
 
