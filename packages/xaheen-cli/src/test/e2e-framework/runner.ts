@@ -10,6 +10,8 @@ import { E2ETestFramework } from './index.js';
 import ProjectValidator from './validators/project-validation.js';
 import CLAUDEComplianceValidator from './validators/claude-compliance-validation.js';
 import DesignSystemValidator from './validators/design-system-validation.js';
+import NSMComplianceValidator from './validators/nsm-compliance-validation.js';
+import WCAGComplianceValidator from './validators/wcag-compliance-validation.js';
 import type { E2ETestConfig, TestReport } from './types.js';
 
 /**
@@ -19,12 +21,16 @@ export class E2ETestRunner extends E2ETestFramework {
   private projectValidator: ProjectValidator;
   private claudeValidator: CLAUDEComplianceValidator;
   private designSystemValidator: DesignSystemValidator;
+  private nsmValidator: NSMComplianceValidator;
+  private wcagValidator: WCAGComplianceValidator;
 
   constructor(config: E2ETestConfig) {
     super(config);
     this.projectValidator = new ProjectValidator();
     this.claudeValidator = new CLAUDEComplianceValidator();
     this.designSystemValidator = new DesignSystemValidator();
+    this.nsmValidator = new NSMComplianceValidator();
+    this.wcagValidator = new WCAGComplianceValidator();
   }
 
   /**
@@ -43,15 +49,11 @@ export class E2ETestRunner extends E2ETestFramework {
   }
 
   protected async validateNSMCompliance(projectPath: string): Promise<any> {
-    // Placeholder for NSM compliance validation
-    // This would integrate with actual NSM compliance rules
-    return { success: true, errors: [], warnings: [] };
+    return await this.nsmValidator.validateNSMCompliance(projectPath);
   }
 
   protected async validateWCAGCompliance(projectPath: string): Promise<any> {
-    // Placeholder for WCAG compliance validation
-    // This would integrate with accessibility testing tools
-    return { success: true, errors: [], warnings: [] };
+    return await this.wcagValidator.validateWCAGCompliance(projectPath);
   }
 
   protected async validateCodeQuality(projectPath: string): Promise<any> {

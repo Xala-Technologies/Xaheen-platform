@@ -1,0 +1,213 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { writable } from 'svelte/store';
+  import { Button, Card, CardHeader, CardTitle, CardContent } from '@xaheen/design-system/svelte';
+
+  interface HomePageState {
+    readonly isLoading: boolean;
+    readonly error: string | null;
+    readonly title: string;
+    readonly description: string;
+  }
+
+  // Reactive state
+  const state = writable<HomePageState>({
+    isLoading: false,
+    error: null,
+    title: '{{title}}',
+    description: '{{description}}'
+  });
+
+  // Technology stack data
+  const technologies = [
+    { name: 'Svelte 5', color: 'bg-orange-100 text-orange-800' },
+    { name: 'SvelteKit', color: 'bg-red-100 text-red-800' },
+    { name: 'TypeScript', color: 'bg-blue-100 text-blue-800' },
+    { name: 'Tailwind CSS', color: 'bg-cyan-100 text-cyan-800' },
+    { name: 'Xaheen Design System', color: 'bg-purple-100 text-purple-800' },
+    { name: 'NSM Compliant', color: 'bg-green-100 text-green-800' }
+  ] as const;
+
+  // Quick start cards data
+  const quickStartCards = [
+    {
+      title: 'Add Components',
+      description: 'Generate AI-powered components with full TypeScript support and Norwegian compliance',
+      command: 'xaheen component generate "user profile card"'
+    },
+    {
+      title: 'Add Services',
+      description: 'Integrate backend services with type-safe APIs and NSM compliance',
+      command: 'xaheen service add database --nsm-compliant'
+    },
+    {
+      title: 'Deploy',
+      description: 'Deploy to production with Norwegian government security standards',
+      command: 'xaheen deploy --region norway'
+    }
+  ] as const;
+
+  onMount(() => {
+    // Initialize component with Norwegian locale support
+    console.log('HomePage initialized with Norwegian compliance');
+  });
+
+  async function handleGetStarted(): Promise<void> {
+    const currentState = $state;
+    if (currentState.isLoading) return;
+
+    state.update(s => ({ ...s, isLoading: true, error: null }));
+
+    try {
+      console.log('Getting started with Xaheen CLI');
+      
+      // Simulate async operation
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Get started completed successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred';
+      
+      state.update(s => ({ ...s, error: errorMessage }));
+      console.error('Get started error:', error);
+    } finally {
+      state.update(s => ({ ...s, isLoading: false }));
+    }
+  }
+
+  function handleLearnMore(): void {
+    try {
+      window.open('https://docs.xaheen.no', '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to open documentation';
+      
+      state.update(s => ({ ...s, error: errorMessage }));
+      console.error('Learn more error:', error);
+    }
+  }
+
+  function clearError(): void {
+    state.update(s => ({ ...s, error: null }));
+  }
+
+  // Reactive declarations
+  $: currentState = $state;
+</script>
+
+<svelte:head>
+  <title>Welcome to {currentState.title}</title>
+  <meta name="description" content={currentState.description} />
+</svelte:head>
+
+<main class="container mx-auto py-12 px-6">
+  <div class="text-center">
+    <h1 class="text-4xl font-bold tracking-tight text-gray-900 mb-6">
+      Welcome to {currentState.title}
+    </h1>
+    <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+      {currentState.description}
+    </p>
+    
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+      <Button
+        on:click={handleGetStarted}
+        disabled={currentState.isLoading}
+        class="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Get started with Xaheen CLI"
+      >
+        {currentState.isLoading ? 'Loading...' : 'Get Started'}
+      </Button>
+      <Button
+        on:click={handleLearnMore}
+        class="h-12 px-8 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        aria-label="Learn more about Xaheen"
+      >
+        Learn More
+      </Button>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="space-y-4 mb-12">
+      <p class="text-lg text-gray-700">
+        Built with Xaheen CLI v3.0.0 and powered by:
+      </p>
+      <div class="flex flex-wrap justify-center gap-4 text-sm">
+        {#each technologies as tech}
+          <span 
+            class="px-4 py-2 rounded-lg font-medium {tech.color}"
+          >
+            {tech.name}
+          </span>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Quick Start Guide -->
+    <section class="mt-12" aria-labelledby="quick-start-heading">
+      <h2 id="quick-start-heading" class="text-2xl font-semibold mb-8 text-gray-900">
+        Quick Start Guide
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {#each quickStartCards as card}
+          <Card class="shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader>
+              <CardTitle class="text-lg font-semibold text-gray-900">
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p class="text-gray-600 mb-4">
+                {card.description}
+              </p>
+              <code class="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                {card.command}
+              </code>
+            </CardContent>
+          </Card>
+        {/each}
+      </div>
+    </section>
+  </div>
+
+  <!-- Error Alert -->
+  {#if currentState.error}
+    <div 
+      class="fixed bottom-4 right-4 max-w-sm bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg"
+      role="alert"
+      transition:fly="{{ y: 50, duration: 300 }}"
+    >
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <p class="text-sm text-red-800">
+            {currentState.error}
+          </p>
+        </div>
+        <div class="ml-4">
+          <button
+            on:click={clearError}
+            class="inline-flex text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md p-1"
+            aria-label="Dismiss error"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+</main>
+
+<style>
+  /* Add any component-specific styles here */
+</style>

@@ -36,7 +36,7 @@ export class AppTemplateRegistry {
 	private templateCache: Map<string, AppTemplate> = new Map();
 
 	constructor() {
-		this.templatesPath = path.resolve(__dirname, "../../templates");
+		this.templatesPath = path.resolve(__dirname, "../templates");
 	}
 
 	/**

@@ -1,0 +1,182 @@
+{
+  "version": "1.0.0",
+  "extends": ["@xaheen/validation-config-recommended"],
+  
+  "claude": {
+    "buttonMinHeight": 12,
+    "inputMinHeight": 14,
+    "strictTypeScript": true,
+    "professionalSizing": true,
+    "modernReactHooks": true,
+    "errorHandling": true,
+    "rules": {
+      "claude-button-min-height": "error",
+      "claude-input-min-height": "error", 
+      "claude-readonly-props-interfaces": "error",
+      "claude-no-any-types": "error",
+      "claude-jsx-element-return-type": "error",
+      "claude-professional-sizing": "warn",
+      "claude-modern-react-hooks": "warn",
+      "claude-error-handling": "warn"
+    }
+  },
+
+  "designSystem": {
+    "packageName": "@xaheen/design-system",
+    "enforceImports": true,
+    "allowHardcodedValues": false,
+    "requiredComponents": ["Button", "Input", "Card", "Modal", "Form"],
+    "deprecatedComponents": ["OldButton", "LegacyInput"],
+    "rules": {
+      "design-system-imports": "error",
+      "design-system-no-hardcoded-values": "warn",
+      "design-system-theme-consistency": "warn",
+      "design-system-component-composition": "warn",
+      "design-system-import-patterns": "warn",
+      "design-system-version-compatibility": "error"
+    }
+  },
+
+  "nsm": {
+    "defaultClassification": "OPEN",
+    "requireClassification": true,
+    "norwegianLocale": true,
+    "governmentServices": true,
+    "classifications": {
+      "OPEN": {
+        "description": "Public information",
+        "requirements": ["Standard accessibility"]
+      },
+      "RESTRICTED": {
+        "description": "Limited distribution",
+        "requirements": ["Access controls", "Audit logging"]
+      },
+      "CONFIDENTIAL": {
+        "description": "Sensitive information",
+        "requirements": ["Encryption", "Multi-factor auth", "Audit trail"]
+      },
+      "SECRET": {
+        "description": "National security information", 
+        "requirements": ["End-to-end encryption", "Air-gapped systems"]
+      }
+    },
+    "rules": {
+      "nsm-data-classification": "error",
+      "nsm-norwegian-localization": "warn",
+      "nsm-security-requirements": "error",
+      "nsm-gdpr-compliance": "warn",
+      "nsm-government-services": "warn",
+      "nsm-data-protection": "error"
+    }
+  },
+
+  "accessibility": {
+    "wcagLevel": "AAA",
+    "enforceAria": true,
+    "colorContrastRatio": 7.0,
+    "keyboardNavigation": true,
+    "screenReaderSupport": true,
+    "semanticHTML": true,
+    "rules": {
+      "wcag-aria-labels-required": "error",
+      "wcag-keyboard-navigation": "error", 
+      "wcag-focus-management": "warn",
+      "wcag-color-contrast": "error",
+      "wcag-semantic-html": "warn",
+      "wcag-screen-reader-support": "error",
+      "wcag-motor-disabilities": "warn"
+    }
+  },
+
+  "validation": {
+    "includePatterns": [
+      "src/**/*.{ts,tsx,js,jsx}",
+      "components/**/*.{ts,tsx,js,jsx}",
+      "pages/**/*.{ts,tsx,js,jsx}",
+      "app/**/*.{ts,tsx,js,jsx}"
+    ],
+    "excludePatterns": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.next/**",
+      "**/coverage/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/__tests__/**",
+      "**/__mocks__/**",
+      "**/storybook-static/**"
+    ],
+    "maxFileSize": "1MB",
+    "timeout": 30000,
+    "parallel": true,
+    "maxWorkers": 4
+  },
+
+  "reporting": {
+    "outputFormat": "console",
+    "detailedErrors": true,
+    "showWarnings": true,
+    "showInfos": false,
+    "groupByCategory": true,
+    "sortBy": "severity",
+    "maxIssuesPerFile": 50,
+    "generateSummary": true,
+    "includeFixes": true
+  },
+
+  "autofix": {
+    "enabled": false,
+    "rules": [
+      "claude-button-min-height",
+      "claude-input-min-height",
+      "design-system-imports",
+      "nsm-data-classification",
+      "wcag-aria-labels-required"
+    ],
+    "backup": true,
+    "confirmBeforeFix": true
+  },
+
+  "integration": {
+    "preCommit": true,
+    "ci": {
+      "failOnErrors": true,
+      "failOnWarnings": false,
+      "generateReport": true,
+      "uploadArtifacts": true
+    },
+    "vscode": {
+      "enableLinting": true,
+      "showProblems": true,
+      "quickFix": true
+    }
+  },
+
+  "customRules": {
+    "companySpecific": {
+      "enforceHeaderComments": "warn",
+      "requireTestCoverage": "warn",
+      "limitFileComplexity": "warn"
+    }
+  },
+
+  "environments": {
+    "development": {
+      "strict": false,
+      "autofix": true,
+      "showWarnings": true
+    },
+    "staging": {
+      "strict": true,
+      "autofix": false,
+      "failOnWarnings": true
+    },
+    "production": {
+      "strict": true,
+      "autofix": false,
+      "failOnWarnings": true,
+      "requireAllChecks": true
+    }
+  }
+}

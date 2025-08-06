@@ -28,8 +28,7 @@ export default class ProjectDomain {
 			);
 		}
 
-		cliLogger.info(`Creating new project: ${projectName}`);
-
+		// Creating new project  
 		try {
 			// Check if directory already exists
 			const projectPath = path.resolve(process.cwd(), projectName);

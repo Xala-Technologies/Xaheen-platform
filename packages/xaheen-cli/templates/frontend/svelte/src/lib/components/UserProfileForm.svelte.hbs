@@ -1,0 +1,405 @@
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { writable, derived } from 'svelte/store';
+  import { z } from 'zod';
+  import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@xaheen/design-system/svelte';
+
+  // Norwegian phone number validation schema
+  const norwegianPhoneSchema = z.string()
+    .regex(/^(\+47|0047|47)?[2-9]\d{7}$/, 'Must be a valid Norwegian phone number');
+
+  // Norwegian postal code validation schema  
+  const norwegianPostalCodeSchema = z.string()
+    .regex(/^\d{4}$/, 'Must be a valid Norwegian postal code (4 digits)');
+
+  // User profile validation schema with Norwegian compliance
+  const userProfileSchema = z.object({
+    firstName: z.string().min(2, 'First name must be at least 2 characters'),
+    lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+    email: z.string().email('Must be a valid email address'),
+    phone: norwegianPhoneSchema.optional(),
+    postalCode: norwegianPostalCodeSchema.optional(),
+    nsmClassification: z.enum(['OPEN', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET']).default('OPEN'),
+  });
+
+  export type UserProfileFormData = z.infer<typeof userProfileSchema>;
+
+  // Props
+  export let initialData: Partial<UserProfileFormData> = {};
+  export let nsmCompliant: boolean = true;
+
+  // Event dispatcher
+  const dispatch = createEventDispatcher<{
+    submit: UserProfileFormData;
+  }>();
+
+  // Component state
+  interface FormState {
+    readonly isSubmitting: boolean;
+    readonly error: string | null;
+    readonly validationErrors: Partial<Record<keyof UserProfileFormData, string>>;
+  }
+
+  const state = writable<FormState>({
+    isSubmitting: false,
+    error: null,
+    validationErrors: {}
+  });
+
+  // Form data
+  const formData = writable<UserProfileFormData>({
+    firstName: initialData.firstName ?? '',
+    lastName: initialData.lastName ?? '',
+    email: initialData.email ?? '',
+    phone: initialData.phone ?? '',
+    postalCode: initialData.postalCode ?? '',
+    nsmClassification: initialData.nsmClassification ?? 'OPEN',
+  });
+
+  // NSM classification options
+  const nsmClassificationOptions = [
+    { value: 'OPEN', label: 'Open (Åpen)', description: 'Information that can be shared publicly' },
+    { value: 'RESTRICTED', label: 'Restricted (Begrenset)', description: 'Limited access information' },
+    { value: 'CONFIDENTIAL', label: 'Confidential (Konfidensiell)', description: 'Sensitive information requiring protection' },
+    { value: 'SECRET', label: 'Secret (Hemmelig)', description: 'Highly classified information' },
+  ] as const;
+
+  // Derived stores
+  const isFormValid = derived(
+    [formData, state],
+    ([$formData, $state]) => {
+      const result = userProfileSchema.safeParse($formData);
+      return result.success && Object.keys($state.validationErrors).length === 0;
+    }
+  );
+
+  // Validation function
+  function validateForm(): boolean {
+    const currentFormData = $formData;
+    const result = userProfileSchema.safeParse(currentFormData);
+    
+    if (!result.success) {
+      const validationErrors: Partial<Record<keyof UserProfileFormData, string>> = {};
+      result.error.errors.forEach(err => {
+        const field = err.path[0] as keyof UserProfileFormData;
+        validationErrors[field] = err.message;
+      });
+      
+      state.update(s => ({ ...s, validationErrors }));
+      return false;
+    }
+    
+    state.update(s => ({ ...s, validationErrors: {} }));
+    return true;
+  }
+
+  // Event handlers
+  async function handleSubmit(): Promise<void> {
+    const currentState = $state;
+    if (currentState.isSubmitting || !validateForm()) return;
+
+    state.update(s => ({ 
+      ...s, 
+      isSubmitting: true, 
+      error: null 
+    }));
+
+    try {
+      const validatedData = userProfileSchema.parse($formData);
+      dispatch('submit', validatedData);
+      
+      console.log('Form submitted successfully:', validatedData);
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred while submitting the form';
+      
+      state.update(s => ({ ...s, error: errorMessage }));
+      console.error('Form submission error:', error);
+    } finally {
+      state.update(s => ({ ...s, isSubmitting: false }));
+    }
+  }
+
+  function handleReset(): void {
+    try {
+      formData.set({
+        firstName: initialData.firstName ?? '',
+        lastName: initialData.lastName ?? '',
+        email: initialData.email ?? '',
+        phone: initialData.phone ?? '',
+        postalCode: initialData.postalCode ?? '',
+        nsmClassification: initialData.nsmClassification ?? 'OPEN',
+      });
+      
+      state.set({
+        isSubmitting: false,
+        error: null,
+        validationErrors: {}
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred while resetting the form';
+      
+      state.update(s => ({ ...s, error: errorMessage }));
+      console.error('Form reset error:', error);
+    }
+  }
+
+  function getFieldError(fieldName: keyof UserProfileFormData): string | null {
+    return $state.validationErrors[fieldName] ?? null;
+  }
+
+  function isFieldInvalid(fieldName: keyof UserProfileFormData): boolean {
+    return !!$state.validationErrors[fieldName];
+  }
+
+  function clearError(): void {
+    state.update(s => ({ ...s, error: null }));
+  }
+
+  // Reactive statements
+  $: currentState = $state;
+  $: currentFormData = $formData;
+  $: formValid = $isFormValid;
+</script>
+
+<Card class="max-w-2xl mx-auto shadow-lg">
+  <CardHeader>
+    <CardTitle class="text-2xl font-bold text-gray-900">
+      User Profile {nsmCompliant ? '(NSM Compliant)' : ''}
+    </CardTitle>
+  </CardHeader>
+  <CardContent class="p-8">
+    <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+      <!-- First Name -->
+      <div>
+        <label 
+          for="firstName" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          First Name (Fornavn) *
+        </label>
+        <Input
+          id="firstName"
+          bind:value={$formData.firstName}
+          type="text"
+          class="h-14 w-full"
+          class:border-red-300={isFieldInvalid('firstName')}
+          aria-describedby={getFieldError('firstName') ? 'firstName-error' : null}
+          aria-invalid={isFieldInvalid('firstName')}
+          disabled={currentState.isSubmitting}
+          placeholder="Enter your first name"
+        />
+        {#if getFieldError('firstName')}
+          <p 
+            id="firstName-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {getFieldError('firstName')}
+          </p>
+        {/if}
+      </div>
+
+      <!-- Last Name -->
+      <div>
+        <label 
+          for="lastName" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Last Name (Etternavn) *
+        </label>
+        <Input
+          id="lastName"
+          bind:value={$formData.lastName}
+          type="text"
+          class="h-14 w-full"
+          class:border-red-300={isFieldInvalid('lastName')}
+          aria-describedby={getFieldError('lastName') ? 'lastName-error' : null}
+          aria-invalid={isFieldInvalid('lastName')}
+          disabled={currentState.isSubmitting}
+          placeholder="Enter your last name"
+        />
+        {#if getFieldError('lastName')}
+          <p 
+            id="lastName-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {getFieldError('lastName')}
+          </p>
+        {/if}
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label 
+          for="email" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Email Address (E-postadresse) *
+        </label>
+        <Input
+          id="email"
+          bind:value={$formData.email}
+          type="email"
+          class="h-14 w-full"
+          class:border-red-300={isFieldInvalid('email')}
+          aria-describedby={getFieldError('email') ? 'email-error' : null}
+          aria-invalid={isFieldInvalid('email')}
+          disabled={currentState.isSubmitting}
+          placeholder="Enter your email address"
+        />
+        {#if getFieldError('email')}
+          <p 
+            id="email-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {getFieldError('email')}
+          </p>
+        {/if}
+      </div>
+
+      <!-- Norwegian Phone Number -->
+      <div>
+        <label 
+          for="phone" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Phone Number (Telefonnummer) - Norwegian format
+        </label>
+        <Input
+          id="phone"
+          bind:value={$formData.phone}
+          type="tel"
+          class="h-14 w-full"
+          class:border-red-300={isFieldInvalid('phone')}
+          aria-describedby={getFieldError('phone') ? 'phone-error' : 'phone-help'}
+          aria-invalid={isFieldInvalid('phone')}
+          disabled={currentState.isSubmitting}
+          placeholder="+47 12 34 56 78"
+        />
+        <p id="phone-help" class="mt-1 text-sm text-gray-500">
+          Format: +47 followed by 8 digits
+        </p>
+        {#if getFieldError('phone')}
+          <p 
+            id="phone-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {getFieldError('phone')}
+          </p>
+        {/if}
+      </div>
+
+      <!-- Norwegian Postal Code -->
+      <div>
+        <label 
+          for="postalCode" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Postal Code (Postnummer)
+        </label>
+        <Input
+          id="postalCode"
+          bind:value={$formData.postalCode}
+          type="text"
+          maxlength={4}
+          class="h-14 w-full"
+          class:border-red-300={isFieldInvalid('postalCode')}
+          aria-describedby={getFieldError('postalCode') ? 'postalCode-error' : 'postalCode-help'}
+          aria-invalid={isFieldInvalid('postalCode')}
+          disabled={currentState.isSubmitting}
+          placeholder="0001"
+        />
+        <p id="postalCode-help" class="mt-1 text-sm text-gray-500">
+          Norwegian postal code (4 digits)
+        </p>
+        {#if getFieldError('postalCode')}
+          <p 
+            id="postalCode-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {getFieldError('postalCode')}
+          </p>
+        {/if}
+      </div>
+
+      <!-- NSM Classification (Norwegian compliance) -->
+      {#if nsmCompliant}
+        <div>
+          <label 
+            for="nsmClassification" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            NSM Security Classification (Sikkerhetsgradert informasjon) *
+          </label>
+          <select
+            id="nsmClassification"
+            bind:value={$formData.nsmClassification}
+            class="h-14 w-full px-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-describedby="nsm-help"
+            disabled={currentState.isSubmitting}
+          >
+            {#each nsmClassificationOptions as option}
+              <option value={option.value} title={option.description}>
+                {option.label}
+              </option>
+            {/each}
+          </select>
+          <p id="nsm-help" class="mt-1 text-sm text-gray-500">
+            Select the appropriate security classification level
+          </p>
+        </div>
+      {/if}
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end space-x-4 pt-6">
+        <Button
+          type="button"
+          on:click={handleReset}
+          class="h-12 px-6 bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          disabled={currentState.isSubmitting}
+          aria-label="Reset form to initial values"
+        >
+          Reset
+        </Button>
+        <Button
+          type="submit"
+          class="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={currentState.isSubmitting || !formValid}
+          aria-label="Submit user profile form"
+        >
+          {currentState.isSubmitting ? 'Submitting...' : 'Save Profile'}
+        </Button>
+      </div>
+    </form>
+  </CardContent>
+</Card>
+
+<!-- Error State -->
+{#if currentState.error}
+  <Card class="max-w-2xl mx-auto shadow-lg mt-4">
+    <CardContent class="p-8">
+      <div class="flex items-start justify-between">
+        <p class="text-red-600 font-medium flex-1" role="alert">
+          {currentState.error}
+        </p>
+        <button
+          on:click={clearError}
+          class="ml-4 text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md p-1"
+          aria-label="Dismiss error"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </CardContent>
+  </Card>
+{/if}

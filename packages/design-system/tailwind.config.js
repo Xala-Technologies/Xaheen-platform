@@ -26,36 +26,72 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      // Enhanced Color System
+      // Enhanced Color System - Dynamic CSS Custom Properties
       colors: {
-        // Primary Brand Colors
+        // Primary Brand Colors - Dynamic from theme system
         primary: {
-          DEFAULT: colorTokens.primary[600],
-          ...colorTokens.primary,
-          foreground: 'hsl(0, 0%, 100%)',
+          DEFAULT: 'var(--color-primary-600)',
+          50: 'var(--color-primary-50)',
+          100: 'var(--color-primary-100)',
+          200: 'var(--color-primary-200)',
+          300: 'var(--color-primary-300)',
+          400: 'var(--color-primary-400)',
+          500: 'var(--color-primary-500)',
+          600: 'var(--color-primary-600)',
+          700: 'var(--color-primary-700)',
+          800: 'var(--color-primary-800)',
+          900: 'var(--color-primary-900)',
+          950: 'var(--color-primary-950)',
+          foreground: 'var(--color-primary-foreground)',
         },
         
-        // Secondary Brand Colors
+        // Secondary Brand Colors - Dynamic from theme system
         secondary: {
-          DEFAULT: colorTokens.secondary[600],
-          ...colorTokens.secondary,
-          foreground: 'hsl(0, 0%, 100%)',
+          DEFAULT: 'var(--color-secondary-600)',
+          50: 'var(--color-secondary-50)',
+          100: 'var(--color-secondary-100)',
+          200: 'var(--color-secondary-200)',
+          300: 'var(--color-secondary-300)',
+          400: 'var(--color-secondary-400)',
+          500: 'var(--color-secondary-500)',
+          600: 'var(--color-secondary-600)',
+          700: 'var(--color-secondary-700)',
+          800: 'var(--color-secondary-800)',
+          900: 'var(--color-secondary-900)',
+          950: 'var(--color-secondary-950)',
+          foreground: 'var(--color-secondary-foreground)',
         },
         
-        // Accent Colors
+        // Accent Colors - Dynamic from theme system
         accent: {
-          coral: colorTokens.accent.coral,
-          teal: colorTokens.accent.teal,
-          indigo: colorTokens.accent.indigo,
-          amber: colorTokens.accent.amber,
+          DEFAULT: 'var(--color-accent-primary)',
+          primary: 'var(--color-accent-primary)',
+          secondary: 'var(--color-accent-secondary)',
+          tertiary: 'var(--color-accent-tertiary)',
+          foreground: 'var(--color-accent-foreground)',
         },
         
-        // Semantic Colors
-        success: colorTokens.semantic.success,
-        warning: colorTokens.semantic.warning,
-        error: colorTokens.semantic.error,
-        info: colorTokens.semantic.info,
-        destructive: colorTokens.semantic.error,
+        // Semantic Colors - Dynamic from theme system
+        success: {
+          DEFAULT: 'var(--color-success)',
+          foreground: 'var(--color-success-foreground)',
+        },
+        warning: {
+          DEFAULT: 'var(--color-warning)',
+          foreground: 'var(--color-warning-foreground)',
+        },
+        error: {
+          DEFAULT: 'var(--color-error)',
+          foreground: 'var(--color-error-foreground)',
+        },
+        info: {
+          DEFAULT: 'var(--color-info)',
+          foreground: 'var(--color-info-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--color-error)',
+          foreground: 'var(--color-error-foreground)',
+        },
         
         // NSM Security Classifications
         nsm: {
@@ -157,6 +193,11 @@ module.exports = {
         'scale-in': 'scaleIn 0.2s ease-out',
         'scale-out': 'scaleOut 0.2s ease-in',
         'spin-slow': 'spin 3s linear infinite',
+        'shimmer': 'shimmer 2s infinite',
+        'wave': 'wave 2s infinite',
+        'slideUp': 'slideUp 0.8s ease-out forwards',
+        'indeterminateProgress': 'indeterminateProgress 2s linear infinite',
+        'circularProgress': 'circularProgress 2s ease-in-out infinite',
       },
       
       keyframes: {
@@ -183,6 +224,26 @@ module.exports = {
         scaleOut: {
           '0%': { transform: 'scale(1)', opacity: '1' },
           '100%': { transform: 'scale(0.95)', opacity: '0' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        wave: {
+          '0%, 100%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(100%)' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(100%)', height: '0' },
+          '100%': { transform: 'translateY(0)', height: 'var(--bar-height)' },
+        },
+        indeterminateProgress: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        circularProgress: {
+          '0%': { strokeDasharray: '0 100' },
+          '100%': { strokeDasharray: '100 0' },
         },
       },
       

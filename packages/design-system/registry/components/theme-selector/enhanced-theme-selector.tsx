@@ -7,9 +7,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../button/button';
+import { 
+  themes,
+  type ThemeName,
+  type ThemeConfig,
+  applyTheme
+} from '../../tokens/themes';
 
 export type ColorScheme = 'light' | 'dark' | 'system';
-export type EnhancedIndustryTheme = 'enterprise' | 'finance' | 'healthcare' | 'education' | 'ecommerce' | 'productivity';
+export type EnhancedIndustryTheme = ThemeName;
 
 export interface EnhancedThemeInfo {
   readonly id: EnhancedIndustryTheme;
@@ -17,50 +23,58 @@ export interface EnhancedThemeInfo {
   readonly description: string;
   readonly primaryColor: string;
   readonly icon: string;
+  readonly theme: ThemeConfig;
 }
 
+// Map theme names to display info with icons
 export const ENHANCED_INDUSTRY_THEMES: Record<EnhancedIndustryTheme, EnhancedThemeInfo> = {
   enterprise: {
     id: 'enterprise',
     name: 'Enterprise',
-    description: 'Profesjonelt design for bedrifter',
-    primaryColor: '#1e40af',
-    icon: '🏢'
-  },
-  finance: {
-    id: 'finance',
-    name: 'Finans',
-    description: 'Tillit og sikkerhet for finansinstitusjoner',
-    primaryColor: '#059669',
-    icon: '💰'
+    description: 'Profesjonelt og sofistikert design for bedrifter',
+    primaryColor: themes.enterprise.colors.light.primary[600],
+    icon: '🏢',
+    theme: themes.enterprise
   },
   healthcare: {
     id: 'healthcare',
     name: 'Helse',
-    description: 'Rent og tilgjengelig for helsevesen',
-    primaryColor: '#dc2626',
-    icon: '🏥'
+    description: 'Rent og tillitsvekkende design for helsevesen',
+    primaryColor: themes.healthcare.colors.light.primary[600],
+    icon: '🏥',
+    theme: themes.healthcare
+  },
+  government: {
+    id: 'government',
+    name: 'Offentlig',
+    description: 'Autoritativ og tilgjengelig design for offentlig sektor',
+    primaryColor: themes.government.colors.light.primary[600],
+    icon: '🏛️',
+    theme: themes.government
   },
   education: {
     id: 'education',
     name: 'Utdanning',
-    description: 'Vennlig og inspirerende for læring',
-    primaryColor: '#7c3aed',
-    icon: '🎓'
+    description: 'Vennlig og inspirerende design for læring',
+    primaryColor: themes.education.colors.light.primary[600],
+    icon: '🎓',
+    theme: themes.education
   },
-  ecommerce: {
-    id: 'ecommerce',
-    name: 'E-handel',
-    description: 'Konverteringsoptimalisert for salg',
-    primaryColor: '#ea580c',
-    icon: '🛒'
+  ai: {
+    id: 'ai',
+    name: 'AI & Teknologi',
+    description: 'Futuristisk og innovativt design for AI og teknologi',
+    primaryColor: themes.ai.colors.light.primary[600],
+    icon: '🤖',
+    theme: themes.ai
   },
-  productivity: {
-    id: 'productivity',
-    name: 'Produktivitet',
-    description: 'Fokusert design for arbeidsflyt',
-    primaryColor: '#0891b2',
-    icon: '⚡'
+  private: {
+    id: 'private',
+    name: 'Privat & Luksus',
+    description: 'Elegant og eksklusivt design for private merkevarer',
+    primaryColor: themes.private.colors.light.primary[600],
+    icon: '💎',
+    theme: themes.private
   }
 };
 
@@ -148,15 +162,23 @@ export const EnhancedThemeSelector: React.FC<EnhancedThemeSelectorProps> = ({
     setColorScheme(scheme);
     onColorSchemeChange?.(scheme);
     
-    // Apply to DOM
+    // Determine the actual color mode
+    const colorMode = scheme === 'system' 
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : scheme === 'dark' ? 'dark' : 'light';
+    
+    // Apply to DOM classes
     document.documentElement.classList.remove('light', 'dark');
-    if (scheme !== 'system') {
-      document.documentElement.classList.add(scheme);
-    } else {
-      // Use system preference
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.add(isDark ? 'dark' : 'light');
-    }
+    document.documentElement.classList.add(colorMode);
+    
+    // Reapply current industry theme with new color mode
+    const themeConfig = ENHANCED_INDUSTRY_THEMES[industryTheme].theme;
+    const cssVars = applyTheme(themeConfig, colorMode);
+    Object.entries(cssVars).forEach(([property, value]) => {
+      document.documentElement.style.setProperty(property, value);
+    });
+    
+    document.documentElement.setAttribute('data-theme-mode', colorMode);
     
     // Save to localStorage
     if (storageKey) {
@@ -169,10 +191,21 @@ export const EnhancedThemeSelector: React.FC<EnhancedThemeSelectorProps> = ({
     setIndustryTheme(theme);
     onIndustryThemeChange?.(theme);
     
-    // Apply theme colors to CSS custom properties
-    const themeInfo = ENHANCED_INDUSTRY_THEMES[theme];
-    document.documentElement.style.setProperty('--theme-primary', themeInfo.primaryColor);
+    // Apply full theme system with complete color palette
+    const themeConfig = ENHANCED_INDUSTRY_THEMES[theme].theme;
+    const colorMode = colorScheme === 'system' 
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : colorScheme === 'dark' ? 'dark' : 'light';
+    
+    // Apply all CSS custom properties from the theme
+    const cssVars = applyTheme(themeConfig, colorMode);
+    Object.entries(cssVars).forEach(([property, value]) => {
+      document.documentElement.style.setProperty(property, value);
+    });
+    
+    // Set theme attributes and classes
     document.documentElement.setAttribute('data-industry-theme', theme);
+    document.documentElement.setAttribute('data-theme-mode', colorMode);
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.add(`theme-${theme}`);
     
@@ -293,29 +326,66 @@ export const EnhancedThemeSelector: React.FC<EnhancedThemeSelectorProps> = ({
               {/* Industry Theme Section */}
               <div>
                 <h4 className="font-medium text-sm mb-2">{labels.industryTheme}</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.values(ENHANCED_INDUSTRY_THEMES).map((theme) => (
-                    <button
-                      key={theme.id}
-                      onClick={() => {
-                        handleIndustryThemeChange(theme.id);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={cn(
-                        'p-3 rounded-lg border text-left transition-colors',
-                        'hover:bg-accent focus:bg-accent focus:outline-none',
-                        theme.id === industryTheme ? 'border-primary bg-primary/5' : 'border-border'
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{theme.icon}</span>
-                        <span className="font-medium text-sm">{theme.name}</span>
-                      </div>
-                      {showDescription && (
-                        <p className="text-xs text-muted-foreground">{theme.description}</p>
-                      )}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto">
+                  {Object.values(ENHANCED_INDUSTRY_THEMES).map((themeInfo) => {
+                    const colorMode = colorScheme === 'system' 
+                      ? (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                      : colorScheme === 'dark' ? 'dark' : 'light';
+                    const themeColors = themeInfo.theme.colors[colorMode];
+                    
+                    return (
+                      <button
+                        key={themeInfo.id}
+                        onClick={() => {
+                          handleIndustryThemeChange(themeInfo.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={cn(
+                          'p-3 rounded-lg border text-left transition-colors',
+                          'hover:bg-accent focus:bg-accent focus:outline-none',
+                          themeInfo.id === industryTheme ? 'border-primary bg-primary/5' : 'border-border'
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="text-lg mt-0.5">{themeInfo.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm">{themeInfo.name}</span>
+                              {themeInfo.id === industryTheme && (
+                                <div className="w-2 h-2 bg-primary rounded-full" />
+                              )}
+                            </div>
+                            {showDescription && (
+                              <p className="text-xs text-muted-foreground mb-2">{themeInfo.description}</p>
+                            )}
+                            {/* Color palette preview */}
+                            <div className="flex gap-1">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: themeColors.primary[500] }}
+                                title="Primary"
+                              />
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: themeColors.secondary[500] }}
+                                title="Secondary"
+                              />
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: themeColors.accent.primary }}
+                                title="Accent"
+                              />
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: themeColors.semantic.success }}
+                                title="Success"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

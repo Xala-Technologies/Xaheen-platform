@@ -1,0 +1,20 @@
+{
+  "name": "final-test",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.5",
+    "typescript": "^5.7.2",
+    "@xala-technologies/ui-system": "^6.1.0"
+  },
+  "packageManager": "pnpm@latest"
+}

@@ -263,9 +263,9 @@ export const DesignTokensShowcase: Story = {
       <div>
         <h3 className="text-lg font-semibold mb-4">Fargetokens</h3>
         <div className="flex gap-2">
-          <Button>Primær ({colorTokens.light.primary})</Button>
-          <Button variant="secondary">Sekundær ({colorTokens.light.secondary})</Button>
-          <Button variant="destructive">Destruktiv ({colorTokens.light.error})</Button>
+          <Button>Primær ({colorTokens.primary[600]})</Button>
+          <Button variant="secondary">Sekundær ({colorTokens.secondary[600]})</Button>
+          <Button variant="destructive">Destruktiv ({colorTokens.semantic.error.default})</Button>
         </div>
       </div>
       

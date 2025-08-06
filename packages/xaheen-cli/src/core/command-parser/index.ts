@@ -875,23 +875,24 @@ export class CommandParser {
 			const commandParts = route.pattern.split(' ');
 			let command;
 			
-			if (commandParts.length > 1 && existingCommand) {
-				// This is a subcommand and parent command exists
-				// Add it as a subcommand to the existing parent
-				const subcommandPattern = commandParts.slice(1).join(' ');
-				command = existingCommand
-					.command(subcommandPattern)
-					.description(`Execute ${route.domain} ${route.action}`)
-					.action(async (...args) => {
-						try {
-							const [target, options] = this.parseCommandArgs(args);
-							const cliCommand: CLICommand = {
-								domain: route.domain,
-								action: route.action,
-								target,
-								arguments: { target },
-								options,
-							};
+			if (commandParts.length > 1) {
+				// This is a subcommand pattern
+				if (existingCommand) {
+					// Parent command exists, add as subcommand
+					const subcommandPattern = commandParts.slice(1).join(' ');
+					command = existingCommand
+						.command(subcommandPattern)
+						.description(`Execute ${route.domain} ${route.action}`)
+						.action(async (...args) => {
+							try {
+								const [target, options] = this.parseSubcommandArgs(args, commandParts);
+								const cliCommand: CLICommand = {
+									domain: route.domain,
+									action: route.action,
+									target,
+									arguments: { target },
+									options,
+								};
 
 							logger.debug(`Executing command: ${route.domain} ${route.action}`, {
 								target,
@@ -906,6 +907,40 @@ export class CommandParser {
 							throw error;
 						}
 					});
+				} else {
+					// Parent command doesn't exist, create it first, then add subcommand
+					const parentCommandName = commandParts[0];
+					const parentCommand = this.program.command(parentCommandName).description(`${parentCommandName} commands`);
+					
+					const subcommandPattern = commandParts.slice(1).join(' ');
+					command = parentCommand
+						.command(subcommandPattern)
+						.description(`Execute ${route.domain} ${route.action}`)
+						.action(async (...args) => {
+							try {
+								const [target, options] = this.parseSubcommandArgs(args, commandParts);
+								const cliCommand: CLICommand = {
+									domain: route.domain,
+									action: route.action,
+									target,
+									arguments: { target },
+									options,
+								};
+
+								logger.debug(`Executing command: ${route.domain} ${route.action}`, {
+									target,
+									options,
+								});
+								await route.handler(cliCommand);
+							} catch (error) {
+								logger.error(
+									`Command failed: ${route.domain} ${route.action}`,
+									error,
+								);
+								throw error;
+							}
+						});
+				}
 			} else {
 				// This is a top-level command
 				command = this.program
@@ -1423,6 +1458,31 @@ export class CommandParser {
 
 		// The last argument is always the options object from commander
 		const options = args[args.length - 1];
+		
+		// Find the first non-options argument as the target
+		let target: string | undefined;
+		for (let i = 0; i < args.length - 1; i++) {
+			const arg = args[i];
+			if (typeof arg === 'string' && !arg.startsWith('-')) {
+				target = arg;
+				break;
+			}
+		}
+
+		return [target, options];
+	}
+
+	private parseSubcommandArgs(
+		args: any[],
+		commandParts: string[]
+	): [string | undefined, Record<string, any>] {
+		if (args.length === 0) return [undefined, {}];
+
+		// The last argument is always the options object from commander
+		const options = args[args.length - 1];
+		
+		// For subcommand pattern "create <name>", Commander.js passes args = ["test-react-app", {options}]
+		// The first argument is the actual parameter value, not the action name
 		const target = args.length > 1 ? args[0] : undefined;
 
 		return [target, options];

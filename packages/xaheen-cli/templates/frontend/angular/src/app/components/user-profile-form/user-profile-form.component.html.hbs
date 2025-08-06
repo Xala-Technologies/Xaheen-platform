@@ -1,0 +1,226 @@
+<x-card class="max-w-2xl mx-auto shadow-lg">
+  <x-card-header>
+    <x-card-title class="text-2xl font-bold text-gray-900">
+      User Profile {{ nsmCompliant ? '(NSM Compliant)' : '' }}
+    </x-card-title>
+  </x-card-header>
+  <x-card-content class="p-8">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- First Name -->
+      <div>
+        <label 
+          for="firstName" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          First Name (Fornavn) *
+        </label>
+        <x-input
+          id="firstName"
+          formControlName="firstName"
+          type="text"
+          class="h-14 w-full"
+          [class.border-red-300]="isFieldInvalid('firstName')"
+          [attr.aria-describedby]="getFieldError('firstName') ? 'firstName-error' : null"
+          [attr.aria-invalid]="isFieldInvalid('firstName')"
+          placeholder="Enter your first name"
+        ></x-input>
+        <p 
+          *ngIf="getFieldError('firstName')" 
+          id="firstName-error" 
+          class="mt-2 text-sm text-red-600" 
+          role="alert"
+        >
+          {{ getFieldError('firstName') }}
+        </p>
+      </div>
+
+      <!-- Last Name -->
+      <div>
+        <label 
+          for="lastName" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Last Name (Etternavn) *
+        </label>
+        <x-input
+          id="lastName"
+          formControlName="lastName"
+          type="text"
+          class="h-14 w-full"
+          [class.border-red-300]="isFieldInvalid('lastName')"
+          [attr.aria-describedby]="getFieldError('lastName') ? 'lastName-error' : null"
+          [attr.aria-invalid]="isFieldInvalid('lastName')"
+          placeholder="Enter your last name"
+        ></x-input>
+        <p 
+          *ngIf="getFieldError('lastName')" 
+          id="lastName-error" 
+          class="mt-2 text-sm text-red-600" 
+          role="alert"
+        >
+          {{ getFieldError('lastName') }}
+        </p>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label 
+          for="email" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Email Address (E-postadresse) *
+        </label>
+        <x-input
+          id="email"
+          formControlName="email"
+          type="email"
+          class="h-14 w-full"
+          [class.border-red-300]="isFieldInvalid('email')"
+          [attr.aria-describedby]="getFieldError('email') ? 'email-error' : null"
+          [attr.aria-invalid]="isFieldInvalid('email')"
+          placeholder="Enter your email address"
+        ></x-input>
+        <p 
+          *ngIf="getFieldError('email')" 
+          id="email-error" 
+          class="mt-2 text-sm text-red-600" 
+          role="alert"
+        >
+          {{ getFieldError('email') }}
+        </p>
+      </div>
+
+      <!-- Norwegian Phone Number -->
+      <div>
+        <label 
+          for="phone" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Phone Number (Telefonnummer) - Norwegian format
+        </label>
+        <x-input
+          id="phone"
+          formControlName="phone"
+          type="tel"
+          class="h-14 w-full"
+          [class.border-red-300]="isFieldInvalid('phone')"
+          [attr.aria-describedby]="getFieldError('phone') ? 'phone-error' : 'phone-help'"
+          [attr.aria-invalid]="isFieldInvalid('phone')"
+          placeholder="+47 12 34 56 78"
+        ></x-input>
+        <p id="phone-help" class="mt-1 text-sm text-gray-500">
+          Format: +47 followed by 8 digits
+        </p>
+        <p 
+          *ngIf="getFieldError('phone')" 
+          id="phone-error" 
+          class="mt-2 text-sm text-red-600" 
+          role="alert"
+        >
+          {{ getFieldError('phone') }}
+        </p>
+      </div>
+
+      <!-- Norwegian Postal Code -->
+      <div>
+        <label 
+          for="postalCode" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Postal Code (Postnummer)
+        </label>
+        <x-input
+          id="postalCode"
+          formControlName="postalCode"
+          type="text"
+          maxlength="4"
+          class="h-14 w-full"
+          [class.border-red-300]="isFieldInvalid('postalCode')"
+          [attr.aria-describedby]="getFieldError('postalCode') ? 'postalCode-error' : 'postalCode-help'"
+          [attr.aria-invalid]="isFieldInvalid('postalCode')"
+          placeholder="0001"
+        ></x-input>
+        <p id="postalCode-help" class="mt-1 text-sm text-gray-500">
+          Norwegian postal code (4 digits)
+        </p>
+        <p 
+          *ngIf="getFieldError('postalCode')" 
+          id="postalCode-error" 
+          class="mt-2 text-sm text-red-600" 
+          role="alert"
+        >
+          {{ getFieldError('postalCode') }}
+        </p>
+      </div>
+
+      <!-- NSM Classification (Norwegian compliance) -->
+      <div *ngIf="nsmCompliant">
+        <label 
+          for="nsmClassification" 
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          NSM Security Classification (Sikkerhetsgradert informasjon) *
+        </label>
+        <select
+          id="nsmClassification"
+          formControlName="nsmClassification"
+          class="h-14 w-full px-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-describedby="nsm-help"
+          [disabled]="state.isSubmitting"
+        >
+          <option 
+            *ngFor="let option of nsmClassificationOptions" 
+            [value]="option.value"
+            [title]="option.description"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+        <p id="nsm-help" class="mt-1 text-sm text-gray-500">
+          Select the appropriate security classification level
+        </p>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end space-x-4 pt-6">
+        <x-button
+          type="button"
+          (click)="onReset()"
+          class="h-12 px-6 bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          [disabled]="state.isSubmitting"
+          aria-label="Reset form to initial values"
+        >
+          Reset
+        </x-button>
+        <x-button
+          type="submit"
+          class="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="state.isSubmitting || form.invalid"
+          aria-label="Submit user profile form"
+        >
+          {{ state.isSubmitting ? 'Submitting...' : 'Save Profile' }}
+        </x-button>
+      </div>
+    </form>
+  </x-card-content>
+</x-card>
+
+<!-- Error State -->
+<x-card *ngIf="state.error" class="max-w-2xl mx-auto shadow-lg mt-4">
+  <x-card-content class="p-8 text-center">
+    <div class="flex items-start justify-between">
+      <p class="text-red-600 font-medium flex-1" role="alert">
+        {{ state.error }}
+      </p>
+      <button
+        (click)="clearError()"
+        class="ml-4 text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md p-1"
+        aria-label="Dismiss error"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </x-card-content>
+</x-card>

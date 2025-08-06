@@ -122,14 +122,7 @@ const preview: Preview = {
   decorators: [
     withTheme,
     (Story, context) => {
-      // Apply theme class to enable CSS custom properties
-      const theme = context.globals.theme || 'light';
-      React.useEffect(() => {
-        const root = document.documentElement;
-        root.classList.remove('light', 'dark', 'high-contrast');
-        root.classList.add(theme);
-      }, [theme]);
-      
+      // Basic font setup - theme handling is done by withTheme decorator
       return (
         <div style={{ fontFamily: 'var(--font-family-sans, Inter, system-ui, sans-serif)' }}>
           <Story />
@@ -276,18 +269,34 @@ const preview: Preview = {
 
     // Industry Theme Selector
     industryTheme: {
-      description: 'Industry-specific theme',
+      description: 'Industry-specific theme (full theme system)',
       defaultValue: 'enterprise',
       toolbar: {
         title: 'Industry Theme',
         icon: 'paintbrush',
         items: [
           { value: 'enterprise', title: '🏢 Enterprise' },
-          { value: 'finance', title: '💰 Finance' },
           { value: 'healthcare', title: '🏥 Healthcare' },
+          { value: 'government', title: '🏛️ Government' },
           { value: 'education', title: '🎓 Education' },
-          { value: 'ecommerce', title: '🛒 E-commerce' },
-          { value: 'productivity', title: '⚡ Productivity' },
+          { value: 'ai', title: '🤖 AI & Technology' },
+          { value: 'private', title: '💎 Private & Luxury' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+
+    // Color Scheme Selector
+    colorScheme: {
+      description: 'Color scheme (light/dark/system)',
+      defaultValue: 'light',
+      toolbar: {
+        title: 'Color Scheme',
+        icon: 'sun',
+        items: [
+          { value: 'light', title: '☀️ Light' },
+          { value: 'dark', title: '🌙 Dark' },
+          { value: 'system', title: '💻 System' },
         ],
         dynamicTitle: true,
       },
