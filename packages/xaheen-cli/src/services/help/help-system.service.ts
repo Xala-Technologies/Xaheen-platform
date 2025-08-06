@@ -7,6 +7,7 @@
 
 import chalk from "chalk";
 import { cliLogger } from "../../utils/logger";
+import { getVersion } from "../../utils/version.js";
 
 export interface HelpSection {
 	title: string;
@@ -765,7 +766,7 @@ export class HelpSystemService {
 		cliLogger.info(chalk.blue(`╭${border}╮`));
 		cliLogger.info(
 			chalk.blue(
-				`│  ${chalk.bold("Xaheen CLI v3.0.0 - Comprehensive Help System")}       │`,
+				`│  ${chalk.bold(`Xaheen CLI v${getVersion()} - Comprehensive Help System`)}       │`,
 			),
 		);
 		cliLogger.info(

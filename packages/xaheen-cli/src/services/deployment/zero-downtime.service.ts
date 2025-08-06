@@ -245,7 +245,7 @@ export class ZeroDowntimeService {
         annotations: {
           'rollout.argoproj.io/revision': '1',
           'xaheen.dev/generated-by': 'xaheen-cli',
-          'xaheen.dev/version': process.env.npm_package_version || '3.0.0',
+          'xaheen.dev/version': process.env.npm_package_version || '5.0.0',
           ...(norwegianCompliance.enabled && {
             'compliance.norway/change-approval': this.config.norwegianCompliance.changeApproval.toString(),
             'compliance.norway/audit-trail': this.config.norwegianCompliance.auditTrail.toString(),

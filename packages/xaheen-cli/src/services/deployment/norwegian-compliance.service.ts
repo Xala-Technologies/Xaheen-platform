@@ -905,7 +905,7 @@ export class NorwegianComplianceService {
     }
 
     report += `\n---\n\n`;
-    report += `*This report was generated automatically by Xaheen CLI v${process.env.npm_package_version || '3.0.0'}*\n`;
+    report += `*This report was generated automatically by Xaheen CLI v${process.env.npm_package_version || '5.0.0'}*\n`;
 
     return report;
   }

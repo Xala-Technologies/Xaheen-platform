@@ -203,7 +203,7 @@ export class KubernetesService {
         annotations: {
           'deployment.kubernetes.io/revision': '1',
           'xaheen.dev/generated-by': 'xaheen-cli',
-          'xaheen.dev/version': process.env.npm_package_version || '3.0.0',
+          'xaheen.dev/version': process.env.npm_package_version || '5.0.0',
           ...(norwegianCompliance.enabled && {
             'compliance.norway/audit-required': 'true',
             'compliance.norway/data-classification': norwegianCompliance.dataClassification,

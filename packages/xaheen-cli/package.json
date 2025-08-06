@@ -1,6 +1,6 @@
 {
   "name": "@xala-technologies/xaheen-cli",
-  "version": "4.0.7",
+  "version": "5.0.0",
   "description": "The next-generation CLI that combines service-based architecture with AI-powered component generation",
   "type": "module",
   "main": "./dist/index.js",

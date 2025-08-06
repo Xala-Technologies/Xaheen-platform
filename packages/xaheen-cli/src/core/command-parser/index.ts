@@ -8,11 +8,9 @@ import type {
 } from "../../types/index.js";
 import { CLIError } from "../../types/index";
 import { logger } from "../../utils/logger";
+import { getVersion } from "../../utils/version.js";
 import { aiGenerateCommand } from "../../commands/ai-generate";
 import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler";
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 
 export class CommandParser {
 	private static instance: CommandParser | undefined;
@@ -80,11 +78,7 @@ export class CommandParser {
 	}
 
 	private setupProgram(): void {
-		const __filename = fileURLToPath(import.meta.url);
-		const __dirname = dirname(__filename);
-		const packageJsonPath = join(__dirname, "../../../package.json");
-		const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
-		const version = packageJson.version;
+		const version = getVersion();
 
 		this.program
 			.name("xaheen")

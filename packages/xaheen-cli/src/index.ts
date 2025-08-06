@@ -2,9 +2,7 @@
 
 import chalk from "chalk";
 import { performance } from "perf_hooks";
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { getVersion } from "./utils/version.js";
 import { CommandParser } from "./core/command-parser/index";
 import { ConfigManager } from "./core/config-manager/index";
 import { StackAdapterRegistry } from "./core/stack-adapters/index";
@@ -111,12 +109,8 @@ async function main(): Promise<void> {
 function displayBanner(): void {
 	if (process.env.XAHEEN_NO_BANNER === "true") return;
 
-	// Dynamically read version from package.json
-	const __filename = fileURLToPath(import.meta.url);
-	const __dirname = dirname(__filename);
-	const packageJsonPath = join(__dirname, "../package.json");
-	const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
-	const version = packageJson.version;
+	// Get version using the centralized utility
+	const version = getVersion();
 	const banner = `
 
 	${chalk.cyan("██╗  ██╗ █████╗ ██╗  ██╗███████╗███████╗███╗   ██╗")}
