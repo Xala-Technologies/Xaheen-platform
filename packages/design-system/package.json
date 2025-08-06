@@ -199,10 +199,24 @@
   "files": [
     "dist",
     "registry",
-    "README.md"
+    "public/r",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xaheen/design-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xaheen/design-system/issues"
+  },
+  "homepage": "https://github.com/xaheen/design-system#readme",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean && pnpm run build:registry",
+    "build": "tsup && pnpm run build:registry",
     "build:registry": "pnpm exec tsx scripts/build-registry.ts",
     "build:components": "pnpm exec tsx scripts/build-components.ts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
@@ -218,7 +232,10 @@
     "registry": "pnpm exec tsx scripts/build-registry.ts",
     "generate": "pnpm exec tsx scripts/generate-component.ts",
     "validate": "pnpm run type-check && pnpm run lint && pnpm run test:platforms",
-    "prepack": "pnpm run build && pnpm run validate"
+    "prepublishOnly": "pnpm run build && pnpm run validate",
+    "prepack": "pnpm run build",
+    "version": "pnpm run build && git add -A dist",
+    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "design-system",

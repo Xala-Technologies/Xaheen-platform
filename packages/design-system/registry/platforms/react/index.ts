@@ -3,15 +3,21 @@
  * Exports all React components
  */
 
-export { Button } from './button';
-export { Input } from './input';
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card';
+// Core components
 export { 
   Accordion, 
   AccordionItem, 
   AccordionTrigger, 
   AccordionContent 
 } from './accordion';
+export { Alert, AlertTitle, AlertDescription } from './alert';
+export { Badge } from './badge';
+export { Button } from './button';
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card';
+export { Checkbox } from './checkbox';
+export { Input } from './input';
+export { Label } from './label';
+export { Select, type SelectOption } from './select';
 
 // Platform utilities
 export const PlatformInfo = {

@@ -18,9 +18,11 @@ export * from './components/chart/chart';
 export * from './components/checkbox/checkbox';
 export * from './components/collapsible/collapsible';
 export * from './components/combobox/combobox';
+export * from './components/container/container';
 export * from './components/dialog/dialog';
 export * from './components/dropdown-menu/dropdown-menu';
 export * from './components/form/form';
+export * from './components/grid/grid';
 export * from './components/hover-card/hover-card';
 export * from './components/input/input';
 export * from './components/label/label';
@@ -30,6 +32,7 @@ export * from './components/pagination/pagination';
 export * from './components/popover/popover';
 export * from './components/progress/progress';
 export * from './components/radio-group/radio-group';
+export * from './components/scroll-area/scroll-area';
 export * from './components/select/select';
 export * from './components/separator/separator';
 export * from './components/sheet/sheet';
@@ -48,6 +51,8 @@ export * from './components/tooltip/tooltip';
 
 // Complex Blocks (Hooks allowed - consumer provides context)
 export * from './blocks/authentication-01/authentication-01';
+export * from './blocks/web-navbar/web-navbar';
+export * from './blocks/sidebar-navigation/sidebar-navigation';
 export * from './blocks/authentication-02/authentication-02';
 export * from './blocks/chat-interface/chat-interface';
 export * from './blocks/chatbot/chatbot';

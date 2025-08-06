@@ -1,0 +1,43 @@
+# Source files (we ship dist)
+src/
+scripts/
+stories/
+registry/tests/
+
+# Configuration files
+tsconfig.json
+tsup.config.ts
+vite.config.ts
+vitest.config.ts
+tailwind.config.js
+postcss.config.js
+next.config.js
+.storybook/
+
+# Development files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+*.stories.tsx
+*.stories.ts
+*.md
+
+# Build artifacts we don't need
+*.log
+*.tsbuildinfo
+.DS_Store
+node_modules/
+coverage/
+.turbo/
+
+# Documentation source
+docs/
+
+# Keep these files
+!dist/**
+!registry/**
+!public/r/**
+!package.json
+!README.md
+!LICENSE

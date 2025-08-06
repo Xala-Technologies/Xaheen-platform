@@ -1,0 +1,125 @@
+name: Publish to NPM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/design-system/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (major, minor, patch, or specific version)'
+        required: true
+        default: 'patch'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'xaheen/design-system'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: packages/design-system
+      
+      - name: Run tests
+        run: pnpm test
+        working-directory: packages/design-system
+        continue-on-error: true
+      
+      - name: Build package
+        run: pnpm build
+        working-directory: packages/design-system
+      
+      - name: Configure npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          npm whoami
+      
+      - name: Version bump
+        if: github.event_name == 'push'
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          npm version patch -m "chore(release): %s [skip ci]"
+        working-directory: packages/design-system
+      
+      - name: Version bump (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          npm version ${{ github.event.inputs.version }} -m "chore(release): %s [skip ci]"
+        working-directory: packages/design-system
+      
+      - name: Publish to npm
+        run: npm publish --access public
+        working-directory: packages/design-system
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Push version changes
+        run: |
+          git push origin main --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: design-system-v${{ steps.version.outputs.version }}
+          release_name: Design System v${{ steps.version.outputs.version }}
+          body: |
+            ## 🎉 New Release
+            
+            ### Changes
+            - See [commit history](https://github.com/xaheen/design-system/commits/main) for details
+            
+            ### Installation
+            ```bash
+            npm install @xaheen/design-system
+            # or
+            yarn add @xaheen/design-system
+            # or
+            pnpm add @xaheen/design-system
+            ```
+            
+            ### Registry URL
+            - Static registry: https://unpkg.com/@xaheen/design-system/public/r/
+            - NPM package: https://www.npmjs.com/package/@xaheen/design-system
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -623,6 +623,5 @@ const SelectOption: React.FC<SelectOptionProps> = ({
   );
 };
 
-// Export variants and types
+// Export variants
 export { selectTriggerVariants, selectContentVariants, selectItemVariants };
-export type { VariantProps, SelectOption };
