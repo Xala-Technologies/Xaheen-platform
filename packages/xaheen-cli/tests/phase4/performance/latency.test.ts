@@ -3,7 +3,7 @@
  * Tests API response times and establishes latency baselines for all frameworks
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { 
 	createTestProject, 
 	createBackendOptions, 
@@ -21,7 +21,7 @@ describe("API Latency Performance Tests", () => {
 
 	beforeEach(async () => {
 		serverPort = await testServerManager.findAvailablePort(3000);
-		vi.setConfig({ testTimeout: 180000 }); // 3 minutes for latency tests
+		// timeout configured in bun test settings
 	});
 
 	afterEach(async () => {

@@ -5,7 +5,7 @@
  * including spelling, formatting, and style guidelines.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { join } from 'path';
 import { executeCommand, fileExists, readFile, cleanupTempDirs } from '../utils/test-helpers';
 import { getTestConfig } from '../config/test-config';

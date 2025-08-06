@@ -5,7 +5,7 @@
  * and provide proper usage information.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { executeCommand, cleanupTempDirs, validateCliBinary } from '../utils/test-helpers';
 import { getTestConfig } from '../config/test-config';
 import { join } from 'path';

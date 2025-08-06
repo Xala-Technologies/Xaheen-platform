@@ -445,5 +445,4 @@ async function promptForInput(question: string): Promise<string> {
   return 'User Input'; // Placeholder
 }
 
-// Export for use in main CLI
-export { createLicenseComplianceCommand };
+// Export already declared above at line 77

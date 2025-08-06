@@ -1,0 +1,52 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "button",
+  "type": "registry:component",
+  "title": "Button",
+  "description": "Professional button component with NSM classification support",
+  "author": "Xaheen Technologies",
+  "category": "components",
+  "categories": [
+    "components",
+    "form",
+    "action"
+  ],
+  "nsm": {
+    "classification": "OPEN",
+    "wcagLevel": "AAA",
+    "norwegianOptimized": true
+  },
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "dependencies": [
+    "@radix-ui/react-slot",
+    "class-variance-authority"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/button/button.tsx",
+      "type": "registry:component",
+      "content": "/**\n * Button Component - Professional Implementation\n * CLAUDE.md Compliant: Minimum h-12 (48px) height\n * WCAG AAA: Full keyboard navigation and screen reader support\n * CVA: Class Variance Authority for consistent styling\n */\n\nimport React from 'react';\nimport { cva, type VariantProps } from 'class-variance-authority';\nimport { Slot } from '@radix-ui/react-slot';\nimport { cn } from '@/utils/cn';\nimport { LoadingSpinner } from '@/components/loading-spinner';\n\nconst buttonVariants = cva(\n  [\n    'inline-flex items-center justify-center',\n    'font-medium transition-all duration-200 ease-in-out',\n    'focus:outline-none focus:ring-2 focus:ring-offset-2',\n    'disabled:opacity-50 disabled:cursor-not-allowed',\n    'rounded-lg shadow-sm',\n    'whitespace-nowrap',\n    'border',\n    // High contrast mode support\n    'contrast-more:border-2'\n  ],\n  {\n    variants: {\n      variant: {\n        primary: [\n          'bg-primary text-primary-foreground',\n          'hover:bg-primary/90 active:bg-primary/95',\n          'focus:ring-primary/20 shadow-md',\n          'border-primary/10',\n          'hover:shadow-lg hover:-translate-y-0.5',\n          'active:translate-y-0 active:shadow-md'\n        ],\n        secondary: [\n          'bg-secondary text-secondary-foreground',\n          'hover:bg-secondary/80 active:bg-secondary/85',\n          'focus:ring-secondary/20 shadow-sm',\n          'border-secondary/20',\n          'hover:shadow-md hover:-translate-y-0.5',\n          'active:translate-y-0 active:shadow-sm'\n        ],\n        outline: [\n          'bg-transparent text-foreground',\n          'hover:bg-accent/10 active:bg-accent/20',\n          'focus:ring-accent/20',\n          'border-2 border-border hover:border-accent',\n          'hover:shadow-sm'\n        ],\n        ghost: [\n          'bg-transparent text-foreground',\n          'hover:bg-accent/10 active:bg-accent/20',\n          'focus:ring-accent/20 shadow-none border-transparent',\n          'hover:shadow-sm'\n        ],\n        destructive: [\n          'bg-destructive text-destructive-foreground',\n          'hover:bg-destructive/90 active:bg-destructive/95',\n          'focus:ring-destructive/20 shadow-md',\n          'border-destructive/20',\n          'hover:shadow-lg hover:-translate-y-0.5',\n          'active:translate-y-0 active:shadow-md'\n        ],\n        // NSM Security Classification variants\n        nsmOpen: [\n          'bg-green-600 text-white',\n          'hover:bg-green-700 active:bg-green-800',\n          'focus:ring-green-500/20 shadow-md',\n          'border-green-600/20'\n        ],\n        nsmRestricted: [\n          'bg-yellow-600 text-white',\n          'hover:bg-yellow-700 active:bg-yellow-800',\n          'focus:ring-yellow-500/20 shadow-md',\n          'border-yellow-600/20'\n        ],\n        nsmConfidential: [\n          'bg-red-600 text-white',\n          'hover:bg-red-700 active:bg-red-800',\n          'focus:ring-red-500/20 shadow-md',\n          'border-red-600/20'\n        ],\n        nsmSecret: [\n          'bg-gray-800 text-white',\n          'hover:bg-gray-900 active:bg-black',\n          'focus:ring-gray-600/20 shadow-md',\n          'border-gray-800/20'\n        ]\n      },\n      size: {\n        // Professional sizing - no small buttons\n        md: 'h-12 px-6 text-base min-w-[6rem]',     // 48px height (CLAUDE.md minimum)\n        lg: 'h-14 px-8 text-lg min-w-[7rem]',       // 56px height (professional)\n        xl: 'h-16 px-10 text-xl min-w-[8rem]',      // 64px height (premium)\n        '2xl': 'h-18 px-12 text-2xl min-w-[9rem]', // 72px height (luxury)\n        icon: 'h-12 w-12 p-0',                      // Icon-only button (48px)\n        iconLg: 'h-14 w-14 p-0',                    // Large icon button (56px)\n        iconXl: 'h-16 w-16 p-0'                     // Extra large icon button (64px)\n      },\n      fullWidth: {\n        true: 'w-full',\n        false: 'w-auto'\n      },\n      loading: {\n        true: 'cursor-wait',\n        false: ''\n      }\n    },\n    defaultVariants: {\n      variant: 'primary',\n      size: 'lg',        // Professional default\n      fullWidth: false,\n      loading: false\n    }\n  }\n);\n\nexport interface ButtonProps extends \n  React.ButtonHTMLAttributes<HTMLButtonElement>,\n  VariantProps<typeof buttonVariants> {\n  readonly loading?: boolean;\n  readonly leftIcon?: React.ReactNode;\n  readonly rightIcon?: React.ReactNode;\n  readonly children?: React.ReactNode;\n  readonly asChild?: boolean;\n  readonly loadingText?: string;\n  readonly ariaLabel?: string;\n  readonly nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';\n}\n\nexport const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(\n  ({ \n    className, \n    variant, \n    size, \n    fullWidth, \n    loading = false, \n    leftIcon, \n    rightIcon, \n    children, \n    disabled, \n    asChild = false,\n    loadingText,\n    ariaLabel,\n    nsmClassification,\n    type = 'button',\n    ...props \n  }, ref) => {\n    const Comp = asChild ? Slot : 'button';\n    const isDisabled = disabled || loading;\n    \n    // Auto-select NSM variant if classification is provided\n    const finalVariant = nsmClassification \n      ? `nsm${nsmClassification.charAt(0).toUpperCase() + nsmClassification.slice(1).toLowerCase()}` as 'nsmOpen' | 'nsmRestricted' | 'nsmConfidential' | 'nsmSecret'\n      : variant;\n    \n    // Loading state announcement for screen readers\n    const ariaLive = loading ? 'polite' : undefined;\n    const ariaBusy = loading ? true : undefined;\n    \n    return (\n      <Comp\n        className={cn(buttonVariants({ variant: finalVariant, size, fullWidth, loading }), className)}\n        ref={ref}\n        disabled={isDisabled}\n        aria-busy={ariaBusy}\n        aria-live={ariaLive}\n        aria-label={ariaLabel || (loading && loadingText ? loadingText : undefined)}\n        type={asChild ? undefined : type}\n        {...props}\n      >\n        {loading ? (\n          <div className=\"flex items-center gap-2\">\n            <LoadingSpinner \n              size={size === 'md' ? 'sm' : size === 'lg' ? 'md' : 'lg'} \n              className=\"text-current\" \n            />\n            {loadingText && (\n              <span className=\"sr-only\">\n                {loadingText}\n              </span>\n            )}\n            {!loadingText && children && (\n              <span className=\"opacity-0\" aria-hidden=\"true\">\n                {children}\n              </span>\n            )}\n          </div>\n        ) : (\n          <div className=\"flex items-center gap-2\">\n            {leftIcon && (\n              <span className=\"flex-shrink-0\" aria-hidden=\"true\">\n                {leftIcon}\n              </span>\n            )}\n            \n            {children && (\n              <span className=\"truncate\">\n                {children}\n              </span>\n            )}\n            \n            {rightIcon && (\n              <span className=\"flex-shrink-0\" aria-hidden=\"true\">\n                {rightIcon}\n              </span>\n            )}\n          </div>\n        )}\n        \n        {/* NSM Classification indicator for screen readers */}\n        {nsmClassification && (\n          <span className=\"sr-only\">\n            NSM Classification: {nsmClassification}\n          </span>\n        )}\n      </Comp>\n    );\n  }\n);\n\nButton.displayName = 'Button';\n\n// Export types\nexport type { VariantProps };\nexport { buttonVariants };"
+    },
+    {
+      "path": "components/button/button.stories.tsx",
+      "type": "registry:file",
+      "target": "~/stories/button.stories.tsx"
+    }
+  ],
+  "docs": "Remember to import the LoadingSpinner component if you plan to use the loading state.",
+  "meta": {
+    "designTokens": [
+      "spacing",
+      "colors",
+      "shadows"
+    ],
+    "minimumHeight": "48px",
+    "touchTarget": "44px"
+  }
+}

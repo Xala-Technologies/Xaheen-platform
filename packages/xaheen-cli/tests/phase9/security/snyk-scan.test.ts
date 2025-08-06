@@ -5,7 +5,7 @@
  * security thresholds for dependencies and code quality.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, mkdir, access } from 'fs/promises';

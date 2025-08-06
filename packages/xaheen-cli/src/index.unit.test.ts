@@ -9,17 +9,17 @@ import { performance } from "perf_hooks";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 // Mock all dependencies
-vi.mock("./core/command-parser/index.js", () => ({
+vi.mock("./core/command-parser/index", () => ({
 	CommandParser: vi.fn().mockImplementation(() => ({
 		parse: vi.fn().mockResolvedValue(undefined),
 	})),
 }));
 
-vi.mock("./core/config-manager/index.js", () => ({
+vi.mock("./core/config-manager/index", () => ({
 	ConfigManager: vi.fn().mockImplementation(() => ({})),
 }));
 
-vi.mock("./core/stack-adapters/index.js", () => ({
+vi.mock("./core/stack-adapters/index", () => ({
 	StackAdapterRegistry: {
 		getInstance: vi.fn().mockReturnValue({
 			detectStack: vi.fn().mockResolvedValue("nextjs"),
@@ -27,7 +27,7 @@ vi.mock("./core/stack-adapters/index.js", () => ({
 	},
 }));
 
-vi.mock("./utils/logger.js", () => ({
+vi.mock("./utils/logger", () => ({
 	logger: {
 		debug: vi.fn(),
 		error: vi.fn(),

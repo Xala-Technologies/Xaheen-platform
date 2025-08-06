@@ -3,7 +3,7 @@
  * Tests for 'new' and 'scaffold' commands with mocked file system and prompts
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
 import { vol } from 'memfs';
 import { promises as fs } from 'fs';
 import * as prompts from '@clack/prompts';
@@ -12,58 +12,58 @@ import { ScaffoldGenerator } from '../../../src/generators/scaffold.generator';
 import type { ScaffoldGeneratorOptions } from '../../../src/generators/scaffold.generator';
 
 // Mock modules
-vi.mock('fs', async () => {
-  const memfs = await vi.importActual<any>('memfs');
+mock.module('fs', () => {
+  const memfs = require('memfs');
   return memfs.fs.promises;
 });
 
-vi.mock('@clack/prompts', () => ({
-  intro: vi.fn(),
-  outro: vi.fn(),
-  cancel: vi.fn(),
-  isCancel: vi.fn().mockReturnValue(false),
-  text: vi.fn(),
-  select: vi.fn(),
-  multiselect: vi.fn(),
-  confirm: vi.fn(),
-  spinner: vi.fn().mockReturnValue({
-    start: vi.fn(),
-    stop: vi.fn(),
-    message: vi.fn(),
-  }),
+mock.module('@clack/prompts', () => ({
+  intro: mock(() => {}),
+  outro: mock(() => {}),
+  cancel: mock(() => {}),
+  isCancel: mock(() => false),
+  text: mock(() => {}),
+  select: mock(() => {}),
+  multiselect: mock(() => {}),
+  confirm: mock(() => {}),
+  spinner: mock(() => ({
+    start: mock(() => {}),
+    stop: mock(() => {}),
+    message: mock(() => {}),
+  })),
 }));
 
-vi.mock('execa', () => ({
-  execa: vi.fn().mockResolvedValue({
+mock.module('execa', () => ({
+  execa: mock(() => Promise.resolve({
     stdout: '',
     stderr: '',
     exitCode: 0,
-  }),
-  execaCommand: vi.fn().mockResolvedValue({
+  })),
+  execaCommand: mock(() => Promise.resolve({
     stdout: '',
     stderr: '',
     exitCode: 0,
-  }),
+  })),
 }));
 
 describe('Phase 1: Command Handlers Unit Tests', () => {
   beforeEach(() => {
     // Reset mocked file system
     vol.reset();
-    vi.clearAllMocks();
+    mock.restore();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    mock.restore();
   });
 
   describe('New Command Handler', () => {
     it('should handle "xaheen new" command with mocked prompts', async () => {
       // Mock user inputs
-      vi.mocked(prompts.text).mockResolvedValueOnce('my-next-app');
-      vi.mocked(prompts.select).mockResolvedValueOnce('nextjs');
-      vi.mocked(prompts.multiselect).mockResolvedValueOnce(['typescript', 'tailwind']);
-      vi.mocked(prompts.confirm).mockResolvedValueOnce(true);
+      (prompts.text as any).mockResolvedValueOnce('my-next-app');
+      (prompts.select as any).mockResolvedValueOnce('nextjs');
+      (prompts.multiselect as any).mockResolvedValueOnce(['typescript', 'tailwind']);
+      (prompts.confirm as any).mockResolvedValueOnce(true);
 
       const parser = new CommandParser();
       const mockArgv = ['node', 'xaheen', 'project', 'create', 'my-next-app'];
@@ -132,9 +132,9 @@ describe('Phase 1: Command Handlers Unit Tests', () => {
   describe('Scaffold Command Handler', () => {
     it('should handle "xaheen scaffold" command with field definitions', async () => {
       // Mock user inputs for scaffold
-      vi.mocked(prompts.text).mockResolvedValueOnce('User');
-      vi.mocked(prompts.multiselect).mockResolvedValueOnce(['crud', 'search', 'pagination']);
-      vi.mocked(prompts.confirm).mockResolvedValueOnce(true);
+      (prompts.text as any).mockResolvedValueOnce('User');
+      (prompts.multiselect as any).mockResolvedValueOnce(['crud', 'search', 'pagination']);
+      (prompts.confirm as any).mockResolvedValueOnce(true);
 
       const options: ScaffoldGeneratorOptions = {
         name: 'User',
@@ -201,7 +201,7 @@ describe('Phase 1: Command Handlers Unit Tests', () => {
   describe('Git Operations Mocking', () => {
     it('should mock git init operations', async () => {
       const { execa } = await import('execa');
-      const mockExeca = vi.mocked(execa);
+      const mockExeca = execa as any;
 
       // Mock git init
       mockExeca.mockResolvedValueOnce({
@@ -224,7 +224,7 @@ describe('Phase 1: Command Handlers Unit Tests', () => {
 
     it('should mock git commit operations', async () => {
       const { execa } = await import('execa');
-      const mockExeca = vi.mocked(execa);
+      const mockExeca = execa as any;
 
       mockExeca.mockResolvedValueOnce({
         stdout: '[main (root-commit) abc123] Initial commit',
@@ -246,8 +246,8 @@ describe('Phase 1: Command Handlers Unit Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle missing project name gracefully', async () => {
-      vi.mocked(prompts.text).mockResolvedValueOnce('');
-      vi.mocked(prompts.isCancel).mockReturnValueOnce(true);
+      (prompts.text as any).mockResolvedValueOnce('');
+      (prompts.isCancel as any).mockReturnValueOnce(true);
 
       const parser = new CommandParser();
       const mockArgv = ['node', 'xaheen', 'project', 'create'];
@@ -257,7 +257,8 @@ describe('Phase 1: Command Handlers Unit Tests', () => {
 
     it('should handle file system errors', async () => {
       // Mock fs error
-      vi.spyOn(fs, 'mkdir').mockRejectedValueOnce(new Error('Permission denied'));
+      const spyMkdir = mock(() => Promise.reject(new Error('Permission denied')));
+      (fs as any).mkdir = spyMkdir;
 
       const options: ScaffoldGeneratorOptions = {
         name: 'error-app',

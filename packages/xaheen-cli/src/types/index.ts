@@ -43,6 +43,7 @@ export type CLIDomain =
 	| "template" // Template operations (singular)
 	| "deploy" // Deployment management
 	| "license" // License management (feature-gated licensing)
+	| "registry" // Component registry management
 	| "help"; // Help system
 
 export type CLIAction =

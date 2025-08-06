@@ -2,7 +2,7 @@
  * Global test setup for Phase 5 integration tests
  */
 
-import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import * as os from 'os';
 import * as path from 'path';
 import { getTestConfig } from '../config/test-config';

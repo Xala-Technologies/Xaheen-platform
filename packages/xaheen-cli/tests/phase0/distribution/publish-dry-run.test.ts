@@ -5,7 +5,7 @@
  * in dry-run mode to ensure publishing configuration is correct.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { cleanupTempDirs, readPackageJson } from '../utils/test-helpers';
 import { 
   packPackage, 

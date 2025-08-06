@@ -3,7 +3,7 @@
  * Tests complete CRUD workflows with real database connections using supertest
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, mock } from "bun:test";
 import request from "supertest";
 import { 
 	createTestProject, 
@@ -25,7 +25,7 @@ describe("E2E CRUD Operations Tests", () => {
 
 	beforeAll(async () => {
 		// Set longer timeout for E2E tests
-		vi.setConfig({ testTimeout: 60000 });
+		// timeout configured in bun test settings
 	});
 
 	afterAll(async () => {

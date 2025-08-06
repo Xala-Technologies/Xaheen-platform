@@ -3,7 +3,7 @@
  * Tests for model generation commands across all supported frameworks
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { join } from "node:path";
 import { 
 	createTestProject, 
@@ -37,7 +37,7 @@ describe("Backend Model Generation", () => {
 
 	afterEach(async () => {
 		await testProject.cleanup();
-		vi.clearAllMocks();
+		mock.restore();
 	});
 
 	describe("NestJS Model Generation", () => {

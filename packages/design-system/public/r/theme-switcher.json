@@ -1,0 +1,22 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "theme-switcher",
+  "type": "registry:component",
+  "title": "Theme Switcher",
+  "description": "Theme switching component with system preference detection",
+  "category": "theme-components",
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "registryDependencies": [
+    "utils",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "components/theme-switcher/theme-switcher.tsx",
+      "type": "registry:component"
+    }
+  ]
+}

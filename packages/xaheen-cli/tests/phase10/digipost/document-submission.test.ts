@@ -5,7 +5,7 @@
  * Uses official Digipost test API with document simulation.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config, DigipostTestRecipient } from '../config/test-config';
 import { DigipostClient } from '../utils/digipost-client';
 import { ComplianceLogger } from '../utils/compliance-logger';

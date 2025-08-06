@@ -12,6 +12,8 @@ import { CommandHandlerFactory } from "./core/command-parser/factories/CommandHa
 import { RouteRegistry } from "./core/command-parser/registry/RouteRegistry.js";
 import { LicenseCommandHandler } from "./core/command-parser/handlers/LicenseCommandHandler.js";
 import { LicenseRouteRegistrar } from "./core/command-parser/registrars/LicenseRouteRegistrar.js";
+import { RegistryCommandHandler } from "./core/command-parser/handlers/RegistryCommandHandler.js";
+import { RegistryRouteRegistrar } from "./core/command-parser/registrars/RegistryRouteRegistrar.js";
 
 async function main(): Promise<void> {
 	const startTime = performance.now();
@@ -47,11 +49,16 @@ async function main(): Promise<void> {
 		
 		// Register domain handlers
 		handlerFactory.registerHandler('license', LicenseCommandHandler);
+		handlerFactory.registerHandler('registry', RegistryCommandHandler);
 
 		// Initialize and register route registrars
 		const licenseRegistrar = new LicenseRouteRegistrar();
 		const licenseRoutes = licenseRegistrar.getRoutes();
 		routeRegistry.registerRoutes(licenseRoutes);
+
+		const registryRegistrar = new RegistryRouteRegistrar();
+		const registryRoutes = registryRegistrar.getRoutes();
+		routeRegistry.registerRoutes(registryRoutes);
 
 		// Initialize command parser (legacy system)
 		const commandParser = new CommandParser();

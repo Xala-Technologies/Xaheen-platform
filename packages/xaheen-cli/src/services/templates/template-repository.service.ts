@@ -13,10 +13,12 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { EventEmitter } from "events";
-import type { 
+import { 
   NSMClassification, 
   Permission, 
-  User, 
+  User
+} from "../authentication/types";
+import type { 
   AuthenticationEvent,
   EnterpriseAuthConfig 
 } from "../authentication/types";

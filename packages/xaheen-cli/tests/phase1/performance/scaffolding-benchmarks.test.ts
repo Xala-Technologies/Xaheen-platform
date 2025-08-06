@@ -3,7 +3,7 @@
  * Measures performance of scaffold operations
  */
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'bun:test';
 import { performance } from 'perf_hooks';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -12,7 +12,7 @@ import tmp from 'tmp';
 import { execa } from 'execa';
 import { cpus, totalmem, freemem } from 'os';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dir;
 const CLI_PATH = path.resolve(__dirname, '../../../dist/index.js');
 
 // Performance thresholds (in milliseconds)

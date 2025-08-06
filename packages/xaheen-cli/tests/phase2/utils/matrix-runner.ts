@@ -3,7 +3,7 @@
  * Executes the same test suite across multiple frameworks
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { FRAMEWORK_CONFIGS, type FrameworkConfig } from '../config/frameworks.config';
 
 export interface MatrixTest {

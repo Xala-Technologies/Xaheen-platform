@@ -5,7 +5,7 @@
  * customer management, payment intents, subscriptions, and webhooks.
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';

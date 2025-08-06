@@ -3,7 +3,7 @@
  * Tests for Vue preset logic with mocked file system
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
 import { vol } from 'memfs';
 import { promises as fs } from 'fs';
 import * as prompts from '@clack/prompts';
@@ -11,35 +11,35 @@ import { ScaffoldGenerator } from '../../../../src/generators/scaffold.generator
 import type { ScaffoldGeneratorOptions } from '../../../../src/generators/scaffold.generator';
 
 // Mock modules
-vi.mock('fs', async () => {
-  const memfs = await vi.importActual<any>('memfs');
+mock.module('fs', async () => {
+  const memfs = await require('memfs');
   return memfs.fs.promises;
 });
 
-vi.mock('@clack/prompts', () => ({
-  intro: vi.fn(),
-  outro: vi.fn(),
-  cancel: vi.fn(),
-  isCancel: vi.fn().mockReturnValue(false),
-  text: vi.fn(),
-  select: vi.fn(),
-  multiselect: vi.fn(),
-  confirm: vi.fn(),
-  spinner: vi.fn().mockReturnValue({
-    start: vi.fn(),
-    stop: vi.fn(),
-    message: vi.fn(),
+mock.module('@clack/prompts', () => ({
+  intro: mock(() => {}),
+  outro: mock(() => {}),
+  cancel: mock(() => {}),
+  isCancel: mock(() => {}).mockReturnValue(false),
+  text: mock(() => {}),
+  select: mock(() => {}),
+  multiselect: mock(() => {}),
+  confirm: mock(() => {}),
+  spinner: mock(() => {}).mockReturnValue({
+    start: mock(() => {}),
+    stop: mock(() => {}),
+    message: mock(() => {}),
   }),
 }));
 
 describe('Phase 2: Vue (Vite) Preset Unit Tests', () => {
   beforeEach(() => {
     vol.reset();
-    vi.clearAllMocks();
+    mock.restore();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    mock.restore();
   });
 
   describe('Vue Project Generation', () => {
@@ -241,7 +241,7 @@ const increment = (): void => {
 
   describe('Vue Feature Flags', () => {
     it('should handle Vue feature selection', async () => {
-      vi.mocked(prompts.multiselect).mockResolvedValueOnce([
+      (prompts.multiselect as any).mockResolvedValueOnce([
         'router',
         'pinia',
         'vitest',

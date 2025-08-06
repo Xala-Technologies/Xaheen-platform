@@ -5,7 +5,7 @@
  * to critical code paths and verifying that tests catch the changes.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, mkdir, readFile, access } from 'fs/promises';

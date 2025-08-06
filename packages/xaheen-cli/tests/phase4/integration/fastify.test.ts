@@ -3,7 +3,7 @@
  * Tests complete Fastify scaffolding workflow from generation to health check
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { 
 	createTestProject, 
 	createBackendOptions, 
@@ -33,7 +33,7 @@ describe("Fastify Framework Integration Tests", () => {
 		await testServerManager.stopAllServers();
 		await databaseTestHelper.cleanupAllDatabases();
 		await testProject.cleanup();
-		vi.clearAllMocks();
+		mock.restore();
 	});
 
 	describe("Basic Fastify Project Scaffolding", () => {

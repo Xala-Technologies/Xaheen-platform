@@ -10,8 +10,8 @@ import {
 	describe,
 	expect,
 	it,
-	jest,
-} from "@jest/globals";
+	vi,
+} from "vitest";
 import { promises as fs } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
@@ -19,18 +19,18 @@ import { ContinuousLearningGenerator } from "../generators/ai/continuous-learnin
 import type { ContinuousLearningOptions } from "../generators/ai/types";
 
 // Mock file system operations
-jest.mock("fs", () => ({
+vi.mock("fs", () => ({
 	promises: {
-		mkdir: jest.fn(),
-		writeFile: jest.fn(),
-		readFile: jest.fn(),
-		access: jest.fn(),
-		readdir: jest.fn(),
-		stat: jest.fn(),
+		mkdir: vi.fn(),
+		writeFile: vi.fn(),
+		readFile: vi.fn(),
+		access: vi.fn(),
+		readdir: vi.fn(),
+		stat: vi.fn(),
 	},
 }));
 
-const mockFs = fs as jest.Mocked<typeof fs>;
+const mockFs = fs as any; // Mocked by vi.mock
 
 describe("ContinuousLearningGenerator", () => {
 	let generator: ContinuousLearningGenerator;
@@ -84,13 +84,13 @@ describe("ContinuousLearningGenerator", () => {
 		};
 
 		// Reset mocks
-		jest.clearAllMocks();
-		mockFs.mkdir.mockResolvedValue(undefined);
-		mockFs.writeFile.mockResolvedValue(undefined);
+		vi.clearAllMocks();
+		mockFs.promises.mkdir.mockResolvedValue(undefined);
+		mockFs.promises.writeFile.mockResolvedValue(undefined);
 	});
 
 	afterEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
 	describe("Generator Initialization", () => {
@@ -639,7 +639,7 @@ describe("ContinuousLearningGenerator", () => {
 
 	describe("Error Handling", () => {
 		it("should handle file system errors gracefully", async () => {
-			mockFs.mkdir.mockRejectedValue(new Error("Permission denied"));
+			mockFs.promises.mkdir.mockRejectedValue(new Error("Permission denied"));
 
 			await expect(generator.generate(defaultOptions)).rejects.toThrow(
 				"Failed to create output directory",
@@ -647,7 +647,7 @@ describe("ContinuousLearningGenerator", () => {
 		});
 
 		it("should handle write errors gracefully", async () => {
-			mockFs.writeFile.mockRejectedValue(new Error("Disk full"));
+			mockFs.promises.writeFile.mockRejectedValue(new Error("Disk full"));
 
 			await expect(generator.generate(defaultOptions)).rejects.toThrow();
 		});
@@ -781,9 +781,9 @@ describe("CLI Integration", () => {
 	beforeEach(() => {
 		mockProcess = {
 			argv: ["node", "xaheen"],
-			exit: jest.fn(),
-			stdout: { write: jest.fn() },
-			stderr: { write: jest.fn() },
+			exit: vi.fn(),
+			stdout: { write: vi.fn() },
+			stderr: { write: vi.fn() },
 		};
 		global.process = mockProcess;
 	});

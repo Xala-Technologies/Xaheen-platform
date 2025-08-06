@@ -5,7 +5,7 @@
  * and right to erasure implementation as per GDPR Article 17.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config } from '../config/test-config';
 import { DataDeletionService } from '../utils/data-deletion-service';
 import { RetentionPolicyManager } from '../utils/retention-policy-manager';

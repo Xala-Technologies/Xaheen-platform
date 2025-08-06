@@ -3,7 +3,7 @@
  * Measures scaffolding performance across all frameworks
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
 import tmp from 'tmp';

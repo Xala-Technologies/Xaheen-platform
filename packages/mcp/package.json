@@ -22,16 +22,15 @@
     "format:check": "prettier --check src/**/*.{ts,tsx}",
     "type-check": "tsc --noEmit",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
-    "validate": "npm run type-check && npm test",
+    "validate": "pnpm run type-check && pnpm test",
     "validate-config": "node dist/validate-config.js",
     "profile": "node --prof dist/index.js",
     "benchmark": "node dist/benchmark.js",
     "doctor": "node dist/doctor.js",
-    "prepublishOnly": "bun run build",
     "postpublish": "git push --tags",
-    "release:patch": "bun version patch && bun publish",
-    "release:minor": "bun version minor && bun publish",
-    "release:major": "bun version major && bun publish"
+    "release:patch": "pnpm version patch && pnpm publish",
+    "release:minor": "pnpm version minor && pnpm publish",
+    "release:major": "pnpm version major && pnpm publish"
   },
   "keywords": [
     "mcp",
@@ -100,7 +99,7 @@
   ],
   "engines": {
     "node": ">=18.0.0",
-    "bun": ">=1.0.0"
+    "pnpm": ">=9.0.0"
   },
   "publishConfig": {
     "access": "public",

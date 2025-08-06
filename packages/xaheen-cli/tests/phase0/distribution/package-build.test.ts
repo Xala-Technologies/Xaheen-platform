@@ -5,7 +5,7 @@
  * correctly for distribution.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { join } from 'path';
 import { executeCommand, fileExists, cleanupTempDirs, readPackageJson } from '../utils/test-helpers';
 import { packPackage, validatePackedPackage } from '../utils/registry-helpers';

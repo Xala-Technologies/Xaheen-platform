@@ -3,7 +3,7 @@
  * Tests full scaffold → install → dev server flow for SvelteKit
  */
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
 import tmp from 'tmp';

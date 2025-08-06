@@ -5,7 +5,7 @@
  * for digital service registration, usage metrics, and compliance reporting.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config } from '../config/test-config';
 import { DIGDIRClient } from '../utils/digdir-client';
 import { ComplianceLogger } from '../utils/compliance-logger';

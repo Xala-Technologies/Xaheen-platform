@@ -3,7 +3,7 @@
  * Tests for endpoint/controller generation commands across all supported frameworks
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { 
 	createTestProject, 
 	createBackendOptions, 
@@ -33,7 +33,7 @@ describe("Backend Endpoint Generation", () => {
 
 	afterEach(async () => {
 		await testProject.cleanup();
-		vi.clearAllMocks();
+		mock.restore();
 	});
 
 	describe("NestJS Controller Generation", () => {

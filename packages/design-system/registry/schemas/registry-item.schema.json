@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xaheen.io/schemas/registry-item.schema.json",
+  "title": "Xaheen Registry Item",
+  "description": "Schema for individual Xaheen registry items",
+  "type": "object",
+  "required": ["$schema", "name", "type", "files"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://xaheen.io/schemas/registry-item.schema.json"
+    },
+    "name": {
+      "type": "string",
+      "description": "Unique identifier for the item",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "registry:component",
+        "registry:block",
+        "registry:style",
+        "registry:hook",
+        "registry:utils",
+        "registry:theme"
+      ],
+      "description": "Type of registry item"
+    },
+    "extends": {
+      "type": "string",
+      "description": "Extends another style (for registry:style)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Display title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Item description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "components",
+        "data-components",
+        "theme-components",
+        "layouts",
+        "providers",
+        "patterns",
+        "tools"
+      ],
+      "description": "Component category"
+    },
+    "nsm": {
+      "type": "object",
+      "description": "Norwegian NSM compliance information",
+      "properties": {
+        "classification": {
+          "type": "string",
+          "enum": ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"]
+        },
+        "wcagLevel": {
+          "type": "string",
+          "enum": ["AA", "AAA"],
+          "default": "AAA"
+        },
+        "norwegianOptimized": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "platforms": {
+      "type": "array",
+      "description": "Supported platforms",
+      "items": {
+        "type": "string",
+        "enum": [
+          "react",
+          "nextjs",
+          "vue",
+          "angular",
+          "svelte",
+          "electron",
+          "react-native"
+        ]
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "NPM dependencies",
+      "items": {
+        "type": "string"
+      }
+    },
+    "devDependencies": {
+      "type": "array",
+      "description": "NPM dev dependencies",
+      "items": {
+        "type": "string"
+      }
+    },
+    "registryDependencies": {
+      "type": "array",
+      "description": "Dependencies on other registry items",
+      "items": {
+        "type": "string"
+      }
+    },
+    "files": {
+      "type": "array",
+      "description": "Files associated with this item",
+      "items": {
+        "type": "object",
+        "required": ["path", "type"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the file"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "registry:component",
+              "registry:page",
+              "registry:hook",
+              "registry:utils",
+              "registry:lib",
+              "registry:file",
+              "registry:style"
+            ],
+            "description": "File type"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target path for installation"
+          },
+          "content": {
+            "type": "string",
+            "description": "Inline file content (optional)"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Platform-specific file"
+          }
+        }
+      }
+    },
+    "cssVars": {
+      "type": "object",
+      "description": "CSS variables for theming",
+      "properties": {
+        "theme": {
+          "type": "object"
+        },
+        "light": {
+          "type": "object"
+        },
+        "dark": {
+          "type": "object"
+        }
+      }
+    },
+    "css": {
+      "type": "object",
+      "description": "CSS rules to inject"
+    },
+    "config": {
+      "type": "object",
+      "description": "Additional configuration",
+      "properties": {
+        "tailwind": {
+          "type": "object",
+          "description": "Tailwind CSS configuration"
+        },
+        "aliases": {
+          "type": "object",
+          "description": "Path aliases"
+        }
+      }
+    },
+    "examples": {
+      "type": "array",
+      "description": "Usage examples",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

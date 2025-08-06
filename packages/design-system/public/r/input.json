@@ -1,0 +1,26 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "input",
+  "type": "registry:component",
+  "title": "Input",
+  "description": "Norwegian-optimized input component",
+  "category": "components",
+  "nsm": {
+    "classification": "OPEN",
+    "wcagLevel": "AAA",
+    "norwegianOptimized": true
+  },
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/input/input.tsx",
+      "type": "registry:component"
+    }
+  ]
+}

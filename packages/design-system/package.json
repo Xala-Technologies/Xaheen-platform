@@ -14,10 +14,12 @@
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "prebuild-storybook": "npm run build",
-    "storybook": "npm run build && storybook dev -p 6006",
+    "prebuild-storybook": "pnpm run build",
+    "storybook": "pnpm run build && storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:registry": "pnpm exec tsx scripts/build-registry.ts",
+    "registry": "pnpm exec tsx scripts/build-registry.ts"
   },
   "keywords": [
     "design-system",
@@ -73,6 +75,7 @@
     "storybook": "9.1.1",
     "tailwindcss": "^3.3.6",
     "tsup": "^8.0.1",
+    "tsx": "^4.0.0",
     "typescript": "^5.3.3",
     "vite": "^5.4.19",
     "vitest": "^1.1.0"

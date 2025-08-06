@@ -3,7 +3,7 @@
  * Tests server startup times and establishes performance baselines
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { 
 	createTestProject, 
 	createBackendOptions, 
@@ -21,7 +21,7 @@ describe("Cold Start Performance Tests", () => {
 
 	beforeEach(async () => {
 		serverPort = await testServerManager.findAvailablePort(3000);
-		vi.setConfig({ testTimeout: 120000 }); // 2 minutes for performance tests
+		// timeout configured in bun test settings
 	});
 
 	afterEach(async () => {

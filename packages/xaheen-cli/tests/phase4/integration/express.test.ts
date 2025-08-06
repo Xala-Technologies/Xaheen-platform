@@ -3,7 +3,7 @@
  * Tests complete Express scaffolding workflow from generation to health check
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { join } from "node:path";
 import { 
 	createTestProject, 
@@ -37,7 +37,7 @@ describe("Express Framework Integration Tests", () => {
 		await testServerManager.stopAllServers();
 		await databaseTestHelper.cleanupAllDatabases();
 		await testProject.cleanup();
-		vi.clearAllMocks();
+		mock.restore();
 	});
 
 	describe("Basic Express Project Scaffolding", () => {

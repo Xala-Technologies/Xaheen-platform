@@ -438,33 +438,33 @@ export function createMockFileSystem(options?: MockFileSystemOptions): MockFileS
  */
 export function createMockFsPromises(mockFs: MockFileSystem) {
 	return {
-		writeFile: vi.fn().mockImplementation((path: string, content: string) => 
+		writeFile: mock().mockImplementation((path: string, content: string) => 
 			mockFs.writeFile(path, content)
 		),
-		readFile: vi.fn().mockImplementation((path: string) => 
+		readFile: mock().mockImplementation((path: string) => 
 			mockFs.readFile(path)
 		),
-		access: vi.fn().mockImplementation(async (path: string) => {
+		access: mock().mockImplementation(async (path: string) => {
 			if (!await mockFs.exists(path)) {
 				throw new Error(`ENOENT: no such file or directory, access '${path}'`);
 			}
 		}),
-		stat: vi.fn().mockImplementation((path: string) => 
+		stat: mock().mockImplementation((path: string) => 
 			mockFs.stat(path)
 		),
-		mkdir: vi.fn().mockImplementation((path: string, options?: { recursive?: boolean }) => 
+		mkdir: mock().mockImplementation((path: string, options?: { recursive?: boolean }) => 
 			mockFs.mkdir(path, options)
 		),
-		readdir: vi.fn().mockImplementation((path: string) => 
+		readdir: mock().mockImplementation((path: string) => 
 			mockFs.readdir(path)
 		),
-		rm: vi.fn().mockImplementation((path: string, options?: { recursive?: boolean; force?: boolean }) => 
+		rm: mock().mockImplementation((path: string, options?: { recursive?: boolean; force?: boolean }) => 
 			mockFs.rm(path, options)
 		),
-		copyFile: vi.fn().mockImplementation((src: string, dest: string) => 
+		copyFile: mock().mockImplementation((src: string, dest: string) => 
 			mockFs.copyFile(src, dest)
 		),
-		rename: vi.fn().mockImplementation((oldPath: string, newPath: string) => 
+		rename: mock().mockImplementation((oldPath: string, newPath: string) => 
 			mockFs.rename(oldPath, newPath)
 		),
 	};

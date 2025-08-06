@@ -5,7 +5,7 @@
  * without errors and all pages render correctly.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { join } from 'path';
 import { executeCommand, createTempDir, fileExists, cleanupTempDirs } from '../utils/test-helpers';
 import { getTestConfig } from '../config/test-config';

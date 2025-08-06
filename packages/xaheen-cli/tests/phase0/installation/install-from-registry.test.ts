@@ -5,7 +5,7 @@
  * and functions correctly after installation.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { cleanupTempDirs, readPackageJson } from '../utils/test-helpers';
 import { 
   testInstallFromRegistry,

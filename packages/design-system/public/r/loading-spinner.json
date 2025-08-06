@@ -1,0 +1,21 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "loading-spinner",
+  "type": "registry:component",
+  "title": "Loading Spinner",
+  "description": "Accessible loading indicators with reduced motion support",
+  "category": "components",
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/loading-spinner/loading-spinner.tsx",
+      "type": "registry:component"
+    }
+  ]
+}

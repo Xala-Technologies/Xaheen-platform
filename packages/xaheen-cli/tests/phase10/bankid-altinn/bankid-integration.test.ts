@@ -5,7 +5,7 @@
  * Uses official Difi test environment with real test users.
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'bun:test';
 import { Page } from '@playwright/test';
 import { loadPhase10Config, BankIDTestUser } from '../config/test-config';
 import { BankIDClient } from '../utils/bankid-client';

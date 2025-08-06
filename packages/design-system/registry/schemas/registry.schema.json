@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xaheen.io/schemas/registry.schema.json",
+  "title": "Xaheen Component Registry",
+  "description": "Schema for Xaheen design system component registry",
+  "type": "object",
+  "required": ["$schema", "name", "version", "homepage", "items"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Schema reference URL"
+    },
+    "name": {
+      "type": "string",
+      "description": "Registry name",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Registry version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Registry homepage URL"
+    },
+    "description": {
+      "type": "string",
+      "description": "Registry description"
+    },
+    "items": {
+      "type": "array",
+      "description": "List of registry items",
+      "items": {
+        "$ref": "#/definitions/registryItem"
+      }
+    }
+  },
+  "definitions": {
+    "registryItem": {
+      "type": "object",
+      "required": ["name", "type", "title", "files"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique identifier for the item",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "registry:component",
+            "registry:block",
+            "registry:style",
+            "registry:hook",
+            "registry:utils",
+            "registry:theme"
+          ],
+          "description": "Type of registry item"
+        },
+        "title": {
+          "type": "string",
+          "description": "Display title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Item description"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "components",
+            "data-components",
+            "theme-components",
+            "layouts",
+            "providers",
+            "patterns",
+            "tools"
+          ],
+          "description": "Component category"
+        },
+        "nsm": {
+          "type": "object",
+          "description": "Norwegian NSM compliance information",
+          "properties": {
+            "classification": {
+              "type": "string",
+              "enum": ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"]
+            },
+            "wcagLevel": {
+              "type": "string",
+              "enum": ["AA", "AAA"]
+            }
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "description": "Supported platforms",
+          "items": {
+            "type": "string",
+            "enum": [
+              "react",
+              "nextjs",
+              "vue",
+              "angular",
+              "svelte",
+              "electron",
+              "react-native"
+            ]
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "NPM dependencies",
+          "items": {
+            "type": "string"
+          }
+        },
+        "devDependencies": {
+          "type": "array",
+          "description": "NPM dev dependencies",
+          "items": {
+            "type": "string"
+          }
+        },
+        "registryDependencies": {
+          "type": "array",
+          "description": "Dependencies on other registry items",
+          "items": {
+            "type": "string"
+          }
+        },
+        "files": {
+          "type": "array",
+          "description": "Files associated with this item",
+          "items": {
+            "$ref": "#/definitions/file"
+          }
+        },
+        "cssVars": {
+          "type": "object",
+          "description": "CSS variables for theming"
+        },
+        "config": {
+          "type": "object",
+          "description": "Additional configuration"
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "required": ["path", "type"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path to the file"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "registry:component",
+            "registry:page",
+            "registry:hook",
+            "registry:utils",
+            "registry:lib",
+            "registry:file",
+            "registry:style"
+          ],
+          "description": "File type"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target path for installation"
+        },
+        "content": {
+          "type": "string",
+          "description": "Inline file content (optional)"
+        }
+      }
+    }
+  }
+}

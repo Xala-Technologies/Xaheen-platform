@@ -5,7 +5,7 @@
  * for OPEN, RESTRICTED, CONFIDENTIAL, and SECRET data levels.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config, NSMClassification } from '../config/test-config';
 import { NSMSecurityHandler } from '../utils/nsm-security-handler';
 import { ComplianceLogger } from '../utils/compliance-logger';

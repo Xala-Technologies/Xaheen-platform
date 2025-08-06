@@ -3,7 +3,7 @@
  * Global setup and teardown for Phase 3 tests
  */
 
-import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { mkdir, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { tmpdir } from 'os';

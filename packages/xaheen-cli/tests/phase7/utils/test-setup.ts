@@ -4,7 +4,7 @@
  * Common setup functions for individual tests
  */
 
-import { beforeEach, afterEach } from 'vitest';
+import { beforeEach, afterEach } from 'bun:test';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { TEST_CONFIG } from '../config/test-config.js';

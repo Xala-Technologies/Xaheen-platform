@@ -4,7 +4,7 @@
  * Tests plugin publishing workflow, validation, and registry submission
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'fs-extra';

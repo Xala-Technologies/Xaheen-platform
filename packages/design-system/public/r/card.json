@@ -1,0 +1,25 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "card",
+  "type": "registry:component",
+  "title": "Card",
+  "description": "Card component with NSM security classification support",
+  "category": "components",
+  "nsm": {
+    "classification": "OPEN",
+    "wcagLevel": "AAA"
+  },
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "components/card/card.tsx",
+      "type": "registry:component"
+    }
+  ]
+}

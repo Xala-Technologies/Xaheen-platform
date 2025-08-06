@@ -5,7 +5,7 @@
  * user interface functionality in multi-tenant SaaS applications.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MockTenantDatabase, type TenantUser } from '../mocks/tenant-database.mock.js';

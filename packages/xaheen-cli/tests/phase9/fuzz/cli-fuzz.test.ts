@@ -5,7 +5,7 @@
  * malicious, and edge-case inputs to detect crashes and vulnerabilities.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, mkdir, readFile } from 'fs/promises';

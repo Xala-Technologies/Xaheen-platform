@@ -1,0 +1,17 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "use-accessibility",
+  "type": "registry:hook",
+  "title": "useAccessibility",
+  "description": "WCAG AAA compliance hooks",
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "files": [
+    {
+      "path": "hooks/use-accessibility.ts",
+      "type": "registry:hook"
+    }
+  ]
+}

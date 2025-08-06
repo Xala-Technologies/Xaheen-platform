@@ -5,7 +5,7 @@
  * and privacy by design principles as per GDPR Articles 7, 17, and 25.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config, GDPRTestSubject } from '../config/test-config';
 import { GDPRConsentManager } from '../utils/gdpr-consent-manager';
 import { DataSubjectRightsHandler } from '../utils/data-subject-rights-handler';

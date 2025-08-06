@@ -13,7 +13,7 @@ import path from "path";
 import crypto from "crypto";
 import { EventEmitter } from "events";
 import { setTimeout, clearTimeout } from "timers";
-import type { 
+import { 
   NSMClassification, 
   Permission, 
   User 
@@ -264,20 +264,34 @@ export class TemplateSyncService extends EventEmitter {
     // Schedule periodic sync for all repositories
     this.schedulePeriodicSync();
     
-    await this.logger.logOperation({
-      operationId: crypto.randomUUID(),
-      category: "SYNC_SERVICE",
-      operation: "START_SERVICE",
-      userId: "system",
-      startTime: new Date(),
-      endTime: new Date(),
-      success: true,
-      details: {
-        config: this.config,
-        cacheSize: this.cache.size,
-        queuedJobs: this.jobQueue.length
+    await this.logger.logOperation(
+      "info",
+      "mcp_connection",
+      "Template Sync Service started",
+      {
+        executionContext: {
+          sessionId: crypto.randomUUID(),
+          userId: "system",
+          processId: process.pid,
+          timestamp: new Date(),
+          command: "sync-service",
+          arguments: [],
+          workingDirectory: process.cwd(),
+        },
+        mcpOperation: {
+          operationId: crypto.randomUUID(),
+          operationType: "connect",
+          startTime: new Date(),
+          endTime: new Date(),
+          status: "completed",
+        },
+        structuredData: {
+          config: this.config,
+          cacheSize: this.cache.size,
+          queuedJobs: this.jobQueue.length
+        }
       }
-    });
+    );
     
     this.emit("serviceStarted", {
       eventId: crypto.randomUUID(),
@@ -314,19 +328,33 @@ export class TemplateSyncService extends EventEmitter {
     // Persist data
     await this.persistData();
     
-    await this.logger.logOperation({
-      operationId: crypto.randomUUID(),
-      category: "SYNC_SERVICE",
-      operation: "STOP_SERVICE",
-      userId: "system",
-      startTime: new Date(),
-      endTime: new Date(),
-      success: true,
-      details: {
-        cacheSize: this.cache.size,
-        cancelledJobs: this.activeJobs.size
+    await this.logger.logOperation(
+      "info",
+      "mcp_connection", 
+      "Template Sync Service stopped",
+      {
+        executionContext: {
+          sessionId: crypto.randomUUID(),
+          userId: "system",
+          processId: process.pid,
+          timestamp: new Date(),
+          command: "stop-sync-service",
+          arguments: [],
+          workingDirectory: process.cwd(),
+        },
+        mcpOperation: {
+          operationId: crypto.randomUUID(),
+          operationType: "disconnect",
+          startTime: new Date(),
+          endTime: new Date(),
+          status: "completed",
+        },
+        structuredData: {
+          cacheSize: this.cache.size,
+          cancelledJobs: this.activeJobs.size
+        }
       }
-    });
+    );
   }
 
   /**
@@ -368,22 +396,36 @@ export class TemplateSyncService extends EventEmitter {
       this.jobQueue.splice(insertIndex, 0, job);
     }
     
-    await this.logger.logOperation({
-      operationId: crypto.randomUUID(),
-      category: "SYNC_SERVICE",
-      operation: "QUEUE_JOB",
-      userId: options.userId || "system",
-      startTime: new Date(),
-      endTime: new Date(),
-      success: true,
-      details: {
-        jobId,
-        repositoryName,
-        type,
-        priority: job.priority,
-        queueLength: this.jobQueue.length
+    await this.logger.logOperation(
+      "info",
+      "mcp_connection",
+      "Sync job queued",
+      {
+        executionContext: {
+          sessionId: crypto.randomUUID(),
+          userId: options.userId || "system",
+          processId: process.pid,
+          timestamp: new Date(),
+          command: "queue-sync",
+          arguments: [],
+          workingDirectory: process.cwd(),
+        },
+        mcpOperation: {
+          operationId: jobId,
+          operationType: "generate_component",
+          startTime: new Date(),
+          endTime: new Date(),
+          status: "completed",
+        },
+        structuredData: { 
+          repositoryName,
+          jobId,
+          type,
+          priority: job.priority,
+          options
+        }
       }
-    });
+    );
     
     this.emit("jobQueued", {
       eventId: crypto.randomUUID(),
@@ -489,27 +531,34 @@ export class TemplateSyncService extends EventEmitter {
       );
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "SYNC_SERVICE",
-        operation: "SYNC_REPOSITORY",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: syncStatus.status === "success",
-        details: {
-          repositoryName,
-          statistics: syncStatus.statistics,
-          conflicts: syncStatus.conflicts.length,
-          dryRun: options.dryRun
-        },
-        compliance: {
-          gdprApplicable: this.config.norwegianCompliance.enableGDPRCompliance,
-          nsmClassification: repoConfig.norwegianCompliance.dataClassification as NSMClassification,
-          dataRetention: this.config.norwegianCompliance.dataRetention,
-          auditRequired: this.config.norwegianCompliance.auditAllOperations
+      await this.logger.logOperation(
+        "info",
+        "mcp_connection",
+        "Repository sync completed",
+        {
+          executionContext: {
+            sessionId: operationId,
+            userId: user.id,
+            processId: process.pid,
+            timestamp: new Date(),
+            command: "sync-repository",
+            arguments: [],
+            workingDirectory: process.cwd(),
+          },
+          mcpOperation: {
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
+          },
+          structuredData: {
+            repositoryName,
+            syncStatus,
+            duration: Date.now() - startTime
+          }
         }
-      });
+      );
       
       // Emit sync completed event
       this.emit("syncCompleted", {
@@ -531,21 +580,40 @@ export class TemplateSyncService extends EventEmitter {
         syncStatus.errors.push({
           timestamp: new Date(),
           error: error instanceof Error ? error.message : String(error),
-          code: error instanceof Error ? error.name : "UNKNOWN_ERROR"
+          code: error instanceof Error ? error.name : "UNKNOWN_ERROR",
+          retryCount: 0
         });
       }
       
-      await this.logger.logOperation({
-        operationId,
-        category: "SYNC_SERVICE",
-        operation: "SYNC_REPOSITORY",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { repositoryName }
-      });
+      await this.logger.logOperation(
+        "error",
+        "mcp_connection",
+        "Repository sync failed",
+        {
+          executionContext: {
+            sessionId: operationId,
+            userId: user.id,
+            processId: process.pid,
+            timestamp: new Date(),
+            command: "sync-repository",
+            arguments: [],
+            workingDirectory: process.cwd(),
+          },
+          mcpOperation: {
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+          },
+          structuredData: {
+            repositoryName,
+            error: error instanceof Error ? error.message : String(error),
+            duration: Date.now() - startTime
+          }
+        }
+      );
       
       this.emit("syncFailed", {
         eventId: crypto.randomUUID(),
@@ -637,27 +705,41 @@ export class TemplateSyncService extends EventEmitter {
       }
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "CONFLICT_RESOLUTION",
-        operation: "RESOLVE_CONFLICTS",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: true,
-        details: {
-          repositoryName,
-          resolutionsCount: resolutions.length,
-          resolvedCount,
-          remainingConflicts: remainingConflicts.length
-        },
-        compliance: {
-          gdprApplicable: this.config.norwegianCompliance.enableGDPRCompliance,
-          nsmClassification: NSMClassification.OPEN,
-          dataRetention: this.config.norwegianCompliance.dataRetention,
-          auditRequired: this.config.norwegianCompliance.auditAllOperations
+      await this.logger.logOperation(
+        "info",
+        "mcp_connection",
+        "Conflicts resolved",
+        {
+          executionContext: {
+            sessionId: operationId,
+            userId: user.id,
+            processId: process.pid,
+            timestamp: new Date(),
+            command: "resolve-conflicts",
+            arguments: [],
+            workingDirectory: process.cwd(),
+          },
+          mcpOperation: {
+            operationId,
+            operationType: "validate_step",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
+          },
+          structuredData: {
+            repositoryName,
+            resolutionsCount: resolutions.length,
+            resolvedCount,
+            remainingConflicts: remainingConflicts.length,
+            compliance: {
+              gdprApplicable: this.config.norwegianCompliance.enableGDPRCompliance,
+              nsmClassification: NSMClassification.OPEN,
+              dataRetention: this.config.norwegianCompliance.dataRetention,
+              auditRequired: this.config.norwegianCompliance.auditAllOperations
+            }
+          }
         }
-      });
+      );
       
       // Emit event
       this.emit("conflictsResolved", {
@@ -671,17 +753,34 @@ export class TemplateSyncService extends EventEmitter {
       });
       
     } catch (error) {
-      await this.logger.logOperation({
-        operationId,
-        category: "CONFLICT_RESOLUTION",
-        operation: "RESOLVE_CONFLICTS",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { repositoryName }
-      });
+      await this.logger.logOperation(
+        "error",
+        "mcp_connection",
+        "Failed to resolve conflicts",
+        {
+          executionContext: {
+            sessionId: operationId,
+            userId: user.id,
+            processId: process.pid,
+            timestamp: new Date(),
+            command: "resolve-conflicts",
+            arguments: [],
+            workingDirectory: process.cwd(),
+          },
+          mcpOperation: {
+            operationId,
+            operationType: "validate_step",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+          },
+          structuredData: { 
+            repositoryName,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        }
+      );
       
       throw error;
     }
@@ -734,16 +833,33 @@ export class TemplateSyncService extends EventEmitter {
   async clearCache(): Promise<void> {
     this.cache.clear();
     
-    await this.logger.logOperation({
-      operationId: crypto.randomUUID(),
-      category: "CACHE_MANAGEMENT",
-      operation: "CLEAR_CACHE",
-      userId: "system",
-      startTime: new Date(),
-      endTime: new Date(),
-      success: true,
-      details: { clearedEntries: this.cache.size }
-    });
+    await this.logger.logOperation(
+      "info",
+      "mcp_connection",
+      "Cache cleared",
+      {
+        executionContext: {
+          sessionId: crypto.randomUUID(),
+          userId: "system",
+          processId: process.pid,
+          timestamp: new Date(),
+          command: "clear-cache",
+          arguments: [],
+          workingDirectory: process.cwd(),
+        },
+        mcpOperation: {
+          operationId: crypto.randomUUID(),
+          operationType: "metadata_extract",
+          startTime: new Date(),
+          endTime: new Date(),
+          status: "completed",
+        },
+        structuredData: { 
+          operation: "CLEAR_CACHE",
+          clearedEntries: this.cache.size 
+        }
+      }
+    );
     
     this.emit("cacheCleared", {
       eventId: crypto.randomUUID(),

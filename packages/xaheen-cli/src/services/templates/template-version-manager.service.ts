@@ -298,28 +298,39 @@ export class TemplateVersionManagerService extends EventEmitter {
       await this.persistVersionData(templateId);
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CREATE_VERSION",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: true,
-        details: {
-          templateId,
-          version,
-          breaking: metadata.breaking,
-          prerelease: versionHistory.prerelease,
-          dependencyCount: versionHistory.dependencies.length
-        },
-        compliance: {
-          gdprApplicable: true,
-          nsmClassification: user.nsmClearance,
-          dataRetention: 2555, // 7 years
-          auditRequired: true
+      await this.logger.logOperation(
+        "info",
+        "template_processing",
+        "Version created successfully",
+        {
+          executionContext: {
+            operationId,
+            operation: "CREATE_VERSION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CREATE_VERSION",
+            userId: user.id,
+            templateId,
+            version,
+            metadata: {
+              breaking: metadata.breaking,
+              prerelease: versionHistory.prerelease,
+              dependencyCount: versionHistory.dependencies.length
+            }
+          },
+          structuredData: {
+            compliance: {
+              gdprApplicable: true,
+              nsmClassification: user.nsmClearance,
+              dataRetention: 2555, // 7 years
+              auditRequired: true
+            }
+          }
         }
-      });
+      );
       
       // Emit event
       this.emit("versionCreated", {
@@ -336,17 +347,28 @@ export class TemplateVersionManagerService extends EventEmitter {
       return versionHistory;
       
     } catch (error) {
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CREATE_VERSION",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { templateId, version }
-      });
+      await this.logger.logOperation(
+        "error",
+        "template_processing",
+        `Failed to create version: ${error instanceof Error ? error.message : String(error)}`,
+        {
+          executionContext: {
+            operationId,
+            operation: "CREATE_VERSION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CREATE_VERSION",
+            userId: user.id,
+            templateId,
+            version,
+            error: error instanceof Error ? error.message : String(error)
+          },
+          structuredData: {}
+        }
+      );
       
       throw error;
     }
@@ -455,38 +477,59 @@ export class TemplateVersionManagerService extends EventEmitter {
       };
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "RESOLVE_VERSION",
-        userId: "system",
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: true,
-        details: {
-          templateId,
-          constraint: versionConstraint,
-          resolved: resolvedVersion,
-          strategy,
-          dependencyCount: resolvedDependencies.length,
-          conflictCount: conflicts.length
+      await this.logger.logOperation(
+        "info",
+        "template_processing",
+        "Version resolved successfully",
+        {
+          executionContext: {
+            operationId,
+            operation: "RESOLVE_VERSION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "RESOLVE_VERSION",
+            userId: "system",
+            templateId,
+            constraint: versionConstraint,
+            resolved: resolvedVersion,
+            strategy,
+            metadata: {
+              dependencyCount: resolvedDependencies.length,
+              conflictCount: conflicts.length
+            }
+          },
+          structuredData: {}
         }
-      });
+      );
       
       return resolution;
       
     } catch (error) {
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "RESOLVE_VERSION",
-        userId: "system",
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { templateId, constraint: versionConstraint }
-      });
+      await this.logger.logOperation(
+        "error",
+        "template_processing",
+        `Failed to resolve version: ${error instanceof Error ? error.message : String(error)}`,
+        {
+          executionContext: {
+            operationId,
+            operation: "RESOLVE_VERSION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "RESOLVE_VERSION",
+            userId: "system",
+            templateId,
+            constraint: versionConstraint,
+            error: error instanceof Error ? error.message : String(error)
+          },
+          structuredData: {}
+        }
+      );
       
       throw error;
     }
@@ -569,38 +612,59 @@ export class TemplateVersionManagerService extends EventEmitter {
       const compatible = issues.length === 0;
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CHECK_COMPATIBILITY",
-        userId: "system",
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: true,
-        details: {
-          templateId,
-          version,
-          compatible,
-          issueCount: issues.length,
-          warningCount: warnings.length,
-          targetEnvironment
+      await this.logger.logOperation(
+        "info",
+        "template_processing",
+        "Compatibility check completed",
+        {
+          executionContext: {
+            operationId,
+            operation: "CHECK_COMPATIBILITY",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CHECK_COMPATIBILITY",
+            userId: "system",
+            templateId,
+            version,
+            metadata: {
+              compatible,
+              issueCount: issues.length,
+              warningCount: warnings.length,
+              targetEnvironment
+            }
+          },
+          structuredData: {}
         }
-      });
+      );
       
       return { compatible, issues, warnings };
       
     } catch (error) {
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CHECK_COMPATIBILITY",
-        userId: "system",
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { templateId, version }
-      });
+      await this.logger.logOperation(
+        "error",
+        "template_processing",
+        `Failed to check compatibility: ${error instanceof Error ? error.message : String(error)}`,
+        {
+          executionContext: {
+            operationId,
+            operation: "CHECK_COMPATIBILITY",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CHECK_COMPATIBILITY",
+            userId: "system",
+            templateId,
+            version,
+            error: error instanceof Error ? error.message : String(error)
+          },
+          structuredData: {}
+        }
+      );
       
       throw error;
     }
@@ -689,29 +753,40 @@ export class TemplateVersionManagerService extends EventEmitter {
       await this.persistMigrationData(templateId);
       
       // Log operation
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CREATE_MIGRATION",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: true,
-        details: {
-          templateId,
-          fromVersion,
-          toVersion,
-          type: migrationType,
-          breaking: migration.breaking,
-          automated: migration.automated
-        },
-        compliance: {
-          gdprApplicable: true,
-          nsmClassification: user.nsmClearance,
-          dataRetention: 2555,
-          auditRequired: true
+      await this.logger.logOperation(
+        "info",
+        "template_processing",
+        "Migration created successfully",
+        {
+          executionContext: {
+            operationId,
+            operation: "CREATE_MIGRATION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CREATE_MIGRATION",
+            userId: user.id,
+            templateId,
+            fromVersion,
+            toVersion,
+            metadata: {
+              type: migrationType,
+              breaking: migration.breaking,
+              automated: migration.automated
+            }
+          },
+          structuredData: {
+            compliance: {
+              gdprApplicable: true,
+              nsmClassification: user.nsmClearance,
+              dataRetention: 2555,
+              auditRequired: true
+            }
+          }
         }
-      });
+      );
       
       // Emit event
       this.emit("migrationCreated", {
@@ -728,17 +803,29 @@ export class TemplateVersionManagerService extends EventEmitter {
       return migration;
       
     } catch (error) {
-      await this.logger.logOperation({
-        operationId,
-        category: "VERSION_MANAGEMENT",
-        operation: "CREATE_MIGRATION",
-        userId: user.id,
-        startTime: new Date(startTime),
-        endTime: new Date(),
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        details: { templateId, fromVersion, toVersion }
-      });
+      await this.logger.logOperation(
+        "error",
+        "template_processing",
+        `Failed to create migration: ${error instanceof Error ? error.message : String(error)}`,
+        {
+          executionContext: {
+            operationId,
+            operation: "CREATE_MIGRATION",
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          },
+          mcpOperation: {
+            type: "VERSION_MANAGEMENT",
+            subtype: "CREATE_MIGRATION",
+            userId: user.id,
+            templateId,
+            fromVersion,
+            toVersion,
+            error: error instanceof Error ? error.message : String(error)
+          },
+          structuredData: {}
+        }
+      );
       
       throw error;
     }

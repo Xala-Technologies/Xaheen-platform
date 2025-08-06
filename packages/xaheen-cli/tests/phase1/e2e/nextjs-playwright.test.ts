@@ -3,16 +3,15 @@
  * Tests actual browser rendering of scaffolded Next.js applications
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import tmp from 'tmp';
 import { execa, execaCommand } from 'execa';
 import treeKill from 'tree-kill';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dir;
 const CLI_PATH = path.resolve(__dirname, '../../../dist/index.js');
 
 // Helper to create temp directory

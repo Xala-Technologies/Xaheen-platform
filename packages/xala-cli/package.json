@@ -17,8 +17,8 @@
     "test:validation": "jest src/services/__tests__/template-validator.test.ts",
     "validate:templates": "node dist/bin/xala.js validate --path templates",
     "validate:ci": "node dist/bin/xala.js validate --path templates --ci",
-    "publish:dry": "bun publish --dry-run",
-    "publish:beta": "bun publish --tag beta"
+    "publish:dry": "pnpm publish --dry-run",
+    "publish:beta": "pnpm publish --tag beta"
   },
   "keywords": [
     "design-system",
@@ -34,7 +34,7 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0",
-    "bun": ">=1.0.0"
+    "pnpm": ">=9.0.0"
   },
   "dependencies": {
     "boxen": "^7.1.1",

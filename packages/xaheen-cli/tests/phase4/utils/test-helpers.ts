@@ -287,11 +287,11 @@ export async function measureTime<T>(operation: () => Promise<T>): Promise<{ res
  */
 export function createMockLogger() {
 	return {
-		info: vi.fn(),
-		error: vi.fn(),
-		warn: vi.fn(),
-		debug: vi.fn(),
-		success: vi.fn(),
+		info: mock(() => {}),
+		error: mock(() => {}),
+		warn: mock(() => {}),
+		debug: mock(() => {}),
+		success: mock(() => {}),
 	};
 }
 

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "use-responsive",
+  "type": "registry:hook",
+  "title": "useResponsive",
+  "description": "Responsive design hook with breakpoint detection",
+  "platforms": [
+    "react",
+    "nextjs"
+  ],
+  "files": [
+    {
+      "path": "hooks/use-responsive.ts",
+      "type": "registry:hook"
+    }
+  ]
+}

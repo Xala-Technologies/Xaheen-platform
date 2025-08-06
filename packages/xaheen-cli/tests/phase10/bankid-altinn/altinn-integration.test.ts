@@ -5,7 +5,7 @@
  * Uses official TT02 test environment with synthetic business data.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { loadPhase10Config, AltinnTestOrg } from '../config/test-config';
 import { AltinnClient } from '../utils/altinn-client';
 import { ComplianceLogger } from '../utils/compliance-logger';

@@ -5,7 +5,7 @@
  * to ensure all user inputs are properly cleaned and validated.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { writeFile, mkdir } from 'fs/promises';
 import { join, resolve } from 'path';
 import path from 'path';

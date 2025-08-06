@@ -10,6 +10,9 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, vi } from "vitest";
+import { getDirname } from "../utils/esm-compat.js";
+
+const __dirname = getDirname(import.meta.url);
 
 // Mock consola to prevent log pollution during tests
 vi.mock("consola", async () => {
@@ -77,7 +80,8 @@ const mockExit = vi.fn();
 vi.stubGlobal("process", {
 	...process,
 	exit: mockExit,
-	cwd: vi.fn(() => "/test/project"),
+	on: vi.fn(),
+	cwd: () => "/test/project",
 	argv: ["node", "xaheen", ...process.argv.slice(2)],
 });
 

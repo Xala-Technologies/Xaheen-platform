@@ -5,7 +5,7 @@
  * and code quality issues in the Xaheen CLI codebase.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { readFile, writeFile, mkdir, access } from 'fs/promises';

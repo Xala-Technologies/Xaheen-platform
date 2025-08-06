@@ -3,13 +3,13 @@
  * Provides mock implementations of template engines for isolated testing
  */
 
-import { vi } from "vitest";
+import { mock } from "bun:test";
 
 export interface MockTemplateEngine {
-	readonly compile: ReturnType<typeof vi.fn>;
-	readonly render: ReturnType<typeof vi.fn>;
-	readonly registerHelper: ReturnType<typeof vi.fn>;
-	readonly registerPartial: ReturnType<typeof vi.fn>;
+	readonly compile: ReturnType<typeof mock>;
+	readonly render: ReturnType<typeof mock>;
+	readonly registerHelper: ReturnType<typeof mock>;
+	readonly registerPartial: ReturnType<typeof mock>;
 }
 
 export interface MockTemplateResult {
@@ -24,8 +24,8 @@ export interface MockTemplateResult {
  * Create a mock template engine for testing
  */
 export function createMockTemplateEngine(): MockTemplateEngine {
-	const compile = vi.fn().mockImplementation((template: string) => {
-		return vi.fn().mockImplementation((context: Record<string, unknown>) => {
+	const compile = mock().mockImplementation((template: string) => {
+		return mock().mockImplementation((context: Record<string, unknown>) => {
 			// Simple template compilation mock
 			let result = template;
 			
@@ -39,13 +39,13 @@ export function createMockTemplateEngine(): MockTemplateEngine {
 		});
 	});
 
-	const render = vi.fn().mockImplementation((template: string, context: Record<string, unknown>) => {
+	const render = mock().mockImplementation((template: string, context: Record<string, unknown>) => {
 		const compiledTemplate = compile(template);
 		return compiledTemplate(context);
 	});
 
-	const registerHelper = vi.fn();
-	const registerPartial = vi.fn();
+	const registerHelper = mock();
+	const registerPartial = mock();
 
 	return {
 		compile,
@@ -337,7 +337,7 @@ module.exports = new {{className}}Service();`,
  */
 export function createMockTemplateLoader() {
 	return {
-		loadTemplate: vi.fn().mockImplementation((templatePath: string) => {
+		loadTemplate: mock().mockImplementation((templatePath: string) => {
 			// Return a mock template based on the path
 			if (templatePath.includes("model")) {
 				return "Mock model template: {{name}}";
@@ -351,11 +351,11 @@ export function createMockTemplateLoader() {
 			return "Mock template: {{name}}";
 		}),
 		
-		loadPartial: vi.fn().mockImplementation((partialName: string) => {
+		loadPartial: mock().mockImplementation((partialName: string) => {
 			return `Mock partial: ${partialName}`;
 		}),
 		
-		getTemplatePath: vi.fn().mockImplementation((framework: string, type: string) => {
+		getTemplatePath: mock().mockImplementation((framework: string, type: string) => {
 			return `templates/${framework}/${type}.hbs`;
 		}),
 	};
@@ -368,11 +368,11 @@ export function createMockFileSystem() {
 	const files = new Map<string, string>();
 	
 	return {
-		writeFile: vi.fn().mockImplementation(async (path: string, content: string) => {
+		writeFile: mock().mockImplementation(async (path: string, content: string) => {
 			files.set(path, content);
 		}),
 		
-		readFile: vi.fn().mockImplementation(async (path: string) => {
+		readFile: mock().mockImplementation(async (path: string) => {
 			const content = files.get(path);
 			if (content === undefined) {
 				throw new Error(`File not found: ${path}`);
@@ -380,11 +380,11 @@ export function createMockFileSystem() {
 			return content;
 		}),
 		
-		exists: vi.fn().mockImplementation(async (path: string) => {
+		exists: mock().mockImplementation(async (path: string) => {
 			return files.has(path);
 		}),
 		
-		mkdir: vi.fn().mockImplementation(async (path: string) => {
+		mkdir: mock().mockImplementation(async (path: string) => {
 			// Mock directory creation
 		}),
 		
@@ -401,7 +401,7 @@ export function createMockCommandExecutor() {
 	const executedCommands: Array<{ command: string; args: string[]; cwd?: string }> = [];
 	
 	return {
-		execute: vi.fn().mockImplementation(async (command: string, args: string[], options?: { cwd?: string }) => {
+		execute: mock().mockImplementation(async (command: string, args: string[], options?: { cwd?: string }) => {
 			executedCommands.push({ command, args, cwd: options?.cwd });
 			
 			// Mock successful execution
