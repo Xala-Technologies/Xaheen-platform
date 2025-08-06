@@ -10,6 +10,9 @@ import { CLIError } from "../../types/index";
 import { logger } from "../../utils/logger";
 import { aiGenerateCommand } from "../../commands/ai-generate";
 import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 export class CommandParser {
 	private static instance: CommandParser | undefined;
@@ -77,12 +80,18 @@ export class CommandParser {
 	}
 
 	private setupProgram(): void {
+		const __filename = fileURLToPath(import.meta.url);
+		const __dirname = dirname(__filename);
+		const packageJsonPath = join(__dirname, "../../../package.json");
+		const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+		const version = packageJson.version;
+
 		this.program
 			.name("xaheen")
 			.description(
 				"Xaheen CLI - Service-based architecture with AI-powered component generation",
 			)
-			.version("3.0.0");
+			.version(version);
 	}
 
 	private setupRoutes(): void {

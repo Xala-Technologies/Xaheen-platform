@@ -144,6 +144,8 @@ function displayBanner(): void {
 	${chalk.cyan("│")}  ${chalk.green("•")} Norwegian compliance, WCAG 2.2 AAA, NSM, ISO27001         ${chalk.cyan("│")}
 	${chalk.cyan("╰─────────────────────────────────────────────────────────────╯")}
 	`;
+
+	console.log(banner);
 }
 
 // Global CLI context interface
