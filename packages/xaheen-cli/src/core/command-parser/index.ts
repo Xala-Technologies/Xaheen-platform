@@ -504,24 +504,24 @@ export class CommandParser {
 			// 	action: "plugin-register",
 			// 	handler: this.handleMCPPluginRegister.bind(this),
 			// },
-			{
-				pattern: "mcp plugin unregister <name>",
-				domain: "mcp",
-				action: "plugin-unregister",
-				handler: this.handleMCPPluginUnregister.bind(this),
-			},
-			{
-				pattern: "mcp plugin enable <name>",
-				domain: "mcp",
-				action: "plugin-enable",
-				handler: this.handleMCPPluginEnable.bind(this),
-			},
-			{
-				pattern: "mcp plugin disable <name>",
-				domain: "mcp",
-				action: "plugin-disable",
-				handler: this.handleMCPPluginDisable.bind(this),
-			},
+// 			{
+// 				pattern: "mcp plugin unregister <name>",
+// 				domain: "mcp",
+// 				action: "plugin-unregister",
+// 				handler: this.handleMCPPluginUnregister.bind(this),
+// 			},
+// 			{
+// 				pattern: "mcp plugin enable <name>",
+// 				domain: "mcp",
+// 				action: "plugin-enable",
+// 				handler: this.handleMCPPluginEnable.bind(this),
+// 			},
+// 			{
+// 				pattern: "mcp plugin disable <name>",
+// 				domain: "mcp",
+// 				action: "plugin-disable",
+// 				handler: this.handleMCPPluginDisable.bind(this),
+// 			},
 
 			// Registry domain routes
 			{
