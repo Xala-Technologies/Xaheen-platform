@@ -33,6 +33,18 @@ export {
   HeadlessCardMeta
 } from './card';
 
+// Accordion components
+export {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+  MultiAccordion,
+  MultiAccordionItem,
+  FAQAccordion,
+  AccordionMeta
+} from './accordion';
+
 // Platform utilities
 export const PlatformInfo = {
   name: 'Headless UI',

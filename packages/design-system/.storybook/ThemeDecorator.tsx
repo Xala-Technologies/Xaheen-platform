@@ -117,8 +117,8 @@ export const withTheme: Decorator = (Story, context) => {
       data-industry-theme={industryTheme}
       data-color-scheme={colorScheme}
     >
-      {/* Debug theme indicator */}
-      <div 
+      {/* Debug theme indicator - temporarily disabled for troubleshooting */}
+      {false && <div 
         style={{
           position: 'fixed',
           top: '10px',
@@ -133,7 +133,7 @@ export const withTheme: Decorator = (Story, context) => {
         }}
       >
         Theme: {industryTheme} | Mode: {colorScheme}
-      </div>
+      </div>}
       <Story />
     </div>
   );

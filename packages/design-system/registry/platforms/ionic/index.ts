@@ -33,6 +33,16 @@ export {
   type IonicCardProps 
 } from './card';
 
+// Accordion components
+export { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent,
+  AccordionMeta,
+  NSMAccordionStyles 
+} from './accordion';
+
 // Re-export component metadata
 export const IonicComponents = {
   button: IonicButtonMeta,

@@ -6,6 +6,12 @@
 export { Button } from './button';
 export { Input } from './input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card';
+export { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from './accordion';
 
 // Platform utilities
 export const PlatformInfo = {

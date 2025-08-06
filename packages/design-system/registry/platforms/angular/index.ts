@@ -6,6 +6,13 @@
 export { ButtonComponent } from './button.component';
 export { InputComponent } from './input.component';
 export { CardComponent, CardHeaderComponent, CardTitleComponent, CardContentComponent, CardFooterComponent } from './card.component';
+export { 
+  AccordionComponent, 
+  AccordionItemComponent, 
+  AccordionTriggerComponent, 
+  AccordionContentComponent,
+  AccordionModule 
+} from './accordion.component';
 
 // Platform utilities
 export const PlatformInfo = {
