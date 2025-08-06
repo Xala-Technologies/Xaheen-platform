@@ -1,60 +1,82 @@
-# Xaheen CLI Design System Specification
-## Comprehensive UX Design System for AI-Native Full-Stack Development
+# Xaheen Design System Specification v5.0
+## Comprehensive UX Design System for Full-Stack Development + Universal Design System
+
+### Overview
+This specification covers **two complementary platforms**:
+1. **Xaheen CLI Full-Stack Platform** - AI-native full-stack development toolkit
+2. **Universal Design System** - Multi-platform component registry (React, Vue, Angular, Svelte, etc.)
 
 ### Table of Contents
-1. [Design System Architecture](#design-system-architecture)
+1. [Dual Platform Architecture](#dual-platform-architecture)
 2. [Design Token Foundation](#design-token-foundation)
 3. [Component Hierarchy & CVA System](#component-hierarchy--cva-system)
-4. [Accessibility Guidelines (WCAG AAA)](#accessibility-guidelines-wcag-aaa)
-5. [Responsive Design Patterns](#responsive-design-patterns)
-6. [Professional Sizing Standards](#professional-sizing-standards)
-7. [Color Systems & Typography](#color-systems--typography)
-8. [Interaction Patterns & Animations](#interaction-patterns--animations)
-9. [Layout Systems & Grids](#layout-systems--grids)
-10. [Multi-Platform Implementation](#multi-platform-implementation)
+4. [Universal Multi-Platform System](#universal-multi-platform-system)
+5. [Accessibility Guidelines (WCAG AAA)](#accessibility-guidelines-wcag-aaa)
+6. [Responsive Design Patterns](#responsive-design-patterns)
+7. [Professional Sizing Standards](#professional-sizing-standards)
+8. [Color Systems & Typography](#color-systems--typography)
+9. [Interaction Patterns & Animations](#interaction-patterns--animations)
+10. [Layout Systems & Grids](#layout-systems--grids)
 11. [Norwegian Compliance & NSM Security](#norwegian-compliance--nsm-security)
 12. [Performance & Optimization](#performance--optimization)
 13. [Implementation Guidelines](#implementation-guidelines)
 
 ---
 
-## 1. Design System Architecture
+## 1. Dual Platform Architecture
 
-### 1.1 Atomic Design Methodology
+### 1.1 Platform Overview
 ```
-Design System Hierarchy
-├── Atoms (Design Tokens)
-│   ├── Colors (Primary, Secondary, Semantic, Neutral)
-│   ├── Typography (Families, Scales, Weights, Line Heights)
-│   ├── Spacing (Base Units, Component Spacing, Layout Spacing)
-│   ├── Sizing (Button Heights, Input Heights, Container Widths)
-│   ├── Border Radius (Small, Medium, Large, Extra Large)
-│   ├── Shadows & Elevation (Subtle, Medium, Large, Extra Large)
-│   └── Animation (Timings, Curves, Durations)
-├── Molecules (Basic Components)
-│   ├── Button (All variants and sizes)
-│   ├── Input (Text, Search, Select, TextArea)
-│   ├── Badge (Status, Count, Label)
-│   ├── Avatar (User, System, Fallback)
-│   ├── Icon (System, Brand, Interactive)
-│   └── Typography (Headings, Body, Captions)
-├── Organisms (Composite Components)
-│   ├── Navigation (WebNavbar, Sidebar, Breadcrumb)
-│   ├── Forms (FormField, RadioGroup, Checkbox Group)
-│   ├── Cards (Content, Interactive, Data Display)
-│   ├── Tables (DataTable, Configuration Table)
-│   ├── Modals (Dialog, Popover, Tooltip)
-│   └── AI Interface (Chat, Suggestions, Preview)
+Xaheen Ecosystem v5.0
+├── Full-Stack Development Platform (CLI)
+│   ├── Project Generation & Scaffolding
+│   ├── AI-Assisted Development
+│   ├── Technology Stack Configuration  
+│   ├── Full-Stack Application Templates
+│   └── Enhanced with Universal UI Components
+└── Universal Design System (Registry)
+    ├── Multi-Platform Component Generation
+    ├── Framework-Agnostic Component Specifications
+    ├── Platform-Specific Implementations
+    ├── Interactive Component Playground
+    └── Norwegian Compliance & Accessibility
+```
+
+### 1.2 Atomic Design Methodology (Shared)
+```
+Universal Design System Hierarchy
+├── Atoms (Universal Design Tokens)
+│   ├── Colors (WCAG AAA, NSM Classifications)
+│   ├── Typography (Norwegian-Optimized, Multi-Platform)
+│   ├── Spacing (Enhanced 8pt Grid, Professional Sizing)
+│   ├── Sizing (CLAUDE.md Compliant, Touch-Optimized)
+│   ├── Border Radius (Consistent Across Platforms)
+│   ├── Shadows & Elevation (Platform-Adaptive)
+│   └── Animation (Reduced Motion Support)
+├── Molecules (Universal Components)
+│   ├── Button (11+ Platform Implementations)
+│   ├── Input (Norwegian Compliance, Validation)
+│   ├── Badge (NSM Classifications, Status)
+│   ├── Avatar (Accessibility, Fallbacks)
+│   ├── Icon (SVG, Platform-Optimized)
+│   └── Typography (Semantic, Responsive)
+├── Organisms (Composite Blocks)
+│   ├── Navigation (Cross-Platform Navbar, Sidebar)
+│   ├── Forms (Universal Form Builder)
+│   ├── Cards (Interactive, Data Display)
+│   ├── Tables (Enterprise Data Tables)
+│   ├── Modals (Platform-Native Dialogs)
+│   └── AI Interface (Chat, Code Preview)
 ├── Templates (Layout Patterns)
-│   ├── Application Shell (Header, Sidebar, Content, Footer)
-│   ├── Wizard Layout (Stepper, Content, Navigation)
-│   ├── Dashboard Layout (Widgets, Metrics, Actions)
-│   └── Documentation Layout (TOC, Content, Navigation)
-└── Pages (Complete Interfaces)
-    ├── Project Creation Wizard
-    ├── Module Generation Interface
-    ├── AI Assistant Dashboard
-    └── Settings & Configuration
+│   ├── Full-Stack Project Templates
+│   ├── Design System Registry Interface
+│   ├── Interactive Playground Layout
+│   └── Documentation System Layout
+└── Pages (Complete Applications)
+    ├── CLI Project Creation Wizard
+    ├── Universal Component Registry
+    ├── Interactive Design Playground
+    └── Multi-Platform Documentation
 ```
 
 ### 1.2 Xala MCP Integration Architecture
@@ -109,7 +131,145 @@ import {
 
 ---
 
-## 2. Design Token Foundation
+## 2. Universal Multi-Platform System
+
+### 2.1 Platform Support Matrix
+```
+Platform Compatibility Grid
+                    Button  Input  Card   Modal  Table  Form   Charts
+React               ✅      ✅     ✅     ✅     ✅     ✅     ✅
+Vue 3               ✅      ✅     ✅     ✅     ✅     ✅     🟡
+Angular 17+         ✅      ✅     ✅     🟡     🟡     ✅     🟡
+Svelte 4+           ✅      ✅     ✅     ✅     🟡     ✅     🟡
+React Native        ✅      ✅     ✅     ✅     🟡     ✅     ⚪
+Electron            ✅      ✅     ✅     ✅     ✅     ✅     ✅
+Radix UI            ✅      ✅     ✅     ✅     ✅     ✅     🟡
+Headless UI         ✅      ✅     ✅     ✅     🟡     ✅     ⚪
+Vanilla JS          ✅      ✅     ✅     🟡     ⚪     ✅     ⚪
+Ionic               🟡      🟡     ✅     ✅     ⚪     ✅     ⚪
+Web Components      ✅      ✅     ✅     🟡     ⚪     ✅     ⚪
+
+Legend: ✅ Complete  🟡 Partial  ⚪ Planned
+```
+
+### 2.2 Universal Component Architecture
+```typescript
+// Universal Component Specification (Platform Agnostic)
+interface UniversalButtonSpec {
+  id: 'button',
+  platforms: ['react', 'vue', 'angular', 'svelte', 'react-native'],
+  
+  // Universal Props (work everywhere)
+  props: {
+    variant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive',
+    size: 'sm' | 'md' | 'lg' | 'xl',
+    disabled: boolean,
+    loading: boolean,
+    fullWidth: boolean,
+    children: ReactNode | string,
+    
+    // Norwegian Compliance
+    nsmClassification?: 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET',
+    norwegianLocale?: boolean,
+    
+    // Platform-Specific Enhancements
+    platformEnhancements?: {
+      react: { onClick: () => void },
+      reactNative: { onPress: () => void },
+      vue: { '@click': () => void },
+      angular: { '(click)': () => void }
+    }
+  },
+  
+  // Accessibility Requirements (Universal)
+  accessibility: {
+    wcagLevel: 'AAA',
+    roles: ['button'],
+    keyboardNavigation: true,
+    screenReaderSupport: true,
+    minTouchTarget: '44px'
+  }
+}
+```
+
+### 2.3 Code Generation System
+```typescript
+// Platform-Specific Code Generation
+class UniversalComponentGenerator {
+  // React Implementation
+  generateReact(spec: UniversalButtonSpec): string {
+    return `
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ variant, size, nsmClassification, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size }), {
+          'nsm-restricted': nsmClassification === 'RESTRICTED',
+          'nsm-confidential': nsmClassification === 'CONFIDENTIAL'
+        })}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);`;
+  }
+  
+  // Vue Implementation  
+  generateVue(spec: UniversalButtonSpec): string {
+    return `
+<template>
+  <button 
+    :class="buttonClasses" 
+    @click="$emit('click', $event)"
+    :disabled="disabled"
+  >
+    <slot />
+  </button>
+</template>
+
+<script setup lang="ts">
+const props = defineProps<ButtonProps>();
+const buttonClasses = computed(() => [
+  'btn',
+  \`btn-\${variant}\`,
+  \`btn-\${size}\`,
+  { 'nsm-restricted': nsmClassification === 'RESTRICTED' }
+]);
+</script>`;
+  }
+  
+  // Angular Implementation
+  generateAngular(spec: UniversalButtonSpec): string {
+    return `
+@Component({
+  selector: 'xaheen-button',
+  standalone: true,
+  template: \`
+    <button 
+      [class]="buttonClasses" 
+      (click)="handleClick($event)"
+      [disabled]="disabled"
+    >
+      <ng-content></ng-content>
+    </button>
+  \`
+})
+export class ButtonComponent {
+  @Input() variant: ButtonVariant = 'primary';
+  @Input() nsmClassification?: NSMClassification;
+  
+  get buttonClasses(): string {
+    return \`btn btn-\${this.variant} \${this.nsmClassification ? 'nsm-' + this.nsmClassification.toLowerCase() : ''}\`;
+  }
+}`;
+  }
+}
+```
+
+---
+
+## 3. Design Token Foundation
 
 ### 2.1 Color System Architecture
 ```typescript

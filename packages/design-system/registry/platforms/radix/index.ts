@@ -4,7 +4,8 @@
  */
 
 export { Button, TooltipButton, DialogTriggerButton } from './button';
-// Add other Radix UI component exports here as they're created
+export { Input } from './input';
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card';
 
 // Platform utilities
 export const PlatformInfo = {

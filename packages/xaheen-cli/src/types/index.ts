@@ -307,6 +307,22 @@ export interface ValidationResult {
 	valid: boolean;
 	errors: string[];
 	warnings: string[];
+	// Extended properties for comprehensive validation
+	norwegianCompliance?: {
+		altinn?: boolean;
+		bankid?: boolean;
+		vipps?: boolean;
+	};
+	accessibility?: {
+		wcag?: any;
+		toolsInstalled?: boolean;
+	};
+	security?: {
+		vulnerabilities: any[];
+	};
+	compliance?: {
+		gdpr?: boolean;
+	};
 }
 
 // Platform and Monorepo types
@@ -539,9 +555,29 @@ export type XalaPlatform =
 	| "nextjs";
 
 export interface ServiceBundle {
+	id: string;
 	name: string;
-	services: ServiceConfiguration[];
-	dependencies: Record<string, string>;
+	description?: string;
+	services: string[]; // Array of service IDs like "frontend-next", "database-prisma"
+	dependencies?: Record<string, string>;
+}
+
+export interface BundleResolutionResult {
+	success: boolean;
+	services?: ServiceConfiguration[];
+	conflicts?: Array<{ type: string; message: string }>;
+	errors?: string[];
+	warnings?: string[];
+}
+
+export interface IBundleResolver {
+	resolveBundle(bundle: ServiceBundle, options?: any): BundleResolutionResult;
+	loadBundleByName(name: string): ServiceBundle | null;
+	createCustomBundle(services: string[]): ServiceBundle;
+}
+
+export interface IServiceInjector {
+	injectService(projectPath: string, service: ServiceConfiguration): Promise<any>;
 }
 
 export interface ProjectConfig extends ProjectContext {
@@ -567,9 +603,22 @@ export interface FixResult {
 }
 
 export interface IServiceRegistry {
+	initialize(): Promise<void>;
 	register(service: ServiceConfiguration): void;
 	get(name: string): ServiceConfiguration | undefined;
 	list(): ServiceConfiguration[];
+	// Additional methods expected by tests
+	getAllServices(): ServiceConfiguration[];
+	getServicesByCategory(category: string): ServiceConfiguration[];
+	registerService(service: ServiceConfiguration): void;
+	checkCompatibility(services: ServiceConfiguration[]): { compatible: boolean; conflicts?: string[] };
+	// Template methods
+	getTemplate(
+		type: string,
+		provider: string,
+	): Promise<any | null>;
+	listTemplates(type?: string): Promise<any[]>;
+	registerTemplate(template: any): Promise<void>;
 }
 
 export interface TemplateContext {

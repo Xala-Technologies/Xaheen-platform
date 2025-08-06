@@ -11,7 +11,7 @@
 import chalk from 'chalk';
 import { consola } from 'consola';
 import { select, text, confirm, multiselect } from '@clack/prompts';
-import fs from 'fs-extra';
+import { promises as fs, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import type { CLIAction, CLICommand } from "../../types/index";
 import { 
@@ -459,7 +459,10 @@ export default class TemplateDomain {
 
     // Save template
     const fullPath = path.join(process.cwd(), 'src/templates', templatePath);
-    await fs.ensureDir(path.dirname(fullPath));
+    const dir = path.dirname(fullPath);
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
     await fs.writeFile(fullPath, templateContent);
 
     // Register template

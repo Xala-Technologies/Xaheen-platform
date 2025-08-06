@@ -12,7 +12,16 @@
       "category": "components",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ],
       "nsm": {
         "classification": "OPEN",
@@ -28,7 +37,16 @@
       "category": "components",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ],
       "nsm": {
         "classification": "OPEN",
@@ -44,7 +62,16 @@
       "category": "components",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ],
       "nsm": {
         "classification": "OPEN",
@@ -59,7 +86,16 @@
       "category": "components",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ]
     },
     {
@@ -70,7 +106,16 @@
       "category": "theme-components",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ]
     },
     {
@@ -83,7 +128,13 @@
         "nextjs",
         "vue",
         "angular",
-        "svelte"
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ]
     },
     {
@@ -93,7 +144,16 @@
       "description": "Responsive design hook with breakpoint detection",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ]
     },
     {
@@ -103,7 +163,16 @@
       "description": "WCAG AAA compliance hooks",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ]
     },
     {
@@ -120,7 +189,16 @@
       "category": "patterns",
       "platforms": [
         "react",
-        "nextjs"
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
       ],
       "nsm": {
         "classification": "RESTRICTED",

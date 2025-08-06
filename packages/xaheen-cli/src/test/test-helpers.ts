@@ -12,7 +12,15 @@ import fs from "fs-extra";
 import stripAnsi from "strip-ansi";
 import tmp from "tmp";
 import { type MockedFunction, vi } from "vitest";
-import type { CLICommand, CLIOptions } from "../types/index";
+import type { CLICommand } from "../types/index";
+
+// Define CLIOptions interface for testing
+export interface CLIOptions {
+	verbose?: boolean;
+	dryRun?: boolean;
+	config?: string;
+	[key: string]: any;
+}
 
 // Mock filesystem utilities
 export interface MockFileSystem {

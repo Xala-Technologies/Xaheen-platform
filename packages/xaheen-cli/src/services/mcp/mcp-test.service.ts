@@ -1091,7 +1091,7 @@ export class MCPTestService {
 	}
 
 	private outputConsoleReport(report: MCPTestReport): void {
-		const chalk = require("chalk");
+		const chalk = require("chalk").default || require("chalk");
 		
 		console.log(chalk.blue("\n🧪 MCP Test Report"));
 		console.log(chalk.gray("═".repeat(60)));

@@ -4,7 +4,8 @@
  */
 
 export { ButtonComponent } from './button.component';
-// Add other Angular component exports here as they're created
+export { InputComponent } from './input.component';
+export { CardComponent, CardHeaderComponent, CardTitleComponent, CardContentComponent, CardFooterComponent } from './card.component';
 
 // Platform utilities
 export const PlatformInfo = {

@@ -9,7 +9,13 @@
     "nextjs",
     "vue",
     "angular",
-    "svelte"
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
   ],
   "dependencies": [
     "clsx",

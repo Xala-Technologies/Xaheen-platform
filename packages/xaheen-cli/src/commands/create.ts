@@ -23,7 +23,7 @@ import {
 import chalk from "chalk";
 import { Command } from "commander";
 import { consola } from "consola";
-import fs from "fs-extra";
+import { existsSync } from "node:fs";
 import { BundleResolver } from "../services/bundles/bundle-resolver";
 import { ServiceInjector } from "../services/injection/service-injector";
 import { ServiceRegistry } from "../services/registry/service-registry";
@@ -188,7 +188,7 @@ async function getProjectConfig(
 
 	const projectPath = path.resolve(process.cwd(), projectName as string);
 
-	if (await fs.pathExists(projectPath)) {
+	if (existsSync(projectPath)) {
 		const overwrite = await confirm({
 			message: `Directory ${projectName} already exists. Overwrite?`,
 			initialValue: false,

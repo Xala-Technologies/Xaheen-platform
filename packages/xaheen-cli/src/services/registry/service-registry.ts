@@ -97,7 +97,7 @@ export class ServiceRegistry implements IServiceRegistry {
 		return this.repository.getTemplatesByType(serviceType);
 	}
 
-	async getService(
+	async getServiceAsync(
 		serviceType: ServiceType,
 		provider: string,
 	): Promise<ServiceConfiguration | null> {
@@ -197,6 +197,68 @@ export class ServiceRegistry implements IServiceRegistry {
 		if (!this.initialized) {
 			await this.initialize();
 		}
+	}
+
+	// Additional methods expected by tests
+	getAllServices(): ServiceConfiguration[] {
+		return Array.from(this.services.values());
+	}
+
+	getServicesByCategory(category: string): ServiceConfiguration[] {
+		return Array.from(this.services.values()).filter(
+			service => service.serviceType === category || service.configuration?.category === category
+		);
+	}
+
+	registerService(service: ServiceConfiguration): void {
+		this.services.set(service.serviceId, service);
+	}
+
+	checkCompatibility(services: ServiceConfiguration[]): { compatible: boolean; conflicts?: string[] } {
+		const conflicts: string[] = [];
+		const providers = new Set<string>();
+		const types = new Map<string, string>();
+
+		for (const service of services) {
+			const key = `${service.serviceType}:${service.provider}`;
+			
+			if (providers.has(key)) {
+				conflicts.push(`Duplicate service: ${key}`);
+			}
+			providers.add(key);
+
+			// Check for type conflicts (e.g., multiple databases)
+			if (types.has(service.serviceType)) {
+				const existingProvider = types.get(service.serviceType);
+				if (existingProvider !== service.provider) {
+					conflicts.push(`Type conflict: ${service.serviceType} has multiple providers (${existingProvider}, ${service.provider})`);
+				}
+			}
+			types.set(service.serviceType, service.provider);
+		}
+
+		return {
+			compatible: conflicts.length === 0,
+			conflicts: conflicts.length > 0 ? conflicts : undefined
+		};
+	}
+
+	// Add getService method for compatibility with tests
+	getService(serviceId: string): ServiceConfiguration | undefined {
+		return this.get(serviceId);
+	}
+
+	// Implement missing interface methods
+	register(service: ServiceConfiguration): void {
+		this.registerService(service);
+	}
+
+	get(name: string): ServiceConfiguration | undefined {
+		return this.services.get(name);
+	}
+
+	list(): ServiceConfiguration[] {
+		return this.getAllServices();
 	}
 }
 

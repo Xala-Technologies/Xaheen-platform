@@ -1,153 +1,153 @@
-# Xaheen CLI Web Interface - Universal Design System Wireframes
+# Xaheen CLI Web Interface - Full-Stack Development Platform
 
-## 📋 Universal Design System Integration
+## 📋 Analysis of Current Web App Structure
 
-### Xaheen Universal Design System Architecture:
+### Current Architecture Analysis:
 ```
-packages/design-system/
-├── registry/                     # Shadcn-UI inspired registry
-│   ├── components/              # Universal components for all platforms
-│   │   ├── button/             # Button component for React, Vue, Angular, Svelte
-│   │   ├── input/              # Input component with Norwegian optimization
-│   │   ├── card/               # Card with NSM classifications
-│   │   └── theme-switcher/     # Multi-platform theme switching
-│   ├── blocks/                 # Composite UI blocks
-│   │   ├── chat-interface/     # AI assistant interface
-│   │   ├── global-search/      # Universal search component
-│   │   ├── sidebar/            # Navigation sidebar
-│   │   └── dashboard-01/       # Dashboard layout block
-│   ├── platforms/              # Platform-specific implementations
-│   │   ├── react/              # React components
-│   │   ├── vue/                # Vue components  
-│   │   ├── angular/            # Angular components
-│   │   ├── svelte/             # Svelte components
-│   │   ├── react-native/       # React Native components
-│   │   └── vanilla/            # Web Components
-│   └── tokens/                 # Universal design tokens
-│       ├── colors.ts           # WCAG AAA compliant colors
-│       ├── spacing.ts          # Enhanced 8pt grid system
-│       └── typography.ts       # Norwegian-optimized typography
+apps/web/src/
+├── app/                           # Next.js App Router
+│   ├── (home)/                   # Main homepage group
+│   │   ├── _components/          # Private components for home
+│   │   │   ├── stack-builder/    # Core stack configuration UI
+│   │   │   ├── navbar.tsx        # Navigation component
+│   │   │   └── footer.tsx        # Footer component
+│   │   ├── analytics/            # Analytics dashboard page
+│   │   ├── new/                  # Project creation page
+│   │   └── showcase/             # Project showcase
+│   └── docs/                     # Documentation pages
+├── components/
+│   ├── agent-dashboard/          # AI agent interface components
+│   ├── homepage/                 # Homepage-specific components
+│   ├── layout/                   # Layout components
+│   └── ui/                       # Reusable UI components (Enhanced by Universal Design System)
+├── lib/
+│   ├── services/                 # Business logic services
+│   ├── tech-stack/              # Technology stack configurations
+│   └── types/                   # TypeScript type definitions
+└── data/                        # Static configuration data
 ```
 
-### Key Features of the Universal Design System:
-- 🌍 **Universal Components**: Write once, use in React, Vue, Angular, Svelte, React Native
-- 🎨 **Design Tokens**: Platform-agnostic tokens that convert to CSS, StyleSheet, or JS objects
-- ♿ **WCAG AAA Compliance**: Built-in accessibility for all platforms
-- 🇳🇴 **Norwegian Compliance**: NSM classifications and Norwegian language optimization
-- 📱 **Multi-Platform**: Native implementations for 11+ platforms and frameworks
+### Key Components Currently Implemented:
+- ✅ **NavigationHeader**: CVA-compliant navbar with theme switching
+- ✅ **AgentDashboard**: AI agent integration interface
+- ✅ **StackBuilder**: Multi-technology stack configuration
+- ✅ **CommandDisplay**: Generated CLI commands visualization
+- ✅ **ProjectIdeaSection**: Natural language project input
+
+### 🌍 Enhanced with Universal Design System:
+The existing full-stack development platform is now enhanced with:
+- **Universal Components**: All UI components can be generated for React, Vue, Angular, Svelte, React Native
+- **Design Registry**: Shadcn-UI inspired registry for component distribution
+- **Multi-Platform Support**: Generate the same interface for any framework
+- **Norwegian Compliance**: Built-in NSM classifications and accessibility
+- **Professional Sizing**: CLAUDE.md compliant professional component sizing
 
 ---
 
 ## 🎨 Comprehensive Wireframe Specifications
 
-### 1. Universal Navigation Header (`@xaheen/design-system/blocks/navbar`)
+### 1. Navigation Header (`Enhanced with Universal Design System`)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ [Xaheen Logo] [Component Gen] [Docs] [Registry]  [🔍 Search] [🌙] [👤] │
+│ [Xaheen Logo] [Project Wizard] [Docs] [Showcase]  [🔍 Search] [🎨] [🌙] [👤] │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Universal Component Structure:**
+**Component Structure (Enhanced with Universal Design System):**
 ```typescript
-// React Implementation
-import { Button, Input, Container, Stack } from '@xaheen/design-system/react';
-import { GlobalSearch, ThemeSwitcher, UserMenu } from '@xaheen/design-system/blocks';
-
+// Standard React Implementation (existing)
 <WebNavbar variant="primary" size="lg" sticky>
   <Container maxWidth="7xl">
     <Stack direction="row" spacing="md" align="center" justify="between">
       <!-- Left Side -->
       <Stack direction="row" spacing="lg" align="center">
-        <Brand logo="/xaheen-logo.svg" href="/" />
+        <Brand logo="/logo.svg" href="/" />
         <Navigation items={navItems} variant="horizontal" />
       </Stack>
       
       <!-- Right Side -->
       <Stack direction="row" spacing="md" align="center">
-        <GlobalSearch 
-          placeholder="Search components, platforms, docs..." 
-          multiPlatform={true}
+        <GlobalSearch placeholder="Search projects, templates..." />
+        <!-- NEW: Design System Registry Access -->
+        <RegistryButton 
+          onClick={() => openDesignSystemRegistry()}
+          platforms={['react', 'vue', 'angular', 'svelte']}
         />
-        <ThemeSwitcher platforms={['react', 'vue', 'angular', 'svelte']} />
+        <ThemeSwitcher />
+        <NotificationBell count={3} />
         <UserMenu avatar="/avatar.jpg" />
       </Stack>
     </Stack>
   </Container>
 </WebNavbar>
-
-// Vue Implementation  
-<script setup lang="ts">
-import { Button, Input, Container, Stack } from '@xaheen/design-system/vue';
-</script>
-
-// Angular Implementation
-import { ButtonComponent, InputComponent } from '@xaheen/design-system/angular';
-
-// Svelte Implementation  
-import { Button, Input } from '@xaheen/design-system/svelte';
 ```
 
-**Universal Registry Integration:**
+**Universal Design System Integration:**
 ```javascript
-// Auto-platform detection
+// Now ALL these components can be used in any framework
+// The same navbar works in React, Vue, Angular, Svelte, etc.
+
+// React (existing)
+import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen/ui-system/react';
+
+// Vue (new capability)
+import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen/ui-system/vue';
+
+// Angular (new capability) 
+import { WebNavbarComponent, GlobalSearchComponent } from '@xaheen/ui-system/angular';
+
+// Auto-detection (new capability)
 import { componentFactory } from '@xaheen/design-system';
 const Navbar = await componentFactory.getComponent('navbar-primary');
-const GlobalSearch = await componentFactory.getBlock('global-search');
-const ThemeSwitcher = await componentFactory.getComponent('theme-switcher');
-
-// Platform-specific imports
-import { Button } from '@xaheen/design-system/react';        // React
-import Button from '@xaheen/design-system/vue/Button.vue';   // Vue
-import { ButtonComponent } from '@xaheen/design-system/angular'; // Angular
 ```
 
 ---
 
-### 2. Universal Landing Page Layout (`@xaheen/design-system/blocks/hero-section`)
+### 2. Main Landing Page Layout (`Enhanced Full-Stack Development Platform`)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         UNIVERSAL NAVBAR                               │
+│                              NAVBAR                                     │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                         HERO SECTION                                   │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │        🌍 Xaheen Universal Design System v5.0                  │   │
-│  │     Write Once, Run Everywhere - 11+ Platform Support          │   │
+│  │              🚀 Xaheen CLI v3.0.0                               │   │
+│  │        AI-Native Full-Stack Development Toolkit                 │   │
 │  │                                                                 │   │
-│  │  [🚀 Get Started] [📖 Registry] [🎨 Components] [⭐ GitHub]   │   │
+│  │  [Get Started] [Watch Demo] [View Docs] [🎨 Design System]    │   │
 │  │                                                                 │   │
-│  │  📱 React • Vue • Angular • Svelte • React Native • Electron   │   │
+│  │     ✨ Enhanced with Universal Design System v5.0              │   │
+│  │     Generate components for React, Vue, Angular, Svelte        │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                    COMPONENT GENERATION WIZARD                         │
+│                    PROJECT CREATION WIZARD                             │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │ 🎯 Generate components for your platform:                      │   │
+│  │ 📝 Describe your project in natural language:                  │   │
 │  │ ┌─────────────────────────────────────────────────────────────┐ │   │
-│  │ │ "Create a user dashboard with data tables, charts, and     │ │   │
-│  │ │  authentication for React with TypeScript"                 │ │   │  
+│  │ │ "Create a SaaS dashboard with user auth, payments, and     │ │   │
+│  │ │  real-time notifications using React and Node.js"          │ │   │  
 │  │ └─────────────────────────────────────────────────────────────┘ │   │
 │  │                                                                 │   │
-│  │         Platform: [React ▼] [🔧 Advanced Options]              │   │
+│  │    Framework: [React ▼] UI Style: [Universal System ▼]        │   │
 │  │                                                                 │   │
-│  │                  [✨ Generate Components]                       │   │
+│  │                    [✨ Generate Project]                        │   │
 │  │                                                                 │   │
 │  │                          OR                                     │   │
 │  │                                                                 │   │
-│  │              [📚 Browse Component Registry]                     │   │
+│  │               [⚙️ Advanced Configuration]                        │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                      PLATFORM TEMPLATES                                │
+│                       QUICK START TEMPLATES                            │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
-│  │ [⚛️]    │ │ [🟢]    │ │ [🔴]    │ │ [🟠]    │ │ [📱]    │         │
-│  │ React   │ │ Vue.js  │ │ Angular │ │ Svelte  │ │ React   │         │
-│  │ + Next  │ │ + Nuxt  │ │ + Ionic │ │ + Kit   │ │ Native  │         │
+│  │ [📱]    │ │ [🌐]    │ │ [⚡]    │ │ [🛒]    │ │ [📊]    │         │
+│  │ Mobile  │ │ Web App │ │ API     │ │ E-comm  │ │ Dashboard│         │
+│  │ App     │ │         │ │ Service │ │ Store   │ │          │         │
 │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
-│  │ [🖥️]    │ │ [📦]    │ │ [🎨]    │ │ [🔧]    │ │ [🌐]    │         │
-│  │ Electron│ │ Web     │ │ Radix   │ │ Headless│ │ Vanilla │         │
-│  │ Desktop │ │ Components│ │ UI      │ │ UI      │ │ JS      │         │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │ 🎨 NEW: All templates now support multiple UI frameworks:      │   │
+│  │ React • Vue • Angular • Svelte • React Native • Electron       │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -834,4 +834,174 @@ Expected Bundle Sizes:
 
 ---
 
-This comprehensive wireframe specification provides your engineering team with detailed blueprints for implementing the Xaheen CLI web interface. Each component includes specific xala-mcp integration points, accessibility requirements, and responsive design considerations for a production-ready implementation.
+---
+
+## 🎨 NEW: Universal Design System Registry Interface
+
+### Design System Registry Landing Page
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      DESIGN SYSTEM NAVBAR                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                         HERO SECTION                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │        🌍 Xaheen Universal Design System v5.0                  │   │
+│  │         The World's First Universal Component Registry          │   │
+│  │                                                                 │   │
+│  │  [🚀 Get Started] [📚 Browse Registry] [🎨 Playground]        │   │
+│  │                                                                 │   │
+│  │  Write once, deploy everywhere: React • Vue • Angular • Svelte │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                    PLATFORM SELECTOR                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │ Choose your platform to see components:                        │   │
+│  │                                                                 │   │
+│  │ [React]    [Vue.js]   [Angular]   [Svelte]   [React Native]   │   │
+│  │   ✅         ⚪         ⚪         ⚪          ⚪              │   │
+│  │                                                                 │   │
+│  │ [Electron] [Headless] [Radix UI]  [Ionic]    [Vanilla JS]     │   │
+│  │   ⚪         ⚪         ⚪         ⚪          ⚪              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                      COMPONENT REGISTRY                                │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
+│  │ Button  │ │ Input   │ │ Card    │ │ Modal   │ │ Table   │         │
+│  │ ✅ 11   │ │ ✅ 11   │ │ ✅ 11   │ │ ✅ 9    │ │ ✅ 8    │         │
+│  │ platforms│ │platforms│ │platforms│ │platforms│ │platforms│         │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         │
+│  │ Form    │ │ Nav     │ │ Charts  │ │ Sidebar │ │ Search  │         │
+│  │ ✅ 7    │ │ ✅ 10   │ │ ✅ 6    │ │ ✅ 9    │ │ ✅ 11   │         │
+│  │platforms│ │platforms│ │platforms│ │platforms│ │platforms│         │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Component Detail Page (Example: Button Component)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [← Back] Button Component                          [⭐ Star] [📋 Copy]  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────┐ ┌─────────────────────────────────────────┐   │
+│  │    LIVE PREVIEW     │ │           CODE EXAMPLE                  │   │
+│  │                     │ │                                         │   │
+│  │  [Primary Button]   │ │ // React                               │   │
+│  │  [Secondary Button] │ │ import { Button } from '@xaheen/react';│   │
+│  │  [Outline Button]   │ │                                         │   │
+│  │  [Ghost Button]     │ │ <Button variant="primary" size="lg">   │   │
+│  │                     │ │   Click me                             │   │
+│  │  ↕️ Resize me        │ │ </Button>                              │   │
+│  └─────────────────────┘ └─────────────────────────────────────────┘   │
+│                                                                         │
+│  Platform Compatibility:                                               │
+│  ✅ React    ✅ Vue      ✅ Angular   ✅ Svelte   ✅ React Native      │
+│  ✅ Electron ✅ Radix UI ✅ Headless  ⚪ Ionic    ✅ Vanilla JS        │
+│                                                                         │
+│  Features:                                                              │
+│  ✅ WCAG AAA Accessible  ✅ Norwegian NSM Support  ✅ Dark Mode         │
+│  ✅ Professional Sizing  ✅ Loading States         ✅ Icon Support      │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        FRAMEWORK TABS                           │   │
+│  │                                                                 │   │
+│  │ [React] [Vue.js] [Angular] [Svelte] [React Native] [Electron]  │   │
+│  │                                                                 │   │
+│  │ // React Implementation                                         │   │
+│  │ export const Button = forwardRef<HTMLButtonElement, ButtonProps>│   │
+│  │ (({ variant, size, ...props }, ref) => {                       │   │
+│  │   return (                                                      │   │
+│  │     <button                                                     │   │
+│  │       className={cn(buttonVariants({ variant, size }))}        │   │
+│  │       ref={ref}                                                 │   │
+│  │       {...props}                                                │   │
+│  │     />                                                          │   │
+│  │   );                                                            │   │
+│  │ });                                                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  [📥 Install] [📋 Copy Code] [🚀 Open in Playground] [📖 Documentation]│
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Interactive Playground
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Xaheen Design System Playground                    [Share] [Export]    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Platform: [React ▼]  Theme: [Light ▼]  Size: [Desktop ▼]             │
+│                                                                         │
+│  ┌─────────────────────┐ ┌─────────────────────────────────────────┐   │
+│  │    COMPONENT TREE   │ │             CANVAS                       │   │
+│  │                     │ │                                         │   │
+│  │ + Layout            │ │  ┌─────────────────────────────────┐    │   │
+│  │   - Container       │ │  │           Card Component        │    │   │
+│  │   - Stack           │ │  │                                 │    │   │
+│  │ + Components        │ │  │  [Primary Button] [Secondary]   │    │   │
+│  │   - Button     ←    │ │  │                                 │    │   │
+│  │   - Input           │ │  │  ┌─────────────────────────┐    │    │   │
+│  │   - Card            │ │  │  │ Input Field             │    │    │   │
+│  │ + Blocks            │ │  │  └─────────────────────────┘    │    │   │
+│  │   - Form            │ │  │                                 │    │   │
+│  │   - Navigation      │ │  │  [✓] Enable dark mode          │    │   │
+│  │                     │ │  └─────────────────────────────────┘    │   │
+│  │                     │ │                                         │   │
+│  │ [+ Add Component]   │ │         [🎨 Customize Theme]            │   │
+│  └─────────────────────┘ └─────────────────────────────────────────┘   │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        PROPERTIES PANEL                         │   │
+│  │                                                                 │   │
+│  │ Button Properties:                                              │   │
+│  │ Variant: [Primary ▼] Size: [Large ▼]                          │   │
+│  │ Full Width: [☐]       Loading: [☐]                            │   │
+│  │ Disabled: [☐]         Icon: [None ▼]                          │   │
+│  │                                                                 │   │
+│  │ Text: [____________Click me___________]                         │   │
+│  │                                                                 │   │
+│  │ NSM Classification: [OPEN ▼]                                   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  [📋 Copy Code] [💾 Save] [🔗 Share] [📱 Preview Mobile]              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 Integration Strategy
+
+### How the Universal Design System Enhances the Full-Stack Platform
+
+1. **Existing Full-Stack Platform** (Xaheen CLI v3.0)
+   - Project generation and scaffolding
+   - AI-assisted development
+   - Technology stack configuration
+   - Full-stack application templates
+
+2. **Enhanced with Universal Design System** (v5.0 addition)
+   - All generated components work in React, Vue, Angular, Svelte
+   - Consistent design language across all frameworks
+   - Professional Norwegian-compliant UI components
+   - Design system registry for component discovery
+
+3. **Unified Developer Experience**
+   - Generate full-stack projects with universal UI components
+   - Switch between frameworks while maintaining design consistency
+   - Access to pre-built industry-specific templates
+   - Professional-grade accessibility and internationalization
+
+### User Journey Enhancement
+
+**Before (v3.0)**: "Generate a React dashboard" → React-only components
+**After (v5.0)**: "Generate a React dashboard" → React components that can be easily ported to Vue, Angular, or Svelte with the same design
+
+**New Capability**: "Generate components for multiple platforms" → Universal components work everywhere
+
+---
+
+This comprehensive wireframe specification provides your engineering team with detailed blueprints for implementing both the enhanced Xaheen CLI web interface and the new Universal Design System registry. The platforms work together to provide a complete full-stack development experience with universal UI components.

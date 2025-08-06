@@ -136,7 +136,7 @@ ${options.aiProviders
 	.join("\n")}
 import { RefactoringEngine } from "./engine/refactoring-engine";
 import { FeedbackManager } from "./feedback/feedback-manager";
-${options.includeGitIntegration ? "import { GitIntegration } from "./git/git-integration";" : ""}
+${options.includeGitIntegration ? 'import { GitIntegration } from "./git/git-integration";' : ""}
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -179,7 +179,7 @@ export class ${options.name}RefactoringAssistant {
     options: RefactoringOptions = {}
   ): Promise<RefactoringSuggestion[]> {
     try {
-      this.logger.info(\`Analyzing \${filePath} for refactoring opportunities...\`);
+      this.logger.info(\`Analyzing \\\${filePath} for refactoring opportunities...\`);
 
       const fullPath = join(this.projectPath, filePath);
       const code = await readFile(fullPath, 'utf-8');

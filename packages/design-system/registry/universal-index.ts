@@ -85,40 +85,73 @@ export const createPlatformLoader = (platform: Platform) => {
     react: () => ({
       Button: () => import('./platforms/react/button').then(m => m.Button),
       Input: () => import('./platforms/react/input').then(m => m.Input),
+      Card: () => import('./platforms/react/card').then(m => m.Card),
     }),
     
     'react-native': () => ({
       Button: () => import('./platforms/react-native/Button').then(m => m.Button),
       Input: () => import('./platforms/react-native/Input').then(m => m.Input),
+      Card: () => import('./platforms/react-native/Card').then(m => m.Card),
     }),
     
     vue: () => ({
       Button: () => import('./platforms/vue/Button.vue').then(m => m.default),
       Input: () => import('./platforms/vue/Input.vue').then(m => m.default),
+      Card: () => import('./platforms/vue/Card.vue').then(m => m.default),
     }),
     
     angular: () => ({
       Button: () => import('./platforms/angular/button.component').then(m => m.ButtonComponent),
       Input: () => import('./platforms/angular/input.component').then(m => m.InputComponent),
+      Card: () => import('./platforms/angular/card.component').then(m => m.CardComponent),
     }),
     
     svelte: () => ({
       Button: () => import('./platforms/svelte/Button.svelte').then(m => m.default),
       Input: () => import('./platforms/svelte/Input.svelte').then(m => m.default),
+      Card: () => import('./platforms/svelte/Card.svelte').then(m => m.default),
+    }),
+    
+    // Platform-specific implementations
+    electron: () => ({
+      Button: () => import('./platforms/electron/button').then(m => m.Button),
+      Input: () => import('./platforms/electron/input').then(m => m.Input),
+      Card: () => import('./platforms/electron/card').then(m => m.Card),
+      WindowControls: () => import('./platforms/electron/window-controls').then(m => m.WindowControls),
+      NativeMenus: () => import('./platforms/electron/native-menus').then(m => m.NativeMenus),
+      FileSystemAccess: () => import('./platforms/electron/file-system-access').then(m => m.FileSystemAccess),
+    }),
+    
+    ionic: () => ({
+      Button: () => import('./platforms/ionic/button').then(m => m.Button),
+      Input: () => import('./platforms/ionic/input').then(m => m.Input),
+      Card: () => import('./platforms/ionic/card').then(m => m.Card),
+      Provider: () => import('./platforms/ionic/provider').then(m => m.IonicProvider),
+    }),
+    
+    vanilla: () => ({
+      Button: () => import('./platforms/vanilla/button').then(m => m.Button),
+      Input: () => import('./platforms/vanilla/input').then(m => m.Input),
+      Card: () => import('./platforms/vanilla/card').then(m => m.Card),
+    }),
+    
+    'headless-ui': () => ({
+      Button: () => import('./platforms/headless-ui/button').then(m => m.Button),
+      Input: () => import('./platforms/headless-ui/input').then(m => m.Input),
+      Card: () => import('./platforms/headless-ui/card').then(m => m.Card),
+    }),
+    
+    radix: () => ({
+      Button: () => import('./platforms/radix/button').then(m => m.Button),
+      Input: () => import('./platforms/radix/input').then(m => m.Input),
+      Card: () => import('./platforms/radix/card').then(m => m.Card),
     }),
     
     // Framework variants use their base framework
     nextjs: () => loaders.react(),
-    electron: () => loaders.react(),
     nuxt: () => loaders.vue(),
     sveltekit: () => loaders.svelte(),
     expo: () => loaders['react-native'](),
-    
-    // Fallbacks
-    vanilla: () => ({}),
-    ionic: () => loaders.react(),
-    radix: () => loaders.react(),
-    'headless-ui': () => loaders.react()
   };
   
   return loaders[platform] || loaders.vanilla;
@@ -229,9 +262,28 @@ export const PlatformUtils = {
   isReactBased: (platform: Platform) => 
     ['react', 'nextjs', 'electron', 'react-native', 'expo', 'ionic', 'radix', 'headless-ui'].includes(platform),
   isWebBased: (platform: Platform) =>
-    ['react', 'vue', 'angular', 'svelte', 'nextjs', 'nuxt', 'sveltekit', 'vanilla'].includes(platform),
+    ['react', 'vue', 'angular', 'svelte', 'nextjs', 'nuxt', 'sveltekit', 'vanilla', 'electron', 'ionic', 'radix', 'headless-ui'].includes(platform),
   isMobileBased: (platform: Platform) =>
-    ['react-native', 'expo', 'ionic'].includes(platform)
+    ['react-native', 'expo', 'ionic'].includes(platform),
+  isDesktopBased: (platform: Platform) =>
+    ['electron'].includes(platform),
+  isVanillaBased: (platform: Platform) =>
+    ['vanilla'].includes(platform),
+  getBasePlatform: (platform: Platform) => {
+    const baseMappings: Record<string, Platform> = {
+      'nextjs': 'react',
+      'nuxt': 'vue',
+      'sveltekit': 'svelte',
+      'expo': 'react-native',
+      'headless-ui': 'react',
+      'radix': 'react'
+    };
+    return baseMappings[platform] || platform;
+  },
+  getSupportedComponents: (platform: Platform) => {
+    const loader = createPlatformLoader(platform);
+    return Object.keys(loader());
+  }
 };
 
 // Token utilities for all platforms

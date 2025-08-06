@@ -18,7 +18,7 @@
         "wcagLevel": "AAA",
         "norwegianOptimized": true
       },
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "dependencies": [
         "@radix-ui/react-slot",
         "class-variance-authority"
@@ -28,6 +28,56 @@
         {
           "path": "components/button/button.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "platforms/react/button.tsx",
+          "type": "registry:component",
+          "platform": "react"
+        },
+        {
+          "path": "platforms/vue/Button.vue",
+          "type": "registry:component",
+          "platform": "vue"
+        },
+        {
+          "path": "platforms/angular/button.component.ts",
+          "type": "registry:component",
+          "platform": "angular"
+        },
+        {
+          "path": "platforms/svelte/Button.svelte",
+          "type": "registry:component",
+          "platform": "svelte"
+        },
+        {
+          "path": "platforms/react-native/Button.tsx",
+          "type": "registry:component",
+          "platform": "react-native"
+        },
+        {
+          "path": "platforms/electron/button.tsx",
+          "type": "registry:component",
+          "platform": "electron"
+        },
+        {
+          "path": "platforms/ionic/button.tsx",
+          "type": "registry:component",
+          "platform": "ionic"
+        },
+        {
+          "path": "platforms/vanilla/button.js",
+          "type": "registry:component",
+          "platform": "vanilla"
+        },
+        {
+          "path": "platforms/headless-ui/button.tsx",
+          "type": "registry:component",
+          "platform": "headless-ui"
+        },
+        {
+          "path": "platforms/radix/button.tsx",
+          "type": "registry:component",
+          "platform": "radix"
         },
         {
           "path": "components/button/button.stories.tsx",
@@ -53,12 +103,62 @@
         "wcagLevel": "AAA",
         "norwegianOptimized": true
       },
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "registryDependencies": ["utils"],
       "files": [
         {
           "path": "components/input/input.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "platforms/react/input.tsx",
+          "type": "registry:component",
+          "platform": "react"
+        },
+        {
+          "path": "platforms/vue/Input.vue",
+          "type": "registry:component",
+          "platform": "vue"
+        },
+        {
+          "path": "platforms/angular/input.component.ts",
+          "type": "registry:component",
+          "platform": "angular"
+        },
+        {
+          "path": "platforms/svelte/Input.svelte",
+          "type": "registry:component",
+          "platform": "svelte"
+        },
+        {
+          "path": "platforms/react-native/Input.tsx",
+          "type": "registry:component",
+          "platform": "react-native"
+        },
+        {
+          "path": "platforms/electron/input.tsx",
+          "type": "registry:component",
+          "platform": "electron"
+        },
+        {
+          "path": "platforms/ionic/input.tsx",
+          "type": "registry:component",
+          "platform": "ionic"
+        },
+        {
+          "path": "platforms/vanilla/input.js",
+          "type": "registry:component",
+          "platform": "vanilla"
+        },
+        {
+          "path": "platforms/headless-ui/input.tsx",
+          "type": "registry:component",
+          "platform": "headless-ui"
+        },
+        {
+          "path": "platforms/radix/input.tsx",
+          "type": "registry:component",
+          "platform": "radix"
         }
       ]
     },
@@ -72,12 +172,62 @@
         "classification": "OPEN",
         "wcagLevel": "AAA"
       },
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "registryDependencies": ["utils"],
       "files": [
         {
           "path": "components/card/card.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "platforms/react/card.tsx",
+          "type": "registry:component",
+          "platform": "react"
+        },
+        {
+          "path": "platforms/vue/Card.vue",
+          "type": "registry:component",
+          "platform": "vue"
+        },
+        {
+          "path": "platforms/angular/card.component.ts",
+          "type": "registry:component",
+          "platform": "angular"
+        },
+        {
+          "path": "platforms/svelte/Card.svelte",
+          "type": "registry:component",
+          "platform": "svelte"
+        },
+        {
+          "path": "platforms/react-native/Card.tsx",
+          "type": "registry:component",
+          "platform": "react-native"
+        },
+        {
+          "path": "platforms/electron/card.tsx",
+          "type": "registry:component",
+          "platform": "electron"
+        },
+        {
+          "path": "platforms/ionic/card.tsx",
+          "type": "registry:component",
+          "platform": "ionic"
+        },
+        {
+          "path": "platforms/vanilla/card.js",
+          "type": "registry:component",
+          "platform": "vanilla"
+        },
+        {
+          "path": "platforms/headless-ui/card.tsx",
+          "type": "registry:component",
+          "platform": "headless-ui"
+        },
+        {
+          "path": "platforms/radix/card.tsx",
+          "type": "registry:component",
+          "platform": "radix"
         }
       ]
     },
@@ -87,7 +237,7 @@
       "title": "Loading Spinner",
       "description": "Accessible loading indicators with reduced motion support",
       "category": "components",
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -102,7 +252,7 @@
       "title": "Theme Switcher",
       "description": "Theme switching component with system preference detection",
       "category": "theme-components",
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "registryDependencies": ["utils", "button"],
       "files": [
         {
@@ -116,7 +266,7 @@
       "type": "registry:utils",
       "title": "Utilities",
       "description": "Core utility functions",
-      "platforms": ["react", "nextjs", "vue", "angular", "svelte"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {
@@ -130,7 +280,7 @@
       "type": "registry:hook",
       "title": "useResponsive",
       "description": "Responsive design hook with breakpoint detection",
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "files": [
         {
           "path": "hooks/use-responsive.ts",
@@ -143,7 +293,7 @@
       "type": "registry:hook",
       "title": "useAccessibility",
       "description": "WCAG AAA compliance hooks",
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "files": [
         {
           "path": "hooks/use-accessibility.ts",
@@ -218,7 +368,7 @@
         "wcagLevel": "AAA",
         "norwegianOptimized": true
       },
-      "platforms": ["react", "nextjs"],
+      "platforms": ["react", "nextjs", "vue", "angular", "svelte", "react-native", "electron", "ionic", "vanilla", "headless-ui", "radix"],
       "registryDependencies": ["button", "input", "card"],
       "files": [
         {

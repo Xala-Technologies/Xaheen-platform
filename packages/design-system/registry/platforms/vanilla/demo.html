@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xaheen Web Components Demo</title>
+  <style>
+    /* Global styles for demo */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      color: #1a202c;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #f7fafc;
+    }
+
+    h1, h2, h3 {
+      color: #2d3748;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.875rem;
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .demo-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .demo-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .demo-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .demo-description {
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+
+    code {
+      background: #edf2f7;
+      padding: 0.125rem 0.25rem;
+      border-radius: 0.25rem;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.875rem;
+    }
+
+    pre {
+      background: #2d3748;
+      color: #f7fafc;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .output-log {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .output-log p {
+      margin: 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Xaheen Web Components Demo</h1>
+  <p class="demo-description">
+    Standards-compliant Web Components with Shadow DOM, CSS Custom Properties, and WCAG AAA accessibility.
+  </p>
+
+  <!-- Button Component Demo -->
+  <section class="demo-section">
+    <h2>Button Component</h2>
+    <p class="demo-description">
+      The <code>&lt;xaheen-button&gt;</code> component supports multiple variants, sizes, and states.
+    </p>
+
+    <h3>Variants</h3>
+    <div class="demo-row">
+      <xaheen-button variant="primary">Primary</xaheen-button>
+      <xaheen-button variant="secondary">Secondary</xaheen-button>
+      <xaheen-button variant="outline">Outline</xaheen-button>
+      <xaheen-button variant="ghost">Ghost</xaheen-button>
+      <xaheen-button variant="destructive">Destructive</xaheen-button>
+    </div>
+
+    <h3>Sizes</h3>
+    <div class="demo-row">
+      <xaheen-button size="xs">Extra Small</xaheen-button>
+      <xaheen-button size="sm">Small</xaheen-button>
+      <xaheen-button size="md">Medium</xaheen-button>
+      <xaheen-button size="lg">Large</xaheen-button>
+      <xaheen-button size="xl">Extra Large</xaheen-button>
+    </div>
+
+    <h3>States</h3>
+    <div class="demo-row">
+      <xaheen-button>Normal</xaheen-button>
+      <xaheen-button disabled>Disabled</xaheen-button>
+      <xaheen-button loading>Loading</xaheen-button>
+      <xaheen-button fullwidth>Full Width</xaheen-button>
+    </div>
+
+    <h3>Usage Example</h3>
+    <pre><code>&lt;xaheen-button 
+  variant="primary" 
+  size="md"
+  aria-label="Submit form"
+&gt;
+  Submit
+&lt;/xaheen-button&gt;</code></pre>
+  </section>
+
+  <!-- Input Component Demo -->
+  <section class="demo-section">
+    <h2>Input Component</h2>
+    <p class="demo-description">
+      The <code>&lt;xaheen-input&gt;</code> component is form-associated and supports validation.
+    </p>
+
+    <h3>Basic Inputs</h3>
+    <div class="demo-grid">
+      <xaheen-input 
+        label="Email Address" 
+        type="email" 
+        placeholder="Enter your email"
+        required
+      ></xaheen-input>
+
+      <xaheen-input 
+        label="Password" 
+        type="password" 
+        placeholder="Enter your password"
+      ></xaheen-input>
+
+      <xaheen-input 
+        label="Phone Number" 
+        type="tel" 
+        placeholder="+1 (555) 000-0000"
+      ></xaheen-input>
+    </div>
+
+    <h3>Input States</h3>
+    <div class="demo-grid">
+      <xaheen-input 
+        label="Normal Input" 
+        value="Normal state"
+      ></xaheen-input>
+
+      <xaheen-input 
+        label="Disabled Input" 
+        value="Cannot edit" 
+        disabled
+      ></xaheen-input>
+
+      <xaheen-input 
+        label="Error Input" 
+        value="Invalid value" 
+        error="This field contains an error"
+      ></xaheen-input>
+
+      <xaheen-input 
+        label="Read-only Input" 
+        value="Read only value" 
+        readonly
+      ></xaheen-input>
+    </div>
+
+    <h3>Form Integration</h3>
+    <form id="demo-form">
+      <div class="demo-grid">
+        <xaheen-input 
+          name="username"
+          label="Username" 
+          required
+          minlength="3"
+          pattern="[a-zA-Z0-9_]+"
+        ></xaheen-input>
+
+        <xaheen-input 
+          name="email"
+          label="Email" 
+          type="email"
+          required
+        ></xaheen-input>
+
+        <div class="demo-row">
+          <xaheen-button type="submit" variant="primary">Submit Form</xaheen-button>
+          <xaheen-button type="reset" variant="outline">Reset</xaheen-button>
+        </div>
+      </div>
+    </form>
+
+    <h3>Usage Example</h3>
+    <pre><code>&lt;xaheen-input 
+  label="Email Address"
+  type="email"
+  name="email"
+  placeholder="your@email.com"
+  required
+  error="Please enter a valid email"
+&gt;&lt;/xaheen-input&gt;</code></pre>
+  </section>
+
+  <!-- Card Component Demo -->
+  <section class="demo-section">
+    <h2>Card Component</h2>
+    <p class="demo-description">
+      The <code>&lt;xaheen-card&gt;</code> component provides flexible content containers.
+    </p>
+
+    <h3>Card Variants</h3>
+    <div class="demo-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+      <xaheen-card variant="default">
+        <h4 slot="header">Default Card</h4>
+        <p>This is a default card with a subtle border and shadow.</p>
+        <div slot="footer">Card footer</div>
+      </xaheen-card>
+
+      <xaheen-card variant="outlined">
+        <h4 slot="header">Outlined Card</h4>
+        <p>This card has a prominent border with no shadow.</p>
+        <div slot="footer">Card footer</div>
+      </xaheen-card>
+
+      <xaheen-card variant="filled">
+        <h4 slot="header">Filled Card</h4>
+        <p>This card has a solid background with no border.</p>
+        <div slot="footer">Card footer</div>
+      </xaheen-card>
+
+      <xaheen-card variant="elevated">
+        <h4 slot="header">Elevated Card</h4>
+        <p>This card has a prominent shadow for elevation.</p>
+        <div slot="footer">Card footer</div>
+      </xaheen-card>
+    </div>
+
+    <h3>Interactive Cards</h3>
+    <div class="demo-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+      <xaheen-card hoverable>
+        <h4>Hoverable Card</h4>
+        <p>This card lifts up when you hover over it.</p>
+      </xaheen-card>
+
+      <xaheen-card clickable aria-label="Click to view details">
+        <h4>Clickable Card</h4>
+        <p>This entire card is clickable and keyboard accessible.</p>
+      </xaheen-card>
+    </div>
+
+    <h3>Padding Variations</h3>
+    <div class="demo-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <xaheen-card padding="none">
+        <p>No padding</p>
+      </xaheen-card>
+      <xaheen-card padding="sm">
+        <p>Small padding</p>
+      </xaheen-card>
+      <xaheen-card padding="md">
+        <p>Medium padding (default)</p>
+      </xaheen-card>
+      <xaheen-card padding="lg">
+        <p>Large padding</p>
+      </xaheen-card>
+      <xaheen-card padding="xl">
+        <p>Extra large padding</p>
+      </xaheen-card>
+    </div>
+
+    <h3>Usage Example</h3>
+    <pre><code>&lt;xaheen-card 
+  variant="elevated" 
+  clickable
+  aria-label="View product details"
+&gt;
+  &lt;h4 slot="header"&gt;Product Name&lt;/h4&gt;
+  &lt;p&gt;Product description goes here&lt;/p&gt;
+  &lt;div slot="footer"&gt;
+    &lt;xaheen-button size="sm"&gt;View Details&lt;/xaheen-button&gt;
+  &lt;/div&gt;
+&lt;/xaheen-card&gt;</code></pre>
+  </section>
+
+  <!-- Event Handling Demo -->
+  <section class="demo-section">
+    <h2>Event Handling</h2>
+    <p class="demo-description">
+      All components dispatch custom events with the <code>xaheen-</code> prefix.
+    </p>
+
+    <div class="demo-grid">
+      <div>
+        <h3>Try these interactions:</h3>
+        <div class="demo-row">
+          <xaheen-button id="event-button" variant="primary">Click Me</xaheen-button>
+          <xaheen-input id="event-input" label="Type something" placeholder="Type here..."></xaheen-input>
+        </div>
+        <xaheen-card id="event-card" clickable>
+          <p>Click this card</p>
+        </xaheen-card>
+      </div>
+      
+      <div>
+        <h3>Event Log:</h3>
+        <div id="event-log" class="output-log">
+          <p>Events will appear here...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script type="module">
+    // Import the components
+    import './index.js';
+
+    // Event logging
+    const eventLog = document.getElementById('event-log');
+    let eventCount = 0;
+
+    function logEvent(message) {
+      eventCount++;
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('p');
+      entry.textContent = `[${timestamp}] ${message}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 10 events
+      while (eventLog.children.length > 10) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Button events
+    document.getElementById('event-button').addEventListener('xaheen-click', (e) => {
+      logEvent('Button clicked!');
+    });
+
+    // Input events
+    const eventInput = document.getElementById('event-input');
+    eventInput.addEventListener('xaheen-input', (e) => {
+      logEvent(`Input changed: "${e.detail.value}"`);
+    });
+    eventInput.addEventListener('xaheen-focus', () => {
+      logEvent('Input focused');
+    });
+    eventInput.addEventListener('xaheen-blur', () => {
+      logEvent('Input blurred');
+    });
+
+    // Card events
+    document.getElementById('event-card').addEventListener('xaheen-card-click', () => {
+      logEvent('Card clicked!');
+    });
+
+    // Form submission
+    document.getElementById('demo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      logEvent(`Form submitted: ${JSON.stringify(data)}`);
+    });
+  </script>
+</body>
+</html>

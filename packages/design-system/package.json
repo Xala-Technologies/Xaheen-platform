@@ -100,6 +100,66 @@
       "require": "./registry/platforms/vanilla/*.js",
       "types": "./registry/platforms/vanilla/*.js"
     },
+    "./electron": {
+      "import": "./registry/platforms/electron/index.ts",
+      "require": "./registry/platforms/electron/index.ts",
+      "types": "./registry/platforms/electron/index.ts"
+    },
+    "./electron/*": {
+      "import": "./registry/platforms/electron/*.tsx",
+      "require": "./registry/platforms/electron/*.tsx",
+      "types": "./registry/platforms/electron/*.tsx"
+    },
+    "./ionic": {
+      "import": "./registry/platforms/ionic/index.ts",
+      "require": "./registry/platforms/ionic/index.ts",
+      "types": "./registry/platforms/ionic/index.ts"
+    },
+    "./ionic/*": {
+      "import": "./registry/platforms/ionic/*.tsx",
+      "require": "./registry/platforms/ionic/*.tsx",
+      "types": "./registry/platforms/ionic/*.tsx"
+    },
+    "./nextjs": {
+      "import": "./registry/platforms/react/index.ts",
+      "require": "./registry/platforms/react/index.ts",
+      "types": "./registry/platforms/react/index.ts"
+    },
+    "./nextjs/*": {
+      "import": "./registry/platforms/react/*.tsx",
+      "require": "./registry/platforms/react/*.tsx",
+      "types": "./registry/platforms/react/*.tsx"
+    },
+    "./nuxt": {
+      "import": "./registry/platforms/vue/index.ts",
+      "require": "./registry/platforms/vue/index.ts",
+      "types": "./registry/platforms/vue/index.ts"
+    },
+    "./nuxt/*": {
+      "import": "./registry/platforms/vue/*.vue",
+      "require": "./registry/platforms/vue/*.vue",
+      "types": "./registry/platforms/vue/*.vue"
+    },
+    "./sveltekit": {
+      "import": "./registry/platforms/svelte/index.ts",
+      "require": "./registry/platforms/svelte/index.ts",
+      "types": "./registry/platforms/svelte/index.ts"
+    },
+    "./sveltekit/*": {
+      "import": "./registry/platforms/svelte/*.svelte",
+      "require": "./registry/platforms/svelte/*.svelte",
+      "types": "./registry/platforms/svelte/*.svelte"
+    },
+    "./expo": {
+      "import": "./registry/platforms/react-native/index.ts",
+      "require": "./registry/platforms/react-native/index.ts",
+      "types": "./registry/platforms/react-native/index.ts"
+    },
+    "./expo/*": {
+      "import": "./registry/platforms/react-native/*.tsx",
+      "require": "./registry/platforms/react-native/*.tsx",
+      "types": "./registry/platforms/react-native/*.tsx"
+    },
     "./cli": {
       "import": "./registry/cli/component-cli.ts",
       "require": "./registry/cli/component-cli.ts",

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { promises as fs, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import * as path from "path";
 import { z } from "zod";
 import type {
@@ -41,7 +41,7 @@ export class ConfigManager {
 		logger.debug("Loading CLI configuration...");
 
 		// Check for existing unified config first
-		if (await fs.pathExists(this.configPaths.unified)) {
+		if (existsSync(this.configPaths.unified)) {
 			logger.debug("Found CLI configuration file");
 			return this.loadUnifiedConfig();
 		}
@@ -72,12 +72,13 @@ export class ConfigManager {
 			const validatedConfig = XaheenConfigSchema.parse(config);
 
 			// Ensure directory exists
-			await fs.ensureDir(path.dirname(this.configPaths.unified));
+			const configDir = path.dirname(this.configPaths.unified);
+			if (!existsSync(configDir)) {
+				mkdirSync(configDir, { recursive: true });
+			}
 
 			// Save unified config
-			await fs.writeJson(this.configPaths.unified, validatedConfig, {
-				spaces: 2,
-			});
+			await fs.writeFile(this.configPaths.unified, JSON.stringify(validatedConfig, null, 2), 'utf-8');
 
 			this.cachedConfig = validatedConfig;
 			logger.success("Configuration saved successfully");
@@ -182,7 +183,8 @@ export class ConfigManager {
 		packages: string[];
 	}> {
 		try {
-			const packageJson = await fs.readJson(this.configPaths.packageJson);
+			const packageJsonContent = await fs.readFile(this.configPaths.packageJson, 'utf-8');
+			const packageJson = JSON.parse(packageJsonContent);
 
 			// Check for workspaces (lerna/yarn/npm workspaces)
 			if (packageJson.workspaces) {
@@ -202,8 +204,8 @@ export class ConfigManager {
 
 			// Check for nx
 			if (
-				await fs.pathExists(
-					path.join(path.dirname(this.configPaths.packageJson), "nx.json"),
+				existsSync(
+					path.join(path.dirname(this.configPaths.packageJson), "nx.json")
 				)
 			) {
 				return {
@@ -233,7 +235,8 @@ export class ConfigManager {
 
 	private async loadUnifiedConfig(): Promise<XaheenConfig> {
 		try {
-			const config = await fs.readJson(this.configPaths.unified);
+			const configContent = await fs.readFile(this.configPaths.unified, 'utf-8');
+			const config = JSON.parse(configContent);
 			const validatedConfig = XaheenConfigSchema.parse(config);
 			this.cachedConfig = validatedConfig;
 			return validatedConfig;
@@ -245,12 +248,12 @@ export class ConfigManager {
 
 	private async detectAndMigrateLegacyConfigs(): Promise<MigrationResult> {
 		// Check for xaheen-cli config
-		if (await fs.pathExists(this.configPaths.xaheen)) {
+		if (existsSync(this.configPaths.xaheen)) {
 			return this.migrateFromXaheen();
 		}
 
 		// Check for xala-cli config
-		if (await fs.pathExists(this.configPaths.xala)) {
+		if (existsSync(this.configPaths.xala)) {
 			return this.migrateFromXala();
 		}
 
@@ -267,9 +270,8 @@ export class ConfigManager {
 		try {
 			logger.info("Migrating from xaheen-cli configuration...");
 
-			const xaheenConfig: LegacyXaheenConfig = await fs.readJson(
-				this.configPaths.xaheen,
-			);
+			const configContent = await fs.readFile(this.configPaths.xaheen, 'utf-8');
+			const xaheenConfig: LegacyXaheenConfig = JSON.parse(configContent);
 
 			const unifiedConfig: XaheenConfig = {
 				version: "3.0.0",
@@ -395,7 +397,8 @@ export class ConfigManager {
 		packageManager?: string;
 	}> {
 		try {
-			const packageJson = await fs.readJson(this.configPaths.packageJson);
+			const packageJsonContent = await fs.readFile(this.configPaths.packageJson, 'utf-8');
+			const packageJson = JSON.parse(packageJsonContent);
 
 			return {
 				name: packageJson.name || "my-app",
@@ -428,10 +431,10 @@ export class ConfigManager {
 	private detectPackageManager(): string {
 		const rootDir = path.dirname(this.configPaths.packageJson);
 
-		if (fs.existsSync(path.join(rootDir, "bun.lockb"))) return "bun";
-		if (fs.existsSync(path.join(rootDir, "pnpm-lock.yaml"))) return "pnpm";
-		if (fs.existsSync(path.join(rootDir, "yarn.lock"))) return "yarn";
-		if (fs.existsSync(path.join(rootDir, "package-lock.json"))) return "npm";
+		if (existsSync(path.join(rootDir, "bun.lockb"))) return "bun";
+		if (existsSync(path.join(rootDir, "pnpm-lock.yaml"))) return "pnpm";
+		if (existsSync(path.join(rootDir, "yarn.lock"))) return "yarn";
+		if (existsSync(path.join(rootDir, "package-lock.json"))) return "npm";
 
 		return "bun"; // default
 	}
@@ -454,7 +457,7 @@ export class ConfigManager {
 				path.dirname(this.configPaths.packageJson),
 				dirName,
 			);
-			if (!(await fs.pathExists(dirPath))) return [];
+			if (!existsSync(dirPath)) return [];
 
 			const items = await fs.readdir(dirPath, { withFileTypes: true });
 			return items

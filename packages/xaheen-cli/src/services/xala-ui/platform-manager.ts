@@ -6,7 +6,7 @@
  */
 
 import { consola } from "consola";
-import * as fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 import * as Handlebars from "handlebars";
 import * as path from "path";
 import type {
@@ -110,7 +110,7 @@ export abstract class Platform {
 			`${templateName}.hbs`,
 		);
 
-		if (!(await fs.pathExists(templatePath))) {
+		if (!existsSync(templatePath)) {
 			throw new Error(`Template not found: ${templatePath}`);
 		}
 
@@ -126,7 +126,10 @@ export abstract class Platform {
 		const compiledTemplate = this.handlebars.compile(templateContent);
 		const generatedContent = compiledTemplate(context);
 
-		await fs.ensureDir(path.dirname(outputPath));
+		const dir = path.dirname(outputPath);
+		if (!existsSync(dir)) {
+			mkdirSync(dir, { recursive: true });
+		}
 		await fs.writeFile(outputPath, generatedContent);
 	}
 }
@@ -339,7 +342,7 @@ export class ReactPlatform extends Platform {
 			references: [{ path: "./tsconfig.node.json" }],
 		};
 
-		await fs.writeJson(tsConfigPath, tsConfig, { spaces: 2 });
+		await fs.writeFile(tsConfigPath, JSON.stringify(tsConfig, null, 2), 'utf-8');
 	}
 
 	private async createCssConfig(projectPath: string): Promise<void> {
@@ -597,7 +600,10 @@ export default createI18n({
   messages
 })
 `;
-		await fs.ensureDir(path.dirname(i18nConfigPath));
+		const i18nDir = path.dirname(i18nConfigPath);
+		if (!existsSync(i18nDir)) {
+			mkdirSync(i18nDir, { recursive: true });
+		}
 		await fs.writeFile(i18nConfigPath, i18nConfig);
 	}
 }
@@ -845,7 +851,10 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 `;
-		await fs.ensureDir(path.dirname(mainProcessPath));
+		const electronDir = path.dirname(mainProcessPath);
+		if (!existsSync(electronDir)) {
+			mkdirSync(electronDir, { recursive: true });
+		}
 		await fs.writeFile(mainProcessPath, mainProcess);
 	}
 }

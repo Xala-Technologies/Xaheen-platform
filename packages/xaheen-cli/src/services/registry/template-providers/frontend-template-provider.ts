@@ -10,12 +10,12 @@ import { BaseTemplateProvider } from "./base-template-provider";
 
 export class NextJSTemplateProvider extends BaseTemplateProvider {
 	constructor() {
-		super("frontend", "nextjs", "14.0.0");
+		super("frontend", "next", "14.0.0");
 	}
 
 	createTemplate(): ServiceTemplate {
 		const base = this.createBaseTemplate(
-			"nextjs",
+			"next",
 			"Next.js React framework with SSR, SSG, and API routes",
 		);
 
@@ -239,6 +239,44 @@ export class NuxtTemplateProvider extends BaseTemplateProvider {
 			platforms: ["web"],
 			tags: ["vue", "ssr", "ssg", "full-stack"],
 		} as ServiceTemplate;
+	}
+}
+
+export class ReactTemplateProvider extends BaseTemplateProvider {
+	constructor() {
+		super("frontend", "react", "18.3.0");
+	}
+
+	createTemplate(): ServiceTemplate {
+		const base = this.createBaseTemplate(
+			"react",
+			"React library for building user interfaces",
+		);
+
+		return {
+			...base,
+			injectionPoints: [
+				this.createFileInjectionPoint(
+					"src/App.tsx",
+					`import React from 'react';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>{{projectName}}</h1>
+        <p>React application ready to go!</p>
+      </header>
+    </div>
+  );
+}
+
+export default App;`,
+					100,
+				),
+			],
+		};
 	}
 }
 

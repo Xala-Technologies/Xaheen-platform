@@ -1,6 +1,6 @@
 import * as prompts from "@clack/prompts";
 import chalk from "chalk";
-import * as fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 import * as path from "path";
 import { appTemplateRegistry } from "../../services/registry/app-template-registry";
 import type { CLICommand, UnifiedConfig } from "../../types/index";
@@ -34,7 +34,7 @@ export default class ProjectDomain {
 			// Check if directory already exists
 			const projectPath = path.resolve(process.cwd(), projectName);
 
-			if (await fs.pathExists(projectPath)) {
+			if (existsSync(projectPath)) {
 				throw new CLIError(
 					`Directory "${projectName}" already exists`,
 					"DIRECTORY_EXISTS",
@@ -264,9 +264,13 @@ export default class ProjectDomain {
 		cliLogger.step(1, 4, "Creating project directory structure...");
 
 		// Create basic monorepo structure
-		await fs.ensureDir(path.join(projectPath, "apps"));
-		await fs.ensureDir(path.join(projectPath, "packages"));
-		await fs.ensureDir(path.join(projectPath, "apps", "web"));
+		const appsDir = path.join(projectPath, "apps");
+		const packagesDir = path.join(projectPath, "packages");
+		const appsWebDir = path.join(projectPath, "apps", "web");
+		
+		if (!existsSync(appsDir)) mkdirSync(appsDir, { recursive: true });
+		if (!existsSync(packagesDir)) mkdirSync(packagesDir, { recursive: true });
+		if (!existsSync(appsWebDir)) mkdirSync(appsWebDir, { recursive: true });
 
 		// Create root package.json
 		const rootPackageJson = {
@@ -287,10 +291,10 @@ export default class ProjectDomain {
 			packageManager: `${config.packageManager}@latest`,
 		};
 
-		await fs.writeJson(
+		await fs.writeFile(
 			path.join(projectPath, "package.json"),
-			rootPackageJson,
-			{ spaces: 2 },
+			JSON.stringify(rootPackageJson, null, 2),
+			'utf-8'
 		);
 
 		cliLogger.step(2, 4, "Setting up monorepo configuration...");
@@ -312,9 +316,7 @@ export default class ProjectDomain {
 			},
 		};
 
-		await fs.writeJson(path.join(projectPath, "turbo.json"), turboJson, {
-			spaces: 2,
-		});
+		await fs.writeFile(path.join(projectPath, "turbo.json"), JSON.stringify(turboJson, null, 2), 'utf-8');
 
 		cliLogger.step(3, 4, "Creating initial web application...");
 
@@ -390,17 +392,17 @@ This is a monorepo project created with Xaheen CLI v3.0.0.
 		// Check for required files
 		const requiredFiles = ["package.json", "xaheen.config.json"];
 		for (const file of requiredFiles) {
-			if (!(await fs.pathExists(file))) {
+			if (!existsSync(file)) {
 				issues.push(`Missing required file: ${file}`);
 			}
 		}
 
 		// Check monorepo structure
 		if (monorepoInfo.isMonorepo) {
-			if (!(await fs.pathExists("apps"))) {
+			if (!existsSync("apps")) {
 				issues.push("Missing apps directory for monorepo structure");
 			}
-			if (!(await fs.pathExists("packages"))) {
+			if (!existsSync("packages")) {
 				issues.push("Missing packages directory for monorepo structure");
 			}
 		}

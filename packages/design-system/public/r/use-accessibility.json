@@ -6,7 +6,16 @@
   "description": "WCAG AAA compliance hooks",
   "platforms": [
     "react",
-    "nextjs"
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
   ],
   "files": [
     {

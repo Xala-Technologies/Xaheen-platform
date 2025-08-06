@@ -4,7 +4,8 @@
  */
 
 export { default as Button } from './Button.svelte';
-// Add other Svelte component exports here as they're created
+export { default as Input } from './Input.svelte';
+export { default as Card } from './Card.svelte';
 
 // Platform utilities
 export const PlatformInfo = {

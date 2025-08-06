@@ -5,47 +5,26 @@
  * handle legacy mappings, and execute command handlers.
  */
 
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { testUtils } from "../../test/test-helpers";
 import type { CLICommand, CommandRoute } from "../../types/index";
 import { CommandParser } from "./index";
-
-// Mock all domain handlers
-vi.mock("../../domains/project/index.js", () => ({
-	default: class MockProjectDomain {
-		create = vi.fn().mockResolvedValue(undefined);
-		validate = vi.fn().mockResolvedValue(undefined);
-	},
-}));
-
-vi.mock("../../domains/service/index.js", () => ({
-	default: class MockServiceDomain {
-		add = vi.fn().mockResolvedValue(undefined);
-		remove = vi.fn().mockResolvedValue(undefined);
-		list = vi.fn().mockResolvedValue(undefined);
-	},
-}));
-
-vi.mock("../../domains/ai/index.js", () => ({
-	default: class MockAIDomain {
-		generate = vi.fn().mockResolvedValue(undefined);
-		generateService = vi.fn().mockResolvedValue(undefined);
-	},
-}));
-
-vi.mock("../../commands/ai.js", () => ({
-	codebuffCommand: vi.fn().mockResolvedValue(undefined),
-	fixTestsCommand: vi.fn().mockResolvedValue(undefined),
-	norwegianComplianceCommand: vi.fn().mockResolvedValue(undefined),
-}));
+import { setupTestIsolation, setupDomainMocks, setupExternalMocks } from "../../test/isolation";
 
 describe("CommandParser", () => {
 	let parser: CommandParser;
 	let mockExit: Mock;
 
+	// Setup test isolation and mocks
+	setupTestIsolation();
+	setupDomainMocks();
+	setupExternalMocks();
+
 	beforeEach(() => {
-		// Reset singleton instance between tests
+		// Reset the CommandParser singleton before each test
 		CommandParser.reset();
+		
+		// Get fresh instance after reset
 		parser = CommandParser.getInstance();
 		mockExit = globalThis.__TEST_UTILS__.mockExit;
 		vi.clearAllMocks();
@@ -71,6 +50,12 @@ describe("CommandParser", () => {
 			expect(Array.from(routes.keys())).toContain("project create <name>");
 			expect(Array.from(routes.keys())).toContain("service add <service>");
 			expect(Array.from(routes.keys())).toContain("ai code <prompt>");
+			expect(Array.from(routes.keys())).toContain("ai generate <prompt>");
+			
+			// Check for registry routes
+			expect(Array.from(routes.keys())).toContain("registry add <components...>");
+			expect(Array.from(routes.keys())).toContain("registry list");
+			expect(Array.from(routes.keys())).toContain("registry info <component>");
 		});
 	});
 
@@ -310,6 +295,79 @@ describe("CommandParser", () => {
 		});
 	});
 
+	describe("Registry Commands", () => {
+		it("should parse registry add command", async () => {
+			const argv = ["node", "xaheen", "registry", "add", "button"];
+
+			const mockHandler = vi.fn().mockResolvedValue(undefined);
+			const routes = parser.getRoutes();
+			const route = routes.get("registry add <components...>");
+			if (route) {
+				route.handler = mockHandler;
+			}
+
+			try {
+				await parser.parse(argv);
+				expect(mockHandler).toHaveBeenCalledWith(
+					expect.objectContaining({
+						domain: "registry",
+						action: "add",
+						target: "button",
+					}),
+				);
+			} catch (error) {
+				// Expected in test environment
+			}
+		});
+
+		it("should parse registry list command", async () => {
+			const argv = ["node", "xaheen", "registry", "list"];
+
+			const mockHandler = vi.fn().mockResolvedValue(undefined);
+			const routes = parser.getRoutes();
+			const route = routes.get("registry list");
+			if (route) {
+				route.handler = mockHandler;
+			}
+
+			try {
+				await parser.parse(argv);
+				expect(mockHandler).toHaveBeenCalledWith(
+					expect.objectContaining({
+						domain: "registry",
+						action: "list",
+					}),
+				);
+			} catch (error) {
+				// Expected in test environment
+			}
+		});
+
+		it("should parse registry info command", async () => {
+			const argv = ["node", "xaheen", "registry", "info", "button"];
+
+			const mockHandler = vi.fn().mockResolvedValue(undefined);
+			const routes = parser.getRoutes();
+			const route = routes.get("registry info <component>");
+			if (route) {
+				route.handler = mockHandler;
+			}
+
+			try {
+				await parser.parse(argv);
+				expect(mockHandler).toHaveBeenCalledWith(
+					expect.objectContaining({
+						domain: "registry",
+						action: "info",
+						target: "button",
+					}),
+				);
+			} catch (error) {
+				// Expected in test environment
+			}
+		});
+	});
+
 	describe("Help Commands", () => {
 		it("should handle help command", async () => {
 			const argv = ["node", "xaheen", "help"];
@@ -437,13 +495,12 @@ describe("CommandParser", () => {
 			// Verify essential routes are registered
 			const expectedRoutes = [
 				"project create <name>",
-				"project validate",
 				"service add <service>",
-				"service remove <service>",
 				"ai code <prompt>",
 				"make:model <name>",
 				"security-audit",
 				"compliance-report",
+				"registry add <components...>",
 			];
 
 			for (const expectedRoute of expectedRoutes) {

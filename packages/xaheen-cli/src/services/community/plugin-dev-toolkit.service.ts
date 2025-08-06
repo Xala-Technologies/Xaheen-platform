@@ -469,12 +469,9 @@ export class PluginDevToolkitService {
 				type: PluginTemplateType.TEMPLATE,
 				description: "A project template plugin",
 				files: await this.getTemplateTemplateFiles(),
-				dependencies: {
-					"fs-extra": "^11.0.0",
-				},
+				dependencies: {},
 				devDependencies: {
 					"@types/node": "^20.0.0",
-					"@types/fs-extra": "^11.0.0",
 					"typescript": "^5.0.0",
 				},
 				scripts: {
@@ -1027,8 +1024,8 @@ xaheen generate {{name}} Modal --output-path src/components
  * Generated with Xaheen CLI Plugin Development Toolkit
  */
 
-import * as fs from 'fs-extra';
-import { join } from 'path';
+import { promises as fs, existsSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'path';
 
 /**
  * {{name}} template class
@@ -1043,7 +1040,9 @@ export class {{name}}Template {
   }> {
     try {
       // Ensure target directory exists
-      await fs.ensureDir(targetPath);
+      if (!existsSync(targetPath)) {
+        mkdirSync(targetPath, { recursive: true });
+      }
 
       // Copy template files
       await this.copyTemplateFiles(targetPath, variables);
@@ -1068,7 +1067,10 @@ export class {{name}}Template {
       const content = this.processTemplate(file.content, variables);
       const filePath = join(targetPath, file.path);
       
-      await fs.ensureDir(join(filePath, '..'));
+      const dir = dirname(filePath);
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+      }
       await fs.writeFile(filePath, content);
     }
   }

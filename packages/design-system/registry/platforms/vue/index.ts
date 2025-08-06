@@ -5,7 +5,8 @@
 
 // Export Vue components
 export { default as Button } from './Button.vue';
-// Add other Vue component exports here as they're created
+export { default as Input } from './Input.vue';
+export { default as Card } from './Card.vue';
 
 // Platform utilities
 export const PlatformInfo = {

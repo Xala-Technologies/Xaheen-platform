@@ -35,7 +35,7 @@ export type {
 } from './CLILicenseIntegration.js';
 
 // Utility functions for easy integration
-export const createLicenseManager = (config?: Partial<import("./types.js').LicenseConfiguration>): import('./LicenseManager").LicenseManager => {
+export const createLicenseManager = (config?: Partial<import("./types").LicenseConfiguration>): import('./LicenseManager').LicenseManager => {
   return new (require("./LicenseManager").LicenseManager)(config);
 };
 

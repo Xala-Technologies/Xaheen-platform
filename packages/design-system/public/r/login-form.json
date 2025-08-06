@@ -12,7 +12,16 @@
   },
   "platforms": [
     "react",
-    "nextjs"
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
   ],
   "registryDependencies": [
     "button",

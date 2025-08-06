@@ -26,10 +26,10 @@ export class BundleResolver implements IBundleResolver {
 		this.initializeBundles();
 	}
 
-	async resolveBundle(
+	resolveBundle(
 		bundle: ServiceBundle,
 		options: any = {},
-	): Promise<BundleResolutionResult> {
+	): BundleResolutionResult {
 		const startTime = Date.now();
 		consola.debug(`Resolving bundle: ${bundle.name}`);
 
@@ -38,54 +38,19 @@ export class BundleResolver implements IBundleResolver {
 		const resolvedServices: ServiceConfiguration[] = [];
 
 		try {
-			// Resolve required services
-			for (const serviceRef of bundle.services) {
-				const template = await this.serviceRegistry.getTemplate(
-					serviceRef.serviceType,
-					serviceRef.provider,
-				);
+			// Resolve required services from service IDs
+			for (const serviceId of bundle.services) {
+				// Find service by ID in the registry
+				const serviceConfig = this.serviceRegistry.get(serviceId) || 
+								     this.serviceRegistry.getAllServices().find(s => 
+									     s.serviceId === serviceId || 
+									     `${s.serviceType}-${s.provider}` === serviceId
+								     );
 
-				if (!template) {
-					if (serviceRef.required) {
-						errors.push(
-							`Required service not found: ${serviceRef.serviceType}:${serviceRef.provider}`,
-						);
-					} else {
-						warnings.push(
-							`Optional service not found: ${serviceRef.serviceType}:${serviceRef.provider}`,
-						);
-					}
+				if (!serviceConfig) {
+					errors.push(`Service not found: ${serviceId}`);
 					continue;
 				}
-
-				// Check framework compatibility
-				if (options.targetFramework && template.frameworks.length > 0) {
-					if (!template.frameworks.includes(options.targetFramework)) {
-						warnings.push(
-							`Service ${serviceRef.serviceType} may not be compatible with ${options.targetFramework}`,
-						);
-					}
-				}
-
-				const serviceConfig: ServiceConfiguration = {
-					serviceId: `${bundle.name}-${serviceRef.serviceType}-${Date.now()}`,
-					serviceType: serviceRef.serviceType,
-					provider: serviceRef.provider,
-					version: serviceRef.version || template.version,
-					required: serviceRef.required,
-					priority: serviceRef.priority,
-					configuration: { ...template, ...serviceRef.config },
-					environmentVariables: template.envVariables.map((env) => ({
-						name: env.name,
-						value: env.defaultValue,
-						required: env.required,
-					})),
-					dependencies: template.dependencies,
-					postInstallSteps: template.postInjectionSteps.map(
-						(step) => step.description,
-					),
-					verificationSteps: [],
-				};
 
 				resolvedServices.push(serviceConfig);
 			}
@@ -94,54 +59,24 @@ export class BundleResolver implements IBundleResolver {
 			const sortedServices = this.sortServicesByDependencies(resolvedServices);
 
 			return {
-				bundleId: bundle.id,
-				bundleName: bundle.name,
-				bundleVersion: bundle.version,
-				status:
-					errors.length > 0
-						? "failed"
-						: warnings.length > 0
-							? "warning"
-							: "success",
-				resolvedServices: sortedServices,
-				dependencies: [],
-				configuration: {},
-				deploymentInstructions: this.generateDeploymentInstructions(
-					bundle,
-					sortedServices,
-				),
-				postInstallSteps: this.collectPostInstallSteps(sortedServices),
-				verificationSteps: [],
-				errors,
-				warnings,
-				resolutionTime: Date.now() - startTime,
-				resolvedAt: new Date(),
+				success: errors.length === 0,
+				services: sortedServices,
+				errors: errors.length > 0 ? errors : undefined,
+				warnings: warnings.length > 0 ? warnings : undefined,
 			};
 		} catch (error) {
 			return {
-				bundleId: bundle.id,
-				bundleName: bundle.name,
-				bundleVersion: bundle.version,
-				status: "failed",
-				resolvedServices: [],
-				dependencies: [],
-				configuration: {},
-				deploymentInstructions: [],
-				postInstallSteps: [],
-				verificationSteps: [],
-				errors: [error instanceof Error ? error.message : String(error)],
-				warnings,
-				resolutionTime: Date.now() - startTime,
-				resolvedAt: new Date(),
+				success: false,
+				errors: [`Bundle resolution failed: ${error instanceof Error ? error.message : String(error)}`],
 			};
 		}
 	}
 
-	async loadBundleByName(name: string): Promise<ServiceBundle | null> {
+	loadBundleByName(name: string): ServiceBundle | null {
 		return this.bundles.get(name) || null;
 	}
 
-	async createCustomBundle(services: string[]): Promise<ServiceBundle> {
+	createCustomBundle(services: string[]): ServiceBundle {
 		const bundle: ServiceBundle = {
 			id: randomUUID(),
 			name: "custom-bundle",

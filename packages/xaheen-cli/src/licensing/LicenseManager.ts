@@ -3,7 +3,7 @@
  * Handles license validation, feature checking, and usage tracking for CLI commands
  */
 
-import * as fs from 'fs-extra';
+import { promises as fs, existsSync, mkdirSync } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
@@ -44,7 +44,9 @@ export class LicenseManager {
   public async initialize(): Promise<void> {
     // Ensure license directory exists
     const licenseDir = path.dirname(this.config.licensePath);
-    await fs.ensureDir(licenseDir);
+    if (!existsSync(licenseDir)) {
+      mkdirSync(licenseDir, { recursive: true });
+    }
     
     // Load existing license if available
     await this.loadStoredLicense();
@@ -251,7 +253,7 @@ export class LicenseManager {
    */
   public async deactivateLicense(): Promise<void> {
     try {
-      await fs.remove(this.config.licensePath);
+      await fs.rm(this.config.licensePath, { force: true });
       this.cachedLicense = undefined;
     } catch (error) {
       throw new Error(`Failed to deactivate license: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -295,7 +297,7 @@ export class LicenseManager {
 
   private async loadStoredLicense(): Promise<SignedLicense | null> {
     try {
-      if (await fs.pathExists(this.config.licensePath)) {
+      if (existsSync(this.config.licensePath)) {
         const content = await fs.readFile(this.config.licensePath, 'utf-8');
         return JSON.parse(content);
       }
@@ -372,7 +374,7 @@ export class LicenseManager {
   private async loadUsageMetrics(): Promise<void> {
     try {
       const metricsPath = path.join(path.dirname(this.config.licensePath), 'usage.json');
-      if (await fs.pathExists(metricsPath)) {
+      if (existsSync(metricsPath)) {
         const content = await fs.readFile(metricsPath, 'utf-8');
         this.usageMetrics = JSON.parse(content);
       }

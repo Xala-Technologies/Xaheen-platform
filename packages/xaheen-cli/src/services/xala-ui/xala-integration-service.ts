@@ -7,7 +7,7 @@
 
 import { consola } from "consola";
 import { execa } from "execa";
-import * as fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync, chmodSync } from "node:fs";
 import * as path from "path";
 import type {
 	ExtendedProjectContext,
@@ -276,28 +276,30 @@ export class XalaIntegrationService {
 		const packageJsonPath = path.join(this.projectPath, "package.json");
 		const xaheenConfigPath = path.join(this.projectPath, "xaheen.config.json");
 
-		if (!(await fs.pathExists(packageJsonPath))) {
+		if (!existsSync(packageJsonPath)) {
 			throw new Error("No package.json found. Not a valid Node.js project.");
 		}
 
-		const packageJson = await fs.readJson(packageJsonPath);
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+		const packageJson = JSON.parse(packageJsonContent);
 		const hasXaheenCLI =
 			packageJson.dependencies?.["@xala-technologies/xaheen-cli"] ||
 			packageJson.devDependencies?.["@xala-technologies/xaheen-cli"];
 
-		if (!hasXaheenCLI && !(await fs.pathExists(xaheenConfigPath))) {
+		if (!hasXaheenCLI && !existsSync(xaheenConfigPath)) {
 			consola.warn("⚠️  Project may not be created with Xaheen CLI v2");
 		}
 	}
 
 	private async loadProjectContext(): Promise<void> {
 		const packageJsonPath = path.join(this.projectPath, "package.json");
-		const packageJson = await fs.readJson(packageJsonPath);
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+		const packageJson = JSON.parse(packageJsonContent);
 
 		// Detect framework and platform
 		const framework = this.detectFramework();
 		const isDesktop =
-			(await fs.pathExists(path.join(this.projectPath, "electron"))) ||
+			existsSync(path.join(this.projectPath, "electron")) ||
 			packageJson.dependencies?.electron ||
 			packageJson.devDependencies?.electron;
 		const isMobile =
@@ -311,7 +313,7 @@ export class XalaIntegrationService {
 			platform: isDesktop ? "desktop" : isMobile ? "mobile" : "web",
 			packageManager: this.detectPackageManager(),
 			typescript: this.detectTypeScript(),
-			git: await fs.pathExists(path.join(this.projectPath, ".git")),
+			git: existsSync(path.join(this.projectPath, ".git")),
 			features: this.detectProjectFeatures(packageJson),
 		};
 	}
@@ -319,8 +321,9 @@ export class XalaIntegrationService {
 	private detectFramework(): string {
 		// Framework detection logic
 		const packageJsonPath = path.join(this.projectPath, "package.json");
-		if (fs.pathExistsSync(packageJsonPath)) {
-			const packageJson = fs.readJsonSync(packageJsonPath);
+		if (existsSync(packageJsonPath)) {
+			const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+			const packageJson = JSON.parse(packageJsonContent);
 			const deps = {
 				...packageJson.dependencies,
 				...packageJson.devDependencies,
@@ -337,17 +340,17 @@ export class XalaIntegrationService {
 	}
 
 	private detectPackageManager(): "npm" | "pnpm" | "yarn" | "bun" {
-		if (fs.pathExistsSync(path.join(this.projectPath, "bun.lockb")))
+		if (existsSync(path.join(this.projectPath, "bun.lockb")))
 			return "bun";
-		if (fs.pathExistsSync(path.join(this.projectPath, "pnpm-lock.yaml")))
+		if (existsSync(path.join(this.projectPath, "pnpm-lock.yaml")))
 			return "pnpm";
-		if (fs.pathExistsSync(path.join(this.projectPath, "yarn.lock")))
+		if (existsSync(path.join(this.projectPath, "yarn.lock")))
 			return "yarn";
 		return "npm";
 	}
 
 	private detectTypeScript(): boolean {
-		return fs.pathExistsSync(path.join(this.projectPath, "tsconfig.json"));
+		return existsSync(path.join(this.projectPath, "tsconfig.json"));
 	}
 
 	private detectProjectFeatures(packageJson: any): string[] {
@@ -421,23 +424,25 @@ export class XalaIntegrationService {
 
 		// Write xala.config.json
 		const configPath = path.join(this.projectPath, "xala.config.json");
-		await fs.writeJson(
+		await fs.writeFile(
 			configPath,
-			{
-				name: this.projectContext?.name || "project",
-				version: "1.0.0",
-				type: "xaheen-integrated",
-				ui: config,
-				integrations: {
-					xaheen: {
-						enabled: true,
-						version: "2.0.0",
-						features: options.features,
-						autoSync: true,
+			JSON.stringify(
+				{
+					name: this.projectContext?.name || "project",
+					version: "1.0.0",
+					type: "xaheen-integrated",
+					ui: config,
+					integrations: {
+						xaheen: {
+							enabled: true,
+							version: "2.0.0",
+							features: options.features,
+							autoSync: true,
+						},
 					},
-				},
-			},
-			{ spaces: 2 },
+				}, null, 2
+			),
+			'utf-8'
 		);
 	}
 
@@ -446,7 +451,8 @@ export class XalaIntegrationService {
 	): Promise<void> {
 		const deps = this.getPlatformDependencies(platform);
 		const packageJsonPath = path.join(this.projectPath, "package.json");
-		const packageJson = await fs.readJson(packageJsonPath);
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+		const packageJson = JSON.parse(packageJsonContent);
 
 		// Add dependencies
 		packageJson.dependencies = {
@@ -458,7 +464,7 @@ export class XalaIntegrationService {
 			...deps.devDependencies,
 		};
 
-		await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+		await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
 
 		// Install dependencies
 		const pm = this.detectPackageManager();
@@ -525,19 +531,22 @@ export class XalaIntegrationService {
 
 	private async createIntegrationHooks(): Promise<void> {
 		const hooksDir = path.join(this.projectPath, ".xaheen", "hooks");
-		await fs.ensureDir(hooksDir);
+		if (!existsSync(hooksDir)) {
+			mkdirSync(hooksDir, { recursive: true });
+		}
 
 		const preBuildHook = `#!/bin/bash
 echo "🎨 Validating Xala UI components..."
 npx xaheen validate --ui --semantic --accessibility
 `;
 		await fs.writeFile(path.join(hooksDir, "pre-build.sh"), preBuildHook);
-		await fs.chmod(path.join(hooksDir, "pre-build.sh"), "755");
+		chmodSync(path.join(hooksDir, "pre-build.sh"), "755");
 	}
 
 	private async updateProjectScripts(platform: XalaPlatform): Promise<void> {
 		const packageJsonPath = path.join(this.projectPath, "package.json");
-		const packageJson = await fs.readJson(packageJsonPath);
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+		const packageJson = JSON.parse(packageJsonContent);
 
 		const newScripts = {
 			"ui:validate": "xaheen validate --ui --semantic --accessibility",
@@ -547,7 +556,7 @@ npx xaheen validate --ui --semantic --accessibility
 		};
 
 		packageJson.scripts = { ...packageJson.scripts, ...newScripts };
-		await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+		await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
 	}
 
 	private showPostInstallInstructions(options: XalaIntegrationOptions): void {

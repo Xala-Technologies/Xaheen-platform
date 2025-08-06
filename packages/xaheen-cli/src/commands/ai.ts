@@ -17,7 +17,7 @@ import {
 	getCurrentBranch,
 	hasUncommittedChanges,
 	validateGitRepository,
-} from "../lib/patch-utils.js";
+} from "../lib/patch-utils";
 import { mcpGenerationOrchestrator } from "../services/mcp/mcp-generation-orchestrator";
 
 export interface AICommandOptions {
@@ -31,7 +31,7 @@ export interface AICommandOptions {
 /**
  * Runs Codebuff CLI and returns the generated patch
  */
-async function runCodebuffCLI(
+export async function runCodebuffCLI(
 	cwd: string,
 	prompt: string,
 	options: { model?: string; verbose?: boolean } = {},
@@ -75,6 +75,7 @@ async function runCodebuffCLI(
 		});
 	});
 }
+
 
 /**
  * Main AI command using Codebuff for context-aware code generation

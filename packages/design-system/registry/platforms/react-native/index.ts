@@ -4,7 +4,8 @@
  */
 
 export { Button } from './Button';
-// Add other React Native component exports here as they're created
+export { Input } from './Input';
+export { Card, CardHeader, CardContent, CardFooter } from './Card';
 
 // Platform utilities
 export const PlatformInfo = {

@@ -12,14 +12,15 @@ import { aiGenerateCommand } from "../../commands/ai-generate";
 import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler";
 
 export class CommandParser {
-	private static instance: CommandParser;
-	private program: Command;
+	private static instance: CommandParser | undefined;
+	private program!: Command;
 	private routes: Map<string, CommandRoute> = new Map();
 	private legacyMappings: Map<string, CommandRoute> = new Map();
 	private registeredCommands: Set<string> = new Set();
+	private registeredOptions: Map<string, Set<string>> = new Map();
 	private isInitialized: boolean = false;
-	private aliasResolver: AliasResolverMiddleware;
-	private registryHandler: RegistryCommandHandler;
+	private aliasResolver!: AliasResolverMiddleware;
+	private registryHandler!: RegistryCommandHandler;
 
 	constructor() {
 		if (CommandParser.instance) {
@@ -47,7 +48,32 @@ export class CommandParser {
 	}
 
 	public static reset(): void {
+		if (CommandParser.instance) {
+			CommandParser.instance.cleanup();
+		}
 		CommandParser.instance = undefined;
+	}
+
+	/**
+	 * Cleanup instance resources
+	 */
+	private cleanup(): void {
+		this.routes.clear();
+		this.legacyMappings.clear();
+		this.registeredCommands.clear();
+		this.registeredOptions.clear();
+		this.isInitialized = false;
+	}
+
+	/**
+	 * Get command pattern from a Commander.js Command object
+	 */
+	private getCommandPattern(command: any): string {
+		// Try to reconstruct the pattern from the command
+		const name = command.name();
+		const args = command.args || [];
+		const argsString = args.map((arg: any) => arg.required ? `<${arg.name}>` : `[${arg.name}]`).join(' ');
+		return argsString ? `${name} ${argsString}` : name;
 	}
 
 	private setupProgram(): void {
@@ -559,13 +585,7 @@ export class CommandParser {
 				handler: this.handleAliases.bind(this),
 			},
 
-			// AI domain routes (Codebuff integration)
-			{
-				pattern: "ai code <prompt>",
-				domain: "ai",
-				action: "code",
-				handler: this.handleAICode.bind(this),
-			},
+			// AI fix-tests command
 			{
 				pattern: "ai fix-tests",
 				domain: "ai",
@@ -737,6 +757,13 @@ export class CommandParser {
 
 		aliases.forEach((alias) => {
 			try {
+				// Check if this alias conflicts with existing commands
+				const existingCommand = this.program.commands.find(cmd => cmd.name() === alias.alias);
+				if (existingCommand) {
+					logger.debug(`Skipping alias '${alias.alias}' - conflicts with existing command`);
+					return;
+				}
+
 				if (!this.registeredCommands.has(alias.alias)) {
 					// Create a dynamic command for each alias
 					const command = this.program
@@ -777,11 +804,19 @@ export class CommandParser {
 							}
 						});
 
+					// Track options for this alias command
+					const aliasOptions = new Set<string>();
+					this.registeredOptions.set(alias.alias, aliasOptions);
+
 					// Add common options to alias commands
 					command
 						.option("-v, --verbose", "Enable verbose logging")
 						.option("--dry-run", "Show what would be done without executing")
 						.option("--config <path>", "Path to configuration file");
+
+					aliasOptions.add('verbose');
+					aliasOptions.add('dry-run');
+					aliasOptions.add('config');
 
 					this.registeredCommands.add(alias.alias);
 					logger.debug(`Registered alias command: ${alias.alias}`);
@@ -820,75 +855,168 @@ export class CommandParser {
 				return;
 			}
 
-			// Check if command conflicts with existing commands
-			const existingCommand = this.program.commands.find(cmd => cmd.name() === route.pattern.split(' ')[0]);
-			if (existingCommand && route.pattern.startsWith(existingCommand.name())) {
-				logger.debug(`Command pattern conflicts with existing command: ${route.pattern}`);
+			// Check if the exact command pattern is already registered
+			const commandName = route.pattern.split(' ')[0];
+			const existingCommand = this.program.commands.find(cmd => cmd.name() === commandName);
+			
+			// Only prevent registration if it's the EXACT same pattern
+			// Allow subcommands even if parent command exists
+			const exactMatch = this.program.commands.find(cmd => {
+				const cmdPattern = this.getCommandPattern(cmd);
+				return cmdPattern === route.pattern;
+			});
+			
+			if (exactMatch) {
+				logger.debug(`Exact command pattern already exists: ${route.pattern}`);
 				return;
 			}
 
-			const command = this.program
-				.command(route.pattern)
-				.description(`Execute ${route.domain} ${route.action}`)
-				.action(async (...args) => {
-					try {
-						const [target, options] = this.parseCommandArgs(args);
-						const cliCommand: CLICommand = {
-							domain: route.domain,
-							action: route.action,
-							target,
-							arguments: { target },
-							options,
-						};
+			// Check if this is a subcommand (has spaces in the pattern)
+			const commandParts = route.pattern.split(' ');
+			let command;
+			
+			if (commandParts.length > 1 && existingCommand) {
+				// This is a subcommand and parent command exists
+				// Add it as a subcommand to the existing parent
+				const subcommandPattern = commandParts.slice(1).join(' ');
+				command = existingCommand
+					.command(subcommandPattern)
+					.description(`Execute ${route.domain} ${route.action}`)
+					.action(async (...args) => {
+						try {
+							const [target, options] = this.parseCommandArgs(args);
+							const cliCommand: CLICommand = {
+								domain: route.domain,
+								action: route.action,
+								target,
+								arguments: { target },
+								options,
+							};
 
-						logger.debug(`Executing command: ${route.domain} ${route.action}`, {
-							target,
-							options,
-						});
-						await route.handler(cliCommand);
-					} catch (error) {
-						logger.error(
-							`Command failed: ${route.domain} ${route.action}`,
-							error,
-						);
-						throw error;
-					}
-				});
+							logger.debug(`Executing command: ${route.domain} ${route.action}`, {
+								target,
+								options,
+							});
+							await route.handler(cliCommand);
+						} catch (error) {
+							logger.error(
+								`Command failed: ${route.domain} ${route.action}`,
+								error,
+							);
+							throw error;
+						}
+					});
+			} else {
+				// This is a top-level command
+				command = this.program
+					.command(route.pattern)
+					.description(`Execute ${route.domain} ${route.action}`)
+					.action(async (...args) => {
+						try {
+							const [target, options] = this.parseCommandArgs(args);
+							const cliCommand: CLICommand = {
+								domain: route.domain,
+								action: route.action,
+								target,
+								arguments: { target },
+								options,
+							};
 
-			// Add common options
-			command
-				.option("-v, --verbose", "Enable verbose logging")
-				.option("--dry-run", "Show what would be done without executing")
-				.option("--config <path>", "Path to configuration file");
+							logger.debug(`Executing command: ${route.domain} ${route.action}`, {
+								target,
+								options,
+							});
+							await route.handler(cliCommand);
+						} catch (error) {
+							logger.error(
+								`Command failed: ${route.domain} ${route.action}`,
+								error,
+							);
+							throw error;
+						}
+					});
+			}
+
+			// Track options for this command to prevent duplicates
+			const commandOptions = this.registeredOptions.get(route.pattern) || new Set();
+			this.registeredOptions.set(route.pattern, commandOptions);
+			
+			// Add common options (only if they don't already exist)
+			if (!commandOptions.has('verbose')) {
+				command.option("-v, --verbose", "Enable verbose logging");
+				commandOptions.add('verbose');
+			}
+			if (!commandOptions.has('dry-run')) {
+				command.option("--dry-run", "Show what would be done without executing");
+				commandOptions.add('dry-run');
+			}
+			if (!commandOptions.has('config')) {
+				command.option("--config <path>", "Path to configuration file");
+				commandOptions.add('config');
+			}
 
 			// Add make-specific options for AI enhancement
 			if (route.domain === "make") {
-				command
-					.option("--ai", "Enable AI-powered generation")
-					.option("--description <desc>", "Describe what you want to build")
-					.option("--test", "Generate unit tests")
-					.option("--withStories", "Generate Storybook stories")
-					.option(
-						"--accessibility <level>",
-						"Set accessibility level (A/AA/AAA)",
-						"AAA",
-					)
-					.option("--norwegian", "Enable Norwegian compliance")
-					.option("--gdpr", "Enable GDPR compliance")
-					.option(
-						"--styling <type>",
-						"Styling approach (tailwind/css-modules/styled-components)",
-						"tailwind",
-					)
-					.option("--features <features>", "Comma-separated list of features")
-					.option("--migration", "Create migration file (for models)")
-					.option("--controller", "Create controller (for models)")
-					.option("--resource", "Create resource controller")
-					.option("--factory", "Create factory file")
-					.option("--seeder", "Create seeder file")
-					.option("--all", "Create all related files")
-					.option("--api", "Create API-only controller")
-					.option("--force", "Force overwrite existing files");
+				const makeOptions = ['ai', 'description', 'test', 'withStories', 'accessibility', 'norwegian', 'gdpr', 'styling', 'features', 'migration', 'controller', 'resource', 'factory', 'seeder', 'all', 'api', 'force'];
+				
+				makeOptions.forEach(option => {
+					if (!commandOptions.has(option)) {
+						switch (option) {
+							case 'ai':
+								command.option("--ai", "Enable AI-powered generation");
+								break;
+							case 'description':
+								command.option("--description <desc>", "Describe what you want to build");
+								break;
+							case 'test':
+								command.option("--test", "Generate unit tests");
+								break;
+							case 'withStories':
+								command.option("--withStories", "Generate Storybook stories");
+								break;
+							case 'accessibility':
+								command.option("--accessibility <level>", "Set accessibility level (A/AA/AAA)", "AAA");
+								break;
+							case 'norwegian':
+								command.option("--norwegian", "Enable Norwegian compliance");
+								break;
+							case 'gdpr':
+								command.option("--gdpr", "Enable GDPR compliance");
+								break;
+							case 'styling':
+								command.option("--styling <type>", "Styling approach (tailwind/css-modules/styled-components)", "tailwind");
+								break;
+							case 'features':
+								command.option("--features <features>", "Comma-separated list of features");
+								break;
+							case 'migration':
+								command.option("--migration", "Create migration file (for models)");
+								break;
+							case 'controller':
+								command.option("--controller", "Create controller (for models)");
+								break;
+							case 'resource':
+								command.option("--resource", "Create resource controller");
+								break;
+							case 'factory':
+								command.option("--factory", "Create factory file");
+								break;
+							case 'seeder':
+								command.option("--seeder", "Create seeder file");
+								break;
+							case 'all':
+								command.option("--all", "Create all related files");
+								break;
+							case 'api':
+								command.option("--api", "Create API-only controller");
+								break;
+							case 'force':
+								command.option("--force", "Force overwrite existing files");
+								break;
+						}
+						commandOptions.add(option);
+					}
+				});
 			}
 
 			// Add MCP-specific options
@@ -961,55 +1089,88 @@ export class CommandParser {
 
 			// Add Template Modernization-specific options
 			if (route.domain === "templates") {
-				command
-					.option(
-						"-t, --target <pattern>",
-						"Target template files (glob pattern)",
-						"**/*.hbs",
-					)
-					.option(
-						"-o, --output <directory>",
-						"Output directory for modernized templates",
-						"./modernized-templates",
-					)
-					.option(
-						"-w, --wcag-level <level>",
-						"WCAG compliance level (A, AA, AAA)",
-						"AAA",
-					)
-					.option(
-						"-n, --nsm-classification <level>",
-						"NSM security classification",
-						"OPEN",
-					)
-					.option("--auto-fix", "Automatically fix issues where possible", true)
-					.option("--dry-run", "Preview changes without writing files", false)
-					.option("--examples", "Generate modernization examples", false)
-					.option(
-						"--analyze",
-						"Only analyze templates without modernizing",
-						false,
-					)
-					.option("--report", "Generate comprehensive report", true)
-					.option("--verbose", "Verbose output", false);
+				const templateOptions = ['target', 'output', 'wcag-level', 'nsm-classification', 'auto-fix', 'examples', 'analyze', 'report'];
+				
+				templateOptions.forEach(option => {
+					if (!commandOptions.has(option)) {
+						switch (option) {
+							case 'target':
+								command.option("-t, --target <pattern>", "Target template files (glob pattern)", "**/*.hbs");
+								break;
+							case 'output':
+								command.option("-o, --output <directory>", "Output directory for modernized templates", "./modernized-templates");
+								break;
+							case 'wcag-level':
+								command.option("-w, --wcag-level <level>", "WCAG compliance level (A, AA, AAA)", "AAA");
+								break;
+							case 'nsm-classification':
+								command.option("-n, --nsm-classification <level>", "NSM security classification", "OPEN");
+								break;
+							case 'auto-fix':
+								command.option("--auto-fix", "Automatically fix issues where possible", true);
+								break;
+							case 'examples':
+								command.option("--examples", "Generate modernization examples", false);
+								break;
+							case 'analyze':
+								command.option("--analyze", "Only analyze templates without modernizing", false);
+								break;
+							case 'report':
+								command.option("--report", "Generate comprehensive report", true);
+								break;
+						}
+						commandOptions.add(option);
+					}
+				});
 			}
 
 			// Add Deployment-specific options
 			if (route.domain === "deploy") {
-				command
-					.option('-n, --name <name>', 'Application name')
-					.option('-t, --type <type>', 'Project type (nodejs, nextjs, nestjs, express)')
-					.option('-p, --package-manager <manager>', 'Package manager (npm, yarn, pnpm, bun)')
-					.option('-s, --strategy <strategy>', 'Deployment strategy (rolling, blue-green, canary)')
-					.option('-r, --registry <registry>', 'Container registry')
-					.option('--repository <repository>', 'Container repository')
-					.option('--namespace <namespace>', 'Kubernetes namespace')
-					.option('-e, --environment <env>', 'Target environment (dev, staging, prod)')
-					.option('--monitoring', 'Enable monitoring and observability')
-					.option('--compliance', 'Enable Norwegian compliance features')
-					.option('-o, --output <path>', 'Output directory', './deployment')
-					.option('--no-interactive', 'Disable interactive mode')
-					.option('--dry-run', 'Show what would be generated without creating files');
+				const deploymentOptions = ['name', 'type', 'package-manager', 'strategy', 'registry', 'repository', 'namespace', 'environment', 'monitoring', 'compliance', 'output', 'no-interactive'];
+				
+				deploymentOptions.forEach(option => {
+					if (!commandOptions.has(option)) {
+						switch (option) {
+							case 'name':
+								command.option('-n, --name <name>', 'Application name');
+								break;
+							case 'type':
+								command.option('-t, --type <type>', 'Project type (nodejs, nextjs, nestjs, express)');
+								break;
+							case 'package-manager':
+								command.option('-p, --package-manager <manager>', 'Package manager (npm, yarn, pnpm, bun)');
+								break;
+							case 'strategy':
+								command.option('-s, --strategy <strategy>', 'Deployment strategy (rolling, blue-green, canary)');
+								break;
+							case 'registry':
+								command.option('-r, --registry <registry>', 'Container registry');
+								break;
+							case 'repository':
+								command.option('--repository <repository>', 'Container repository');
+								break;
+							case 'namespace':
+								command.option('--namespace <namespace>', 'Kubernetes namespace');
+								break;
+							case 'environment':
+								command.option('-e, --environment <env>', 'Target environment (dev, staging, prod)');
+								break;
+							case 'monitoring':
+								command.option('--monitoring', 'Enable monitoring and observability');
+								break;
+							case 'compliance':
+								command.option('--compliance', 'Enable Norwegian compliance features');
+								break;
+							case 'output':
+								command.option('-o, --output <path>', 'Output directory', './deployment');
+								break;
+							case 'no-interactive':
+								command.option('--no-interactive', 'Disable interactive mode');
+								break;
+						}
+						commandOptions.add(option);
+					}
+				});
 
 				// Add version-specific options
 				if (route.action === "version") {
@@ -1070,126 +1231,97 @@ export class CommandParser {
 			// Add Security-specific options
 			if (route.domain === "security") {
 				if (route.action === "audit") {
-					command
-						.option(
-							"--tools <tools>",
-							"Security tools to use (comma-separated)",
-							"npm-audit,eslint-security",
-						)
-						.option(
-							"--standards <standards>",
-							"Compliance standards to check (comma-separated)",
-							"owasp",
-						)
-						.option(
-							"--classification <level>",
-							"NSM security classification level",
-							"OPEN",
-						)
-						.option(
-							"--format <format>",
-							"Output format (json|html|markdown|all)",
-							"html",
-						)
-						.option(
-							"--severity <level>",
-							"Minimum severity level (low|medium|high|critical|all)",
-							"medium",
-						)
-						.option("--output <dir>", "Output directory for reports")
-						.option("--scan-code", "Scan source code for vulnerabilities", true)
-						.option(
-							"--scan-deps",
-							"Scan dependencies for vulnerabilities",
-							true,
-						)
-						.option("--scan-config", "Scan configuration files", true)
-						.option("--include-snyk", "Include Snyk vulnerability scanning")
-						.option("--include-sonarqube", "Include SonarQube analysis")
-						.option(
-							"--include-eslint",
-							"Include ESLint security analysis",
-							true,
-						)
-						.option("--include-custom", "Include custom security rules", true)
-						.option("--interactive", "Interactive mode with guided prompts");
-				} else if (route.action === "compliance") {
-					command
-						.option(
-							"--standards <standards>",
-							"Compliance standards to assess (comma-separated)",
-							"gdpr,owasp",
-						)
-						.option(
-							"--type <type>",
-							"Report type (executive|detailed|technical|audit)",
-							"detailed",
-						)
-						.option(
-							"--format <format>",
-							"Output format (json|html|pdf|all)",
-							"html",
-						)
-						.option(
-							"--classification <level>",
-							"NSM security classification level",
-						)
-						.option(
-							"--lawful-basis <basis>",
-							"GDPR lawful basis (comma-separated)",
-						)
-						.option("--output <dir>", "Output directory for reports")
-						.option("--gaps", "Include gap analysis", true)
-						.option("--remediation", "Include remediation planning", true)
-						.option("--dashboard", "Generate interactive dashboard", true)
-						.option("--metrics", "Include compliance metrics", true)
-						.option("--action-plan", "Generate detailed action plan")
-						.option(
-							"--timeframe <timeframe>",
-							"Report timeframe (current|historical|projected)",
-							"current",
-						)
-						.option("--interactive", "Interactive mode with guided prompts");
+					const auditOptions = ['tools', 'standards', 'classification', 'format', 'severity', 'output', 'scan-code', 'scan-deps', 'scan-config', 'include-snyk', 'include-sonarqube', 'include-eslint', 'include-custom', 'interactive'];
+					
+					auditOptions.forEach(option => {
+						if (!commandOptions.has(option)) {
+							switch (option) {
+								case 'tools':
+									command.option("--tools <tools>", "Security tools to use (comma-separated)", "npm-audit,eslint-security");
+									break;
+								case 'standards':
+									command.option("--standards <standards>", "Compliance standards to check (comma-separated)", "owasp");
+									break;
+								case 'classification':
+									command.option("--classification <level>", "NSM security classification level", "OPEN");
+									break;
+								case 'format':
+									command.option("--format <format>", "Output format (json|html|markdown|all)", "html");
+									break;
+								case 'severity':
+									command.option("--severity <level>", "Minimum severity level (low|medium|high|critical|all)", "medium");
+									break;
+								case 'output':
+									command.option("--output <dir>", "Output directory for reports");
+									break;
+								case 'scan-code':
+									command.option("--scan-code", "Scan source code for vulnerabilities", true);
+									break;
+								case 'scan-deps':
+									command.option("--scan-deps", "Scan dependencies for vulnerabilities", true);
+									break;
+								case 'scan-config':
+									command.option("--scan-config", "Scan configuration files", true);
+									break;
+								case 'include-snyk':
+									command.option("--include-snyk", "Include Snyk vulnerability scanning");
+									break;
+								case 'include-sonarqube':
+									command.option("--include-sonarqube", "Include SonarQube analysis");
+									break;
+								case 'include-eslint':
+									command.option("--include-eslint", "Include ESLint security analysis", true);
+									break;
+								case 'include-custom':
+									command.option("--include-custom", "Include custom security rules", true);
+									break;
+								case 'interactive':
+									command.option("--interactive", "Interactive mode with guided prompts");
+									break;
+							}
+							commandOptions.add(option);
+						}
+					});
 				} else if (route.action === "scan") {
-					command
-						.option(
-							"-t, --types <types>",
-							"Scan types: code,dependencies,secrets,configuration,compliance",
-							"code,dependencies,secrets",
-						)
-						.option(
-							"-s, --severity <levels>",
-							"Severity levels to include: critical,high,medium,low,info",
-							"critical,high,medium",
-						)
-						.option(
-							"-c, --compliance <standards>",
-							"Compliance standards to check: owasp,nsm,gdpr,wcag",
-							"owasp",
-						)
-						.option(
-							"--ai-enhanced",
-							"Enable AI-powered security analysis",
-							true,
-						)
-						.option("--no-ai-enhanced", "Disable AI-powered analysis")
-						.option(
-							"-f, --format <format>",
-							"Report format: json,html,markdown,sarif",
-							"json",
-						)
-						.option("-o, --output <path>", "Output file path for the report")
-						.option(
-							"--exclude <patterns>",
-							"Comma-separated patterns to exclude",
-						)
-						.option(
-							"--max-file-size <size>",
-							"Maximum file size to scan (KB)",
-							"1024",
-						)
-						.option("--timeout <ms>", "Scan timeout in milliseconds", "300000")
-						.option("--verbose", "Enable verbose logging");
+					const scanOptions = ['types', 'severity', 'compliance', 'ai-enhanced', 'no-ai-enhanced', 'format', 'output', 'exclude', 'max-file-size', 'timeout'];
+					
+					scanOptions.forEach(option => {
+						if (!commandOptions.has(option)) {
+							switch (option) {
+								case 'types':
+									command.option("-t, --types <types>", "Scan types: code,dependencies,secrets,configuration,compliance", "code,dependencies,secrets");
+									break;
+								case 'severity':
+									command.option("-s, --severity <levels>", "Severity levels to include: critical,high,medium,low,info", "critical,high,medium");
+									break;
+								case 'compliance':
+									command.option("-c, --compliance <standards>", "Compliance standards to check: owasp,nsm,gdpr,wcag", "owasp");
+									break;
+								case 'ai-enhanced':
+									command.option("--ai-enhanced", "Enable AI-powered security analysis", true);
+									break;
+								case 'no-ai-enhanced':
+									command.option("--no-ai-enhanced", "Disable AI-powered analysis");
+									break;
+								case 'format':
+									command.option("-f, --format <format>", "Report format: json,html,markdown,sarif", "json");
+									break;
+								case 'output':
+									command.option("-o, --output <path>", "Output file path for the report");
+									break;
+								case 'exclude':
+									command.option("--exclude <patterns>", "Comma-separated patterns to exclude");
+									break;
+								case 'max-file-size':
+									command.option("--max-file-size <size>", "Maximum file size to scan (KB)", "1024");
+									break;
+								case 'timeout':
+									command.option("--timeout <ms>", "Scan timeout in milliseconds", "300000");
+									break;
+							}
+							commandOptions.add(option);
+						}
+					});
 				}
 			}
 

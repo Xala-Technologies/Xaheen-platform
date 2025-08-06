@@ -1,0 +1,205 @@
+{
+  "name": "xaheen",
+  "version": "1.0.0",
+  "homepage": "https://xaheen.io",
+  "description": "Professional design system with WCAG AAA compliance and Norwegian standards",
+  "items": [
+    {
+      "name": "button",
+      "type": "registry:component",
+      "title": "Button",
+      "description": "Professional button component with NSM classification support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "input",
+      "type": "registry:component",
+      "title": "Input",
+      "description": "Norwegian-optimized input component",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    },
+    {
+      "name": "card",
+      "type": "registry:component",
+      "title": "Card",
+      "description": "Card component with NSM security classification support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "OPEN",
+        "wcagLevel": "AAA"
+      }
+    },
+    {
+      "name": "loading-spinner",
+      "type": "registry:component",
+      "title": "Loading Spinner",
+      "description": "Accessible loading indicators with reduced motion support",
+      "category": "components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ]
+    },
+    {
+      "name": "theme-switcher",
+      "type": "registry:component",
+      "title": "Theme Switcher",
+      "description": "Theme switching component with system preference detection",
+      "category": "theme-components",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:utils",
+      "title": "Utilities",
+      "description": "Core utility functions",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ]
+    },
+    {
+      "name": "use-responsive",
+      "type": "registry:hook",
+      "title": "useResponsive",
+      "description": "Responsive design hook with breakpoint detection",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ]
+    },
+    {
+      "name": "use-accessibility",
+      "type": "registry:hook",
+      "title": "useAccessibility",
+      "description": "WCAG AAA compliance hooks",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ]
+    },
+    {
+      "name": "login-form",
+      "type": "registry:block",
+      "title": "Login Form",
+      "description": "Accessible login form with Norwegian language support",
+      "category": "patterns",
+      "platforms": [
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "svelte",
+        "react-native",
+        "electron",
+        "ionic",
+        "vanilla",
+        "headless-ui",
+        "radix"
+      ],
+      "nsm": {
+        "classification": "RESTRICTED",
+        "wcagLevel": "AAA",
+        "norwegianOptimized": true
+      }
+    }
+  ],
+  "platform": "sveltekit"
+}

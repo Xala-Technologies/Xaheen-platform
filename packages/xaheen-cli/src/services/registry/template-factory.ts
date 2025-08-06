@@ -11,12 +11,28 @@ import {
 	BetterAuthTemplateProvider,
 	ClerkTemplateProvider,
 } from "./template-providers/auth-template-provider.js";
+import {
+	ExpressTemplateProvider,
+	FastifyTemplateProvider,
+	NestJSTemplateProvider,
+} from "./template-providers/backend-template-provider.js";
 import { BaseTemplateProvider } from "./template-providers/base-template-provider";
+import {
+	DrizzleTemplateProvider,
+	MongooseTemplateProvider,
+	PrismaTemplateProvider,
+} from "./template-providers/database-template-provider.js";
 import {
 	NextJSTemplateProvider,
 	NuxtTemplateProvider,
+	ReactTemplateProvider,
 	RemixTemplateProvider,
 } from "./template-providers/frontend-template-provider.js";
+import {
+	AltinnTemplateProvider,
+	BankIDTemplateProvider,
+	VippsTemplateProvider,
+} from "./template-providers/integrations-template-provider.js";
 
 export interface ITemplateFactory {
 	createTemplate(
@@ -36,8 +52,24 @@ export class TemplateFactory implements ITemplateFactory {
 	private registerDefaultProviders(): void {
 		// Frontend providers
 		this.registerProvider(new NextJSTemplateProvider());
+		this.registerProvider(new ReactTemplateProvider());
 		this.registerProvider(new NuxtTemplateProvider());
 		this.registerProvider(new RemixTemplateProvider());
+
+		// Backend providers
+		this.registerProvider(new ExpressTemplateProvider());
+		this.registerProvider(new FastifyTemplateProvider());
+		this.registerProvider(new NestJSTemplateProvider());
+
+		// Database providers
+		this.registerProvider(new PrismaTemplateProvider());
+		this.registerProvider(new DrizzleTemplateProvider());
+		this.registerProvider(new MongooseTemplateProvider());
+
+		// Norwegian integrations providers
+		this.registerProvider(new AltinnTemplateProvider());
+		this.registerProvider(new BankIDTemplateProvider());
+		this.registerProvider(new VippsTemplateProvider());
 
 		// Auth providers
 		this.registerProvider(new BetterAuthTemplateProvider());

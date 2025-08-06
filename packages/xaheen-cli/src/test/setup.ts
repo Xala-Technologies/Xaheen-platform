@@ -51,6 +51,18 @@ vi.mock("@clack/prompts", () => ({
 	cancel: vi.fn(),
 }));
 
+// Mock inquirer to prevent interactive prompts during tests
+vi.mock("inquirer", () => ({
+	default: {
+		prompt: vi.fn().mockResolvedValue({ confirmed: true }),
+		select: vi.fn().mockResolvedValue("default"),
+		confirm: vi.fn().mockResolvedValue(true),
+	},
+	prompt: vi.fn().mockResolvedValue({ confirmed: true }),
+	select: vi.fn().mockResolvedValue("default"),
+	confirm: vi.fn().mockResolvedValue(true),
+}));
+
 // Mock external services
 vi.mock("codebuff", () => ({
 	runCodebuff: vi.fn().mockResolvedValue({
@@ -145,22 +157,25 @@ const originalFs = {
 };
 
 // Create a proper test directory for process.cwd() mock
-const testCwd = path.resolve(__dirname, "../../test-output/mock-project");
+// Use process ID and timestamp to ensure unique directory per worker
+const testCwd = path.resolve(__dirname, "../../test-output", `mock-project-${process.pid}-${Date.now()}`);
 
 // Mock process.exit to prevent tests from terminating
 const mockExit = vi.fn();
-vi.stubGlobal("process", {
-	...process,
+// Create a complete process mock that preserves all necessary methods
+const processMock = Object.assign({}, process, {
 	exit: mockExit,
 	on: vi.fn(),
 	cwd: () => testCwd,
 	argv: ["node", "xaheen", ...process.argv.slice(2)],
-	// Ensure all process methods are available for Vitest
-	memoryUsage: process.memoryUsage,
-	cpuUsage: process.cpuUsage,
-	hrtime: process.hrtime,
-	nextTick: process.nextTick,
+	// Explicitly preserve critical methods for Vitest
+	memoryUsage: process.memoryUsage.bind(process),
+	cpuUsage: process.cpuUsage.bind(process),
+	hrtime: process.hrtime.bind(process),
+	nextTick: process.nextTick.bind(process),
 });
+
+vi.stubGlobal("process", processMock);
 
 // Setup test directories
 beforeEach(async () => {

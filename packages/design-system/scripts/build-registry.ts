@@ -39,6 +39,11 @@ interface RegistryItem {
   cssVars?: any;
   config?: any;
   examples?: any[];
+  platformFiles?: Record<string, Array<{
+    path: string;
+    type: string;
+    content?: string;
+  }>>;
 }
 
 interface Registry {
@@ -69,7 +74,7 @@ async function buildRegistry() {
     for (const item of registry.items) {
       console.log(`📦 Processing: ${item.name} (${item.type})`);
 
-      // Read file contents
+      // Read file contents and organize by platform
       const processedFiles = await Promise.all(
         item.files.map(async (file) => {
           const filePath = join(REGISTRY_PATH, file.path);
@@ -86,11 +91,31 @@ async function buildRegistry() {
         })
       );
 
+      // Organize platform-specific files
+      const platformFiles: Record<string, Array<{ path: string; type: string; content?: string }>> = {};
+      const generalFiles: Array<{ path: string; type: string; content?: string; target?: string; platform?: string }> = [];
+      
+      processedFiles.forEach(file => {
+        if (file.platform) {
+          if (!platformFiles[file.platform]) {
+            platformFiles[file.platform] = [];
+          }
+          platformFiles[file.platform].push({
+            path: file.path,
+            type: file.type,
+            content: file.content
+          });
+        } else {
+          generalFiles.push(file);
+        }
+      });
+
       // Create individual item JSON
       const itemData = {
         $schema: 'https://xaheen.io/schemas/registry-item.schema.json',
         ...item,
-        files: processedFiles
+        files: generalFiles,
+        platformFiles: Object.keys(platformFiles).length > 0 ? platformFiles : undefined
       };
 
       // Write to both output locations
@@ -107,6 +132,38 @@ async function buildRegistry() {
       );
 
       console.log(`  ✅ Generated: ${fileName}`);
+      
+      // Also create platform-specific registries
+      if (Object.keys(platformFiles).length > 0) {
+        for (const platform of Object.keys(platformFiles)) {
+          const platformDir = join(OUTPUT_PATH, 'platforms', platform);
+          const publicPlatformDir = join(PUBLIC_PATH, 'platforms', platform);
+          
+          [platformDir, publicPlatformDir].forEach(dir => {
+            if (!existsSync(dir)) {
+              mkdirSync(dir, { recursive: true });
+            }
+          });
+          
+          const platformItemData = {
+            ...itemData,
+            files: platformFiles[platform],
+            platform: platform
+          };
+          
+          writeFileSync(
+            join(platformDir, fileName),
+            JSON.stringify(platformItemData, null, 2)
+          );
+          
+          writeFileSync(
+            join(publicPlatformDir, fileName),
+            JSON.stringify(platformItemData, null, 2)
+          );
+          
+          console.log(`  ✅ Generated platform file: ${platform}/${fileName}`);
+        }
+      }
     }
 
     // Create index file
@@ -135,6 +192,54 @@ async function buildRegistry() {
       join(PUBLIC_PATH, 'index.json'),
       JSON.stringify(indexData, null, 2)
     );
+
+    // Create platform-specific index files
+    const supportedPlatforms = ['react', 'nextjs', 'vue', 'angular', 'svelte', 'react-native', 'electron', 'ionic', 'vanilla', 'headless-ui', 'radix', 'nuxt', 'sveltekit', 'expo'];
+    
+    for (const platform of supportedPlatforms) {
+      const platformItems = registry.items.filter(item => 
+        item.platforms?.includes(platform) || 
+        item.platforms?.includes('react') && ['nextjs', 'electron', 'headless-ui', 'radix'].includes(platform) ||
+        item.platforms?.includes('vue') && platform === 'nuxt' ||
+        item.platforms?.includes('svelte') && platform === 'sveltekit' ||
+        item.platforms?.includes('react-native') && platform === 'expo'
+      );
+      
+      const platformIndexData = {
+        ...indexData,
+        platform: platform,
+        items: platformItems.map(item => ({
+          name: item.name,
+          type: item.type,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          platforms: item.platforms,
+          nsm: item.nsm
+        }))
+      };
+      
+      const platformDir = join(OUTPUT_PATH, 'platforms', platform);
+      const publicPlatformDir = join(PUBLIC_PATH, 'platforms', platform);
+      
+      [platformDir, publicPlatformDir].forEach(dir => {
+        if (!existsSync(dir)) {
+          mkdirSync(dir, { recursive: true });
+        }
+      });
+      
+      writeFileSync(
+        join(platformDir, 'index.json'),
+        JSON.stringify(platformIndexData, null, 2)
+      );
+      
+      writeFileSync(
+        join(publicPlatformDir, 'index.json'),
+        JSON.stringify(platformIndexData, null, 2)
+      );
+      
+      console.log(`✅ Generated platform index: ${platform}/index.json`);
+    }
 
     // Also process items directory for v4-style universal items
     const itemsPath = join(REGISTRY_PATH, 'items');

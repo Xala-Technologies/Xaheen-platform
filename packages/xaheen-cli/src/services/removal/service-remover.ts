@@ -11,7 +11,7 @@
 import path from "node:path";
 import { consola } from "consola";
 import { execa } from "execa";
-import fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 
 import type { IServiceRegistry } from "../../types/index";
 import type { ProjectInfo } from "../analysis/project-analyzer";
@@ -156,8 +156,8 @@ export class ServiceRemover {
 			for (const filePath of plan.filesToRemove) {
 				try {
 					const fullPath = path.resolve(projectPath, filePath);
-					if (await fs.pathExists(fullPath)) {
-						await fs.remove(fullPath);
+					if (existsSync(fullPath)) {
+						await fs.rm(fullPath, { recursive: true, force: true });
 						result.removedFiles.push(filePath);
 						consola.debug(`Removed file: ${filePath}`);
 					}
@@ -257,7 +257,7 @@ export class ServiceRemover {
 
 		for (const configFile of configFiles) {
 			const configPath = path.join(projectPath, configFile);
-			if (await fs.pathExists(configPath)) {
+			if (existsSync(configPath)) {
 				try {
 					const content = await fs.readFile(configPath, "utf-8");
 
@@ -283,7 +283,7 @@ export class ServiceRemover {
 	): Promise<void> {
 		// Check for imports and usage in source code
 		const srcPath = path.join(projectPath, "src");
-		if (!(await fs.pathExists(srcPath))) return;
+		if (!existsSync(srcPath)) return;
 
 		try {
 			// Use grep to find potential references
@@ -410,7 +410,7 @@ export class ServiceRemover {
 	): Promise<void> {
 		// Find orphaned files in lib directory
 		const libPath = path.join(projectPath, "src/lib");
-		if (await fs.pathExists(libPath)) {
+		if (existsSync(libPath)) {
 			const files = await fs.readdir(libPath);
 
 			for (const file of files) {
@@ -485,7 +485,7 @@ export class ServiceRemover {
 	): Promise<void> {
 		const fullPath = path.resolve(projectPath, modification.path);
 
-		if (!(await fs.pathExists(fullPath))) {
+		if (!existsSync(fullPath)) {
 			return;
 		}
 
@@ -502,9 +502,10 @@ export class ServiceRemover {
 		dependencies: string[],
 	): Promise<void> {
 		const packageJsonPath = path.join(projectPath, "package.json");
-		if (!(await fs.pathExists(packageJsonPath))) return;
+		if (!existsSync(packageJsonPath)) return;
 
-		const packageJson = await fs.readJson(packageJsonPath);
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+		const packageJson = JSON.parse(packageJsonContent);
 
 		// Remove from dependencies and devDependencies
 		dependencies.forEach((dep) => {
@@ -516,7 +517,7 @@ export class ServiceRemover {
 			}
 		});
 
-		await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+		await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
 	}
 
 	private async updateConfigFile(
@@ -525,14 +526,15 @@ export class ServiceRemover {
 	): Promise<void> {
 		const fullPath = path.resolve(projectPath, configUpdate.file);
 
-		if (!(await fs.pathExists(fullPath))) {
+		if (!existsSync(fullPath)) {
 			return;
 		}
 
 		if (configUpdate.file.endsWith(".json")) {
-			const content = await fs.readJson(fullPath);
+			const contentStr = await fs.readFile(fullPath, 'utf-8');
+			const content = JSON.parse(contentStr);
 			Object.assign(content, configUpdate.updates);
-			await fs.writeJson(fullPath, content, { spaces: 2 });
+			await fs.writeFile(fullPath, JSON.stringify(content, null, 2), 'utf-8');
 		}
 	}
 
@@ -563,7 +565,9 @@ export class ServiceRemover {
 		const backupDir = path.join(projectPath, ".xaheen-backups");
 		const backupPath = path.join(backupDir, `backup-${timestamp}`);
 
-		await fs.ensureDir(backupDir);
+		if (!existsSync(backupDir)) {
+			mkdirSync(backupDir, { recursive: true });
+		}
 
 		// Copy important files
 		const importantPaths = [
@@ -579,8 +583,8 @@ export class ServiceRemover {
 			const srcPath = path.join(projectPath, importantPath);
 			const destPath = path.join(backupPath, importantPath);
 
-			if (await fs.pathExists(srcPath)) {
-				await fs.copy(srcPath, destPath);
+			if (existsSync(srcPath)) {
+				await fs.cp(srcPath, destPath, { recursive: true });
 			}
 		}
 

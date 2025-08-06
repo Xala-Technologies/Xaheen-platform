@@ -18,6 +18,7 @@ import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ProjectAnalyzer } from "../services/analysis/project-analyzer";
 import { BundleResolver } from "../services/bundles/bundle-resolver";
+import { ServiceInjector } from "../services/injection/service-injector";
 import { ServiceRegistry } from "../services/registry/service-registry";
 import { ServiceRemover } from "../services/removal/service-remover";
 import { ProjectScaffolder } from "../services/scaffolding/project-scaffolder";
@@ -47,8 +48,9 @@ describe("Core Services Testing Suite", () => {
 	describe("Service Registry", () => {
 		let serviceRegistry: ServiceRegistry;
 
-		beforeEach(() => {
+		beforeEach(async () => {
 			serviceRegistry = new ServiceRegistry();
+			await serviceRegistry.initialize();
 		});
 
 		it("should initialize with default services", () => {
@@ -165,9 +167,16 @@ describe("Core Services Testing Suite", () => {
 
 	describe("Project Scaffolder", () => {
 		let projectScaffolder: ProjectScaffolder;
+		let serviceRegistry: ServiceRegistry;
+		let bundleResolver: BundleResolver;
+		let serviceInjector: ServiceInjector;
 
-		beforeEach(() => {
-			projectScaffolder = new ProjectScaffolder();
+		beforeEach(async () => {
+			serviceRegistry = new ServiceRegistry();
+			await serviceRegistry.initialize();
+			bundleResolver = new BundleResolver(serviceRegistry);
+			serviceInjector = new ServiceInjector(serviceRegistry);
+			projectScaffolder = new ProjectScaffolder(serviceRegistry, bundleResolver, serviceInjector);
 		});
 
 		it("should create basic Next.js project structure", async () => {
@@ -432,9 +441,12 @@ describe("Core Services Testing Suite", () => {
 
 	describe("Project Validator", () => {
 		let projectValidator: ProjectValidator;
+		let serviceRegistry: ServiceRegistry;
 
-		beforeEach(() => {
-			projectValidator = new ProjectValidator();
+		beforeEach(async () => {
+			serviceRegistry = new ServiceRegistry();
+			await serviceRegistry.initialize();
+			projectValidator = new ProjectValidator(serviceRegistry);
 		});
 
 		it("should validate correct Next.js project", async () => {
@@ -583,9 +595,12 @@ describe("Core Services Testing Suite", () => {
 
 	describe("Bundle Resolver", () => {
 		let bundleResolver: BundleResolver;
+		let serviceRegistry: ServiceRegistry;
 
-		beforeEach(() => {
-			bundleResolver = new BundleResolver();
+		beforeEach(async () => {
+			serviceRegistry = new ServiceRegistry();
+			await serviceRegistry.initialize();
+			bundleResolver = new BundleResolver(serviceRegistry);
 		});
 
 		it("should resolve Norwegian e-commerce bundle", () => {
@@ -700,9 +715,12 @@ describe("Core Services Testing Suite", () => {
 
 	describe("Service Remover", () => {
 		let serviceRemover: ServiceRemover;
+		let serviceRegistry: ServiceRegistry;
 
-		beforeEach(() => {
-			serviceRemover = new ServiceRemover();
+		beforeEach(async () => {
+			serviceRegistry = new ServiceRegistry();
+			await serviceRegistry.initialize();
+			serviceRemover = new ServiceRemover(serviceRegistry);
 		});
 
 		it("should remove service files correctly", async () => {

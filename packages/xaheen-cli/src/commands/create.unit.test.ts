@@ -29,10 +29,10 @@ describe("Create Command", () => {
 		vi.clearAllMocks();
 
 		// Setup mock implementations
-		const { BundleResolver } = await import("../services/bundles/bundle-resolver");
-		const { ServiceInjector } = await import("../services/injection/service-injector");
-		const { ServiceRegistry } = await import("../services/registry/service-registry");
-		const { ProjectScaffolder } = await import("../services/scaffolding/project-scaffolder");
+		const { BundleResolver } = await import("../services/bundles/bundle-resolver.js");
+		const { ServiceInjector } = await import("../services/injection/service-injector.js");
+		const { ServiceRegistry } = await import("../services/registry/service-registry.js");
+		const { ProjectScaffolder } = await import("../services/scaffolding/project-scaffolder.js");
 		const prompts = await import("@clack/prompts");
 		const fs = await import("fs-extra");
 
@@ -106,7 +106,7 @@ describe("Create Command", () => {
 	describe("Command Configuration", () => {
 		it("should have correct command configuration", () => {
 			expect(createCommand.name()).toBe("create");
-			expect(createCommand.aliases).toContain("new");
+			expect(createCommand.aliases()).toContain("new");
 			expect(createCommand.description()).toBe("Create a new project");
 		});
 
@@ -124,11 +124,13 @@ describe("Create Command", () => {
 	describe("Argument Parsing", () => {
 		it("should parse project name argument", async () => {
 			const args = ["test-project"];
-			const options = { preset: "saas-starter" };
 
 			// Create a mock action function
 			const actionFn = vi.fn();
-			createCommand.action(actionFn);
+			
+			// Replace the command's action with our mock
+			const originalAction = createCommand._actionHandler;
+			createCommand._actionHandler = actionFn;
 
 			// Simulate command execution
 			await createCommand.parseAsync(["node", "xaheen", "create", ...args], {
@@ -136,7 +138,10 @@ describe("Create Command", () => {
 			});
 
 			// Verify the action was called with correct arguments
-			expect(actionFn).toHaveBeenCalledWith("test-project", expect.any(Object));
+			expect(actionFn).toHaveBeenCalledWith("test-project", expect.any(Object), expect.any(Object));
+			
+			// Restore original action
+			createCommand._actionHandler = originalAction;
 		});
 
 		it("should handle missing project name with interactive prompt", async () => {
