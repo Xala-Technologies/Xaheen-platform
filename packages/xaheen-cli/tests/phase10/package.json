@@ -1,0 +1,65 @@
+{
+  "name": "@xaheen/cli-phase10-tests",
+  "version": "1.0.0",
+  "description": "Phase 10: Norwegian/NSM/DIGDIR/GDPR/WCAG Compliance Tests - FINAL compliance gate",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run-phase10-tests.ts",
+    "test:ci": "CI=true node run-phase10-tests.ts",
+    "test:bankid": "vitest run ./bankid-altinn/bankid-integration.test.ts",
+    "test:altinn": "vitest run ./bankid-altinn/altinn-integration.test.ts",
+    "test:digipost": "vitest run ./digipost/document-submission.test.ts",
+    "test:nsm": "vitest run ./nsm-security/classification-handling.test.ts",
+    "test:digdir": "vitest run ./digdir-reporting/service-reporting.test.ts",
+    "test:gdpr-consent": "vitest run ./gdpr-compliance/consent-management.test.ts",
+    "test:gdpr-deletion": "vitest run ./gdpr-compliance/data-deletion.test.ts",
+    "test:wcag": "playwright test ./wcag-accessibility/accessibility-compliance.test.ts",
+    "test:auth": "npm run test:bankid && npm run test:altinn",
+    "test:gdpr": "npm run test:gdpr-consent && npm run test:gdpr-deletion",
+    "test:security": "npm run test:nsm",
+    "test:accessibility": "npm run test:wcag",
+    "validate-config": "node -e \"const { validatePhase10Config, loadPhase10Config } = require('./config/test-config'); const errors = validatePhase10Config(loadPhase10Config()); if (errors.length > 0) { console.error('Config errors:', errors); process.exit(1); } else { console.log('Config valid'); }\"",
+    "clean": "rm -rf ./test-output",
+    "setup": "npm run validate-config && npm run clean && mkdir -p ./test-output/phase10/{reports,certificates,logs,screenshots,artifacts}"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.0",
+    "@axe-core/playwright": "^4.8.0",
+    "axe-playwright": "^1.2.3",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "compliance",
+    "norwegian-government",
+    "bankid",
+    "altinn",
+    "digipost",
+    "nsm-security",
+    "digdir",
+    "gdpr",
+    "wcag",
+    "accessibility",
+    "testing",
+    "xaheen"
+  ],
+  "author": "Xaheen Enterprise",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xaheen/xaheen-cli.git",
+    "directory": "packages/xaheen-cli/tests/phase10"
+  },
+  "bugs": {
+    "url": "https://github.com/xaheen/xaheen-cli/issues"
+  },
+  "homepage": "https://xaheen.com/cli#phase10-compliance"
+}

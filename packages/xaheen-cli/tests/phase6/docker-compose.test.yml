@@ -1,0 +1,436 @@
+# Docker Compose for Phase 6 Testing Services
+# 
+# This configuration provides containerized services for integration testing
+# including databases, message queues, and other third-party service simulators.
+
+version: '3.8'
+
+services:
+  # PostgreSQL for database integration tests
+  postgres:
+    image: postgres:15-alpine
+    container_name: xaheen-test-postgres
+    environment:
+      POSTGRES_DB: xaheen_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=nb_NO.UTF-8 --lc-ctype=nb_NO.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./fixtures/sql/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d xaheen_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # MySQL for database integration tests
+  mysql:
+    image: mysql:8
+    container_name: xaheen-test-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: xaheen_test
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./fixtures/sql/init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # MongoDB for NoSQL database tests
+  mongodb:
+    image: mongo:6
+    container_name: xaheen-test-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: xaheen_test
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./fixtures/mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # Redis for caching and pub/sub tests
+  redis:
+    image: redis:7-alpine
+    container_name: xaheen-test-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./fixtures/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # Elasticsearch for search and analytics tests
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    container_name: xaheen-test-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # RabbitMQ for message queue tests
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: xaheen-test-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./fixtures/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./fixtures/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # Kafka for streaming tests
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: xaheen-test-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - xaheen-test
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: xaheen-test-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # Supabase for backend-as-a-service tests
+  supabase-db:
+    image: supabase/postgres:15.1.0.117
+    container_name: xaheen-test-supabase-db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: supabase_admin
+      POSTGRES_PASSWORD: supabase_password
+      POSTGRES_PORT: 5432
+    ports:
+      - "54322:5432"
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+    networks:
+      - xaheen-test
+
+  supabase-auth:
+    image: supabase/gotrue:v2.132.3
+    container_name: xaheen-test-supabase-auth
+    depends_on:
+      - supabase-db
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:54321
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:supabase_password@supabase-db:5432/postgres
+      GOTRUE_SITE_URL: http://localhost:3000
+      GOTRUE_URI_ALLOW_LIST: "http://localhost:3000"
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_SMTP_ADMIN_EMAIL: admin@example.com
+      GOTRUE_SMTP_HOST: localhost
+      GOTRUE_SMTP_PORT: 587
+      GOTRUE_SMTP_USER: ""
+      GOTRUE_SMTP_PASS: ""
+      GOTRUE_SMTP_SENDER_NAME: "Xaheen Test"
+    ports:
+      - "54321:9999"
+    networks:
+      - xaheen-test
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: xaheen-test-mailhog
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # Web UI port
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /maildir
+    volumes:
+      - mailhog_data:/maildir
+    networks:
+      - xaheen-test
+
+  # MinIO for S3-compatible storage tests
+  minio:
+    image: minio/minio:latest
+    container_name: xaheen-test-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - xaheen-test
+
+  # Prometheus for metrics collection tests
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: xaheen-test-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./fixtures/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - xaheen-test
+
+  # Grafana for visualization tests
+  grafana:
+    image: grafana/grafana:latest
+    container_name: xaheen-test-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./fixtures/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - xaheen-test
+
+  # Jaeger for distributed tracing tests
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: xaheen-test-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # HTTP collector
+      - "14250:14250" # gRPC collector
+      - "6831:6831/udp" # UDP collector
+    networks:
+      - xaheen-test
+
+  # Mock HTTP server for API testing
+  mock-server:
+    build:
+      context: ./mocks
+      dockerfile: Dockerfile.mock-server
+    container_name: xaheen-test-mock-server
+    ports:
+      - "3100:3100"
+    environment:
+      PORT: 3100
+      LOG_LEVEL: info
+    volumes:
+      - ./mocks/responses:/app/responses
+    networks:
+      - xaheen-test
+
+  # Test runner service
+  test-runner:
+    build:
+      context: ../../../..
+      dockerfile: packages/xaheen-cli/tests/phase6/Dockerfile.test-runner
+    container_name: xaheen-test-runner
+    depends_on:
+      - postgres
+      - mysql
+      - mongodb
+      - redis
+      - elasticsearch
+      - rabbitmq
+      - kafka
+      - supabase-auth
+      - mailhog
+      - minio
+      - prometheus
+      - mock-server
+    environment:
+      NODE_ENV: test
+      CI: "true"
+      # Database connections
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: xaheen_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: xaheen_test
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+      
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: xaheen_test
+      
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      
+      # Message queues
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      KAFKA_BROKERS: kafka:29092
+      
+      # Supabase
+      SUPABASE_URL: http://supabase-auth:9999
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      
+      # Email testing
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      
+      # Storage
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      
+      # Monitoring
+      PROMETHEUS_URL: http://prometheus:9090
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+      
+      # Mock services
+      MOCK_SERVER_URL: http://mock-server:3100
+    volumes:
+      - ../../../..:/app
+      - /app/node_modules
+      - test_reports:/app/test-reports
+      - test_coverage:/app/coverage
+    working_dir: /app/packages/xaheen-cli/tests/phase6
+    command: ["npm", "run", "test:phase6:ci"]
+    networks:
+      - xaheen-test
+
+volumes:
+  postgres_data:
+    driver: local
+  mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  supabase_db_data:
+    driver: local
+  mailhog_data:
+    driver: local
+  minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  test_reports:
+    driver: local
+  test_coverage:
+    driver: local
+
+networks:
+  xaheen-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

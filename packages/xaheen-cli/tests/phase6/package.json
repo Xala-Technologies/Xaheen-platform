@@ -1,0 +1,49 @@
+{
+  "name": "@xaheen/cli-phase6-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Phase 6: Services & Integrations testing for Xaheen CLI",
+  "scripts": {
+    "test": "tsx run-phase6-tests.ts",
+    "test:ci": "npm run test -- --no-docker --coverage",
+    "test:auth": "npm run test -- --category auth",
+    "test:payments": "npm run test -- --category payments",
+    "test:communications": "npm run test -- --category communications",
+    "test:documents": "npm run test -- --category documents",
+    "test:queues": "npm run test -- --category queues",
+    "test:databases": "npm run test -- --category databases",
+    "test:analytics": "npm run test -- --category analytics",
+    "test:infrastructure": "npm run test -- --category infrastructure",
+    "test:coverage": "npm run test -- --coverage",
+    "test:watch": "npm run test -- --watch",
+    "test:verbose": "npm run test -- --verbose",
+    "test:sequential": "npm run test -- --sequential",
+    "test:pact": "vitest run pact/**/*.test.ts --config config/vitest.config.ts",
+    "test:unit": "vitest run utils/**/*.test.ts --config config/vitest.config.ts",
+    "docker:up": "docker-compose -f docker-compose.test.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.test.yml down -v",
+    "docker:logs": "docker-compose -f docker-compose.test.yml logs -f",
+    "docker:health": "docker-compose -f docker-compose.test.yml ps",
+    "clean": "rimraf temp test-results coverage logs",
+    "setup": "npm run clean && npm run docker:up",
+    "teardown": "npm run docker:down && npm run clean",
+    "lint": "eslint . --ext .ts,.js --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pact-foundation/pact": "^12.1.0",
+    "vitest": "^1.6.0",
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
