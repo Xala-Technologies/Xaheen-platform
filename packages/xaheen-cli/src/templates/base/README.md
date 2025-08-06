@@ -39,7 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 {{/if}}
 {{#if norwegianFeatures}}
-import { useNorwegianValidation } from '@xaheen/norwegian-utils';
+import { useNorwegianValidation } from '@xaheen-ai/norwegian-utils';
 {{/if}}
 
 {{#if hasTypes}}
@@ -225,8 +225,8 @@ Norwegian government-compliant dashboard layout:
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 {{#if norwegianFeatures}}
-import { NorwegianHeader } from '@xaheen/norwegian-components';
-import { BankIDAuth } from '@xaheen/bankid-integration';
+import { NorwegianHeader } from '@xaheen-ai/norwegian-components';
+import { BankIDAuth } from '@xaheen-ai/bankid-integration';
 {{/if}}
 {{#if hasNavigation}}
 import { NavigationSidebar } from './NavigationSidebar';

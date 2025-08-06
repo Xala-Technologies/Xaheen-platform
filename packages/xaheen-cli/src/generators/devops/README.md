@@ -102,7 +102,7 @@ xaheen generate devops monitoring --type=prometheus --metrics=cpu,memory,request
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a GitHub Actions workflow
 const result = await generateCode({

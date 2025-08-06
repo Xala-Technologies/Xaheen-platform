@@ -39,8 +39,8 @@ npx cap init
 ### Basic Setup
 
 ```tsx
-import { IonicProvider } from '@xaheen/design-system/ionic';
-import { Button, Input, Card } from '@xaheen/design-system/ionic';
+import { IonicProvider } from '@xaheen-ai/design-system/ionic';
+import { Button, Input, Card } from '@xaheen-ai/design-system/ionic';
 
 function App() {
   return (
@@ -62,7 +62,7 @@ function App() {
 #### Button
 
 ```tsx
-import { Button, FAB, SegmentButton, TabButton } from '@xaheen/design-system/ionic';
+import { Button, FAB, SegmentButton, TabButton } from '@xaheen-ai/design-system/ionic';
 
 // Basic button
 <Button variant="primary" size="lg" haptic="medium">
@@ -86,7 +86,7 @@ import { Button, FAB, SegmentButton, TabButton } from '@xaheen/design-system/ion
 #### Input
 
 ```tsx
-import { Input, SearchInput, PinInput, CurrencyInput } from '@xaheen/design-system/ionic';
+import { Input, SearchInput, PinInput, CurrencyInput } from '@xaheen-ai/design-system/ionic';
 
 // Basic input with floating label
 <Input 
@@ -120,7 +120,7 @@ import { Input, SearchInput, PinInput, CurrencyInput } from '@xaheen/design-syst
 #### Card
 
 ```tsx
-import { Card, ProductCard, ProfileCard, MediaCard } from '@xaheen/design-system/ionic';
+import { Card, ProductCard, ProfileCard, MediaCard } from '@xaheen-ai/design-system/ionic';
 
 // Basic card
 <Card 
@@ -166,7 +166,7 @@ import { Card, ProductCard, ProfileCard, MediaCard } from '@xaheen/design-system
 #### Platform Detection
 
 ```tsx
-import { useIonicPlatform } from '@xaheen/design-system/ionic';
+import { useIonicPlatform } from '@xaheen-ai/design-system/ionic';
 
 function MyComponent() {
   const platform = useIonicPlatform();
@@ -184,7 +184,7 @@ function MyComponent() {
 #### Haptic Feedback
 
 ```tsx
-import { useHaptics } from '@xaheen/design-system/ionic';
+import { useHaptics } from '@xaheen-ai/design-system/ionic';
 
 function MyComponent() {
   const haptics = useHaptics();
@@ -209,7 +209,7 @@ function MyComponent() {
 #### Keyboard Management
 
 ```tsx
-import { useKeyboard } from '@xaheen/design-system/ionic';
+import { useKeyboard } from '@xaheen-ai/design-system/ionic';
 
 function MyForm() {
   const keyboard = useKeyboard();
@@ -231,7 +231,7 @@ function MyForm() {
 ### Theme Customization
 
 ```tsx
-import { ionicTheme, applyIonicTheme } from '@xaheen/design-system/ionic';
+import { ionicTheme, applyIonicTheme } from '@xaheen-ai/design-system/ionic';
 
 // Generate custom theme
 const customTheme = ionicTheme.generate({

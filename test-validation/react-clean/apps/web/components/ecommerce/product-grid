@@ -1,0 +1,450 @@
+/**
+ * @fileoverview  - E-commerce Product Grid Pattern
+ * @description AI-optimized product grid using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, useState, useCallback, useMemo, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Stack,
+  Text,
+  Button,
+  Image,
+  Badge,
+  Input,
+  Select,
+  Pagination
+} from '@xaheen-ai/design-system';
+
+export interface Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly products: Product[];
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly columns?: { base: number; sm?: number; md?: number; lg?: number; xl?: number };
+  readonly gap?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly showFilters?: boolean;
+  readonly showSearch?: boolean;
+  readonly showPagination?: boolean;
+  readonly itemsPerPage?: number;
+  readonly onProductClick?: (product: Product) => void;
+  readonly onAddToCart?: (product: Product) => void;
+  readonly categories?: readonly string[];
+  readonly sortOptions?: readonly SortOption[];
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly nsmClassification?: ;
+}
+
+export interface Product {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly price: number;
+  readonly originalPrice?: number;
+  readonly currency?: string;
+  readonly image: string;
+  readonly imageAlt?: string;
+  readonly category: string;
+  readonly tags?: readonly string[];
+  readonly rating?: number;
+  readonly reviewCount?: number;
+  readonly availability: 'in-stock' | 'out-of-stock' | 'pre-order';
+  readonly featured?: boolean;
+  readonly discount?: number;
+}
+
+export interface SortOption {
+  readonly label: string;
+  readonly value: string;
+  readonly field: keyof Product;
+  readonly direction: 'asc' | 'desc';
+}
+
+/**
+ * AI-Optimized E-commerce Product Grid
+ * Pattern:  complexity product grid with filtering
+ * Estimated tokens: 
+ * 
+ * MCP Patterns:
+ * 
+ * - : 
+ * 
+ */
+export const  = forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      className,
+      products,
+      title = ,
+      subtitle,
+      columns = { base: 1, sm: 2, md: 3, lg: 4, xl: 5 },
+      gap = 'lg',
+      showFilters = true,
+      showSearch = true,
+      showPagination = true,
+      itemsPerPage = 12,
+      onProductClick,
+      onAddToCart,
+      categories = [],
+      sortOptions = [
+        { label: , value: 'name-asc', field: 'name', direction: 'asc' },
+        { label: , value: 'name-desc', field: 'name', direction: 'desc' },
+        { label: , value: 'price-asc', field: 'price', direction: 'asc' },
+        { label: , value: 'price-desc', field: 'price', direction: 'desc' }
+      ],
+      size = 'xl',
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [sortBy, setSortBy] = useState(sortOptions[0]?.value || '');
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Filter and sort products
+    const filteredAndSortedProducts = useMemo(() => {
+      let filtered = [...products];
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(product =>
+          product.name.toLowerCase().includes(query) ||
+          product.description?.toLowerCase().includes(query) ||
+          product.category.toLowerCase().includes(query) ||
+          product.tags?.some(tag => tag.toLowerCase().includes(query))
+        );
+      }
+
+      // Category filter
+      if (selectedCategory) {
+        filtered = filtered.filter(product => product.category === selectedCategory);
+      }
+
+      // Sort products
+      if (sortBy) {
+        const sortOption = sortOptions.find(option => option.value === sortBy);
+        if (sortOption) {
+          filtered.sort((a, b) => {
+            const aValue = a[sortOption.field];
+            const bValue = b[sortOption.field];
+            
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return sortOption.direction === 'asc' 
+                ? aValue.localeCompare(bValue, '')
+                : bValue.localeCompare(aValue, '');
+            }
+            
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+              return sortOption.direction === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+            
+            return 0;
+          });
+        }
+      }
+
+      return filtered;
+    }, [products, searchQuery, selectedCategory, sortBy, sortOptions]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedProducts = filteredAndSortedProducts.slice(startIndex, startIndex + itemsPerPage);
+
+    const handleProductClick = useCallback((product: Product) => {
+      onProductClick?.(product);
+    }, [onProductClick]);
+
+    const handleAddToCart = useCallback((product: Product, event: React.MouseEvent) => {
+      event.stopPropagation();
+      onAddToCart?.(product);
+    }, [onAddToCart]);
+
+    const formatPrice = useCallback((price: number, currency = 'NOK') => {
+      return new Intl.NumberFormat('', {
+        style: 'currency',
+        currency
+      }).format(price);
+    }, []);
+
+    const renderProductCard = useCallback((product: Product) => (
+      <Card
+        key={product.id}
+        hover
+        onClick={() => handleProductClick(product)}
+        className="cursor-pointer transition-transform hover:scale-105"
+        data-testid={`product-card-${product.id}`}
+        role="article"
+        aria-labelledby={`product-name-${product.id}`}
+      >
+        <div className="relative">
+          <Image
+            src={product.image}
+            alt={product.imageAlt || product.name}
+            width={300}
+            height={300}
+            className="w-full h-48 object-cover rounded-t-lg"
+            loading="lazy"
+          />
+          
+          {/* Product badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {product.featured && (
+              <Badge variant="primary" size="sm">
+                
+              </Badge>
+            )}
+            {product.discount && (
+              <Badge variant="success" size="sm">
+                -{product.discount}%
+              </Badge>
+            )}
+            {product.availability === 'out-of-stock' && (
+              <Badge variant="error" size="sm">
+                
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <CardContent className="p-4">
+          <Stack direction="vertical" gap="sm">
+            <Text 
+              variant="h4" 
+              weight="semibold"
+              id={`product-name-${product.id}`}
+              className="line-clamp-2"
+            >
+              {product.name}
+            </Text>
+            
+            {product.description && (
+              <Text 
+                variant="caption" 
+                color="secondary"
+                className="line-clamp-2"
+              >
+                {product.description}
+              </Text>
+            )}
+
+            <Stack direction="horizontal" justify="space-between" align="center">
+              <Stack direction="horizontal" gap="sm" align="center">
+                <Text variant="h5" weight="bold" color="primary">
+                  {formatPrice(product.price, product.currency)}
+                </Text>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <Text 
+                    variant="caption" 
+                    color="secondary"
+                    className="line-through"
+                  >
+                    {formatPrice(product.originalPrice, product.currency)}
+                  </Text>
+                )}
+              </Stack>
+
+              {product.rating && (
+                <Stack direction="horizontal" gap="xs" align="center">
+                  <Text variant="caption" color="secondary">
+                    ⭐ {product.rating.toFixed(1)}
+                  </Text>
+                  {product.reviewCount && (
+                    <Text variant="caption" color="secondary">
+                      ({product.reviewCount})
+                    </Text>
+                  )}
+                </Stack>
+              )}
+            </Stack>
+
+            {onAddToCart && (
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                disabled={product.availability === 'out-of-stock'}
+                onClick={(event) => handleAddToCart(product, event)}
+                aria-label={`$} ${product.name}`}
+              >
+                {product.availability === 'out-of-stock' 
+                  ? 
+                  : product.availability === 'pre-order'
+                  ? 
+                  : 
+                }
+              </Button>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+    ), [handleProductClick, handleAddToCart, formatPrice, onAddToCart]);
+
+    return (
+      <Container 
+        size={size} 
+        ref={ref} 
+        className={className}
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        <Stack direction="vertical" gap="xl">
+          {/* Header */}
+          {(title || subtitle) && (
+            <Stack direction="vertical" gap="sm" align="center" className="text-center">
+              {title && (
+                <Text variant="h1" weight="bold">
+                  {title}
+                </Text>
+              )}
+              {subtitle && (
+                <Text variant="body" color="secondary" size="lg">
+                  {subtitle}
+                </Text>
+              )}
+            </Stack>
+          )}
+
+          {/* Filters and Search */}
+          {(showSearch || showFilters) && (
+            <Stack 
+              direction="horizontal" 
+              justify="space-between" 
+              align="center" 
+              gap="md"
+              className="flex-wrap"
+            >
+              {showSearch && (
+                <div className="flex-1 min-w-[200px] max-w-md">
+                  <Input
+                    type="search"
+                    placeholder=
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    aria-label=
+                  />
+                </div>
+              )}
+
+              {showFilters && (
+                <Stack direction="horizontal" gap="md">
+                  {categories.length > 0 && (
+                    <Select
+                      value={selectedCategory}
+                      onChange={setSelectedCategory}
+                      options={[
+                        { label: , value: '' },
+                        ...categories.map(category => ({ label: category, value: category }))
+                      ]}
+                      aria-label=
+                    />
+                  )}
+
+                  {sortOptions.length > 0 && (
+                    <Select
+                      value={sortBy}
+                      onChange={setSortBy}
+                      options={sortOptions.map(option => ({ 
+                        label: option.label, 
+                        value: option.value 
+                      }))}
+                      aria-label=
+                    />
+                  )}
+                </Stack>
+              )}
+            </Stack>
+          )}
+
+          {/* Results count */}
+          <Text variant="caption" color="secondary">
+            {{t "products.results_count" "Showing {count} of {total} products"}} 
+            {/* Replace with actual i18n interpolation */}
+            {filteredAndSortedProducts.length}  {products.length}
+          </Text>
+
+          {/* Product Grid */}
+          <Grid columns={columns} gap={gap} role="region" aria-label=>
+            {paginatedProducts.map(renderProductCard)}
+          </Grid>
+
+          {/* Empty state */}
+          {filteredAndSortedProducts.length === 0 && (
+            <Stack direction="vertical" gap="md" align="center" className="py-12 text-center">
+              <Text variant="h3" color="secondary">
+                
+              </Text>
+              <Text variant="body" color="secondary">
+                
+              </Text>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('');
+                  setCurrentPage(1);
+                }}
+              >
+                
+              </Button>
+            </Stack>
+          )}
+
+          {/* Pagination */}
+          {showPagination && totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                aria-label=
+              />
+            </div>
+          )}
+        </Stack>
+      </Container>
+    );
+  }
+);
+
+.displayName = '';
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   subtitle=
+ *   products={productList}
+ *   columns=
+ *   categories={['Electronics', 'Clothing', 'Books', 'Home & Garden']}
+ *   showFilters={true}
+ *   showSearch={true}
+ *   showPagination={true}
+ *   itemsPerPage={12}
+ *   nsmClassification=""
+ *   onProductClick={(product) => navigate(`/products/${product.id}`)}
+ *   onAddToCart={(product) => {
+ *     addToCart(product);
+ *     showNotification();
+ *   }}
+ *   sortOptions={[
+ *     { label: , value: 'newest', field: 'createdAt', direction: 'desc' },
+ *     { label: , value: 'popular', field: 'rating', direction: 'desc' },
+ *     { label: , value: 'price-asc', field: 'price', direction: 'asc' },
+ *     { label: , value: 'price-desc', field: 'price', direction: 'desc' }
+ *   ]}
+ * />
+ */

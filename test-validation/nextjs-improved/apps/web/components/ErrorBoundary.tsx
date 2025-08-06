@@ -1,0 +1,523 @@
+
+
+
+
+
+'use client';
+
+/**
+ * ErrorBoundary Component - Xala UI System Compliant
+ * Generated with Xaheen CLI - Platform-Specific Error Handling
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Platform-specific error handling
+ * - Norwegian error reporting
+ * - Accessibility-first error states
+ * - Recovery mechanisms
+ * - Error analytics integration
+ * - GDPR-compliant error logging
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Alert,
+  Card,
+  CardContent,
+  Icon,
+  Badge,
+  Separator,
+  Code
+} from '@xaheen-ai/design-system';
+import { 
+  AlertTriangle,
+  RefreshCw,
+  Home,
+  Bug,
+  Send,
+  Copy,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<ErrorFallbackProps>;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  enableReporting?: boolean;
+  showDetails?: boolean;
+  platform?: 'mobile' | 'desktop' | 'web';
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  errorId: string | null;
+}
+
+interface ErrorInfo {
+  componentStack: string;
+  errorBoundary?: string;
+  errorBoundaryStack?: string;
+}
+
+interface ErrorFallbackProps {
+  error: Error;
+  errorInfo: ErrorInfo;
+  resetError: () => void;
+  reportError: () => void;
+  platform: 'mobile' | 'desktop' | 'web';
+  locale: string;
+  theme: 'light' | 'dark' | 'high-contrast';
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Alert,
+  Card,
+  CardContent,
+  Icon,
+  Badge,
+  Separator,
+  Code
+} from '@xaheen-ai/design-system';
+import { 
+  AlertTriangle,
+  RefreshCw,
+  Home,
+  Bug,
+  Send,
+  Copy,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
+
+
+/**
+ * Generate unique error ID for tracking
+ */
+const generateErrorId = (): string => {
+  return "template string";
+};
+
+/**
+ * Default error fallback component
+ */
+
+const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  errorInfo,
+  resetError,
+  reportError,
+  platform,
+  locale,
+  theme
+}) => {
+
+const DefaultErrorFallback = ({
+  error,
+  errorInfo,
+  resetError,
+  reportError,
+  platform,
+  locale,
+  theme
+}) => {
+
+  const { t } = useTranslation();
+  const [showDetails, setShowDetails] = React.useState(false);
+  const [reportSent, setReportSent] = React.useState(false);
+
+  const handleCopyError = async (): Promise<void> => {
+    const errorText = "template string";
+    
+    try {
+      await navigator.clipboard.writeText(errorText);
+      // Show success toast
+    } catch (err) {
+      // Fallback for older browsers
+      console.error('Failed to copy error details:', err);
+    }
+  };
+
+  const handleReportError = async (): Promise<void> => {
+    try {
+      await reportError();
+      setReportSent(true);
+    } catch (err) {
+      console.error('Failed to report error:', err);
+    }
+  };
+
+  const getPlatformSpecificActions = (): React.ReactElement => {
+    switch (platform) {
+      case 'mobile':
+        return (
+          <Stack direction="vertical" spacing="3" width="full">
+            <Button variant="primary" size="lg" onClick={handleClick} fullWidth>
+              <Icon component={RefreshCw} size="sm" />
+              {t('error.retry', 'Try Again')}
+            </Button>
+            
+            <Button variant="outline" size="md" onClick={handleClick} fullWidth>
+              <Icon component={Home} size="sm" />
+              {t('error.goBack', 'Go Back')}
+            </Button>
+          </Stack>
+        );
+      
+      case 'desktop':
+        return (
+          <Stack direction="horizontal" spacing="3" justify="center">
+            <Button variant="primary" size="md" onClick={handleClick}>
+              <Icon component={RefreshCw} size="sm" />
+              {t('error.retry', 'Try Again')}
+            </Button>
+            
+            <Button variant="outline" size="md" onClick={handleClick}>
+              <Icon component={Home} size="sm" />
+              {t('error.home', 'Go Home')}
+            </Button>
+            
+            <Button variant="outline" size="md" onClick={handleClick}>
+              <Icon component={Copy} size="sm" />
+              {t('error.copy', 'Copy Details')}
+            </Button>
+          </Stack>
+        );
+      
+      case 'web':
+      default:
+        return (
+          <Stack direction="horizontal" spacing="3" justify="center" className="flex-col sm:flex-row">
+            <Button variant="primary" size="md" onClick={handleClick}>
+              <Icon component={RefreshCw} size="sm" />
+              {t('error.retry', 'Try Again')}
+            </Button>
+            
+            <Button variant="outline" size="md" onClick={handleClick}>
+              {t('error.refresh', 'Refresh Page')}
+            </Button>
+            
+            <Button variant="outline" size="md" onClick={handleClick}>
+              <Icon component={Home} size="sm" />
+              {t('error.home', 'Go Home')}
+            </Button>
+          </Stack>
+        );
+    }
+  };
+
+  return (
+    <Container maxWidth="md" padding="6">
+      <Stack direction="vertical" spacing="6" align="center" textAlign="center">
+        {/* Error Icon and Title */}
+        <Stack direction="vertical" spacing="4" align="center">
+          <Box
+            width="16"
+            height="16"
+            backgroundColor="destructive"
+            borderRadius="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon component={AlertTriangle} size="lg" color="destructive-foreground" />
+          </Box>
+          
+          <Stack direction="vertical" spacing="2" align="center">
+            <Typography variant="heading" size="2xl" weight="bold">
+              {t('error.title', 'Something went wrong')}
+            </Typography>
+            
+            <Typography variant="body" size="lg" color="muted" maxWidth="96">
+              {t('error.description', 'We encountered an unexpected error. Our team has been notified and is working on a fix.')}
+            </Typography>
+          </Stack>
+        </Stack>
+
+        {/* Error Alert */}
+        <Alert variant="destructive" width="full">
+          <Icon component={Bug} size="sm" />
+          <Stack direction="vertical" spacing="2" width="full">
+            <Typography variant="body" weight="medium">
+              {error.name}: {error.message}
+            </Typography>
+            
+            {platform === 'desktop' && (
+              <Typography variant="body" size="sm">
+                {t('error.errorId', 'Error ID: {id}', { id: generateErrorId() })}
+              </Typography>
+            )}
+          </Stack>
+        </Alert>
+
+        {/* Platform-specific Actions */}
+        {getPlatformSpecificActions()}
+
+        {/* Error Details (Collapsible) */}
+        <Card width="full">
+          <CardContent padding="4">
+            <Stack direction="vertical" spacing="4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClick}
+                justifyContent="between"
+                fullWidth
+              >
+                <Typography variant="body" size="sm" weight="medium">
+                  {t('error.technicalDetails', 'Technical Details')}
+                </Typography>
+                <Icon component={showDetails ? ChevronUp : ChevronDown} size="sm" />
+              </Button>
+
+              {showDetails && (
+                <Stack direction="vertical" spacing="4">
+                  <Separator />
+                  
+                  <Stack direction="vertical" spacing="2">
+                    <Typography variant="body" size="sm" weight="medium">
+                      {t('error.errorMessage', 'Error Message')}:
+                    </Typography>
+                    <Code size="sm" backgroundColor="muted" padding="2" borderRadius="sm">
+                      {error.message}
+                    </Code>
+                  </Stack>
+
+                  {error.stack && (
+                    <Stack direction="vertical" spacing="2">
+                      <Typography variant="body" size="sm" weight="medium">
+                        {t('error.stackTrace', 'Stack Trace')}:
+                      </Typography>
+                      <Code
+                        size="xs"
+                        backgroundColor="muted"
+                        padding="3"
+                        borderRadius="sm"
+                        maxHeight="32"
+                        overflow="auto"
+                      >
+                        {error.stack}
+                      </Code>
+                    </Stack>
+                  )}
+
+                  <Stack direction="horizontal" spacing="2" justify="center">
+                    <Button variant="outline" size="sm" onClick={handleClick}>
+                      <Icon component={Copy} size="sm" />
+                      {t('error.copyDetails', 'Copy Details')}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClick}
+                      disabled={reportSent}
+                    >
+                      <Icon component={Send} size="sm" />
+                      {reportSent
+                        ? t('error.reportSent', 'Report Sent')
+                        : t('error.reportError', 'Report Error')
+                      }
+                    </Button>
+                  </Stack>
+                </Stack>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {/* Norwegian Privacy Notice */}
+        <Typography variant="body" size="sm" color="muted" textAlign="center">
+          {t('error.privacyNotice', 'Error reports are processed in accordance with Norwegian privacy regulations (GDPR). No personal data is collected without consent.')}
+        </Typography>
+      </Stack>
+    </Container>
+  );
+};
+
+/**
+ * ErrorBoundary - Platform-aware error boundary with Norwegian compliance
+ */
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+
+class ErrorBoundary extends React.Component {
+
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      errorId: null,
+    };
+  }
+
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return {
+      hasError: true,
+      error,
+      errorId: generateErrorId(),
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({ errorInfo });
+
+    // Call onError callback
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+
+    // Log error (GDPR compliant)
+    this.logError(error, errorInfo);
+  }
+
+  logError = (error: Error, errorInfo: ErrorInfo): void => {
+    const { platform = 'web', locale = 'en' } = this.props;
+    
+    // Create GDPR-compliant error log
+    const errorLog = {
+      errorId: this.state.errorId,
+      timestamp: new Date().toISOString(),
+      platform,
+      locale,
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+      componentStack: errorInfo.componentStack,
+      // No personal data included
+    };
+
+    // Send to error reporting service (implement based on your service)
+    if (this.props.enableReporting) {
+      this.reportError(errorLog);
+    }
+
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught an error:', errorLog);
+    }
+  };
+
+  reportError = async (errorLog: any): Promise<void> => {
+    try {
+      // Implement your error reporting service here
+      // Example: await fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorLog) });
+      console.log('Error reported:', errorLog);
+    } catch (err) {
+      console.error('Failed to report error:', err);
+    }
+  };
+
+  resetError = (): void => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      errorId: null,
+    });
+  };
+
+  render(): React.ReactNode {
+    if (this.state.hasError && this.state.error && this.state.errorInfo) {
+      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
+      
+      return (
+        <FallbackComponent
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          resetError={this.resetError}
+          reportError={() => this.reportError({
+            errorId: this.state.errorId,
+            error: this.state.error,
+            errorInfo: this.state.errorInfo,
+          })}
+          platform={this.props.platform || 'web'}
+          locale={this.props.locale || 'en'}
+          theme={this.props.theme || 'light'}
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+
+
+// Example usage:
+/*
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+// Basic usage
+<ErrorBoundary platform="web" locale="nb" enableReporting={true}>
+  <App />
+</ErrorBoundary>
+
+// With custom fallback
+<ErrorBoundary
+  platform="mobile"
+  locale="nb"
+  fallback={CustomErrorFallback}
+  onError={(error, errorInfo) => {
+    // Custom error handling
+    analytics.track('error_boundary_triggered', {
+      error: error.message,
+      platform: 'mobile',
+    });
+  }}
+>
+  <MobileApp />
+</ErrorBoundary>
+
+// Desktop app with detailed reporting
+<ErrorBoundary
+  platform="desktop"
+  locale="nb"
+  enableReporting={true}
+  showDetails={true}
+  onError={(error, errorInfo) => {
+    // Send to desktop error reporting
+    electronAPI.reportError(error, errorInfo);
+  }}
+>
+  <DesktopApp />
+</ErrorBoundary>
+*/
+

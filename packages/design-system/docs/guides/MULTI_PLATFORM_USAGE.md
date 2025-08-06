@@ -38,13 +38,13 @@ The Xaheen Universal Design System supports 14+ platforms and frameworks, provid
 
 ```bash
 # Install the complete design system
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 
 # Or with yarn
-yarn add @xaheen/design-system
+yarn add @xaheen-ai/design-system
 
 # Or with pnpm
-pnpm add @xaheen/design-system
+pnpm add @xaheen-ai/design-system
 ```
 
 ### Platform-Specific Dependencies
@@ -53,45 +53,45 @@ Each platform may require additional dependencies:
 
 #### React/Next.js
 ```bash
-npm install @xaheen/design-system react react-dom
+npm install @xaheen-ai/design-system react react-dom
 # Additional for Next.js projects
 npm install next
 ```
 
 #### Vue 3/Nuxt
 ```bash
-npm install @xaheen/design-system vue
+npm install @xaheen-ai/design-system vue
 # Additional for Nuxt projects  
 npm install nuxt
 ```
 
 #### Angular
 ```bash
-npm install @xaheen/design-system @angular/core @angular/common
+npm install @xaheen-ai/design-system @angular/core @angular/common
 ```
 
 #### Svelte/SvelteKit
 ```bash
-npm install @xaheen/design-system svelte
+npm install @xaheen-ai/design-system svelte
 # Additional for SvelteKit projects
 npm install @sveltejs/kit
 ```
 
 #### React Native/Expo
 ```bash
-npm install @xaheen/design-system react-native
+npm install @xaheen-ai/design-system react-native
 # Additional for Expo projects
 npm install expo
 ```
 
 #### Electron
 ```bash
-npm install @xaheen/design-system electron react react-dom
+npm install @xaheen-ai/design-system electron react react-dom
 ```
 
 #### Ionic
 ```bash
-npm install @xaheen/design-system @ionic/react @ionic/core ionicons
+npm install @xaheen-ai/design-system @ionic/react @ionic/core ionicons
 # For Angular Ionic
 npm install @ionic/angular
 ```
@@ -99,10 +99,10 @@ npm install @ionic/angular
 #### Enhanced Libraries
 ```bash
 # Radix UI
-npm install @xaheen/design-system @radix-ui/react-* 
+npm install @xaheen-ai/design-system @radix-ui/react-* 
 
 # Headless UI  
-npm install @xaheen/design-system @headlessui/react
+npm install @xaheen-ai/design-system @headlessui/react
 # Or for Vue
 npm install @headlessui/vue
 ```
@@ -113,7 +113,7 @@ npm install @headlessui/vue
 
 ```tsx
 // Auto-detection (recommended)
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 
 function MyApp() {
   // Automatically detects React and loads React components
@@ -135,8 +135,8 @@ function MyApp() {
 
 ```tsx
 // Manual import (explicit)
-import { Button, Input, Card } from '@xaheen/design-system/react';
-import { UniversalTokens } from '@xaheen/design-system/tokens';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react';
+import { UniversalTokens } from '@xaheen-ai/design-system/tokens';
 
 // Use design tokens
 const theme = {
@@ -178,7 +178,7 @@ const theme = {
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Button, Input, Card } from '@xaheen/design-system/vue';
+import { Button, Input, Card } from '@xaheen-ai/design-system/vue';
 
 const email = ref('');
 const isSubmitting = ref(false);
@@ -267,7 +267,7 @@ export class AppComponent {
 ```typescript
 // app.module.ts
 import { NgModule } from '@angular/core';
-import { XaheenDesignSystemModule } from '@xaheen/design-system/angular';
+import { XaheenDesignSystemModule } from '@xaheen-ai/design-system/angular';
 
 @NgModule({
   imports: [
@@ -290,7 +290,7 @@ export class AppModule { }
 ```svelte
 <!-- App.svelte -->
 <script lang="ts">
-  import { Button, Input, Card } from '@xaheen/design-system/svelte';
+  import { Button, Input, Card } from '@xaheen-ai/design-system/svelte';
   
   let email = '';
   let isSubmitting = false;
@@ -348,7 +348,7 @@ export class AppModule { }
 // App.tsx
 import React, { useState } from 'react';
 import { ScrollView, SafeAreaView } from 'react-native';
-import { Button, Input, Card } from '@xaheen/design-system/react-native';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react-native';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -422,7 +422,7 @@ import {
   TitleBar,
   WindowControls,
   useElectron 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -491,13 +491,13 @@ export default function App() {
   <title>Xaheen Web Components</title>
   
   <!-- Import all components -->
-  <script type="module" src="@xaheen/design-system/vanilla"></script>
+  <script type="module" src="@xaheen-ai/design-system/vanilla"></script>
   
   <!-- Or import individually -->
   <script type="module">
-    import '@xaheen/design-system/vanilla/button.js';
-    import '@xaheen/design-system/vanilla/input.js'; 
-    import '@xaheen/design-system/vanilla/card.js';
+    import '@xaheen-ai/design-system/vanilla/button.js';
+    import '@xaheen-ai/design-system/vanilla/input.js'; 
+    import '@xaheen-ai/design-system/vanilla/card.js';
   </script>
 </head>
 <body>
@@ -577,7 +577,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <title>Web Components Example</title>
-  <script type="module" src="@xaheen/design-system/vanilla"></script>
+  <script type="module" src="@xaheen-ai/design-system/vanilla"></script>
 </head>
 <body>
   <xaheen-card variant="elevated" padding="lg">
@@ -635,7 +635,7 @@ import {
   Card,
   useIonicPlatform,
   useHaptics
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 export default function App() {
   return (
@@ -707,7 +707,7 @@ import {
   CardContent,
   CardFooter,
   ComboboxInput
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -823,7 +823,7 @@ import { Button, TextField, Card } from '@mui/material';
 </Card>
 
 // After (Xaheen)
-import { Button, Input, Card } from '@xaheen/design-system/react';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react';
 
 <Card variant="outlined">
   <Input label="Email" />
@@ -851,7 +851,7 @@ import { Button, Input, Card } from 'antd';
 </Card>
 
 // After (Xaheen)
-import { Button, Input, Card } from '@xaheen/design-system/react';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react';
 
 <Card>
   <Card.Header title="Form" />
@@ -890,7 +890,7 @@ import { Button, Input, Card } from '@xaheen/design-system/react';
 </template>
 
 <script setup>
-import { Button, Input, Card, CardHeader, CardContent } from '@xaheen/design-system/vue';
+import { Button, Input, Card, CardHeader, CardContent } from '@xaheen-ai/design-system/vue';
 </script>
 ```
 
@@ -915,7 +915,7 @@ import { MatButtonModule, MatInputModule, MatCardModule } from '@angular/materia
 })
 
 // After (Xaheen)
-import { XaheenDesignSystemModule } from '@xaheen/design-system/angular';
+import { XaheenDesignSystemModule } from '@xaheen-ai/design-system/angular';
 
 @Component({
   template: `
@@ -941,7 +941,7 @@ import { Button, Input, Card } from 'react-native-elements';
 </Card>
 
 // After (Xaheen)
-import { Button, Input, Card } from '@xaheen/design-system/react-native';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react-native';
 
 <Card>
   <Input label="Email" placeholder="Email" />
@@ -957,7 +957,7 @@ Use design tokens consistently across all platforms:
 
 ```typescript
 // ✅ Good - Use universal tokens
-import { UniversalTokens } from '@xaheen/design-system/tokens';
+import { UniversalTokens } from '@xaheen-ai/design-system/tokens';
 
 const styles = {
   button: {
@@ -1039,11 +1039,11 @@ Import only what you need:
 
 ```typescript
 // ✅ Good - Tree-shaking friendly
-import { Button } from '@xaheen/design-system/react';
-import { Input } from '@xaheen/design-system/react';
+import { Button } from '@xaheen-ai/design-system/react';
+import { Input } from '@xaheen-ai/design-system/react';
 
 // ❌ Avoid - Imports everything
-import * as Xaheen from '@xaheen/design-system/react';
+import * as Xaheen from '@xaheen-ai/design-system/react';
 ```
 
 ### Platform-Specific Optimizations
@@ -1053,7 +1053,7 @@ Use platform-specific features when available:
 ```tsx
 // React Native - Use platform-specific styles
 import { Platform } from 'react-native';
-import { Button } from '@xaheen/design-system/react-native';
+import { Button } from '@xaheen-ai/design-system/react-native';
 
 <Button 
   variant="primary"
@@ -1068,7 +1068,7 @@ import { Button } from '@xaheen/design-system/react-native';
 </Button>
 
 // Electron - Use native capabilities
-import { useElectron } from '@xaheen/design-system/electron';
+import { useElectron } from '@xaheen-ai/design-system/electron';
 
 const { showOpenDialog } = useElectron();
 
@@ -1087,10 +1087,10 @@ const { showOpenDialog } = useElectron();
 
 ```typescript
 // Problem: Auto-detection fails
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 
 // Solution: Explicitly set platform
-import { UniversalComponentFactory } from '@xaheen/design-system';
+import { UniversalComponentFactory } from '@xaheen-ai/design-system';
 const factory = new UniversalComponentFactory('react');
 const Button = await factory.getComponent('button');
 ```
@@ -1099,10 +1099,10 @@ const Button = await factory.getComponent('button');
 
 ```typescript
 // Problem: Type errors with platform imports
-import { Button } from '@xaheen/design-system/react';
+import { Button } from '@xaheen-ai/design-system/react';
 
 // Solution: Import types explicitly
-import type { ButtonProps } from '@xaheen/design-system/react';
+import type { ButtonProps } from '@xaheen-ai/design-system/react';
 
 const MyButton: React.FC<ButtonProps> = (props) => {
   return <Button {...props} />;
@@ -1118,7 +1118,7 @@ const MyButton: React.FC<ButtonProps> = (props) => {
 }
 
 /* Solution: Import token CSS */
-@import '@xaheen/design-system/tokens/css';
+@import '@xaheen-ai/design-system/tokens/css';
 
 .my-component {
   color: var(--xaheen-color-primary-500); /* Working */
@@ -1129,14 +1129,14 @@ const MyButton: React.FC<ButtonProps> = (props) => {
 
 ```typescript
 // Problem: Large bundle size in React Native
-import { Button, Input, Card, ... } from '@xaheen/design-system/react-native';
+import { Button, Input, Card, ... } from '@xaheen-ai/design-system/react-native';
 
 // Solution: Use metro resolver for better tree-shaking
 // metro.config.js
 module.exports = {
   resolver: {
     alias: {
-      '@xaheen/design-system/react-native': '@xaheen/design-system/dist/react-native'
+      '@xaheen-ai/design-system/react-native': '@xaheen-ai/design-system/dist/react-native'
     }
   }
 };
@@ -1146,7 +1146,7 @@ module.exports = {
 
 ```typescript
 // Problem: Can't access Electron APIs
-import { useElectron } from '@xaheen/design-system/electron';
+import { useElectron } from '@xaheen-ai/design-system/electron';
 
 // Solution: Ensure preload script is configured
 // preload.js

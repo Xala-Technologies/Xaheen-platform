@@ -1,0 +1,129 @@
+
+
+
+
+
+{
+  "common": {
+    "loading": "Laster...",
+    "error": "En feil oppstod",
+    "success": "Vellykket",
+    "cancel": "Avbryt",
+    "save": "Lagre",
+    "delete": "Slett",
+    "edit": "Rediger",
+    "create": "Opprett",
+    "update": "Oppdater",
+    "search": "Søk",
+    "filter": "Filtrer",
+    "clear": "Tøm",
+    "close": "Lukk",
+    "open": "Åpne",
+    "yes": "Ja",
+    "no": "Nei",
+    "ok": "OK",
+    "back": "Tilbake",
+    "next": "Neste",
+    "previous": "Forrige",
+    "home": "Hjem",
+    "dashboard": "Dashbord",
+    "settings": "Innstillinger",
+    "profile": "Profil",
+    "logout": "Logg ut",
+    "login": "Logg inn"
+  },
+  "navigation": {
+    "home": "Hjem",
+    "dashboard": "Dashbord",
+    "settings": "Innstillinger",
+    "profile": "Profil",
+    "help": "Hjelp",
+    "about": "Om"
+  },
+  "auth": {
+    "signIn": "Logg inn",
+    "signUp": "Registrer deg",
+    "signOut": "Logg ut",
+    "email": "E-post",
+    "password": "Passord",
+    "confirmPassword": "Bekreft passord",
+    "forgotPassword": "Glemt passord?",
+    "rememberMe": "Husk meg",
+    "createAccount": "Opprett konto",
+    "alreadyHaveAccount": "Har du allerede en konto?",
+    "dontHaveAccount": "Har du ikke en konto?",
+    "resetPassword": "Tilbakestill passord",
+    "newPassword": "Nytt passord",
+    "currentPassword": "Nåværende passord"
+  },
+  "welcome": {
+    "title": "Velkommen til nextjs-improved",
+    "subtitle": "Kom i gang ved å redigere siden",
+    "message": "Velkommen! Denne applikasjonen bruker Xala UI System v5 for bedriftsklasse compliance.",
+    "getStarted": "Kom i gang",
+    "learnMore": "Lær mer",
+    "documentation": "Dokumentasjon"
+  },
+  "dashboard": {
+    "title": "Dashbord",
+    "overview": "Oversikt",
+    "analytics": "Analyse",
+    "reports": "Rapporter",
+    "users": "Brukere",
+    "activities": "Nylige aktiviteter",
+    "statistics": "Statistikk"
+  },
+  "forms": {
+    "required": "Dette feltet er påkrevd",
+    "invalidEmail": "Vennligst skriv inn en gyldig e-postadresse",
+    "passwordTooShort": "Passordet må være minst 8 tegn",
+    "passwordsDoNotMatch": "Passordene stemmer ikke overens",
+    "invalidFormat": "Ugyldig format",
+    "fieldTooLong": "Feltet er for langt",
+    "fieldTooShort": "Feltet er for kort"
+  },
+  "errors": {
+    "generic": "Noe gikk galt. Vennligst prøv igjen.",
+    "network": "Nettverksfeil. Vennligst sjekk tilkoblingen din.",
+    "unauthorized": "Du har ikke tillatelse til å utføre denne handlingen.",
+    "notFound": "Den forespurte ressursen ble ikke funnet.",
+    "serverError": "Serverfeil. Vennligst prøv igjen senere.",
+    "validation": "Vennligst sjekk inndataene dine og prøv igjen."
+  },
+  "success": {
+    "saved": "Lagret",
+    "updated": "Oppdatert",
+    "deleted": "Slettet",
+    "created": "Opprettet",
+    "sent": "Sendt"
+  },
+  "accessibility": {
+    "skipToContent": "Hopp til hovedinnhold",
+    "openMenu": "Åpne meny",
+    "closeMenu": "Lukk meny",
+    "toggleTheme": "Bytt tema",
+    "previousPage": "Gå til forrige side",
+    "nextPage": "Gå til neste side",
+    "loading": "Innhold lastes",
+    "searchResults": "Søkeresultater"
+  },
+  "compliance": {
+    "gdpr": {
+      "cookieConsent": "Denne nettsiden bruker informasjonskapsler for å sikre at du får den beste opplevelsen.",
+      "acceptCookies": "Godta informasjonskapsler",
+      "manageCookies": "Administrer informasjonskapsler",
+      "privacyPolicy": "Personvernerklæring",
+      "dataProcessing": "Databehandleravtale",
+      "yourRights": "Dine rettigheter",
+      "contactDpo": "Kontakt personvernombud"
+    },
+    "norwegian": {
+      "bankIdLogin": "Logg inn med BankID",
+      "vippsLogin": "Logg inn med Vipps",
+      "altinnIntegration": "Altinn-integrasjon",
+      "governmentServices": "Offentlige tjenester",
+      "digitalSignature": "Digital signatur",
+      "secureLogin": "Sikker innlogging med norsk digital identitet"
+    }
+  }
+}

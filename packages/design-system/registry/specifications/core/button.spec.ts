@@ -477,7 +477,7 @@ export const ButtonSpecification: ComponentSpecification = {
     required: [],
     optional: [
       {
-        name: '@xaheen/icons',
+        name: '@xaheen-ai/icons',
         version: '^1.0.0',
         purpose: 'Icon support for button content'
       }

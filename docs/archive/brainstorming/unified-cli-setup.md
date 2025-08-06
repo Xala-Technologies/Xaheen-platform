@@ -151,7 +151,7 @@ export const UnifiedStandards = {
   componentRules: {
     allowedImports: [
       '@xala-technologies/ui-system',
-      '@xaheen/ui-system',
+      '@xaheen-ai/ui-system',
       'react',
       'next/*',
     ],
@@ -325,7 +325,7 @@ import {
   Grid,
   type StackProps 
 } from '@xala-technologies/ui-system';
-import type { Result } from '@xaheen/shared';
+import type { Result } from '@xaheen-ai/shared';
 
 interface UserDashboardProps {
   readonly userId: string;
@@ -429,7 +429,7 @@ The CLI generates these configuration files:
 module.exports = {
   extends: [
     '@xala-technologies/eslint-config',
-    '@xaheen/eslint-config'
+    '@xaheen-ai/eslint-config'
   ],
   rules: {
     // Strict enforcement of standards

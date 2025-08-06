@@ -241,7 +241,7 @@ The registry automatically detects your platform and loads appropriate component
 
 ```typescript
 // Works in ANY framework automatically
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 
 // Detects React and loads React Button
 const Button = await componentFactory.getComponent('button');
@@ -257,7 +257,7 @@ const Button = await componentFactory.getComponent('button');
 Or explicitly choose your platform:
 
 ```typescript
-import { UniversalComponentFactory } from '@xaheen/design-system';
+import { UniversalComponentFactory } from '@xaheen-ai/design-system';
 
 // Force React components
 const reactFactory = new UniversalComponentFactory('react');
@@ -277,19 +277,19 @@ Import directly for your specific framework:
 
 ```typescript
 // React
-import { Button } from '@xaheen/design-system/react';
+import { Button } from '@xaheen-ai/design-system/react';
 
 // React Native
-import { Button } from '@xaheen/design-system/react-native';
+import { Button } from '@xaheen-ai/design-system/react-native';
 
 // Vue  
-import Button from '@xaheen/design-system/vue/Button.vue';
+import Button from '@xaheen-ai/design-system/vue/Button.vue';
 
 // Angular
-import { ButtonComponent } from '@xaheen/design-system/angular';
+import { ButtonComponent } from '@xaheen-ai/design-system/angular';
 
 // Svelte
-import Button from '@xaheen/design-system/svelte/Button.svelte';
+import Button from '@xaheen-ai/design-system/svelte/Button.svelte';
 ```
 
 ---
@@ -299,7 +299,7 @@ import Button from '@xaheen/design-system/svelte/Button.svelte';
 ### **Web Frameworks** (React, Vue, Angular, Svelte)
 ```typescript
 // Tokens become CSS custom properties
-import { TokenUtils } from '@xaheen/design-system';
+import { TokenUtils } from '@xaheen-ai/design-system';
 
 const cssTokens = TokenUtils.toCSS(UniversalTokens.colors);
 // Result: { '--color-primary-500': '#3b82f6' }
@@ -333,7 +333,7 @@ const themeTokens = TokenUtils.toJS(UniversalTokens);
 Generate components for any platform on demand:
 
 ```typescript
-import { ComponentGenerator, ButtonSpec } from '@xaheen/design-system';
+import { ComponentGenerator, ButtonSpec } from '@xaheen-ai/design-system';
 
 // Generate React implementation
 const reactFiles = ComponentGenerator.generateComponent(
@@ -406,19 +406,19 @@ const allPlatforms = ComponentGenerator.generateForAllPlatforms(
 
 ### **Installation**
 ```bash
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 ```
 
 ### **Usage**
 ```typescript
 // Automatic platform detection (recommended)
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const Button = await componentFactory.getComponent('button');
 
 // Platform-specific (explicit)
-import { Button } from '@xaheen/design-system/react';          // React
-import { Button } from '@xaheen/design-system/react-native';   // React Native  
-import Button from '@xaheen/design-system/vue/Button.vue';     // Vue
+import { Button } from '@xaheen-ai/design-system/react';          // React
+import { Button } from '@xaheen-ai/design-system/react-native';   // React Native  
+import Button from '@xaheen-ai/design-system/vue/Button.vue';     // Vue
 ```
 
 **The world's first truly universal design system - write once, run everywhere!** 🌍✨

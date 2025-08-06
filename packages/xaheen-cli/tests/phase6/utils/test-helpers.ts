@@ -224,7 +224,7 @@ export class TestDataGenerator {
     const id = this.userCounter++;
     return {
       id: `user_${id}`,
-      email: `test.user.${id}@xaheen.example.com`,
+      email: `test.user.${id}@xaheen-ai.example.com`,
       name: `Test User ${id}`,
       phone: `+4712345${String(id).padStart(3, '0')}`,
       country: 'NO',
@@ -250,7 +250,7 @@ export class TestDataGenerator {
     return {
       id: `message_${id}`,
       to: `recipient.${id}@example.com`,
-      from: 'noreply@xaheen.example.com',
+      from: 'noreply@xaheen-ai.example.com',
       subject: `Test Message ${id}`,
       body: `This is a test message generated for integration testing purposes. Message ID: ${id}`,
       type: 'email',

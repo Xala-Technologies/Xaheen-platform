@@ -407,7 +407,7 @@ export const ComplexContent: Story = {
             
             <div className="p-4 bg-muted rounded-lg">
               <code className="text-sm">
-                npm install @xaheen/design-system
+                npm install @xaheen-ai/design-system
               </code>
             </div>
           </div>

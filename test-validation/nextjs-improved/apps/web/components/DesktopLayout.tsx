@@ -1,0 +1,568 @@
+
+
+
+
+
+'use client';
+
+/**
+ * DesktopLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Large screen optimized layout
+ * - Multi-column grid system
+ * - Desktop sidebar navigation
+ * - Keyboard navigation support
+ * - Professional workspace design
+ * - Context-aware panels
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Grid,
+  GridItem,
+  Typography,
+  Button,
+  Avatar,
+  Badge,
+  Icon,
+  Separator,
+  DesktopSidebar,
+  Navigation,
+  Breadcrumb,
+  DropdownMenu,
+  CommandPalette,
+  ScrollArea,
+  Tooltip
+} from '@xaheen-ai/design-system';
+import { 
+  Menu,
+  Search,
+  Bell,
+  Settings,
+  User,
+  LogOut,
+  Home,
+  BarChart3,
+  Users,
+  FileText,
+  Shield,
+  Command,
+  ChevronDown,
+  Plus
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface DesktopLayoutProps {
+  children: React.ReactNode;
+  currentUser?: {
+    name: string;
+    email: string;
+    avatar?: string;
+    role: string;
+  };
+  navigationItems?: NavigationItem[];
+  breadcrumbs?: BreadcrumbItem[];
+  sidebarWidth?: 'sm' | 'md' | 'lg';
+  showCommandPalette?: boolean;
+  rightPanel?: React.ReactNode;
+  showRightPanel?: boolean;
+  headerActions?: React.ReactNode;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: React.ComponentType;
+  badge?: string;
+  children?: NavigationItem[];
+  shortcut?: string;
+}
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Grid,
+  GridItem,
+  Typography,
+  Button,
+  Avatar,
+  Badge,
+  Icon,
+  Separator,
+  DesktopSidebar,
+  Navigation,
+  Breadcrumb,
+  DropdownMenu,
+  CommandPalette,
+  ScrollArea,
+  Tooltip
+} from '@xaheen-ai/design-system';
+import { 
+  Menu,
+  Search,
+  Bell,
+  Settings,
+  User,
+  LogOut,
+  Home,
+  BarChart3,
+  Users,
+  FileText,
+  Shield,
+  Command,
+  ChevronDown,
+  Plus
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+
+/**
+ * Default navigation items for desktop
+ */
+const defaultNavigationItems: NavigationItem[] = [
+  {
+    id: 'dashboard',
+    label: 'navigation.dashboard',
+    href: '/dashboard',
+    icon: Home,
+    shortcut: '⌘D',
+  },
+  {
+    id: 'analytics',
+    label: 'navigation.analytics',
+    href: '/analytics',
+    icon: BarChart3,
+    shortcut: '⌘A',
+  },
+  {
+    id: 'users',
+    label: 'navigation.users',
+    href: '/users',
+    icon: Users,
+    badge: '12',
+    shortcut: '⌘U',
+  },
+  {
+    id: 'content',
+    label: 'navigation.content',
+    href: '/content',
+    icon: FileText,
+    shortcut: '⌘C',
+  },
+  {
+    id: 'security',
+    label: 'navigation.security',
+    href: '/security',
+    icon: Shield,
+    shortcut: '⌘S',
+  },
+];
+
+/**
+ * DesktopLayout - Professional desktop workspace
+ * Optimized for large screens with keyboard navigation
+ */
+
+export default function DesktopLayout({
+  children,
+  currentUser,
+  navigationItems = defaultNavigationItems,
+  breadcrumbs = [],
+  sidebarWidth = 'md',
+  showCommandPalette = true,
+  rightPanel,
+  showRightPanel = false,
+  headerActions,
+  locale = 'en',
+  theme = 'light'
+}: DesktopLayoutProps): React.ReactElement {
+
+export default function DesktopLayout({
+  children,
+  currentUser,
+  navigationItems = defaultNavigationItems,
+  breadcrumbs = [],
+  sidebarWidth = 'md',
+  showCommandPalette = true,
+  rightPanel,
+  showRightPanel = false,
+  headerActions,
+  locale = 'en',
+  theme = 'light'
+}) {
+
+  const { t } = useTranslation();
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = React.useState(false);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Command/Ctrl + K to open command palette
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const getSidebarWidth = (): string => {
+    const widthMap = {
+      sm: '56', // 224px
+      md: '64', // 256px
+      lg: '72', // 288px
+    };
+    return widthMap[sidebarWidth];
+  };
+
+  const renderUserMenu = (): React.ReactElement => (
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <Button variant="ghost" size="sm">
+          <Stack direction="horizontal" align="center" spacing="3">
+            <Avatar
+              src={currentUser?.avatar}
+              alt={currentUser?.name || t('user.avatar', 'User avatar')}
+              size="sm"
+            />
+            <Stack direction="vertical" spacing="0" align="start">
+              <Typography variant="body" size="sm" weight="medium">
+                {currentUser?.name || t('user.guest', 'Guest')}
+              </Typography>
+              <Typography variant="caption" size="xs" color="muted">
+                {currentUser?.role || t('user.role.guest', 'Guest')}
+              </Typography>
+            </Stack>
+            <Icon component={ChevronDown} size="xs" />
+          </Stack>
+        </Button>
+      </DropdownMenu.Trigger>
+      
+      <DropdownMenu.Content align="end" width="56">
+        <DropdownMenu.Item>
+          <Icon component={User} size="sm" />
+          {t('user.profile', 'Profile')}
+          <DropdownMenu.Shortcut>⌘P</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item>
+          <Icon component={Settings} size="sm" />
+          {t('user.settings', 'Settings')}
+          <DropdownMenu.Shortcut>⌘,</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item variant="destructive">
+          <Icon component={LogOut} size="sm" />
+          {t('user.logout', 'Logout')}
+          <DropdownMenu.Shortcut>⌘⇧Q</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu>
+  );
+
+  const renderSidebar = (): React.ReactElement => (
+    <DesktopSidebar
+      width={getSidebarWidth()}
+      backgroundColor="card"
+      borderRight="1"
+      height="screen"
+      position="fixed"
+      top="0"
+      left="0"
+    >
+      <Stack direction="vertical" spacing="0" height="full">
+        {/* Sidebar Header */}
+        <Box padding="6" borderBottom="1">
+          <Stack direction="horizontal" align="center" spacing="3">
+            <Box
+              width="8"
+              height="8"
+              backgroundColor="primary"
+              borderRadius="md"
+            />
+            <Typography variant="heading" size="lg" weight="bold">
+              {t('app.name', 'Workspace')}
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Navigation */}
+        <ScrollArea flex="1" padding="4">
+          <Navigation orientation="vertical" spacing="2">
+            {navigationItems.map((item) => (
+              <Tooltip key={item.id} content={item.shortcut} side="right">
+                <Navigation.Item
+                  href={item.href}
+                  active={false} // This would be determined by current route
+                >
+                  <Stack direction="horizontal" align="center" justify="between" width="full">
+                    <Stack direction="horizontal" align="center" spacing="3">
+                      {item.icon && (
+                        <Icon component={item.icon} size="sm" />
+                      )}
+                      <Typography variant="body" size="sm">
+                        {t(item.label, item.label)}
+                      </Typography>
+                    </Stack>
+                    
+                    <Stack direction="horizontal" align="center" spacing="2">
+                      {item.badge && (
+                        <Badge variant="secondary" size="sm">
+                          {item.badge}
+                        </Badge>
+                      )}
+                      {item.shortcut && (
+                        <Typography variant="caption" size="xs" color="muted">
+                          {item.shortcut}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Navigation.Item>
+              </Tooltip>
+            ))}
+          </Navigation>
+        </ScrollArea>
+
+        {/* Sidebar Footer */}
+        <Box padding="4" borderTop="1">
+          <Button variant="outline" size="sm" fullWidth>
+            <Icon component={Plus} size="sm" />
+            {t('actions.new', 'New')}
+          </Button>
+        </Box>
+      </Stack>
+    </DesktopSidebar>
+  );
+
+  const renderHeader = (): React.ReactElement => (
+    <Box
+      backgroundColor="card"
+      borderBottom="1"
+      padding="4"
+      marginLeft={getSidebarWidth()}
+      position="sticky"
+      top="0"
+      zIndex="10"
+    >
+      <Container maxWidth="full">
+        <Stack direction="horizontal" align="center" justify="between">
+          {/* Breadcrumbs */}
+          {breadcrumbs.length > 0 && (
+            <Breadcrumb>
+              {breadcrumbs.map((crumb, index) => (
+                <Breadcrumb.Item
+                  key={index}
+                  href={crumb.href}
+                  current={index === breadcrumbs.length - 1}
+                >
+                  {t(crumb.label, crumb.label)}
+                </Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
+          )}
+
+          {/* Header Actions */}
+          <Stack direction="horizontal" align="center" spacing="2">
+            {showCommandPalette && (
+              <Tooltip content={t('shortcuts.commandPalette', 'Command Palette (⌘K)')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClick}
+                >
+                  <Icon component={Command} size="sm" />
+                </Button>
+              </Tooltip>
+            )}
+
+            <Button variant="ghost" size="sm">
+              <Icon component={Search} size="sm" />
+            </Button>
+
+            <Button variant="ghost" size="sm">
+              <Icon component={Bell} size="sm" />
+              <Badge variant="destructive" size="sm" position="absolute" top="-1" right="-1">
+                3
+              </Badge>
+            </Button>
+
+            {headerActions}
+
+            <Separator orientation="vertical" height="6" />
+
+            {renderUserMenu()}
+          </Stack>
+        </Stack>
+      </Container>
+    </Box>
+  );
+
+  const renderCommandPalette = (): React.ReactElement | null => {
+    if (!showCommandPalette) return null;
+
+    return (
+      <CommandPalette
+        open={isCommandPaletteOpen}
+        onOpenChange={setIsCommandPaletteOpen}
+        placeholder={t('commandPalette.placeholder', 'Type a command or search...')}
+      >
+        {navigationItems.map((item) => (
+          <CommandPalette.Item
+            key={item.id}
+            value={item.label}
+            onSelect={() => {
+              // Navigate to item.href
+              setIsCommandPaletteOpen(false);
+            }}
+          >
+            {item.icon && <Icon component={item.icon} size="sm" />}
+            {t(item.label, item.label)}
+            {item.shortcut && (
+              <CommandPalette.Shortcut>{item.shortcut}</CommandPalette.Shortcut>
+            )}
+          </CommandPalette.Item>
+        ))}
+      </CommandPalette>
+    );
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Box minHeight="screen" backgroundColor="background" className="desktop-layout">
+        {/* Sidebar */}
+        {renderSidebar()}
+
+        {/* Main Content Area */}
+        <Box marginLeft={getSidebarWidth()}>
+          {/* Header */}
+          {renderHeader()}
+
+          {/* Content Grid */}
+          <Grid
+            columns={showRightPanel ? "1fr 320px" : "1fr"}
+            gap="0"
+            minHeight="calc(100vh - 73px)" // Subtract header height
+          >
+            {/* Main Content */}
+            <GridItem>
+              <Container maxWidth="full" padding="6">
+                {children}
+              </Container>
+            </GridItem>
+
+            {/* Right Panel */}
+            {showRightPanel && (
+              <GridItem>
+                <Box
+                  backgroundColor="card"
+                  borderLeft="1"
+                  height="full"
+                  padding="6"
+                >
+                  <ScrollArea height="full">
+                    {rightPanel}
+                  </ScrollArea>
+                </Box>
+              </GridItem>
+            )}
+          </Grid>
+        </Box>
+
+        {/* Command Palette */}
+        {renderCommandPalette()}
+      </Box>
+    </BaseLayout>
+  );
+}
+
+
+// Example usage:
+/*
+import DesktopLayout from '@/layouts/DesktopLayout';
+import { Typography, Card, Stack } from '@xaheen-ai/design-system';
+
+export default function DesktopPage() {
+  const currentUser = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'Administrator',
+    avatar: '/avatars/john.jpg'
+  };
+
+  const breadcrumbs = [
+    { label: 'dashboard.title', href: '/dashboard' },
+    { label: 'analytics.title', href: '/analytics' },
+    { label: 'reports.title' }
+  ];
+
+  const rightPanelContent = (
+    <Stack direction="vertical" spacing="4">
+      <Typography variant="heading" size="md">
+        Quick Actions
+      </Typography>
+      <Card padding="4">
+        <Typography variant="body" size="sm">
+          Panel content here
+        </Typography>
+      </Card>
+    </Stack>
+  );
+
+  return (
+    <DesktopLayout
+      currentUser={currentUser}
+      breadcrumbs={breadcrumbs}
+      sidebarWidth="lg"
+      showCommandPalette={true}
+      showRightPanel={true}
+      rightPanel={rightPanelContent}
+      locale="nb"
+    >
+      <Stack direction="vertical" spacing="6">
+        <Typography variant="heading" size="2xl">
+          Desktop Dashboard
+        </Typography>
+        <Card padding="6">
+          <Typography variant="body">
+            Main content area
+          </Typography>
+        </Card>
+      </Stack>
+    </DesktopLayout>
+  );
+}
+*/
+

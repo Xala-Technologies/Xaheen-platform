@@ -392,7 +392,7 @@ interface TemplateContext {
 
 ```typescript
 // generators/custom/my-generator.ts
-import { BaseGenerator } from '@xaheen/cli';
+import { BaseGenerator } from '@xaheen-ai/cli';
 
 export class MyGenerator extends BaseGenerator {
   static meta = {

@@ -1,0 +1,429 @@
+
+
+
+
+
+'use client';
+
+/**
+ * Norwegian Localization Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Multi-language support (English, Norwegian Bokmål, French, Arabic)
+ * - Norwegian cultural adaptation
+ * - RTL support for Arabic
+ * - Date/time/currency formatting
+ * - Accessibility-compliant translations
+ * - GDPR-compliant messaging
+ */
+
+
+import { NextIntlConfig } from 'next-intl';
+import { notFound } from 'next/navigation';
+
+// Supported locales - MANDATORY: English, Norwegian Bokmål, French, Arabic
+export const locales = ['en', 'nb', 'fr', 'ar'] as const;
+export type Locale = typeof locales[number];
+
+// Default locale (English as fallback)
+export const defaultLocale: Locale = 'en';
+
+// Norwegian Bokmål as primary for Norwegian compliance
+export const primaryLocale: Locale = 'nb';
+
+interface LocaleConfig {
+  label: string;
+  dir: 'ltr' | 'rtl';
+  dateFormat: string;
+  timeFormat: string;
+  currencyCode: string;
+  numberFormat: Intl.NumberFormatOptions;
+  culturalAdaptations: {
+    greetingStyle: 'formal' | 'casual';
+    addressFormat: 'norwegian' | 'international';
+    phoneFormat: string;
+    postalCodeFormat: string;
+  };
+}
+
+import { notFound } from 'next/navigation';
+
+// Supported locales - MANDATORY: English, Norwegian Bokmål, French, Arabic
+export const locales = ['en', 'nb', 'fr', 'ar'];
+
+// Default locale (English as fallback)
+export const defaultLocale = 'en';
+
+// Norwegian Bokmål as primary for Norwegian compliance
+export const primaryLocale = 'nb';
+
+
+/**
+ * Locale configuration with cultural adaptations
+ */
+
+export const localeConfigs: Record<Locale, LocaleConfig> = {
+
+export const localeConfigs = {
+
+  en: {
+    label: 'English',
+    dir: 'ltr',
+    dateFormat: 'MM/dd/yyyy',
+    timeFormat: 'h:mm a',
+    currencyCode: 'USD',
+    numberFormat: {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
+    culturalAdaptations: {
+      greetingStyle: 'casual',
+      addressFormat: 'international',
+      phoneFormat: '+1 (###) ###-####',
+      postalCodeFormat: '#####',
+    },
+  },
+  nb: {
+    label: 'Norsk (Bokmål)',
+    dir: 'ltr',
+    dateFormat: 'dd.MM.yyyy',
+    timeFormat: 'HH:mm',
+    currencyCode: 'NOK',
+    numberFormat: {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
+    culturalAdaptations: {
+      greetingStyle: 'formal',
+      addressFormat: 'norwegian',
+      phoneFormat: '+47 ### ## ###',
+      postalCodeFormat: '####',
+    },
+  },
+  fr: {
+    label: 'Français',
+    dir: 'ltr',
+    dateFormat: 'dd/MM/yyyy',
+    timeFormat: 'HH:mm',
+    currencyCode: 'EUR',
+    numberFormat: {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
+    culturalAdaptations: {
+      greetingStyle: 'formal',
+      addressFormat: 'international',
+      phoneFormat: '+33 # ## ## ## ##',
+      postalCodeFormat: '#####',
+    },
+  },
+  ar: {
+    label: 'العربية',
+    dir: 'rtl',
+    dateFormat: 'dd/MM/yyyy',
+    timeFormat: 'HH:mm',
+    currencyCode: 'USD',
+    numberFormat: {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
+    culturalAdaptations: {
+      greetingStyle: 'formal',
+      addressFormat: 'international',
+      phoneFormat: '+### ### ### ###',
+      postalCodeFormat: '#####',
+    },
+  },
+};
+
+/**
+ * Norwegian-specific formatting utilities
+ */
+export const norwegianFormatting = {
+  /**
+   * Format Norwegian currency (NOK)
+   */
+  formatCurrency: (amount: number, locale: Locale = 'nb'): string => {
+    const currencyCode = localeConfigs[locale].currencyCode;
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+    }).format(amount);
+  },
+
+  /**
+   * Format Norwegian date
+   */
+  formatDate: (date: Date | string, locale: Locale = 'nb'): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(dateObj);
+  },
+
+  /**
+   * Format Norwegian time
+   */
+  formatTime: (date: Date | string, locale: Locale = 'nb'): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(dateObj);
+  },
+
+  /**
+   * Format Norwegian phone number
+   */
+  formatPhone: (phone: string, locale: Locale = 'nb'): string => {
+    const cleaned = phone.replace(/\D/g, '');
+    const config = localeConfigs[locale];
+    
+    if (locale === 'nb' && cleaned.length === 8) {
+      return "template string";
+    }
+    
+    return phone; // Return original if can't format
+  },
+
+  /**
+   * Format Norwegian postal code
+   */
+  formatPostalCode: (postalCode: string, locale: Locale = 'nb'): string => {
+    const cleaned = postalCode.replace(/\D/g, '');
+    
+    if (locale === 'nb' && cleaned.length === 4) {
+      return cleaned;
+    }
+    
+    return postalCode; // Return original if can't format
+  },
+};
+
+/**
+ * GDPR-compliant message keys for Norwegian compliance
+ */
+export const gdprMessageKeys = {
+  consent: {
+    title: 'gdpr.consent.title',
+    description: 'gdpr.consent.description',
+    accept: 'gdpr.consent.accept',
+    decline: 'gdpr.consent.decline',
+    manage: 'gdpr.consent.manage',
+  },
+  dataProcessing: {
+    purpose: 'gdpr.dataProcessing.purpose',
+    lawfulBasis: 'gdpr.dataProcessing.lawfulBasis',
+    retention: 'gdpr.dataProcessing.retention',
+    rights: 'gdpr.dataProcessing.rights',
+  },
+  userRights: {
+    access: 'gdpr.userRights.access',
+    rectification: 'gdpr.userRights.rectification',
+    erasure: 'gdpr.userRights.erasure',
+    portability: 'gdpr.userRights.portability',
+    objection: 'gdpr.userRights.objection',
+  },
+};
+
+/**
+ * Accessibility message keys for WCAG 2.2 AAA compliance
+ */
+export const accessibilityMessageKeys = {
+  navigation: {
+    skipToContent: 'a11y.navigation.skipToContent',
+    mainMenu: 'a11y.navigation.mainMenu',
+    breadcrumb: 'a11y.navigation.breadcrumb',
+  },
+  forms: {
+    required: 'a11y.forms.required',
+    invalid: 'a11y.forms.invalid',
+    helpText: 'a11y.forms.helpText',
+  },
+  media: {
+    altText: 'a11y.media.altText',
+    videoDescription: 'a11y.media.videoDescription',
+    audioTranscript: 'a11y.media.audioTranscript',
+  },
+};
+
+/**
+ * Next.js Internationalization configuration
+ */
+
+const config: NextIntlConfig = {
+
+const config = {
+
+  // A list of all locales that are supported
+  locales,
+
+  // Used when no locale matches
+  defaultLocale,
+
+  async getMessages(locale) {
+    try {
+      return (await import("template string")).default;
+    } catch (error) {
+      // Fallback to English if locale file doesn't exist
+      if (locale !== defaultLocale) {
+        return (await import("template string")).default;
+      }
+      throw error;
+    }
+  },
+
+  // Configure time zone handling
+  getTimeZone({locale}) {
+    // Norwegian timezone for Norwegian locale
+    if (locale === 'nb') {
+      return 'Europe/Oslo';
+    }
+    // Default to UTC for other locales
+    return 'UTC';
+  },
+
+  // Configure number formatting
+  getFormats({locale}) {
+    const config = localeConfigs[locale] || localeConfigs[defaultLocale];
+    
+    return {
+      dateTime: {
+        short: {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        },
+        long: {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          weekday: 'long'
+        }
+      },
+      number: config.numberFormat,
+    };
+  },
+
+  // Handle missing translations
+  onError(error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Translation error:', error);
+    }
+  },
+
+  // Handle missing message keys
+  getMessageFallback({namespace, key, error}) {
+    const path = [namespace, key].filter((part) => part != null).join('.');
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("template string");
+    }
+    
+    return "template string";
+  },
+};
+
+export default config;
+
+/**
+ * Utility function to validate locale
+ */
+
+export function isValidLocale(locale: string): locale is Locale {
+  return locales.includes(locale as Locale);
+}
+
+export function isValidLocale(locale) {
+  return locales.includes(locale);
+}
+
+
+/**
+ * Get locale configuration
+ */
+
+export function getLocaleConfig(locale: Locale): LocaleConfig {
+  return localeConfigs[locale] || localeConfigs[defaultLocale];
+}
+
+export function getLocaleConfig(locale) {
+  return localeConfigs[locale] || localeConfigs[defaultLocale];
+}
+
+
+/**
+ * Get text direction for locale (important for Arabic RTL support)
+ */
+
+export function getTextDirection(locale: Locale): 'ltr' | 'rtl' {
+  return getLocaleConfig(locale).dir;
+}
+
+export function getTextDirection(locale) {
+  return getLocaleConfig(locale).dir;
+}
+
+
+
+// Example usage:
+/*
+// In your Next.js app/layout.tsx
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import config from '@/config/localization.config';
+
+export default async function LocaleLayout({
+  children,
+  params: { locale }
+}) {
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale} dir={getTextDirection(locale)}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+
+// In your components
+import { useTranslation } from 'next-intl';
+import { norwegianFormatting } from '@/config/localization.config';
+
+function MyComponent() {
+  const { t } = useTranslation();
+  
+  return (
+    <Typography variant="body">
+      {t('welcome.message', 'Welcome to our application')}
+    </Typography>
+  );
+}
+*/
+

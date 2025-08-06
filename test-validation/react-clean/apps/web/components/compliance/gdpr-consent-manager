@@ -1,0 +1,593 @@
+/**
+ * @fileoverview  - GDPR Consent Manager Component
+ * @description AI-optimized GDPR consent management with audit trails and Norwegian compliance
+ * @version 5.0.0
+ * @compliance WCAG AAA, GDPR Article 7, NSM , Audit trails enabled
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, useState, useCallback, useEffect, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Text,
+  Button,
+  Checkbox,
+  Badge,
+  Alert,
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent
+} from '@xaheen-ai/design-system';
+
+export interface Props extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly consentCategories?: readonly ConsentCategory[];
+  readonly onConsentChange?: (consents: ConsentRecord) => Promise<void>;
+  readonly showAdvancedOptions?: boolean;
+  readonly compactMode?: boolean;
+  readonly position?: 'bottom' | 'top' | 'modal';
+  readonly nsmClassification?: ;
+  readonly auditTrailEnabled?: boolean;
+}
+
+export interface ConsentCategory {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly required: boolean;
+  readonly lawfulBasis: 'consent' | 'contract' | 'legal-obligation' | 'vital-interests' | 'public-task' | 'legitimate-interests';
+  readonly purposes: readonly string[];
+  readonly dataTypes: readonly string[];
+  readonly retentionPeriod: number; // days
+  readonly thirdParties?: readonly string[];
+  readonly internationalTransfer?: boolean;
+  readonly automatedDecisionMaking?: boolean;
+}
+
+export interface ConsentRecord {
+  readonly userId?: string;
+  readonly timestamp: string;
+  readonly consents: Record<string, ConsentEntry>;
+  readonly ipAddress?: string;
+  readonly userAgent?: string;
+  readonly version: string;
+}
+
+export interface ConsentEntry {
+  readonly granted: boolean;
+  readonly timestamp: string;
+  readonly method: 'explicit' | 'implicit' | 'withdrawn';
+  readonly lawfulBasis: string;
+}
+
+/**
+ * AI-Optimized GDPR Consent Manager
+ * Pattern:  complexity consent management with audit trails
+ * Estimated tokens: 
+ * 
+ * GDPR Compliance:
+ * - Article 7: Conditions for consent
+ * - Article 12: Transparent information
+ * - Article 13: Information to be provided
+ * - Article 17: Right to erasure
+ * - Article 20: Right to data portability
+ * 
+ * Norwegian Compliance:
+ * - NSM Classification: 
+ * - GDPR Implementation: Datatilsynet requirements
+ * - Language: Norwegian and English support
+ */
+export const  = forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      className,
+      title = ,
+      description = ,
+      consentCategories = defaultConsentCategories,
+      onConsentChange,
+      showAdvancedOptions = true,
+      compactMode = false,
+      position = 'bottom',
+      nsmClassification = 'OPEN',
+      auditTrailEnabled = true,
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [consents, setConsents] = useState<Record<string, boolean>>({});
+    const [showDetails, setShowDetails] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Initialize consents based on categories
+    useEffect(() => {
+      const initialConsents: Record<string, boolean> = {};
+      consentCategories.forEach(category => {
+        initialConsents[category.id] = category.required;
+      });
+      setConsents(initialConsents);
+    }, [consentCategories]);
+
+    const handleConsentChange = useCallback((categoryId: string, granted: boolean) => {
+      setConsents(prev => ({
+        ...prev,
+        [categoryId]: granted
+      }));
+    }, []);
+
+    const handleAcceptAll = useCallback(async () => {
+      setIsProcessing(true);
+      
+      const allConsents: Record<string, boolean> = {};
+      consentCategories.forEach(category => {
+        allConsents[category.id] = true;
+      });
+      
+      setConsents(allConsents);
+      await saveConsents(allConsents, 'explicit');
+      setIsVisible(false);
+      setIsProcessing(false);
+    }, [consentCategories]);
+
+    const handleAcceptSelected = useCallback(async () => {
+      setIsProcessing(true);
+      await saveConsents(consents, 'explicit');
+      setIsVisible(false);
+      setIsProcessing(false);
+    }, [consents]);
+
+    const handleRejectAll = useCallback(async () => {
+      setIsProcessing(true);
+      
+      const requiredOnly: Record<string, boolean> = {};
+      consentCategories.forEach(category => {
+        requiredOnly[category.id] = category.required;
+      });
+      
+      setConsents(requiredOnly);
+      await saveConsents(requiredOnly, 'explicit');
+      setIsVisible(false);
+      setIsProcessing(false);
+    }, [consentCategories]);
+
+    const saveConsents = async (consentData: Record<string, boolean>, method: ConsentEntry['method']) => {
+      const timestamp = new Date().toISOString();
+      
+      const consentRecord: ConsentRecord = {
+        userId: getUserId(), // Implement user ID retrieval
+        timestamp,
+        consents: Object.entries(consentData).reduce((acc, [categoryId, granted]) => {
+          const category = consentCategories.find(cat => cat.id === categoryId);
+          acc[categoryId] = {
+            granted,
+            timestamp,
+            method,
+            lawfulBasis: category?.lawfulBasis || 'consent'
+          };
+          return acc;
+        }, {} as Record<string, ConsentEntry>),
+        ipAddress: await getClientIP(), // Implement IP detection
+        userAgent: navigator.userAgent,
+        version: '1.0'
+      };
+
+      if (auditTrailEnabled) {
+        await createAuditEntry('consent-updated', consentRecord);
+      }
+
+      await onConsentChange?.(consentRecord);
+    };
+
+    const getUserId = (): string | undefined => {
+      // Implement user ID retrieval logic
+      return localStorage.getItem('userId') || undefined;
+    };
+
+    const getClientIP = async (): Promise<string | undefined> => {
+      // Implement IP detection - note: client-side IP detection has limitations
+      try {
+        const response = await fetch('/api/client-ip');
+        const data = await response.json();
+        return data.ip;
+      } catch (error) {
+        console.warn('Could not determine client IP:', error);
+        return undefined;
+      }
+    };
+
+    const createAuditEntry = async (action: string, data: any) => {
+      if (!auditTrailEnabled) return;
+      
+      const auditEntry = {
+        timestamp: new Date().toISOString(),
+        action,
+        userId: getUserId(),
+        nsmClassification,
+        data: JSON.stringify(data),
+        ipAddress: await getClientIP(),
+        userAgent: navigator.userAgent
+      };
+
+      try {
+        await fetch('/api/audit/consent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-NSM-Classification': nsmClassification
+          },
+          body: JSON.stringify(auditEntry)
+        });
+      } catch (error) {
+        console.error('Failed to create audit entry:', error);
+      }
+    };
+
+    const getLawfulBasisDescription = (basis: ConsentCategory['lawfulBasis']): string => {
+      const descriptions = {
+        'consent': ,
+        'contract': ,
+        'legal-obligation': ,
+        'vital-interests': ,
+        'public-task': ,
+        'legitimate-interests': 
+      };
+      return descriptions[basis] || basis;
+    };
+
+    if (!isVisible) return null;
+
+    const modalStyle = position === 'modal' ? {
+      position: 'fixed' as const,
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      zIndex: 9999,
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      overflow: 'auto'
+    } : {};
+
+    const positionStyle = position === 'bottom' ? {
+      position: 'fixed' as const,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1000
+    } : position === 'top' ? {
+      position: 'fixed' as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1000
+    } : {};
+
+    return (
+      <>
+        {position === 'modal' && <div className="fixed inset-0 bg-black bg-opacity-50 z-[9998]" />}
+        
+        <div
+          ref={ref}
+          className={className}
+          style=
+          data-testid={testId}
+          data-nsm-classification={nsmClassification}
+          role="dialog"
+          aria-labelledby="consent-title"
+          aria-describedby="consent-description"
+          {...props}
+        >
+          <Container size={compactMode ? 'md' : 'lg'}>
+            <Card className="shadow-xl">
+              <CardHeader>
+                <Stack direction="horizontal" justify="space-between" align="center">
+                  <Stack direction="vertical" gap="sm">
+                    <CardTitle id="consent-title">{title}</CardTitle>
+                    <Badge variant="outline" size="sm">
+                      GDPR  • NSM {nsmClassification}
+                    </Badge>
+                  </Stack>
+                  
+                  {position === 'modal' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsVisible(false)}
+                      aria-label=
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </Stack>
+              </CardHeader>
+
+              <CardContent>
+                <Stack direction="vertical" gap="lg">
+                  <Text variant="body" id="consent-description">
+                    {description}
+                  </Text>
+
+                  {compactMode ? (
+                    // Compact view - essential info only
+                    <Stack direction="horizontal" gap="sm" className="flex-wrap">
+                      <Button
+                        variant="primary"
+                        onClick={handleAcceptAll}
+                        disabled={isProcessing}
+                        loading={isProcessing}
+                      >
+                        
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={handleRejectAll}
+                        disabled={isProcessing}
+                      >
+                        
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowDetails(!showDetails)}
+                      >
+                        
+                      </Button>
+                    </Stack>
+                  ) : null}
+
+                  {(showDetails || !compactMode) && (
+                    <>
+                      {/* Consent Categories */}
+                      <Stack direction="vertical" gap="md">
+                        <Text variant="h4" weight="semibold">
+                          
+                        </Text>
+                        
+                        {consentCategories.map((category) => (
+                          <Card key={category.id} variant="outline">
+                            <CardContent className="p-4">
+                              <Stack direction="vertical" gap="sm">
+                                <Stack direction="horizontal" justify="space-between" align="center">
+                                  <Stack direction="horizontal" gap="md" align="center">
+                                    <Checkbox
+                                      checked={consents[category.id] || false}
+                                      onChange={(checked) => handleConsentChange(category.id, checked)}
+                                      disabled={category.required}
+                                      aria-describedby={`category-${category.id}-description`}
+                                    />
+                                    
+                                    <Stack direction="vertical" gap="xs">
+                                      <Stack direction="horizontal" gap="sm" align="center">
+                                        <Text variant="h5" weight="semibold">
+                                          {category.name}
+                                        </Text>
+                                        {category.required && (
+                                          <Badge variant="secondary" size="sm">
+                                            
+                                          </Badge>
+                                        )}
+                                      </Stack>
+                                      
+                                      <Text 
+                                        variant="caption" 
+                                        color="secondary"
+                                        id={`category-${category.id}-description`}
+                                      >
+                                        {category.description}
+                                      </Text>
+                                    </Stack>
+                                  </Stack>
+                                </Stack>
+
+                                {showAdvancedOptions && (
+                                  <Accordion>
+                                    <AccordionItem value={`details-${category.id}`}>
+                                      <AccordionTrigger>
+                                        <Text variant="caption">
+                                          
+                                        </Text>
+                                      </AccordionTrigger>
+                                      <AccordionContent>
+                                        <Stack direction="vertical" gap="sm" className="text-sm">
+                                          <div>
+                                            <Text variant="caption" weight="semibold">
+                                              :
+                                            </Text>
+                                            <Text variant="caption" className="ml-2">
+                                              {getLawfulBasisDescription(category.lawfulBasis)}
+                                            </Text>
+                                          </div>
+                                          
+                                          <div>
+                                            <Text variant="caption" weight="semibold">
+                                              :
+                                            </Text>
+                                            <Text variant="caption" className="ml-2">
+                                              {category.purposes.join(', ')}
+                                            </Text>
+                                          </div>
+                                          
+                                          <div>
+                                            <Text variant="caption" weight="semibold">
+                                              :
+                                            </Text>
+                                            <Text variant="caption" className="ml-2">
+                                              {category.dataTypes.join(', ')}
+                                            </Text>
+                                          </div>
+                                          
+                                          <div>
+                                            <Text variant="caption" weight="semibold">
+                                              :
+                                            </Text>
+                                            <Text variant="caption" className="ml-2">
+                                              {Math.floor(category.retentionPeriod / 365)} 
+                                            </Text>
+                                          </div>
+                                          
+                                          {category.thirdParties && category.thirdParties.length > 0 && (
+                                            <div>
+                                              <Text variant="caption" weight="semibold">
+                                                :
+                                              </Text>
+                                              <Text variant="caption" className="ml-2">
+                                                {category.thirdParties.join(', ')}
+                                              </Text>
+                                            </div>
+                                          )}
+                                          
+                                          {category.internationalTransfer && (
+                                            <Alert variant="info" size="sm">
+                                              <Text variant="caption">
+                                                
+                                              </Text>
+                                            </Alert>
+                                          )}
+                                          
+                                          {category.automatedDecisionMaking && (
+                                            <Alert variant="warning" size="sm">
+                                              <Text variant="caption">
+                                                
+                                              </Text>
+                                            </Alert>
+                                          )}
+                                        </Stack>
+                                      </AccordionContent>
+                                    </AccordionItem>
+                                  </Accordion>
+                                )}
+                              </Stack>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </Stack>
+
+                      {/* Action Buttons */}
+                      <Stack direction="horizontal" gap="sm" justify="flex-end" className="flex-wrap">
+                        <Button
+                          variant="outline"
+                          onClick={handleRejectAll}
+                          disabled={isProcessing}
+                        >
+                          
+                        </Button>
+                        
+                        <Button
+                          variant="secondary"
+                          onClick={handleAcceptSelected}
+                          disabled={isProcessing}
+                          loading={isProcessing}
+                        >
+                          
+                        </Button>
+                        
+                        <Button
+                          variant="primary"
+                          onClick={handleAcceptAll}
+                          disabled={isProcessing}
+                          loading={isProcessing}
+                        >
+                          
+                        </Button>
+                      </Stack>
+
+                      {/* Footer Links */}
+                      <Stack direction="horizontal" gap="md" justify="center" className="text-center">
+                        <Button variant="link" size="sm">
+                          
+                        </Button>
+                        <Button variant="link" size="sm">
+                          
+                        </Button>
+                        <Button variant="link" size="sm">
+                          
+                        </Button>
+                      </Stack>
+                    </>
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Container>
+        </div>
+      </>
+    );
+  }
+);
+
+.displayName = '';
+
+// Default consent categories for Norwegian compliance
+const defaultConsentCategories: readonly ConsentCategory[] = [
+  {
+    id: 'necessary',
+    name: ,
+    description: ,
+    required: true,
+    lawfulBasis: 'legitimate-interests',
+    purposes: ['Website functionality', 'Security', 'Load balancing'],
+    dataTypes: ['Session data', 'Authentication tokens', 'Security logs'],
+    retentionPeriod: 30
+  },
+  {
+    id: 'functional',
+    name: ,
+    description: ,
+    required: false,
+    lawfulBasis: 'consent',
+    purposes: ['User preferences', 'Language settings', 'Accessibility options'],
+    dataTypes: ['Preference data', 'Language settings', 'UI customizations'],
+    retentionPeriod: 365
+  },
+  {
+    id: 'analytics',
+    name: ,
+    description: ,
+    required: false,
+    lawfulBasis: 'legitimate-interests',
+    purposes: ['Usage analytics', 'Performance monitoring', 'User experience improvement'],
+    dataTypes: ['Page views', 'Click events', 'Session duration', 'Device information'],
+    retentionPeriod: 1095, // 3 years
+    thirdParties: ['Google Analytics', 'Hotjar']
+  },
+  {
+    id: 'marketing',
+    name: ,
+    description: ,
+    required: false,
+    lawfulBasis: 'consent',
+    purposes: ['Targeted advertising', 'Marketing campaigns', 'Social media integration'],
+    dataTypes: ['Browsing behavior', 'Ad interactions', 'Social media data'],
+    retentionPeriod: 730, // 2 years
+    thirdParties: ['Facebook', 'Google Ads', 'LinkedIn'],
+    internationalTransfer: true
+  }
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   position="bottom"
+ *   nsmClassification=""
+ *   auditTrailEnabled={true}
+ *   showAdvancedOptions={true}
+ *   onConsentChange={async (consents) => {
+ *     await saveUserConsents(consents);
+ *     updateAnalyticsConsent(consents.consents.analytics?.granted);
+ *     updateMarketingConsent(consents.consents.marketing?.granted);
+ *   }}
+ *   consentCategories={customConsentCategories}
+ * />
+ */

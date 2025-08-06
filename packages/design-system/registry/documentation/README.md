@@ -15,7 +15,7 @@ A comprehensive documentation generation system that creates beautiful, interact
 ## 📦 Installation
 
 ```bash
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 ```
 
 ## 🚀 Quick Start
@@ -23,8 +23,8 @@ npm install @xaheen/design-system
 ### Basic Documentation Generation
 
 ```typescript
-import { DocumentationGenerator } from '@xaheen/design-system/documentation';
-import { ButtonSpec } from '@xaheen/design-system/specs';
+import { DocumentationGenerator } from '@xaheen-ai/design-system/documentation';
+import { ButtonSpec } from '@xaheen-ai/design-system/specs';
 
 // Generate markdown documentation
 const docs = DocumentationGenerator.generateComponentDocs(ButtonSpec, {
@@ -41,7 +41,7 @@ console.log(docs.content); // Generated markdown content
 ### Industry-Specific Documentation
 
 ```typescript
-import { IndustryTemplateGenerator } from '@xaheen/design-system/documentation';
+import { IndustryTemplateGenerator } from '@xaheen-ai/design-system/documentation';
 
 // Generate enterprise-themed documentation
 const enterpriseDocs = IndustryTemplateGenerator.generateIndustryTemplate(
@@ -61,7 +61,7 @@ const financeTokens = IndustryTemplateGenerator.generateDesignTokensDoc('finance
 ### Interactive Playgrounds
 
 ```typescript
-import { PlaygroundGenerator } from '@xaheen/design-system/documentation';
+import { PlaygroundGenerator } from '@xaheen-ai/design-system/documentation';
 
 // Generate CodeSandbox playground
 const playground = PlaygroundGenerator.generatePlayground({
@@ -274,7 +274,7 @@ Interactive button element with multiple variants and sizes.
 ### Basic Usage
 
 \`\`\`tsx
-import { Button } from '@xaheen/design-system';
+import { Button } from '@xaheen-ai/design-system';
 
 export function BasicExample() {
   return <Button>Click me</Button>;
@@ -412,7 +412,7 @@ const a11yPlayground = PlaygroundGenerator.generatePlayground({
 ### Bulk Documentation Generation
 
 ```typescript
-import { COMPONENT_REGISTRY } from '@xaheen/design-system/specs';
+import { COMPONENT_REGISTRY } from '@xaheen-ai/design-system/specs';
 
 // Generate documentation for all components
 const allComponents = Object.values(COMPONENT_REGISTRY);
@@ -461,7 +461,7 @@ const customDocs = DocumentationGenerator.generateComponentDocs(ButtonSpec, {
 
 ```typescript
 // Example CI/CD integration
-import { DocumentationGenerator } from '@xaheen/design-system/documentation';
+import { DocumentationGenerator } from '@xaheen-ai/design-system/documentation';
 import { writeFileSync, mkdirSync } from 'fs';
 
 async function generateDocumentationSite() {

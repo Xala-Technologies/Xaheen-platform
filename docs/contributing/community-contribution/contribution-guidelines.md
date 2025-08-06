@@ -154,7 +154,7 @@ Create tests for your template:
 
 ```javascript
 // tests/template.test.js
-const { generateTemplate } = require('@xaheen/template-engine');
+const { generateTemplate } = require('@xaheen-ai/template-engine');
 const template = require('../template.json');
 
 describe('My Awesome Template', () => {
@@ -528,7 +528,7 @@ module.exports = {
 - **Discord Server**: [Join our community](https://discord.gg/xaheen)
 - **GitHub Discussions**: [Ask questions](https://github.com/xaheen/cli/discussions)
 - **Stack Overflow**: Tag questions with `xaheen-cli`
-- **Email Support**: [support@xaheen.com](mailto:support@xaheen.com)
+- **Email Support**: [support@xaheen-ai.com](mailto:support@xaheen-ai.com)
 
 ### Contributing to Community
 
@@ -613,7 +613,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 ### Reporting Issues
 
 Report code of conduct violations to:
-- **Email**: [conduct@xaheen.com](mailto:conduct@xaheen.com)
+- **Email**: [conduct@xaheen-ai.com](mailto:conduct@xaheen-ai.com)
 - **Anonymous Form**: [Report Form](https://forms.xaheen.com/conduct)
 
 ## 📝 Legal Considerations

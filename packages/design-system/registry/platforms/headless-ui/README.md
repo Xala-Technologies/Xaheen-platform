@@ -19,7 +19,7 @@ Headless UI components provide:
 Enhanced button component with Headless UI patterns for state management and composition.
 
 ```tsx
-import { Button, ButtonGroup, ToggleButton, MenuButton } from '@xaheen/design-system/headless-ui';
+import { Button, ButtonGroup, ToggleButton, MenuButton } from '@xaheen-ai/design-system/headless-ui';
 
 // Basic usage
 <Button variant="primary" size="md">
@@ -58,7 +58,7 @@ import { Button, ButtonGroup, ToggleButton, MenuButton } from '@xaheen/design-sy
 Accessible input component with built-in Combobox functionality for auto-complete.
 
 ```tsx
-import { Input, SearchInput, PasswordInput } from '@xaheen/design-system/headless-ui';
+import { Input, SearchInput, PasswordInput } from '@xaheen-ai/design-system/headless-ui';
 
 // Basic input
 <Input
@@ -109,7 +109,7 @@ import {
   InteractiveCard,
   FeatureCard,
   StatCard
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 // Basic card
 <Card variant="default" padding="md">
@@ -228,7 +228,7 @@ These components are designed to work seamlessly with other Headless UI primitiv
 
 ```tsx
 import { Menu, Dialog, Popover } from '@headlessui/react';
-import { Button, Input, Card } from '@xaheen/design-system/headless-ui';
+import { Button, Input, Card } from '@xaheen-ai/design-system/headless-ui';
 
 // Menu with custom button
 <Menu>
@@ -278,7 +278,7 @@ import type {
   HeadlessButtonProps,
   HeadlessInputProps,
   HeadlessCardProps 
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 // Custom component with typed props
 interface MyButtonProps extends HeadlessButtonProps {

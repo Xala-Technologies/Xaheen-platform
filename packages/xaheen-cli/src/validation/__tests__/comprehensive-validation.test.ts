@@ -81,7 +81,7 @@ const Button = ({ title, onClick }: ButtonProps) => { // Missing JSX.Element ret
 
 const DESIGN_SYSTEM_COMPLIANT_COMPONENT = `
 import React from 'react';
-import { Button, Input, Card } from '@xaheen/design-system';
+import { Button, Input, Card } from '@xaheen-ai/design-system';
 
 export const LoginForm = (): JSX.Element => {
   return (
@@ -283,7 +283,7 @@ describe('Comprehensive Validation System', () => {
       name: 'test-project',
       version: '1.0.0',
       dependencies: {
-        '@xaheen/design-system': '^1.0.0',
+        '@xaheen-ai/design-system': '^1.0.0',
         'react': '^18.0.0',
         'react-i18next': '^12.0.0'
       }

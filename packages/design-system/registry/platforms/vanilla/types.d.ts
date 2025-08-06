@@ -2,7 +2,7 @@
  * TypeScript definitions for Xaheen Web Components
  */
 
-declare module '@xaheen/design-system/vanilla' {
+declare module '@xaheen-ai/design-system/vanilla' {
   // Button Component
   export interface XaheenButtonElement extends HTMLElement {
     variant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';

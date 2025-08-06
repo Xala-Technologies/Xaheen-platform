@@ -601,14 +601,14 @@ Content-Type: application/json
 - **Documentation**: [Platform docs](https://docs.xaheen.com/platform)
 - **Community Forum**: [Discussions](https://github.com/xaheen/cli/discussions)
 - **Discord Server**: [Real-time chat](https://discord.gg/xaheen)
-- **Email Support**: [support@xaheen.com](mailto:support@xaheen.com)
+- **Email Support**: [support@xaheen-ai.com](mailto:support@xaheen-ai.com)
 
 ### Reporting Issues
 
 - **Template Issues**: Use template-specific issue tracker
 - **Platform Bugs**: [Report here](https://github.com/xaheen/platform/issues)
-- **Security Issues**: [security@xaheen.com](mailto:security@xaheen.com)
-- **Abuse Reports**: [abuse@xaheen.com](mailto:abuse@xaheen.com)
+- **Security Issues**: [security@xaheen-ai.com](mailto:security@xaheen-ai.com)
+- **Abuse Reports**: [abuse@xaheen-ai.com](mailto:abuse@xaheen-ai.com)
 
 ---
 

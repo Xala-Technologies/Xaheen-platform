@@ -37,7 +37,7 @@ export const defaultThemeConfig: ThemeConfig = {
 
 // Design System Metadata
 export const designSystemInfo = {
-  name: '@xaheen/design-system',
+  name: '@xaheen-ai/design-system',
   version: '1.0.0',
   description: 'Professional design system for Xaheen CLI with WCAG AAA compliance',
   standards: {

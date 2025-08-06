@@ -97,7 +97,7 @@ xaheen generate model Product --fields=name:string,price:number,description:stri
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a controller
 const result = await generateCode({

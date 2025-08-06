@@ -308,7 +308,7 @@ await registry.syncRemoteServices();
 ```typescript
 // Register plugin loader
 registry.registerPlugin('npm-plugin-loader', {
-  prefix: '@xaheen/service-'
+  prefix: '@xaheen-ai/service-'
 });
 ```
 

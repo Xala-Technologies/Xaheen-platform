@@ -86,9 +86,9 @@ export class TemplateComplianceValidator {
       const content = readFileSync(packageJsonPath, 'utf-8');
       const packageData = JSON.parse(content);
 
-      // Check for @xaheen/design-system dependency
-      if (!packageData.dependencies?.['@xaheen/design-system']) {
-        this.errors.push('Missing @xaheen/design-system dependency');
+      // Check for @xaheen-ai/design-system dependency
+      if (!packageData.dependencies?.['@xaheen-ai/design-system']) {
+        this.errors.push('Missing @xaheen-ai/design-system dependency');
       }
 
       // Check for Norwegian compliance dependencies
@@ -156,7 +156,7 @@ export class TemplateComplianceValidator {
   }
 
   /**
-   * Validates proper usage of @xaheen/design-system
+   * Validates proper usage of @xaheen-ai/design-system
    */
   private async validateDesignSystemUsage(): Promise<void> {
     const componentFiles = this.getComponentFiles();
@@ -168,10 +168,10 @@ export class TemplateComplianceValidator {
         const content = readFileSync(filePath, 'utf-8');
         
         // Check for design system imports
-        const hasDesignSystemImport = content.includes('@xaheen/design-system');
+        const hasDesignSystemImport = content.includes('@xaheen-ai/design-system');
         
         if (!hasDesignSystemImport && this.hasUIComponents(content)) {
-          this.errors.push(`${filePath}: Should use @xaheen/design-system components`);
+          this.errors.push(`${filePath}: Should use @xaheen-ai/design-system components`);
         }
 
         // Check for old UI library imports

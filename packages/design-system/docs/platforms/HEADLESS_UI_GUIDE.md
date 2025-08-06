@@ -58,13 +58,13 @@ npm install -D typescript @types/react @types/react-dom
 
 ```bash
 # Install Xaheen Design System with Headless UI support
-npm install @xaheen/design-system @headlessui/react
+npm install @xaheen-ai/design-system @headlessui/react
 
 # Or with yarn
-yarn add @xaheen/design-system @headlessui/react
+yarn add @xaheen-ai/design-system @headlessui/react
 
 # Or with pnpm
-pnpm add @xaheen/design-system @headlessui/react
+pnpm add @xaheen-ai/design-system @headlessui/react
 ```
 
 ### Optional Dependencies
@@ -87,10 +87,10 @@ npm install framer-motion @tailwindcss/forms
 ```tsx
 // app.tsx or main.tsx
 import React from 'react';
-import { HeadlessUIProvider } from '@xaheen/design-system/headless-ui';
+import { HeadlessUIProvider } from '@xaheen-ai/design-system/headless-ui';
 
 // Import design tokens CSS
-import '@xaheen/design-system/tokens/css';
+import '@xaheen-ai/design-system/tokens/css';
 
 function App() {
   return (
@@ -129,7 +129,7 @@ import {
   CardHeader,
   CardContent,
   CardFooter
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 function BasicExample() {
   const [email, setEmail] = useState('');
@@ -207,7 +207,7 @@ import {
   ToggleButton,
   MenuButton,
   SplitButton
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 import { Menu } from '@headlessui/react';
 
 function ButtonExamples() {
@@ -419,7 +419,7 @@ import {
   TextareaInput,
   NumberInput,
   DateInput
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 function InputExamples() {
   const [basicValue, setBasicValue] = useState('');
@@ -613,7 +613,7 @@ import {
   FeatureCard,
   StatCard,
   MediaCard
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon, PlayIcon } from '@heroicons/react/24/outline';
 
@@ -868,7 +868,7 @@ import {
   FieldSet,
   FormField,
   FormMessage
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 // Form schema
 const profileSchema = z.object({
@@ -1232,7 +1232,7 @@ import {
   Card,
   Badge,
   Pagination
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 interface User {
   id: string;
@@ -1673,7 +1673,7 @@ Headless UI components expose data attributes for advanced styling:
 
 ```tsx
 // Live region announcements
-import { useLiveAnnouncer } from '@xaheen/design-system/headless-ui';
+import { useLiveAnnouncer } from '@xaheen-ai/design-system/headless-ui';
 
 function AccessibleForm() {
   const { announce } = useLiveAnnouncer();
@@ -1695,7 +1695,7 @@ function AccessibleForm() {
 }
 
 // Focus management
-import { useFocusTrap, useFocusReturn } from '@xaheen/design-system/headless-ui';
+import { useFocusTrap, useFocusReturn } from '@xaheen-ai/design-system/headless-ui';
 
 function Modal({ isOpen, onClose }) {
   const focusTrapRef = useFocusTrap(isOpen);
@@ -1711,7 +1711,7 @@ function Modal({ isOpen, onClose }) {
 }
 
 // Keyboard navigation
-import { useKeyboardNav } from '@xaheen/design-system/headless-ui';
+import { useKeyboardNav } from '@xaheen-ai/design-system/headless-ui';
 
 function NavigableList({ items }) {
   const { activeIndex, keyboardProps } = useKeyboardNav({
@@ -1757,7 +1757,7 @@ import {
   CardHeader,
   CardContent,
   CardFooter
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 // Modal dialog with Xaheen components
 function ModalExample() {
@@ -2140,7 +2140,7 @@ function MyModal({ isOpen, onClose, title, children }) {
 
 // After (Xaheen Headless UI)
 import { Dialog } from '@headlessui/react';
-import { Card, CardHeader, CardContent } from '@xaheen/design-system/headless-ui';
+import { Card, CardHeader, CardContent } from '@xaheen-ai/design-system/headless-ui';
 
 function MyModal({ isOpen, onClose, title, children }) {
   return (
@@ -2195,7 +2195,7 @@ import {
   Card,
   CardContent,
   CardFooter
-} from '@xaheen/design-system/headless-ui';
+} from '@xaheen-ai/design-system/headless-ui';
 
 function MyForm() {
   return (
@@ -2265,7 +2265,7 @@ const MenuButton = forwardRef<HTMLButtonElement, ButtonProps>(
 // Problem: Focus not properly managed in complex components
 // Solution: Use focus management hooks
 
-import { useFocusManager } from '@xaheen/design-system/headless-ui';
+import { useFocusManager } from '@xaheen-ai/design-system/headless-ui';
 
 function ComplexComponent() {
   const { focusFirst, focusLast, focusNext, focusPrevious } = useFocusManager({
@@ -2338,17 +2338,17 @@ function InteractiveCard({ onClick, children }) {
 ```typescript
 // Use dynamic imports for large components
 const LazyDataTable = lazy(() => 
-  import('@xaheen/design-system/headless-ui').then(module => ({
+  import('@xaheen-ai/design-system/headless-ui').then(module => ({
     default: module.DataTable
   }))
 );
 
 // Tree-shake unused components
-import { Button } from '@xaheen/design-system/headless-ui/button';
-import { Input } from '@xaheen/design-system/headless-ui/input';
+import { Button } from '@xaheen-ai/design-system/headless-ui/button';
+import { Input } from '@xaheen-ai/design-system/headless-ui/input';
 
 // Instead of importing everything
-// import * as UI from '@xaheen/design-system/headless-ui';
+// import * as UI from '@xaheen-ai/design-system/headless-ui';
 ```
 
 For more help:

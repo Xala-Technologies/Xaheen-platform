@@ -55,13 +55,13 @@ cd myApp
 
 ```bash
 # Install Xaheen Design System with Ionic support
-npm install @xaheen/design-system @ionic/react @ionic/core ionicons
+npm install @xaheen-ai/design-system @ionic/react @ionic/core ionicons
 
 # Or with yarn
-yarn add @xaheen/design-system @ionic/react @ionic/core ionicons
+yarn add @xaheen-ai/design-system @ionic/react @ionic/core ionicons
 
 # Or with pnpm
-pnpm add @xaheen/design-system @ionic/react @ionic/core ionicons
+pnpm add @xaheen-ai/design-system @ionic/react @ionic/core ionicons
 ```
 
 ### Native Development Setup
@@ -104,7 +104,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 // Import Xaheen Ionic components
-import { IonicProvider } from '@xaheen/design-system/ionic';
+import { IonicProvider } from '@xaheen-ai/design-system/ionic';
 
 // Import your pages
 import Home from './pages/Home';
@@ -168,7 +168,7 @@ import {
   SearchInput,
   useIonicPlatform,
   useHaptics
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -261,7 +261,7 @@ export default Home;
 Enhanced button component with haptic feedback and platform-specific styling.
 
 ```tsx
-import { Button, FAB, SegmentButton, TabButton } from '@xaheen/design-system/ionic';
+import { Button, FAB, SegmentButton, TabButton } from '@xaheen-ai/design-system/ionic';
 
 function ButtonExamples() {
   return (
@@ -354,7 +354,7 @@ import {
   PinInput,
   CurrencyInput,
   PhoneInput 
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 function InputExamples() {
   return (
@@ -467,7 +467,7 @@ import {
   MediaCard,
   StatCard,
   InteractiveCard 
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 function CardExamples() {
   return (
@@ -614,7 +614,7 @@ import {
   LoadingSpinner,
   useIonicPlatform,
   useHaptics 
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 interface ListItem {
   id: string;
@@ -834,7 +834,7 @@ import {
   FAB,
   useIonicPlatform,
   useHaptics
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const TabsExample: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('home');
@@ -988,7 +988,7 @@ import {
   Card,
   useHaptics,
   useIonicPlatform
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const CameraExample: React.FC = () => {
   const [photos, setPhotos] = useState<string[]>([]);
@@ -1179,7 +1179,7 @@ import {
   Card,
   useHaptics,
   useIonicPlatform 
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const iOSFeatures: React.FC = () => {
   const platform = useIonicPlatform();
@@ -1249,7 +1249,7 @@ import {
   Card,
   useHaptics,
   useIonicPlatform 
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const AndroidFeatures: React.FC = () => {
   const platform = useIonicPlatform();
@@ -1317,7 +1317,7 @@ import {
   Button,
   useHaptics,
   useIonicPlatform
-} from '@xaheen/design-system/ionic';
+} from '@xaheen-ai/design-system/ionic';
 
 const CapacitorFeatures: React.FC = () => {
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
@@ -1591,7 +1591,7 @@ const OldComponent = () => {
 };
 
 // After (Xaheen Ionic)
-import { Button, Input, Card } from '@xaheen/design-system/ionic';
+import { Button, Input, Card } from '@xaheen-ai/design-system/ionic';
 
 const NewComponent = () => {
   return (

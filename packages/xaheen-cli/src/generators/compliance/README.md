@@ -79,7 +79,7 @@ xaheen generate compliance accessibility --wcag=2.2 --level=AA
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate NSM security components
 const result = await generateCode({

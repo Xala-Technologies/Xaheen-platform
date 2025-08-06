@@ -260,7 +260,7 @@ async function createXaheenProject(
 		note(
 			chalk.yellow(`
 Remember Xaheen Development Standards:
-• NO raw HTML elements - use @xaheen/ui-system components only
+• NO raw HTML elements - use @xaheen-ai/ui-system components only
 • NO hardcoded styles - use design tokens exclusively
 • NO 'any' types - strict TypeScript required
 • ALL components must have explicit return types
@@ -571,7 +571,7 @@ async function createProjectStructure(
 				"xaheen:agent": "xaheen agent",
 			},
 			dependencies: {
-				"@xaheen/ui-system": "^1.0.0",
+				"@xaheen-ai/ui-system": "^1.0.0",
 				"@anthropic-ai/sdk": "^0.20.0",
 				next: "^14.0.0",
 				react: "^18.2.0",

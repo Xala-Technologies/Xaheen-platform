@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "extends": ["@xaheen/validation-config-recommended"],
+  "extends": ["@xaheen-ai/validation-config-recommended"],
   
   "claude": {
     "buttonMinHeight": 12,
@@ -22,7 +22,7 @@
   },
 
   "designSystem": {
-    "packageName": "@xaheen/design-system",
+    "packageName": "@xaheen-ai/design-system",
     "enforceImports": true,
     "allowHardcodedValues": false,
     "requiredComponents": ["Button", "Input", "Card", "Modal", "Form"],

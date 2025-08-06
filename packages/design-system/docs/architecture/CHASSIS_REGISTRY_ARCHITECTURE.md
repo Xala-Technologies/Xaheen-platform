@@ -231,7 +231,7 @@ const handleClick = (event: MouseEvent) => {
 
 ```typescript
 // Consumer app
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 
 // Auto-detects platform and installs appropriate components
 const Button = await componentFactory.install('button');
@@ -242,16 +242,16 @@ const Input = await componentFactory.install('input');
 
 ```typescript
 // Consumer app - explicit platform
-import { Button } from '@xaheen/design-system/react';
-import Button from '@xaheen/design-system/vue/Button.vue';
-import { ButtonComponent } from '@xaheen/design-system/angular';
+import { Button } from '@xaheen-ai/design-system/react';
+import Button from '@xaheen-ai/design-system/vue/Button.vue';
+import { ButtonComponent } from '@xaheen-ai/design-system/angular';
 ```
 
 ### 3. Registry-Based Installation
 
 ```typescript
 // Consumer app - registry approach
-import { Registry } from '@xaheen/design-system/registry';
+import { Registry } from '@xaheen-ai/design-system/registry';
 
 const registry = new Registry();
 
@@ -291,7 +291,7 @@ const Input = registry.getComponent('input');
 
 ```typescript
 // Direct import from chassis
-import { Button, Card } from '@xaheen/design-system/registry';
+import { Button, Card } from '@xaheen-ai/design-system/registry';
 
 // Consumer provides all context
 function App() {
@@ -313,7 +313,7 @@ function App() {
 
 ```typescript
 // Platform-specific with enhanced features
-import { Button, useButton } from '@xaheen/design-system/react';
+import { Button, useButton } from '@xaheen-ai/design-system/react';
 
 function App() {
   // Platform-specific hooks available
@@ -334,7 +334,7 @@ function App() {
 
 ```typescript
 // Full registry management
-import { createRegistry } from '@xaheen/design-system/registry';
+import { createRegistry } from '@xaheen-ai/design-system/registry';
 
 const registry = createRegistry({
   platform: 'react',
@@ -360,8 +360,8 @@ The chassis & registry pattern enables smooth migrations:
 
 ```typescript
 // Gradual migration
-import { Button as ButtonV1 } from '@xaheen/design-system/v1/react';
-import { Button as ButtonV2 } from '@xaheen/design-system/v2/react';
+import { Button as ButtonV1 } from '@xaheen-ai/design-system/v1/react';
+import { Button as ButtonV2 } from '@xaheen-ai/design-system/v2/react';
 
 // Side-by-side usage during migration
 function MigrationApp() {

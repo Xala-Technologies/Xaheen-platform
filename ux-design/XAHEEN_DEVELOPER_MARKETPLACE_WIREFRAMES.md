@@ -279,7 +279,7 @@
 │  │ </template>                                                     │   │
 │  │                                                                 │   │
 │  │ <script setup lang="ts">                                        │   │
-│  │ import { Button } from '@xaheen/design-system/vue';            │   │
+│  │ import { Button } from '@xaheen-ai/design-system/vue';            │   │
 │  │ // Maintained all functionality with Universal standards        │   │
 │  │ </script>                                                       │   │
 │  │                                                                 │   │

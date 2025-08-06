@@ -84,7 +84,7 @@ xaheen generate pattern cqrs --domain=Payments --aggregates=Invoice,Payment,Refu
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a Clean Architecture structure
 const result = await generateCode({

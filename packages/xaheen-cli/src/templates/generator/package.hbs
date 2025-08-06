@@ -57,10 +57,10 @@
     "npm": ">=8.0.0"
   },
   "peerDependencies": {
-    "@xaheen/cli": "^1.0.0",
+    "@xaheen-ai/cli": "^1.0.0",
     "typescript": ">=5.0.0"
     {{#each dependencies}}
-    {{#unless (eq id "@xaheen/cli")}}
+    {{#unless (eq id "@xaheen-ai/cli")}}
     ,"{{id}}": "{{version}}"
     {{/unless}}
     {{/each}}

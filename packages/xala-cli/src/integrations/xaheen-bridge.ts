@@ -101,7 +101,7 @@ export class XaheenBridge {
 			const packageJson = JSON.parse(packageContent);
 
 			// Check if it's a Xaheen-generated project
-			if (packageJson.xaheen || packageJson.devDependencies?.["@xaheen/cli"]) {
+			if (packageJson.xaheen || packageJson.devDependencies?.["@xaheen-ai/cli"]) {
 				return true;
 			}
 		}

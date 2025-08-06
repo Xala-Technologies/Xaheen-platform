@@ -70,7 +70,7 @@ describe("Xaheen Integration Tests", () => {
 					name: "test-project",
 					version: "1.0.0",
 					devDependencies: {
-						"@xaheen/cli": "^1.0.0",
+						"@xaheen-ai/cli": "^1.0.0",
 					},
 				};
 

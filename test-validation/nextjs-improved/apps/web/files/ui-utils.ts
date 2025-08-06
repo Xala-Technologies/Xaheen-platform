@@ -1,0 +1,521 @@
+
+
+
+
+
+'use client';
+
+/**
+ * Xala UI System Utility Functions
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Enhanced Design Token System utilities
+ * - WCAG 2.2 AAA accessibility helpers
+ * - Norwegian localization utilities
+ * - Professional component styling helpers
+ * - Type-safe token access
+ * - SSR-compatible functions
+ */
+
+
+import type { 
+  TokenValue, 
+  ColorToken, 
+  SpacingToken, 
+  TypographyToken,
+  ComponentVariant,
+  AccessibilityProps 
+} from '@xaheen-ai/design-system';
+
+
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * Merge Tailwind CSS classes with proper precedence
+ * Combines clsx and tailwind-merge for optimal class handling
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+
+/**
+ * Enhanced Design Token Utilities
+ */
+export const tokens = {
+  /**
+   * Get spacing value from Enhanced 8pt Grid System
+   */
+  spacing: (value: SpacingTokenstring | number): string => {
+    const spacingMap: Record<string, string> = {
+      '0': '0px',
+      '1': '4px',    // 4px
+      '2': '8px',    // 8px
+      '3': '12px',   // 12px
+      '4': '16px',   // 16px
+      '5': '20px',   // 20px
+      '6': '24px',   // 24px
+      '7': '28px',   // 28px
+      '8': '32px',   // 32px
+      '9': '36px',   // 36px
+      '10': '40px',  // 40px
+      '11': '44px',  // 44px - Professional button height
+      '12': '48px',  // 48px - Large button height
+      '14': '56px',  // 56px - WCAG compliant input height
+      '16': '64px',  // 64px - Section spacing
+      '20': '80px',  // 80px
+      '24': '96px',  // 96px
+      '32': '128px', // 128px
+    };
+    
+    return spacingMap[String(value)] || "template string";
+  },
+
+  /**
+   * Get color value with WCAG 2.2 AAA compliance
+   */
+  color: (token: ColorTokenstring): string => {
+    // This would integrate with the actual token system
+    // For now, return CSS custom property
+    return "template string";
+  },
+
+  /**
+   * Get typography token value
+   */
+  typography: (variant: TypographyTokenstring) => {
+    const typographyMap = {
+      'heading-xs': { fontSize: '14px', lineHeight: '20px', fontWeight: '600' },
+      'heading-sm': { fontSize: '16px', lineHeight: '24px', fontWeight: '600' },
+      'heading-md': { fontSize: '18px', lineHeight: '28px', fontWeight: '600' },
+      'heading-lg': { fontSize: '20px', lineHeight: '28px', fontWeight: '600' },
+      'heading-xl': { fontSize: '24px', lineHeight: '32px', fontWeight: '600' },
+      'heading-2xl': { fontSize: '30px', lineHeight: '36px', fontWeight: '700' },
+      'heading-3xl': { fontSize: '36px', lineHeight: '40px', fontWeight: '700' },
+      'body-xs': { fontSize: '12px', lineHeight: '16px', fontWeight: '400' },
+      'body-sm': { fontSize: '14px', lineHeight: '20px', fontWeight: '400' },
+      'body-md': { fontSize: '16px', lineHeight: '24px', fontWeight: '400' },
+      'body-lg': { fontSize: '18px', lineHeight: '28px', fontWeight: '400' },
+      'caption-xs': { fontSize: '10px', lineHeight: '14px', fontWeight: '400' },
+      'caption-sm': { fontSize: '12px', lineHeight: '16px', fontWeight: '400' },
+    };
+    
+    return typographyMap[variant as keyof typeof typographyMap] || typographyMap['body-md'];
+  },
+};
+
+/**
+ * Component Variant Utilities
+ */
+export const variants = {
+  /**
+   * Get component variant classes
+   */
+  get: (component: string, variant: ComponentVariantstring, size?: string) => {
+    const variantMap: Record<string, Record<string, string>> = {
+      button: {
+        primary: 'bg-primary text-primary-foreground hover:bg-primary/90 focus-ring',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-ring',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-ring',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground focus-ring',
+        ghost: 'hover:bg-accent hover:text-accent-foreground focus-ring',
+        link: 'text-primary underline-offset-4 hover:underline focus-ring',
+      },
+      card: {
+        default: 'rounded-lg border bg-card text-card-foreground shadow-sm',
+        elevated: 'rounded-lg border bg-card text-card-foreground shadow-md',
+        outlined: 'rounded-lg border-2 bg-card text-card-foreground',
+        subtle: 'rounded-lg bg-muted/50 text-card-foreground',
+        warning: 'rounded-lg border border-warning bg-warning/10 text-warning-foreground',
+        info: 'rounded-lg border border-primary bg-primary/10 text-primary-foreground',
+      },
+      input: {
+        default: 'flex h-14 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      },
+    };
+    
+    const sizeMap: Record<string, Record<string, string>> = {
+      button: {
+        sm: 'h-9 rounded-md px-3 text-xs',
+        md: 'h-11 rounded-md px-8 text-sm', // 44px - WCAG compliant
+        lg: 'h-12 rounded-md px-8 text-base', // 48px - Large size
+      },
+    };
+    
+    const baseClasses = variantMap[component]?.[variant] || '';
+    const sizeClasses = size ? sizeMap[component]?.[size] || '' : '';
+    
+    return cn(baseClasses, sizeClasses);
+  },
+};
+
+/**
+ * Accessibility Utilities (WCAG 2.2 AAA)
+ */
+export const accessibility = {
+  /**
+   * Generate ARIA attributes for components
+   */
+  generateAriaProps: (props: AccessibilityPropsany) => {
+    const ariaProps: Record<string, string | boolean | undefined> = {};
+    
+    if (props.label) ariaProps['aria-label'] = props.label;
+    if (props.describedBy) ariaProps['aria-describedby'] = props.describedBy;
+    if (props.expanded !== undefined) ariaProps['aria-expanded'] = props.expanded;
+    if (props.pressed !== undefined) ariaProps['aria-pressed'] = props.pressed;
+    if (props.selected !== undefined) ariaProps['aria-selected'] = props.selected;
+    if (props.disabled) ariaProps['aria-disabled'] = props.disabled;
+    if (props.required) ariaProps['aria-required'] = props.required;
+    if (props.invalid) ariaProps['aria-invalid'] = props.invalid;
+    if (props.role) ariaProps['role'] = props.role;
+    
+    return ariaProps;
+  },
+
+  /**
+   * Check if color contrast meets WCAG AAA standards
+   */
+  checkContrast: (foreground: string, background: string): boolean => {
+    // Simplified contrast check - in real implementation, use proper color contrast calculation
+    // This would integrate with a proper contrast checking library
+    return true; // Placeholder
+  },
+
+  /**
+   * Generate focus ring classes
+   */
+  focusRing: (variant: 'default' | 'offset' = 'default'): string => {
+    return variant === 'offset' ? 'focus-ring-offset' : 'focus-ring';
+  },
+
+  /**
+   * Generate skip link for keyboard navigation
+   */
+  skipLink: (targetId: string, text: string = 'Skip to main content'): React.ReactElement => {
+    return React.createElement('a', {
+      href: "template string",
+      className: 'sr-only-focusable absolute top-4 left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium',
+      children: text,
+    });
+  },
+};
+
+/**
+ * Norwegian Localization Utilities
+ */
+export const norwegian = {
+  /**
+   * Format Norwegian currency
+   */
+  formatCurrency: (amount: number, currency: string = 'NOK'): string => {
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    }).format(amount);
+  },
+
+  /**
+   * Format Norwegian date
+   */
+  formatDate: (date: Date | string, format: 'short' | 'medium' | 'long' = 'medium'): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    const formatOptions: Record<string, Intl.DateTimeFormatOptions> = {
+      short: { day: '2-digit', month: '2-digit', year: 'numeric' },
+      medium: { day: '2-digit', month: 'long', year: 'numeric' },
+      long: { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' },
+    };
+    
+    return new Intl.DateTimeFormat('nb-NO', formatOptions[format]).format(dateObj);
+  },
+
+  /**
+   * Format Norwegian time
+   */
+  formatTime: (date: Date | string, includeSeconds: boolean = false): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    return new Intl.DateTimeFormat('nb-NO', {
+      hour: '2-digit',
+      minute: '2-digit',
+      ...(includeSeconds && { second: '2-digit' }),
+      hour12: false,
+    }).format(dateObj);
+  },
+
+  /**
+   * Format Norwegian numbers
+   */
+  formatNumber: (number: number, decimals?: number): string => {
+    return new Intl.NumberFormat('nb-NO', {
+      ...(decimals !== undefined && { 
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals 
+      }),
+    }).format(number);
+  },
+
+  /**
+   * Get relative time in Norwegian
+   */
+  getRelativeTime: (date: Date | string): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+    
+    const rtf = new Intl.RelativeTimeFormat('nb-NO', { numeric: 'auto' });
+    
+    if (diffInSeconds < 60) return rtf.format(-diffInSeconds, 'second');
+    if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
+    if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
+    if (diffInSeconds < 2592000) return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
+    if (diffInSeconds < 31536000) return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month');
+    return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
+  },
+};
+
+/**
+ * Responsive Design Utilities
+ */
+export const responsive = {
+  /**
+   * Get responsive classes for different breakpoints
+   */
+  classes: (config: Record<string, string>): string => {
+    const breakpointPrefixes = ['', 'sm:', 'md:', 'lg:', 'xl:', '2xl:'];
+    const classes: string[] = [];
+    
+    Object.entries(config).forEach(([breakpoint, className]) => {
+      const prefix = breakpoint === 'default' ? '' : "template string";
+      classes.push("template string");
+    });
+    
+    return cn(...classes);
+  },
+
+  /**
+   * Check if current viewport matches breakpoint
+   */
+  matches: (breakpoint: string): boolean => {
+    if (typeof window === 'undefined') return false;
+    
+    const breakpoints: Record<string, number> = {
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      '2xl': 1536,
+    };
+    
+    const width = window.innerWidth;
+    const breakpointWidth = breakpoints[breakpoint];
+    
+    return breakpointWidth ? width >= breakpointWidth : false;
+  },
+};
+
+/**
+ * Theme Utilities
+ */
+export const theme = {
+  /**
+   * Toggle between light and dark themes
+   */
+  toggle: (): void => {
+    if (typeof document === 'undefined') return;
+    
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    
+    if (isDark) {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  },
+
+  /**
+   * Set specific theme
+   */
+  set: (themeName: 'light' | 'dark' | 'system'): void => {
+    if (typeof document === 'undefined') return;
+    
+    const root = document.documentElement;
+    
+    if (themeName === 'system') {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', systemPrefersDark);
+      localStorage.setItem('theme', 'system');
+    } else {
+      root.classList.toggle('dark', themeName === 'dark');
+      localStorage.setItem('theme', themeName);
+    }
+  },
+
+  /**
+   * Get current theme
+   */
+  get: (): 'light' | 'dark' | 'system' => {
+    if (typeof localStorage === 'undefined') return 'system';
+    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
+  },
+};
+
+/**
+ * Performance Utilities
+ */
+export const performance = {
+  /**
+   * Debounce function calls
+   */
+  debounce: <T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+  ): ((...args: Parameters<T>) => void) => {
+    let timeout: NodeJS.Timeout;
+    
+    return (...args: Parameters<T>) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  },
+
+  /**
+   * Throttle function calls
+   */
+  throttle: <T extends (...args: any[]) => any>(
+    func: T,
+    limit: number
+  ): ((...args: Parameters<T>) => void) => {
+    let inThrottle: boolean;
+    
+    return (...args: Parameters<T>) => {
+      if (!inThrottle) {
+        func(...args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    };
+  },
+};
+
+/**
+ * Validation Utilities
+ */
+export const validation = {
+  /**
+   * Validate email format
+   */
+  email: (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  },
+
+  /**
+   * Validate Norwegian phone number
+   */
+  norwegianPhone: (phone: string): boolean => {
+    // Norwegian phone numbers: +47 followed by 8 digits
+    const phoneRegex = /^(\+47|0047|47)?[2-9]\d{7}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  },
+
+  /**
+   * Validate Norwegian postal code
+   */
+  norwegianPostalCode: (postalCode: string): boolean => {
+    // Norwegian postal codes: 4 digits
+    const postalRegex = /^\d{4}$/;
+    return postalRegex.test(postalCode);
+  },
+
+  /**
+   * Validate Norwegian organization number
+   */
+  norwegianOrgNumber: (orgNumber: string): boolean => {
+    // Norwegian organization numbers: 9 digits with specific validation
+    const cleaned = orgNumber.replace(/\s/g, '');
+    if (!/^\d{9}$/.test(cleaned)) return false;
+    
+    // Modulus 11 validation for Norwegian org numbers
+    const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+    let sum = 0;
+    
+    for (let i = 0; i < 8; i++) {
+      sum += parseInt(cleaned[i]) * weights[i];
+    }
+    
+    const remainder = sum % 11;
+    const checkDigit = remainder === 0 ? 0 : 11 - remainder;
+    
+    return checkDigit === parseInt(cleaned[8]);
+  },
+};
+
+
+// Example usage:
+/*
+// Class name merging
+const buttonClasses = cn(
+  'px-4 py-2 rounded',
+  isActive && 'bg-primary text-white',
+  isDisabled && 'opacity-50 cursor-not-allowed'
+);
+
+// Token access
+const spacing = tokens.spacing('6'); // '24px'
+const color = tokens.color('primary.500'); // 'hsl(var(--primary-500))'
+
+// Component variants
+const buttonVariant = variants.get('button', 'primary', 'lg');
+
+// Accessibility
+const ariaProps = accessibility.generateAriaProps({
+  label: 'Close dialog',
+  expanded: false,
+  role: 'button',
+});
+
+// Norwegian formatting
+const price = norwegian.formatCurrency(1299); // '1 299,00 kr'
+const date = norwegian.formatDate(new Date()); // '15. januar 2024'
+const relativeTime = norwegian.getRelativeTime(new Date(Date.now() - 3600000)); // 'for 1 time siden'
+
+// Responsive classes
+const responsiveClasses = responsive.classes({
+  default: 'text-sm',
+  md: 'text-base',
+  lg: 'text-lg',
+}); // 'text-sm md:text-base lg:text-lg'
+
+// Theme management
+theme.set('dark');
+const currentTheme = theme.get(); // 'dark'
+
+// Performance
+const debouncedSearch = performance.debounce((query: string) => {
+  console.log('Searching for:', query);
+}, 300);
+
+// Validation
+const isValidEmail = validation.email('user@example.com'); // true
+const isValidPhone = validation.norwegianPhone('+47 12345678'); // true
+*/
+

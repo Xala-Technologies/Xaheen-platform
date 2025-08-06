@@ -82,7 +82,7 @@ LABEL org.opencontainers.image.title="Xaheen CLI" \
       org.opencontainers.image.vendor="Xaheen Enterprise" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/xaheen/xaheen-cli" \
-      maintainer="ibrahim@xaheen.com"
+      maintainer="ibrahim@xaheen-ai.com"
 
 # Security hardening
 RUN apk upgrade --no-cache && \

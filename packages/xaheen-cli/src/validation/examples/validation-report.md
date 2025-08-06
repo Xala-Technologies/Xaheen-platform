@@ -31,7 +31,7 @@ The project meets all validation standards with some minor improvements recommen
 - ⚠️ JSX.Element return types: 2 components missing
 
 ### Design System Usage: **88%** (Good)
-- ✅ Proper imports from @xaheen/design-system
+- ✅ Proper imports from @xaheen-ai/design-system
 - ⚠️ 3 instances of hardcoded color values detected
 - ✅ Component composition follows patterns
 - ✅ Theme consistency maintained
@@ -147,7 +147,7 @@ Norwegian text found without i18n support
     "strictTypeScript": true
   },
   "designSystem": {
-    "packageName": "@xaheen/design-system",
+    "packageName": "@xaheen-ai/design-system",
     "enforceImports": true
   },
   "nsm": {

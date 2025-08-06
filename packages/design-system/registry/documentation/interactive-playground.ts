@@ -890,13 +890,13 @@ export default App;`;
     const baseDeps = ['react', 'react-dom'];
     
     const platformDeps: Record<Platform, string[]> = {
-      'react': ['@xaheen/design-system-react'],
-      'nextjs': ['@xaheen/design-system-react', 'next'],
-      'vue': ['vue', '@xaheen/design-system-vue'],
-      'angular': ['@angular/core', '@angular/common', '@xaheen/design-system-angular'],
-      'svelte': ['svelte', '@xaheen/design-system-svelte'],
-      'react-native': ['react-native', '@xaheen/design-system-rn'],
-      'ionic': ['@ionic/react', '@ionic/core', '@xaheen/design-system-ionic'],
+      'react': ['@xaheen-ai/design-system-react'],
+      'nextjs': ['@xaheen-ai/design-system-react', 'next'],
+      'vue': ['vue', '@xaheen-ai/design-system-vue'],
+      'angular': ['@angular/core', '@angular/common', '@xaheen-ai/design-system-angular'],
+      'svelte': ['svelte', '@xaheen-ai/design-system-svelte'],
+      'react-native': ['react-native', '@xaheen-ai/design-system-rn'],
+      'ionic': ['@ionic/react', '@ionic/core', '@xaheen-ai/design-system-ionic'],
       // ... other platforms
     } as any;
     

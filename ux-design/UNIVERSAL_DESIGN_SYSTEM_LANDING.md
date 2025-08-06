@@ -62,7 +62,7 @@ This document outlines wireframes for a dedicated landing page showcasing the Xa
 │  │                     │ │ Platform: [React ▼]                    │   │
 │  │  [Primary Button]   │ │                                         │   │
 │  │  [Secondary]        │ │ import { Button } from                  │   │
-│  │  [Outline]          │ │   '@xaheen/design-system/react';        │   │
+│  │  [Outline]          │ │   '@xaheen-ai/design-system/react';        │   │
 │  │                     │ │                                         │   │
 │  │  Size: [Large ▼]    │ │ <Button                                 │   │
 │  │  Icon: [None ▼]     │ │   variant="primary"                     │   │
@@ -124,10 +124,10 @@ This document outlines wireframes for a dedicated landing page showcasing the Xa
 │  │                                                                 │   │
 │  │  React Installation:                                           │   │
 │  │  ┌─────────────────────────────────────────────────────────┐   │   │
-│  │  │ $ npm install @xaheen/design-system                     │   │   │
+│  │  │ $ npm install @xaheen-ai/design-system                     │   │   │
 │  │  │                                                         │   │   │
 │  │  │ // Import components                                    │   │   │
-│  │  │ import { Button } from '@xaheen/design-system/react';   │   │   │
+│  │  │ import { Button } from '@xaheen-ai/design-system/react';   │   │   │
 │  │  │                                                         │   │   │
 │  │  │ // Use in your app                                      │   │   │
 │  │  │ <Button variant="primary" size="lg">                   │   │   │
@@ -223,7 +223,7 @@ This document outlines wireframes for a dedicated landing page showcasing the Xa
 │  │ [React] [Vue.js] [Angular] [Svelte] [React Native] [Vanilla]   │   │
 │  │                                                                 │   │
 │  │ // React Implementation                                         │   │
-│  │ import { Button, Input, Card } from '@xaheen/design-system';    │   │
+│  │ import { Button, Input, Card } from '@xaheen-ai/design-system';    │   │
 │  │                                                                 │   │
 │  │ export function Dashboard() {                                   │   │
 │  │   return (                                                      │   │

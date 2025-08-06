@@ -109,16 +109,16 @@ jobs:
             
             ### Installation
             ```bash
-            npm install @xaheen/design-system
+            npm install @xaheen-ai/design-system
             # or
-            yarn add @xaheen/design-system
+            yarn add @xaheen-ai/design-system
             # or
-            pnpm add @xaheen/design-system
+            pnpm add @xaheen-ai/design-system
             ```
             
             ### Registry URL
-            - Static registry: https://unpkg.com/@xaheen/design-system/public/r/
-            - NPM package: https://www.npmjs.com/package/@xaheen/design-system
+            - Static registry: https://unpkg.com/@xaheen-ai/design-system/public/r/
+            - NPM package: https://www.npmjs.com/package/@xaheen-ai/design-system
           draft: false
           prerelease: false
         env:

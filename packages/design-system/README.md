@@ -1,8 +1,8 @@
-# @xaheen/design-system
+# @xaheen-ai/design-system
 
 🎨 **Universal Design System** - Professional React components with multi-platform support, WCAG AAA compliance, and Norwegian standards.
 
-[![npm version](https://img.shields.io/npm/v/@xaheen/design-system.svg)](https://www.npmjs.com/package/@xaheen/design-system)
+[![npm version](https://img.shields.io/npm/v/@xaheen-ai/design-system.svg)](https://www.npmjs.com/package/@xaheen-ai/design-system)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -18,11 +18,11 @@
 ## Installation
 
 ```bash
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 # or
-yarn add @xaheen/design-system
+yarn add @xaheen-ai/design-system
 # or
-pnpm add @xaheen/design-system
+pnpm add @xaheen-ai/design-system
 ```
 
 ## Usage
@@ -31,12 +31,12 @@ pnpm add @xaheen/design-system
 
 ```tsx
 // Platform-specific imports
-import { Button } from '@xaheen/design-system/react';
-import { Input } from '@xaheen/design-system/vue';
-import { Card } from '@xaheen/design-system/angular';
+import { Button } from '@xaheen-ai/design-system/react';
+import { Input } from '@xaheen-ai/design-system/vue';
+import { Card } from '@xaheen-ai/design-system/angular';
 
 // Universal import (auto-detects platform)
-import { UniversalComponentFactory } from '@xaheen/design-system';
+import { UniversalComponentFactory } from '@xaheen-ai/design-system';
 const factory = new UniversalComponentFactory();
 const Button = await factory.getComponent('button');
 ```
@@ -44,7 +44,7 @@ const Button = await factory.getComponent('button');
 ### Basic Example
 
 ```tsx
-import { Button, Input, Card } from '@xaheen/design-system/react';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react';
 
 function LoginForm() {
   return (
@@ -109,30 +109,30 @@ function LoginForm() {
 
 | Platform | Package Path | Status |
 |----------|-------------|---------|
-| React | `@xaheen/design-system/react` | ✅ Full Support |
-| Vue 3 | `@xaheen/design-system/vue` | ✅ Full Support |
-| Angular | `@xaheen/design-system/angular` | ✅ Full Support |
-| Svelte | `@xaheen/design-system/svelte` | ✅ Full Support |
-| React Native | `@xaheen/design-system/react-native` | ✅ Full Support |
-| Electron | `@xaheen/design-system/electron` | ✅ Full Support |
-| Ionic | `@xaheen/design-system/ionic` | ✅ Full Support |
-| Vanilla JS | `@xaheen/design-system/vanilla` | ✅ Full Support |
-| Headless UI | `@xaheen/design-system/headless-ui` | ✅ Full Support |
-| Radix UI | `@xaheen/design-system/radix` | ✅ Full Support |
+| React | `@xaheen-ai/design-system/react` | ✅ Full Support |
+| Vue 3 | `@xaheen-ai/design-system/vue` | ✅ Full Support |
+| Angular | `@xaheen-ai/design-system/angular` | ✅ Full Support |
+| Svelte | `@xaheen-ai/design-system/svelte` | ✅ Full Support |
+| React Native | `@xaheen-ai/design-system/react-native` | ✅ Full Support |
+| Electron | `@xaheen-ai/design-system/electron` | ✅ Full Support |
+| Ionic | `@xaheen-ai/design-system/ionic` | ✅ Full Support |
+| Vanilla JS | `@xaheen-ai/design-system/vanilla` | ✅ Full Support |
+| Headless UI | `@xaheen-ai/design-system/headless-ui` | ✅ Full Support |
+| Radix UI | `@xaheen-ai/design-system/radix` | ✅ Full Support |
 
 ## Registry Access
 
 ### Static Registry (CDN)
 ```javascript
 // Access registry JSON files directly
-const registryUrl = 'https://unpkg.com/@xaheen/design-system/public/r';
+const registryUrl = 'https://unpkg.com/@xaheen-ai/design-system/public/r';
 const buttonSpec = await fetch(`${registryUrl}/button.json`).then(r => r.json());
 ```
 
 ### CLI Integration
 ```bash
 # Install Xaheen CLI
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Add components from registry
 xaheen registry add button input card
@@ -149,7 +149,7 @@ xaheen registry info button
 The design system uses a universal token system for consistent theming:
 
 ```typescript
-import { UniversalTokens } from '@xaheen/design-system';
+import { UniversalTokens } from '@xaheen-ai/design-system';
 
 // Access design tokens
 const colors = UniversalTokens.colors;

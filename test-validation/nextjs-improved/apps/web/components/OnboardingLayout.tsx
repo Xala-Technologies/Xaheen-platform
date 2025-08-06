@@ -1,0 +1,661 @@
+
+
+
+
+
+'use client';
+
+/**
+ * OnboardingLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI - User Onboarding Layout
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Step-by-step user onboarding
+ * - Progress tracking and completion
+ * - Interactive tutorials and tooltips
+ * - Norwegian cultural onboarding patterns
+ * - Accessibility-first design
+ * - Gamification elements
+ * - Skip and resume functionality
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Progress,
+  Badge,
+  Icon,
+  Avatar,
+  Separator,
+  Tooltip,
+  Spotlight,
+  Confetti,
+  Lottie
+} from '@xaheen-ai/design-system';
+import { 
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Star,
+  Gift,
+  Target,
+  Users,
+  Lightbulb,
+  Play,
+  Skip,
+  X,
+  Trophy,
+  Sparkles
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface OnboardingLayoutProps {
+  children: React.ReactNode;
+  steps: OnboardingStep[];
+  currentStep: number;
+  onStepChange: (step: number) => void;
+  onComplete: () => void;
+  onSkip?: () => void;
+  showProgress?: boolean;
+  showSkipOption?: boolean;
+  enableGamification?: boolean;
+  userProfile?: UserProfile;
+  completedSteps?: number[];
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  icon?: React.ComponentType;
+  illustration?: string;
+  estimatedTime?: number;
+  required?: boolean;
+  reward?: Reward;
+  tips?: string[];
+  nextButtonText?: string;
+  skipButtonText?: string;
+}
+
+interface UserProfile {
+  name: string;
+  avatar?: string;
+  level?: number;
+  points?: number;
+  completedOnboardings?: string[];
+}
+
+interface Reward {
+  type: 'points' | 'badge' | 'unlock';
+  value: number | string;
+  title: string;
+  description: string;
+  icon?: React.ComponentType;
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Progress,
+  Badge,
+  Icon,
+  Avatar,
+  Separator,
+  Tooltip,
+  Spotlight,
+  Confetti,
+  Lottie
+} from '@xaheen-ai/design-system';
+import { 
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Star,
+  Gift,
+  Target,
+  Users,
+  Lightbulb,
+  Play,
+  Skip,
+  X,
+  Trophy,
+  Sparkles
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+
+/**
+ * OnboardingLayout - Interactive user onboarding experience
+ * Optimized for Norwegian cultural patterns and accessibility
+ */
+
+export default function OnboardingLayout({
+  children,
+  steps,
+  currentStep,
+  onStepChange,
+  onComplete,
+  onSkip,
+  showProgress = true,
+  showSkipOption = true,
+  enableGamification = true,
+  userProfile,
+  completedSteps = [],
+  locale = 'en',
+  theme = 'light'
+}: OnboardingLayoutProps): React.ReactElement {
+
+export default function OnboardingLayout({
+  children,
+  steps,
+  currentStep,
+  onStepChange,
+  onComplete,
+  onSkip,
+  showProgress = true,
+  showSkipOption = true,
+  enableGamification = true,
+  userProfile,
+  completedSteps = [],
+  locale = 'en',
+  theme = 'light'
+}) {
+
+  const { t } = useTranslation();
+  const [showReward, setShowReward] = React.useState(false);
+  const [earnedReward, setEarnedReward] = React.useState<Reward | null>(null);
+
+  const currentStepData = steps[currentStep - 1];
+  const totalSteps = steps.length;
+  const progressPercentage = (currentStep / totalSteps) * 100;
+  const isLastStep = currentStep === totalSteps;
+  const isFirstStep = currentStep === 1;
+
+  const handleNext = (): void => {
+    if (isLastStep) {
+      // Show reward if available
+      if (currentStepData?.reward && enableGamification) {
+        setEarnedReward(currentStepData.reward);
+        setShowReward(true);
+        setTimeout(() => {
+          setShowReward(false);
+          onComplete();
+        }, 3000);
+      } else {
+        onComplete();
+      }
+    } else {
+      onStepChange(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = (): void => {
+    if (!isFirstStep) {
+      onStepChange(currentStep - 1);
+    }
+  };
+
+  const handleSkip = (): void => {
+    if (onSkip) {
+      onSkip();
+    }
+  };
+
+  const renderWelcomeHeader = (): React.ReactElement => (
+    <Box textAlign="center" marginBottom="8">
+      <Stack direction="vertical" align="center" spacing="4">
+        {userProfile && (
+          <Avatar
+            src={userProfile.avatar}
+            alt={userProfile.name}
+            size="lg"
+          />
+        )}
+        
+        <Stack direction="vertical" align="center" spacing="2">
+          <Typography variant="heading" size="2xl" weight="bold">
+            {userProfile 
+              ? t('onboarding.welcomeBack', 'Welcome back, {name}!', { name: userProfile.name })
+              : t('onboarding.welcome', 'Welcome!')
+            }
+          </Typography>
+          
+          <Typography variant="body" size="lg" color="muted" maxWidth="128">
+            {t('onboarding.subtitle', 'Let\'s get you set up with everything you need to get started.')}
+          </Typography>
+        </Stack>
+
+        {enableGamification && userProfile && (
+          <Stack direction="horizontal" align="center" spacing="4">
+            <Badge variant="secondary" size="md">
+              <Icon component={Star} size="sm" />
+              {t('gamification.level', 'Level {level}', { level: userProfile.level || 1 })}
+            </Badge>
+            
+            <Badge variant="outline" size="md">
+              <Icon component={Trophy} size="sm" />
+              {t('gamification.points', '{points} points', { points: userProfile.points || 0 })}
+            </Badge>
+          </Stack>
+        )}
+      </Stack>
+    </Box>
+  );
+
+  const renderProgressIndicator = (): React.ReactElement | null => {
+    if (!showProgress) return null;
+
+    return (
+      <Card marginBottom="6">
+        <CardContent padding="6">
+          <Stack direction="vertical" spacing="4">
+            <Stack direction="horizontal" align="center" justify="between">
+              <Typography variant="body" size="sm" weight="medium">
+                {t('onboarding.progress', 'Step {current} of {total}', {
+                  current: currentStep,
+                  total: totalSteps,
+                })}
+              </Typography>
+              
+              <Typography variant="body" size="sm" color="muted">
+                {Math.round(progressPercentage)}% {t('onboarding.complete', 'complete')}
+              </Typography>
+            </Stack>
+
+            <Progress value={progressPercentage} max={100} />
+
+            {/* Step indicators */}
+            <Stack direction="horizontal" align="center" spacing="2" wrap>
+              {steps.map((step, index) => {
+                const stepNumber = index + 1;
+                const isCompleted = completedSteps.includes(stepNumber) || stepNumber < currentStep;
+                const isCurrent = stepNumber === currentStep;
+                
+                return (
+                  <Tooltip key={step.id} content={t(step.title, step.title)}>
+                    <Box
+                      width="8"
+                      height="8"
+                      borderRadius="full"
+                      backgroundColor={
+                        isCompleted
+                          ? 'success'
+                          : isCurrent
+                          ? 'primary'
+                          : 'muted'
+                      }
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      cursor="pointer"
+                      onClick={handleClick}
+                    >
+                      {isCompleted ? (
+                        <Icon component={Check} size="sm" color="success-foreground" />
+                      ) : (
+                        <Typography
+                          variant="body"
+                          size="sm"
+                          weight="medium"
+                          color={isCurrent ? 'primary-foreground' : 'muted-foreground'}
+                        >
+                          {stepNumber}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Tooltip>
+                );
+              })}
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderStepHeader = (): React.ReactElement => (
+    <Card marginBottom="6">
+      <CardContent padding="6">
+        <Stack direction="horizontal" align="center" spacing="4">
+          {currentStepData?.icon && (
+            <Box
+              width="12"
+              height="12"
+              borderRadius="md"
+              backgroundColor="primary"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Icon component={currentStepData.icon} size="md" color="primary-foreground" />
+            </Box>
+          )}
+
+          <Stack direction="vertical" spacing="2" flex="1">
+            <Typography variant="heading" size="xl" weight="bold">
+              {t(currentStepData?.title || '', currentStepData?.title || '')}
+            </Typography>
+            
+            <Typography variant="body" size="md" color="muted">
+              {t(currentStepData?.description || '', currentStepData?.description || '')}
+            </Typography>
+
+            {currentStepData?.estimatedTime && (
+              <Badge variant="outline" size="sm" width="fit">
+                <Icon component={Target} size="xs" />
+                {t('onboarding.estimatedTime', '{time} min', { time: currentStepData.estimatedTime })}
+              </Badge>
+            )}
+          </Stack>
+
+          {currentStepData?.required && (
+            <Badge variant="destructive" size="sm">
+              {t('onboarding.required', 'Required')}
+            </Badge>
+          )}
+        </Stack>
+
+        {/* Tips */}
+        {currentStepData?.tips && currentStepData.tips.length > 0 && (
+          <Box marginTop="4" paddingTop="4" borderTop="1">
+            <Stack direction="vertical" spacing="2">
+              <Stack direction="horizontal" align="center" spacing="2">
+                <Icon component={Lightbulb} size="sm" color="warning" />
+                <Typography variant="body" size="sm" weight="medium">
+                  {t('onboarding.tips', 'Helpful Tips')}
+                </Typography>
+              </Stack>
+              
+              <Stack direction="vertical" spacing="1">
+                {currentStepData.tips.map((tip, index) => (
+                  <Typography key={index} variant="body" size="sm" color="muted">
+                    • {t(tip, tip)}
+                  </Typography>
+                ))}
+              </Stack>
+            </Stack>
+          </Box>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderNavigationActions = (): React.ReactElement => (
+    <Stack direction="horizontal" align="center" justify="between" spacing="4">
+      {/* Previous Button */}
+      <Button
+        variant="outline"
+        size="md"
+        onClick={handleClick}
+        disabled={isFirstStep}
+      >
+        <Icon component={ArrowLeft} size="sm" />
+        {t('onboarding.previous', 'Previous')}
+      </Button>
+
+      {/* Skip Option */}
+      {showSkipOption && !currentStepData?.required && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleClick}
+        >
+          <Icon component={Skip} size="sm" />
+          {t(currentStepData?.skipButtonText || 'onboarding.skip', 'Skip for now')}
+        </Button>
+      )}
+
+      {/* Next/Complete Button */}
+      <Button
+        variant="primary"
+        size="md"
+        onClick={handleClick}
+      >
+        {isLastStep 
+          ? t('onboarding.complete', 'Complete Setup')
+          : t(currentStepData?.nextButtonText || 'onboarding.next', 'Next Step')
+        }
+        {!isLastStep && <Icon component={ArrowRight} size="sm" />}
+        {isLastStep && enableGamification && <Icon component={Sparkles} size="sm" />}
+      </Button>
+    </Stack>
+  );
+
+  const renderRewardModal = (): React.ReactElement | null => {
+    if (!showReward || !earnedReward) return null;
+
+    return (
+      <Box
+        position="fixed"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        backgroundColor="overlay"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        zIndex="50"
+      >
+        <Confetti active={showReward} />
+        
+        <Card maxWidth="96" textAlign="center">
+          <CardContent padding="8">
+            <Stack direction="vertical" align="center" spacing="6">
+              <Box
+                width="16"
+                height="16"
+                borderRadius="full"
+                backgroundColor="success"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Icon
+                  component={earnedReward.icon || Gift}
+                  size="lg"
+                  color="success-foreground"
+                />
+              </Box>
+
+              <Stack direction="vertical" align="center" spacing="2">
+                <Typography variant="heading" size="xl" weight="bold">
+                  {t('rewards.congratulations', 'Congratulations!')}
+                </Typography>
+                
+                <Typography variant="body" size="lg">
+                  {t(earnedReward.title, earnedReward.title)}
+                </Typography>
+                
+                <Typography variant="body" size="md" color="muted">
+                  {t(earnedReward.description, earnedReward.description)}
+                </Typography>
+              </Stack>
+
+              <Badge variant="success" size="lg">
+                {earnedReward.type === 'points' && (
+                  <React.Fragment>
+                    <Icon component={Star} size="sm" />
+                    +{earnedReward.value} {t('rewards.points', 'points')}
+                  </React.Fragment>
+                )}
+                
+                {earnedReward.type === 'badge' && (
+                  <React.Fragment>
+                    <Icon component={Trophy} size="sm" />
+                    {t('rewards.newBadge', 'New Badge')}
+                  </React.Fragment>
+                )}
+                
+                {earnedReward.type === 'unlock' && (
+                  <React.Fragment>
+                    <Icon component={Sparkles} size="sm" />
+                    {t('rewards.unlocked', 'Unlocked')}
+                  </React.Fragment>
+                )}
+              </Badge>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Container maxWidth="192" padding="6">
+        <Stack direction="vertical" spacing="0">
+          {renderWelcomeHeader()}
+          {renderProgressIndicator()}
+          {renderStepHeader()}
+
+          {/* Main Content */}
+          <Card marginBottom="6">
+            <CardContent padding="8">
+              {children}
+            </CardContent>
+          </Card>
+
+          {/* Navigation */}
+          <Card>
+            <CardContent padding="6">
+              {renderNavigationActions()}
+            </CardContent>
+          </Card>
+        </Stack>
+      </Container>
+
+      {/* Reward Modal */}
+      {renderRewardModal()}
+    </BaseLayout>
+  );
+}
+
+
+// Example usage:
+/*
+import OnboardingLayout from '@/layouts/OnboardingLayout';
+import { User, Settings, Bell, Shield, CheckCircle } from 'lucide-react';
+
+export default function UserOnboarding() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState([]);
+
+  const onboardingSteps = [
+    {
+      id: 'welcome',
+      title: 'onboarding.welcome.title',
+      description: 'onboarding.welcome.description',
+      icon: User,
+      estimatedTime: 2,
+      required: true,
+      tips: [
+        'onboarding.welcome.tip1',
+        'onboarding.welcome.tip2',
+      ],
+    },
+    {
+      id: 'profile',
+      title: 'onboarding.profile.title',
+      description: 'onboarding.profile.description',
+      icon: Settings,
+      estimatedTime: 5,
+      required: true,
+      reward: {
+        type: 'points',
+        value: 50,
+        title: 'rewards.profileComplete',
+        description: 'rewards.profileComplete.description',
+        icon: CheckCircle,
+      },
+    },
+    {
+      id: 'notifications',
+      title: 'onboarding.notifications.title',
+      description: 'onboarding.notifications.description',
+      icon: Bell,
+      estimatedTime: 3,
+      required: false,
+      skipButtonText: 'onboarding.notifications.skip',
+    },
+    {
+      id: 'security',
+      title: 'onboarding.security.title',
+      description: 'onboarding.security.description',
+      icon: Shield,
+      estimatedTime: 4,
+      required: true,
+      reward: {
+        type: 'badge',
+        value: 'security-champion',
+        title: 'rewards.securityChampion',
+        description: 'rewards.securityChampion.description',
+        icon: Shield,
+      },
+    },
+  ];
+
+  const userProfile = {
+    name: 'Ola Nordmann',
+    avatar: '/avatars/ola.jpg',
+    level: 1,
+    points: 0,
+  };
+
+  return (
+    <OnboardingLayout
+      steps={onboardingSteps}
+      currentStep={currentStep}
+      onStepChange={setCurrentStep}
+      onComplete={() => {
+        console.log('Onboarding completed!');
+        // Redirect to main app
+      }}
+      onSkip={() => {
+        console.log('Step skipped');
+        setCurrentStep(currentStep + 1);
+      }}
+      userProfile={userProfile}
+      completedSteps={completedSteps}
+      enableGamification={true}
+      locale="nb"
+    >
+      {currentStep === 1 && <WelcomeStep />}
+      {currentStep === 2 && <ProfileStep />}
+      {currentStep === 3 && <NotificationStep />}
+      {currentStep === 4 && <SecurityStep />}
+    </OnboardingLayout>
+  );
+}
+*/
+

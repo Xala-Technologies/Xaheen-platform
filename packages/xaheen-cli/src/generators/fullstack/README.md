@@ -88,7 +88,7 @@ xaheen generate auth --method=jwt --roles=admin,user --features=registration,pas
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a feature
 const result = await generateCode({

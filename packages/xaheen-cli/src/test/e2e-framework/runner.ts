@@ -359,7 +359,7 @@ export class E2ETestRunner extends E2ETestFramework {
     }
 
     if (report.compliance.designSystemUsage < 90) {
-      recommendations.push('Increase design system usage by replacing custom components with @xaheen/design-system components');
+      recommendations.push('Increase design system usage by replacing custom components with @xaheen-ai/design-system components');
     }
 
     if (report.failedTests > 0) {

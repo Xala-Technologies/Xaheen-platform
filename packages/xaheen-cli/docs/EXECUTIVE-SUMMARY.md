@@ -48,7 +48,7 @@ The Xaheen CLI test infrastructure has been **successfully rescued from critical
 ## 📈 Strategic Achievements
 
 ### 1. **Complete Design System Integration** ✅
-- All frontend templates now use @xaheen/design-system
+- All frontend templates now use @xaheen-ai/design-system
 - Multi-platform support across 14 frameworks
 - Registry commands fully operational
 

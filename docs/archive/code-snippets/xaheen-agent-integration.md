@@ -48,7 +48,7 @@ xaheen/
 ```typescript
 import { Anthropic } from '@anthropic-ai/sdk';
 import { VectorStore } from '@/lib/vector-db';
-import { XaheenStandards } from '@xaheen/standards';
+import { XaheenStandards } from '@xaheen-ai/standards';
 
 export abstract class BaseAgent {
   protected claude: Anthropic;

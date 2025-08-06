@@ -1117,7 +1117,7 @@ xaheen plugin <command> [options]
 
 ```bash
 # Install plugin
-xaheen plugin install @xaheen/plugin-analytics
+xaheen plugin install @xaheen-ai/plugin-analytics
 
 # Create plugin
 xaheen plugin create my-plugin

@@ -165,7 +165,7 @@ try {
     machineId: await getMachineId()
   });
   
-  console.log('Please send this activation request to support@xaheen.no:');
+  console.log('Please send this activation request to support@xaheen-ai.no:');
   console.log(activationRequest);
 }
 ```

@@ -98,7 +98,7 @@ export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
  * 
  * Usage in Consumer Apps:
  * ```typescript
- * import { Button, GlobalSearch } from '@xaheen/design-system/registry';
+ * import { Button, GlobalSearch } from '@xaheen-ai/design-system/registry';
  * 
  * <AccessibilityProvider>
  *   <ResponsiveProvider>

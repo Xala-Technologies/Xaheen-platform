@@ -15,7 +15,7 @@ The Xaheen CLI has been **successfully transformed from 85.8% test failure to a 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | **Test Infrastructure** | ✅ 100% | Command parser tests passing, infrastructure health 7.8/10 |
-| **Design System Integration** | ✅ 100% | Registry commands working, @xaheen/design-system integrated |
+| **Design System Integration** | ✅ 100% | Registry commands working, @xaheen-ai/design-system integrated |
 | **CLI Architecture** | ✅ 100% | Command registration, routing, error handling all functional |
 | **Template System** | ✅ 95% | Templates exist and structured correctly |
 | **Project Creation** | ⚠️ 90% | **Blocked by single ESM issue** |
@@ -37,7 +37,7 @@ The Xaheen CLI has been **successfully transformed from 85.8% test failure to a 
 
 ### **2. Design System Integration**
 - ✅ Registry commands working (`registry list`, `registry info`, `registry search`)
-- ✅ @xaheen/design-system package built with 10 components
+- ✅ @xaheen-ai/design-system package built with 10 components
 - ✅ Multi-platform support (React, Vue, Angular, Svelte, React Native, Electron)
 - ✅ Component registry with 14 platforms
 - ✅ Norwegian compliance and NSM security classification

@@ -39,7 +39,7 @@ The integration enables Xaheen to automatically use the Xala UI system for front
 
 ```bash
 # Install Xaheen CLI (assuming it exists)
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Install Xala UI CLI
 npm install -g @xala-technologies/xala-cli
@@ -721,7 +721,7 @@ xala check src/ --theme-compliance
 xala xaheen init --check-compatibility
 
 # Update to compatible versions
-npm update -g @xaheen/cli @xala-technologies/xala-cli
+npm update -g @xaheen-ai/cli @xala-technologies/xala-cli
 ```
 
 **2. Missing Dependencies**
@@ -789,7 +789,7 @@ If you have a Xala UI project and want to add Xaheen:
 
 ```bash
 # 1. Install Xaheen in existing project
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 xaheen init --existing --ui xala
 
 # 2. Update configuration

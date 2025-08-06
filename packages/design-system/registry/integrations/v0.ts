@@ -11,7 +11,7 @@ export { getDependencies, isV0Compatible, getOptimalBundle } from '../lib/depend
 
 // Component metadata for AI tools
 export const V0_COMPONENT_METADATA = {
-  registryName: '@xaheen/design-system',
+  registryName: '@xaheen-ai/design-system',
   version: '2.1.0',
   totalComponents: 12,
   architecture: 'LEGO-block modular system',
@@ -61,7 +61,7 @@ export const getComponentBundleSize = (componentName: string) => {
 export const generateComponentBoilerplate = (pattern: string) => {
   const boilerplates = {
     'basic-search': `
-import { GlobalSearch } from '@xaheen/design-system';
+import { GlobalSearch } from '@xaheen-ai/design-system';
 
 export default function SearchExample() {
   const handleSearch = async (query: string) => {
@@ -84,7 +84,7 @@ export default function SearchExample() {
 }`,
     
     'basic-chat': `
-import { ChatInterface } from '@xaheen/design-system';
+import { ChatInterface } from '@xaheen-ai/design-system';
 
 export default function ChatExample() {
   const [messages, setMessages] = useState([]);

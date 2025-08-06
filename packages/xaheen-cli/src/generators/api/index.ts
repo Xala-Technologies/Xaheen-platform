@@ -189,7 +189,7 @@ export abstract class APIGenerator {
 				version: "1.0.0",
 				contact: {
 					name: "API Support",
-					email: "support@xaheen.com",
+					email: "support@xaheen-ai.com",
 				},
 			},
 			servers: [

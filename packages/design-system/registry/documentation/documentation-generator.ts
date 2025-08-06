@@ -344,7 +344,7 @@ ${spec.platforms.map(platform => `- ${platform}`).join('\n')}
     // React-specific
     if (spec.platforms.includes('react')) {
       section += `#### React\n\n`;
-      section += `\`\`\`tsx\nimport { ${spec.name} } from '@xaheen/design-system/react';\n\n`;
+      section += `\`\`\`tsx\nimport { ${spec.name} } from '@xaheen-ai/design-system/react';\n\n`;
       section += `<${spec.name}>${texts.content}</${spec.name}>\n\`\`\`\n\n`;
     }
 
@@ -352,7 +352,7 @@ ${spec.platforms.map(platform => `- ${platform}`).join('\n')}
     if (spec.platforms.includes('vue')) {
       section += `#### Vue\n\n`;
       section += `\`\`\`vue\n<template>\n  <${spec.name}>${texts.content}</${spec.name}>\n</template>\n\n`;
-      section += `<script>\nimport { ${spec.name} } from '@xaheen/design-system/vue';\n</script>\n\`\`\`\n\n`;
+      section += `<script>\nimport { ${spec.name} } from '@xaheen-ai/design-system/vue';\n</script>\n\`\`\`\n\n`;
     }
 
     // Angular-specific
@@ -585,7 +585,7 @@ export const AllVariants: Story = {
 
   private static generateBasicExample(spec: BaseComponentSpec): string {
     return `\`\`\`tsx
-import { ${spec.name} } from '@xaheen/design-system';
+import { ${spec.name} } from '@xaheen-ai/design-system';
 
 export function BasicExample() {
   return (

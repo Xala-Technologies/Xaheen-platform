@@ -43,10 +43,10 @@ sources:
 # Maintainers
 maintainers:
   - name: Xaheen Enterprise
-    email: devops@xaheen.no
+    email: devops@xaheen-ai.no
     url: https://xaheen.dev
   - name: Ibrahim Rahmani
-    email: ibrahim@xaheen.com
+    email: ibrahim@xaheen-ai.com
 
 # Dependencies
 dependencies:
@@ -140,7 +140,7 @@ annotations:
   api.documentation: "https://api.xaheen.dev/docs"
   
   # Support
-  support.email: "support@xaheen.no"
+  support.email: "support@xaheen-ai.no"
   support.slack: "https://xaheen.slack.com"
   
   # Artifact information

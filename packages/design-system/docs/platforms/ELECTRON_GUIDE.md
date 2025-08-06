@@ -22,13 +22,13 @@ The Xaheen Design System Electron platform provides React components enhanced wi
 
 ```bash
 # Install Xaheen Design System with Electron support
-npm install @xaheen/design-system electron react react-dom
+npm install @xaheen-ai/design-system electron react react-dom
 
 # Or with yarn
-yarn add @xaheen/design-system electron react react-dom
+yarn add @xaheen-ai/design-system electron react react-dom
 
 # Or with pnpm
-pnpm add @xaheen/design-system electron react react-dom
+pnpm add @xaheen-ai/design-system electron react react-dom
 ```
 
 ### TypeScript Support
@@ -181,7 +181,7 @@ import {
   Input,
   Card,
   useElectron 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 export default function App() {
   return (
@@ -260,7 +260,7 @@ function MainContent() {
 Enhanced button with native desktop features:
 
 ```tsx
-import { ElectronButton } from '@xaheen/design-system/electron';
+import { ElectronButton } from '@xaheen-ai/design-system/electron';
 
 function MyComponent() {
   return (
@@ -302,7 +302,7 @@ function MyComponent() {
 Input field with file picker and clipboard integration:
 
 ```tsx
-import { ElectronInput } from '@xaheen/design-system/electron';
+import { ElectronInput } from '@xaheen-ai/design-system/electron';
 
 function FileInput() {
   const [filePath, setFilePath] = useState('');
@@ -353,7 +353,7 @@ function FileInput() {
 Card component with window dragging and native features:
 
 ```tsx
-import { ElectronCard, CardHeader, CardContent, CardFooter } from '@xaheen/design-system/electron';
+import { ElectronCard, CardHeader, CardContent, CardFooter } from '@xaheen-ai/design-system/electron';
 
 function DraggableCard() {
   return (
@@ -398,7 +398,7 @@ function DraggableCard() {
 Custom title bar and window control buttons:
 
 ```tsx
-import { TitleBar, WindowControls, useWindowState } from '@xaheen/design-system/electron';
+import { TitleBar, WindowControls, useWindowState } from '@xaheen-ai/design-system/electron';
 
 function CustomTitleBar() {
   const { isMaximized, isMinimized, isFullscreen } = useWindowState();
@@ -476,7 +476,7 @@ import {
   useFileSave, 
   FileDropZone,
   useRecentFiles 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 function FileManager() {
   // File picker hook
@@ -607,7 +607,7 @@ import {
   useContextMenu, 
   MenuBuilder, 
   CommonMenus 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 function AppWithMenus() {
   return (
@@ -752,7 +752,7 @@ import {
   useVibrancy, 
   useTrafficLights,
   MacOSControls 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 function MacOSSpecificFeatures() {
   // Vibrancy effects
@@ -807,7 +807,7 @@ import {
   WindowsControls,
   useAcrylicEffect,
   useJumpList 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 function WindowsSpecificFeatures() {
   // Acrylic effect for Windows 11
@@ -877,7 +877,7 @@ import {
   LinuxControls,
   useSystemTheme,
   useNotifications 
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 
 function LinuxSpecificFeatures() {
   const { systemTheme, followSystemTheme } = useSystemTheme();
@@ -925,7 +925,7 @@ function LinuxSpecificFeatures() {
 Access Electron utilities and platform information:
 
 ```tsx
-import { useElectron } from '@xaheen/design-system/electron';
+import { useElectron } from '@xaheen-ai/design-system/electron';
 
 function MyComponent() {
   const { 
@@ -980,7 +980,7 @@ function MyComponent() {
 Register global keyboard shortcuts:
 
 ```tsx
-import { useKeyboardShortcuts } from '@xaheen/design-system/electron';
+import { useKeyboardShortcuts } from '@xaheen-ai/design-system/electron';
 
 function ShortcutManager() {
   const { registerShortcut, unregisterShortcut, listShortcuts } = useKeyboardShortcuts();
@@ -1034,7 +1034,7 @@ function ShortcutManager() {
 Manage application theme with OS integration:
 
 ```tsx
-import { useTheme } from '@xaheen/design-system/electron';
+import { useTheme } from '@xaheen-ai/design-system/electron';
 
 function ThemeManager() {
   const { 
@@ -1098,7 +1098,7 @@ function ThemeManager() {
 ### Custom IPC Communication
 
 ```tsx
-import { useIPC } from '@xaheen/design-system/electron';
+import { useIPC } from '@xaheen-ai/design-system/electron';
 
 function CustomIPCExample() {
   const { send, invoke, on, removeListener } = useIPC();
@@ -1152,7 +1152,7 @@ function CustomIPCExample() {
 ### Auto-Updater Integration
 
 ```tsx
-import { useAutoUpdater } from '@xaheen/design-system/electron';
+import { useAutoUpdater } from '@xaheen-ai/design-system/electron';
 
 function UpdateManager() {
   const {
@@ -1360,7 +1360,7 @@ function FileHandler() {
 ```typescript
 // Jest test for Electron components
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ElectronProvider } from '@xaheen/design-system/electron';
+import { ElectronProvider } from '@xaheen-ai/design-system/electron';
 import MyComponent from './MyComponent';
 
 // Mock Electron APIs

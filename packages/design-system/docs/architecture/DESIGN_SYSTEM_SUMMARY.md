@@ -207,7 +207,7 @@ I have successfully implemented a comprehensive, professional-grade design syste
 
 ### Basic Component Usage
 ```tsx
-import { Button, Input, Card } from '@xaheen/design-system';
+import { Button, Input, Card } from '@xaheen-ai/design-system';
 
 <Card padding="md" nsmClassification="RESTRICTED">
   <Input 
@@ -223,7 +223,7 @@ import { Button, Input, Card } from '@xaheen/design-system';
 
 ### Responsive Design
 ```tsx
-import { useBreakpoint, useResponsiveValue } from '@xaheen/design-system';
+import { useBreakpoint, useResponsiveValue } from '@xaheen-ai/design-system';
 
 const { isMobile } = useBreakpoint();
 const buttonSize = useResponsiveValue({
@@ -235,7 +235,7 @@ const buttonSize = useResponsiveValue({
 
 ### Accessibility Features
 ```tsx
-import { useFocusTrap, useAriaLive } from '@xaheen/design-system';
+import { useFocusTrap, useAriaLive } from '@xaheen-ai/design-system';
 
 const trapRef = useFocusTrap(isModalOpen);
 const { announce } = useAriaLive();

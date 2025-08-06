@@ -1,0 +1,638 @@
+/**
+ * @fileoverview  - Altinn Design System Compatible Form
+ * @description Norwegian government form component following Altinn Design System patterns
+ * @version 5.0.0
+ * @compliance WCAG AAA, Altinn Design System v3, NSM , Norwegian Government Standards
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, useState, useCallback, type FormEvent } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Form,
+  Input,
+  Select,
+  Textarea,
+  Button,
+  Text,
+  Alert,
+  Badge,
+  Progress,
+  Stepper,
+  StepperItem
+} from '@xaheen-ai/design-system';
+
+export interface Props {
+  readonly 'data-testid'?: string;
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly steps?: readonly FormStep[];
+  readonly currentStep?: number;
+  readonly onSubmit?: (data: AltinnFormData) => Promise<void>;
+  readonly onStepChange?: (step: number) => void;
+  readonly organizationNumber?: string;
+  readonly serviceCode?: string;
+  readonly serviceEdition?: string;
+  readonly reportingYear?: number;
+  readonly nsmClassification?: ;
+  readonly auditEnabled?: boolean;
+}
+
+export interface FormStep {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly fields: readonly FormField[];
+  readonly validation?: (data: any) => string[];
+}
+
+export interface FormField {
+  readonly id: string;
+  readonly type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'date' | 'checkbox' | 'radio' | 'organization-number';
+  readonly label: string;
+  readonly description?: string;
+  readonly required?: boolean;
+  readonly validation?: RegExp | ((value: any) => boolean);
+  readonly options?: readonly { label: string; value: string }[];
+  readonly placeholder?: string;
+  readonly helperText?: string;
+  readonly maxLength?: number;
+  readonly min?: number;
+  readonly max?: number;
+}
+
+export interface AltinnFormData {
+  readonly organizationNumber?: string;
+  readonly reportingPeriod: {
+    readonly year: number;
+    readonly period: string;
+  };
+  readonly contactInformation: {
+    readonly name: string;
+    readonly email: string;
+    readonly phone: string;
+  };
+  readonly formData: Record<string, any>;
+  readonly attachments?: readonly File[];
+  readonly digitalSignature?: string;
+}
+
+/**
+ * AI-Optimized Altinn Compatible Form
+ * Pattern:  complexity government form with multi-step flow
+ * Estimated tokens: 
+ * 
+ * Altinn Compliance:
+ * - Design System v3 compatibility
+ * - Norwegian government branding
+ * - Digital signature support
+ * - Multi-language support (Bokmål/Nynorsk/English)
+ * - Organization number validation
+ * - Audit trail integration
+ */
+export const  = forwardRef<HTMLFormElement, Props>(
+  (
+    {
+      title,
+      subtitle,
+      steps = defaultSteps,
+      currentStep = 0,
+      onSubmit,
+      onStepChange,
+      organizationNumber,
+      serviceCode = 'XAHEEN_FORM',
+      serviceEdition = '1.0',
+      reportingYear = new Date().getFullYear(),
+      nsmClassification = 'RESTRICTED',
+      auditEnabled = true,
+      'data-testid': testId,
+    },
+    ref
+  ): JSX.Element => {
+    const [formData, setFormData] = useState<Record<string, any>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+
+    const currentStepData = steps[currentStep];
+    const isLastStep = currentStep === steps.length - 1;
+    const canProceed = validateCurrentStep();
+
+    function validateCurrentStep(): boolean {
+      if (!currentStepData) return false;
+      
+      const stepErrors: Record<string, string> = {};
+      
+      currentStepData.fields.forEach(field => {
+        const value = formData[field.id];
+        
+        // Required field validation
+        if (field.required && (!value || value === '')) {
+          stepErrors[field.id] = ;
+          return;
+        }
+        
+        // Type-specific validation
+        if (value && value !== '') {
+          if (field.type === 'email' && !isValidEmail(value)) {
+            stepErrors[field.id] = ;
+          }
+          
+          if (field.type === 'organization-number' && !isValidOrganizationNumber(value)) {
+            stepErrors[field.id] = ;
+          }
+          
+          if (field.type === 'tel' && !isValidPhoneNumber(value)) {
+            stepErrors[field.id] = ;
+          }
+          
+          // Custom validation
+          if (field.validation) {
+            if (field.validation instanceof RegExp && !field.validation.test(value)) {
+              stepErrors[field.id] = ;
+            } else if (typeof field.validation === 'function' && !field.validation(value)) {
+              stepErrors[field.id] = ;
+            }
+          }
+        }
+      });
+      
+      setErrors(stepErrors);
+      return Object.keys(stepErrors).length === 0;
+    }
+
+    const handleFieldChange = useCallback((fieldId: string, value: any) => {
+      setFormData(prev => ({ ...prev, [fieldId]: value }));
+      
+      // Clear error when user starts typing
+      if (errors[fieldId]) {
+        setErrors(prev => ({ ...prev, [fieldId]: undefined }));
+      }
+    }, [errors]);
+
+    const handleNextStep = useCallback(() => {
+      if (validateCurrentStep()) {
+        setCompletedSteps(prev => new Set([...prev, currentStep]));
+        const nextStep = Math.min(currentStep + 1, steps.length - 1);
+        onStepChange?.(nextStep);
+      }
+    }, [currentStep, steps.length, onStepChange]);
+
+    const handlePrevStep = useCallback(() => {
+      const prevStep = Math.max(currentStep - 1, 0);
+      onStepChange?.(prevStep);
+    }, [currentStep, onStepChange]);
+
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      
+      if (!validateCurrentStep()) return;
+      
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+
+      try {
+        const submissionData: AltinnFormData = {
+          organizationNumber,
+          reportingPeriod: {
+            year: reportingYear,
+            period: formData.reportingPeriod || 'annual'
+          },
+          contactInformation: {
+            name: formData.contactName || '',
+            email: formData.contactEmail || '',
+            phone: formData.contactPhone || ''
+          },
+          formData,
+          digitalSignature: await generateDigitalSignature(formData)
+        };
+
+        if (auditEnabled) {
+          await createAuditEntry('form-submitted', submissionData);
+        }
+
+        await onSubmit?.(submissionData);
+        setSubmitStatus('success');
+      } catch (error) {
+        console.error('Form submission error:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, organizationNumber, reportingYear, onSubmit, auditEnabled]);
+
+    const renderField = useCallback((field: FormField) => {
+      const commonProps = {
+        key: field.id,
+        label: field.label,
+        value: formData[field.id] || '',
+        onChange: (value: any) => handleFieldChange(field.id, value),
+        error: errors[field.id],
+        required: field.required,
+        placeholder: field.placeholder,
+        helperText: field.helperText,
+        'aria-describedby': field.description ? `${field.id}-description` : undefined
+      };
+
+      switch (field.type) {
+        case 'textarea':
+          return (
+            <Textarea
+              {...commonProps}
+              rows={4}
+              maxLength={field.maxLength}
+            />
+          );
+          
+        case 'select':
+          return (
+            <Select
+              {...commonProps}
+              options={field.options || []}
+            />
+          );
+          
+        case 'number':
+          return (
+            <Input
+              {...commonProps}
+              type="number"
+              min={field.min}
+              max={field.max}
+            />
+          );
+          
+        case 'organization-number':
+          return (
+            <Input
+              {...commonProps}
+              type="text"
+              pattern="[0-9]{9}"
+              maxLength={9}
+              placeholder="123456789"
+              helperText=
+            />
+          );
+          
+        default:
+          return (
+            <Input
+              {...commonProps}
+              type={field.type}
+              maxLength={field.maxLength}
+            />
+          );
+      }
+    }, [formData, errors, handleFieldChange]);
+
+    // Helper validation functions
+    const isValidEmail = (email: string): boolean => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    };
+
+    const isValidOrganizationNumber = (orgNumber: string): boolean => {
+      // Norwegian organization number validation (simplified)
+      const cleaned = orgNumber.replace(/\s/g, '');
+      return /^\d{9}$/.test(cleaned);
+    };
+
+    const isValidPhoneNumber = (phone: string): boolean => {
+      // Norwegian phone number validation (simplified)
+      const cleaned = phone.replace(/[\s\-\+]/g, '');
+      return /^(47)?[4-9]\d{7}$/.test(cleaned);
+    };
+
+    const generateDigitalSignature = async (data: any): Promise<string> => {
+      // Implement digital signature generation
+      const dataString = JSON.stringify(data);
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(dataString);
+      
+      try {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (error) {
+        console.error('Digital signature generation failed:', error);
+        return '';
+      }
+    };
+
+    const createAuditEntry = async (action: string, data: any) => {
+      const auditEntry = {
+        timestamp: new Date().toISOString(),
+        action,
+        serviceCode,
+        serviceEdition,
+        organizationNumber,
+        nsmClassification,
+        data: JSON.stringify(data),
+        userAgent: navigator.userAgent
+      };
+
+      try {
+        await fetch('/api/audit/altinn', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-NSM-Classification': nsmClassification,
+            'X-Service-Code': serviceCode
+          },
+          body: JSON.stringify(auditEntry)
+        });
+      } catch (error) {
+        console.error('Failed to create audit entry:', error);
+      }
+    };
+
+    return (
+      <Container size="lg">
+        <Card className="shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <Stack direction="vertical" gap="sm">
+              <Stack direction="horizontal" justify="space-between" align="center">
+                <CardTitle className="text-2xl">{title}</CardTitle>
+                <Badge variant="outline" className="bg-white text-blue-700">
+                  Altinn  • NSM {nsmClassification}
+                </Badge>
+              </Stack>
+              
+              {subtitle && (
+                <Text variant="body" className="text-blue-100">
+                  {subtitle}
+                </Text>
+              )}
+              
+              {organizationNumber && (
+                <Text variant="caption" className="text-blue-200">
+                  : {organizationNumber}
+                </Text>
+              )}
+            </Stack>
+          </CardHeader>
+
+          <CardContent className="p-6">
+            <Form
+              ref={ref}
+              onSubmit={handleSubmit}
+              data-testid={testId}
+              data-nsm-classification={nsmClassification}
+              data-service-code={serviceCode}
+              noValidate
+            >
+              <Stack direction="vertical" gap="xl">
+                {/* Progress Indicator */}
+                {steps.length > 1 && (
+                  <div>
+                    <Progress 
+                      value={((currentStep + 1) / steps.length) * 100}
+                      className="mb-4"
+                    />
+                    
+                    <Stepper currentStep={currentStep}>
+                      {steps.map((step, index) => (
+                        <StepperItem
+                          key={step.id}
+                          title={step.title}
+                          completed={completedSteps.has(index)}
+                          active={index === currentStep}
+                        />
+                      ))}
+                    </Stepper>
+                  </div>
+                )}
+
+                {/* Status Messages */}
+                {submitStatus === 'success' && (
+                  <Alert variant="success" role="status">
+                    <Stack direction="vertical" gap="sm">
+                      <Text weight="semibold">
+                        
+                      </Text>
+                      <Text variant="caption">
+                        
+                      </Text>
+                    </Stack>
+                  </Alert>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <Alert variant="error" role="alert">
+                    <Stack direction="vertical" gap="sm">
+                      <Text weight="semibold">
+                        
+                      </Text>
+                      <Text variant="caption">
+                        
+                      </Text>
+                    </Stack>
+                  </Alert>
+                )}
+
+                {/* Current Step Content */}
+                {currentStepData && (
+                  <Card variant="outline">
+                    <CardHeader>
+                      <CardTitle>{currentStepData.title}</CardTitle>
+                      {currentStepData.description && (
+                        <Text variant="body" color="secondary">
+                          {currentStepData.description}
+                        </Text>
+                      )}
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <Stack direction="vertical" gap="lg">
+                        {currentStepData.fields.map(renderField)}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Navigation Buttons */}
+                <Stack direction="horizontal" justify="space-between" gap="md">
+                  <div>
+                    {currentStep > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevStep}
+                        disabled={isSubmitting}
+                      >
+                        
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <Stack direction="horizontal" gap="sm">
+                    {!isLastStep ? (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={handleNextStep}
+                        disabled={!canProceed || isSubmitting}
+                      >
+                        
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        disabled={!canProceed || isSubmitting}
+                        loading={isSubmitting}
+                        size="lg"
+                      >
+                        {isSubmitting 
+                          ? 
+                          : 
+                        }
+                      </Button>
+                    )}
+                  </Stack>
+                </Stack>
+
+                {/* Footer Information */}
+                <div className="border-t pt-4">
+                  <Stack direction="horizontal" justify="between" align="center" className="text-sm text-gray-600">
+                    <Text variant="caption">
+                      : {serviceCode} v{serviceEdition}
+                    </Text>
+                    <Text variant="caption">
+                      : {reportingYear}
+                    </Text>
+                  </Stack>
+                </div>
+              </Stack>
+            </Form>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+);
+
+.displayName = '';
+
+// Default form steps for Norwegian government forms
+const defaultSteps: readonly FormStep[] = [
+  {
+    id: 'organization',
+    title: ,
+    description: ,
+    fields: [
+      {
+        id: 'organizationNumber',
+        type: 'organization-number',
+        label: ,
+        required: true,
+        helperText: 
+      },
+      {
+        id: 'organizationName',
+        type: 'text',
+        label: ,
+        required: true,
+        maxLength: 100
+      },
+      {
+        id: 'industry',
+        type: 'select',
+        label: ,
+        required: true,
+        options: [
+          { label: , value: 'agriculture' },
+          { label: , value: 'manufacturing' },
+          { label: , value: 'construction' },
+          { label: , value: 'retail' },
+          { label: , value: 'services' },
+          { label: , value: 'other' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'contact',
+    title: ,
+    description: ,
+    fields: [
+      {
+        id: 'contactName',
+        type: 'text',
+        label: ,
+        required: true,
+        maxLength: 50
+      },
+      {
+        id: 'contactEmail',
+        type: 'email',
+        label: ,
+        required: true,
+        helperText: 
+      },
+      {
+        id: 'contactPhone',
+        type: 'tel',
+        label: ,
+        required: true,
+        placeholder: '+47 12 34 56 78'
+      }
+    ]
+  },
+  {
+    id: 'reporting',
+    title: ,
+    description: ,
+    fields: [
+      {
+        id: 'reportingPeriod',
+        type: 'select',
+        label: ,
+        required: true,
+        options: [
+          { label: , value: 'annual' },
+          { label: , value: 'quarterly' },
+          { label: , value: 'monthly' }
+        ]
+      },
+      {
+        id: 'additionalInfo',
+        type: 'textarea',
+        label: ,
+        required: false,
+        maxLength: 1000,
+        helperText: 
+      }
+    ]
+  }
+];
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   subtitle=
+ *   organizationNumber="123456789"
+ *   serviceCode="VAT_REPORT"
+ *   serviceEdition="2.1"
+ *   reportingYear={2024}
+ *   nsmClassification="RESTRICTED"
+ *   auditEnabled={true}
+ *   steps={customVATSteps}
+ *   onSubmit={async (data) => {
+ *     await submitToAltinn(data);
+ *     showNotification();
+ *   }}
+ *   onStepChange={(step) => {
+ *     trackFormProgress('vat-report', step);
+ *   }}
+ * />
+ */

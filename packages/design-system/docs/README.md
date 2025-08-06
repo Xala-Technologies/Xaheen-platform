@@ -24,10 +24,10 @@ Welcome to the comprehensive documentation for the Xaheen Design System - a LEGO
 
 ```typescript
 // Install the package
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 
 // Import components (LEGO blocks)
-import { Button, GlobalSearch, ChatInterface } from '@xaheen/design-system';
+import { Button, GlobalSearch, ChatInterface } from '@xaheen-ai/design-system';
 
 // Use with props-based localization
 <GlobalSearch

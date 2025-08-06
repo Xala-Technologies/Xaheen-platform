@@ -116,7 +116,7 @@ Features include:
 ### 1. Create a Custom Component Generator
 
 ```typescript
-import { createMetaGeneratorSystem } from '@xaheen/cli/generators/meta';
+import { createMetaGeneratorSystem } from '@xaheen-ai/cli/generators/meta';
 
 const system = await createMetaGeneratorSystem();
 

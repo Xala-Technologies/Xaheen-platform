@@ -180,7 +180,7 @@ export async function getValidationStats(projectPath: string) {
 export const VALIDATION_SYSTEM_VERSION = '1.0.0';
 export const SUPPORTED_STANDARDS = {
   CLAUDE_MD: '2025-08-06',
-  DESIGN_SYSTEM: '@xaheen/design-system@^1.0.0',
+  DESIGN_SYSTEM: '@xaheen-ai/design-system@^1.0.0',
   NSM_COMPLIANCE: 'NSM 2024 Guidelines',
   WCAG: 'WCAG 2.1 AAA'
 };

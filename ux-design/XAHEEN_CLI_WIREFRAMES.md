@@ -89,16 +89,16 @@ The existing full-stack development platform is now enhanced with:
 // The same navbar works in React, Vue, Angular, Svelte, etc.
 
 // React (existing)
-import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen/ui-system/react';
+import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen-ai/ui-system/react';
 
 // Vue (new capability)
-import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen/ui-system/vue';
+import { WebNavbar, GlobalSearch, ThemeSwitcher } from '@xaheen-ai/ui-system/vue';
 
 // Angular (new capability) 
-import { WebNavbarComponent, GlobalSearchComponent } from '@xaheen/ui-system/angular';
+import { WebNavbarComponent, GlobalSearchComponent } from '@xaheen-ai/ui-system/angular';
 
 // Auto-detection (new capability)
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const Navbar = await componentFactory.getComponent('navbar-primary');
 ```
 
@@ -154,8 +154,8 @@ const Navbar = await componentFactory.getComponent('navbar-primary');
 **Universal Component Structure:**
 ```typescript
 // React Implementation
-import { Container, HeroSection, Typography, ButtonGroup, Button, Card } from '@xaheen/design-system/react';
-import { ComponentWizard, PlatformSelector, TemplateGrid } from '@xaheen/design-system/blocks';
+import { Container, HeroSection, Typography, ButtonGroup, Button, Card } from '@xaheen-ai/design-system/react';
+import { ComponentWizard, PlatformSelector, TemplateGrid } from '@xaheen-ai/design-system/blocks';
 
 <Container maxWidth="7xl" spacing="xl">
   <!-- Hero Section -->
@@ -214,16 +214,16 @@ import { ComponentWizard, PlatformSelector, TemplateGrid } from '@xaheen/design-
 
 // Vue Implementation (Same structure, Vue syntax)
 <script setup lang="ts">
-import { Container, HeroSection, Typography } from '@xaheen/design-system/vue';
+import { Container, HeroSection, Typography } from '@xaheen-ai/design-system/vue';
 // Auto-generates Vue-specific implementation
 </script>
 
 // Angular Implementation  
-import { HeroSectionComponent, TypographyComponent } from '@xaheen/design-system/angular';
+import { HeroSectionComponent, TypographyComponent } from '@xaheen-ai/design-system/angular';
 // Auto-generates Angular standalone components
 
 // Universal Factory (Auto-Detection)
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const HeroSection = await componentFactory.getBlock('hero-section');
 const ComponentWizard = await componentFactory.getBlock('component-wizard');
 ```
@@ -890,7 +890,7 @@ Expected Bundle Sizes:
 │  │    LIVE PREVIEW     │ │           CODE EXAMPLE                  │   │
 │  │                     │ │                                         │   │
 │  │  [Primary Button]   │ │ // React                               │   │
-│  │  [Secondary Button] │ │ import { Button } from '@xaheen/react';│   │
+│  │  [Secondary Button] │ │ import { Button } from '@xaheen-ai/react';│   │
 │  │  [Outline Button]   │ │                                         │   │
 │  │  [Ghost Button]     │ │ <Button variant="primary" size="lg">   │   │
 │  │                     │ │   Click me                             │   │

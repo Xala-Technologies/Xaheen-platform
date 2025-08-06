@@ -114,7 +114,7 @@ module.exports = {
     enabled: true,
     autoLoad: true,
     searchPaths: ['./plugins', '~/.xaheen/plugins'],
-    allowedPlugins: ['@xaheen/plugin-*'],
+    allowedPlugins: ['@xaheen-ai/plugin-*'],
     blockedPlugins: []
   },
 

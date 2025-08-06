@@ -18,7 +18,7 @@ This document provides comprehensive examples for using the Xaheen License Compl
 ### Simple License Scan
 
 ```typescript
-import { LicenseComplianceService, NorwegianLicensePolicy } from '@xaheen/cli';
+import { LicenseComplianceService, NorwegianLicensePolicy } from '@xaheen-ai/cli';
 
 // Basic Norwegian enterprise policy
 const policy: NorwegianLicensePolicy = {
@@ -319,7 +319,7 @@ jobs:
       run: npm ci
       
     - name: Install Xaheen CLI
-      run: npm install -g @xaheen/cli
+      run: npm install -g @xaheen-ai/cli
       
     - name: Initialize License Policy
       run: |
@@ -414,7 +414,7 @@ stages:
       
     - script: |
         npm ci
-        npm install -g @xaheen/cli
+        npm install -g @xaheen-ai/cli
       displayName: 'Install Dependencies'
       
     - script: |

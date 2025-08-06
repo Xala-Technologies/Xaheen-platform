@@ -186,7 +186,7 @@ jobs:
           echo "" >> release_notes.md
           echo "- **@xala-technologies/xaheen-cli** - Next-generation CLI with AI-powered component generation" >> release_notes.md
           echo "- **@xala-technologies/xala-mcp** - Multi-platform MCP server with enhanced prompts" >> release_notes.md
-          echo "- **@xaheen/design-system** - Xaheen Design System with Xala UI components" >> release_notes.md
+          echo "- **@xaheen-ai/design-system** - Xaheen Design System with Xala UI components" >> release_notes.md
           echo "" >> release_notes.md
           echo "### 🔧 Installation" >> release_notes.md
           echo "" >> release_notes.md
@@ -284,7 +284,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **@xala-technologies/xaheen-cli@${{ needs.validate-release.outputs.version }}**" >> $GITHUB_STEP_SUMMARY
           echo "- **@xala-technologies/xala-mcp@${{ needs.validate-release.outputs.version }}**" >> $GITHUB_STEP_SUMMARY
-          echo "- **@xaheen/design-system@${{ needs.validate-release.outputs.version }}**" >> $GITHUB_STEP_SUMMARY
+          echo "- **@xaheen-ai/design-system@${{ needs.validate-release.outputs.version }}**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

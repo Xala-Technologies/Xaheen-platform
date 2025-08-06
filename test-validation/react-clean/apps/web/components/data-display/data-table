@@ -1,0 +1,575 @@
+/**
+ * @fileoverview  - Admin Data Table Pattern
+ * @description AI-optimized data table using semantic UI System components with advanced features
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, useState, useCallback, useMemo, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Stack,
+  Text,
+  Button,
+  Input,
+  Select,
+  Checkbox,
+  Badge,
+  Pagination,
+  Dropdown,
+  DropdownTrigger,
+  DropdownContent,
+  DropdownItem
+} from '@xaheen-ai/design-system';
+
+export interface Props<T = any> extends HTMLAttributes<HTMLDivElement> {
+  readonly 'data-testid'?: string;
+  readonly data: readonly T[];
+  readonly columns: readonly TableColumn<T>[];
+  readonly title?: string;
+  readonly subtitle?: string;
+  readonly loading?: boolean;
+  readonly selectable?: boolean;
+  readonly sortable?: boolean;
+  readonly filterable?: boolean;
+  readonly searchable?: boolean;
+  readonly paginated?: boolean;
+  readonly itemsPerPage?: number;
+  readonly actions?: readonly TableAction<T>[];
+  readonly bulkActions?: readonly BulkAction<T>[];
+  readonly onRowClick?: (item: T, index: number) => void;
+  readonly onSelectionChange?: (selectedItems: readonly T[]) => void;
+  readonly emptyMessage?: string;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly nsmClassification?: ;
+}
+
+export interface TableColumn<T> {
+  readonly key: keyof T | string;
+  readonly label: string;
+  readonly sortable?: boolean;
+  readonly filterable?: boolean;
+  readonly width?: string;
+  readonly align?: 'left' | 'center' | 'right';
+  readonly render?: (value: any, item: T, index: number) => React.ReactNode;
+  readonly accessor?: (item: T) => any;
+}
+
+export interface TableAction<T> {
+  readonly label: string;
+  readonly icon?: React.ReactNode;
+  readonly variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  readonly onClick: (item: T, index: number) => void;
+  readonly disabled?: (item: T) => boolean;
+  readonly hidden?: (item: T) => boolean;
+}
+
+export interface BulkAction<T> {
+  readonly label: string;
+  readonly icon?: React.ReactNode;
+  readonly variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  readonly onClick: (selectedItems: readonly T[]) => void;
+  readonly disabled?: (selectedItems: readonly T[]) => boolean;
+}
+
+/**
+ * AI-Optimized Admin Data Table
+ * Pattern:  complexity data table with advanced features
+ * Estimated tokens: 
+ * 
+ * MCP Patterns:
+ * 
+ * - : 
+ * 
+ */
+export const  = forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      className,
+      data,
+      columns,
+      title,
+      subtitle,
+      loading = false,
+      selectable = false,
+      sortable = true,
+      filterable = true,
+      searchable = true,
+      paginated = true,
+      itemsPerPage = 10,
+      actions = [],
+      bulkActions = [],
+      onRowClick,
+      onSelectionChange,
+      emptyMessage = ,
+      size = 'lg',
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortColumn, setSortColumn] = useState<string>('');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [selectedItems, setSelectedItems] = useState<readonly T[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+
+    // Filter and sort data
+    const processedData = useMemo(() => {
+      let filtered = [...data];
+
+      // Global search
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(item =>
+          columns.some(column => {
+            const value = column.accessor ? column.accessor(item) : item[column.key as keyof T];
+            return String(value).toLowerCase().includes(query);
+          })
+        );
+      }
+
+      // Column filters
+      Object.entries(columnFilters).forEach(([columnKey, filterValue]) => {
+        if (filterValue) {
+          const column = columns.find(col => col.key === columnKey);
+          if (column) {
+            filtered = filtered.filter(item => {
+              const value = column.accessor ? column.accessor(item) : item[column.key as keyof T];
+              return String(value).toLowerCase().includes(filterValue.toLowerCase());
+            });
+          }
+        }
+      });
+
+      // Sorting
+      if (sortColumn) {
+        const column = columns.find(col => col.key === sortColumn);
+        if (column) {
+          filtered.sort((a, b) => {
+            const aValue = column.accessor ? column.accessor(a) : a[column.key as keyof T];
+            const bValue = column.accessor ? column.accessor(b) : b[column.key as keyof T];
+            
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              const comparison = aValue.localeCompare(bValue, '');
+              return sortDirection === 'asc' ? comparison : -comparison;
+            }
+            
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+              return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+            
+            if (aValue instanceof Date && bValue instanceof Date) {
+              return sortDirection === 'asc' 
+                ? aValue.getTime() - bValue.getTime()
+                : bValue.getTime() - aValue.getTime();
+            }
+            
+            return 0;
+          });
+        }
+      }
+
+      return filtered;
+    }, [data, searchQuery, sortColumn, sortDirection, columnFilters, columns]);
+
+    // Pagination
+    const totalPages = paginated ? Math.ceil(processedData.length / itemsPerPage) : 1;
+    const startIndex = paginated ? (currentPage - 1) * itemsPerPage : 0;
+    const endIndex = paginated ? startIndex + itemsPerPage : processedData.length;
+    const paginatedData = processedData.slice(startIndex, endIndex);
+
+    const handleSort = useCallback((columnKey: string) => {
+      if (!sortable) return;
+      
+      const column = columns.find(col => col.key === columnKey);
+      if (!column?.sortable) return;
+
+      if (sortColumn === columnKey) {
+        setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortColumn(columnKey);
+        setSortDirection('asc');
+      }
+    }, [sortable, sortColumn, columns]);
+
+    const handleSelectAll = useCallback((checked: boolean) => {
+      const newSelection = checked ? [...paginatedData] : [];
+      setSelectedItems(newSelection);
+      onSelectionChange?.(newSelection);
+    }, [paginatedData, onSelectionChange]);
+
+    const handleSelectItem = useCallback((item: T, checked: boolean) => {
+      const newSelection = checked
+        ? [...selectedItems, item]
+        : selectedItems.filter(selected => selected !== item);
+      
+      setSelectedItems(newSelection);
+      onSelectionChange?.(newSelection);
+    }, [selectedItems, onSelectionChange]);
+
+    const handleColumnFilter = useCallback((columnKey: string, value: string) => {
+      setColumnFilters(prev => ({
+        ...prev,
+        [columnKey]: value
+      }));
+      setCurrentPage(1);
+    }, []);
+
+    const isAllSelected = selectable && paginatedData.length > 0 && 
+      paginatedData.every(item => selectedItems.includes(item));
+    const isPartiallySelected = selectable && selectedItems.length > 0 && !isAllSelected;
+
+    const renderCellContent = useCallback((column: TableColumn<T>, item: T, index: number) => {
+      if (column.render) {
+        const value = column.accessor ? column.accessor(item) : item[column.key as keyof T];
+        return column.render(value, item, index);
+      }
+      
+      const value = column.accessor ? column.accessor(item) : item[column.key as keyof T];
+      
+      if (value === null || value === undefined) {
+        return <Text variant="caption" color="secondary">—</Text>;
+      }
+      
+      if (typeof value === 'boolean') {
+        return (
+          <Badge variant={value ? 'success' : 'secondary'}>
+            {value ?  : }
+          </Badge>
+        );
+      }
+      
+      if (value instanceof Date) {
+        return value.toLocaleDateString('');
+      }
+      
+      return String(value);
+    }, []);
+
+    return (
+      <Container 
+        size={size} 
+        ref={ref} 
+        className={className}
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        {...props}
+      >
+        <Stack direction="vertical" gap="lg">
+          {/* Header */}
+          <Stack direction="horizontal" justify="space-between" align="flex-start">
+            <Stack direction="vertical" gap="sm">
+              {title && (
+                <Text variant="h2" weight="bold">
+                  {title}
+                </Text>
+              )}
+              {subtitle && (
+                <Text variant="body" color="secondary">
+                  {subtitle}
+                </Text>
+              )}
+            </Stack>
+
+            {/* Bulk Actions */}
+            {bulkActions.length > 0 && selectedItems.length > 0 && (
+              <Stack direction="horizontal" gap="sm">
+                <Text variant="caption" color="secondary">
+                  {selectedItems.length} 
+                </Text>
+                {bulkActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant={action.variant || 'outline'}
+                    size="sm"
+                    onClick={() => action.onClick(selectedItems)}
+                    disabled={action.disabled?.(selectedItems)}
+                    aria-label={`${action.label} ${selectedItems.length} `}
+                  >
+                    {action.icon}
+                    {action.label}
+                  </Button>
+                ))}
+              </Stack>
+            )}
+          </Stack>
+
+          {/* Controls */}
+          <Stack direction="horizontal" justify="space-between" align="center" gap="md" className="flex-wrap">
+            {searchable && (
+              <div className="flex-1 min-w-[200px] max-w-md">
+                <Input
+                  type="search"
+                  placeholder=
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  aria-label=
+                />
+              </div>
+            )}
+
+            <Stack direction="horizontal" gap="sm">
+              <Text variant="caption" color="secondary">
+                 {startIndex + 1}-{Math.min(endIndex, processedData.length)}  {processedData.length}
+              </Text>
+            </Stack>
+          </Stack>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <Table
+              role="table"
+              aria-label={title ||  }
+              aria-rowcount={processedData.length}
+              className="min-w-full"
+            >
+              <TableHeader>
+                <TableRow>
+                  {selectable && (
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={isAllSelected}
+                        indeterminate={isPartiallySelected}
+                        onChange={handleSelectAll}
+                        aria-label=
+                      />
+                    </TableHead>
+                  )}
+                  
+                  {columns.map((column) => (
+                    <TableHead
+                      key={String(column.key)}
+                      style=
+                      className={`text-${column.align || 'left'}`}
+                    >
+                      <Stack direction="vertical" gap="xs">
+                        <Stack 
+                          direction="horizontal" 
+                          align="center" 
+                          gap="xs"
+                          className={column.sortable && sortable ? 'cursor-pointer hover:text-primary-600' : ''}
+                          onClick={() => column.sortable && sortable && handleSort(String(column.key))}
+                        >
+                          <Text variant="caption" weight="semibold" className="uppercase tracking-wide">
+                            {column.label}
+                          </Text>
+                          
+                          {column.sortable && sortable && (
+                            <div className="text-xs">
+                              {sortColumn === column.key ? (
+                                sortDirection === 'asc' ? '↑' : '↓'
+                              ) : '↕'}
+                            </div>
+                          )}
+                        </Stack>
+
+                        {column.filterable && filterable && (
+                          <Input
+                            size="sm"
+                            placeholder=
+                            value={columnFilters[String(column.key)] || ''}
+                            onChange={(value) => handleColumnFilter(String(column.key), value)}
+                            aria-label={`$} ${column.label}`}
+                          />
+                        )}
+                      </Stack>
+                    </TableHead>
+                  ))}
+                  
+                  {actions.length > 0 && (
+                    <TableHead className="w-24">
+                      <Text variant="caption" weight="semibold" className="uppercase tracking-wide">
+                        
+                      </Text>
+                    </TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}>
+                      <div className="py-8 text-center">
+                        <Text variant="body" color="secondary">
+                          
+                        </Text>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}>
+                      <div className="py-8 text-center">
+                        <Text variant="body" color="secondary">
+                          {emptyMessage}
+                        </Text>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedData.map((item, index) => (
+                    <TableRow
+                      key={index}
+                      className={onRowClick ? 'cursor-pointer hover:bg-secondary-50' : ''}
+                      onClick={() => onRowClick?.(item, startIndex + index)}
+                      aria-rowindex={startIndex + index + 1}
+                    >
+                      {selectable && (
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedItems.includes(item)}
+                            onChange={(checked) => handleSelectItem(item, checked)}
+                            aria-label={`$} ${index + 1}`}
+                          />
+                        </TableCell>
+                      )}
+                      
+                      {columns.map((column) => (
+                        <TableCell
+                          key={String(column.key)}
+                          className={`text-${column.align || 'left'}`}
+                        >
+                          {renderCellContent(column, item, startIndex + index)}
+                        </TableCell>
+                      ))}
+                      
+                      {actions.length > 0 && (
+                        <TableCell>
+                          <Dropdown>
+                            <DropdownTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                aria-label={`$} ${index + 1}`}
+                              >
+                                ⋯
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownContent>
+                              {actions.map((action, actionIndex) => (
+                                !action.hidden?.(item) && (
+                                  <DropdownItem
+                                    key={actionIndex}
+                                    onClick={() => action.onClick(item, startIndex + index)}
+                                    disabled={action.disabled?.(item)}
+                                  >
+                                    {action.icon}
+                                    {action.label}
+                                  </DropdownItem>
+                                )
+                              ))}
+                            </DropdownContent>
+                          </Dropdown>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {paginated && totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                aria-label=
+              />
+            </div>
+          )}
+        </Stack>
+      </Container>
+    );
+  }
+);
+
+.displayName = '';
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   subtitle=
+ *   data={users}
+ *   nsmClassification=""
+ *   selectable={true}
+ *   columns={[
+ *     {
+ *       key: 'name',
+ *       label: ,
+ *       sortable: true,
+ *       filterable: true
+ *     },
+ *     {
+ *       key: 'email',
+ *       label: ,
+ *       sortable: true,
+ *       filterable: true
+ *     },
+ *     {
+ *       key: 'role',
+ *       label: ,
+ *       sortable: true,
+ *       render: (value) => <Badge variant="outline">{value}</Badge>
+ *     },
+ *     {
+ *       key: 'status',
+ *       label: ,
+ *       render: (value) => (
+ *         <Badge variant={value === 'active' ? 'success' : 'secondary'}>
+ *           {value}
+ *         </Badge>
+ *       )
+ *     },
+ *     {
+ *       key: 'lastLogin',
+ *       label: ,
+ *       sortable: true,
+ *       render: (value) => value ? new Date(value).toLocaleDateString() : '—'
+ *     }
+ *   ]}
+ *   actions={[
+ *     {
+ *       label: ,
+ *       onClick: (user) => openEditModal(user),
+ *       variant: 'outline'
+ *     },
+ *     {
+ *       label: ,
+ *       onClick: (user) => confirmDelete(user),
+ *       variant: 'destructive',
+ *       disabled: (user) => user.role === 'admin'
+ *     }
+ *   ]}
+ *   bulkActions={[
+ *     {
+ *       label: ,
+ *       onClick: (users) => bulkDeactivate(users),
+ *       variant: 'outline'
+ *     },
+ *     {
+ *       label: ,
+ *       onClick: (users) => exportUsers(users),
+ *       variant: 'primary'
+ *     }
+ *   ]}
+ *   onRowClick={(user) => navigate(`/admin/users/${user.id}`)}
+ *   itemsPerPage={25}
+ * />
+ */

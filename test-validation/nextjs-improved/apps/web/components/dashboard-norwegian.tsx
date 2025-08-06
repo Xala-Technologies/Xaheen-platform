@@ -1,0 +1,218 @@
+
+
+
+
+
+
+import { Metadata } from "next";
+import { useTranslations } from "next-intl";
+import { AdminLayout } from "@/components/layouts/AdminLayout";
+import {
+  Box,
+  Stack,
+  Grid,
+  Card,
+  Heading,
+  Text,
+  Button,
+  DataTable,
+  Chart,
+  Badge,
+  Avatar
+} from "@xaheen-ai/design-system";
+
+export const metadata: Metadata = {
+  title: " | Dashboard",
+  description: "",
+};
+
+interface Props {
+  params: { locale: string };
+}
+
+/**
+ *  page - Norwegian compliant dashboard
+ * Follows WCAG 2.2 AAA accessibility standards
+ */
+export default function ({ params }: Props): React.ReactElement {
+  const t = useTranslations("");
+
+  return (
+    <AdminLayout
+      title={t("title")}
+      breadcrumbs={[
+        { label: t("home"), href: "/" },
+        { label: t("dashboard"), href: "/dashboard" },
+        { label: t(""), href: "/" }
+      ]}
+    >
+      <Stack direction="vertical" spacing="6">
+        {/* Page Header */}
+        <Box variant="section">
+          <Stack direction="horizontal" justify="between" align="center">
+            <Stack direction="vertical" spacing="2">
+              <Heading level={1} variant="page">
+                {t("title")}
+              </Heading>
+              <Text variant="subtitle">
+                {t("description")}
+              </Text>
+            </Stack>
+            <Button variant="primary" size="lg">
+              {t("primaryAction")}
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* Metrics Cards */}
+        <Grid columns={4} gap="4">
+          <Card variant="metric">
+            <Stack direction="vertical" spacing="2">
+              <Text variant="label">{t("metrics.total")}</Text>
+              <Heading level={3} variant="metric">1,234</Heading>
+              <Badge variant="success">+12%</Badge>
+            </Stack>
+          </Card>
+          <Card variant="metric">
+            <Stack direction="vertical" spacing="2">
+              <Text variant="label">{t("metrics.active")}</Text>
+              <Heading level={3} variant="metric">567</Heading>
+              <Badge variant="warning">-3%</Badge>
+            </Stack>
+          </Card>
+          <Card variant="metric">
+            <Stack direction="vertical" spacing="2">
+              <Text variant="label">{t("metrics.pending")}</Text>
+              <Heading level={3} variant="metric">89</Heading>
+              <Badge variant="info">+5%</Badge>
+            </Stack>
+          </Card>
+          <Card variant="metric">
+            <Stack direction="vertical" spacing="2">
+              <Text variant="label">{t("metrics.completed")}</Text>
+              <Heading level={3} variant="metric">2,345</Heading>
+              <Badge variant="success">+18%</Badge>
+            </Stack>
+          </Card>
+        </Grid>
+
+        {/* Charts Section */}
+        <Grid columns={2} gap="6">
+          <Card>
+            <Stack direction="vertical" spacing="4">
+              <Heading level={3} variant="section">
+                {t("charts.overview")}
+              </Heading>
+              <Chart
+                type="line"
+                data=}}{
+                  labels: monthLabels,
+                  datasets: [{
+                    label: t("charts.dataset1"),
+                    data: [12, 19, 3, 5, 2, 3]
+                  }]
+                }}}
+                height={300}
+              />
+            </Stack>
+          </Card>
+          <Card>
+            <Stack direction="vertical" spacing="4">
+              <Heading level={3} variant="section">
+                {t("charts.distribution")}
+              </Heading>
+              <Chart
+                type="doughnut"
+                data=}}{
+                  labels: [t("category1"), t("category2"), t("category3")],
+                  datasets: [{
+                    data: [300, 50, 100]
+                  }]
+                }}}
+                height={300}
+              />
+            </Stack>
+          </Card>
+        </Grid>
+
+        {/* Data Table */}
+        <Card>
+          <Stack direction="vertical" spacing="4">
+            <Stack direction="horizontal" justify="between" align="center">
+              <Heading level={3} variant="section">
+                {t("table.title")}
+              </Heading>
+              <Button variant="secondary">
+                {t("table.viewAll")}
+              </Button>
+            </Stack>
+            <DataTable
+              columns={[
+                {
+                  key: "name",
+                  label: t("table.columns.name"),
+                  sortable: true,
+                  render: (value, row) => (
+                    <Stack direction="horizontal" spacing="3" align="center">
+                      <Avatar src={row.avatar} alt={value} size="sm" />
+                      <Text variant="body">{value}</Text>
+                    </Stack>
+                  )
+                },
+                {
+                  key: "status",
+                  label: t("table.columns.status"),
+                  render: (value) => (
+                    <Badge variant={value === "active" ? "success" : "warning"}>
+                      {t("template string")}
+                    </Badge>
+                  )
+                },
+                {
+                  key: "date",
+                  label: t("table.columns.date"),
+                  sortable: true
+                },
+                {
+                  key: "actions",
+                  label: t("table.columns.actions"),
+                  render: (_, row) => (
+                    <Stack direction="horizontal" spacing="2">
+                      <Button variant="ghost" size="sm">
+                        {t("actions.edit")}
+                      </Button>
+                      <Button variant="ghost" size="sm" destructive>
+                        {t("actions.delete")}
+                      </Button>
+                    </Stack>
+                  )
+                }
+              ]}
+              data={[
+                {
+                  id: 1,
+                  name: "John Doe",
+                  status: "active",
+                  date: "2024-01-15",
+                  avatar: "/avatars/john.jpg"
+                },
+                {
+                  id: 2,
+                  name: "Jane Smith",
+                  status: "pending",
+                  date: "2024-01-14",
+                  avatar: "/avatars/jane.jpg"
+                }
+              ]}
+              pagination=}}{
+                page: 1,
+                pageSize: 10,
+                total: 100
+              }}}
+            />
+          </Stack>
+        </Card>
+      </Stack>
+    </AdminLayout>
+  );
+}

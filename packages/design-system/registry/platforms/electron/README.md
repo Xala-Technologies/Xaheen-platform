@@ -20,7 +20,7 @@ The Electron platform provides React components enhanced with native desktop cap
 Enhanced button with native features:
 
 ```tsx
-import { ElectronButton } from '@xaheen/design-system/electron';
+import { ElectronButton } from '@xaheen-ai/design-system/electron';
 
 <ElectronButton
   variant="primary"
@@ -40,7 +40,7 @@ import { ElectronButton } from '@xaheen/design-system/electron';
 Input field with file picker and clipboard integration:
 
 ```tsx
-import { ElectronInput } from '@xaheen/design-system/electron';
+import { ElectronInput } from '@xaheen-ai/design-system/electron';
 
 <ElectronInput
   label="Select File"
@@ -61,7 +61,7 @@ import { ElectronInput } from '@xaheen/design-system/electron';
 Card component with window dragging and glassmorphism:
 
 ```tsx
-import { ElectronCard, CardTitle, CardContent } from '@xaheen/design-system/electron';
+import { ElectronCard, CardTitle, CardContent } from '@xaheen-ai/design-system/electron';
 
 <ElectronCard
   windowDraggable
@@ -84,7 +84,7 @@ import { ElectronCard, CardTitle, CardContent } from '@xaheen/design-system/elec
 Native window control buttons and title bar:
 
 ```tsx
-import { TitleBar, WindowControls } from '@xaheen/design-system/electron';
+import { TitleBar, WindowControls } from '@xaheen-ai/design-system/electron';
 
 <TitleBar
   title="My Electron App"
@@ -116,7 +116,7 @@ import { TitleBar, WindowControls } from '@xaheen/design-system/electron';
 OS-integrated theme switching:
 
 ```tsx
-import { ElectronThemeSwitcher, useTheme } from '@xaheen/design-system/electron';
+import { ElectronThemeSwitcher, useTheme } from '@xaheen-ai/design-system/electron';
 
 function App() {
   const { theme, setTheme } = useTheme();
@@ -140,7 +140,7 @@ function App() {
 Core utilities for Electron functionality:
 
 ```tsx
-import { ElectronUtils, useElectron } from '@xaheen/design-system/electron';
+import { ElectronUtils, useElectron } from '@xaheen-ai/design-system/electron';
 
 function MyComponent() {
   const { isElectron, platform, utils } = useElectron();
@@ -177,7 +177,7 @@ function MyComponent() {
 Application menus and context menus:
 
 ```tsx
-import { ApplicationMenu, useContextMenu, MenuBuilder, CommonMenus } from '@xaheen/design-system/electron';
+import { ApplicationMenu, useContextMenu, MenuBuilder, CommonMenus } from '@xaheen-ai/design-system/electron';
 
 // Application menu
 <ApplicationMenu
@@ -228,7 +228,7 @@ function MyComponent() {
 File operations and drag-drop:
 
 ```tsx
-import { useFilePicker, useFileSave, FileDropZone } from '@xaheen/design-system/electron';
+import { useFilePicker, useFileSave, FileDropZone } from '@xaheen-ai/design-system/electron';
 
 function FileManager() {
   const { open, selectedPaths, isLoading } = useFilePicker({
@@ -319,7 +319,7 @@ const { theme, effectiveTheme, setTheme } = useTheme();
 Initialize Electron components with default configuration:
 
 ```tsx
-import { QuickSetup } from '@xaheen/design-system/electron';
+import { QuickSetup } from '@xaheen-ai/design-system/electron';
 
 // Initialize with default settings
 QuickSetup.init({
@@ -405,5 +405,5 @@ import type {
   ElectronInputProps,
   ElectronCardProps,
   ElectronAPI
-} from '@xaheen/design-system/electron';
+} from '@xaheen-ai/design-system/electron';
 ```

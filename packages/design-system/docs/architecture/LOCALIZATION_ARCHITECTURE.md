@@ -63,7 +63,7 @@ export const SearchBox = ({
 ### **With react-i18next**
 ```typescript
 import { useTranslation } from 'react-i18next';
-import { SearchBox } from '@xaheen/design-system/registry';
+import { SearchBox } from '@xaheen-ai/design-system/registry';
 
 const App = () => {
   const { t } = useTranslation();
@@ -83,7 +83,7 @@ const App = () => {
 ### **With next-i18next**
 ```typescript
 import { useTranslation } from 'next-i18next';
-import { SearchBox } from '@xaheen/design-system/registry';
+import { SearchBox } from '@xaheen-ai/design-system/registry';
 
 const HomePage = () => {
   const { t } = useTranslation('common');
@@ -100,7 +100,7 @@ const HomePage = () => {
 
 ### **With Custom Localization**
 ```typescript
-import { SearchBox } from '@xaheen/design-system/registry';
+import { SearchBox } from '@xaheen-ai/design-system/registry';
 import { useLocale } from './hooks/useLocale';
 
 const App = () => {
@@ -118,7 +118,7 @@ const App = () => {
 
 ### **With Static Norwegian Text**
 ```typescript
-import { SearchBox } from '@xaheen/design-system/registry';
+import { SearchBox } from '@xaheen-ai/design-system/registry';
 
 const NorwegianApp = () => {
   return (

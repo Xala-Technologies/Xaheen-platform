@@ -290,7 +290,7 @@ The Marketplace Analytics Dashboard provides real-time insights into the Univers
 │  │ ☐ Market Intelligence        │       │ ⚪ Daily ⚫ Weekly ⚪ Monthly│  │
 │  │ ☐ Client Satisfaction        │       │                          │   │
 │  │                             │       │ Recipients:               │   │
-│  │ [📊 Generate Report]        │       │ executive@xaheen.com     │   │
+│  │ [📊 Generate Report]        │       │ executive@xaheen-ai.com     │   │
 │  └─────────────────────────────┘       │ [+ Add Recipient]        │   │
 │                                        └──────────────────────────┘   │
 │                                                                         │

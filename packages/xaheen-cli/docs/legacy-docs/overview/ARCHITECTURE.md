@@ -940,7 +940,7 @@ interface BuildArchitecture {
 interface DistributionArchitecture {
   // Package Distribution
   npm: {
-    package: '@xaheen/cli';
+    package: '@xaheen-ai/cli';
     versions: 'semver';
     tags: ['latest', 'next', 'stable'];
   };

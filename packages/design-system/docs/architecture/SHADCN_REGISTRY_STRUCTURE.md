@@ -400,7 +400,7 @@ import Button from '@/components/ui/Button.vue';
 
 ```typescript
 // Programmatic installation
-import { registryClient } from '@xaheen/design-system/registry';
+import { registryClient } from '@xaheen-ai/design-system/registry';
 
 const button = await registryClient.install('button', {
   platform: 'react',

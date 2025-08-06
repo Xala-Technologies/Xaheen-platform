@@ -1,5 +1,5 @@
 {
-  "name": "@xaheen/cli-phase10-tests",
+  "name": "@xaheen-ai/cli-phase10-tests",
   "version": "1.0.0",
   "description": "Phase 10: Norwegian/NSM/DIGDIR/GDPR/WCAG Compliance Tests - FINAL compliance gate",
   "private": true,

@@ -14,7 +14,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 1. Hero Section - Above the Fold
-*Universal component: `@xaheen/design-system/blocks/hero-universal`*
+*Universal component: `@xaheen-ai/design-system/blocks/hero-universal`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -79,7 +79,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 2. Interactive Component Generator
-*Universal component: `@xaheen/design-system/blocks/component-generator`*
+*Universal component: `@xaheen-ai/design-system/blocks/component-generator`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -123,7 +123,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 3. Live Code Demonstration
-*Universal component: `@xaheen/design-system/blocks/code-demo`*
+*Universal component: `@xaheen-ai/design-system/blocks/code-demo`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -171,7 +171,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 4. Registry Architecture Showcase  
-*Universal component: `@xaheen/design-system/blocks/registry-demo`*
+*Universal component: `@xaheen-ai/design-system/blocks/registry-demo`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -224,7 +224,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 5. Feature Highlights Section
-*Universal component: `@xaheen/design-system/blocks/features-grid`*
+*Universal component: `@xaheen-ai/design-system/blocks/features-grid`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -263,7 +263,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 6. Interactive Component Playground
-*Universal component: `@xaheen/design-system/blocks/playground`*
+*Universal component: `@xaheen-ai/design-system/blocks/playground`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -300,7 +300,7 @@ These wireframes showcase the world's first truly universal design system landin
 │  │                                                                             │   │
 │  │  [React]   [Vue]   [Angular]   [Svelte]   [React Native]                  │   │
 │  │  ┌─────────────────────────────────────────────────────────────────────┐   │   │
-│  │  │ import { Button } from '@xaheen/design-system/react';               │   │   │
+│  │  │ import { Button } from '@xaheen-ai/design-system/react';               │   │   │
 │  │  │                                                                     │   │   │
 │  │  │ <Button                                                             │   │   │
 │  │  │   variant="primary"                                                 │   │   │
@@ -318,7 +318,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 7. Getting Started Section
-*Universal component: `@xaheen/design-system/blocks/getting-started`*
+*Universal component: `@xaheen-ai/design-system/blocks/getting-started`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -329,7 +329,7 @@ These wireframes showcase the world's first truly universal design system landin
 │  │                                                                             │   │
 │  │  Step 1: Install the CLI                                                   │   │
 │  │  ┌─────────────────────────────────────────────────────────────────────┐   │   │
-│  │  │ $ npm install -g @xaheen/cli                                        │   │   │
+│  │  │ $ npm install -g @xaheen-ai/cli                                        │   │   │
 │  │  └─────────────────────────────────────────────────────────────────────┘   │   │
 │  │                                                                             │   │
 │  │  Step 2: Initialize your project                                           │   │
@@ -378,7 +378,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 8. Developer Experience Section
-*Universal component: `@xaheen/design-system/blocks/developer-experience`*
+*Universal component: `@xaheen-ai/design-system/blocks/developer-experience`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -436,7 +436,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 9. Community & Support Section
-*Universal component: `@xaheen/design-system/blocks/community`*
+*Universal component: `@xaheen-ai/design-system/blocks/community`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -479,7 +479,7 @@ These wireframes showcase the world's first truly universal design system landin
 ---
 
 ## 10. Footer Section
-*Universal component: `@xaheen/design-system/blocks/footer`*
+*Universal component: `@xaheen-ai/design-system/blocks/footer`*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐

@@ -86,7 +86,7 @@ Documentation System Architecture
 The documentation system is automatically available when you install the Xaheen CLI:
 
 ```bash
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 ```
 
 ### Basic Usage
@@ -223,7 +223,7 @@ export XALA_TELEMETRY_TOKEN=your-token
 ### StorybookIntegrationGenerator
 
 ```typescript
-import { StorybookIntegrationGenerator } from '@xaheen/cli';
+import { StorybookIntegrationGenerator } from '@xaheen-ai/cli';
 
 const generator = new StorybookIntegrationGenerator();
 
@@ -243,7 +243,7 @@ const result = await generator.generate({
 ### InteractiveTutorialGenerator
 
 ```typescript
-import { InteractiveTutorialGenerator } from '@xaheen/cli';
+import { InteractiveTutorialGenerator } from '@xaheen-ai/cli';
 
 const generator = new InteractiveTutorialGenerator();
 
@@ -261,7 +261,7 @@ const result = await generator.generate({
 ### DocumentationOrchestrator
 
 ```typescript
-import { documentationOrchestrator } from '@xaheen/cli';
+import { documentationOrchestrator } from '@xaheen-ai/cli';
 
 const result = await documentationOrchestrator.generate({
   projectName: 'My Project',
@@ -278,7 +278,7 @@ const result = await documentationOrchestrator.generate({
 ### MCP Logging
 
 ```typescript
-import { mcpExecutionLogger } from '@xaheen/cli';
+import { mcpExecutionLogger } from '@xaheen-ai/cli';
 
 // Log an operation
 await mcpExecutionLogger.logOperation(
@@ -308,7 +308,7 @@ const results = await mcpExecutionLogger.searchLogs({
 ### Log Analysis
 
 ```typescript
-import { mcpLogAnalyzer } from '@xaheen/cli';
+import { mcpLogAnalyzer } from '@xaheen-ai/cli';
 
 // Analyze performance
 const performance = await mcpLogAnalyzer.analyzePerformance(
@@ -497,8 +497,8 @@ npm run test:compliance:norwegian
 
 ### Enterprise Support
 
-- **Email**: enterprise@xaheen.com
-- **Norwegian Support**: norge@xaheen.com
+- **Email**: enterprise@xaheen-ai.com
+- **Norwegian Support**: norge@xaheen-ai.com
 - **Phone**: +47 123 45 678 (Norwegian business hours)
 
 ## Changelog

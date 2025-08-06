@@ -1,7 +1,7 @@
 # Comprehensive Test Execution Report - Xaheen CLI
 
 **Date**: January 6, 2025  
-**Package**: `@xaheen/cli`  
+**Package**: `@xaheen-ai/cli`  
 **Test Framework**: Bun Test Runner  
 **Total Test Files**: 78 (142 originally created, some consolidated)
 

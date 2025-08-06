@@ -16,15 +16,15 @@ A comprehensive theme system that provides consistent theming across all platfor
 
 ```bash
 # Install the design system
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 
 # Platform-specific dependencies
-npm install @xaheen/design-system-react      # React
-npm install @xaheen/design-system-vue        # Vue
-npm install @xaheen/design-system-angular    # Angular
-npm install @xaheen/design-system-svelte     # Svelte
-npm install @xaheen/design-system-rn         # React Native
-npm install @xaheen/design-system-ionic      # Ionic
+npm install @xaheen-ai/design-system-react      # React
+npm install @xaheen-ai/design-system-vue        # Vue
+npm install @xaheen-ai/design-system-angular    # Angular
+npm install @xaheen-ai/design-system-svelte     # Svelte
+npm install @xaheen-ai/design-system-rn         # React Native
+npm install @xaheen-ai/design-system-ionic      # Ionic
 ```
 
 ## 🚀 Quick Start
@@ -32,7 +32,7 @@ npm install @xaheen/design-system-ionic      # Ionic
 ### React
 
 ```tsx
-import { ThemeProvider, useTheme } from '@xaheen/design-system/themes';
+import { ThemeProvider, useTheme } from '@xaheen-ai/design-system/themes';
 
 function App() {
   return (
@@ -67,7 +67,7 @@ function YourComponent() {
 </template>
 
 <script setup lang="ts">
-import { useTheme } from '@xaheen/design-system/themes';
+import { useTheme } from '@xaheen-ai/design-system/themes';
 
 const { theme, isDark, toggleColorMode, themeClass } = useTheme();
 </script>
@@ -77,7 +77,7 @@ const { theme, isDark, toggleColorMode, themeClass } = useTheme();
 
 ```svelte
 <script lang="ts">
-  import { theme, isDark, toggleColorMode } from '@xaheen/design-system/themes';
+  import { theme, isDark, toggleColorMode } from '@xaheen-ai/design-system/themes';
 </script>
 
 <div class={$isDark ? 'dark' : 'light'}>
@@ -91,7 +91,7 @@ const { theme, isDark, toggleColorMode, themeClass } = useTheme();
 
 ```typescript
 import { Component } from '@angular/core';
-import { ThemeService } from '@xaheen/design-system/themes';
+import { ThemeService } from '@xaheen-ai/design-system/themes';
 
 @Component({
   selector: 'app-root',
@@ -120,7 +120,7 @@ export class AppComponent {
 ### React Native
 
 ```tsx
-import { ReactNativeThemeProvider, useReactNativeTheme } from '@xaheen/design-system/themes';
+import { ReactNativeThemeProvider, useReactNativeTheme } from '@xaheen-ai/design-system/themes';
 
 function App() {
   return (
@@ -149,7 +149,7 @@ function YourComponent() {
 
 ```tsx
 import { IonApp, IonContent, IonButton } from '@ionic/react';
-import { useTheme, applyIonicTheme } from '@xaheen/design-system/themes';
+import { useTheme, applyIonicTheme } from '@xaheen-ai/design-system/themes';
 import { useEffect } from 'react';
 
 function App() {
@@ -174,7 +174,7 @@ function App() {
 ### Vanilla JS
 
 ```javascript
-import { themeManager, toggleTheme } from '@xaheen/design-system/themes';
+import { themeManager, toggleTheme } from '@xaheen-ai/design-system/themes';
 
 // Theme is automatically applied to document
 document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -271,7 +271,7 @@ interface SpacingTokens {
 ### Custom Themes
 
 ```typescript
-import { UniversalTheme, THEME_REGISTRY } from '@xaheen/design-system/themes';
+import { UniversalTheme, THEME_REGISTRY } from '@xaheen-ai/design-system/themes';
 
 // Create custom theme by extending existing theme
 const customTheme: UniversalTheme = {
@@ -300,7 +300,7 @@ THEME_REGISTRY.custom = customTheme;
 
 ```typescript
 // React - CSS Variables + Tailwind
-import { ThemeConverters } from '@xaheen/design-system/themes';
+import { ThemeConverters } from '@xaheen-ai/design-system/themes';
 
 const tailwindConfig = ThemeConverters.toTailwind(theme);
 const cssVariables = ThemeConverters.toCSSVariables(theme);
@@ -321,7 +321,7 @@ const ionicCSS = generateIonicCSS(ionicVariables);
 ### Theme Generation
 
 ```typescript
-import { ThemeGenerator } from '@xaheen/design-system/themes';
+import { ThemeGenerator } from '@xaheen-ai/design-system/themes';
 
 // Generate theme files for all platforms
 const files = ThemeGenerator.generateThemeForPlatform(
@@ -425,7 +425,7 @@ accessibility: {
 ### Theme Debugging
 
 ```typescript
-import { useTheme } from '@xaheen/design-system/themes';
+import { useTheme } from '@xaheen-ai/design-system/themes';
 
 function ThemeDebugger() {
   const { theme, tokens } = useTheme();
@@ -443,7 +443,7 @@ function ThemeDebugger() {
 ### Theme Validation
 
 ```typescript
-import { ThemeUtils } from '@xaheen/design-system/themes';
+import { ThemeUtils } from '@xaheen-ai/design-system/themes';
 
 // Validate theme structure
 const isValid = ThemeUtils.validateTheme(customTheme);

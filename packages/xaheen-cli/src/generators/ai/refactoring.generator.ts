@@ -1212,7 +1212,7 @@ export class GitIntegration {
       '',
       '🤖 Generated with ${options.name} AI Refactoring Assistant',
       '',
-      'Co-Authored-By: ${options.name}-AI <noreply@xaheen.com>'
+      'Co-Authored-By: ${options.name}-AI <noreply@xaheen-ai.com>'
     ];
 
     return \`\${message}\${details.join('\\n')}\`;

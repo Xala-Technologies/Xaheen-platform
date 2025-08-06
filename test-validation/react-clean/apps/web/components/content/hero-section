@@ -1,0 +1,295 @@
+/**
+ * @fileoverview  - Hero Section Pattern
+ * @description AI-optimized hero section using semantic UI System components
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, type HTMLAttributes } from 'react';
+import {
+  Container,
+  Stack,
+  Text,
+  Button,
+  Image,
+  Grid
+} from '@xaheen-ai/design-system';
+
+export interface Props extends HTMLAttributes<HTMLElement> {
+  readonly 'data-testid'?: string;
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly description?: string;
+  readonly primaryAction?: HeroAction;
+  readonly secondaryAction?: HeroAction;
+  readonly image?: HeroImage;
+  readonly variant?: 'default' | 'centered' | 'split' | 'full-width';
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly backgroundImage?: string;
+  readonly backgroundColor?: string;
+  readonly textAlign?: 'left' | 'center' | 'right';
+  readonly nsmClassification?: ;
+}
+
+export interface HeroAction {
+  readonly label: string;
+  readonly onClick?: () => void;
+  readonly href?: string;
+  readonly variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly ariaLabel?: string;
+}
+
+export interface HeroImage {
+  readonly src: string;
+  readonly alt: string;
+  readonly width?: number;
+  readonly height?: number;
+  readonly priority?: boolean;
+  readonly placeholder?: string;
+}
+
+/**
+ * AI-Optimized Hero Section Pattern
+ * Pattern:  complexity hero section with responsive layout
+ * Estimated tokens: 
+ * 
+ * MCP Patterns:
+ * 
+ * - : 
+ * 
+ */
+export const  = forwardRef<HTMLElement, Props>(
+  (
+    {
+      className,
+      title,
+      subtitle,
+      description,
+      primaryAction,
+      secondaryAction,
+      image,
+      variant = 'default',
+      size = 'xl',
+      backgroundImage,
+      backgroundColor,
+      textAlign = 'left',
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+      ...props
+    },
+    ref
+  ): JSX.Element => {
+    const isFullWidth = variant === 'full-width';
+    const isCentered = variant === 'centered';
+    const isSplit = variant === 'split';
+
+    const heroStyle = {
+      backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+      backgroundColor: backgroundColor || undefined,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      position: 'relative' as const
+    };
+
+    const contentAlignment = isCentered ? 'center' : textAlign;
+
+    const renderContent = () => (
+      <Stack 
+        direction="vertical" 
+        gap="xl" 
+        align={contentAlignment === 'center' ? 'center' : 'flex-start'}
+        className={contentAlignment === 'center' ? 'text-center' : 
+                   contentAlignment === 'right' ? 'text-right' : 'text-left'}
+      >
+        {/* Title and Subtitle */}
+        <Stack direction="vertical" gap="md" align={contentAlignment === 'center' ? 'center' : 'flex-start'}>
+          {subtitle && (
+            <Text 
+              variant="overline" 
+              color="primary"
+              className="font-semibold tracking-wide uppercase"
+            >
+              {subtitle}
+            </Text>
+          )}
+          
+          <Text 
+            variant="h1" 
+            weight="bold"
+            className="text-4xl md:text-5xl lg:text-6xl leading-tight"
+            style=
+          >
+            {title}
+          </Text>
+          
+          {description && (
+            <Text 
+              variant="body" 
+              size="lg"
+              color="secondary"
+              className="text-lg md:text-xl leading-relaxed"
+              style=
+            >
+              {description}
+            </Text>
+          )}
+        </Stack>
+
+        {/* Action Buttons */}
+        {(primaryAction || secondaryAction) && (
+          <Stack 
+            direction="horizontal" 
+            gap="md" 
+            align="center"
+            justify={contentAlignment === 'center' ? 'center' : 'flex-start'}
+            className="flex-wrap"
+          >
+            {primaryAction && (
+              <Button
+                variant={primaryAction.variant || 'primary'}
+                size={primaryAction.size || 'lg'}
+                onClick={primaryAction.onClick}
+                href={primaryAction.href}
+                aria-label={primaryAction.ariaLabel || primaryAction.label}
+                className="min-w-[140px]"
+              >
+                {primaryAction.label}
+              </Button>
+            )}
+            
+            {secondaryAction && (
+              <Button
+                variant={secondaryAction.variant || 'outline'}
+                size={secondaryAction.size || 'lg'}
+                onClick={secondaryAction.onClick}
+                href={secondaryAction.href}
+                aria-label={secondaryAction.ariaLabel || secondaryAction.label}
+                className="min-w-[140px]"
+              >
+                {secondaryAction.label}
+              </Button>
+            )}
+          </Stack>
+        )}
+      </Stack>
+    );
+
+    const renderImage = () => {
+      if (!image) return null;
+      
+      return (
+        <div className="relative">
+          <Image
+            src={image.src}
+            alt={image.alt}
+            width={image.width || 600}
+            height={image.height || 400}
+            priority={image.priority}
+            placeholder={image.placeholder}
+            className="rounded-xl shadow-2xl w-full h-auto"
+          />
+        </div>
+      );
+    };
+
+    return (
+      <section
+        ref={ref}
+        className={className}
+        style={heroStyle}
+        data-testid={testId}
+        data-nsm-classification={nsmClassification}
+        role="banner"
+        aria-labelledby="hero-title"
+        {...props}
+      >
+        {/* Background overlay for better text contrast */}
+        {backgroundImage && (
+          <div className="absolute inset-0 bg-black bg-opacity-40" />
+        )}
+        
+        <Container 
+          size={isFullWidth ? 'full' : size}
+          className={`relative z-10 ${backgroundImage ? 'text-white' : ''}`}
+        >
+          <div className="py-16 md:py-20 lg:py-24">
+            {isSplit && image ? (
+              // Split layout with image
+              <Grid 
+                columns= 
+                gap="xl" 
+                align="center"
+              >
+                <div className="order-2 lg:order-1">
+                  {renderContent()}
+                </div>
+                <div className="order-1 lg:order-2">
+                  {renderImage()}
+                </div>
+              </Grid>
+            ) : (
+              // Default/Centered layout
+              <Stack direction="vertical" gap="xl" align={isCentered ? 'center' : 'flex-start'}>
+                {renderContent()}
+                {image && !isSplit && (
+                  <div className={`mt-8 ${isCentered ? 'text-center' : ''}`}>
+                    {renderImage()}
+                  </div>
+                )}
+              </Stack>
+            )}
+          </div>
+        </Container>
+      </section>
+    );
+  }
+);
+
+.displayName = '';
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   subtitle=
+ *   description=
+ *   variant="split"
+ *   textAlign="left"
+ *   nsmClassification=""
+ *   primaryAction=,
+ *     onClick: () => navigate('/signup'),
+ *     variant: 'primary',
+ *     size: 'xl',
+ *     ariaLabel: 
+ *   }}
+ *   secondaryAction=,
+ *     onClick: () => openDemo(),
+ *     variant: 'outline',
+ *     size: 'xl'
+ *   }}
+ *   image=,
+ *     width: 800,
+ *     height: 600,
+ *     priority: true
+ *   }}
+ *   backgroundImage="/images/hero-bg.jpg"
+ * />
+ * 
+ * // Centered variant for landing pages
+ * <
+ *   title=
+ *   description=
+ *   variant="centered"
+ *   size="lg"
+ *   backgroundColor="#f8fafc"
+ *   primaryAction=,
+ *     href: '/explore',
+ *     variant: 'primary',
+ *     size: 'xl'
+ *   }}
+ * />
+ */

@@ -949,7 +949,7 @@ export class TemplateSyncService extends EventEmitter {
       // Mock user for system jobs
       const user: User = {
         id: job.userId || "system",
-        email: "system@xaheen.com",
+        email: "system@xaheen-ai.com",
         firstName: "System",
         lastName: "User",
         roles: ["system"],
@@ -1009,7 +1009,7 @@ export class TemplateSyncService extends EventEmitter {
           // Get all repositories and queue sync jobs
           const repositories = await this.repositoryService.listRepositories({
             id: "system",
-            email: "system@xaheen.com", 
+            email: "system@xaheen-ai.com", 
             firstName: "System",
             lastName: "User",
             roles: ["system"],

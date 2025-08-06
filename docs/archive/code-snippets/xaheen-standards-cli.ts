@@ -82,7 +82,7 @@ export const XaheenDevelopmentStandards = {
 					selector:
 						"JSXElement[openingElement.name.name=/^(div|span|p|h[1-6]|ul|li|ol|section|article|main|header|footer|nav|button|input|form|label|select|textarea|a|img|table|tr|td|th)$/]",
 					message:
-						"Raw HTML elements are forbidden. Use semantic components from @xaheen/ui-system instead.",
+						"Raw HTML elements are forbidden. Use semantic components from @xaheen-ai/ui-system instead.",
 				},
 			],
 
@@ -235,7 +235,7 @@ export class XaheenCodeValidator {
 						file,
 						line: index + 1,
 						message:
-							"Importing HTML elements is forbidden. Use @xaheen/ui-system components.",
+							"Importing HTML elements is forbidden. Use @xaheen-ai/ui-system components.",
 						severity: "error",
 					});
 				}
@@ -291,8 +291,8 @@ import {
   Text,
   Button,
   type StackProps 
-} from '@xaheen/ui-system';
-import type { Result } from '@xaheen/shared';
+} from '@xaheen-ai/ui-system';
+import type { Result } from '@xaheen-ai/shared';
 
 ${props.length > 0 ? this.generatePropsInterface(name, props, children) : ""}
 
@@ -360,7 +360,7 @@ import {
   HydrationProvider,
   ThemeProvider,
   LocaleProvider
-} from '@xaheen/ui-system';
+} from '@xaheen-ai/ui-system';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -413,7 +413,7 @@ import {
   Button,
   Card,
   Grid
-} from '@xaheen/ui-system';
+} from '@xaheen-ai/ui-system';
 import { XaheenLogo } from '@/components/brand/XaheenLogo';
 
 export default function HomePage(): JSX.Element {
@@ -483,7 +483,7 @@ export default function HomePage(): JSX.Element {
 }`,
 
 	"src/components/brand/XaheenLogo.tsx": `import React from 'react';
-import { Stack, Text, type StackProps } from '@xaheen/ui-system';
+import { Stack, Text, type StackProps } from '@xaheen-ai/ui-system';
 
 interface XaheenLogoProps {
   readonly variant?: 'full' | 'icon' | 'text';

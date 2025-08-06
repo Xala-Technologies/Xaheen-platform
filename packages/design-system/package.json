@@ -1,5 +1,5 @@
 {
-  "name": "@xaheen/design-system",
+  "name": "@xaheen-ai/design-system",
   "version": "1.0.0",
   "description": "Universal design system that works across all platforms - React, Vue, Angular, Svelte, React Native, and more",
   "main": "dist/index.js",

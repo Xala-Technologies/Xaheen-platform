@@ -216,7 +216,7 @@ export const validateSetupCommand = new Command("validate-setup")
           professionalSizing: true
         },
         designSystem: {
-          packageName: "@xaheen/design-system",
+          packageName: "@xaheen-ai/design-system",
           enforceImports: true,
           allowHardcodedValues: false
         },

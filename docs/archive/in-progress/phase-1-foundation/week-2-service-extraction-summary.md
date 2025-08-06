@@ -12,14 +12,14 @@
 ### **Core Service Infrastructure**
 Successfully extracted and created a modular service architecture from xala-scaffold:
 
-1. **@xaheen/core** - Core service infrastructure
+1. **@xaheen-ai/core** - Core service infrastructure
    - Base service architecture with SOLID principles
    - Service factory pattern implementation
    - Event emitter and progress reporter interfaces
    - Comprehensive interface definitions
    - Logger utility with Winston
 
-2. **@xaheen/compliance** - Norwegian compliance services
+2. **@xaheen-ai/compliance** - Norwegian compliance services
    - NSM security classification support
    - GDPR compliance validation
    - WCAG accessibility checking
@@ -85,7 +85,7 @@ packages/
 
 ### **Key Design Decisions**
 1. **Simplified Locale Codes**: Changed to `nb`, `en`, `ar`, `fr` (no Nynorsk)
-2. **Clean Package Names**: `@xaheen/core` instead of `@xaheen/xala-core`
+2. **Clean Package Names**: `@xaheen-ai/core` instead of `@xaheen-ai/xala-core`
 3. **Workspace Integration**: Proper Bun workspace configuration
 4. **External Dependencies**: Minimal - only Winston for logging
 
@@ -112,7 +112,7 @@ packages/
 4. ⏳ Basic ESLint integration - Add xala-scaffold rules
 
 ### **Service Integration Plan**
-- AI services implementation in `@xaheen/ai`
+- AI services implementation in `@xaheen-ai/ai`
 - Localization services in new package
 - Validation services in new package
 - Template engine services

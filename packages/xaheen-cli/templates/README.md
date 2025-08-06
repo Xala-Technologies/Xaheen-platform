@@ -13,7 +13,7 @@ This directory contains all frontend templates for the Xaheen CLI, fully updated
 
 All templates include:
 - **Full TypeScript support** with strict mode
-- **@xaheen/design-system** integration
+- **@xaheen-ai/design-system** integration
 - **Norwegian NSM compliance** features
 - **WCAG AAA accessibility** standards
 - **Professional UI standards** (h-12+ buttons, h-14+ inputs)
@@ -35,7 +35,7 @@ All templates include:
 - ✅ **Tailwind CSS exclusive** - No inline styles or arbitrary values
 
 #### Design System Integration
-- ✅ **@xaheen/design-system** - Replaced old UI libraries
+- ✅ **@xaheen-ai/design-system** - Replaced old UI libraries
 - ✅ **Consistent component usage** - Button, Input, Card components
 - ✅ **Platform-specific imports** - `/react`, `/vue`, `/angular`, etc.
 
@@ -43,7 +43,7 @@ All templates include:
 
 ```typescript
 import React, { useState, useCallback } from 'react';
-import { Button, Input, Card } from '@xaheen/design-system/react';
+import { Button, Input, Card } from '@xaheen-ai/design-system/react';
 
 interface UserFormProps {
   readonly initialData?: Partial<UserData>;
@@ -185,7 +185,7 @@ Each template receives a score (0-100) based on:
 ## 📦 Template Dependencies
 
 ### Core Dependencies
-- `@xaheen/design-system` - UI component library
+- `@xaheen-ai/design-system` - UI component library
 - `zod` - Schema validation for Norwegian compliance
 - `react-hook-form` - Form management (React/Next.js)
 - `@hookform/resolvers` - Form validation integration

@@ -762,7 +762,7 @@ import {
   TemplateRegistry, 
   ContextProcessor,
   ValidationEngine 
-} from '@xaheen/template-system';
+} from '@xaheen-ai/template-system';
 
 async function generateComponent() {
   // Initialize services
@@ -835,7 +835,7 @@ async function generateComponent() {
 ### Custom Template Creation
 
 ```typescript
-import { Template, TemplateEngine } from '@xaheen/template-system';
+import { Template, TemplateEngine } from '@xaheen-ai/template-system';
 
 async function createCustomTemplate() {
   const template: Template = {

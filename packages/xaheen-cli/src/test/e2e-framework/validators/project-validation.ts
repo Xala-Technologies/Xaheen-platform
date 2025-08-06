@@ -40,7 +40,7 @@ export class ProjectValidator {
       packageJsonChecks: [
         { field: 'dependencies.react', expected: '^18.0.0', type: 'version-range', message: 'React version should be 18+' },
         { field: 'dependencies.typescript', expected: true, type: 'exists', message: 'TypeScript should be included' },
-        { field: 'dependencies.@xaheen/design-system', expected: true, type: 'exists', message: 'Design system should be included' },
+        { field: 'dependencies.@xaheen-ai/design-system', expected: true, type: 'exists', message: 'Design system should be included' },
         { field: 'dependencies.tailwindcss', expected: true, type: 'exists', message: 'Tailwind CSS should be included' }
       ],
       codeChecks: [
@@ -76,7 +76,7 @@ export class ProjectValidator {
       packageJsonChecks: [
         { field: 'dependencies.next', expected: '^14.0.0', type: 'version-range', message: 'Next.js version should be 14+' },
         { field: 'dependencies.react', expected: '^18.0.0', type: 'version-range', message: 'React version should be 18+' },
-        { field: 'dependencies.@xaheen/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
+        { field: 'dependencies.@xaheen-ai/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
       ],
       codeChecks: [
         {
@@ -109,7 +109,7 @@ export class ProjectValidator {
       packageJsonChecks: [
         { field: 'dependencies.vue', expected: '^3.0.0', type: 'version-range', message: 'Vue version should be 3+' },
         { field: 'devDependencies.@vitejs/plugin-vue', expected: true, type: 'exists', message: 'Vite Vue plugin should be included' },
-        { field: 'dependencies.@xaheen/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
+        { field: 'dependencies.@xaheen-ai/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
       ],
       codeChecks: [
         {
@@ -141,7 +141,7 @@ export class ProjectValidator {
       ],
       packageJsonChecks: [
         { field: 'dependencies.@angular/core', expected: '^17.0.0', type: 'version-range', message: 'Angular version should be 17+' },
-        { field: 'dependencies.@xaheen/design-system', expected: true, type: 'exists', message: 'Design system should be included' },
+        { field: 'dependencies.@xaheen-ai/design-system', expected: true, type: 'exists', message: 'Design system should be included' },
         { field: 'devDependencies.tailwindcss', expected: true, type: 'exists', message: 'Tailwind CSS should be included' }
       ],
       codeChecks: [
@@ -175,7 +175,7 @@ export class ProjectValidator {
       packageJsonChecks: [
         { field: 'devDependencies.svelte', expected: '^4.0.0', type: 'version-range', message: 'Svelte version should be 4+' },
         { field: 'devDependencies.@sveltejs/vite-plugin-svelte', expected: true, type: 'exists', message: 'Svelte Vite plugin should be included' },
-        { field: 'dependencies.@xaheen/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
+        { field: 'dependencies.@xaheen-ai/design-system', expected: true, type: 'exists', message: 'Design system should be included' }
       ],
       codeChecks: [
         {

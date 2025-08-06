@@ -93,7 +93,7 @@ xaheen generate terraform aws --modules=vpc,ec2,rds,s3
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate Docker configuration
 const result = await generateCode({

@@ -9,7 +9,7 @@
  * 
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
- * ✅ ONLY semantic components from @xaheen/design-system
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
  * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
@@ -32,7 +32,7 @@ export default defineNuxtConfig({
 
   // CSS framework
   css: [
-    '@xaheen/design-system/dist/style.css',
+    '@xaheen-ai/design-system/dist/style.css',
     '~/assets/css/main.css'
   ],
 
@@ -88,7 +88,7 @@ export default defineNuxtConfig({
 
   // Build configuration
   build: {
-    transpile: ['@xaheen/design-system']
+    transpile: ['@xaheen-ai/design-system']
   },
 
   // Development configuration

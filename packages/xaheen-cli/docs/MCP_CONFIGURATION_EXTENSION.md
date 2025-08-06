@@ -132,7 +132,7 @@ xaheen mcp plugin list --enabled
 xaheen mcp plugin register ./path/to/plugin
 
 # Register from npm package
-xaheen mcp plugin register @xaheen/compliance-plugin --source npm
+xaheen mcp plugin register @xaheen-ai/compliance-plugin --source npm
 
 # Unregister a plugin
 xaheen mcp plugin unregister plugin-name

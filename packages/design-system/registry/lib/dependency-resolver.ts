@@ -219,7 +219,7 @@ export class DependencyResolver {
       if (!component) return;
 
       const exports = component.exports;
-      const basePath = `@xaheen/registry`;
+      const basePath = `@xaheen-ai/registry`;
 
       switch (importStyle) {
         case 'named':

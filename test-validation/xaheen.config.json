@@ -1,0 +1,17 @@
+{
+  "version": "5.0.0",
+  "project": {
+    "name": "nextjs-improved",
+    "framework": "nextjs",
+    "packageManager": "pnpm"
+  },
+  "design": {
+    "platform": "nextjs",
+    "theme": "default"
+  },
+  "compliance": {
+    "accessibility": "AAA",
+    "norwegian": false,
+    "gdpr": false
+  }
+}

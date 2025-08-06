@@ -62,7 +62,7 @@ describe('DIGDIR Service Reporting Tests', () => {
         provider: {
           organizationNumber: '123456789', // Test organization
           organizationName: 'Xaheen Enterprise',
-          contactEmail: 'compliance@xaheen.com',
+          contactEmail: 'compliance@xaheen-ai.com',
           contactPhone: '+47 12345678'
         },
         technicalDetails: {

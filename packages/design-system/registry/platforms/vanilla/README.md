@@ -113,30 +113,30 @@ Flexible container for grouping related content.
 ### Via NPM
 
 ```bash
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 ```
 
 ```javascript
 // Import all components
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 // Or import individually
-import '@xaheen/design-system/registry/platforms/vanilla/button.js';
-import '@xaheen/design-system/registry/platforms/vanilla/input.js';
-import '@xaheen/design-system/registry/platforms/vanilla/card.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/button.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/input.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/card.js';
 ```
 
 ### Via CDN
 
 ```html
 <!-- Import all components -->
-<script type="module" src="https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/index.js"></script>
+<script type="module" src="https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/index.js"></script>
 
 <!-- Or import individually -->
 <script type="module">
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/button.js';
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/input.js';
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/card.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/button.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/input.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/card.js';
 </script>
 ```
 
@@ -247,7 +247,7 @@ All components follow WCAG AAA guidelines:
 Type definitions are included:
 
 ```typescript
-import { XaheenButton, XaheenInput, XaheenCard } from '@xaheen/design-system/vanilla';
+import { XaheenButton, XaheenInput, XaheenCard } from '@xaheen-ai/design-system/vanilla';
 
 // Type-safe event handling
 const button = document.querySelector<XaheenButton>('xaheen-button');

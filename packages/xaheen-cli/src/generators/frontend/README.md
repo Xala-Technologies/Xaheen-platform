@@ -92,7 +92,7 @@ xaheen generate layout AdminPanel --responsive=true --navigation=sidebar
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a page
 const result = await generateCode({

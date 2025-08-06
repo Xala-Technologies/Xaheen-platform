@@ -31,7 +31,7 @@
 ### **Task 2.2: AI Services Extraction**
 
 #### **2.2.1 Extract AI Service Interfaces**
-- [ ] Extract `/src/ai/interfaces.ts` (20KB) to `@xaheen/ai-services`
+- [ ] Extract `/src/ai/interfaces.ts` (20KB) to `@xaheen-ai/ai-services`
 - [ ] Create service abstractions
 - [ ] Remove inversify dependencies
 - [ ] Add TypeScript strict mode compliance
@@ -54,7 +54,7 @@
 #### **2.3.1 Extract Norwegian Compliance**
 - [ ] Extract `/src/compliance/norwegian-compliance.ts` (32KB)
 - [ ] Extract compliance helpers and service
-- [ ] Create `@xaheen/compliance` package
+- [ ] Create `@xaheen-ai/compliance` package
 - [ ] Add NSM, GDPR, WCAG validation
 
 **Status**: ⏳ **PENDING**
@@ -68,7 +68,7 @@
 #### **2.4.1 Extract Localization System**
 - [ ] Extract AdvancedLocalizationService (39KB)
 - [ ] Extract RTL support and validation
-- [ ] Create `@xaheen/localization` package
+- [ ] Create `@xaheen-ai/localization` package
 - [ ] Add Norwegian (Bokmål/Nynorsk), English, Arabic, French support
 
 **Status**: ⏳ **PENDING**
@@ -100,9 +100,9 @@
 
 ## 🎯 Week 2 Success Criteria
 - [ ] Packages directory structure created and configured
-- [ ] AI services extracted to `@xaheen/ai-services`
-- [ ] Compliance services extracted to `@xaheen/compliance`
-- [ ] Localization services extracted to `@xaheen/localization`
+- [ ] AI services extracted to `@xaheen-ai/ai-services`
+- [ ] Compliance services extracted to `@xaheen-ai/compliance`
+- [ ] Localization services extracted to `@xaheen-ai/localization`
 - [ ] Basic service integration layer created
 - [ ] Services tested and validated
 

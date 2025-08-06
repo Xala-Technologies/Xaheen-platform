@@ -25,7 +25,7 @@ Before starting, make sure you have:
 First, let's install the Xaheen CLI globally:
 
 ```bash
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 ```
 
 Verify the installation:

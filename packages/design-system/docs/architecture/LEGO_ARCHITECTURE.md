@@ -153,14 +153,14 @@ const SearchableDashboard = () => (
 ### **2. Automatic Dependency Resolution**
 ```typescript
 // Registry automatically bundles required dependencies
-import { GlobalSearch } from '@xaheen/registry';
+import { GlobalSearch } from '@xaheen-ai/registry';
 // ↓ Automatically includes: Button, Input, Card, utils
 
 // Or granular imports for smaller bundles
 import { 
   GlobalSearch, 
   type GlobalSearchProps 
-} from '@xaheen/registry/blocks/global-search';
+} from '@xaheen-ai/registry/blocks/global-search';
 ```
 
 ### **3. Tree-Shaking Optimization**
@@ -171,7 +171,7 @@ export { Input } from './components/input/input';
 export { GlobalSearch } from './blocks/global-search/global-search';
 
 // Consumers get only what they import
-import { Button, GlobalSearch } from '@xaheen/registry';
+import { Button, GlobalSearch } from '@xaheen-ai/registry';
 // ↓ Bundle only includes Button + GlobalSearch + their dependencies
 ```
 
@@ -282,7 +282,7 @@ export const getComponentClasses = (variant: string, size: string) => {
 ### **1. Semantic Versioning for Components**
 ```json
 {
-  "name": "@xaheen/registry",
+  "name": "@xaheen-ai/registry",
   "version": "2.1.0",
   "components": {
     "button": "1.0.0",        // Stable
@@ -295,9 +295,9 @@ export const getComponentClasses = (variant: string, size: string) => {
 ### **2. Component Installation System**
 ```bash
 # Install specific components (future CLI)
-npx @xaheen/registry add button input global-search
-npx @xaheen/registry add dashboard-layout --with-dependencies
-npx @xaheen/registry update global-search@2.1.0
+npx @xaheen-ai/registry add button input global-search
+npx @xaheen-ai/registry add dashboard-layout --with-dependencies
+npx @xaheen-ai/registry update global-search@2.1.0
 ```
 
 ### **3. Compatibility Matrix**

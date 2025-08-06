@@ -1,0 +1,310 @@
+/**
+ * @fileoverview  - Contact Form Pattern
+ * @description AI-optimized contact form using semantic UI System components with validation
+ * @version 5.0.0
+ * @compliance WCAG AAA, Semantic components, SSR-safe, Norwegian ready
+ * @ai-optimized Pattern: 
+ * @mcp-hints 
+ */
+
+import React, { forwardRef, useState, useCallback, type FormEvent } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stack,
+  Form,
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Text,
+  Alert
+} from '@xaheen-ai/design-system';
+
+export interface Props {
+  readonly 'data-testid'?: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly onSubmit?: (data: ContactFormData) => Promise<void>;
+  readonly subjects?: readonly string[];
+  readonly showCompanyField?: boolean;
+  readonly nsmClassification?: ;
+}
+
+export interface ContactFormData {
+  readonly name: string;
+  readonly email: string;
+  readonly company?: string;
+  readonly subject: string;
+  readonly message: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  company?: string;
+  subject?: string;
+  message?: string;
+}
+
+/**
+ * AI-Optimized Contact Form Pattern
+ * Pattern:  complexity form with validation
+ * Estimated tokens: 
+ * 
+ * MCP Patterns:
+ * 
+ * - : 
+ * 
+ */
+export const  = forwardRef<HTMLFormElement, Props>(
+  (
+    {
+      title = ,
+      description,
+      size = 'md',
+      onSubmit,
+      subjects = [
+        ,
+        ,
+        ,
+        
+      ],
+      showCompanyField = true,
+      nsmClassification = 'OPEN',
+      'data-testid': testId,
+    },
+    ref
+  ): JSX.Element => {
+    const [formData, setFormData] = useState<ContactFormData>({
+      name: '',
+      email: '',
+      company: '',
+      subject: subjects[0] || '',
+      message: ''
+    });
+
+    const [errors, setErrors] = useState<FormErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const validateForm = useCallback((): FormErrors => {
+      const newErrors: FormErrors = {};
+
+      // Name validation
+      if (!formData.name.trim()) {
+        newErrors.name = ;
+      } else if (formData.name.trim().length < 2) {
+        newErrors.name = ;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!formData.email.trim()) {
+        newErrors.email = ;
+      } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = ;
+      }
+
+      // Subject validation
+      if (!formData.subject) {
+        newErrors.subject = ;
+      }
+
+      // Message validation
+      if (!formData.message.trim()) {
+        newErrors.message = ;
+      } else if (formData.message.trim().length < 10) {
+        newErrors.message = ;
+      }
+
+      return newErrors;
+    }, [formData]);
+
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      
+      const formErrors = validateForm();
+      setErrors(formErrors);
+
+      if (Object.keys(formErrors).length > 0) {
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitStatus('idle');
+
+      try {
+        await onSubmit?.(formData);
+        setSubmitStatus('success');
+        
+        // Reset form on successful submission
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: subjects[0] || '',
+          message: ''
+        });
+      } catch (error) {
+        console.error('Form submission error:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, [formData, validateForm, onSubmit, subjects]);
+
+    const handleInputChange = useCallback((field: keyof ContactFormData, value: string) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+      }
+    }, [errors]);
+
+    return (
+      <Container size={size}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            {description && (
+              <Text variant="body" color="secondary">
+                {description}
+              </Text>
+            )}
+          </CardHeader>
+          <CardContent>
+            <Form
+              ref={ref}
+              onSubmit={handleSubmit}
+              data-testid={testId}
+              data-nsm-classification={nsmClassification}
+              noValidate
+            >
+              <Stack direction="vertical" gap="lg">
+                {/* Success/Error Messages */}
+                {submitStatus === 'success' && (
+                  <Alert variant="success" role="status">
+                    
+                  </Alert>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <Alert variant="error" role="alert">
+                    
+                  </Alert>
+                )}
+
+                {/* Form Fields */}
+                <Stack direction="vertical" gap="md">
+                  {/* Name Field */}
+                  <Input
+                    label=
+                    value={formData.name}
+                    onChange={(value) => handleInputChange('name', value)}
+                    error={errors.name}
+                    required
+                    aria-describedby={errors.name ? 'name-error' : undefined}
+                    placeholder=
+                  />
+
+                  {/* Email Field */}
+                  <Input
+                    label=
+                    type="email"
+                    value={formData.email}
+                    onChange={(value) => handleInputChange('email', value)}
+                    error={errors.email}
+                    required
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    placeholder=
+                  />
+
+                  {/* Company Field (Optional) */}
+                  {showCompanyField && (
+                    <Input
+                      label=
+                      value={formData.company}
+                      onChange={(value) => handleInputChange('company', value)}
+                      error={errors.company}
+                      placeholder=
+                    />
+                  )}
+
+                  {/* Subject Field */}
+                  <Select
+                    label=
+                    value={formData.subject}
+                    onChange={(value) => handleInputChange('subject', value)}
+                    error={errors.subject}
+                    required
+                    options={subjects.map(subject => ({
+                      label: subject,
+                      value: subject
+                    }))}
+                  />
+
+                  {/* Message Field */}
+                  <Textarea
+                    label=
+                    value={formData.message}
+                    onChange={(value) => handleInputChange('message', value)}
+                    error={errors.message}
+                    required
+                    rows={5}
+                    aria-describedby={errors.message ? 'message-error' : undefined}
+                    placeholder=
+                  />
+                </Stack>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  aria-label=
+                >
+                  {isSubmitting 
+                    ? 
+                    : 
+                  }
+                </Button>
+              </Stack>
+            </Form>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+);
+
+.displayName = '';
+
+/**
+ * AI Generation Example:
+ * 
+ * <
+ *   title=
+ *   description=
+ *   nsmClassification=""
+ *   subjects={[
+ *     ,
+ *     ,
+ *     ,
+ *     
+ *   ]}
+ *   showCompanyField={true}
+ *   onSubmit={async (data) => {
+ *     await submitContactForm(data);
+ *     showNotification();
+ *   }}
+ * />
+ */

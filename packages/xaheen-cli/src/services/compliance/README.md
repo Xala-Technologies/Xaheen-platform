@@ -99,7 +99,7 @@ xaheen license-compliance --project ./gov-system --fail-on medium_risk --notify-
 ### Programmatic Usage
 
 ```typescript
-import { LicenseComplianceService, NorwegianLicensePolicy } from '@xaheen/cli';
+import { LicenseComplianceService, NorwegianLicensePolicy } from '@xaheen-ai/cli';
 
 // Norwegian enterprise policy
 const policy: NorwegianLicensePolicy = {

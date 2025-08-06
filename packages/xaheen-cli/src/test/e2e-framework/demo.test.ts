@@ -173,7 +173,7 @@ async function createMockProject(projectPath: string): Promise<void> {
     dependencies: {
       'react': '^18.0.0',
       'react-dom': '^18.0.0',
-      '@xaheen/design-system': 'file:../design-system',
+      '@xaheen-ai/design-system': 'file:../design-system',
       'tailwindcss': '^3.0.0'
     },
     devDependencies: {
@@ -266,7 +266,7 @@ async function createMockProjectWithDesignSystem(projectPath: string): Promise<v
   // Create a component that imports from design system
   const componentCode = `
 import React from 'react';
-import { Button } from '@xaheen/design-system';
+import { Button } from '@xaheen-ai/design-system';
 
 interface HeaderProps {
   readonly title: string;
@@ -296,7 +296,7 @@ export const Header = ({ title, onMenuClick }: HeaderProps): JSX.Element => {
   // Update package.json to include design system dependency properly
   const packageJsonPath = join(projectPath, 'package.json');
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-  packageJson.dependencies['@xaheen/design-system'] = 'file:../../../design-system';
+  packageJson.dependencies['@xaheen-ai/design-system'] = 'file:../../../design-system';
   await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 

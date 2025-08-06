@@ -225,13 +225,13 @@ export class DependencyManager {
 			const minimumVersion = "1.0.0";
 
 			return {
-				name: "@xaheen/cli",
+				name: "@xaheen-ai/cli",
 				version: xaheenVersion,
 				required: false,
 				compatible: semver.gte(xaheenVersion, minimumVersion),
 				minimumVersion,
 				installedVersion: xaheenVersion,
-				installCommand: "npm install -g @xaheen/cli@latest",
+				installCommand: "npm install -g @xaheen-ai/cli@latest",
 				checkCommand: "xaheen --version",
 			};
 		} catch {
@@ -241,12 +241,12 @@ export class DependencyManager {
 			);
 			if (isXaheenProject) {
 				return {
-					name: "@xaheen/cli",
+					name: "@xaheen-ai/cli",
 					version: "not installed",
 					required: true,
 					compatible: false,
 					minimumVersion: "1.0.0",
-					installCommand: "npm install -g @xaheen/cli@latest",
+					installCommand: "npm install -g @xaheen-ai/cli@latest",
 					checkCommand: "xaheen --version",
 				};
 			}

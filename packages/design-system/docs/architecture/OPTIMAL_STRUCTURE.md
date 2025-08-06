@@ -233,17 +233,17 @@ export class ComponentRegistry {
 
 ```typescript
 // Pattern 1: Direct Chassis Import
-import { Button } from '@xaheen/design-system/chassis';
+import { Button } from '@xaheen-ai/design-system/chassis';
 
 // Pattern 2: Platform-Specific Import
-import { Button } from '@xaheen/design-system/react';
+import { Button } from '@xaheen-ai/design-system/react';
 
 // Pattern 3: Registry-Based Import
-import { registry } from '@xaheen/design-system/registry';
+import { registry } from '@xaheen-ai/design-system/registry';
 const Button = await registry.install('button');
 
 // Pattern 4: Automatic Platform Detection
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const Button = await componentFactory.getComponent('button');
 ```
 

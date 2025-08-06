@@ -881,14 +881,14 @@ graph TD
 | Node.js | ✅ | v18.17.0 | v18.0.0 | ✅ |
 | npm | ✅ | v9.6.7 | v8.0.0 | ✅ |
 | react | ✅ | v18.2.0 | v17.0.0 | ✅ |
-| @xaheen/cli | ✅ | Not installed | v1.0.0 | ❌ |
+| @xaheen-ai/cli | ✅ | Not installed | v1.0.0 | ❌ |
 | tailwindcss | ✅ | v3.3.0 | v3.0.0 | ✅ |
 
 ## Recommendations
 
 - ⚠️ Some dependencies are incompatible or missing:
-  - @xaheen/cli: not installed (requires v1.0.0)
-    Install: npm install -g @xaheen/cli@latest
+  - @xaheen-ai/cli: not installed (requires v1.0.0)
+    Install: npm install -g @xaheen-ai/cli@latest
 ```
 
 ---
@@ -1463,7 +1463,7 @@ CheckoutForm: Multi-step checkout process
 xala xaheen init --check-compatibility
 
 # Update to compatible versions
-npm update -g @xaheen/cli @xala-technologies/xala-cli
+npm update -g @xaheen-ai/cli @xala-technologies/xala-cli
 
 # Or specify compatible versions
 npm install -g @xala-technologies/xala-cli@1.2.0
@@ -1587,7 +1587,7 @@ xala doctor
 ❌ Integration hooks: not executable
 
 🔧 Recommended fixes:
-1. Install Xaheen CLI: npm install -g @xaheen/cli
+1. Install Xaheen CLI: npm install -g @xaheen-ai/cli
 2. Fix hook permissions: chmod +x .xaheen/hooks/*.sh
 ```
 

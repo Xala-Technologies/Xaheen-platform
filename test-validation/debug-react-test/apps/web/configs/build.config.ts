@@ -1,0 +1,679 @@
+{{!-- Template: build.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/build.config.ts.hbs --}}
+/**
+ * Build Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI - Multi-Platform Build Setup
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Platform-specific build configurations
+ * - Performance optimization per platform
+ * - Norwegian compliance bundling
+ * - Tree-shaking and code splitting
+ * - Asset optimization
+ * - Environment-specific builds
+ */
+
+{{#if typescript}}
+import type { Configuration as WebpackConfig } from 'webpack';
+import type { BuildOptions as ViteBuildOptions } from 'vite';
+import type { NextConfig } from 'next';
+
+interface PlatformBuildConfig {
+  web: WebBuildConfig;
+  mobile: MobileBuildConfig;
+  desktop: DesktopBuildConfig;
+  common: CommonBuildConfig;
+}
+
+interface WebBuildConfig {
+  next: NextConfig;
+  vite: ViteBuildOptions;
+  webpack: WebpackConfig;
+  pwa: PWAConfig;
+  seo: SEOConfig;
+}
+
+interface MobileBuildConfig {
+  capacitor: CapacitorConfig;
+  cordova: CordovaConfig;
+  reactNative: ReactNativeConfig;
+  pwa: PWAConfig;
+}
+
+interface DesktopBuildConfig {
+  electron: ElectronConfig;
+  tauri: TauriConfig;
+  neutralino: NeutralinoConfig;
+}
+
+interface CommonBuildConfig {
+  typescript: TypeScriptConfig;
+  bundleAnalysis: BundleAnalysisConfig;
+  optimization: OptimizationConfig;
+  localization: LocalizationBuildConfig;
+  compliance: ComplianceBuildConfig;
+}
+
+interface PWAConfig {
+  enabled: boolean;
+  manifest: any;
+  serviceWorker: any;
+  workbox: any;
+}
+
+interface SEOConfig {
+  sitemap: boolean;
+  robots: boolean;
+  meta: any;
+  structuredData: boolean;
+}
+{{else}}
+// TypeScript interfaces would be here in TypeScript mode
+{{/if}}
+
+/**
+ * Common build configuration shared across platforms
+ */
+const commonBuildConfig = {
+  typescript: {
+    strict: true,
+    noImplicitAny: true,
+    strictNullChecks: true,
+    noImplicitReturns: true,
+    noFallthroughCasesInSwitch: true,
+    exactOptionalPropertyTypes: true,
+    paths: {
+      '@/*': ['./src/*'],
+      '@/components/*': ['./src/components/*'],
+      '@/layouts/*': ['./src/layouts/*'],
+      '@/platforms/*': ['./src/platforms/*'],
+      '@/config/*': ['./src/config/*'],
+      '@/utils/*': ['./src/utils/*'],
+    },
+  },
+
+  bundleAnalysis: {
+    enabled: process.env.ANALYZE === 'true',
+    openAnalyzer: false,
+    analyzerMode: 'static',
+    reportFilename: 'bundle-analysis.html',
+  },
+
+  optimization: {
+    treeshaking: true,
+    codeSplitting: true,
+    minification: process.env.NODE_ENV === 'production',
+    compression: true,
+    imageOptimization: true,
+    fontOptimization: true,
+    cssOptimization: true,
+  },
+
+  localization: {
+    locales: ['en', 'nb', 'fr', 'ar'],
+    defaultLocale: 'en',
+    fallbackLocale: 'en',
+    extractDefaultMessages: true,
+    generateTypes: true,
+    norwegianCompliance: true,
+  },
+
+  compliance: {
+    wcag: 'AAA',
+    gdpr: true,
+    norwegianDataProtection: true,
+    accessibilityAudit: true,
+    securityAudit: true,
+    performanceAudit: true,
+  },
+};
+
+/**
+ * Web platform build configuration
+ */
+const webBuildConfig = {
+  // Next.js configuration
+  next: {
+    experimental: {
+      appDir: true,
+      serverComponentsExternalPackages: ['@xaheen-ai/design-system'],
+    },
+    images: {
+      domains: ['localhost'],
+      formats: ['image/webp', 'image/avif'],
+      minimumCacheTTL: 60,
+    },
+    i18n: {
+      locales: commonBuildConfig.localization.locales,
+      defaultLocale: commonBuildConfig.localization.defaultLocale,
+      localeDetection: true,
+    },
+    compiler: {
+      removeConsole: process.env.NODE_ENV === 'production',
+    },
+    poweredByHeader: false,
+    compress: true,
+    generateEtags: true,
+    httpAgentOptions: {
+      keepAlive: true,
+    },
+    webpack: (config{{#if typescript}}: WebpackConfig{{/if}}, { dev, isServer }{{#if typescript}}: { dev: boolean; isServer: boolean }{{/if}}) => {
+      // Bundle analyzer
+      if (commonBuildConfig.bundleAnalysis.enabled && !isServer) {
+        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+        config.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: commonBuildConfig.bundleAnalysis.analyzerMode,
+            openAnalyzer: commonBuildConfig.bundleAnalysis.openAnalyzer,
+            reportFilename: commonBuildConfig.bundleAnalysis.reportFilename,
+          })
+        );
+      }
+
+      // Optimize for production
+      if (!dev) {
+        config.optimization = {
+          ...config.optimization,
+          usedExports: true,
+          sideEffects: false,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendors',
+                chunks: 'all',
+              },
+              xala: {
+                test: /[\\/]node_modules[\\/]@xala-technologies[\\/]/,
+                name: 'xala-ui',
+                chunks: 'all',
+                priority: 10,
+              },
+            },
+          },
+        };
+      }
+
+      return config;
+    },
+  },
+
+  // Vite configuration (alternative to Next.js)
+  vite: {
+    build: {
+      target: 'es2020',
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: process.env.NODE_ENV === 'development',
+      minify: process.env.NODE_ENV === 'production' ? 'terser' : false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            xala: ['@xaheen-ai/design-system'],
+            localization: ['next-intl'],
+          },
+        },
+      },
+      terserOptions: {
+        compress: {
+          drop_console: process.env.NODE_ENV === 'production',
+          drop_debugger: process.env.NODE_ENV === 'production',
+        },
+      },
+    },
+    optimizeDeps: {
+      include: ['@xaheen-ai/design-system'],
+    },
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    },
+  },
+
+  // PWA configuration
+  pwa: {
+    enabled: true,
+    manifest: {
+      name: 'web',
+      short_name: 'web',
+      description: '{{appDescription}}',
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#ffffff',
+      theme_color: '#000000',
+      lang: 'nb-NO',
+      icons: [
+        {
+          src: '/icons/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: '/icons/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+      ],
+    },
+    serviceWorker: {
+      enabled: true,
+      swSrc: 'src/sw.ts',
+      swDest: 'public/sw.js',
+    },
+    workbox: {
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+            },
+          },
+        },
+        {
+          urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'images-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+            },
+          },
+        },
+      ],
+    },
+  },
+
+  // SEO configuration
+  seo: {
+    sitemap: true,
+    robots: true,
+    meta: {
+      charset: 'utf-8',
+      viewport: 'width=device-width, initial-scale=1',
+      'theme-color': '#000000',
+      'apple-mobile-web-app-capable': 'yes',
+      'apple-mobile-web-app-status-bar-style': 'default',
+    },
+    structuredData: true,
+  },
+};
+
+/**
+ * Mobile platform build configuration
+ */
+const mobileBuildConfig = {
+  // Capacitor configuration
+  capacitor: {
+    appId: '{{packageName}}',
+    appName: 'web',
+    webDir: 'dist',
+    bundledWebRuntime: false,
+    plugins: {
+      SplashScreen: {
+        launchShowDuration: 2000,
+        backgroundColor: '#ffffff',
+        androidSplashResourceName: 'splash',
+        iosSplashResourceName: 'Default',
+      },
+      StatusBar: {
+        style: 'default',
+        backgroundColor: '#ffffff',
+      },
+      Keyboard: {
+        resize: 'body',
+        style: 'dark',
+        resizeOnFullScreen: true,
+      },
+    },
+    ios: {
+      scheme: 'web',
+      contentInset: 'automatic',
+    },
+    android: {
+      buildOptions: {
+        keystorePath: process.env.ANDROID_KEYSTORE_PATH,
+        keystoreAlias: process.env.ANDROID_KEYSTORE_ALIAS,
+        releaseType: 'APK',
+        signingType: 'apksigner',
+      },
+    },
+  },
+
+  // React Native configuration (if using)
+  reactNative: {
+    metro: {
+      resolver: {
+        alias: {
+          '@': './src',
+          '@/components': './src/components',
+          '@/layouts': './src/layouts',
+          '@/platforms': './src/platforms',
+        },
+      },
+      transformer: {
+        getTransformOptions: {{#if typescript}}async (): Promise<any>{{/if}} => ({
+          transform: {
+            experimentalImportSupport: false,
+            inlineRequires: true,
+          },
+        }),
+      },
+    },
+    android: {
+      enableProguardInReleaseBuilds: true,
+      enableSeparateBuildPerCPUArchitecture: true,
+    },
+    ios: {
+      flipper: process.env.NODE_ENV === 'development',
+    },
+  },
+
+  // PWA configuration for mobile web
+  pwa: {
+    ...webBuildConfig.pwa,
+    manifest: {
+      ...webBuildConfig.pwa.manifest,
+      display: 'standalone',
+      orientation: 'portrait',
+      categories: ['productivity', 'business'],
+    },
+  },
+};
+
+/**
+ * Desktop platform build configuration
+ */
+const desktopBuildConfig = {
+  // Electron configuration
+  electron: {
+    main: 'public/electron.js',
+    homepage: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : './index.html',
+    buildOptions: {
+      appId: '{{packageName}}',
+      productName: 'web',
+      directories: {
+        output: 'dist-electron',
+      },
+      files: [
+        'build/**/*',
+        'public/electron.js',
+        'node_modules/**/*',
+      ],
+      mac: {
+        category: 'public.app-category.productivity',
+        hardenedRuntime: true,
+        entitlements: 'build/entitlements.mac.plist',
+        entitlementsInherit: 'build/entitlements.mac.plist',
+        gatekeeperAssess: false,
+      },
+      win: {
+        target: 'nsis',
+        publisherName: '{{publisherName}}',
+      },
+      linux: {
+        target: 'AppImage',
+        category: 'Office',
+      },
+      publish: {
+        provider: 'github',
+        owner: '{{githubOwner}}',
+        repo: '{{githubRepo}}',
+      },
+    },
+  },
+
+  // Tauri configuration (Rust-based alternative)
+  tauri: {
+    build: {
+      beforeBuildCommand: 'npm run build',
+      beforeDevCommand: 'npm run dev',
+      devPath: 'http://localhost:3000',
+      distDir: '../dist',
+    },
+    tauri: {
+      allowlist: {
+        all: false,
+        shell: {
+          all: false,
+          open: true,
+        },
+        dialog: {
+          all: false,
+          open: true,
+          save: true,
+        },
+        fs: {
+          all: false,
+          readFile: true,
+          writeFile: true,
+          readDir: true,
+          createDir: true,
+        },
+      },
+      bundle: {
+        active: true,
+        targets: 'all',
+        identifier: '{{packageName}}',
+        icon: [
+          'icons/32x32.png',
+          'icons/128x128.png',
+          'icons/128x128@2x.png',
+          'icons/icon.icns',
+          'icons/icon.ico',
+        ],
+      },
+      security: {
+        csp: null,
+      },
+      updater: {
+        active: true,
+        endpoints: ['https://releases.example.com/web/{{target}}/{{arch}}/{{current_version}}'],
+        dialog: true,
+        pubkey: process.env.TAURI_PUBLIC_KEY,
+      },
+      windows: [
+        {
+          fullscreen: false,
+          height: 800,
+          resizable: true,
+          title: 'web',
+          width: 1200,
+          minHeight: 600,
+          minWidth: 800,
+        },
+      ],
+    },
+  },
+};
+
+/**
+ * Platform-specific build scripts
+ */
+const buildScripts = {
+  // Web platform scripts
+  web: {
+    dev: 'next dev',
+    build: 'next build',
+    start: 'next start',
+    export: 'next build && next export',
+    analyze: 'ANALYZE=true next build',
+  },
+
+  // Mobile platform scripts
+  mobile: {
+    dev: 'capacitor run ios --livereload',
+    'build:ios': 'capacitor build ios',
+    'build:android': 'capacitor build android',
+    'sync': 'capacitor sync',
+    'add:ios': 'capacitor add ios',
+    'add:android': 'capacitor add android',
+  },
+
+  // Desktop platform scripts
+  desktop: {
+    'dev:electron': 'concurrently "npm run dev" "wait-on http://localhost:3000 && electron ."',
+    'build:electron': 'npm run build && electron-builder',
+    'build:tauri': 'tauri build',
+    'dev:tauri': 'tauri dev',
+  },
+
+  // Common scripts
+  common: {
+    test: 'jest',
+    'test:watch': 'jest --watch',
+    'test:coverage': 'jest --coverage',
+    'test:e2e': 'playwright test',
+    lint: 'eslint . --ext .ts,.tsx',
+    'lint:fix': 'eslint . --ext .ts,.tsx --fix',
+    'type-check': 'tsc --noEmit',
+    storybook: 'storybook dev -p 6006',
+    'build-storybook': 'storybook build',
+  },
+};
+
+/**
+ * Environment-specific configurations
+ */
+const environmentConfigs = {
+  development: {
+    optimization: false,
+    sourceMaps: true,
+    minification: false,
+    bundleAnalysis: false,
+  },
+  
+  staging: {
+    optimization: true,
+    sourceMaps: true,
+    minification: true,
+    bundleAnalysis: true,
+  },
+  
+  production: {
+    optimization: true,
+    sourceMaps: false,
+    minification: true,
+    bundleAnalysis: false,
+  },
+};
+
+/**
+ * Complete platform build configuration
+ */
+const platformBuildConfig{{#if typescript}}: PlatformBuildConfig{{/if}} = {
+  web: webBuildConfig,
+  mobile: mobileBuildConfig,
+  desktop: desktopBuildConfig,
+  common: commonBuildConfig,
+};
+
+export default platformBuildConfig;
+export {
+  webBuildConfig,
+  mobileBuildConfig,
+  desktopBuildConfig,
+  commonBuildConfig,
+  buildScripts,
+  environmentConfigs,
+};
+
+{{#if includeExamples}}
+// Example package.json scripts:
+/*
+{
+  "scripts": {
+    // Web platform
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "build:analyze": "ANALYZE=true next build",
+    
+    // Mobile platform
+    "mobile:dev": "capacitor run ios --livereload",
+    "mobile:build:ios": "npm run build && capacitor build ios",
+    "mobile:build:android": "npm run build && capacitor build android",
+    "mobile:sync": "capacitor sync",
+    
+    // Desktop platform
+    "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "desktop:build": "npm run build && electron-builder",
+    "desktop:build:tauri": "tauri build",
+    
+    // Testing and quality
+    "test": "jest",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "type-check": "tsc --noEmit",
+    
+    // Storybook
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  }
+}
+
+// Example usage in CI/CD:
+// GitHub Actions workflow for multi-platform builds
+name: Multi-Platform Build
+
+on: [push, pull_request]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test
+      - run: npm run test:e2e
+
+  mobile:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run mobile:build:ios
+      - run: npm run mobile:build:android
+
+  desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run desktop:build
+*/
+{{/if}}

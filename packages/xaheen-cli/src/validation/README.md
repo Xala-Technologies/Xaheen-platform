@@ -7,7 +7,7 @@ A comprehensive validation framework that ensures all generated projects meet de
 This validation system provides 100% coverage for:
 
 - **CLAUDE.md Compliance**: Button heights (h-12+), input heights (h-14+), TypeScript readonly interfaces, no `any` types
-- **Design System Usage**: Proper imports from `@xaheen/design-system`, component composition, theme consistency
+- **Design System Usage**: Proper imports from `@xaheen-ai/design-system`, component composition, theme consistency
 - **Norwegian NSM Compliance**: Data classification, Norwegian localization, security patterns, GDPR compliance
 - **WCAG AAA Accessibility**: ARIA labels, keyboard navigation, color contrast, semantic HTML, screen reader support
 
@@ -80,14 +80,14 @@ export const Button = ({ title, onClick }: ButtonProps): JSX.Element => {
 
 Ensures proper usage of the design system:
 
-- **Component Imports**: Must import from `@xaheen/design-system`
+- **Component Imports**: Must import from `@xaheen-ai/design-system`
 - **No Hardcoded Values**: Use design tokens instead of hardcoded colors/spacing
 - **Component Composition**: Use design system components over custom implementations
 - **Theme Consistency**: Consistent color families and patterns
 
 ```typescript
 // ✅ Design System Compliant
-import { Button, Input, Card } from '@xaheen/design-system';
+import { Button, Input, Card } from '@xaheen-ai/design-system';
 
 export const LoginForm = (): JSX.Element => {
   return (
@@ -165,7 +165,7 @@ Create `.xaheen-validation.json` in your project root:
     "strictTypeScript": true
   },
   "designSystem": {
-    "packageName": "@xaheen/design-system",
+    "packageName": "@xaheen-ai/design-system",
     "enforceImports": true
   },
   "nsm": {
@@ -349,7 +349,7 @@ describe('CLAUDE.md Compliance', () => {
 
 | Rule ID | Severity | Description |
 |---------|----------|-------------|
-| `design-system-imports` | error | Must import from @xaheen/design-system |
+| `design-system-imports` | error | Must import from @xaheen-ai/design-system |
 | `design-system-no-hardcoded-values` | warn | Use design tokens |
 | `design-system-component-composition` | warn | Use design system components |
 

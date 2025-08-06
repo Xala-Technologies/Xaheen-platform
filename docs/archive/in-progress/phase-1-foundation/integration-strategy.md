@@ -74,7 +74,7 @@ export interface AIService {
 
 // Integration with existing CLI
 // apps/cli/src/services/ai/index.ts
-import { AIService } from '@xaheen/ai-services';
+import { AIService } from '@xaheen-ai/ai-services';
 
 export class XaheenAIService implements AIService {
   // Integrate xala-scaffold AI capabilities
@@ -104,7 +104,7 @@ export interface ComplianceService {
 
 // Integration with template generation
 // apps/cli/src/helpers/project-generation/compliance-validator.ts
-import { ComplianceService } from '@xaheen/compliance';
+import { ComplianceService } from '@xaheen-ai/compliance';
 
 export async function validateProjectCompliance(project: Project) {
   // Add compliance validation to project generation
@@ -134,7 +134,7 @@ export interface LocalizationService {
 
 // Integration with CLI prompts
 // apps/cli/src/prompts/localization.ts
-import { LocalizationService } from '@xaheen/localization';
+import { LocalizationService } from '@xaheen-ai/localization';
 
 export async function promptForLanguages(): Promise<Language[]> {
   // Add language selection to project setup
@@ -156,7 +156,7 @@ export async function promptForLanguages(): Promise<Language[]> {
 #### **Integration Plan**
 ```typescript
 // Enhanced: apps/cli/src/validation.ts
-import { ValidationService } from '@xaheen/validation';
+import { ValidationService } from '@xaheen-ai/validation';
 
 export class EnhancedValidation extends ValidationService {
   // Extend existing Zod validation with xala-scaffold capabilities
@@ -300,7 +300,7 @@ export function ProjectAnalyzer() {
 #### **Localization Integration**
 ```typescript
 // Enhanced: apps/web/src/app/layout.tsx
-import { LocalizationProvider } from '@xaheen/localization';
+import { LocalizationProvider } from '@xaheen-ai/localization';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

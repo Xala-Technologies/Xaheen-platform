@@ -1,0 +1,743 @@
+
+
+
+
+
+'use client';
+
+/**
+ * WebAppLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI - Web Platform Specific
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Web Platform Features:
+ * - Responsive web design
+ * - Progressive Web App support
+ * - SEO optimization
+ * - Browser navigation
+ * - Cookie consent (GDPR)
+ * - Web accessibility standards
+ * - Norwegian web compliance
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Icon,
+  Badge,
+  Avatar,
+  Navigation,
+  Header,
+  Footer,
+  Breadcrumb,
+  SkipLink,
+  CookieConsent,
+  ProgressBar,
+  BackToTop,
+  SearchBar,
+  LanguageSelector,
+  ThemeToggle
+} from '@xaheen-ai/design-system';
+import { 
+  Menu,
+  Search,
+  Bell,
+  User,
+  Globe,
+  Sun,
+  Moon,
+  ChevronUp,
+  Home,
+  Settings,
+  HelpCircle,
+  Shield,
+  Cookie
+} from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout';
+
+interface WebAppLayoutProps {
+  children: React.ReactNode;
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  showHeader?: boolean;
+  showFooter?: boolean;
+  showNavigation?: boolean;
+  showBreadcrumbs?: boolean;
+  showSearch?: boolean;
+  showLanguageSelector?: boolean;
+  showThemeToggle?: boolean;
+  navigationItems?: WebNavItem[];
+  breadcrumbs?: BreadcrumbItem[];
+  currentUser?: UserInfo;
+  onSearch?: (query: string) => void;
+  onLanguageChange?: (locale: string) => void;
+  onThemeChange?: (theme: string) => void;
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  showCookieConsent?: boolean;
+  cookieConsentAccepted?: boolean;
+  onCookieConsentAccept?: () => void;
+  loading?: boolean;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface WebNavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: React.ComponentType;
+  badge?: string | number;
+  children?: WebNavItem[];
+  external?: boolean;
+}
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface UserInfo {
+  name: string;
+  email: string;
+  avatar?: string;
+  role?: string;
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Icon,
+  Badge,
+  Avatar,
+  Navigation,
+  Header,
+  Footer,
+  Breadcrumb,
+  SkipLink,
+  CookieConsent,
+  ProgressBar,
+  BackToTop,
+  SearchBar,
+  LanguageSelector,
+  ThemeToggle
+} from '@xaheen-ai/design-system';
+import { 
+  Menu,
+  Search,
+  Bell,
+  User,
+  Globe,
+  Sun,
+  Moon,
+  ChevronUp,
+  Home,
+  Settings,
+  HelpCircle,
+  Shield,
+  Cookie
+} from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout';
+
+
+/**
+ * Default web navigation items
+ */
+const defaultNavItems: WebNavItem[] = [
+  {
+    id: 'home',
+    label: 'navigation.home',
+    href: '/',
+    icon: Home,
+  },
+  {
+    id: 'dashboard',
+    label: 'navigation.dashboard',
+    href: '/dashboard',
+  },
+  {
+    id: 'settings',
+    label: 'navigation.settings',
+    href: '/settings',
+    icon: Settings,
+  },
+  {
+    id: 'help',
+    label: 'navigation.help',
+    href: '/help',
+    icon: HelpCircle,
+  },
+];
+
+/**
+ * WebAppLayout - Modern web application experience
+ * Optimized for SEO, accessibility, and Norwegian web standards
+ */
+
+export default function WebAppLayout({
+  children,
+  title,
+  description,
+  keywords = [],
+  showHeader = true,
+  showFooter = true,
+  showNavigation = true,
+  showBreadcrumbs = false,
+  showSearch = true,
+  showLanguageSelector = true,
+  showThemeToggle = true,
+  navigationItems = defaultNavItems,
+  breadcrumbs = [],
+  currentUser,
+  onSearch,
+  onLanguageChange,
+  onThemeChange,
+  maxWidth = 'xl',
+  showCookieConsent = true,
+  cookieConsentAccepted = false,
+  onCookieConsentAccept,
+  loading = false,
+  locale = 'en',
+  theme = 'light'
+}: WebAppLayoutProps): React.ReactElement {
+
+export default function WebAppLayout({
+  children,
+  title,
+  description,
+  keywords = [],
+  showHeader = true,
+  showFooter = true,
+  showNavigation = true,
+  showBreadcrumbs = false,
+  showSearch = true,
+  showLanguageSelector = true,
+  showThemeToggle = true,
+  navigationItems = defaultNavItems,
+  breadcrumbs = [],
+  currentUser,
+  onSearch,
+  onLanguageChange,
+  onThemeChange,
+  maxWidth = 'xl',
+  showCookieConsent = true,
+  cookieConsentAccepted = false,
+  onCookieConsentAccept,
+  loading = false,
+  locale = 'en',
+  theme = 'light'
+}) {
+
+  const { t } = useTranslation();
+  const [showMobileMenu, setShowMobileMenu] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [showBackToTop, setShowBackToTop] = React.useState(false);
+
+  // Back to top visibility
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleSearch = (query: string): void => {
+    setSearchQuery(query);
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const renderSkipLinks = (): React.ReactElement => (
+    <Stack direction="horizontal" spacing="2" position="absolute" top="-20" left="4" zIndex="50">
+      <SkipLink href="#main-content">
+        {t('accessibility.skipToMain', 'Skip to main content')}
+      </SkipLink>
+      <SkipLink href="#navigation">
+        {t('accessibility.skipToNav', 'Skip to navigation')}
+      </SkipLink>
+    </Stack>
+  );
+
+  const renderProgressBar = (): React.ReactElement | null => {
+    if (!loading) return null;
+
+    return (
+      <ProgressBar
+        indeterminate={true}
+        position="fixed"
+        top="0"
+        left="0"
+        right="0"
+        zIndex="50"
+        height="1"
+      />
+    );
+  };
+
+  const renderHeader = (): React.ReactElement | null => {
+    if (!showHeader) return null;
+
+    return (
+      <Header
+        backgroundColor="card"
+        borderBottom="1"
+        position="sticky"
+        top="0"
+        zIndex="40"
+      >
+        <Container maxWidth={maxWidth} paddingHorizontal="4" paddingVertical="3">
+          <Stack direction="horizontal" align="center" justify="between">
+            {/* Logo and Brand */}
+            <Stack direction="horizontal" align="center" spacing="4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClick}
+                className="md:hidden"
+                accessibilityLabel={t('navigation.toggleMenu', 'Toggle menu')}
+              >
+                <Icon component={Menu} size="md" />
+              </Button>
+
+              <Stack direction="horizontal" align="center" spacing="3">
+                <Box
+                  width="8"
+                  height="8"
+                  backgroundColor="primary"
+                  borderRadius="md"
+                />
+                <Typography variant="heading" size="lg" weight="bold">
+                  {t('app.name', 'Application')}
+                </Typography>
+              </Stack>
+            </Stack>
+
+            {/* Desktop Navigation */}
+            {showNavigation && (
+              <Navigation
+                orientation="horizontal"
+                spacing="6"
+                className="hidden md:flex"
+                id="navigation"
+              >
+                {navigationItems.map((item) => (
+                  <Navigation.Item
+                    key={item.id}
+                    href={item.href}
+                    external={item.external}
+                  >
+                    <Stack direction="horizontal" align="center" spacing="2">
+                      {item.icon && <Icon component={item.icon} size="sm" />}
+                      <Typography variant="body" size="sm">
+                        {t(item.label, item.label)}
+                      </Typography>
+                      {item.badge && (
+                        <Badge variant="secondary" size="sm">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Stack>
+                  </Navigation.Item>
+                ))}
+              </Navigation>
+            )}
+
+            {/* Header Actions */}
+            <Stack direction="horizontal" align="center" spacing="3">
+              {/* Search */}
+              {showSearch && (
+                <SearchBar
+                  placeholder={t('search.placeholder', 'Search...')}
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  size="sm"
+                  className="hidden md:block"
+                />
+              )}
+
+              {/* Language Selector */}
+              {showLanguageSelector && (
+                <LanguageSelector
+                  currentLocale={locale}
+                  onLocaleChange={onLanguageChange}
+                  size="sm"
+                />
+              )}
+
+              {/* Theme Toggle */}
+              {showThemeToggle && (
+                <ThemeToggle
+                  currentTheme={theme}
+                  onThemeChange={onThemeChange}
+                  size="sm"
+                />
+              )}
+
+              {/* User Menu */}
+              {currentUser ? (
+                <Button variant="ghost" size="sm">
+                  <Avatar
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    size="sm"
+                  />
+                  <Typography variant="body" size="sm" className="hidden md:block">
+                    {currentUser.name}
+                  </Typography>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm">
+                  <Icon component={User} size="sm" />
+                  <Typography variant="body" size="sm" className="hidden md:block">
+                    {t('auth.login', 'Login')}
+                  </Typography>
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+
+          {/* Mobile Navigation */}
+          {showMobileMenu && showNavigation && (
+            <Box
+              marginTop="4"
+              paddingTop="4"
+              borderTop="1"
+              className="md:hidden"
+            >
+              <Navigation orientation="vertical" spacing="2">
+                {navigationItems.map((item) => (
+                  <Navigation.Item
+                    key={item.id}
+                    href={item.href}
+                    external={item.external}
+                    onClick={handleClick}
+                  >
+                    <Stack direction="horizontal" align="center" spacing="3">
+                      {item.icon && <Icon component={item.icon} size="sm" />}
+                      <Typography variant="body" size="sm">
+                        {t(item.label, item.label)}
+                      </Typography>
+                      {item.badge && (
+                        <Badge variant="secondary" size="sm">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Stack>
+                  </Navigation.Item>
+                ))}
+              </Navigation>
+
+              {/* Mobile Search */}
+              {showSearch && (
+                <Box marginTop="4">
+                  <SearchBar
+                    placeholder={t('search.placeholder', 'Search...')}
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    size="md"
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+        </Container>
+      </Header>
+    );
+  };
+
+  const renderBreadcrumbs = (): React.ReactElement | null => {
+    if (!showBreadcrumbs || breadcrumbs.length === 0) return null;
+
+    return (
+      <Box backgroundColor="muted" borderBottom="1">
+        <Container maxWidth={maxWidth} paddingHorizontal="4" paddingVertical="2">
+          <Breadcrumb>
+            {breadcrumbs.map((crumb, index) => (
+              <Breadcrumb.Item
+                key={index}
+                href={crumb.href}
+                current={index === breadcrumbs.length - 1}
+              >
+                {t(crumb.label, crumb.label)}
+              </Breadcrumb.Item>
+            ))}
+          </Breadcrumb>
+        </Container>
+      </Box>
+    );
+  };
+
+  const renderFooter = (): React.ReactElement | null => {
+    if (!showFooter) return null;
+
+    return (
+      <Footer
+        backgroundColor="card"
+        borderTop="1"
+        marginTop="16"
+      >
+        <Container maxWidth={maxWidth} paddingHorizontal="4" paddingVertical="8">
+          <Stack direction="vertical" spacing="8">
+            {/* Footer Content */}
+            <Stack direction="horizontal" justify="between" spacing="8" className="flex-col md:flex-row">
+              {/* Company Info */}
+              <Stack direction="vertical" spacing="4">
+                <Stack direction="horizontal" align="center" spacing="3">
+                  <Box
+                    width="6"
+                    height="6"
+                    backgroundColor="primary"
+                    borderRadius="sm"
+                  />
+                  <Typography variant="heading" size="md" weight="medium">
+                    {t('app.name', 'Application')}
+                  </Typography>
+                </Stack>
+                
+                <Typography variant="body" size="sm" color="muted" maxWidth="80">
+                  {t('app.description', 'Building the future of digital experiences with Norwegian quality and accessibility.')}
+                </Typography>
+              </Stack>
+
+              {/* Footer Links */}
+              <Stack direction="horizontal" spacing="12" className="flex-col md:flex-row">
+                <Stack direction="vertical" spacing="3">
+                  <Typography variant="body" size="sm" weight="medium">
+                    {t('footer.product', 'Product')}
+                  </Typography>
+                  <Stack direction="vertical" spacing="2">
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.features', 'Features')}
+                    </Button>
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.pricing', 'Pricing')}
+                    </Button>
+                  </Stack>
+                </Stack>
+
+                <Stack direction="vertical" spacing="3">
+                  <Typography variant="body" size="sm" weight="medium">
+                    {t('footer.support', 'Support')}
+                  </Typography>
+                  <Stack direction="vertical" spacing="2">
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.help', 'Help Center')}
+                    </Button>
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.contact', 'Contact Us')}
+                    </Button>
+                  </Stack>
+                </Stack>
+
+                <Stack direction="vertical" spacing="3">
+                  <Typography variant="body" size="sm" weight="medium">
+                    {t('footer.legal', 'Legal')}
+                  </Typography>
+                  <Stack direction="vertical" spacing="2">
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.privacy', 'Privacy Policy')}
+                    </Button>
+                    <Button variant="link" size="sm" justifyContent="start">
+                      {t('footer.terms', 'Terms of Service')}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Stack>
+            </Stack>
+
+            {/* Footer Bottom */}
+            <Stack
+              direction="horizontal"
+              align="center"
+              justify="between"
+              paddingTop="6"
+              borderTop="1"
+              className="flex-col md:flex-row"
+            >
+              <Typography variant="body" size="sm" color="muted">
+                {t('footer.copyright', '© {year} Application. All rights reserved.', {
+                  year: new Date().getFullYear(),
+                })}
+              </Typography>
+
+              <Stack direction="horizontal" align="center" spacing="4">
+                <Icon component={Shield} size="sm" color="muted" />
+                <Typography variant="body" size="sm" color="muted">
+                  {t('footer.gdprCompliant', 'GDPR Compliant')}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Container>
+      </Footer>
+    );
+  };
+
+  const renderCookieConsent = (): React.ReactElement | null => {
+    if (!showCookieConsent || cookieConsentAccepted) return null;
+
+    return (
+      <CookieConsent
+        onAccept={onCookieConsentAccept}
+        position="bottom"
+        backgroundColor="card"
+        borderTop="1"
+      >
+        <Stack direction="horizontal" align="center" justify="between" spacing="4">
+          <Stack direction="horizontal" align="center" spacing="3">
+            <Icon component={Cookie} size="md" />
+            <Typography variant="body" size="sm">
+              {t('cookies.message', 'We use cookies to improve your experience and comply with Norwegian privacy regulations.')}
+            </Typography>
+          </Stack>
+
+          <Stack direction="horizontal" align="center" spacing="2">
+            <Button variant="outline" size="sm">
+              {t('cookies.settings', 'Settings')}
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleClick}>
+              {t('cookies.accept', 'Accept All')}
+            </Button>
+          </Stack>
+        </Stack>
+      </CookieConsent>
+    );
+  };
+
+  const renderBackToTop = (): React.ReactElement | null => {
+    if (!showBackToTop) return null;
+
+    return (
+      <BackToTop
+        onClick={handleClick})}
+        position="fixed"
+        bottom="6"
+        right="6"
+        zIndex="40"
+      >
+        <Icon component={ChevronUp} size="md" />
+      </BackToTop>
+    );
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      {renderSkipLinks()}
+      {renderProgressBar()}
+      
+      <Stack direction="vertical" minHeight="screen">
+        {renderHeader()}
+        {renderBreadcrumbs()}
+        
+        <Box flex="1" id="main-content">
+          <Container maxWidth={maxWidth} paddingHorizontal="4" paddingVertical="6">
+            {children}
+          </Container>
+        </Box>
+        
+        {renderFooter()}
+      </Stack>
+
+      {renderCookieConsent()}
+      {renderBackToTop()}
+    </BaseLayout>
+  );
+}
+
+
+// Example usage:
+/*
+import WebAppLayout from '@/platforms/web/WebAppLayout';
+import { BarChart, Users, Settings } from 'lucide-react';
+
+export default function WebApp() {
+  const customNavItems = [
+    {
+      id: 'dashboard',
+      label: 'navigation.dashboard',
+      href: '/dashboard',
+      icon: BarChart,
+    },
+    {
+      id: 'users',
+      label: 'navigation.users',
+      href: '/users',
+      icon: Users,
+      badge: 5,
+    },
+    {
+      id: 'settings',
+      label: 'navigation.settings',
+      href: '/settings',
+      icon: Settings,
+    },
+  ];
+
+  const breadcrumbs = [
+    { label: 'navigation.home', href: '/' },
+    { label: 'navigation.dashboard', href: '/dashboard' },
+    { label: 'dashboard.analytics' },
+  ];
+
+  const currentUser = {
+    name: 'Ola Nordmann',
+    email: 'ola@example.no',
+    avatar: '/avatars/ola.jpg',
+    role: 'Administrator',
+  };
+
+  return (
+    <WebAppLayout
+      title="dashboard.title"
+      description="dashboard.description"
+      keywords={['dashboard', 'analytics', 'norwegian']}
+      navigationItems={customNavItems}
+      breadcrumbs={breadcrumbs}
+      currentUser={currentUser}
+      showBreadcrumbs={true}
+      onSearch={handleSearch}
+      onLanguageChange={handleLanguageChange}
+      onThemeChange={handleThemeChange}
+      locale="nb"
+      theme="light"
+    >
+      <Stack direction="vertical" spacing="6">
+        <Typography variant="heading" size="2xl">
+          Web Application Content
+        </Typography>
+        
+        <Typography variant="body">
+          This is a responsive web application layout optimized for Norwegian users.
+        </Typography>
+      </Stack>
+    </WebAppLayout>
+  );
+}
+*/
+

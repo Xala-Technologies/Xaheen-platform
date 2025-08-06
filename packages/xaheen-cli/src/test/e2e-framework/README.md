@@ -7,7 +7,7 @@ This comprehensive end-to-end testing framework verifies that generated projects
 The E2E testing framework provides comprehensive validation of:
 
 - **Project Creation**: Verifies correct project structure and dependencies
-- **Design System Integration**: Validates proper usage of @xaheen/design-system
+- **Design System Integration**: Validates proper usage of @xaheen-ai/design-system
 - **CLAUDE.md Compliance**: Ensures TypeScript-first, React patterns, and professional styling
 - **NSM Compliance**: Validates Norwegian security standards and data classification
 - **WCAG AAA Compliance**: Ensures accessibility standards are met
@@ -65,7 +65,7 @@ Each test validates:
 
 ### 2. Design System Integration Tests
 
-Validates proper integration with @xaheen/design-system:
+Validates proper integration with @xaheen-ai/design-system:
 
 - ✅ Correct imports from design system package
 - ✅ Professional component sizing (Button h-12+, Input h-14+)

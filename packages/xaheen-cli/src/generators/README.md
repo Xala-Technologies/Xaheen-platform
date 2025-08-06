@@ -174,7 +174,7 @@ xaheen ai-generate "Create a dashboard component with charts and filters"
 ### Programmatic Usage
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 const result = await generateCode({
   type: 'component',

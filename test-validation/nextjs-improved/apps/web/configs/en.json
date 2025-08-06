@@ -1,0 +1,129 @@
+
+
+
+
+
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "profile": "Profile",
+    "help": "Help",
+    "about": "About"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember me",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "resetPassword": "Reset Password",
+    "newPassword": "New Password",
+    "currentPassword": "Current Password"
+  },
+  "welcome": {
+    "title": "Welcome to nextjs-improved",
+    "subtitle": "Get started by editing the page",
+    "message": "Welcome! This application uses Xala UI System v5 for enterprise-grade compliance.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "documentation": "Documentation"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "users": "Users",
+    "activities": "Recent Activities",
+    "statistics": "Statistics"
+  },
+  "forms": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "invalidFormat": "Invalid format",
+    "fieldTooLong": "Field is too long",
+    "fieldTooShort": "Field is too short"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "Server error. Please try again later.",
+    "validation": "Please check your input and try again."
+  },
+  "success": {
+    "saved": "Successfully saved",
+    "updated": "Successfully updated",
+    "deleted": "Successfully deleted",
+    "created": "Successfully created",
+    "sent": "Successfully sent"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleTheme": "Toggle theme",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "loading": "Content is loading",
+    "searchResults": "Search results"
+  },
+  "compliance": {
+    "gdpr": {
+      "cookieConsent": "This website uses cookies to ensure you get the best experience.",
+      "acceptCookies": "Accept Cookies",
+      "manageCookies": "Manage Cookies",
+      "privacyPolicy": "Privacy Policy",
+      "dataProcessing": "Data Processing Agreement",
+      "yourRights": "Your Rights",
+      "contactDpo": "Contact Data Protection Officer"
+    },
+    "norwegian": {
+      "bankIdLogin": "Log in with BankID",
+      "vippsLogin": "Log in with Vipps",
+      "altinnIntegration": "Altinn Integration",
+      "governmentServices": "Government Services",
+      "digitalSignature": "Digital Signature",
+      "secureLogin": "Secure Login with Norwegian Digital Identity"
+    }
+  }
+}

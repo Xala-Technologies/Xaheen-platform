@@ -58,7 +58,7 @@ Real-time status updates for refactoring tasks.
 These components follow strict TypeScript and accessibility standards:
 
 ```typescript
-import { RefactoringPreview } from '@xaheen/ai-refactoring-components';
+import { RefactoringPreview } from '@xaheen-ai/ai-refactoring-components';
 
 const MyRefactoringUI = (): JSX.Element => {
   return (

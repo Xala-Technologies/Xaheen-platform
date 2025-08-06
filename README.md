@@ -216,6 +216,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## 🏢 Enterprise Support
 
 For enterprise support, Norwegian compliance consulting, or custom integrations:
-- **Email**: enterprise@xaheen.dev
+- **Email**: enterprise@xaheen-ai.dev
 - **Website**: [xaheen.dev/enterprise](https://xaheen.dev/enterprise)
 - **Documentation**: [Norwegian Compliance Guide](documentation/compliance/norwegian.md)

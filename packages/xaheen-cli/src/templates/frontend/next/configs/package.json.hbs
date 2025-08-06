@@ -10,7 +10,7 @@
   "_compliance_rules": {
     "mandatory": [
       "NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages",
-      "ONLY semantic components from @xaheen/design-system",
+      "ONLY semantic components from @xaheen-ai/design-system",
       "NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)",
       "MANDATORY design token usage for all colors, spacing, typography",
       "Enhanced 8pt Grid System - all spacing in 8px increments",
@@ -68,15 +68,15 @@
     
     {{! Xaheen Design System - Main dependency (local registry) }}
     {{#if (eq ui "xala")}}
-    "@xaheen/design-system": "workspace:*",
+    "@xaheen-ai/design-system": "workspace:*",
     {{else}}
-    "@xaheen/design-system": "^1.0.0",
+    "@xaheen-ai/design-system": "^1.0.0",
     {{/if}}
     
     {{! Authentication }}
     {{#if auth}}
-    "@xaheen/auth": "github:Xala-Technologies/xaheen-auth#v1.3.4",
-    "@xaheen/auth-drizzle-adapter": "github:Xala-Technologies/xaheen-auth#v1.3.4",
+    "@xaheen-ai/auth": "github:Xala-Technologies/xaheen-auth#v1.3.4",
+    "@xaheen-ai/auth-drizzle-adapter": "github:Xala-Technologies/xaheen-auth#v1.3.4",
     {{/if}}
     
     {{! API Integration }}

@@ -28,17 +28,17 @@ Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules/@xaheen'
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 nvm install 20
 nvm use 20
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Option 2: Change npm's default directory
 mkdir ~/.npm-global
 npm config set prefix '~/.npm-global'
 echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
 source ~/.profile
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Option 3: Use npx (no installation needed)
-npx @xaheen/cli init my-app
+npx @xaheen-ai/cli init my-app
 ```
 
 ### Issue: Bun installation fails
@@ -99,13 +99,13 @@ bash: xaheen: command not found
 **Solution:**
 ```bash
 # Check if installed globally
-npm list -g @xaheen/cli
+npm list -g @xaheen-ai/cli
 
 # If not installed, install it
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Or use with npx
-npx @xaheen/cli [command]
+npx @xaheen-ai/cli [command]
 
 # Check PATH
 echo $PATH

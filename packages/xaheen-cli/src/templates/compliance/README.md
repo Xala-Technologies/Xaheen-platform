@@ -42,7 +42,7 @@ The NSM security templates provide complete implementations for all four classif
 ### Usage
 
 ```typescript
-import { generateNSMSecurity } from '@xaheen/cli/generators/compliance';
+import { generateNSMSecurity } from '@xaheen-ai/cli/generators/compliance';
 
 await generateNSMSecurity({
   projectName: 'my-secure-app',
@@ -103,7 +103,7 @@ The GDPR compliance templates provide complete data protection and privacy imple
 ### Usage
 
 ```typescript
-import { generateGDPRCompliance } from '@xaheen/cli/generators/compliance';
+import { generateGDPRCompliance } from '@xaheen-ai/cli/generators/compliance';
 
 await generateGDPRCompliance({
   projectName: 'my-compliant-app',

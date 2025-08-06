@@ -1,0 +1,539 @@
+{{!-- Template: platform.config.ts.hbs --}}
+{{!-- Category: frontend --}}
+{{!-- Type: config --}}
+{{!-- Framework: next --}}
+{{!-- Migrated from: /Volumes/Development/Xaheen Enterprise/xaheen/apps/cli/templates/frontend/react/next/platform.config.ts.hbs --}}
+/**
+ * Platform Configuration - Xala UI System Compliant
+ * Generated with Xaheen CLI - Multi-Platform Configuration
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Platform Configurations:
+ * - Web (Next.js/React) configuration
+ * - Mobile (React Native) configuration  
+ * - Desktop (Electron) configuration
+ * - Shared configuration across platforms
+ */
+
+{{#if typescript}}
+export interface PlatformConfig {
+  platform: 'web' | 'mobile' | 'desktop';
+  bundler: 'webpack' | 'metro' | 'vite' | 'electron-builder';
+  runtime: 'browser' | 'react-native' | 'electron';
+  features: PlatformFeatures;
+  build: BuildConfig;
+  development: DevelopmentConfig;
+  deployment: DeploymentConfig;
+}
+
+export interface PlatformFeatures {
+  fileSystem: boolean;
+  notifications: boolean;
+  camera: boolean;
+  geolocation: boolean;
+  clipboard: boolean;
+  windowControls: boolean;
+  systemTray: boolean;
+  touchSupport: boolean;
+  keyboardShortcuts: boolean;
+  nativeMenus: boolean;
+  offlineSupport: boolean;
+  backgroundSync: boolean;
+  deepLinking: boolean;
+  biometricAuth: boolean;
+}
+
+export interface BuildConfig {
+  outputDir: string;
+  assetsDir: string;
+  publicPath: string;
+  sourceMaps: boolean;
+  minification: boolean;
+  bundleAnalysis: boolean;
+  codesplitting: boolean;
+  treeshaking: boolean;
+  optimization: OptimizationConfig;
+}
+
+export interface OptimizationConfig {
+  images: boolean;
+  fonts: boolean;
+  css: boolean;
+  javascript: boolean;
+  chunks: boolean;
+  compression: boolean;
+}
+
+export interface DevelopmentConfig {
+  port: number;
+  host: string;
+  https: boolean;
+  hotReload: boolean;
+  liveReload: boolean;
+  devtools: boolean;
+  debugging: boolean;
+  profiling: boolean;
+}
+
+export interface DeploymentConfig {
+  target: string;
+  platform: string;
+  architecture: string[];
+  signing: SigningConfig;
+  distribution: DistributionConfig;
+}
+
+export interface SigningConfig {
+  enabled: boolean;
+  certificate?: string;
+  keystore?: string;
+  identity?: string;
+}
+
+export interface DistributionConfig {
+  appStore: boolean;
+  playStore: boolean;
+  webDeploy: boolean;
+  selfHosted: boolean;
+  enterprise: boolean;
+}
+{{/if}}
+
+/**
+ * Web Platform Configuration (Next.js/React)
+ */
+{{#if typescript}}
+export const webConfig: PlatformConfig = {
+{{else}}
+export const webConfig = {
+{{/if}}
+  platform: 'web',
+  bundler: 'webpack',
+  runtime: 'browser',
+  features: {
+    fileSystem: false,
+    notifications: true,
+    camera: true,
+    geolocation: true,
+    clipboard: true,
+    windowControls: false,
+    systemTray: false,
+    touchSupport: true,
+    keyboardShortcuts: true,
+    nativeMenus: false,
+    offlineSupport: true,
+    backgroundSync: true,
+    deepLinking: true,
+    biometricAuth: false,
+  },
+  build: {
+    outputDir: 'dist',
+    assetsDir: 'assets',
+    publicPath: '/',
+    sourceMaps: true,
+    minification: true,
+    bundleAnalysis: true,
+    codesplitting: true,
+    treeshaking: true,
+    optimization: {
+      images: true,
+      fonts: true,
+      css: true,
+      javascript: true,
+      chunks: true,
+      compression: true,
+    },
+  },
+  development: {
+    port: 3000,
+    host: 'localhost',
+    https: false,
+    hotReload: true,
+    liveReload: true,
+    devtools: true,
+    debugging: true,
+    profiling: true,
+  },
+  deployment: {
+    target: 'static',
+    platform: 'web',
+    architecture: ['universal'],
+    signing: {
+      enabled: false,
+    },
+    distribution: {
+      appStore: false,
+      playStore: false,
+      webDeploy: true,
+      selfHosted: true,
+      enterprise: false,
+    },
+  },
+};
+
+/**
+ * Mobile Platform Configuration (React Native)
+ */
+{{#if typescript}}
+export const mobileConfig: PlatformConfig = {
+{{else}}
+export const mobileConfig = {
+{{/if}}
+  platform: 'mobile',
+  bundler: 'metro',
+  runtime: 'react-native',
+  features: {
+    fileSystem: true,
+    notifications: true,
+    camera: true,
+    geolocation: true,
+    clipboard: true,
+    windowControls: false,
+    systemTray: false,
+    touchSupport: true,
+    keyboardShortcuts: false,
+    nativeMenus: true,
+    offlineSupport: true,
+    backgroundSync: true,
+    deepLinking: true,
+    biometricAuth: true,
+  },
+  build: {
+    outputDir: 'android/app/build/outputs',
+    assetsDir: 'assets',
+    publicPath: '',
+    sourceMaps: true,
+    minification: true,
+    bundleAnalysis: true,
+    codesplitting: false,
+    treeshaking: true,
+    optimization: {
+      images: true,
+      fonts: true,
+      css: false,
+      javascript: true,
+      chunks: false,
+      compression: true,
+    },
+  },
+  development: {
+    port: 8081,
+    host: 'localhost',
+    https: false,
+    hotReload: true,
+    liveReload: true,
+    devtools: true,
+    debugging: true,
+    profiling: true,
+  },
+  deployment: {
+    target: 'native',
+    platform: 'mobile',
+    architecture: ['arm64', 'armv7', 'x86_64'],
+    signing: {
+      enabled: true,
+      keystore: 'android/app/{{projectName}}.keystore',
+      certificate: 'ios/{{projectName}}.p12',
+    },
+    distribution: {
+      appStore: true,
+      playStore: true,
+      webDeploy: false,
+      selfHosted: false,
+      enterprise: true,
+    },
+  },
+};
+
+/**
+ * Desktop Platform Configuration (Electron)
+ */
+{{#if typescript}}
+export const desktopConfig: PlatformConfig = {
+{{else}}
+export const desktopConfig = {
+{{/if}}
+  platform: 'desktop',
+  bundler: 'electron-builder',
+  runtime: 'electron',
+  features: {
+    fileSystem: true,
+    notifications: true,
+    camera: true,
+    geolocation: true,
+    clipboard: true,
+    windowControls: true,
+    systemTray: true,
+    touchSupport: false,
+    keyboardShortcuts: true,
+    nativeMenus: true,
+    offlineSupport: true,
+    backgroundSync: true,
+    deepLinking: true,
+    biometricAuth: false,
+  },
+  build: {
+    outputDir: 'dist-electron',
+    assetsDir: 'assets',
+    publicPath: './',
+    sourceMaps: true,
+    minification: true,
+    bundleAnalysis: true,
+    codesplitting: true,
+    treeshaking: true,
+    optimization: {
+      images: true,
+      fonts: true,
+      css: true,
+      javascript: true,
+      chunks: true,
+      compression: true,
+    },
+  },
+  development: {
+    port: 3000,
+    host: 'localhost',
+    https: false,
+    hotReload: true,
+    liveReload: true,
+    devtools: true,
+    debugging: true,
+    profiling: true,
+  },
+  deployment: {
+    target: 'desktop',
+    platform: 'desktop',
+    architecture: ['x64', 'arm64'],
+    signing: {
+      enabled: true,
+      certificate: 'certificates/{{projectName}}.p12',
+      identity: 'Developer ID Application: {{organizationName}}',
+    },
+    distribution: {
+      appStore: true,
+      playStore: false,
+      webDeploy: false,
+      selfHosted: true,
+      enterprise: true,
+    },
+  },
+};
+
+/**
+ * Get platform configuration based on current environment
+ */
+{{#if typescript}}
+export function getPlatformConfig(): PlatformConfig {
+{{else}}
+export function getPlatformConfig() {
+{{/if}}
+  // Detect platform from environment
+  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+    return mobileConfig;
+  }
+  
+  if (typeof window !== 'undefined' && window.process && window.process.type) {
+    return desktopConfig;
+  }
+  
+  if (typeof window !== 'undefined' && window.require) {
+    try {
+      window.require('electron');
+      return desktopConfig;
+    } catch {
+      // Not Electron
+    }
+  }
+  
+  // Default to web
+  return webConfig;
+}
+
+/**
+ * Platform-specific package.json configurations
+ */
+{{#if typescript}}
+export const platformPackages: Record<string, Record<string, string>> = {
+{{else}}
+export const platformPackages = {
+{{/if}}
+  web: {
+    // Next.js and web-specific dependencies
+    'next': '^15.0.0',
+    'react': '^18.0.0',
+    'react-dom': '^18.0.0',
+    '@next/bundle-analyzer': '^15.0.0',
+    'next-pwa': '^5.6.0',
+    'workbox-webpack-plugin': '^7.0.0',
+  },
+  mobile: {
+    // React Native dependencies
+    'react-native': '^0.74.0',
+    '@react-native-community/cli': '^13.0.0',
+    '@react-native-async-storage/async-storage': '^1.21.0',
+    'react-native-fs': '^2.20.0',
+    'react-native-image-picker': '^7.0.0',
+    '@react-native-community/geolocation': '^3.2.0',
+    'react-native-push-notification': '^8.1.0',
+    'react-native-document-picker': '^9.1.0',
+    '@react-navigation/native': '^6.1.0',
+    '@react-navigation/stack': '^6.3.0',
+    'react-native-screens': '^3.29.0',
+    'react-native-safe-area-context': '^4.8.0',
+  },
+  desktop: {
+    // Electron dependencies
+    'electron': '^28.0.0',
+    'electron-builder': '^24.9.0',
+    'electron-updater': '^6.1.0',
+    'electron-store': '^8.1.0',
+    'electron-window-state': '^5.0.3',
+  },
+  shared: {
+    // Shared dependencies across all platforms
+    '@xaheen-ai/design-system': '^5.0.0',
+    'next-intl': '^3.0.0',
+    'lucide-react': '^0.344.0',
+    'class-variance-authority': '^0.7.0',
+    'clsx': '^2.1.0',
+    'tailwind-merge': '^2.2.0',
+  },
+};
+
+/**
+ * Platform-specific build scripts
+ */
+{{#if typescript}}
+export const platformScripts: Record<string, Record<string, string>> = {
+{{else}}
+export const platformScripts = {
+{{/if}}
+  web: {
+    'dev': 'next dev',
+    'build': 'next build',
+    'start': 'next start',
+    'export': 'next export',
+    'analyze': 'ANALYZE=true next build',
+  },
+  mobile: {
+    'android': 'react-native run-android',
+    'ios': 'react-native run-ios',
+    'start': 'react-native start',
+    'build:android': 'cd android && ./gradlew assembleRelease',
+    'build:ios': 'react-native run-ios --configuration Release',
+    'bundle:android': 'react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle',
+    'bundle:ios': 'react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle',
+  },
+  desktop: {
+    'electron': 'electron .',
+    'electron:dev': 'concurrently "npm run dev" "wait-on http://localhost:3000 && electron ."',
+    'build:electron': 'next build && electron-builder',
+    'dist': 'electron-builder --publish=never',
+    'dist:mac': 'electron-builder --mac',
+    'dist:win': 'electron-builder --win',
+    'dist:linux': 'electron-builder --linux',
+  },
+};
+
+/**
+ * Platform-specific environment variables
+ */
+{{#if typescript}}
+export const platformEnvVars: Record<string, Record<string, string>> = {
+{{else}}
+export const platformEnvVars = {
+{{/if}}
+  web: {
+    'NEXT_PUBLIC_PLATFORM': 'web',
+    'NEXT_PUBLIC_APP_ENV': process.env.NODE_ENV || 'development',
+    'NEXT_PUBLIC_API_URL': process.env.API_URL || 'http://localhost:3001',
+  },
+  mobile: {
+    'PLATFORM': 'mobile',
+    'APP_ENV': process.env.NODE_ENV || 'development',
+    'API_URL': process.env.API_URL || 'http://localhost:3001',
+    'BUNDLE_ID': '{{bundleId}}',
+    'APP_NAME': 'web',
+  },
+  desktop: {
+    'ELECTRON_IS_DEV': process.env.NODE_ENV === 'development' ? '1' : '0',
+    'PLATFORM': 'desktop',
+    'APP_ENV': process.env.NODE_ENV || 'development',
+    'API_URL': process.env.API_URL || 'http://localhost:3001',
+  },
+};
+
+/**
+ * Platform-specific Tailwind CSS configurations
+ */
+{{#if typescript}}
+export const platformTailwindConfig: Record<string, any> = {
+{{else}}
+export const platformTailwindConfig = {
+{{/if}}
+  web: {
+    content: [
+      './pages/**/*.{js,ts,jsx,tsx}',
+      './components/**/*.{js,ts,jsx,tsx}',
+      './app/**/*.{js,ts,jsx,tsx}',
+      './layouts/**/*.{js,ts,jsx,tsx}',
+    ],
+    theme: {
+      extend: {
+        screens: {
+          'xs': '475px',
+        },
+      },
+    },
+    plugins: [],
+  },
+  mobile: {
+    // React Native doesn't use Tailwind CSS directly
+    // This would be for React Native Web if used
+    content: [],
+    theme: {},
+    plugins: [],
+  },
+  desktop: {
+    content: [
+      './src/**/*.{js,ts,jsx,tsx}',
+      './components/**/*.{js,ts,jsx,tsx}',
+      './layouts/**/*.{js,ts,jsx,tsx}',
+    ],
+    theme: {
+      extend: {
+        screens: {
+          'xl': '1280px',
+          '2xl': '1536px',
+          '3xl': '1920px',
+        },
+      },
+    },
+    plugins: [],
+  },
+};
+
+/**
+ * Export all configurations
+ */
+export {
+  webConfig,
+  mobileConfig,
+  desktopConfig,
+  platformPackages,
+  platformScripts,
+  platformEnvVars,
+  platformTailwindConfig,
+};

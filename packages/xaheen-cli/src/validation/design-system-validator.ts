@@ -1,7 +1,7 @@
 /**
  * Design System Usage Validator
  * 
- * Validates proper usage of @xaheen/design-system:
+ * Validates proper usage of @xaheen-ai/design-system:
  * - Correct imports from design system
  * - Usage of design system components
  * - Consistent component patterns
@@ -42,7 +42,7 @@ interface ImportPattern {
 }
 
 const DESIGN_SYSTEM_CONFIG: DesignSystemConfig = {
-  packageName: '@xaheen/design-system',
+  packageName: '@xaheen-ai/design-system',
   requiredComponents: ['Button', 'Input', 'Card', 'Modal', 'Form', 'Layout'],
   deprecatedComponents: ['OldButton', 'LegacyInput'],
   designTokens: {
@@ -74,7 +74,7 @@ export const designSystemRules: ValidationRule[] = [
     name: 'Design System Import Validation',
     category: 'design-system',
     severity: 'error',
-    description: 'Components must import from @xaheen/design-system when using design system components',
+    description: 'Components must import from @xaheen-ai/design-system when using design system components',
     validate: (context: ValidationContext, sourceCode: string, filePath: string): ValidationIssue[] => {
       const issues: ValidationIssue[] = [];
       
@@ -535,7 +535,7 @@ export class DesignSystemValidator {
     }
 
     if (designSystemIssues.some(i => i.ruleId === 'design-system-imports')) {
-      recommendations.push('Add proper imports from @xaheen/design-system for better component usage');
+      recommendations.push('Add proper imports from @xaheen-ai/design-system for better component usage');
     }
 
     if (designSystemIssues.some(i => i.ruleId === 'design-system-no-hardcoded-values')) {

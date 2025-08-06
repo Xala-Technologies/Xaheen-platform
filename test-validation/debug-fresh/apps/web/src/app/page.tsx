@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button, Card, CardHeader, CardTitle, CardContent } from '@xaheen/design-system/nextjs';
+import { Button, Card, CardHeader, CardTitle, CardContent } from '@xaheen-ai/design-system/nextjs';
 
 interface HomePageProps {
   readonly title?: string;

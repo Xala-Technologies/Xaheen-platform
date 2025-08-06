@@ -45,26 +45,26 @@ The Xaheen Design System Web Components platform provides standards-compliant Cu
 
 ```bash
 # Install the complete design system
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 
 # Or with yarn
-yarn add @xaheen/design-system
+yarn add @xaheen-ai/design-system
 
 # Or with pnpm
-pnpm add @xaheen/design-system
+pnpm add @xaheen-ai/design-system
 ```
 
 ### Via CDN
 
 ```html
 <!-- Import all components -->
-<script type="module" src="https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/index.js"></script>
+<script type="module" src="https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/index.js"></script>
 
 <!-- Or import individually for better performance -->
 <script type="module">
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/button.js';
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/input.js';
-  import 'https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/card.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/button.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/input.js';
+  import 'https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/card.js';
 </script>
 ```
 
@@ -72,12 +72,12 @@ pnpm add @xaheen/design-system
 
 ```javascript
 // Import all components
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 // Or import individually (recommended)
-import '@xaheen/design-system/registry/platforms/vanilla/button.js';
-import '@xaheen/design-system/registry/platforms/vanilla/input.js';
-import '@xaheen/design-system/registry/platforms/vanilla/card.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/button.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/input.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/card.js';
 ```
 
 ## Basic Usage
@@ -93,10 +93,10 @@ import '@xaheen/design-system/registry/platforms/vanilla/card.js';
   <title>Xaheen Web Components</title>
   
   <!-- Import design system tokens -->
-  <link rel="stylesheet" href="https://unpkg.com/@xaheen/design-system/tokens/css">
+  <link rel="stylesheet" href="https://unpkg.com/@xaheen-ai/design-system/tokens/css">
   
   <!-- Import components -->
-  <script type="module" src="https://unpkg.com/@xaheen/design-system/registry/platforms/vanilla/index.js"></script>
+  <script type="module" src="https://unpkg.com/@xaheen-ai/design-system/registry/platforms/vanilla/index.js"></script>
 </head>
 <body>
   <main>
@@ -149,7 +149,7 @@ import '@xaheen/design-system/registry/platforms/vanilla/card.js';
 
 ```jsx
 // React doesn't need any special setup for Web Components
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 function MyReactApp() {
   const handleButtonClick = (event) => {
@@ -196,7 +196,7 @@ function MyReactApp() {
 </template>
 
 <script setup>
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 const handleInput = (event) => {
   console.log('Input value:', event.detail.value);
@@ -213,7 +213,7 @@ const handleClick = (event) => {
 ```typescript
 // app.component.ts
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 @Component({
   selector: 'app-root',
@@ -1151,8 +1151,8 @@ customElements.define('custom-form-card', CustomFormCard);
 <script type="module">
   // Only load components when needed
   if ('customElements' in window && 'shadowRoot' in Element.prototype) {
-    import('@xaheen/design-system/registry/platforms/vanilla/card.js');
-    import('@xaheen/design-system/registry/platforms/vanilla/button.js');
+    import('@xaheen-ai/design-system/registry/platforms/vanilla/card.js');
+    import('@xaheen-ai/design-system/registry/platforms/vanilla/button.js');
   } else {
     // Polyfill for older browsers
     import('@webcomponents/webcomponentsjs/webcomponents-loader.js');
@@ -1175,9 +1175,9 @@ const LazyComponentLoader = {
     }
     
     const componentMap = {
-      'xaheen-button': () => import('@xaheen/design-system/registry/platforms/vanilla/button.js'),
-      'xaheen-input': () => import('@xaheen/design-system/registry/platforms/vanilla/input.js'),
-      'xaheen-card': () => import('@xaheen/design-system/registry/platforms/vanilla/card.js')
+      'xaheen-button': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/button.js'),
+      'xaheen-input': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/input.js'),
+      'xaheen-card': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/card.js')
     };
     
     const loader = componentMap[tagName];
@@ -1565,7 +1565,7 @@ function MyComponent() {
 }
 
 // After (Web Components)
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 function createSignInCard() {
   const container = document.createElement('div');
@@ -1613,7 +1613,7 @@ $('#my-form').on('submit', function(e) {
 });
 
 // After (Web Components)
-import '@xaheen/design-system/registry/platforms/vanilla';
+import '@xaheen-ai/design-system/registry/platforms/vanilla';
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('my-form');
@@ -1683,7 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Error: "Uncaught DOMException: Failed to construct 'CustomElement'"
 
 // Solution: Ensure proper import and registration
-import '@xaheen/design-system/registry/platforms/vanilla/button.js';
+import '@xaheen-ai/design-system/registry/platforms/vanilla/button.js';
 
 // Check if component is registered
 if (customElements.get('xaheen-button')) {
@@ -1867,9 +1867,9 @@ class ComponentLoader {
   
   async importComponent(tagName) {
     const componentMap = {
-      'xaheen-button': () => import('@xaheen/design-system/registry/platforms/vanilla/button.js'),
-      'xaheen-input': () => import('@xaheen/design-system/registry/platforms/vanilla/input.js'),
-      'xaheen-card': () => import('@xaheen/design-system/registry/platforms/vanilla/card.js')
+      'xaheen-button': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/button.js'),
+      'xaheen-input': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/input.js'),
+      'xaheen-card': () => import('@xaheen-ai/design-system/registry/platforms/vanilla/card.js')
     };
     
     const loader = componentMap[tagName];

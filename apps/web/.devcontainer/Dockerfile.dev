@@ -43,7 +43,7 @@ RUN pnpm install --frozen-lockfile
 # Set up git configuration
 RUN git config --global init.defaultBranch main
 RUN git config --global user.name "Xaheen Developer"
-RUN git config --global user.email "dev@xaheen.no"
+RUN git config --global user.email "dev@xaheen-ai.no"
 
 # Set ownership
 RUN chown -R node:node /workspace

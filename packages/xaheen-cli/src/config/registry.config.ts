@@ -13,7 +13,7 @@ export interface RegistryConfig {
 
 export const REGISTRY_CONFIG: RegistryConfig = {
   // Primary registry URL - Use unpkg CDN for published package
-  primary: 'https://unpkg.com/@xaheen/design-system/public/r',
+  primary: 'https://unpkg.com/@xaheen-ai/design-system/public/r',
   
   // Fallback registry URL - Direct GitHub raw content
   fallback: 'https://raw.githubusercontent.com/xaheen/design-system/main/packages/design-system/public/r',
@@ -22,7 +22,7 @@ export const REGISTRY_CONFIG: RegistryConfig = {
   local: process.env.XAHEEN_LOCAL_REGISTRY,
   
   // NPM package registry for direct imports
-  npm: '@xaheen/design-system',
+  npm: '@xaheen-ai/design-system',
   
   // Request timeout in milliseconds
   timeout: 10000,

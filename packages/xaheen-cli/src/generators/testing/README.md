@@ -74,7 +74,7 @@ xaheen generate mock User --count=50 --fields=id,name,email,role,createdAt
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate unit tests for a component
 const result = await generateCode({

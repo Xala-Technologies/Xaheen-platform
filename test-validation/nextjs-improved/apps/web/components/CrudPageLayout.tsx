@@ -1,0 +1,718 @@
+
+
+
+
+
+'use client';
+
+/**
+ * CrudPageLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Complete CRUD operations interface
+ * - Data table with sorting and filtering
+ * - Create/Edit modal forms
+ * - Bulk actions support
+ * - Search and pagination
+ * - Norwegian compliance patterns
+ * - Accessibility-first design
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Input,
+  Select,
+  Badge,
+  Icon,
+  DataTable,
+  Modal,
+  Form,
+  Alert,
+  Pagination,
+  DropdownMenu,
+  Checkbox,
+  Separator,
+  Card,
+  CardHeader,
+  CardContent,
+  ActionBar,
+  Tooltip
+} from '@xaheen-ai/design-system';
+import { 
+  Plus,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  Archive,
+  Settings
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface CrudPageLayoutProps<T = any> {
+  title: string;
+  description?: string;
+  data: T[];
+  columns: ColumnDefinition<T>[];
+  loading?: boolean;
+  error?: string;
+  totalCount?: number;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  onSearch?: (query: string) => void;
+  onFilter?: (filters: Record<string, any>) => void;
+  onSort?: (column: string, direction: 'asc' | 'desc') => void;
+  onCreate?: () => void;
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  onView?: (item: T) => void;
+  onBulkAction?: (action: string, items: T[]) => void;
+  bulkActions?: BulkAction[];
+  filters?: FilterDefinition[];
+  searchPlaceholder?: string;
+  createButtonText?: string;
+  emptyStateText?: string;
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface ColumnDefinition<T> {
+  key: string;
+  label: string;
+  sortable?: boolean;
+  filterable?: boolean;
+  render?: (item: T) => React.ReactNode;
+  width?: string;
+}
+
+interface BulkAction {
+  id: string;
+  label: string;
+  icon?: React.ComponentType;
+  variant?: 'primary' | 'secondary' | 'destructive';
+  requiresConfirmation?: boolean;
+}
+
+interface FilterDefinition {
+  key: string;
+  label: string;
+  type: 'text' | 'select' | 'date' | 'boolean';
+  options?: Array<{ value: string; label: string }>;
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Input,
+  Select,
+  Badge,
+  Icon,
+  DataTable,
+  Modal,
+  Form,
+  Alert,
+  Pagination,
+  DropdownMenu,
+  Checkbox,
+  Separator,
+  Card,
+  CardHeader,
+  CardContent,
+  ActionBar,
+  Tooltip
+} from '@xaheen-ai/design-system';
+import { 
+  Plus,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  Archive,
+  Settings
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+
+/**
+ * Default bulk actions for CRUD operations
+ */
+const defaultBulkActions: BulkAction[] = [
+  {
+    id: 'delete',
+    label: 'actions.delete',
+    icon: Trash2,
+    variant: 'destructive',
+    requiresConfirmation: true,
+  },
+  {
+    id: 'archive',
+    label: 'actions.archive',
+    icon: Archive,
+    variant: 'secondary',
+  },
+  {
+    id: 'export',
+    label: 'actions.export',
+    icon: Download,
+    variant: 'secondary',
+  },
+];
+
+/**
+ * CrudPageLayout - Complete CRUD operations interface
+ * Provides data table, search, filtering, and bulk actions
+ */
+
+export default function CrudPageLayout<T = any>({
+  title,
+  description,
+  data,
+  columns,
+  loading = false,
+  error,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
+  onSearch,
+  onFilter,
+  onSort,
+  onCreate,
+  onEdit,
+  onDelete,
+  onView,
+  onBulkAction,
+  bulkActions = defaultBulkActions,
+  filters = [],
+  searchPlaceholder,
+  createButtonText,
+  emptyStateText,
+  locale = 'en',
+  theme = 'light'
+}: CrudPageLayoutProps<T>): React.ReactElement {
+
+export default function CrudPageLayout({
+  title,
+  description,
+  data,
+  columns,
+  loading = false,
+  error,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
+  onSearch,
+  onFilter,
+  onSort,
+  onCreate,
+  onEdit,
+  onDelete,
+  onView,
+  onBulkAction,
+  bulkActions = defaultBulkActions,
+  filters = [],
+  searchPlaceholder,
+  createButtonText,
+  emptyStateText,
+  locale = 'en',
+  theme = 'light'
+}) {
+
+  const { t } = useTranslation();
+  const [selectedItems, setSelectedItems] = React.useState<T[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeFilters, setActiveFilters] = React.useState<Record<string, any>>({});
+  const [showFilters, setShowFilters] = React.useState(false);
+
+  const handleSearch = (query: string): void => {
+    setSearchQuery(query);
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const handleFilterChange = (key: string, value: any): void => {
+    const newFilters = { ...activeFilters, [key]: value };
+    setActiveFilters(newFilters);
+    if (onFilter) {
+      onFilter(newFilters);
+    }
+  };
+
+  const handleSelectAll = (checked: boolean): void => {
+    setSelectedItems(checked ? [...data] : []);
+  };
+
+  const handleSelectItem = (item: T, checked: boolean): void => {
+    if (checked) {
+      setSelectedItems([...selectedItems, item]);
+    } else {
+      setSelectedItems(selectedItems.filter(selected => selected !== item));
+    }
+  };
+
+  const handleBulkAction = (actionId: string): void => {
+    if (onBulkAction && selectedItems.length > 0) {
+      onBulkAction(actionId, selectedItems);
+      setSelectedItems([]);
+    }
+  };
+
+  const renderHeader = (): React.ReactElement => (
+    <Stack direction="vertical" spacing="4">
+      <Stack direction="horizontal" align="center" justify="between">
+        <Stack direction="vertical" spacing="2">
+          <Typography variant="heading" size="2xl" weight="bold">
+            {t(title, title)}
+          </Typography>
+          {description && (
+            <Typography variant="body" size="lg" color="muted">
+              {t(description, description)}
+            </Typography>
+          )}
+        </Stack>
+
+        <Stack direction="horizontal" align="center" spacing="3">
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleClick}
+          >
+            <Icon component={RefreshCw} size="sm" />
+            {t('actions.refresh', 'Refresh')}
+          </Button>
+
+          {onCreate && (
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleClick}
+            >
+              <Icon component={Plus} size="sm" />
+              {t(createButtonText || 'actions.create', 'Create')}
+            </Button>
+          )}
+        </Stack>
+      </Stack>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardContent padding="4">
+          <Stack direction="horizontal" align="center" spacing="3">
+            <Box flex="1">
+              <Input
+                placeholder={t(searchPlaceholder || 'search.placeholder', 'Search...')}
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                leftIcon={Search}
+                size="md"
+              />
+            </Box>
+
+            {filters.length > 0 && (
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleClick}
+              >
+                <Icon component={Filter} size="sm" />
+                {t('actions.filter', 'Filter')}
+                {Object.keys(activeFilters).length > 0 && (
+                  <Badge variant="primary" size="sm">
+                    {Object.keys(activeFilters).length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenu.Trigger asChild>
+                <Button variant="outline" size="md">
+                  <Icon component={MoreHorizontal} size="sm" />
+                </Button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DropdownMenu.Item>
+                  <Icon component={Download} size="sm" />
+                  {t('actions.export', 'Export')}
+                </DropdownMenu.Item>
+                <DropdownMenu.Item>
+                  <Icon component={Upload} size="sm" />
+                  {t('actions.import', 'Import')}
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item>
+                  <Icon component={Settings} size="sm" />
+                  {t('actions.settings', 'Settings')}
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
+          </Stack>
+
+          {/* Filter Panel */}
+          {showFilters && filters.length > 0 && (
+            <Box marginTop="4" paddingTop="4" borderTop="1">
+              <Stack direction="horizontal" align="center" spacing="4" wrap>
+                {filters.map((filter) => (
+                  <Box key={filter.key} minWidth="48">
+                    {filter.type === 'select' ? (
+                      <Select
+                        placeholder={t(filter.label, filter.label)}
+                        value={activeFilters[filter.key] || ''}
+                        onValueChange={(value) => handleFilterChange(filter.key, value)}
+                        options={filter.options || []}
+                      />
+                    ) : (
+                      <Input
+                        placeholder={t(filter.label, filter.label)}
+                        value={activeFilters[filter.key] || ''}
+                        onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                        size="md"
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
+  const renderBulkActions = (): React.ReactElement | null => {
+    if (selectedItems.length === 0) return null;
+
+    return (
+      <ActionBar
+        backgroundColor="primary"
+        color="primary-foreground"
+        padding="4"
+        borderRadius="md"
+        shadow="md"
+      >
+        <Stack direction="horizontal" align="center" justify="between">
+          <Typography variant="body" size="sm" weight="medium">
+            {t('bulk.selected', '{count} items selected', { count: selectedItems.length })}
+          </Typography>
+
+          <Stack direction="horizontal" align="center" spacing="2">
+            {bulkActions.map((action) => (
+              <Button
+                key={action.id}
+                variant={action.variant === 'destructive' ? 'destructive' : 'secondary'}
+                size="sm"
+                onClick={handleClick}
+              >
+                {action.icon && <Icon component={action.icon} size="sm" />}
+                {t(action.label, action.label)}
+              </Button>
+            ))}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClick}
+            >
+              {t('actions.cancel', 'Cancel')}
+            </Button>
+          </Stack>
+        </Stack>
+      </ActionBar>
+    );
+  };
+
+  const renderDataTable = (): React.ReactElement => {
+    if (loading) {
+      return (
+        <Card>
+          <CardContent padding="8" textAlign="center">
+            <Typography variant="body" color="muted">
+              {t('loading.data', 'Loading data...')}
+            </Typography>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    if (error) {
+      return (
+        <Alert variant="destructive">
+          <Typography variant="body">
+            {t('error.loadData', 'Failed to load data: {error}', { error })}
+          </Typography>
+        </Alert>
+      );
+    }
+
+    if (data.length === 0) {
+      return (
+        <Card>
+          <CardContent padding="12" textAlign="center">
+            <Typography variant="body" size="lg" color="muted">
+              {t(emptyStateText || 'empty.noData', 'No data available')}
+            </Typography>
+            {onCreate && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleClick}
+                marginTop="4"
+              >
+                <Icon component={Plus} size="sm" />
+                {t(createButtonText || 'actions.createFirst', 'Create First Item')}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Enhanced columns with selection and actions
+    const enhancedColumns = [
+      {
+        key: 'select',
+        label: (
+          <Checkbox
+            checked={selectedItems.length === data.length}
+            indeterminate={selectedItems.length > 0 && selectedItems.length < data.length}
+            onChange={(checked) => handleSelectAll(checked)}
+            aria-label={t('table.selectAll', 'Select all')}
+          />
+        ),
+        width: '48px',
+        render: (item: T) => (
+          <Checkbox
+            checked={selectedItems.includes(item)}
+            onChange={(checked) => handleSelectItem(item, checked)}
+            aria-label={t('table.selectItem', 'Select item')}
+          />
+        ),
+      },
+      ...columns,
+      {
+        key: 'actions',
+        label: t('table.actions', 'Actions'),
+        width: '120px',
+        render: (item: T) => (
+          <Stack direction="horizontal" align="center" spacing="1">
+            {onView && (
+              <Tooltip content={t('actions.view', 'View')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClick}
+                >
+                  <Icon component={Eye} size="sm" />
+                </Button>
+              </Tooltip>
+            )}
+            {onEdit && (
+              <Tooltip content={t('actions.edit', 'Edit')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClick}
+                >
+                  <Icon component={Edit} size="sm" />
+                </Button>
+              </Tooltip>
+            )}
+            {onDelete && (
+              <Tooltip content={t('actions.delete', 'Delete')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClick}
+                >
+                  <Icon component={Trash2} size="sm" />
+                </Button>
+              </Tooltip>
+            )}
+          </Stack>
+        ),
+      },
+    ];
+
+    return (
+      <Card>
+        <DataTable
+          data={data}
+          columns={enhancedColumns}
+          sortable={true}
+          onSort={onSort}
+        />
+      </Card>
+    );
+  };
+
+  const renderPagination = (): React.ReactElement | null => {
+    if (totalCount <= pageSize) return null;
+
+    return (
+      <Stack direction="horizontal" align="center" justify="between">
+        <Typography variant="body" size="sm" color="muted">
+          {t('pagination.showing', 'Showing {start} to {end} of {total} results', {
+            start: (currentPage - 1) * pageSize + 1,
+            end: Math.min(currentPage * pageSize, totalCount),
+            total: totalCount,
+          })}
+        </Typography>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalCount / pageSize)}
+          onPageChange={onPageChange}
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+        />
+      </Stack>
+    );
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Container maxWidth="full" padding="6">
+        <Stack direction="vertical" spacing="6">
+          {renderHeader()}
+          {renderBulkActions()}
+          {renderDataTable()}
+          {renderPagination()}
+        </Stack>
+      </Container>
+    </BaseLayout>
+  );
+}
+
+
+// Example usage:
+/*
+import CrudPageLayout from '@/layouts/CrudPageLayout';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+}
+
+export default function UsersPage() {
+  const columns = [
+    {
+      key: 'name',
+      label: 'users.name',
+      sortable: true,
+      render: (user: User) => (
+        <Typography variant="body" weight="medium">
+          {user.name}
+        </Typography>
+      ),
+    },
+    {
+      key: 'email',
+      label: 'users.email',
+      sortable: true,
+    },
+    {
+      key: 'role',
+      label: 'users.role',
+      filterable: true,
+    },
+    {
+      key: 'status',
+      label: 'users.status',
+      render: (user: User) => (
+        <Badge variant={user.status === 'active' ? 'success' : 'secondary'}>
+          {user.status}
+        </Badge>
+      ),
+    },
+  ];
+
+  const filters = [
+    {
+      key: 'role',
+      label: 'users.role',
+      type: 'select',
+      options: [
+        { value: 'admin', label: 'Admin' },
+        { value: 'user', label: 'User' },
+      ],
+    },
+    {
+      key: 'status',
+      label: 'users.status',
+      type: 'select',
+      options: [
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ],
+    },
+  ];
+
+  return (
+    <CrudPageLayout
+      title="users.title"
+      description="users.description"
+      data={users}
+      columns={columns}
+      filters={filters}
+      totalCount={totalUsers}
+      currentPage={currentPage}
+      pageSize={pageSize}
+      onPageChange={handlePageChange}
+      onSearch={handleSearch}
+      onFilter={handleFilter}
+      onCreate={handleCreateUser}
+      onEdit={handleEditUser}
+      onDelete={handleDeleteUser}
+      onBulkAction={handleBulkAction}
+      locale="nb"
+    />
+  );
+}
+*/
+

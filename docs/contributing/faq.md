@@ -13,7 +13,7 @@ Find answers to the most common questions about Xaheen CLI, template development
 **A:** Install Xaheen CLI globally using npm:
 
 ```bash
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 ```
 
 Verify installation:
@@ -446,7 +446,7 @@ See our [Contribution Guidelines](./community-contribution/contribution-guidelin
 - **GitHub Discussions:** General questions and discussions
 - **Stack Overflow:** Tag questions with `xaheen-cli`
 - **Documentation:** Comprehensive guides and tutorials
-- **Email Support:** [support@xaheen.com](mailto:support@xaheen.com)
+- **Email Support:** [support@xaheen-ai.com](mailto:support@xaheen-ai.com)
 
 ### Q: How do I share my templates?
 
@@ -484,7 +484,7 @@ See our [Contribution Guidelines](./community-contribution/contribution-guidelin
 - **Priority support**
 - **Custom integrations**
 
-Contact [enterprise@xaheen.com](mailto:enterprise@xaheen.com) for details.
+Contact [enterprise@xaheen-ai.com](mailto:enterprise@xaheen-ai.com) for details.
 
 ## 🔮 Future & Roadmap
 
@@ -517,7 +517,7 @@ If you can't find the answer you're looking for:
 1. **Search our documentation:** [docs.xaheen.com](https://docs.xaheen.com)
 2. **Check GitHub issues:** Someone might have asked already
 3. **Ask the community:** Discord or GitHub Discussions
-4. **Contact support:** [support@xaheen.com](mailto:support@xaheen.com)
+4. **Contact support:** [support@xaheen-ai.com](mailto:support@xaheen-ai.com)
 
 We're here to help you succeed with Xaheen CLI!
 

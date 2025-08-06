@@ -1091,7 +1091,7 @@ export class UserProfilesService {
 				id: "user_1",
 				username: "xaheen_master",
 				displayName: "Xaheen Master",
-				email: "master@xaheen.com",
+				email: "master@xaheen-ai.com",
 				avatar: "https://avatars.example.com/xaheen_master.png",
 				bio: "Full-stack developer passionate about building amazing applications with Xaheen CLI. Norwegian compliance expert.",
 				location: "Oslo, Norway",

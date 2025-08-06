@@ -1,0 +1,534 @@
+
+
+
+
+
+'use client';
+
+/**
+ * FormLayout Component - Xala UI System Compliant
+ * Generated with Xaheen CLI
+ * 
+ * MANDATORY COMPLIANCE RULES:
+ * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
+ * ✅ ONLY semantic components from @xaheen-ai/design-system
+ * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
+ * ✅ MANDATORY design token usage for all colors, spacing, typography
+ * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
+ * ✅ WCAG 2.2 AAA compliance for accessibility
+ * ❌ NO hardcoded user-facing text - ALL text must use t() function
+ * ✅ MANDATORY localization: English, Norwegian Bokmål, French, Arabic
+ * ✅ Explicit TypeScript return types (no 'any' types)
+ * ✅ SOLID principles and component composition
+ * ✅ Maximum 200 lines per file, 20 lines per function
+ * 
+ * Features:
+ * - Multi-step form support
+ * - Validation and error handling
+ * - Auto-save functionality
+ * - Progress indicators
+ * - Responsive form layouts
+ * - Accessibility-first design
+ * - Norwegian form patterns
+ */
+
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Form,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Progress,
+  Alert,
+  Separator,
+  Badge,
+  Icon,
+  ScrollArea
+} from '@xaheen-ai/design-system';
+import { 
+  Save,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  AlertCircle,
+  Info
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+interface FormLayoutProps {
+  title: string;
+  description?: string;
+  steps?: FormStep[];
+  currentStep?: number;
+  totalSteps?: number;
+  onStepChange?: (step: number) => void;
+  onSubmit?: (data: any) => void;
+  onCancel?: () => void;
+  onSave?: (data: any) => void;
+  loading?: boolean;
+  error?: string;
+  success?: string;
+  autoSave?: boolean;
+  showProgress?: boolean;
+  children: React.ReactNode;
+  actions?: React.ReactNode;
+  sidebar?: React.ReactNode;
+  showSidebar?: boolean;
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  locale?: string;
+  theme?: 'light' | 'dark' | 'high-contrast';
+}
+
+interface FormStep {
+  id: string;
+  title: string;
+  description?: string;
+  completed?: boolean;
+  optional?: boolean;
+}
+
+import React from 'react';
+import { useTranslation } from 'next-intl';
+import {
+  Box,
+  Stack,
+  Container,
+  Typography,
+  Button,
+  Form,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Progress,
+  Alert,
+  Separator,
+  Badge,
+  Icon,
+  ScrollArea
+} from '@xaheen-ai/design-system';
+import { 
+  Save,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  AlertCircle,
+  Info
+} from 'lucide-react';
+import BaseLayout from './BaseLayout';
+
+
+/**
+ * FormLayout - Professional form interface with multi-step support
+ * Optimized for accessibility and Norwegian form patterns
+ */
+
+export default function FormLayout({
+  title,
+  description,
+  steps = [],
+  currentStep = 1,
+  totalSteps = 1,
+  onStepChange,
+  onSubmit,
+  onCancel,
+  onSave,
+  loading = false,
+  error,
+  success,
+  autoSave = false,
+  showProgress = true,
+  children,
+  actions,
+  sidebar,
+  showSidebar = false,
+  maxWidth = 'lg',
+  locale = 'en',
+  theme = 'light'
+}: FormLayoutProps): React.ReactElement {
+
+export default function FormLayout({
+  title,
+  description,
+  steps = [],
+  currentStep = 1,
+  totalSteps = 1,
+  onStepChange,
+  onSubmit,
+  onCancel,
+  onSave,
+  loading = false,
+  error,
+  success,
+  autoSave = false,
+  showProgress = true,
+  children,
+  actions,
+  sidebar,
+  showSidebar = false,
+  maxWidth = 'lg',
+  locale = 'en',
+  theme = 'light'
+}) {
+
+  const { t } = useTranslation();
+  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+
+  // Auto-save functionality
+  React.useEffect(() => {
+    if (autoSave && hasUnsavedChanges && onSave) {
+      const timer = setTimeout(() => {
+        onSave({});
+        setHasUnsavedChanges(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [autoSave, hasUnsavedChanges, onSave]);
+
+  const getMaxWidth = (): string => {
+    const widthMap = {
+      sm: '128', // 512px
+      md: '160', // 640px
+      lg: '192', // 768px
+      xl: '256', // 1024px
+      full: 'full',
+    };
+    return widthMap[maxWidth];
+  };
+
+  const renderProgressIndicator = (): React.ReactElement | null => {
+    if (!showProgress || totalSteps <= 1) return null;
+
+    const progressPercentage = (currentStep / totalSteps) * 100;
+
+    return (
+      <Card marginBottom="6">
+        <CardContent padding="6">
+          <Stack direction="vertical" spacing="4">
+            <Stack direction="horizontal" align="center" justify="between">
+              <Typography variant="body" size="sm" weight="medium">
+                {t('form.progress', 'Step {current} of {total}', {
+                  current: currentStep,
+                  total: totalSteps,
+                })}
+              </Typography>
+              <Typography variant="body" size="sm" color="muted">
+                {Math.round(progressPercentage)}% {t('form.complete', 'complete')}
+              </Typography>
+            </Stack>
+
+            <Progress value={progressPercentage} max={100} />
+
+            {steps.length > 0 && (
+              <Stack direction="horizontal" align="center" spacing="2" wrap>
+                {steps.map((step, index) => (
+                  <Stack key={step.id} direction="horizontal" align="center" spacing="2">
+                    <Badge
+                      variant={
+                        index + 1 < currentStep
+                          ? 'success'
+                          : index + 1 === currentStep
+                          ? 'primary'
+                          : 'secondary'
+                      }
+                      size="sm"
+                    >
+                      {index + 1 < currentStep ? (
+                        <Icon component={Check} size="xs" />
+                      ) : (
+                        index + 1
+                      )}
+                    </Badge>
+                    <Typography
+                      variant="body"
+                      size="sm"
+                      color={index + 1 === currentStep ? 'primary' : 'muted'}
+                    >
+                      {t(step.title, step.title)}
+                      {step.optional && (
+                        <Typography variant="caption" size="xs" color="muted">
+                          {' '}({t('form.optional', 'optional')})
+                        </Typography>
+                      )}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderFormHeader = (): React.ReactElement => (
+    <Stack direction="vertical" spacing="4" marginBottom="6">
+      <Stack direction="horizontal" align="center" justify="between">
+        <Stack direction="vertical" spacing="2">
+          <Typography variant="heading" size="2xl" weight="bold">
+            {t(title, title)}
+          </Typography>
+          {description && (
+            <Typography variant="body" size="lg" color="muted">
+              {t(description, description)}
+            </Typography>
+          )}
+        </Stack>
+
+        {autoSave && (
+          <Stack direction="horizontal" align="center" spacing="2">
+            <Icon component={Save} size="sm" color="muted" />
+            <Typography variant="body" size="sm" color="muted">
+              {hasUnsavedChanges
+                ? t('form.autoSaving', 'Auto-saving...')
+                : t('form.saved', 'All changes saved')}
+            </Typography>
+          </Stack>
+        )}
+      </Stack>
+
+      {/* Status Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <Icon component={AlertCircle} size="sm" />
+          <Typography variant="body">
+            {t(error, error)}
+          </Typography>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert variant="success">
+          <Icon component={Check} size="sm" />
+          <Typography variant="body">
+            {t(success, success)}
+          </Typography>
+        </Alert>
+      )}
+    </Stack>
+  );
+
+  const renderFormActions = (): React.ReactElement => (
+    <Stack direction="horizontal" align="center" justify="between" spacing="4">
+      {/* Previous Step / Cancel */}
+      <Stack direction="horizontal" align="center" spacing="3">
+        {currentStep > 1 && onStepChange ? (
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleClick}
+            disabled={loading}
+          >
+            <Icon component={ChevronLeft} size="sm" />
+            {t('form.previous', 'Previous')}
+          </Button>
+        ) : onCancel ? (
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleClick}
+            disabled={loading}
+          >
+            <Icon component={X} size="sm" />
+            {t('form.cancel', 'Cancel')}
+          </Button>
+        ) : null}
+      </Stack>
+
+      {/* Custom Actions */}
+      {actions && (
+        <Stack direction="horizontal" align="center" spacing="2">
+          {actions}
+        </Stack>
+      )}
+
+      {/* Next Step / Submit */}
+      <Stack direction="horizontal" align="center" spacing="3">
+        {onSave && !autoSave && (
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleClick})}
+            disabled={loading}
+          >
+            <Icon component={Save} size="sm" />
+            {t('form.save', 'Save')}
+          </Button>
+        )}
+
+        {currentStep < totalSteps && onStepChange ? (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleClick}
+            disabled={loading}
+          >
+            {t('form.next', 'Next')}
+            <Icon component={ChevronRight} size="sm" />
+          </Button>
+        ) : onSubmit ? (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleClick})}
+            disabled={loading}
+            loading={loading}
+          >
+            {loading ? t('form.submitting', 'Submitting...') : t('form.submit', 'Submit')}
+          </Button>
+        ) : null}
+      </Stack>
+    </Stack>
+  );
+
+  const renderSidebar = (): React.ReactElement | null => {
+    if (!showSidebar || !sidebar) return null;
+
+    return (
+      <Box width="80" flexShrink="0">
+        <Card height="fit">
+          <CardHeader>
+            <Typography variant="heading" size="md" weight="medium">
+              {t('form.help', 'Help & Information')}
+            </Typography>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea height="120">
+              {sidebar}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  };
+
+  return (
+    <BaseLayout locale={locale} theme={theme} enableCompliance={true}>
+      <Container maxWidth={getMaxWidth()} padding="6">
+        <Stack direction="vertical" spacing="0">
+          {renderFormHeader()}
+          {renderProgressIndicator()}
+
+          <Stack direction="horizontal" align="start" spacing="6">
+            {/* Main Form Content */}
+            <Box flex="1">
+              <Card>
+                <CardContent padding="8">
+                  <Form onSubmit={onSubmit}>
+                    {children}
+                  </Form>
+                </CardContent>
+
+                <CardFooter padding="6" borderTop="1">
+                  {renderFormActions()}
+                </CardFooter>
+              </Card>
+            </Box>
+
+            {/* Sidebar */}
+            {renderSidebar()}
+          </Stack>
+        </Stack>
+      </Container>
+    </BaseLayout>
+  );
+}
+
+
+// Example usage:
+/*
+import FormLayout from '@/layouts/FormLayout';
+import { FormField, FormLabel, FormControl, Input, Textarea, Select } from '@xaheen-ai/design-system';
+
+export default function CreateUserForm() {
+  const steps = [
+    { id: 'basic', title: 'form.steps.basicInfo', description: 'Basic user information' },
+    { id: 'contact', title: 'form.steps.contact', description: 'Contact details' },
+    { id: 'permissions', title: 'form.steps.permissions', description: 'User permissions', optional: true },
+    { id: 'review', title: 'form.steps.review', description: 'Review and submit' },
+  ];
+
+  const sidebarContent = (
+    <Stack direction="vertical" spacing="4">
+      <Typography variant="body" size="sm">
+        Fill out all required fields to create a new user account.
+      </Typography>
+      <Alert variant="info">
+        <Icon component={Info} size="sm" />
+        <Typography variant="body" size="sm">
+          Norwegian users require BankID verification.
+        </Typography>
+      </Alert>
+    </Stack>
+  );
+
+  return (
+    <FormLayout
+      title="users.create.title"
+      description="users.create.description"
+      steps={steps}
+      currentStep={1}
+      totalSteps={4}
+      onStepChange={handleStepChange}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      autoSave={true}
+      showSidebar={true}
+      sidebar={sidebarContent}
+      locale="nb"
+    >
+      <Stack direction="vertical" spacing="6">
+        <FormField name="name" required>
+          <FormLabel>users.name</FormLabel>
+          <FormControl>
+            <Input placeholder="users.name.placeholder" />
+          </FormControl>
+          <FormMessage />
+        </FormField>
+
+        <FormField name="email" required>
+          <FormLabel>users.email</FormLabel>
+          <FormControl>
+            <Input type="email" placeholder="users.email.placeholder" />
+          </FormControl>
+          <FormMessage />
+        </FormField>
+
+        <FormField name="role" required>
+          <FormLabel>users.role</FormLabel>
+          <FormControl>
+            <Select
+              placeholder="users.role.placeholder"
+              options={[
+                { value: 'admin', label: 'Admin' },
+                { value: 'user', label: 'User' },
+              ]}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormField>
+      </Stack>
+    </FormLayout>
+  );
+}
+*/
+

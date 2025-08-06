@@ -286,13 +286,13 @@ ${spec.description}
 ## Installation
 
 \`\`\`bash
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 \`\`\`
 
 ## Usage
 
 \`\`\`tsx
-import { ${componentName} } from '@xaheen/design-system/react';
+import { ${componentName} } from '@xaheen-ai/design-system/react';
 
 export function App() {
   return (

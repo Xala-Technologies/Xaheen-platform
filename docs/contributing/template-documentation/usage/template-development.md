@@ -20,7 +20,7 @@ Before developing templates, ensure you have:
 
 ```bash
 # Install Xaheen CLI globally
-npm install -g @xaheen/cli
+npm install -g @xaheen-ai/cli
 
 # Create a new template project
 xaheen create template my-custom-template
@@ -446,7 +446,7 @@ module.exports = {
 
 ```javascript
 // tests/template.test.js
-const { generateTemplate } = require('@xaheen/template-engine');
+const { generateTemplate } = require('@xaheen-ai/template-engine');
 const template = require('../template.json');
 
 describe('Custom Button Template', () => {
@@ -846,4 +846,4 @@ xaheen generate --trace-template-execution
 
 - [Issue Tracker](https://github.com/xaheen/cli/issues)
 - [Documentation](https://docs.xaheen.com)
-- [Email Support](mailto:support@xaheen.com)
+- [Email Support](mailto:support@xaheen-ai.com)

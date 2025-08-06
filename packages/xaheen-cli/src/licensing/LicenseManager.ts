@@ -133,7 +133,7 @@ export class LicenseManager {
           issuedAt: new Date().toISOString(),
           metadata: {
             customerName: 'Development User',
-            customerEmail: 'dev@xaheen.dev',
+            customerEmail: 'dev@xaheen-ai.dev',
             organizationName: 'Development',
             licenseType: 'development',
           }

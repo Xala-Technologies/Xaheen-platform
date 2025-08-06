@@ -1,0 +1,197 @@
+
+
+
+
+
+{
+  "name": "nextjs-improved",
+  "version": "",
+  "description": "Web application for nextjs-improved - Generated with Xaheen CLI using Xala UI System",
+  "_compliance_rules": {
+    "mandatory": [
+      "NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages",
+      "ONLY semantic components from @xaheen-ai/design-system",
+      "NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)",
+      "MANDATORY design token usage for all colors, spacing, typography",
+      "Enhanced 8pt Grid System - all spacing in 8px increments",
+      "WCAG 2.2 AAA compliance for accessibility",
+      "NO hardcoded user-facing text - ALL text must use t() function",
+      "MANDATORY localization: English, Norwegian Bokmål, French, Arabic",
+      "Explicit TypeScript return types (no 'any' types)",
+      "SOLID principles and component composition",
+      "Maximum 200 lines per file, 20 lines per function"
+    ]
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "storybook": "
+    "next": "^14.0.0",
+    
+    
+    
+    "typescript": "^5.0.0",
+    
+    
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    
+    
+    
+    "@xaheen-ai/design-system": "workspace:*",
+    
+    "@xaheen-ai/design-system": "^1.0.0",
+    
+    
+    
+    
+    "lucide-react": "^0.300.0",
+    
+    
+    
+    
+    "framer-motion": "^10.0.0",
+    "react-spring": "^9.0.0",
+    
+    
+    
+    
+    "date-fns": "^3.0.0",
+    "date-fns-tz": "^2.0.0",
+    
+    
+    
+    "react-use": "^17.0.0",
+    "usehooks-ts": "^2.0.0"
+  },
+  "devDependencies": {
+    
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    
+    
+    
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-jsx-a11y": "^6.0.0",
+    "eslint-plugin-import": "^2.0.0",
+    
+    
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.5.0",
+    
+    
+    
+    
+    "vitest": "^1.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "jsdom": "^23.0.0",
+    
+    
+    "jest": "^29.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "happy-dom": "^12.0.0",
+    
+    
+    
+    
+    "@axe-core/react": "^4.0.0",
+    "axe-core": "^4.0.0",
+    "lighthouse": "^11.0.0",
+    "pa11y": "^8.0.0",
+    
+    
+    
+    
+    "@storybook/react": "^7.0.0",
+    "@storybook/react-vite": "^7.0.0",
+    "@storybook/addon-essentials": "^7.0.0",
+    "@storybook/addon-a11y": "^7.0.0",
+    "@storybook/addon-docs": "^7.0.0",
+    
+    
+    
+    "cross-env": "^7.0.0",
+    "rimraf": "^5.0.0",
+    
+    
+    "concurrently": "^8.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "next/core-web-vitals",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:jsx-a11y/recommended"
+    ],
+    "rules": {
+      "jsx-a11y/anchor-is-valid": "error",
+      "jsx-a11y/aria-props": "error",
+      "jsx-a11y/aria-proptypes": "error",
+      "jsx-a11y/aria-unsupported-elements": "error",
+      "jsx-a11y/role-has-required-aria-props": "error",
+      "jsx-a11y/role-supports-aria-props": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "plugins": ["prettier-plugin-tailwindcss"]
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "xala-ui",
+    "design-system",
+    "accessibility",
+    "wcag",
+    "norwegian",
+    "gdpr",
+    "ui-components"
+  ],
+  "author": "",
+  "license": ""
+}

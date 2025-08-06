@@ -923,7 +923,7 @@ export class ContextualHelpSystem extends EventEmitter {
 		cliLogger.info(chalk.blue('\n🚀 Getting Started with Xaheen CLI\n'));
 		
 		const steps = [
-			'Install Xaheen CLI globally: npm install -g @xaheen/cli',
+			'Install Xaheen CLI globally: npm install -g @xaheen-ai/cli',
 			'Create your first project: xaheen project create my-app',
 			'Navigate to your project: cd my-app',
 			'Generate your first component: xaheen make:component Button',
@@ -995,8 +995,8 @@ export class ContextualHelpSystem extends EventEmitter {
 		const issues = [
 			{
 				problem: 'Command not found error',
-				solution: 'Make sure Xaheen CLI is installed globally: npm install -g @xaheen/cli',
-				code: 'npm list -g @xaheen/cli'
+				solution: 'Make sure Xaheen CLI is installed globally: npm install -g @xaheen-ai/cli',
+				code: 'npm list -g @xaheen-ai/cli'
 			},
 			{
 				problem: 'Permission denied when creating files',
@@ -1027,7 +1027,7 @@ export class ContextualHelpSystem extends EventEmitter {
 		cliLogger.info(chalk.blue('🆘 Still need help?'));
 		cliLogger.info('  • Check GitHub issues: https://github.com/xaheen/cli/issues');
 		cliLogger.info('  • Join our Discord: https://discord.gg/xaheen');
-		cliLogger.info('  • Email support: support@xaheen.com');
+		cliLogger.info('  • Email support: support@xaheen-ai.com');
 
 		await inquirer.prompt([{ type: 'input', name: 'continue', message: 'Press Enter to continue...' }]);
 		return await this.showMainHelpMenu(session);
@@ -1376,8 +1376,8 @@ export class ContextualHelpSystem extends EventEmitter {
 					{
 						title: 'Install Xaheen CLI',
 						description: 'First, let\'s install the Xaheen CLI globally on your system.',
-						command: 'npm install -g @xaheen/cli',
-						expectedOutput: 'Successfully installed @xaheen/cli',
+						command: 'npm install -g @xaheen-ai/cli',
+						expectedOutput: 'Successfully installed @xaheen-ai/cli',
 						tips: ['You may need to use sudo on macOS/Linux', 'Restart your terminal after installation']
 					},
 					{

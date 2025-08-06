@@ -295,7 +295,7 @@ export class MetaGenerator extends BaseGenerator<MetaGeneratorOptions> {
       'generator/package.hbs',
       path.join(outputPath, 'package.json'),
       {
-        name: `@xaheen/generator-${metadata.id}`,
+        name: `@xaheen-ai/generator-${metadata.id}`,
         version: metadata.version,
         description: metadata.description,
         author: metadata.author,

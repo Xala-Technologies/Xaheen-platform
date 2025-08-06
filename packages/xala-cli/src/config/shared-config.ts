@@ -362,8 +362,8 @@ export class ConfigUtils {
 			const packageJson = JSON.parse(packageContent);
 
 			if (
-				packageJson.dependencies?.["@xaheen/cli"] ||
-				packageJson.devDependencies?.["@xaheen/cli"]
+				packageJson.dependencies?.["@xaheen-ai/cli"] ||
+				packageJson.devDependencies?.["@xaheen-ai/cli"]
 			) {
 				return "xaheen-integrated";
 			}

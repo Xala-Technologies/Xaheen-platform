@@ -455,7 +455,7 @@ export class ComprehensiveValidator {
       name: 'Design System Imports',
       category: 'design-system',
       severity: 'error',
-      description: 'Components must import from @xaheen/design-system',
+      description: 'Components must import from @xaheen-ai/design-system',
       validate: (context, sourceCode, filePath) => {
         const issues: ValidationIssue[] = [];
         
@@ -474,7 +474,7 @@ export class ComprehensiveValidator {
             fix: {
               description: 'Add design system import',
               oldText: '',
-              newText: "import { Button, Input, Card, Modal, Form } from '@xaheen/design-system';\n"
+              newText: "import { Button, Input, Card, Modal, Form } from '@xaheen-ai/design-system';\n"
             }
           });
         }
@@ -791,7 +791,7 @@ export class ComprehensiveValidator {
     }
     
     if (categories.get('design-system')?.length > 0) {
-      recommendations.push('Improve design system usage: import components from @xaheen/design-system and avoid hardcoded values');
+      recommendations.push('Improve design system usage: import components from @xaheen-ai/design-system and avoid hardcoded values');
     }
     
     if (categories.get('nsm-security')?.length > 0) {

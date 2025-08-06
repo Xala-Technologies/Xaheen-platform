@@ -178,7 +178,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const subject = `Bug Report: ${error?.message || 'Unexpected Error'}`;
     const body = `Error ID: ${errorId}\nURL: ${window.location.href}\nPlease describe what you were doing when this error occurred.`;
     
-    window.open(`mailto:support@xaheen.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    window.open(`mailto:support@xaheen-ai.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
 
   public render(): ReactNode {
@@ -357,11 +357,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open('mailto:support@xaheen.com')}
+                      onClick={() => window.open('mailto:support@xaheen-ai.com')}
                       className="h-8"
                     >
                       <Mail className="h-3 w-3 mr-2" />
-                      support@xaheen.com
+                      support@xaheen-ai.com
                     </Button>
                   </Stack>
                 </Stack>

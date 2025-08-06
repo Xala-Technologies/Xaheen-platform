@@ -15,7 +15,7 @@ Professional web application navigation bar with responsive design, theme switch
 ## Usage
 
 ```tsx
-import { WebNavbar } from '@xaheen/design-system';
+import { WebNavbar } from '@xaheen-ai/design-system';
 
 const navigation = [
   {

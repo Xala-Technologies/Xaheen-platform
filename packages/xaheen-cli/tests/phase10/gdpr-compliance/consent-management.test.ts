@@ -85,8 +85,8 @@ describe('GDPR Consent Management Tests', () => {
         },
         dataController: {
           name: 'Xaheen Enterprise',
-          email: 'privacy@xaheen.com',
-          dpoEmail: 'dpo@xaheen.com'
+          email: 'privacy@xaheen-ai.com',
+          dpoEmail: 'dpo@xaheen-ai.com'
         }
       };
 

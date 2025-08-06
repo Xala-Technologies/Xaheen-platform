@@ -1,7 +1,7 @@
 /**
  * Design System Integration Validation Module
  * 
- * Validates that generated projects properly integrate with @xaheen/design-system:
+ * Validates that generated projects properly integrate with @xaheen-ai/design-system:
  * - Correct imports and usage
  * - Proper component sizing (Button h-12+, Input h-14+)
  * - TypeScript interfaces are readonly
@@ -17,9 +17,9 @@ export class DesignSystemValidator {
   private static readonly DESIGN_SYSTEM_VALIDATIONS: DesignSystemValidation[] = [
     {
       type: 'import',
-      pattern: 'from "@xaheen/design-system"',
+      pattern: 'from "@xaheen-ai/design-system"',
       expected: true,
-      message: 'Should import components from @xaheen/design-system'
+      message: 'Should import components from @xaheen-ai/design-system'
     },
     {
       type: 'import',
@@ -145,18 +145,18 @@ export class DesignSystemValidator {
       const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
       const packageJson = JSON.parse(packageJsonContent);
 
-      // Check for @xaheen/design-system dependency
+      // Check for @xaheen-ai/design-system dependency
       const hasDesignSystemDep = 
-        (packageJson.dependencies && packageJson.dependencies['@xaheen/design-system']) ||
-        (packageJson.devDependencies && packageJson.devDependencies['@xaheen/design-system']);
+        (packageJson.dependencies && packageJson.dependencies['@xaheen-ai/design-system']) ||
+        (packageJson.devDependencies && packageJson.devDependencies['@xaheen-ai/design-system']);
 
       if (!hasDesignSystemDep) {
-        errors.push('package.json: Missing @xaheen/design-system dependency');
+        errors.push('package.json: Missing @xaheen-ai/design-system dependency');
       }
 
       // Check for proper version (if exists)
-      const designSystemVersion = packageJson.dependencies?.['@xaheen/design-system'] || 
-                                  packageJson.devDependencies?.['@xaheen/design-system'];
+      const designSystemVersion = packageJson.dependencies?.['@xaheen-ai/design-system'] || 
+                                  packageJson.devDependencies?.['@xaheen-ai/design-system'];
 
       if (designSystemVersion) {
         // Simple version check - in production, use semver
@@ -242,7 +242,7 @@ export class DesignSystemValidator {
       const hasDesignSystemImport = /from\s+["']@xaheen\/design-system["']/m.test(content);
       
       if (!hasDesignSystemImport && this.hasUIComponents(content)) {
-        warnings.push(`${fileName}: Should import UI components from @xaheen/design-system`);
+        warnings.push(`${fileName}: Should import UI components from @xaheen-ai/design-system`);
       }
 
       // Validate each component type
@@ -414,7 +414,7 @@ export class DesignSystemValidator {
         const configContent = await fs.readFile(configPath, 'utf-8');
 
         // Check for design system preset or configuration
-        const hasDesignSystemConfig = /preset.*@xaheen|extend.*@xaheen|require.*@xaheen/i.test(configContent);
+        const hasDesignSystemConfig = /preset.*@xaheen|extend.*@xaheen|require.*@xaheen-ai/i.test(configContent);
         
         if (!hasDesignSystemConfig) {
           warnings.push('Tailwind config may not include design system configuration');

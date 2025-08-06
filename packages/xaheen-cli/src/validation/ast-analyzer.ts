@@ -478,7 +478,7 @@ export class ASTAnalyzer {
       return 'unknown';
     });
 
-    const isDesignSystemImport = source === '@xaheen/design-system';
+    const isDesignSystemImport = source === '@xaheen-ai/design-system';
 
     result.imports.push({
       source,

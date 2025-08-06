@@ -29,7 +29,7 @@ export default defineConfig({
 		"winston",
 		// MCP dependencies
 		"@xala-technologies/xala-mcp",
-		"@xaheen/design-system",
+		"@xaheen-ai/design-system",
 	],
 	noExternal: ["@clack/prompts", "consola", "chalk"],
 });

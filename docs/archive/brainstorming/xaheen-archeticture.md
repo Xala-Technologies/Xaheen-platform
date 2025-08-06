@@ -133,8 +133,8 @@ export const XaheenStandards = {
 
 #### Token Mode (`apps/cli/src/modes/token.ts`)
 ```typescript
-import { generateProject } from '@xaheen/core';
-import { validateToken } from '@xaheen/auth';
+import { generateProject } from '@xaheen-ai/core';
+import { validateToken } from '@xaheen-ai/auth';
 
 export async function runTokenMode() {
   // 1. Prompt for API token
@@ -151,7 +151,7 @@ export async function runTokenMode() {
 #### Xala Mode (`apps/cli/src/modes/xala.ts`)
 ```typescript
 import { XalaTemplates } from '../templates/xala';
-import { applyXalaStandards } from '@xaheen/standards';
+import { applyXalaStandards } from '@xaheen-ai/standards';
 
 export async function runXalaMode(projectName: string) {
   // 1. Select Xala template
@@ -170,8 +170,8 @@ export async function runXalaMode(projectName: string) {
 
 #### Xaheen Mode (`apps/cli/src/modes/xaheen.ts`)
 ```typescript
-import { XaheenValidator } from '@xaheen/validators';
-import { generateAIAgents } from '@xaheen/ai';
+import { XaheenValidator } from '@xaheen-ai/validators';
+import { generateAIAgents } from '@xaheen-ai/ai';
 
 export async function runXaheenMode(projectName: string) {
   // 1. Configure AI agents
@@ -287,7 +287,7 @@ jobs:
 - [ ] Add comprehensive tests
 - [ ] Update documentation
 - [ ] Set up CI/CD
-- [ ] Publish to npm as `@xaheen/cli`
+- [ ] Publish to npm as `@xaheen-ai/cli`
 
 ### 🚀 Usage After Implementation
 

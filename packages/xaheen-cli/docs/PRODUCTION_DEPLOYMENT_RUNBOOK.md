@@ -777,13 +777,13 @@ kubectl logs -n kube-system -l component=kube-apiserver | grep -i denied
 ## Emergency Contacts
 
 ### Norwegian Compliance Team
-- **NSM Compliance Officer**: compliance@xaheen.no
-- **GDPR Data Protection Officer**: dpo@xaheen.no
-- **Security Team**: security@xaheen.no
+- **NSM Compliance Officer**: compliance@xaheen-ai.no
+- **GDPR Data Protection Officer**: dpo@xaheen-ai.no
+- **Security Team**: security@xaheen-ai.no
 
 ### Technical Teams
-- **Platform Team**: platform@xaheen.no
-- **DevOps Team**: devops@xaheen.no
+- **Platform Team**: platform@xaheen-ai.no
+- **DevOps Team**: devops@xaheen-ai.no
 - **On-Call Engineer**: +47 XXX XX XXX
 
 ### External Contacts

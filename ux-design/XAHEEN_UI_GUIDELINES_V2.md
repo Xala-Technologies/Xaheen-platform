@@ -198,13 +198,13 @@ Components are automatically registered and discoverable:
 
 ```typescript
 // Automatic platform detection
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const Button = await componentFactory.getComponent('button');
 
 // Platform-specific imports
-import { Button } from '@xaheen/design-system/react';
-import Button from '@xaheen/design-system/vue/Button.vue';
-import { ButtonComponent } from '@xaheen/design-system/angular';
+import { Button } from '@xaheen-ai/design-system/react';
+import Button from '@xaheen-ai/design-system/vue/Button.vue';
+import { ButtonComponent } from '@xaheen-ai/design-system/angular';
 ```
 
 ### 3.3 Discovery and Documentation
@@ -1081,11 +1081,11 @@ const FileTreeViewer = lazy(() => import('./FileTreeViewer'));
 #### **Tree Shaking**
 ```typescript
 // ✅ GOOD: Import specific components
-import { Button } from '@xaheen/design-system/react/button';
-import { Input } from '@xaheen/design-system/react/input';
+import { Button } from '@xaheen-ai/design-system/react/button';
+import { Input } from '@xaheen-ai/design-system/react/input';
 
 // ❌ BAD: Import entire library
-import * as Components from '@xaheen/design-system/react';
+import * as Components from '@xaheen-ai/design-system/react';
 ```
 
 #### **Asset Optimization**
@@ -1218,11 +1218,11 @@ npm run scan:legacy-components
 #### **Step 2: Install New Design System**
 ```bash
 # Install the new design system
-npm install @xaheen/design-system
+npm install @xaheen-ai/design-system
 
 # Install platform-specific packages
-npm install @xaheen/design-system-react
-npm install @xaheen/design-system-vue
+npm install @xaheen-ai/design-system-react
+npm install @xaheen-ai/design-system-vue
 ```
 
 #### **Step 3: Update Imports**
@@ -1232,11 +1232,11 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 
 // ✅ NEW: Registry-based imports
-import { Button } from '@xaheen/design-system/react';
-import { Input } from '@xaheen/design-system/react';
+import { Button } from '@xaheen-ai/design-system/react';
+import { Input } from '@xaheen-ai/design-system/react';
 
 // OR: Auto-detection
-import { componentFactory } from '@xaheen/design-system';
+import { componentFactory } from '@xaheen-ai/design-system';
 const Button = await componentFactory.getComponent('button');
 ```
 
@@ -1304,12 +1304,12 @@ variant="primary" | "secondary" | "outline" | "ghost" | "destructive"
 
 ```bash
 # Run automated migration
-npx @xaheen/codemod migrate-to-v2 src/
+npx @xaheen-ai/codemod migrate-to-v2 src/
 
 # Specific transformations
-npx @xaheen/codemod button-props src/
-npx @xaheen/codemod input-props src/
-npx @xaheen/codemod size-variants src/
+npx @xaheen-ai/codemod button-props src/
+npx @xaheen-ai/codemod input-props src/
+npx @xaheen-ai/codemod size-variants src/
 ```
 
 ### 14.4 Gradual Migration Strategy

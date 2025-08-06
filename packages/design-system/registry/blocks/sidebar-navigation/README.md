@@ -16,7 +16,7 @@ Professional collapsible sidebar navigation with nested items, badges, and respo
 ## Usage
 
 ```tsx
-import { SidebarNavigation } from '@xaheen/design-system';
+import { SidebarNavigation } from '@xaheen-ai/design-system';
 import { Home, Users, Settings, FileText, BarChart } from 'lucide-react';
 
 const navigationItems = [

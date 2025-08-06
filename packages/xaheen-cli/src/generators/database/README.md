@@ -84,7 +84,7 @@ xaheen generate schema Product --fields=id:uuid,name:string,price:decimal,descri
 ### Programmatically
 
 ```typescript
-import { generateCode } from '@xaheen/cli/generators';
+import { generateCode } from '@xaheen-ai/cli/generators';
 
 // Generate a migration
 const result = await generateCode({

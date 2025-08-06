@@ -62,11 +62,11 @@ npx xaheen add button input card
 ### ✅ **Usage Patterns**
 ```typescript
 // Direct registry import
-import { Button } from '@xaheen/design-system/registry';
+import { Button } from '@xaheen-ai/design-system/registry';
 
 // Platform-specific import  
-import { Button } from '@xaheen/design-system/react';
-import Button from '@xaheen/design-system/vue/Button.vue';
+import { Button } from '@xaheen-ai/design-system/react';
+import Button from '@xaheen-ai/design-system/vue/Button.vue';
 
 // CLI installation (copies files to project)
 // After: npx xaheen add button

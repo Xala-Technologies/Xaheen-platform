@@ -1,5 +1,5 @@
 {
-  "name": "@xaheen/cli-phase6-tests",
+  "name": "@xaheen-ai/cli-phase6-tests",
   "version": "1.0.0",
   "private": true,
   "description": "Phase 6: Services & Integrations testing for Xaheen CLI",

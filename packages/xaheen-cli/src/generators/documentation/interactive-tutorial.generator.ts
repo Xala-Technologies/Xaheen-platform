@@ -2744,8 +2744,8 @@ ${norwegianContent}
 
 - **Documentation**: https://docs.xaheen.com/tutorials
 - **Community**: https://community.xaheen.com
-- **Enterprise Support**: enterprise@xaheen.com
-- **Norwegian Support**: norge@xaheen.com
+- **Enterprise Support**: enterprise@xaheen-ai.com
+- **Norwegian Support**: norge@xaheen-ai.com
 
 ---
 
