@@ -1,0 +1,35 @@
+{
+  "timestamp": "2025-08-06T07:31:38.648Z",
+  "system": {
+    "cpus": 14,
+    "cpuModel": "Apple M4 Max",
+    "totalMemory": 36,
+    "freeMemory": 5,
+    "platform": "darwin",
+    "nodeVersion": "v24.3.0"
+  },
+  "thresholds": {
+    "dryRun": 500,
+    "fullScaffold": 2000,
+    "minimalProject": 1000,
+    "complexProject": 3000
+  },
+  "results": {
+    "dryRun": {
+      "target": 500,
+      "unit": "ms"
+    },
+    "fullScaffold": {
+      "target": 2000,
+      "unit": "ms"
+    },
+    "minimalProject": {
+      "target": 1000,
+      "unit": "ms"
+    },
+    "complexProject": {
+      "target": 3000,
+      "unit": "ms"
+    }
+  }
+}

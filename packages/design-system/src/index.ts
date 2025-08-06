@@ -14,19 +14,20 @@ export * from './tokens/themes';
 // Complete Token Export
 export * from './tokens';
 
-// Core Components
-export * from './components/Button/Button';
-export * from './components/Input/Input';
-export * from './components/Card/Card';
-export * from './components/LoadingSpinner/LoadingSpinner';
-export * from './components/ThemeSwitcher/ThemeSwitcher';
+// Core Components - All components are managed through the registry
+// The registry is the single source of truth for all components
+export * from '../registry/components/button/button';
+export * from '../registry/components/input/input';
+export * from '../registry/components/card/card';
+export * from '../registry/components/loading-spinner/loading-spinner';
+export * from '../registry/components/theme-switcher/theme-switcher';
 
-// Hooks
-export * from './hooks/useResponsive';
-export * from './hooks/useAccessibility';
+// Hooks - Managed through registry
+export * from '../registry/hooks/use-responsive';
+export * from '../registry/hooks/use-accessibility';
 
-// Utilities
-export * from './utils/cn';
+// Utilities - Managed through registry
+export * from '../registry/utils/cn';
 
 // Animations
 export * from './animations/interactions';

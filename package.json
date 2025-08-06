@@ -17,7 +17,6 @@
     "test": "turbo test",
     "format": "turbo format",
     "check": "turbo check",
-    "install": "pnpm install",
     "install:clean": "pnpm clean && pnpm install",
     "update-deps": "pnpm update",
     "typecheck": "turbo typecheck",

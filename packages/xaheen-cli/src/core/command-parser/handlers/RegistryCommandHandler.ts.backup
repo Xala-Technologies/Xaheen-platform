@@ -56,54 +56,12 @@ const RegistryItemSchema = z.object({
 
 type RegistryItem = z.infer<typeof RegistryItemSchema>;
 
-export class RegistryCommandHandler implements ICommandHandler {
-  public readonly domain = 'registry';
+export class RegistryCommandHandler {
   private registryUrl: string = 'https://xaheen.io/registry';
   private localRegistryPath: string = '';
 
   constructor() {
     // Initialize if needed
-  }
-
-  public getSupportedActions(): string[] {
-    return ['add', 'list', 'info', 'search', 'build', 'serve'];
-  }
-
-  public canHandle(command: CLICommand): boolean {
-    return command.domain === this.domain && this.getSupportedActions().includes(command.action);
-  }
-
-  public async execute(command: CLICommand): Promise<void> {
-    const { action, arguments: args, options } = command;
-
-    switch (action) {
-      case 'add':
-        const components = Array.isArray(args.components) ? args.components : [args.components].filter(Boolean);
-        await this.handleAdd(components, options);
-        break;
-      case 'list':
-        await this.handleList(options);
-        break;
-      case 'info':
-        await this.handleInfo(args.component, options);
-        break;
-      case 'search':
-        await this.handleSearch(args.query, options);
-        break;
-      case 'build':
-        await this.handleBuild(options);
-        break;
-      case 'serve':
-        await this.handleServe(options);
-        break;
-      default:
-        throw new CLIError(
-          `Unsupported registry action: ${action}`,
-          'UNSUPPORTED_ACTION',
-          this.domain,
-          action
-        );
-    }
   }
 
   public async handleAdd(components: string[], options: any): Promise<void> {
@@ -199,8 +157,8 @@ export class RegistryCommandHandler implements ICommandHandler {
       }
 
       // Success message
-      console.log(chalk.green('✨ Installation completed successfully!'));
-      console.log(chalk.gray('Installed components:'));
+      console.log(chalk.green('\n✨ Installation completed successfully!'));
+      console.log(chalk.gray('\nInstalled components:'));
       installedComponents.forEach(comp => {
         console.log(chalk.gray(`  - ${comp}`));
       });
@@ -240,7 +198,7 @@ export class RegistryCommandHandler implements ICommandHandler {
       }
 
       // Display items
-      console.log(chalk.blue('📦 Available Registry Items:'));
+      console.log(chalk.blue('\n📦 Available Registry Items:\n'));
 
       const categories = [...new Set(items.map((item: any) => item.category || 'uncategorized'))];
       
@@ -288,7 +246,7 @@ export class RegistryCommandHandler implements ICommandHandler {
       const item = await this.fetchRegistryItem(component);
       spinner.stop();
 
-      console.log(chalk.blue(`📦 ${item.title || item.name}`));
+      console.log(chalk.blue(`\n📦 ${item.title || item.name}\n`));
       
       if (item.description) {
         console.log(item.description);
@@ -304,32 +262,32 @@ export class RegistryCommandHandler implements ICommandHandler {
       }
 
       if (item.nsm) {
-        console.log(chalk.yellow('Norwegian Compliance:'));
+        console.log(chalk.yellow('\nNorwegian Compliance:'));
         console.log(`  NSM Classification: ${item.nsm.classification || 'N/A'}`);
         console.log(`  WCAG Level: ${item.nsm.wcagLevel || 'N/A'}`);
         console.log(`  Norwegian Optimized: ${item.nsm.norwegianOptimized ? 'Yes' : 'No'}`);
       }
 
       if (item.dependencies && item.dependencies.length > 0) {
-        console.log(chalk.yellow('Dependencies:'));
+        console.log(chalk.yellow('\nDependencies:'));
         item.dependencies.forEach(dep => {
           console.log(`  - ${dep}`);
         });
       }
 
       if (item.registryDependencies && item.registryDependencies.length > 0) {
-        console.log(chalk.yellow('Registry Dependencies:'));
+        console.log(chalk.yellow('\nRegistry Dependencies:'));
         item.registryDependencies.forEach(dep => {
           console.log(`  - ${dep}`);
         });
       }
 
-      console.log(chalk.yellow('Files:'));
+      console.log(chalk.yellow('\nFiles:'));
       item.files.forEach(file => {
         console.log(`  - ${file.path} (${file.type})`);
       });
 
-      console.log(chalk.gray(`To install: xaheen registry add ${component}`));
+      console.log(chalk.gray(`\nTo install: xaheen registry add ${component}`));
 
     } catch (error) {
       spinner.fail('Failed to fetch component info');
@@ -353,11 +311,11 @@ export class RegistryCommandHandler implements ICommandHandler {
       );
 
       if (results.length === 0) {
-        console.log(chalk.yellow('No results found.'));
+        console.log(chalk.yellow('\nNo results found.'));
         return;
       }
 
-      console.log(chalk.blue(`🔍 Search Results for "${query}":`));
+      console.log(chalk.blue(`\n🔍 Search Results for "${query}":\n`));
 
       results.forEach((item: any) => {
         console.log(
@@ -409,7 +367,7 @@ export class RegistryCommandHandler implements ICommandHandler {
       }
 
       spinner.succeed('Registry built successfully');
-      console.log(chalk.gray('Registry files generated in dist/registry and public/r'));
+      console.log(chalk.gray('\nRegistry files generated in dist/registry and public/r'));
 
     } catch (error) {
       spinner.fail('Registry build failed');
@@ -422,7 +380,7 @@ export class RegistryCommandHandler implements ICommandHandler {
     const port = options.port || 3333;
     const host = options.host || 'localhost';
 
-    console.log(chalk.blue('🚀 Starting registry server...'));
+    console.log(chalk.blue('🚀 Starting registry server...\n'));
 
     try {
       const app = express();
@@ -463,10 +421,10 @@ export class RegistryCommandHandler implements ICommandHandler {
       // Start server
       app.listen(port, host, () => {
         console.log(chalk.green(`✨ Registry server running at http://${host}:${port}`));
-        console.log(chalk.gray('Endpoints:'));
+        console.log(chalk.gray('\nEndpoints:'));
         console.log(chalk.gray(`  Index: http://${host}:${port}/`));
         console.log(chalk.gray(`  Items: http://${host}:${port}/r/[component].json`));
-        console.log(chalk.gray('Press Ctrl+C to stop the server'));
+        console.log(chalk.gray('\nPress Ctrl+C to stop the server'));
       });
 
     } catch (error) {

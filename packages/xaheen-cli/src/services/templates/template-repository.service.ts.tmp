@@ -273,11 +273,44 @@ export class TemplateRepositoryService extends EventEmitter {
       // Store repository configuration
       this.repositories.set(validatedConfig.name, validatedConfig);
       
-      // TODO: Fix logging format to match new API
-      console.log('Repository registered successfully:', {
-        operationId,
-        repositoryName: validatedConfig.name,
-        userId: user.id
+      // Log operation
+      await this.logger.logOperation(
+        "info",
+        "audit_trail",
+        "Repository registered successfully",
+        {
+          executionContext: {
+            sessionId: operationId,
+            userId: user.id,
+            timestamp: new Date(),
+            command: "register-repository",
+            arguments: [validatedConfig.name],
+            workingDirectory: process.cwd(),
+          },
+          mcpOperation: {
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            success: true,
+            resultMetadata: {
+              repositoryName: validatedConfig.name,
+              gitUrl: validatedConfig.gitUrl,
+            }
+          },
+          tags: ["repository-management", "registration"],
+          structuredData: {
+            repositoryName: validatedConfig.name,
+            gitUrl: validatedConfig.gitUrl,
+            nsmClassification: validatedConfig.norwegianCompliance.dataClassification
+          },
+          complianceMetadata: {
+            gdprApplicable: validatedConfig.norwegianCompliance.enableGDPRCompliance,
+            nsmClassification: validatedConfig.norwegianCompliance.dataClassification,
+            dataRetention: validatedConfig.norwegianCompliance.retentionPeriod,
+            auditRequired: validatedConfig.norwegianCompliance.auditTrail
+          }
+        }
       });
       
       // Emit event
@@ -351,8 +384,29 @@ export class TemplateRepositoryService extends EventEmitter {
       const result = await this.executeGitCommand(cloneArgs, this.basePath);
       
       // Log operation
-      // TODO: Fix logging format to match new API
-      console.log("Operation logged:", operationId);      
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "CLONE_REPOSITORY",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: true,
+        details: {
+          repositoryName,
+          gitUrl: config.gitUrl,
+          branch: config.branch,
+          shallow: options.shallow,
+          depth: options.depth
+        },
+        compliance: {
+          gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+          nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
+          dataRetention: config.norwegianCompliance.retentionPeriod,
+          auditRequired: config.norwegianCompliance.auditTrail
+        }
+      });
+      
       // Emit event
       this.emit("repositoryCloned", {
         eventId: crypto.randomUUID(),
@@ -365,8 +419,18 @@ export class TemplateRepositoryService extends EventEmitter {
       });
       
     } catch (error) {
-      // TODO: Fix logging format to match new API
-      console.log("Operation logged:", operationId);      
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "CLONE_REPOSITORY", 
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        details: { repositoryName }
+      });
+      
       throw error;
     }
   }
@@ -410,8 +474,29 @@ export class TemplateRepositoryService extends EventEmitter {
       const changedFiles = this.parseChangedFiles(result.stdout);
       
       // Log operation
-      // TODO: Fix logging format to match new API
-      console.log("Operation logged:", operationId);      
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "PULL_REPOSITORY",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: true,
+        details: {
+          repositoryName,
+          branch: config.branch,
+          conflicts: conflicts.length,
+          changedFiles: changedFiles.length,
+          rebase: options.rebase
+        },
+        compliance: {
+          gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+          nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
+          dataRetention: config.norwegianCompliance.retentionPeriod,
+          auditRequired: config.norwegianCompliance.auditTrail
+        }
+      });
+      
       // Emit event
       this.emit("repositoryPulled", {
         eventId: crypto.randomUUID(),
@@ -426,8 +511,18 @@ export class TemplateRepositoryService extends EventEmitter {
       return { conflicts, changedFiles };
       
     } catch (error) {
-      // TODO: Fix logging format to match new API
-      console.log("Operation logged:", operationId);      
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "PULL_REPOSITORY",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        details: { repositoryName }
+      });
+      
       throw error;
     }
   }
@@ -489,46 +584,28 @@ export class TemplateRepositoryService extends EventEmitter {
       const result = await this.executeGitCommand(pushArgs, repoPath);
       
       // Log operation
-      await this.logger.logOperation(
-        "info",
-        "audit_trail",
-        "Repository pushed successfully",
-        {
-          executionContext: {
-            sessionId: operationId,
-            userId: user.id,
-            timestamp: new Date(),
-            command: "push-repository",
-            arguments: [repositoryName],
-            workingDirectory: process.cwd(),
-          },
-          mcpOperation: {
-            operationId,
-            operationType: "template_render",
-            startTime: new Date(startTime),
-            endTime: new Date(),
-            success: true,
-            metadata: {
-              repositoryName,
-              commitMessage,
-              branch: options.branch || config.branch,
-              force: options.force,
-              tags: options.tags
-            }
-          },
-          complianceMetadata: {
-            gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
-            nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
-            dataRetention: config.norwegianCompliance.retentionPeriod,
-            auditRequired: config.norwegianCompliance.auditTrail
-          },
-          tags: ["git-operations", "push"],
-          structuredData: {
-            repositoryName,
-            commitMessage
-          }
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "PUSH_REPOSITORY",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: true,
+        details: {
+          repositoryName,
+          commitMessage,
+          branch: options.branch || config.branch,
+          force: options.force,
+          tags: options.tags
+        },
+        compliance: {
+          gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+          nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
+          dataRetention: config.norwegianCompliance.retentionPeriod,
+          auditRequired: config.norwegianCompliance.auditTrail
         }
-      );
+      });
       
       // Emit event
       this.emit("repositoryPushed", {
@@ -542,36 +619,17 @@ export class TemplateRepositoryService extends EventEmitter {
       });
       
     } catch (error) {
-      await this.logger.logOperation(
-        "error",
-        "audit_trail",
-        "Repository push failed",
-        {
-          executionContext: {
-            sessionId: operationId,
-            userId: user.id,
-            timestamp: new Date(),
-            command: "push-repository",
-            arguments: [repositoryName],
-            workingDirectory: process.cwd(),
-          },
-          mcpOperation: {
-            operationId,
-            operationType: "template_render",
-            startTime: new Date(startTime),
-            endTime: new Date(),
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-            metadata: { repositoryName, commitMessage }
-          },
-          tags: ["git-operations", "push", "error"],
-          structuredData: {
-            repositoryName,
-            commitMessage,
-            error: error instanceof Error ? error.message : String(error)
-          }
-        }
-      );
+      await this.logger.logOperation({
+        operationId,
+        category: "GIT_OPERATIONS",
+        operation: "PUSH_REPOSITORY",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        details: { repositoryName, commitMessage }
+      });
       
       throw error;
     }
@@ -613,46 +671,27 @@ export class TemplateRepositoryService extends EventEmitter {
       await this.executeGitCommand(["push", "origin", version], repoPath);
       
       // Log operation
-      await this.logger.logOperation(
-        "info",
-        "audit_trail",
-        "Version tagged successfully",
-        {
-          executionContext: {
-            sessionId: operationId,
-            userId: user.id,
-            timestamp: new Date(),
-            command: "tag-version",
-            arguments: [repositoryName, version],
-            workingDirectory: process.cwd(),
-          },
-          mcpOperation: {
-            operationId,
-            operationType: "template_render",
-            startTime: new Date(startTime),
-            endTime: new Date(),
-            success: true,
-            metadata: {
-              repositoryName,
-              version,
-              message,
-              strategy: config.versioning.strategy
-            }
-          },
-          complianceMetadata: {
-            gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
-            nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
-            dataRetention: config.norwegianCompliance.retentionPeriod,
-            auditRequired: config.norwegianCompliance.auditTrail
-          },
-          tags: ["version-management", "tag"],
-          structuredData: {
-            repositoryName,
-            version,
-            message
-          }
+      await this.logger.logOperation({
+        operationId,
+        category: "VERSION_MANAGEMENT",
+        operation: "TAG_VERSION",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: true,
+        details: {
+          repositoryName,
+          version,
+          message,
+          strategy: config.versioning.strategy
+        },
+        compliance: {
+          gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+          nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
+          dataRetention: config.norwegianCompliance.retentionPeriod,
+          auditRequired: config.norwegianCompliance.auditTrail
         }
-      );
+      });
       
       // Emit event
       this.emit("versionTagged", {
@@ -666,36 +705,17 @@ export class TemplateRepositoryService extends EventEmitter {
       });
       
     } catch (error) {
-      await this.logger.logOperation(
-        "error",
-        "audit_trail",
-        "Version tagging failed",
-        {
-          executionContext: {
-            sessionId: operationId,
-            userId: user.id,
-            timestamp: new Date(),
-            command: "tag-version",
-            arguments: [repositoryName, version],
-            workingDirectory: process.cwd(),
-          },
-          mcpOperation: {
-            operationId,
-            operationType: "template_render",
-            startTime: new Date(startTime),
-            endTime: new Date(),
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-            metadata: { repositoryName, version }
-          },
-          tags: ["version-management", "tag", "error"],
-          structuredData: {
-            repositoryName,
-            version,
-            error: error instanceof Error ? error.message : String(error)
-          }
-        }
-      );
+      await this.logger.logOperation({
+        operationId,
+        category: "VERSION_MANAGEMENT",
+        operation: "TAG_VERSION",
+        userId: user.id,
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        details: { repositoryName, version }
+      });
       
       throw error;
     }
@@ -835,7 +855,7 @@ export class TemplateRepositoryService extends EventEmitter {
     cwd: string
   ): Promise<{ stdout: string; stderr: string }> {
     return new Promise((resolve, reject) => {
-      const childProcess = spawn("git", args, {
+      const process = spawn("git", args, {
         cwd,
         env: {
           ...process.env,
@@ -849,15 +869,15 @@ export class TemplateRepositoryService extends EventEmitter {
       let stdout = "";
       let stderr = "";
       
-      childProcess.stdout?.on("data", (data: any) => {
+      process.stdout.on("data", (data) => {
         stdout += data.toString();
       });
       
-      childProcess.stderr?.on("data", (data: any) => {
+      process.stderr.on("data", (data) => {
         stderr += data.toString();
       });
       
-      childProcess.on("close", (code: any) => {
+      process.on("close", (code) => {
         if (code === 0) {
           resolve({ stdout, stderr });
         } else {
@@ -870,7 +890,7 @@ export class TemplateRepositoryService extends EventEmitter {
         }
       });
       
-      childProcess.on("error", (error: any) => {
+      process.on("error", (error) => {
         reject(new GitOperationError(
           `Failed to execute git command: ${error.message}`,
           args.join(" "),
