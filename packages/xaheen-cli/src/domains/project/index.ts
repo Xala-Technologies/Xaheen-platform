@@ -185,6 +185,8 @@ export default class ProjectDomain {
 		norwegian?: boolean;
 		gdpr?: boolean;
 	}> {
+
+		
 		// If options are provided via CLI flags, use them
 		if (options.framework && options.platform && options.packageManager) {
 			return {
@@ -269,7 +271,6 @@ export default class ProjectDomain {
 		});
 
 		return {
-			projectType: responses.projectType as string,
 			framework: responses.framework as string,
 			platform: this.getPlatformFromFramework(responses.framework as string, responses.projectType as string),
 			packageManager: responses.packageManager as string,

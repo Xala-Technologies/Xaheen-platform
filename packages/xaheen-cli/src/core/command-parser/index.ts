@@ -1456,8 +1456,9 @@ export class CommandParser {
 	): [string | undefined, Record<string, any>] {
 		if (args.length === 0) return [undefined, {}];
 
-		// The last argument is always the options object from commander
-		const options = args[args.length - 1];
+		// The last argument is the Command object from commander
+		const command = args[args.length - 1];
+		const options = command?.opts ? command.opts() : {};
 		
 		// Find the first non-options argument as the target
 		let target: string | undefined;
@@ -1478,8 +1479,9 @@ export class CommandParser {
 	): [string | undefined, Record<string, any>] {
 		if (args.length === 0) return [undefined, {}];
 
-		// The last argument is always the options object from commander
-		const options = args[args.length - 1];
+		// The last argument is the Command object from commander
+		const command = args[args.length - 1];
+		const options = command?.opts ? command.opts() : {};
 		
 		// For subcommand pattern "create <name>", Commander.js passes args = ["test-react-app", {options}]
 		// The first argument is the actual parameter value, not the action name

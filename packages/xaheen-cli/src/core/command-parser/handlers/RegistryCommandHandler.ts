@@ -13,8 +13,7 @@ import { logger } from "../../../utils/logger";
 import { CLIError, CLICommand } from "../../../types/index";
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import express from 'express';
-import cors from 'cors';
+// Express imports moved to dynamic imports to avoid bundling in CLI
 import { ICommandHandler } from "../interfaces/ICommandHandler";
 
 const execAsync = promisify(exec);
@@ -425,6 +424,10 @@ export class RegistryCommandHandler implements ICommandHandler {
     console.log(chalk.blue('🚀 Starting registry server...'));
 
     try {
+      // Dynamic imports to avoid bundling server dependencies in CLI
+      const { default: express } = await import('express');
+      const { default: cors } = await import('cors');
+      
       const app = express();
       app.use(cors());
 
