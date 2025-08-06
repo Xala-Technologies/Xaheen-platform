@@ -10,7 +10,7 @@
 
 import path from "node:path";
 import { consola } from "consola";
-import fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 
 export interface ProjectInfo {
 	isValid: boolean;
@@ -33,17 +33,18 @@ export class ProjectAnalyzer {
 	async analyzeProject(projectPath: string): Promise<ProjectInfo> {
 		try {
 			// Check if directory exists
-			if (!(await fs.pathExists(projectPath))) {
+			if (!existsSync(projectPath)) {
 				return this.invalidProject();
 			}
 
 			// Check for package.json
 			const packageJsonPath = path.join(projectPath, "package.json");
-			if (!(await fs.pathExists(packageJsonPath))) {
+			if (!existsSync(packageJsonPath)) {
 				return this.invalidProject();
 			}
 
-			const packageJson = await fs.readJson(packageJsonPath);
+			const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+			const packageJson = JSON.parse(packageJsonContent);
 
 			// Basic project info
 			const projectInfo: ProjectInfo = {
@@ -95,19 +96,19 @@ export class ProjectAnalyzer {
 	}
 
 	private async detectTypeScript(projectPath: string): Promise<boolean> {
-		return fs.pathExists(path.join(projectPath, "tsconfig.json"));
+		return existsSync(path.join(projectPath, "tsconfig.json"));
 	}
 
 	private async detectGit(projectPath: string): Promise<boolean> {
-		return fs.pathExists(path.join(projectPath, ".git"));
+		return existsSync(path.join(projectPath, ".git"));
 	}
 
 	private async detectPackageManager(
 		projectPath: string,
 	): Promise<"npm" | "pnpm" | "yarn" | "bun"> {
-		if (await fs.pathExists(path.join(projectPath, "bun.lockb"))) return "bun";
-		if (await fs.pathExists(path.join(projectPath, "yarn.lock"))) return "yarn";
-		if (await fs.pathExists(path.join(projectPath, "pnpm-lock.yaml")))
+		if (existsSync(path.join(projectPath, "bun.lockb"))) return "bun";
+		if (existsSync(path.join(projectPath, "yarn.lock"))) return "yarn";
+		if (existsSync(path.join(projectPath, "pnpm-lock.yaml")))
 			return "pnpm";
 		return "npm";
 	}
@@ -181,7 +182,7 @@ export class ProjectAnalyzer {
 		if (projectInfo.framework === "next") {
 			const apiDir = path.join(process.cwd(), "pages/api");
 			const appApiDir = path.join(process.cwd(), "app/api");
-			if ((await fs.pathExists(apiDir)) || (await fs.pathExists(appApiDir))) {
+			if ((existsSync(apiDir)) || (existsSync(appApiDir))) {
 				return "next-api";
 			}
 		}
@@ -189,7 +190,7 @@ export class ProjectAnalyzer {
 		// Nuxt server routes
 		if (projectInfo.framework === "nuxt") {
 			const serverDir = path.join(process.cwd(), "server");
-			if (await fs.pathExists(serverDir)) {
+			if (existsSync(serverDir)) {
 				return "nuxt-api";
 			}
 		}
@@ -209,7 +210,7 @@ export class ProjectAnalyzer {
 		if (deps["@prisma/client"] || deps["prisma"]) {
 			// Check Prisma schema for provider
 			const schemaPath = path.join(process.cwd(), "prisma/schema.prisma");
-			if (await fs.pathExists(schemaPath)) {
+			if (existsSync(schemaPath)) {
 				const schema = await fs.readFile(schemaPath, "utf-8");
 				if (schema.includes('provider = "postgresql"')) return "postgresql";
 				if (schema.includes('provider = "mysql"')) return "mysql";
@@ -245,7 +246,7 @@ export class ProjectAnalyzer {
 
 		// Check for service files in src/lib directory
 		const libPath = path.join(projectPath, "src/lib");
-		if (await fs.pathExists(libPath)) {
+		if (existsSync(libPath)) {
 			const files = await fs.readdir(libPath);
 
 			for (const file of files) {
@@ -258,7 +259,7 @@ export class ProjectAnalyzer {
 
 		// Check for Prisma schema
 		const prismaSchemaPath = path.join(projectPath, "prisma/schema.prisma");
-		if (await fs.pathExists(prismaSchemaPath)) {
+		if (existsSync(prismaSchemaPath)) {
 			if (!services.includes("database")) {
 				services.push("database");
 			}

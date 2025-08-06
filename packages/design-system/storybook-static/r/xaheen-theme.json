@@ -1,0 +1,62 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "xaheen-theme",
+  "type": "registry:style",
+  "title": "Xaheen Theme",
+  "description": "Professional design system theme with Norwegian standards",
+  "extends": "none",
+  "dependencies": [
+    "tailwind-merge",
+    "clsx"
+  ],
+  "registryDependencies": [
+    "utils"
+  ],
+  "files": [
+    {
+      "path": "styles/globals.css",
+      "type": "registry:style",
+      "target": "~/styles/globals.css"
+    }
+  ],
+  "cssVars": {
+    "theme": {
+      "font-sans": "Inter, -apple-system, sans-serif",
+      "font-mono": "JetBrains Mono, monospace"
+    },
+    "light": {
+      "primary": "#3B82F6",
+      "secondary": "#64748B",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "background": "#FFFFFF",
+      "foreground": "#0F172A",
+      "border": "#E2E8F0",
+      "ring": "#3B82F6"
+    },
+    "dark": {
+      "primary": "#60A5FA",
+      "secondary": "#94A3B8",
+      "success": "#34D399",
+      "warning": "#FBBF24",
+      "error": "#F87171",
+      "background": "#0F172A",
+      "foreground": "#F8FAFC",
+      "border": "#334155",
+      "ring": "#60A5FA"
+    }
+  },
+  "config": {
+    "tailwind": {
+      "extend": {
+        "spacing": {
+          "13": "3.25rem",
+          "15": "3.75rem",
+          "128": "32rem",
+          "144": "36rem"
+        }
+      }
+    }
+  }
+}

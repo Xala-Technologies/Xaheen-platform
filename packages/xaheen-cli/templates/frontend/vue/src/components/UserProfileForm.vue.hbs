@@ -1,0 +1,366 @@
+<template>
+  <XCard class="max-w-2xl mx-auto shadow-lg">
+    <XCardHeader>
+      <XCardTitle class="text-2xl font-bold text-gray-900">
+        {{ $t('userProfile.title') }} {{ nsmCompliant ? '(NSM Compliant)' : '' }}
+      </XCardTitle>
+    </XCardHeader>
+    <XCardContent class="p-8">
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <!-- First Name -->
+        <div>
+          <label 
+            for="firstName" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.firstName') }} *
+          </label>
+          <XInput
+            id="firstName"
+            v-model="form.firstName"
+            type="text"
+            class="h-14 w-full"
+            :aria-describedby="errors.firstName ? 'firstName-error' : undefined"
+            :aria-invalid="!!errors.firstName"
+            :disabled="isSubmitting"
+            :placeholder="$t('userProfile.firstNamePlaceholder')"
+          />
+          <p 
+            v-if="errors.firstName" 
+            id="firstName-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {{ errors.firstName }}
+          </p>
+        </div>
+
+        <!-- Last Name -->
+        <div>
+          <label 
+            for="lastName" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.lastName') }} *
+          </label>
+          <XInput
+            id="lastName"
+            v-model="form.lastName"
+            type="text"
+            class="h-14 w-full"
+            :aria-describedby="errors.lastName ? 'lastName-error' : undefined"
+            :aria-invalid="!!errors.lastName"
+            :disabled="isSubmitting"
+            :placeholder="$t('userProfile.lastNamePlaceholder')"
+          />
+          <p 
+            v-if="errors.lastName" 
+            id="lastName-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {{ errors.lastName }}
+          </p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label 
+            for="email" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.email') }} *
+          </label>
+          <XInput
+            id="email"
+            v-model="form.email"
+            type="email"
+            class="h-14 w-full"
+            :aria-describedby="errors.email ? 'email-error' : undefined"
+            :aria-invalid="!!errors.email"
+            :disabled="isSubmitting"
+            :placeholder="$t('userProfile.emailPlaceholder')"
+          />
+          <p 
+            v-if="errors.email" 
+            id="email-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {{ errors.email }}
+          </p>
+        </div>
+
+        <!-- Norwegian Phone Number -->
+        <div>
+          <label 
+            for="phone" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.phone') }}
+          </label>
+          <XInput
+            id="phone"
+            v-model="form.phone"
+            type="tel"
+            class="h-14 w-full"
+            :aria-describedby="errors.phone ? 'phone-error' : 'phone-help'"
+            :aria-invalid="!!errors.phone"
+            :disabled="isSubmitting"
+            placeholder="+47 12 34 56 78"
+          />
+          <p id="phone-help" class="mt-1 text-sm text-gray-500">
+            {{ $t('userProfile.phoneHelp') }}
+          </p>
+          <p 
+            v-if="errors.phone" 
+            id="phone-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {{ errors.phone }}
+          </p>
+        </div>
+
+        <!-- Norwegian Postal Code -->
+        <div>
+          <label 
+            for="postalCode" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.postalCode') }}
+          </label>
+          <XInput
+            id="postalCode"
+            v-model="form.postalCode"
+            type="text"
+            maxlength="4"
+            class="h-14 w-full"
+            :aria-describedby="errors.postalCode ? 'postalCode-error' : 'postalCode-help'"
+            :aria-invalid="!!errors.postalCode"
+            :disabled="isSubmitting"
+            placeholder="0001"
+          />
+          <p id="postalCode-help" class="mt-1 text-sm text-gray-500">
+            {{ $t('userProfile.postalCodeHelp') }}
+          </p>
+          <p 
+            v-if="errors.postalCode" 
+            id="postalCode-error" 
+            class="mt-2 text-sm text-red-600" 
+            role="alert"
+          >
+            {{ errors.postalCode }}
+          </p>
+        </div>
+
+        <!-- NSM Classification (Norwegian compliance) -->
+        <div v-if="nsmCompliant">
+          <label 
+            for="nsmClassification" 
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ $t('userProfile.nsmClassification') }} *
+          </label>
+          <select
+            id="nsmClassification"
+            v-model="form.nsmClassification"
+            class="h-14 w-full px-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-describedby="nsm-help"
+            :disabled="isSubmitting"
+          >
+            <option 
+              v-for="option in nsmClassificationOptions" 
+              :key="option.value" 
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+          <p id="nsm-help" class="mt-1 text-sm text-gray-500">
+            {{ $t('userProfile.nsmHelp') }}
+          </p>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end space-x-4 pt-6">
+          <XButton
+            type="button"
+            @click="handleReset"
+            class="h-12 px-6 bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            :disabled="isSubmitting"
+            :aria-label="$t('buttons.reset')"
+          >
+            {{ $t('buttons.reset') }}
+          </XButton>
+          <XButton
+            type="submit"
+            class="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="isSubmitting || !isFormValid"
+            :aria-label="$t('buttons.saveProfile')"
+          >
+            {{ isSubmitting ? $t('common.submitting') : $t('buttons.saveProfile') }}
+          </XButton>
+        </div>
+      </form>
+    </XCardContent>
+  </XCard>
+
+  <!-- Error State -->
+  <XCard v-if="error" class="max-w-2xl mx-auto shadow-lg mt-4">
+    <XCardContent class="p-8 text-center">
+      <p class="text-red-600 font-medium" role="alert">
+        {{ $t('errors.formError') }}
+      </p>
+    </XCardContent>
+  </XCard>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, onErrorCaptured } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { z } from 'zod';
+import { 
+  XButton, 
+  XInput, 
+  XCard, 
+  XCardHeader, 
+  XCardTitle, 
+  XCardContent 
+} from '@xaheen/design-system/vue';
+
+// Norwegian phone number validation schema
+const norwegianPhoneSchema = z.string()
+  .regex(/^(\+47|0047|47)?[2-9]\d{7}$/, 'Must be a valid Norwegian phone number');
+
+// Norwegian postal code validation schema  
+const norwegianPostalCodeSchema = z.string()
+  .regex(/^\d{4}$/, 'Must be a valid Norwegian postal code (4 digits)');
+
+// User profile validation schema with Norwegian compliance
+const userProfileSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Must be a valid email address'),
+  phone: norwegianPhoneSchema.optional(),
+  postalCode: norwegianPostalCodeSchema.optional(),
+  nsmClassification: z.enum(['OPEN', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET']).default('OPEN'),
+});
+
+type UserProfileFormData = z.infer<typeof userProfileSchema>;
+
+interface UserProfileFormProps {
+  readonly initialData?: Partial<UserProfileFormData>;
+  readonly nsmCompliant?: boolean;
+}
+
+interface UserProfileFormEmits {
+  submit: [data: UserProfileFormData];
+}
+
+const props = withDefaults(defineProps<UserProfileFormProps>(), {
+  initialData: () => ({}),
+  nsmCompliant: true
+});
+
+const emit = defineEmits<UserProfileFormEmits>();
+
+// Composables
+const { t } = useI18n();
+
+// Reactive state
+const isSubmitting = ref<boolean>(false);
+const error = ref<Error | null>(null);
+
+const form = reactive<UserProfileFormData>({
+  firstName: props.initialData?.firstName ?? '',
+  lastName: props.initialData?.lastName ?? '',
+  email: props.initialData?.email ?? '',
+  phone: props.initialData?.phone ?? '',
+  postalCode: props.initialData?.postalCode ?? '',
+  nsmClassification: props.initialData?.nsmClassification ?? 'OPEN',
+});
+
+const errors = reactive<Partial<Record<keyof UserProfileFormData, string>>>({});
+
+// NSM classification options
+const nsmClassificationOptions = [
+  { value: 'OPEN', label: t('nsm.open') },
+  { value: 'RESTRICTED', label: t('nsm.restricted') },
+  { value: 'CONFIDENTIAL', label: t('nsm.confidential') },
+  { value: 'SECRET', label: t('nsm.secret') },
+];
+
+// Computed properties
+const isFormValid = computed(() => {
+  const result = userProfileSchema.safeParse(form);
+  return result.success && Object.keys(errors).length === 0;
+});
+
+// Validation function
+const validateForm = (): boolean => {
+  // Clear previous errors
+  Object.keys(errors).forEach(key => {
+    delete errors[key as keyof UserProfileFormData];
+  });
+
+  const result = userProfileSchema.safeParse(form);
+  
+  if (!result.success) {
+    result.error.errors.forEach(err => {
+      const field = err.path[0] as keyof UserProfileFormData;
+      errors[field] = err.message;
+    });
+    return false;
+  }
+  
+  return true;
+};
+
+// Event handlers
+const handleSubmit = async (): Promise<void> => {
+  if (isSubmitting.value) return;
+  
+  if (!validateForm()) return;
+  
+  isSubmitting.value = true;
+  error.value = null;
+  
+  try {
+    emit('submit', { ...form });
+  } catch (err) {
+    console.error('Form submission error:', err);
+    error.value = err instanceof Error ? err : new Error('Unknown error');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const handleReset = (): void => {
+  Object.assign(form, {
+    firstName: props.initialData?.firstName ?? '',
+    lastName: props.initialData?.lastName ?? '',
+    email: props.initialData?.email ?? '',
+    phone: props.initialData?.phone ?? '',
+    postalCode: props.initialData?.postalCode ?? '',
+    nsmClassification: props.initialData?.nsmClassification ?? 'OPEN',
+  });
+  
+  Object.keys(errors).forEach(key => {
+    delete errors[key as keyof UserProfileFormData];
+  });
+};
+
+// Error boundary
+onErrorCaptured((err: Error) => {
+  console.error('UserProfileForm error captured:', err);
+  error.value = err;
+  return false;
+});
+</script>
+
+<script lang="ts">
+export default {
+  name: 'UserProfileForm'
+};
+</script>

@@ -11,6 +11,7 @@ export * from './components/card/card';
 export * from './components/loading-spinner/loading-spinner';
 export * from './components/theme-switcher/theme-switcher';
 export * from './components/theme-selector/theme-selector';
+export * from './components/theme-selector/enhanced-theme-selector';
 
 // Complex Blocks (Hooks allowed - consumer provides context)
 export * from './blocks/chat-interface/chat-interface';

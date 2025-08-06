@@ -1,0 +1,29 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "eslint-config",
+  "type": "registry:item",
+  "title": "ESLint Configuration",
+  "description": "Xaheen's recommended ESLint configuration with Norwegian compliance",
+  "author": "Xaheen Technologies",
+  "files": [
+    {
+      "path": "config/eslintrc.json",
+      "type": "registry:file",
+      "target": "~/.eslintrc.json",
+      "content": "{\n  \"root\": true,\n  \"extends\": [\n    \"eslint:recommended\",\n    \"plugin:@typescript-eslint/recommended\",\n    \"plugin:react/recommended\",\n    \"plugin:react-hooks/recommended\",\n    \"plugin:jsx-a11y/recommended\"\n  ],\n  \"parser\": \"@typescript-eslint/parser\",\n  \"plugins\": [\"@typescript-eslint\", \"react\", \"jsx-a11y\"],\n  \"rules\": {\n    \"@typescript-eslint/no-explicit-any\": \"error\",\n    \"@typescript-eslint/explicit-function-return-type\": \"error\",\n    \"jsx-a11y/alt-text\": \"error\",\n    \"jsx-a11y/aria-props\": \"error\",\n    \"jsx-a11y/aria-role\": \"error\",\n    \"react/prop-types\": \"off\"\n  },\n  \"settings\": {\n    \"react\": {\n      \"version\": \"detect\"\n    }\n  }\n}"
+    }
+  ],
+  "dependencies": [
+    "eslint",
+    "@typescript-eslint/parser",
+    "@typescript-eslint/eslint-plugin",
+    "eslint-plugin-react",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-jsx-a11y"
+  ],
+  "docs": "This ESLint configuration enforces Xaheen's coding standards including TypeScript strict mode, React best practices, and WCAG AAA accessibility compliance.",
+  "meta": {
+    "compliance": ["WCAG AAA", "Norwegian Standards"],
+    "typescript": "strict"
+  }
+}

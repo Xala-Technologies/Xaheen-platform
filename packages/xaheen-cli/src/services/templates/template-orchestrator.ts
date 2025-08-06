@@ -10,6 +10,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { consola } from 'consola';
 import semver from 'semver';
@@ -182,7 +183,10 @@ export class TemplateOrchestrator {
       if (!request.options.dryRun) {
         // Write main component
         const componentPath = path.join(request.options.outputPath, `${request.componentName}.tsx`);
-        await fs.ensureDir(path.dirname(componentPath));
+        const componentDir = path.dirname(componentPath);
+        if (!existsSync(componentDir)) {
+          mkdirSync(componentDir, { recursive: true });
+        }
         await fs.writeFile(componentPath, compositionResult.template, 'utf-8');
         generatedFiles.push(componentPath);
 
@@ -376,7 +380,10 @@ export class TemplateOrchestrator {
 
     // Write migrated content to temporary location
     const migratedPath = path.join(this.versionsPath, template.id, migration.toVersion, template.path);
-    await fs.ensureDir(path.dirname(migratedPath));
+    const migratedDir = path.dirname(migratedPath);
+    if (!existsSync(migratedDir)) {
+      mkdirSync(migratedDir, { recursive: true });
+    }
     await fs.writeFile(migratedPath, content, 'utf-8');
 
     return migratedTemplate;
@@ -485,7 +492,9 @@ export class TemplateOrchestrator {
     const testFiles: string[] = [];
     const testDir = path.join(request.options.outputPath, '__tests__');
     
-    await fs.ensureDir(testDir);
+    if (!existsSync(testDir)) {
+      mkdirSync(testDir, { recursive: true });
+    }
 
     // Unit test
     const unitTestPath = path.join(testDir, `${request.componentName}.test.tsx`);

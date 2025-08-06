@@ -6,6 +6,9 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { colorTokens } from '../registry/tokens/colors';
+import { spacingTokens } from '../registry/tokens/spacing';
+import { shadowTokens } from '../registry/tokens/shadows';
 
 // Temporary simple Button for Storybook demo
 const Button = ({ 
@@ -269,15 +272,15 @@ export const DesignTokensShowcase: Story = {
       <div>
         <h3 className="text-lg font-semibold mb-4">Avstandstokens</h3>
         <div className="flex flex-col gap-2">
-          <Button>Standard polstring (px-{spacingTokens[6]} = 1.5rem)</Button>
-          <Button size="xl">XL polstring (px-{spacingTokens[10]} = 2.5rem)</Button>
+          <Button>Standard polstring (px-{spacingTokens.spacing[6]} = 1.5rem)</Button>
+          <Button size="xl">XL polstring (px-{spacingTokens.spacing[10]} = 2.5rem)</Button>
         </div>
       </div>
       
       <div>
         <h3 className="text-lg font-semibold mb-4">Skyggetokens</h3>
         <div className="flex gap-4">
-          <Button>Standard skygge ({shadowTokens.md})</Button>
+          <Button>Standard skygge ({shadowTokens.light.md})</Button>
           <div className="p-2 bg-background">
             <Button variant="ghost">Ingen skygge</Button>
           </div>

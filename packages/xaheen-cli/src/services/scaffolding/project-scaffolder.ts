@@ -10,7 +10,7 @@
 import path from "node:path";
 import { consola } from "consola";
 import { execa } from "execa";
-import fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 import ora from "ora";
 
 import type {
@@ -67,7 +67,9 @@ export class ProjectScaffolder {
 		try {
 			// Create project directory
 			if (!options.dryRun) {
-				await fs.ensureDir(projectPath);
+				if (!existsSync(projectPath)) {
+					mkdirSync(projectPath, { recursive: true });
+				}
 			}
 
 			// Create base project structure
@@ -157,7 +159,10 @@ export class ProjectScaffolder {
 		];
 
 		for (const dir of dirs) {
-			await fs.ensureDir(path.join(projectPath, dir));
+			const dirPath = path.join(projectPath, dir);
+			if (!existsSync(dirPath)) {
+				mkdirSync(dirPath, { recursive: true });
+			}
 		}
 
 		// Create basic files
@@ -249,13 +254,14 @@ coverage/
 		};
 
 		const existingPath = path.join(projectPath, "package.json");
-		if (await fs.pathExists(existingPath)) {
+		if (existsSync(existingPath)) {
 			// Merge with existing
-			const existing = await fs.readJson(existingPath);
+			const existingContent = await fs.readFile(existingPath, 'utf-8');
+			const existing = JSON.parse(existingContent);
 			const merged = this.deepMerge(existing, packageJson);
-			await fs.writeJson(existingPath, merged, { spaces: 2 });
+			await fs.writeFile(existingPath, JSON.stringify(merged, null, 2));
 		} else {
-			await fs.writeJson(existingPath, packageJson, { spaces: 2 });
+			await fs.writeFile(existingPath, JSON.stringify(packageJson, null, 2));
 		}
 	}
 

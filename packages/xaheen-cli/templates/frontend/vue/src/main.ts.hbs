@@ -1,0 +1,143 @@
+import { createApp } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import { createI18n } from 'vue-i18n';
+
+import App from './App.vue';
+import HomePage from './views/HomePage.vue';
+
+// Import CSS
+import './style.css';
+
+// Norwegian translations for NSM compliance
+const messages = {
+  en: {
+    common: {
+      loading: 'Loading...',
+      submitting: 'Submitting...',
+    },
+    buttons: {
+      getStarted: 'Get Started',
+      learnMore: 'Learn More',
+      retry: 'Retry',
+      reset: 'Reset',
+      saveProfile: 'Save Profile',
+    },
+    home: {
+      builtWith: 'Built with Xaheen CLI v3.0.0 and powered by:',
+      quickStartGuide: 'Quick Start Guide',
+      addComponents: 'Add Components',
+      addComponentsDesc: 'Generate AI-powered components with full TypeScript support and Norwegian compliance',
+      addServices: 'Add Services',
+      addServicesDesc: 'Integrate backend services with type-safe APIs and NSM compliance',
+      deploy: 'Deploy',
+      deployDesc: 'Deploy to production with Norwegian government security standards',
+    },
+    userProfile: {
+      title: 'User Profile',
+      firstName: 'First Name (Fornavn)',
+      firstNamePlaceholder: 'Enter your first name',
+      lastName: 'Last Name (Etternavn)',
+      lastNamePlaceholder: 'Enter your last name',
+      email: 'Email Address (E-postadresse)',
+      emailPlaceholder: 'Enter your email address',
+      phone: 'Phone Number (Telefonnummer) - Norwegian format',
+      phoneHelp: 'Format: +47 followed by 8 digits',
+      postalCode: 'Postal Code (Postnummer)',
+      postalCodeHelp: 'Norwegian postal code (4 digits)',
+      nsmClassification: 'NSM Security Classification (Sikkerhetsgradert informasjon)',
+      nsmHelp: 'Select the appropriate security classification level',
+    },
+    nsm: {
+      open: 'Open (Åpen)',
+      restricted: 'Restricted (Begrenset)',
+      confidential: 'Confidential (Konfidensiell)',
+      secret: 'Secret (Hemmelig)',
+    },
+    errors: {
+      applicationError: 'Application Error',
+      pageRefresh: 'An error occurred while loading the page. Please refresh and try again.',
+      formError: 'An error occurred while loading the form. Please refresh and try again.',
+    },
+  },
+  'nb-NO': {
+    common: {
+      loading: 'Laster...',
+      submitting: 'Sender...',
+    },
+    buttons: {
+      getStarted: 'Kom i gang',
+      learnMore: 'Lær mer',
+      retry: 'Prøv igjen',
+      reset: 'Tilbakestill',
+      saveProfile: 'Lagre profil',
+    },
+    home: {
+      builtWith: 'Bygget med Xaheen CLI v3.0.0 og drevet av:',
+      quickStartGuide: 'Hurtigstartguide',
+      addComponents: 'Legg til komponenter',
+      addComponentsDesc: 'Generer AI-drevne komponenter med full TypeScript-støtte og norsk samsvar',
+      addServices: 'Legg til tjenester',
+      addServicesDesc: 'Integrer backend-tjenester med typesikre APIer og NSM-samsvar',
+      deploy: 'Distribuer',
+      deployDesc: 'Distribuer til produksjon med norske statlige sikkerhetsstandarder',
+    },
+    userProfile: {
+      title: 'Brukerprofil',
+      firstName: 'Fornavn',
+      firstNamePlaceholder: 'Skriv inn fornavnet ditt',
+      lastName: 'Etternavn',
+      lastNamePlaceholder: 'Skriv inn etternavnet ditt',
+      email: 'E-postadresse',
+      emailPlaceholder: 'Skriv inn e-postadressen din',
+      phone: 'Telefonnummer - Norsk format',
+      phoneHelp: 'Format: +47 etterfulgt av 8 siffer',
+      postalCode: 'Postnummer',
+      postalCodeHelp: 'Norsk postnummer (4 siffer)',
+      nsmClassification: 'NSM Sikkerhetsgradert informasjon',
+      nsmHelp: 'Velg passende sikkerhetsgradsnivå',
+    },
+    nsm: {
+      open: 'Åpen',
+      restricted: 'Begrenset',
+      confidential: 'Konfidensiell',
+      secret: 'Hemmelig',
+    },
+    errors: {
+      applicationError: 'Applikasjonsfeil',
+      pageRefresh: 'Det oppstod en feil under lasting av siden. Vennligst oppdater og prøv igjen.',
+      formError: 'Det oppstod en feil under lasting av skjemaet. Vennligst oppdater og prøv igjen.',
+    },
+  },
+};
+
+// Create i18n instance
+const i18n = createI18n({
+  locale: 'nb-NO', // Default to Norwegian
+  fallbackLocale: 'en',
+  messages,
+});
+
+// Create router
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/',
+      name: 'Home',
+      component: HomePage,
+    },
+  ],
+});
+
+// Create and mount app
+const app = createApp(App);
+
+app.use(router);
+app.use(i18n);
+
+// Global error handler
+app.config.errorHandler = (err: Error, instance, info) => {
+  console.error('Global error handler:', err, info);
+};
+
+app.mount('#app');

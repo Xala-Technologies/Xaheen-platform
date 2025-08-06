@@ -12,7 +12,7 @@ import { confirm, intro, outro, spinner } from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
 import { consola } from "consola";
-import * as fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 import * as path from "path";
 import { ProjectAnalyzer } from "../services/analysis/project-analyzer";
 import { ServiceRegistry } from "../services/registry/service-registry";
@@ -312,7 +312,7 @@ async function runXalaUIValidations(
 	try {
 		// Check if Xala UI is integrated
 		const xalaConfigPath = path.join(projectPath, "xala.config.json");
-		if (!(await fs.pathExists(xalaConfigPath))) {
+		if (!existsSync(xalaConfigPath)) {
 			if (validationOptions.validateUI) {
 				consola.warn("🎨 Xala UI is not integrated in this project");
 				consola.info("Run 'xaheen add ui-integration' to integrate Xala UI");

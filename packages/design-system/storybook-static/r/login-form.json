@@ -1,0 +1,42 @@
+{
+  "$schema": "https://xaheen.io/schemas/registry-item.schema.json",
+  "name": "login-form",
+  "type": "registry:block",
+  "title": "Login Form",
+  "description": "Accessible login form with Norwegian language support",
+  "category": "patterns",
+  "nsm": {
+    "classification": "RESTRICTED",
+    "wcagLevel": "AAA",
+    "norwegianOptimized": true
+  },
+  "platforms": [
+    "react",
+    "nextjs",
+    "vue",
+    "angular",
+    "svelte",
+    "react-native",
+    "electron",
+    "ionic",
+    "vanilla",
+    "headless-ui",
+    "radix"
+  ],
+  "registryDependencies": [
+    "button",
+    "input",
+    "card"
+  ],
+  "files": [
+    {
+      "path": "blocks/login-form/login-form.tsx",
+      "type": "registry:component"
+    },
+    {
+      "path": "blocks/login-form/page.tsx",
+      "type": "registry:page",
+      "target": "app/login/page.tsx"
+    }
+  ]
+}

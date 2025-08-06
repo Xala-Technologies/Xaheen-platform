@@ -16,7 +16,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { consola } from "consola";
-import fs from "fs-extra";
+import { promises as fs, existsSync, mkdirSync } from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -382,7 +382,7 @@ export class MCPClient {
 		);
 
 		try {
-			if (!(await fs.pathExists(categoriesPath))) {
+			if (!existsSync(categoriesPath)) {
 				return [];
 			}
 
@@ -458,7 +458,7 @@ export class MCPClient {
 		}
 
 		for (const specPath of possiblePaths) {
-			if (await fs.pathExists(specPath)) {
+			if (existsSync(specPath)) {
 				return specPath;
 			}
 		}
@@ -1129,12 +1129,7 @@ GENERATION REQUIREMENTS:
 	}
 
 	private async fileExists(filePath: string): Promise<boolean> {
-		try {
-			await fs.access(filePath);
-			return true;
-		} catch {
-			return false;
-		}
+		return existsSync(filePath);
 	}
 
 	private async getFilesRecursively(dir: string): Promise<string[]> {

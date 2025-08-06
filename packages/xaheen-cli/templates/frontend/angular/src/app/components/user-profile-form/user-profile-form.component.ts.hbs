@@ -1,0 +1,234 @@
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import { z } from 'zod';
+
+// Norwegian phone number validation schema
+const norwegianPhoneSchema = z.string()
+  .regex(/^(\+47|0047|47)?[2-9]\d{7}$/, 'Must be a valid Norwegian phone number');
+
+// Norwegian postal code validation schema  
+const norwegianPostalCodeSchema = z.string()
+  .regex(/^\d{4}$/, 'Must be a valid Norwegian postal code (4 digits)');
+
+// User profile validation schema with Norwegian compliance
+const userProfileSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Must be a valid email address'),
+  phone: norwegianPhoneSchema.optional(),
+  postalCode: norwegianPostalCodeSchema.optional(),
+  nsmClassification: z.enum(['OPEN', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET']).default('OPEN'),
+});
+
+export type UserProfileFormData = z.infer<typeof userProfileSchema>;
+
+interface UserProfileFormState {
+  readonly isSubmitting: boolean;
+  readonly error: string | null;
+  readonly validationErrors: Partial<Record<keyof UserProfileFormData, string>>;
+}
+
+@Component({
+  selector: 'app-user-profile-form',
+  templateUrl: './user-profile-form.component.html',
+  styleUrls: ['./user-profile-form.component.scss']
+})
+export class UserProfileFormComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly formBuilder = inject(FormBuilder);
+
+  @Input() initialData: Partial<UserProfileFormData> = {};
+  @Input() nsmCompliant: boolean = true;
+  @Output() formSubmit = new EventEmitter<UserProfileFormData>();
+
+  public form!: FormGroup;
+  public state: UserProfileFormState = {
+    isSubmitting: false,
+    error: null,
+    validationErrors: {}
+  };
+
+  public readonly nsmClassificationOptions = [
+    { value: 'OPEN', label: 'Open (Åpen)', description: 'Information that can be shared publicly' },
+    { value: 'RESTRICTED', label: 'Restricted (Begrenset)', description: 'Limited access information' },
+    { value: 'CONFIDENTIAL', label: 'Confidential (Konfidensiell)', description: 'Sensitive information requiring protection' },
+    { value: 'SECRET', label: 'Secret (Hemmelig)', description: 'Highly classified information' },
+  ] as const;
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initializeForm(): void {
+    try {
+      this.form = this.formBuilder.group({
+        firstName: [
+          this.initialData.firstName || '', 
+          [Validators.required, Validators.minLength(2)]
+        ],
+        lastName: [
+          this.initialData.lastName || '', 
+          [Validators.required, Validators.minLength(2)]
+        ],
+        email: [
+          this.initialData.email || '', 
+          [Validators.required, Validators.email]
+        ],
+        phone: [
+          this.initialData.phone || '', 
+          [this.norwegianPhoneValidator]
+        ],
+        postalCode: [
+          this.initialData.postalCode || '', 
+          [this.norwegianPostalCodeValidator]
+        ],
+        nsmClassification: [
+          this.initialData.nsmClassification || 'OPEN',
+          [Validators.required]
+        ]
+      });
+
+      // Watch for form changes and clear errors
+      this.form.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          if (this.state.error) {
+            this.state = { ...this.state, error: null };
+          }
+        });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  private norwegianPhoneValidator = (control: any) => {
+    if (!control.value) return null;
+    
+    const result = norwegianPhoneSchema.safeParse(control.value);
+    return result.success ? null : { norwegianPhone: true };
+  };
+
+  private norwegianPostalCodeValidator = (control: any) => {
+    if (!control.value) return null;
+    
+    const result = norwegianPostalCodeSchema.safeParse(control.value);
+    return result.success ? null : { norwegianPostalCode: true };
+  };
+
+  public async onSubmit(): Promise<void> {
+    if (this.state.isSubmitting || this.form.invalid) return;
+
+    this.state = { 
+      ...this.state, 
+      isSubmitting: true, 
+      error: null, 
+      validationErrors: {} 
+    };
+
+    try {
+      // Validate with Zod schema
+      const formData = this.form.value;
+      const validatedData = userProfileSchema.parse(formData);
+
+      // Emit the validated data
+      this.formSubmit.emit(validatedData);
+
+      console.log('Form submitted successfully:', validatedData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationErrors: Partial<Record<keyof UserProfileFormData, string>> = {};
+        error.errors.forEach(err => {
+          const field = err.path[0] as keyof UserProfileFormData;
+          validationErrors[field] = err.message;
+        });
+        this.state = { ...this.state, validationErrors };
+      } else {
+        this.handleError(error);
+      }
+    } finally {
+      this.state = { ...this.state, isSubmitting: false };
+    }
+  }
+
+  public onReset(): void {
+    try {
+      this.form.reset();
+      this.form.patchValue({
+        firstName: this.initialData.firstName || '',
+        lastName: this.initialData.lastName || '',
+        email: this.initialData.email || '',
+        phone: this.initialData.phone || '',
+        postalCode: this.initialData.postalCode || '',
+        nsmClassification: this.initialData.nsmClassification || 'OPEN'
+      });
+      
+      this.state = {
+        isSubmitting: false,
+        error: null,
+        validationErrors: {}
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  public getFieldError(fieldName: keyof UserProfileFormData): string | null {
+    const control = this.form.get(fieldName);
+    
+    if (this.state.validationErrors[fieldName]) {
+      return this.state.validationErrors[fieldName]!;
+    }
+    
+    if (control?.errors && control.touched) {
+      if (control.errors['required']) {
+        return `${fieldName} is required`;
+      }
+      if (control.errors['email']) {
+        return 'Must be a valid email address';
+      }
+      if (control.errors['minlength']) {
+        return `${fieldName} must be at least ${control.errors['minlength'].requiredLength} characters`;
+      }
+      if (control.errors['norwegianPhone']) {
+        return 'Must be a valid Norwegian phone number';
+      }
+      if (control.errors['norwegianPostalCode']) {
+        return 'Must be a valid Norwegian postal code (4 digits)';
+      }
+    }
+    
+    return null;
+  }
+
+  public isFieldInvalid(fieldName: keyof UserProfileFormData): boolean {
+    const control = this.form.get(fieldName);
+    return !!(
+      (control?.errors && control.touched) || 
+      this.state.validationErrors[fieldName]
+    );
+  }
+
+  private handleError(error: unknown): void {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'An unexpected error occurred while processing the form';
+    
+    this.state = { 
+      ...this.state, 
+      error: errorMessage, 
+      isSubmitting: false 
+    };
+    
+    console.error('UserProfileForm error:', error);
+  }
+
+  public clearError(): void {
+    this.state = { ...this.state, error: null };
+  }
+}

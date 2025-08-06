@@ -1,65 +1,160 @@
-export default function HomePage(): JSX.Element {
-  return (
-    <div className="container mx-auto py-12">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-6">
-          Welcome to {{title}}
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          {{description}}
-        </p>
-        <div className="space-y-4">
-          <p className="text-lg text-gray-700">
-            Built with Xaheen CLI v3.0.0 and powered by:
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-              Next.js 15
-            </span>
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full">
-              TypeScript
-            </span>
-            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
-              Tailwind CSS
-            </span>
-            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full">
-              Xala UI System
-            </span>
-          </div>
-        </div>
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-6">Get Started</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="p-6 bg-white rounded-xl shadow-md">
-              <h3 className="text-lg font-semibold mb-2">Add Components</h3>
-              <p className="text-gray-600 mb-4">
-                Generate AI-powered components
-              </p>
-              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                xaheen component generate "user profile card"
-              </code>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-md">
-              <h3 className="text-lg font-semibold mb-2">Add Services</h3>
-              <p className="text-gray-600 mb-4">
-                Integrate backend services
-              </p>
-              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                xaheen service add database
-              </code>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-md">
-              <h3 className="text-lg font-semibold mb-2">Deploy</h3>
-              <p className="text-gray-600 mb-4">
-                Deploy to production
-              </p>
-              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                xaheen deploy
-              </code>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+'use client';
+
+import React, { useState, useCallback } from 'react';
+import { Button, Card, CardHeader, CardTitle, CardContent } from '@xaheen/design-system/nextjs';
+
+interface HomePageProps {
+  readonly title?: string;
+  readonly description?: string;
 }
+
+export default function HomePage({
+  title = '{{title}}',
+  description = '{{description}}'
+}: HomePageProps): JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleGetStarted = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      console.log('Getting started with Xaheen CLI');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error('Get started error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleLearnMore = useCallback((): void => {
+    window.open('https://docs.xaheen.no', '_blank', 'noopener,noreferrer');
+  }, []);
+
+  try {
+    return (
+      <main className="container mx-auto py-12 px-6">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-6">
+            Welcome to {title}
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            {description}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <Button
+              onClick={handleGetStarted}
+              disabled={isLoading}
+              className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Get started with Xaheen CLI"
+            >
+              {isLoading ? 'Loading...' : 'Get Started'}
+            </Button>
+            <Button
+              onClick={handleLearnMore}
+              className="h-12 px-8 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              aria-label="Learn more about Xaheen"
+            >
+              Learn More
+            </Button>
+          </div>
+
+          <div className="space-y-4 mb-12">
+            <p className="text-lg text-gray-700">
+              Built with Xaheen CLI v3.0.0 and powered by:
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-medium">
+                Next.js 15
+              </span>
+              <span className="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-medium">
+                TypeScript
+              </span>
+              <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg font-medium">
+                Tailwind CSS
+              </span>
+              <span className="px-4 py-2 bg-orange-100 text-orange-800 rounded-lg font-medium">
+                Xaheen Design System
+              </span>
+              <span className="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-medium">
+                NSM Compliant
+              </span>
+            </div>
+          </div>
+
+          <section className="mt-12" aria-labelledby="quick-start-heading">
+            <h2 id="quick-start-heading" className="text-2xl font-semibold mb-8 text-gray-900">
+              Quick Start Guide
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    Add Components
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Generate AI-powered components with full TypeScript support and Norwegian compliance
+                  </p>
+                  <code className="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                    xaheen component generate "user profile card"
+                  </code>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    Add Services
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Integrate backend services with type-safe APIs and NSM compliance
+                  </p>
+                  <code className="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                    xaheen service add database --nsm-compliant
+                  </code>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    Deploy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Deploy to production with Norwegian government security standards
+                  </p>
+                  <code className="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                    xaheen deploy --region norway
+                  </code>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  } catch (error) {
+    console.error('HomePage error:', error);
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 bg-gray-50">
+        <Card className="max-w-md w-full shadow-lg">
+          <CardContent className="p-8 text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">
+              Application Error
+            </h1>
+            <p className="text-gray-600" role="alert">
+              An error occurred while loading the page. Please refresh and try again.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+}
+EOF < /dev/null

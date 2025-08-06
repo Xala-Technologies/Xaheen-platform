@@ -1,0 +1,24 @@
+<template>
+  <div id="app" class="min-h-screen bg-gray-50 font-sans antialiased">
+    <router-view />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onErrorCaptured, ref } from 'vue';
+
+const error = ref<Error | null>(null);
+
+onErrorCaptured((err: Error) => {
+  console.error('App error captured:', err);
+  error.value = err;
+  return false;
+});
+</script>
+
+<style>
+#app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+</style>

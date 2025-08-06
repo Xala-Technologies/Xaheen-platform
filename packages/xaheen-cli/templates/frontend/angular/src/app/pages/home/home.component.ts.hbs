@@ -1,0 +1,113 @@
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+
+interface HomeComponentState {
+  readonly isLoading: boolean;
+  readonly error: string | null;
+  readonly title: string;
+  readonly description: string;
+}
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly translate = inject(TranslateService);
+
+  public state: HomeComponentState = {
+    isLoading: false,
+    error: null,
+    title: '{{title}}',
+    description: '{{description}}'
+  };
+
+  public readonly technologies = [
+    { name: 'Angular 18', color: 'bg-red-100 text-red-800' },
+    { name: 'TypeScript', color: 'bg-blue-100 text-blue-800' },
+    { name: 'Tailwind CSS', color: 'bg-cyan-100 text-cyan-800' },
+    { name: 'Xaheen Design System', color: 'bg-purple-100 text-purple-800' },
+    { name: 'NSM Compliant', color: 'bg-green-100 text-green-800' }
+  ] as const;
+
+  public readonly quickStartCards = [
+    {
+      title: 'Add Components',
+      description: 'Generate AI-powered components with full TypeScript support and Norwegian compliance',
+      command: 'xaheen component generate "user profile card"'
+    },
+    {
+      title: 'Add Services',
+      description: 'Integrate backend services with type-safe APIs and NSM compliance',
+      command: 'xaheen service add database --nsm-compliant'
+    },
+    {
+      title: 'Deploy',
+      description: 'Deploy to production with Norwegian government security standards',
+      command: 'xaheen deploy --region norway'
+    }
+  ] as const;
+
+  ngOnInit(): void {
+    this.initializeComponent();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initializeComponent(): void {
+    try {
+      // Set default language to Norwegian for NSM compliance
+      this.translate.setDefaultLang('nb-NO');
+      this.translate.use('nb-NO');
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  public async onGetStarted(): Promise<void> {
+    if (this.state.isLoading) return;
+
+    this.state = { ...this.state, isLoading: true, error: null };
+
+    try {
+      console.log('Getting started with Xaheen CLI');
+      
+      // Simulate async operation
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate to dashboard or show success message
+      console.log('Get started completed successfully');
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.state = { ...this.state, isLoading: false };
+    }
+  }
+
+  public onLearnMore(): void {
+    try {
+      window.open('https://docs.xaheen.no', '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  private handleError(error: unknown): void {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'An unexpected error occurred';
+    
+    this.state = { ...this.state, error: errorMessage, isLoading: false };
+    console.error('HomeComponent error:', error);
+  }
+
+  public clearError(): void {
+    this.state = { ...this.state, error: null };
+  }
+}

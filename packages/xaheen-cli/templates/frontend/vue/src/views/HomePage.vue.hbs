@@ -1,0 +1,206 @@
+<template>
+  <main class="container mx-auto py-12 px-6">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold tracking-tight text-gray-900 mb-6">
+        Welcome to {{title}}
+      </h1>
+      <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        {{description}}
+      </p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+        <XButton
+          @click="handleGetStarted"
+          :disabled="isLoading"
+          class="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          :aria-label="$t('buttons.getStarted')"
+        >
+          {{ isLoading ? $t('common.loading') : $t('buttons.getStarted') }}
+        </XButton>
+        <XButton
+          @click="handleLearnMore"
+          class="h-12 px-8 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          :aria-label="$t('buttons.learnMore')"
+        >
+          {{ $t('buttons.learnMore') }}
+        </XButton>
+      </div>
+
+      <div class="space-y-4 mb-12">
+        <p class="text-lg text-gray-700">
+          {{ $t('home.builtWith') }}
+        </p>
+        <div class="flex flex-wrap justify-center gap-4 text-sm">
+          <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-medium">
+            Vue 3
+          </span>
+          <span class="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-medium">
+            TypeScript
+          </span>
+          <span class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg font-medium">
+            Tailwind CSS
+          </span>
+          <span class="px-4 py-2 bg-orange-100 text-orange-800 rounded-lg font-medium">
+            Xaheen Design System
+          </span>
+          <span class="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-medium">
+            NSM Compliant
+          </span>
+        </div>
+      </div>
+
+      <section class="mt-12" aria-labelledby="quick-start-heading">
+        <h2 id="quick-start-heading" class="text-2xl font-semibold mb-8 text-gray-900">
+          {{ $t('home.quickStartGuide') }}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <XCard class="shadow-lg hover:shadow-xl transition-shadow">
+            <XCardHeader>
+              <XCardTitle class="text-lg font-semibold text-gray-900">
+                {{ $t('home.addComponents') }}
+              </XCardTitle>
+            </XCardHeader>
+            <XCardContent>
+              <p class="text-gray-600 mb-4">
+                {{ $t('home.addComponentsDesc') }}
+              </p>
+              <code class="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                xaheen component generate "user profile card"
+              </code>
+            </XCardContent>
+          </XCard>
+
+          <XCard class="shadow-lg hover:shadow-xl transition-shadow">
+            <XCardHeader>
+              <XCardTitle class="text-lg font-semibold text-gray-900">
+                {{ $t('home.addServices') }}
+              </XCardTitle>
+            </XCardHeader>
+            <XCardContent>
+              <p class="text-gray-600 mb-4">
+                {{ $t('home.addServicesDesc') }}
+              </p>
+              <code class="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                xaheen service add database --nsm-compliant
+              </code>
+            </XCardContent>
+          </XCard>
+
+          <XCard class="shadow-lg hover:shadow-xl transition-shadow">
+            <XCardHeader>
+              <XCardTitle class="text-lg font-semibold text-gray-900">
+                {{ $t('home.deploy') }}
+              </XCardTitle>
+            </XCardHeader>
+            <XCardContent>
+              <p class="text-gray-600 mb-4">
+                {{ $t('home.deployDesc') }}
+              </p>
+              <code class="text-sm bg-gray-100 px-3 py-2 rounded-lg block font-mono">
+                xaheen deploy --region norway
+              </code>
+            </XCardContent>
+          </XCard>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Error Boundary -->
+  <div 
+    v-if="error" 
+    class="min-h-screen flex items-center justify-center px-6 bg-gray-50"
+  >
+    <XCard class="max-w-md w-full shadow-lg">
+      <XCardContent class="p-8 text-center">
+        <h1 class="text-2xl font-bold text-red-600 mb-4">
+          {{ $t('errors.applicationError') }}
+        </h1>
+        <p class="text-gray-600" role="alert">
+          {{ $t('errors.pageRefresh') }}
+        </p>
+        <XButton
+          @click="handleRetry"
+          class="mt-4 h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md"
+          :aria-label="$t('buttons.retry')"
+        >
+          {{ $t('buttons.retry') }}
+        </XButton>
+      </XCardContent>
+    </XCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onErrorCaptured } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { 
+  XButton, 
+  XCard, 
+  XCardHeader, 
+  XCardTitle, 
+  XCardContent 
+} from '@xaheen/design-system/vue';
+
+// Props interface for type safety
+interface HomePageProps {
+  readonly title?: string;
+  readonly description?: string;
+}
+
+const props = withDefaults(defineProps<HomePageProps>(), {
+  title: '{{title}}',
+  description: '{{description}}'
+});
+
+// Composables
+const { t } = useI18n();
+
+// Reactive state with explicit typing
+const isLoading = ref<boolean>(false);
+const error = ref<Error | null>(null);
+
+// Event handlers with proper error handling
+const handleGetStarted = async (): Promise<void> => {
+  if (isLoading.value) return;
+  
+  isLoading.value = true;
+  try {
+    console.log('Getting started with Xaheen CLI');
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  } catch (err) {
+    console.error('Get started error:', err);
+    error.value = err instanceof Error ? err : new Error('Unknown error');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleLearnMore = (): void => {
+  try {
+    window.open('https://docs.xaheen.no', '_blank', 'noopener,noreferrer');
+  } catch (err) {
+    console.error('Learn more error:', err);
+    error.value = err instanceof Error ? err : new Error('Failed to open documentation');
+  }
+};
+
+const handleRetry = (): void => {
+  error.value = null;
+  window.location.reload();
+};
+
+// Error boundary
+onErrorCaptured((err: Error) => {
+  console.error('HomePage error captured:', err);
+  error.value = err;
+  return false;
+});
+</script>
+
+<script lang="ts">
+export default {
+  name: 'HomePage'
+};
+</script>

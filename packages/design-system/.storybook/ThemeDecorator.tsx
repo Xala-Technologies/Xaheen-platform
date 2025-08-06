@@ -6,59 +6,78 @@
 import React, { useEffect } from 'react';
 import type { Decorator } from '@storybook/react';
 import { 
-  ThemeSelector, 
-  ThemeSelectorIndustry, 
-  useThemeSelector,
-  INDUSTRY_THEMES 
-} from '../registry/components/theme-selector/theme-selector';
+  EnhancedThemeSelector,
+  EnhancedIndustryTheme,
+  ColorScheme,
+  ENHANCED_INDUSTRY_THEMES 
+} from '../registry/components/theme-selector/enhanced-theme-selector';
 
 // Global theme state management for Storybook
-let globalTheme: ThemeSelectorIndustry = 'enterprise';
-let globalThemeCallbacks: Array<(theme: ThemeSelectorIndustry) => void> = [];
+let globalIndustryTheme: EnhancedIndustryTheme = 'enterprise';
+let globalColorScheme: ColorScheme = 'system';
+let globalIndustryThemeCallbacks: Array<(theme: EnhancedIndustryTheme) => void> = [];
+let globalColorSchemeCallbacks: Array<(scheme: ColorScheme) => void> = [];
 
 const useGlobalTheme = () => {
-  const [currentTheme, setCurrentTheme] = React.useState(globalTheme);
+  const [currentIndustryTheme, setCurrentIndustryTheme] = React.useState(globalIndustryTheme);
+  const [currentColorScheme, setCurrentColorScheme] = React.useState(globalColorScheme);
 
-  const setGlobalTheme = React.useCallback((theme: ThemeSelectorIndustry) => {
-    globalTheme = theme;
-    setCurrentTheme(theme);
+  const setGlobalIndustryTheme = React.useCallback((theme: EnhancedIndustryTheme) => {
+    globalIndustryTheme = theme;
+    setCurrentIndustryTheme(theme);
     
     // Apply theme to document
-    const themeInfo = INDUSTRY_THEMES[theme];
+    const themeInfo = ENHANCED_INDUSTRY_THEMES[theme];
     document.documentElement.style.setProperty('--theme-primary', themeInfo.primaryColor);
-    document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-industry-theme', theme);
-    
-    // Update body class for theme-specific styling
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.add(`theme-${theme}`);
     
     // Notify all instances
-    globalThemeCallbacks.forEach(callback => callback(theme));
+    globalIndustryThemeCallbacks.forEach(callback => callback(theme));
+  }, []);
+
+  const setGlobalColorScheme = React.useCallback((scheme: ColorScheme) => {
+    globalColorScheme = scheme;
+    setCurrentColorScheme(scheme);
+    
+    // Apply color scheme to document
+    document.documentElement.classList.remove('light', 'dark');
+    if (scheme !== 'system') {
+      document.documentElement.classList.add(scheme);
+    } else {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.add(isDark ? 'dark' : 'light');
+    }
+    
+    // Notify all instances
+    globalColorSchemeCallbacks.forEach(callback => callback(scheme));
   }, []);
 
   useEffect(() => {
-    globalThemeCallbacks.push(setCurrentTheme);
+    globalIndustryThemeCallbacks.push(setCurrentIndustryTheme);
+    globalColorSchemeCallbacks.push(setCurrentColorScheme);
     return () => {
-      globalThemeCallbacks = globalThemeCallbacks.filter(callback => callback !== setCurrentTheme);
+      globalIndustryThemeCallbacks = globalIndustryThemeCallbacks.filter(callback => callback !== setCurrentIndustryTheme);
+      globalColorSchemeCallbacks = globalColorSchemeCallbacks.filter(callback => callback !== setCurrentColorScheme);
     };
   }, []);
 
-  return { currentTheme, setGlobalTheme };
+  return { currentIndustryTheme, currentColorScheme, setGlobalIndustryTheme, setGlobalColorScheme };
 };
 
 // Theme Toolbar Component
 export const ThemeToolbar: React.FC = () => {
-  const { currentTheme, setGlobalTheme } = useGlobalTheme();
+  const { currentIndustryTheme, currentColorScheme, setGlobalIndustryTheme, setGlobalColorScheme } = useGlobalTheme();
 
   return (
     <div className="fixed top-4 right-4 z-50">
-      <ThemeSelector
-        currentTheme={currentTheme}
-        onThemeChange={setGlobalTheme}
-        variant="dropdown"
-        size="sm"
-        showDescription={false}
+      <EnhancedThemeSelector
+        currentIndustryTheme={currentIndustryTheme}
+        currentColorScheme={currentColorScheme}
+        onIndustryThemeChange={setGlobalIndustryTheme}
+        onColorSchemeChange={setGlobalColorScheme}
+        variant="compact"
         norwegianLabels={true}
       />
     </div>
@@ -67,17 +86,26 @@ export const ThemeToolbar: React.FC = () => {
 
 // Storybook Decorator
 export const withTheme: Decorator = (Story, context) => {
-  const { currentTheme } = useGlobalTheme();
+  const { currentIndustryTheme, currentColorScheme } = useGlobalTheme();
 
-  // Apply theme on story change
+  // Apply themes on story change
   useEffect(() => {
-    const themeInfo = INDUSTRY_THEMES[currentTheme];
+    const themeInfo = ENHANCED_INDUSTRY_THEMES[currentIndustryTheme];
     document.documentElement.style.setProperty('--theme-primary', themeInfo.primaryColor);
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    document.documentElement.setAttribute('data-industry-theme', currentTheme);
+    document.documentElement.setAttribute('data-industry-theme', currentIndustryTheme);
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
-    document.body.classList.add(`theme-${currentTheme}`);
-  }, [currentTheme]);
+    document.body.classList.add(`theme-${currentIndustryTheme}`);
+  }, [currentIndustryTheme]);
+
+  useEffect(() => {
+    document.documentElement.classList.remove('light', 'dark');
+    if (currentColorScheme !== 'system') {
+      document.documentElement.classList.add(currentColorScheme);
+    } else {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.add(isDark ? 'dark' : 'light');
+    }
+  }, [currentColorScheme]);
 
   return (
     <div className="relative">
@@ -91,11 +119,11 @@ export const withTheme: Decorator = (Story, context) => {
 export const themeControl = {
   control: {
     type: 'select',
-    options: Object.keys(INDUSTRY_THEMES)
+    options: Object.keys(ENHANCED_INDUSTRY_THEMES)
   },
   description: 'Industry theme selector',
   table: {
-    type: { summary: 'ThemeSelectorIndustry' },
+    type: { summary: 'EnhancedIndustryTheme' },
     defaultValue: { summary: 'enterprise' }
   }
 };

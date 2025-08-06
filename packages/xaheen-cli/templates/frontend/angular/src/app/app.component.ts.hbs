@@ -1,0 +1,70 @@
+import { Component, OnInit, OnDestroy, ErrorHandler, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+interface AppComponentState {
+  readonly isLoading: boolean;
+  readonly hasError: boolean;
+  readonly errorMessage: string;
+}
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly router = inject(Router);
+  private readonly errorHandler = inject(ErrorHandler);
+
+  readonly title = '{{title}}';
+  
+  public state: AppComponentState = {
+    isLoading: false,
+    hasError: false,
+    errorMessage: ''
+  };
+
+  ngOnInit(): void {
+    this.initializeApp();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initializeApp(): void {
+    try {
+      // Application initialization logic
+      console.log(`${this.title} initialized successfully`);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  public handleError(error: unknown): void {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'An unexpected error occurred';
+    
+    this.state = {
+      ...this.state,
+      hasError: true,
+      errorMessage
+    };
+    
+    console.error('App error:', error);
+    this.errorHandler.handleError(error);
+  }
+
+  public retry(): void {
+    this.state = {
+      isLoading: false,
+      hasError: false,
+      errorMessage: ''
+    };
+    this.initializeApp();
+  }
+}

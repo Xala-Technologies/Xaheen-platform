@@ -7,7 +7,7 @@
  * @since 2025-01-03
  */
 
-import fs from 'fs-extra';
+import { promises as fs, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
@@ -59,7 +59,7 @@ export class TemplateLoader {
     // Load template from disk
     const fullPath = path.join(this.templatesPath, templatePath);
     
-    if (!(await fs.pathExists(fullPath))) {
+    if (!existsSync(fullPath)) {
       throw new Error(`Template not found: ${templatePath}`);
     }
 
@@ -88,7 +88,7 @@ export class TemplateLoader {
    */
   async renderTemplate(templatePath: string, context: any): Promise<string> {
     const template = await this.loadTemplate(templatePath);
-    let enhancedContext = this.enhanceContext(context);
+    let enhancedContext = await this.enhanceContext(context);
     
     // Add MCP intelligence if component name is provided
     if (context.componentName) {
@@ -101,12 +101,12 @@ export class TemplateLoader {
   /**
    * Enhance template context with UI System version and metadata
    */
-  private enhanceContext(context: any): any {
+  private async enhanceContext(context: any): Promise<any> {
     return {
       ...context,
       // UI System metadata
       uiSystem: {
-        version: this.getUISystemVersion(),
+        version: await this.getUISystemVersion(),
         semanticComponents: true,
         designTokens: true,
         accessibilityCompliant: true,
@@ -227,12 +227,13 @@ export class TemplateLoader {
   /**
    * Get UI System version from package.json
    */
-  private getUISystemVersion(): string {
+  private async getUISystemVersion(): Promise<string> {
     try {
       // Try to load UI System package.json to get version
       const packagePath = path.resolve(process.cwd(), 'node_modules/@xala-technologies/ui-system/package.json');
-      if (require('fs').existsSync(packagePath)) {
-        const packageJson = require(packagePath);
+      if (existsSync(packagePath)) {
+        const packageData = await fs.readFile(packagePath, 'utf-8');
+        const packageJson = JSON.parse(packageData);
         return packageJson.version || '5.0.0';
       }
     } catch (error) {
@@ -1072,7 +1073,10 @@ export class TemplateLoader {
    */
   async saveTemplate(templatePath: string, content: string): Promise<void> {
     const fullPath = path.join(this.templatesPath, templatePath);
-    await fs.ensureDir(path.dirname(fullPath));
+    const dirPath = path.dirname(fullPath);
+    if (!existsSync(dirPath)) {
+      mkdirSync(dirPath, { recursive: true });
+    }
     await fs.writeFile(fullPath, content, 'utf-8');
     
     // Clear cached version
