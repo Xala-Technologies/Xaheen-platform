@@ -478,30 +478,32 @@ export class CommandParser {
 				action: "test",
 				handler: this.handleMCPTest.bind(this),
 			},
-			{
-				pattern: "mcp config init [target]",
-				domain: "mcp",
-				action: "config-init",
-				handler: this.handleMCPConfigInit.bind(this),
-			},
-			{
-				pattern: "mcp config show",
-				domain: "mcp",
-				action: "config-show",
-				handler: this.handleMCPConfigShow.bind(this),
-			},
-			{
-				pattern: "mcp plugin list",
-				domain: "mcp",
-				action: "plugin-list",
-				handler: this.handleMCPPluginList.bind(this),
-			},
-			{
-				pattern: "mcp plugin register <path>",
-				domain: "mcp",
-				action: "plugin-register",
-				handler: this.handleMCPPluginRegister.bind(this),
-			},
+			// COMMENTED: Conflicts with existing config commands
+			// {
+			// 	pattern: "mcp config init [target]",
+			// 	domain: "mcp",
+			// 	action: "config-init",
+			// 	handler: this.handleMCPConfigInit.bind(this),
+			// },
+			// {
+			// 	pattern: "mcp config show",
+			// 	domain: "mcp",
+			// 	action: "config-show",
+			// 	handler: this.handleMCPConfigShow.bind(this),
+			// },
+			// COMMENTED: Conflicts with existing plugin commands
+			// {
+			// 	pattern: "mcp plugin list",
+			// 	domain: "mcp",
+			// 	action: "plugin-list",
+			// 	handler: this.handleMCPPluginList.bind(this),
+			// },
+			// {
+			// 	pattern: "mcp plugin register <path>",
+			// 	domain: "mcp",
+			// 	action: "plugin-register",
+			// 	handler: this.handleMCPPluginRegister.bind(this),
+			// },
 			{
 				pattern: "mcp plugin unregister <name>",
 				domain: "mcp",
@@ -1139,7 +1141,7 @@ export class CommandParser {
 						"Comma-separated list of platforms",
 					)
 					.option("--name <name>", "Component name to generate")
-					.option("--force", "Force deployment despite critical issues");
+					// .option("--force", "Force deployment despite critical issues"); // COMMENTED: Conflicts with make --force
 
 				// Add test-specific options
 				if (route.action === "test") {
@@ -1152,7 +1154,7 @@ export class CommandParser {
 						.option("--timeout <ms>", "Test timeout in milliseconds", "30000")
 						.option("--retry <attempts>", "Number of retry attempts", "2")
 						.option("--parallel", "Run tests in parallel", false)
-						.option("--verbose", "Verbose test output", false)
+						// .option("--verbose", "Verbose test output", false) // COMMENTED: Conflicts with global --verbose
 						.option(
 							"--format <format>",
 							"Output format (json|junit|html|console)",
@@ -1161,8 +1163,8 @@ export class CommandParser {
 						.option("--output <path>", "Output file path for reports")
 						.option("--fail-fast", "Stop on first failure", false)
 						.option("--coverage", "Enable test coverage", false)
-						.option("--benchmark", "Enable benchmarking", false)
-						.option("--dry-run", "Preview tests without execution", false);
+						.option("--benchmark", "Enable benchmarking", false);
+						// .option("--dry-run", "Preview tests without execution", false); // COMMENTED: Conflicts with global --dry-run
 				}
 
 				// Add config-specific options
@@ -1172,15 +1174,15 @@ export class CommandParser {
 							"--target <target>",
 							"Configuration target (global|project|both)",
 							"project"
-						)
-						.option("--force", "Overwrite existing configuration", false);
+						);
+						// .option("--force", "Overwrite existing configuration", false); // COMMENTED: Conflicts with make --force
 				}
 
 				// Add plugin-specific options
 				if (route.action.startsWith("plugin-")) {
 					command
 						.option("--source <source>", "Plugin source (local|npm|git|registry)", "local")
-						.option("--category <category>", "Filter by plugin category")
+						// .option("--category <category>", "Filter by plugin category") // COMMENTED: Conflicts with general MCP --category
 						.option("--type <type>", "Filter by plugin type")
 						.option("--enabled", "Show only enabled plugins", false)
 						.option("--disabled", "Show only disabled plugins", false);
@@ -1324,7 +1326,7 @@ export class CommandParser {
 				if (route.action === "status") {
 					command
 						.option('--app-name <name>', 'Application name')
-						.option('--environment <env>', 'Environment to check');
+						// .option('--environment <env>', 'Environment to check'); // COMMENTED: Conflicts with general deploy --environment
 				}
 			}
 
