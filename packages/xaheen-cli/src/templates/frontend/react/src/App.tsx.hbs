@@ -1,0 +1,69 @@
+{{!-- Template: App.tsx.hbs --}}
+{{!-- Framework: react --}}
+{{!-- Type: component --}}
+{{!-- Uses Xaheen Design System components --}}
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, WebNavbar } from '@xaheen/design-system';
+import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPage';
+import './App.css';
+
+{{#if typescript}}
+export default function App(): JSX.Element {
+{{else}}
+export default function App() {
+{{/if}}
+  const navigation = [
+    {
+      label: 'Home',
+      href: '/'
+    },
+    {
+      label: 'Dashboard',
+      href: '/dashboard'
+    },
+    {
+      label: 'Features',
+      items: [
+        {
+          label: 'Analytics',
+          href: '/analytics',
+          description: 'View detailed analytics'
+        },
+        {
+          label: 'Reports',
+          href: '/reports',
+          description: 'Generate and view reports'
+        }
+      ]
+    }
+  ];
+
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <Router>
+        <div className="relative flex min-h-screen flex-col">
+          <WebNavbar
+            title="{{projectName}}"
+            navigation={navigation}
+            showSearch={true}
+            showThemeSelector={true}
+            showUserMenu={true}
+          />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </ThemeProvider>
+  );
+}

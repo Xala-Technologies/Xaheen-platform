@@ -235,10 +235,26 @@ export class AppTemplateRegistry {
 		variables: Record<string, any>,
 	): string {
 		let result = content;
+		
+		// Remove Handlebars comments
+		result = result.replace(/{{!--[\s\S]*?--}}/g, '');
+		
+		// Handle simple conditionals (default to true for typescript)
+		result = result.replace(/{{#if\s+typescript}}([\s\S]*?){{\/if}}/g, '$1');
+		result = result.replace(/{{#unless\s+typescript}}([\s\S]*?){{\/unless}}/g, '');
+		
+		// Handle else blocks
+		result = result.replace(/{{#if\s+\w+}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g, '$1');
+		
+		// Replace variables
 		for (const [key, value] of Object.entries(variables)) {
 			const regex = new RegExp(`{{${key}}}`, "g");
 			result = result.replace(regex, String(value));
 		}
+		
+		// Clean up any remaining Handlebars syntax
+		result = result.replace(/{{[^}]+}}/g, '');
+		
 		return result;
 	}
 

@@ -276,6 +276,8 @@ export default class ProjectDomain {
 			packageManager: responses.packageManager
 		});
 
+		console.log("DEBUG: Raw responses object:", JSON.stringify(responses, null, 2));
+
 		const result = {
 			framework: responses.framework as string,
 			platform: responses.framework as string, // Use framework name directly for design.platform
@@ -470,6 +472,8 @@ This is a monorepo project created with Xaheen CLI v5.0.0.
 				features: ["dashboard", "navbar"],
 				framework: config.framework,
 				packageManager: config.packageManager,
+				typescript: true,
+				projectName: projectName,
 			},
 		);
 	}

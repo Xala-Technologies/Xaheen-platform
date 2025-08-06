@@ -1,0 +1,69 @@
+{{!-- Template: layout.tsx.hbs --}}
+{{!-- Framework: nextjs --}}
+{{!-- Type: layout --}}
+{{!-- Uses Xaheen Design System components --}}
+{{#if typescript}}'use client';{{/if}}
+
+import React from 'react';
+import { WebNavbar, ThemeProvider } from '@xaheen/design-system';
+import './globals.css';
+
+{{#if typescript}}
+export interface RootLayoutProps {
+  readonly children: React.ReactNode;
+}
+{{/if}}
+
+export default function RootLayout({ children }: RootLayoutProps){{#if typescript}}: JSX.Element{{/if}} {
+  const navigation = [
+    {
+      label: 'Home',
+      href: '/'
+    },
+    {
+      label: 'Features',
+      items: [
+        {
+          label: 'Dashboard',
+          href: '/dashboard',
+          description: 'View your analytics and metrics'
+        },
+        {
+          label: 'Settings',
+          href: '/settings',
+          description: 'Manage your account settings'
+        }
+      ]
+    },
+    {
+      label: 'About',
+      href: '/about'
+    }
+  ];
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="relative flex min-h-screen flex-col">
+            <WebNavbar
+              title="{{projectName}}"
+              navigation={navigation}
+              showSearch={true}
+              showThemeSelector={true}
+              showUserMenu={true}
+            />
+            <main className="flex-1">
+              {children}
+            </main>
+          </div>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}

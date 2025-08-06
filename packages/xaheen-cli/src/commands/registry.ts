@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { ConfigurationService } from '../services/configuration.service';
 import { logger } from '../utils/logger';
 import { handleError } from '../utils/error-handler';
+import { getRegistryUrl, REGISTRY_ENDPOINTS } from '../config/registry.config';
 
 // Registry item schema
 const RegistryItemSchema = z.object({
@@ -50,11 +51,12 @@ type RegistryItem = z.infer<typeof RegistryItemSchema>;
 
 export class RegistryCommand {
   private configService: ConfigurationService;
-  private registryUrl: string = 'https://xaheen.io/registry';
+  private registryUrl: string;
   private localRegistryPath: string = '';
 
   constructor() {
     this.configService = new ConfigurationService();
+    this.registryUrl = getRegistryUrl();
   }
 
   public getCommand(): Command {

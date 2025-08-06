@@ -1,0 +1,80 @@
+{{!-- Template: HomePage.tsx.hbs --}}
+{{!-- Framework: react --}}
+{{!-- Type: page --}}
+{{!-- Uses Xaheen Design System components --}}
+import React from 'react';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Container, Grid } from '@xaheen/design-system';
+
+{{#if typescript}}
+export default function HomePage(): JSX.Element {
+{{else}}
+export default function HomePage() {
+{{/if}}
+  return (
+    <Container className="py-8">
+      <div className="mx-auto max-w-6xl space-y-8">
+        {/* Hero Section */}
+        <section className="text-center space-y-4">
+          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+            Welcome to {{projectName}}
+          </h1>
+          <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+            Built with React, Vite, and the Xaheen Design System. Fast, modern, and production-ready.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button size="lg">Get Started</Button>
+            <Button size="lg" variant="outline">Documentation</Button>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">Why Choose {{projectName}}?</h2>
+          <Grid cols={{ default: 1, md: 2, lg: 3 }} gap={6}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Lightning Fast</CardTitle>
+                <CardDescription>
+                  Powered by Vite for instant HMR and optimized builds
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Experience near-instant hot module replacement and blazing fast build times.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Type Safe</CardTitle>
+                <CardDescription>
+                  Full TypeScript support with strict type checking
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Catch errors at compile time and enjoy better IDE support and refactoring.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Accessible</CardTitle>
+                <CardDescription>
+                  WCAG AAA compliant components out of the box
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Built with accessibility in mind, supporting screen readers and keyboard navigation.
+                </p>
+              </CardContent>
+            </Card>
+          </Grid>
+        </section>
+      </div>
+    </Container>
+  );
+}
