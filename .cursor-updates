@@ -1,48 +1,43 @@
-# ✅ **Cursor Updates - v6.5.0 Release Complete**
+# Storybook Configuration Fix - January 2025
 
-## **🎯 What We Achieved**
+## Issues Resolved
 
-Successfully released **xala-mcp v6.5.0** with complete architecture compliance overhaul.
+### 1. **Missing Addon Dependencies**
+- **Problem**: `@storybook/addon-essentials` was missing from package.json
+- **Solution**: Added the missing dependency to devDependencies
 
-### **Major Accomplishments**
+### 2. **Version Compatibility Issues**
+- **Problem**: Storybook core was on v9.1.1 but addons were mixed versions, creating incompatibilities
+- **Solution**: Standardized all Storybook packages to v8.6.14 for consistency:
+  - `storybook`: 8.6.14
+  - `@storybook/react`: 8.6.14 
+  - `@storybook/react-vite`: ^8.6.14
+  - `@storybook/addon-*`: ^8.6.14
+  - `eslint-plugin-storybook`: ^0.8.0 (compatible version)
 
-- **Fixed init_project tool** to follow documented architecture instead of custom workarounds
-- **Integrated UI Compliance Engine** with automatic violation scanning and fixing  
-- **Applied Service Registry patterns** using existing bundle system and BundleResolver
-- **Added three operational modes** (analyze, dry-run, enhance) for flexible usage
-- **Comprehensive validation** with xala-ui-mcp server ensuring all 10 tools work correctly
+### 3. **Code Conflicts and Naming Issues**
+- **Problem**: Duplicate "Card" declaration in Calendar.stories.tsx (import vs export)
+- **Solution**: Renamed story export from `Card` to `CardVariant` to avoid naming conflict
 
-### **Technical Improvements**
+### 4. **Duplicate Exports**
+- **Problem**: `useTooltip` and `useAccessibleTooltip` exported twice in tooltip.tsx
+- **Solution**: Removed duplicate exports from the export object, keeping individual function exports
 
-- **Zero custom workarounds** - everything follows established patterns
-- **Architecture-compliant implementation** reading from docs/architecture/
-- **Full TypeScript compliance** with zero build errors
-- **Proper error handling** for workspace dependencies
-- **Enhanced documentation** with validation results
+### 5. **Missing Import Specifier**
+- **Problem**: Import from `'storybook/viewport'` not found 
+- **Solution**: Updated to correct import: `'@storybook/addon-viewport'`
 
-### **Publishing Success**
+### 6. **CSS Import Order Violation**
+- **Problem**: @import statements placed after @tailwind directives in globals.css
+- **Solution**: Moved @import statements to the top of the file (CSS specification requirement)
 
-- **Package published** to GitHub packages as @xala-technologies/xala-mcp@6.5.0
-- **Git tagged** and pushed to Xaheen-platform repository
-- **Version updated** across all files (package.json, README, CHANGELOG, server files)
-- **Documentation created** with comprehensive release summary
+## Final Status
+✅ **Storybook v8.6.14 running successfully on http://localhost:6006**  
+✅ **All build errors resolved**  
+✅ **Version compatibility established**  
+✅ **Professional design system showcase ready**
 
-## **🔧 Build & Deploy Status**
-
-- ✅ **TypeScript Build**: Successful compilation with zero errors
-- ✅ **Package Creation**: 750.9 kB tarball with 385 files
-- ✅ **GitHub Packages**: Published successfully
-- ✅ **Git Repository**: Committed, tagged, and pushed
-- ✅ **Version Consistency**: All references updated to 6.5.0
-
-## **🧪 Testing Completed**
-
-- ✅ **MCP Server**: All 10 tools functional and accessible
-- ✅ **Analysis Mode**: Correctly detects project structure and dependencies
-- ✅ **Dry-Run Mode**: Shows planned UI compliance and service architecture changes  
-- ✅ **Enhancement Mode**: Applies documented rules and reports results
-- ✅ **Integration**: Validated with comprehensive xala-ui-mcp server testing
-
-## **📋 Next Actions**
-
-The v6.5.0 release is complete and ready for production use. The init_project tool now properly follows documented architecture and applies real compliance rules instead of generating custom code.
+## Next Steps
+- Storybook is now ready for component documentation and testing
+- All stories should load without errors
+- Design system components can be viewed and interacted with in isolation

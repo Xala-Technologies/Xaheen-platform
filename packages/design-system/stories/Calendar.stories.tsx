@@ -106,7 +106,7 @@ export const Minimal: Story = {
   }
 };
 
-export const Card: Story = {
+export const CardVariant: Story = {
   args: {
     variant: 'card',
     locale: 'nb-NO',

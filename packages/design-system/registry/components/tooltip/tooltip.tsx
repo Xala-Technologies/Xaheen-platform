@@ -385,8 +385,6 @@ export {
   RichTooltip,
   KeyboardTooltip,
   tooltipContentVariants,
-  useTooltip,
-  useAccessibleTooltip,
 };
 
 export type { 

@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
-import { INITIAL_VIEWPORTS } from 'storybook/viewport';
+import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
 import { withTheme } from './ThemeDecorator';
 import './styles.css';
 
