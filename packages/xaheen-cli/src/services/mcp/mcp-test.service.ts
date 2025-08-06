@@ -11,7 +11,7 @@ import { z } from "zod";
 import { performance } from "perf_hooks";
 import { logger } from "../../utils/logger";
 import type { MCPConfig } from "./mcp-config.service";
-import type { XalaMCPClient } from "@xala-technologies/xala-mcp";
+// import type { XalaMCPClient } from "@xala-technologies/xala-mcp"; // Disabled for now
 
 // Test configuration schema
 const TestConfigSchema = z.object({
@@ -117,7 +117,7 @@ export interface MCPTestReport {
 }
 
 export interface MCPTestServiceOptions {
-	readonly mcpClient?: XalaMCPClient;
+	readonly mcpClient?: any; // XalaMCPClient disabled for now
 	readonly debug?: boolean;
 	readonly dryRun?: boolean;
 }
@@ -127,7 +127,7 @@ export interface MCPTestServiceOptions {
  */
 export class MCPTestService {
 	private readonly options: MCPTestServiceOptions;
-	private mcpClient: XalaMCPClient | null = null;
+	private mcpClient: any | null = null; // XalaMCPClient disabled for now
 	private testResults: TestResult[] = [];
 	private startTime: number = 0;
 
@@ -149,7 +149,7 @@ export class MCPTestService {
 	async runTests(
 		mcpConfig: MCPConfig,
 		testConfig: MCPTestConfig,
-		mcpClient?: XalaMCPClient
+		mcpClient?: any // XalaMCPClient disabled for now
 	): Promise<MCPTestReport> {
 		try {
 			this.startTime = performance.now();
