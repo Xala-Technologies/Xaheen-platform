@@ -34,7 +34,10 @@
     "extract-i18n": "ng extract-i18n",
     "analyze": "ng build --stats-json && npx webpack-bundle-analyzer dist/stats.json",
     "accessibility:test": "{{#if accessibility}}axe-core{{/if}}",
-    "accessibility:audit": "{{#if accessibility}}lighthouse --only=accessibility{{/if}}"
+    "accessibility:audit": "{{#if accessibility}}lighthouse --only=accessibility{{/if}}",
+    "ui:add": "xaheen registry add",
+    "ui:list": "xaheen registry list",
+    "ui:search": "xaheen registry search"
   },
   "private": true,
   "dependencies": {

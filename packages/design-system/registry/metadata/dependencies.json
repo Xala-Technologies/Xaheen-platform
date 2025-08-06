@@ -1,0 +1,292 @@
+{
+  "components": {
+    "button": {
+      "type": "atom",
+      "dependencies": [],
+      "peerDependencies": ["react"],
+      "exports": ["Button", "ButtonProps"],
+      "bundle": {
+        "gzipped": "2.1kb",
+        "dependencies_included": []
+      },
+      "api": {
+        "props": ["variant", "size", "disabled", "children", "onClick"],
+        "variants": ["primary", "secondary", "outline", "ghost", "destructive"],
+        "sizes": ["xs", "sm", "md", "lg", "xl"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true
+    },
+    
+    "input": {
+      "type": "atom", 
+      "dependencies": [],
+      "peerDependencies": ["react"],
+      "exports": ["Input", "InputProps"],
+      "bundle": {
+        "gzipped": "1.8kb",
+        "dependencies_included": []
+      },
+      "api": {
+        "props": ["type", "placeholder", "value", "onChange", "disabled", "error"],
+        "types": ["text", "email", "password", "search", "number"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true
+    },
+
+    "card": {
+      "type": "atom",
+      "dependencies": [],
+      "peerDependencies": ["react"],
+      "exports": ["Card", "CardHeader", "CardContent", "CardFooter", "CardProps"],
+      "bundle": {
+        "gzipped": "1.5kb",
+        "dependencies_included": []
+      },
+      "api": {
+        "props": ["variant", "shadow", "padding", "children"],
+        "variants": ["default", "elevated", "outlined"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true
+    },
+
+    "loading-spinner": {
+      "type": "atom",
+      "dependencies": [],
+      "peerDependencies": ["react"],
+      "exports": ["LoadingSpinner", "LoadingSpinnerProps"],
+      "bundle": {
+        "gzipped": "0.8kb",
+        "dependencies_included": []
+      },
+      "api": {
+        "props": ["size", "color", "speed"],
+        "sizes": ["xs", "sm", "md", "lg", "xl"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true
+    },
+
+    "theme-switcher": {
+      "type": "molecule",
+      "dependencies": ["button"],
+      "peerDependencies": ["react"],
+      "exports": ["ThemeSwitcher", "ThemeSwitcherProps"],
+      "bundle": {
+        "gzipped": "3.2kb", 
+        "dependencies_included": ["button"]
+      },
+      "api": {
+        "props": ["theme", "onThemeChange", "variant", "size"],
+        "themes": ["light", "dark", "system"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true
+    }
+  },
+
+  "blocks": {
+    "global-search": {
+      "type": "organism",
+      "dependencies": ["button", "input"],
+      "peerDependencies": ["react"],
+      "exports": [
+        "GlobalSearch", 
+        "GlobalSearchProps", 
+        "GlobalSearchTexts",
+        "GlobalSearchCallbacks",
+        "GlobalSearchState",
+        "SearchResult"
+      ],
+      "bundle": {
+        "gzipped": "12.4kb",
+        "dependencies_included": ["button", "input", "utils"]
+      },
+      "api": {
+        "props": ["texts", "callbacks", "state", "showFilters", "enableAI"],
+        "callbacks": ["onSearch", "onResultClick", "onAnnounce"],
+        "state": ["query", "results", "loading", "selectedIndex"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": false,
+      "ai_features": ["suggestions", "semantic_search", "filters"],
+      "localization": "props_based"
+    },
+
+    "chat-interface": {
+      "type": "organism", 
+      "dependencies": ["button", "input"],
+      "peerDependencies": ["react"],
+      "exports": [
+        "ChatInterface",
+        "ChatInterfaceProps",
+        "ChatInterfaceTexts", 
+        "ChatInterfaceCallbacks",
+        "ChatMessage",
+        "ChatUser"
+      ],
+      "bundle": {
+        "gzipped": "18.7kb",
+        "dependencies_included": ["button", "input", "utils"]
+      },
+      "api": {
+        "props": ["messages", "currentUser", "texts", "callbacks", "enableAttachments"],
+        "callbacks": ["onSendMessage", "onEditMessage", "onDeleteMessage", "onReaction"],
+        "features": ["attachments", "reactions", "typing_indicators", "read_receipts"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": false,
+      "real_time": true,
+      "localization": "props_based"
+    },
+
+    "chatbot": {
+      "type": "organism",
+      "dependencies": ["button", "input", "card"],
+      "peerDependencies": ["react"],
+      "exports": ["Chatbot", "ChatbotProps", "ChatbotMessage", "ChatbotAction"],
+      "bundle": {
+        "gzipped": "15.3kb", 
+        "dependencies_included": ["button", "input", "card", "utils"]
+      },
+      "api": {
+        "props": ["onSendMessage", "suggestions", "welcomeMessage", "minimizable"],
+        "callbacks": ["onSendMessage", "onActionClick", "onFeedback"],
+        "features": ["ai_suggestions", "rich_responses", "minimizable", "feedback"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": false,
+      "ai_powered": true
+    },
+
+    "sidebar": {
+      "type": "organism",
+      "dependencies": ["button", "input"],
+      "peerDependencies": ["react"], 
+      "exports": ["Sidebar", "SidebarProps", "SidebarItem", "SidebarSection", "DashboardSidebar"],
+      "bundle": {
+        "gzipped": "11.8kb",
+        "dependencies_included": ["button", "input", "utils"]
+      },
+      "api": {
+        "props": ["sections", "collapsible", "showSearch", "variant"],
+        "callbacks": ["onItemClick", "onSearch"],
+        "features": ["collapsible", "search", "keyboard_navigation", "nsm_classification"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": false,
+      "responsive": true
+    },
+
+    "tabs": {
+      "type": "organism",
+      "dependencies": [],
+      "peerDependencies": ["react"],
+      "exports": ["Tabs", "TabsProps", "Tab"],
+      "bundle": {
+        "gzipped": "6.2kb",
+        "dependencies_included": ["utils"]
+      },
+      "api": {
+        "props": ["tabs", "defaultTab", "variant", "orientation"],
+        "callbacks": ["onChange"],
+        "features": ["keyboard_navigation", "lazy_loading", "animations"]
+      },
+      "v0_compatible": true,
+      "copy_paste_ready": true,
+      "accessibility": "wcag_aaa"
+    }
+  },
+
+  "tokens": {
+    "colors": {
+      "type": "design_token",
+      "dependencies": [],
+      "exports": ["COLOR_TOKENS", "ColorTokens"],
+      "bundle": {
+        "gzipped": "0.5kb"
+      },
+      "css_variables": true,
+      "theming": ["light", "dark", "high_contrast"]
+    },
+
+    "spacing": {
+      "type": "design_token",
+      "dependencies": [],
+      "exports": ["SPACING_TOKENS", "SpacingTokens"],
+      "bundle": {
+        "gzipped": "0.3kb"
+      },
+      "css_variables": true,
+      "responsive": true
+    },
+
+    "typography": {
+      "type": "design_token", 
+      "dependencies": [],
+      "exports": ["TYPOGRAPHY_TOKENS", "TypographyTokens"],
+      "bundle": {
+        "gzipped": "0.4kb"
+      },
+      "css_variables": true,
+      "font_loading": "optimized"
+    },
+
+    "shadows": {
+      "type": "design_token",
+      "dependencies": [],
+      "exports": ["SHADOW_TOKENS", "ShadowTokens"], 
+      "bundle": {
+        "gzipped": "0.2kb"
+      },
+      "css_variables": true,
+      "elevation_system": true
+    }
+  },
+
+  "animations": {
+    "interactions": {
+      "type": "animation_system",
+      "dependencies": [],
+      "exports": ["INTERACTION_ANIMATIONS", "InteractionAnimations"],
+      "bundle": {
+        "gzipped": "1.1kb"
+      },
+      "css_animations": true,
+      "reduced_motion_support": true,
+      "performance_optimized": true
+    }
+  },
+
+  "utilities": {
+    "cn": {
+      "type": "utility",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "exports": ["cn"],
+      "bundle": {
+        "gzipped": "2.3kb",
+        "dependencies_included": ["clsx", "tailwind-merge"]
+      },
+      "tree_shakeable": true
+    }
+  },
+
+  "registry_metadata": {
+    "total_components": 12,
+    "total_tokens": 4,
+    "total_animations": 1,
+    "bundle_sizes": {
+      "full_registry": "67.2kb",
+      "minimal_app": "8.4kb",
+      "dashboard_app": "34.1kb"
+    },
+    "v0_ready_components": 12,
+    "copy_paste_ready": 6,
+    "ai_powered_components": 2,
+    "localization": "props_based",
+    "accessibility": "wcag_aaa",
+    "typescript_support": "full"
+  }
+}

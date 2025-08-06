@@ -58,8 +58,8 @@ export const useResponsive = (config: ResponsiveConfig = {}): ResponsiveResult =
   } = config;
 
   // Initialize with SSR-safe values
-  const [width, setWidth] = useState(ssr ? breakpoints[initialBreakpoint] : 0);
-  const [height, setHeight] = useState(ssr ? 900 : 0); // Reasonable default height
+  const [width, setWidth] = useState<number>(ssr ? breakpoints[initialBreakpoint] : 0);
+  const [height, setHeight] = useState<number>(ssr ? 900 : 0); // Reasonable default height
   const [isTouch, setIsTouch] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 

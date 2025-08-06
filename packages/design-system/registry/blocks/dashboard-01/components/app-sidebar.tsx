@@ -5,9 +5,11 @@
  */
 
 import React from 'react';
-import { cn } from '@/utils/cn';
-import { Button } from '@/components/button';
-import { useAccessibility } from '@/hooks/use-accessibility';
+import { cn } from '../../../lib/utils';
+import { Button } from '../../../components/button/button';
+import { LABELS } from '../../../lib/constants';
+// TODO: Replace with context/provider pattern
+// import { useAccessibility } from '@/hooks/use-accessibility';
 
 interface NavItem {
   readonly id: string;
@@ -76,7 +78,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onCollapsedChange 
 }) => {
   const [currentPath, setCurrentPath] = React.useState('/dashboard');
-  const [_, { getAriaLabel }] = useAccessibility();
+  // TODO: Replace with proper context/provider
+  const getAriaLabel = (key: string) => LABELS[key as keyof typeof LABELS] || key;
 
   return (
     <aside

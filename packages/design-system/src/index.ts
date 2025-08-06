@@ -2,35 +2,13 @@
  * Xaheen Design System - Main Export File
  * Professional design system with WCAG AAA compliance
  * Norwegian NSM security standards and multi-platform support
+ * 
+ * Registry Architecture: All components, tokens, animations, and utilities
+ * are managed through the registry as the single source of truth
  */
 
-// Design Tokens
-export * from './tokens/colors';
-export * from './tokens/spacing';
-export * from './tokens/typography';
-export * from './tokens/shadows';
-export * from './tokens/themes';
-
-// Complete Token Export
-export * from './tokens';
-
-// Core Components - All components are managed through the registry
-// The registry is the single source of truth for all components
-export * from '../registry/components/button/button';
-export * from '../registry/components/input/input';
-export * from '../registry/components/card/card';
-export * from '../registry/components/loading-spinner/loading-spinner';
-export * from '../registry/components/theme-switcher/theme-switcher';
-
-// Hooks - Managed through registry
-export * from '../registry/hooks/use-responsive';
-export * from '../registry/hooks/use-accessibility';
-
-// Utilities - Managed through registry
-export * from '../registry/utils/cn';
-
-// Animations
-export * from './animations/interactions';
+// Registry - Single Source of Truth
+export * from '../registry';
 
 // Types
 export type NSMClassification = 'OPEN' | 'RESTRICTED' | 'CONFIDENTIAL' | 'SECRET';

@@ -1,6 +1,13 @@
-# Xaheen Design System
+# 🧱 Xaheen Design System
 
-A professional, accessible design system built for the Xaheen CLI ecosystem with WCAG AAA compliance, Norwegian NSM security standards, and multi-platform support.
+A **LEGO block architecture** design system with 100% pure components, props-based localization, and perfect AI tool integration. Built for professional applications with WCAG AAA compliance and Norwegian standards.
+
+## 📚 **[Complete Documentation →](./docs/README.md)**
+
+All documentation has been organized in the `docs/` folder:
+- **Architecture Guides**: LEGO block principles, registry system
+- **Implementation Guides**: Usage patterns, integration examples  
+- **API Reference**: Component interfaces, token system
 
 ## 🚀 Features
 

@@ -10,7 +10,7 @@
   "_compliance_rules": {
     "mandatory": [
       "NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages",
-      "ONLY semantic components from @xala-technologies/ui-system",
+      "ONLY semantic components from @xaheen/design-system",
       "NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)",
       "MANDATORY design token usage for all colors, spacing, typography",
       "Enhanced 8pt Grid System - all spacing in 8px increments",
@@ -37,7 +37,10 @@
     "storybook": "{{#if storybook}}storybook dev -p 6006{{/if}}",
     "build-storybook": "{{#if storybook}}storybook build{{/if}}",
     "accessibility:test": "{{#if accessibility}}axe-core{{/if}}",
-    "accessibility:audit": "{{#if accessibility}}lighthouse --only=accessibility{{/if}}"
+    "accessibility:audit": "{{#if accessibility}}lighthouse --only=accessibility{{/if}}",
+    "ui:add": "xaheen registry add",
+    "ui:list": "xaheen registry list",
+    "ui:search": "xaheen registry search"
   },
   "dependencies": {
     {{#if framework}}
@@ -63,9 +66,11 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     
-    {{! Xala UI System - Main dependency (GitHub packages) }}
+    {{! Xaheen Design System - Main dependency (local registry) }}
     {{#if (eq ui "xala")}}
-    "@xala-technologies/ui-system": "github:Xala-Technologies/ui-system#v5.0.0",
+    "@xaheen/design-system": "workspace:*",
+    {{else}}
+    "@xaheen/design-system": "^1.0.0",
     {{/if}}
     
     {{! Authentication }}

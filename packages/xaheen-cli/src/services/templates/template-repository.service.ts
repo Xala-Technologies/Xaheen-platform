@@ -93,7 +93,7 @@ export const TemplateMetadataSchema = z.object({
     wcagLevel: z.enum(["A", "AA", "AAA"]).default("AA"),
     gdprCompliant: z.boolean().default(true),
     nsmApproved: z.boolean().default(false),
-    dataRetention: z.number().int().min(30).default(365)
+    dataRetentionDays: z.number().int().min(30).default(365)
   }).default({}),
   files: z.array(z.object({
     path: z.string(),
@@ -507,7 +507,7 @@ export class TemplateRepositoryService extends EventEmitter {
             operationType: "template_render",
             startTime: new Date(startTime),
             endTime: new Date(),
-            success: true,
+            status: "completed" as const,
             metadata: {
               repositoryName,
               commitMessage,
@@ -517,10 +517,10 @@ export class TemplateRepositoryService extends EventEmitter {
             }
           },
           complianceMetadata: {
-            gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+            gdprCompliant: config.norwegianCompliance.enableGDPRCompliance,
             nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
-            dataRetention: config.norwegianCompliance.retentionPeriod,
-            auditRequired: config.norwegianCompliance.auditTrail
+            dataRetentionDays: config.norwegianCompliance.retentionPeriod,
+            auditTrailRequired: config.norwegianCompliance.auditTrail
           },
           tags: ["git-operations", "push"],
           structuredData: {
@@ -560,7 +560,7 @@ export class TemplateRepositoryService extends EventEmitter {
             operationType: "template_render",
             startTime: new Date(startTime),
             endTime: new Date(),
-            success: false,
+            status: "failed" as const,
             error: error instanceof Error ? error.message : String(error),
             metadata: { repositoryName, commitMessage }
           },
@@ -631,7 +631,7 @@ export class TemplateRepositoryService extends EventEmitter {
             operationType: "template_render",
             startTime: new Date(startTime),
             endTime: new Date(),
-            success: true,
+            status: "completed" as const,
             metadata: {
               repositoryName,
               version,
@@ -640,10 +640,10 @@ export class TemplateRepositoryService extends EventEmitter {
             }
           },
           complianceMetadata: {
-            gdprApplicable: config.norwegianCompliance.enableGDPRCompliance,
+            gdprCompliant: config.norwegianCompliance.enableGDPRCompliance,
             nsmClassification: config.norwegianCompliance.dataClassification as NSMClassification,
-            dataRetention: config.norwegianCompliance.retentionPeriod,
-            auditRequired: config.norwegianCompliance.auditTrail
+            dataRetentionDays: config.norwegianCompliance.retentionPeriod,
+            auditTrailRequired: config.norwegianCompliance.auditTrail
           },
           tags: ["version-management", "tag"],
           structuredData: {
@@ -684,7 +684,7 @@ export class TemplateRepositoryService extends EventEmitter {
             operationType: "template_render",
             startTime: new Date(startTime),
             endTime: new Date(),
-            success: false,
+            status: "failed" as const,
             error: error instanceof Error ? error.message : String(error),
             metadata: { repositoryName, version }
           },

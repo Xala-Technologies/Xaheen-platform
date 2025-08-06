@@ -5,8 +5,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/button';
-import { cn } from '@/utils/cn';
+import { Button } from '../button/button';
+import { cn } from '../../lib/utils';
 
 // Icon components (replace with your icon library)
 const SunIcon = () => (

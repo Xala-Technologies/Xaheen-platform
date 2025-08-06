@@ -196,7 +196,7 @@ export class ContextAwareGenerator {
     const result = await templateComposer.composeTemplate(
       appliedPatterns.template,
       appliedPatterns.slots,
-      pattern.recommendedMixins,
+      [...pattern.recommendedMixins], // Convert readonly array to mutable
       compositionContext
     );
 

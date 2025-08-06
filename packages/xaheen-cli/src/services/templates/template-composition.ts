@@ -481,7 +481,7 @@ export class TemplateComposer {
    */
   private initializeHelpers(): void {
     // Conditional helper
-    this.handlebars.registerHelper('if_eq', function(a, b, options) {
+    this.handlebars.registerHelper('if_eq', function(this: any, a: any, b: any, options: any) {
       return a === b ? options.fn(this) : options.inverse(this);
     });
 
@@ -491,13 +491,14 @@ export class TemplateComposer {
     });
 
     // Accessibility helper
+    const SafeString = this.handlebars.SafeString;
     this.handlebars.registerHelper('aria_label', function(text: string) {
-      return new this.handlebars.SafeString(`aria-label="${text}"`);
+      return new SafeString(`aria-label="${text}"`);
     });
 
-    // Platform-specific helper
-    this.handlebars.registerHelper('platform_specific', function(platform: string, content: string, options) {
-      return platform === this.platform ? content : '';
+    // Platform-specific helper (simplified - platform context needed from caller)
+    this.handlebars.registerHelper('platform_specific', function(platform: string, content: string, targetPlatform: string) {
+      return platform === targetPlatform ? content : '';
     });
 
     consola.debug('Initialized Handlebars helpers');

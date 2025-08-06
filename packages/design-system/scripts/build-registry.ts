@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REGISTRY_PATH = join(__dirname, '../registry');
+const REGISTRY_METADATA_PATH = join(__dirname, '../registry/metadata');
 const OUTPUT_PATH = join(__dirname, '../dist/registry');
 const PUBLIC_PATH = join(__dirname, '../public/r');
 
@@ -53,7 +54,7 @@ async function buildRegistry() {
 
   try {
     // Read registry.json
-    const registryPath = join(REGISTRY_PATH, 'registry.json');
+    const registryPath = join(REGISTRY_METADATA_PATH, 'registry.json');
     const registryContent = readFileSync(registryPath, 'utf-8');
     const registry: Registry = JSON.parse(registryContent);
 

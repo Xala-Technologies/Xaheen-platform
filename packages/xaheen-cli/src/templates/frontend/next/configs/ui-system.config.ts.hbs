@@ -11,7 +11,7 @@
  * 
  * MANDATORY COMPLIANCE RULES:
  * ❌ NO raw HTML elements (div, span, p, h1-h6, button, input, etc.) in pages
- * ✅ ONLY semantic components from @xala-technologies/ui-system
+ * ✅ ONLY semantic components from @xaheen/design-system
  * ❌ NO hardcoded styling (no style=placeholder, no arbitrary Tailwind values)
  * ✅ MANDATORY design token usage for all colors, spacing, typography
  * ✅ Enhanced 8pt Grid System - all spacing in 8px increments
@@ -33,9 +33,9 @@
  */
 
 {{#if typescript}}
-import type { UISystemConfig, ThemeConfig, TokenConfig } from '@xala-technologies/ui-system';
+import type { UISystemConfig, ThemeConfig, TokenConfig } from '@xaheen/design-system';
 {{else}}
-import { UISystemConfig, ThemeConfig, TokenConfig } from '@xala-technologies/ui-system';
+import { UISystemConfig, ThemeConfig, TokenConfig } from '@xaheen/design-system';
 {{/if}}
 
 /**
@@ -418,7 +418,7 @@ export default uiSystemConfig;
 // Example usage:
 /*
 // In your app root
-import { UISystemProvider } from '@xala-technologies/ui-system';
+import { UISystemProvider } from '@xaheen/design-system';
 import { uiSystemConfig } from './config/ui-system.config';
 
 function App() {
@@ -430,7 +430,7 @@ function App() {
 }
 
 // Using tokens in components
-import { useTokens } from '@xala-technologies/ui-system';
+import { useTokens } from '@xaheen/design-system';
 
 function MyComponent() {
   const { colors, spacing, typography } = useTokens();

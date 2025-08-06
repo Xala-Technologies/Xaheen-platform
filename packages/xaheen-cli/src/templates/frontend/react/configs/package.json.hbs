@@ -11,14 +11,16 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "ui:add": "xaheen registry add",
+    "ui:list": "xaheen registry list",
+    "ui:search": "xaheen registry search"
   },
   "dependencies": {
     {{#if (eq ui "xala")}}
-    "@xala-technologies/ui-system": "^6.0.0",
-    "@xala-technologies/design-tokens": "^5.0.0",
-    "@xala-technologies/compliance": "^2.0.0",
+    "@xaheen/design-system": "workspace:*",
     {{else}}
+    "@xaheen/design-system": "^1.0.0",
     "radix-ui": "^1.4.2",
     "lucide-react": "^0.511.0",
     "sonner": "^2.0.3",

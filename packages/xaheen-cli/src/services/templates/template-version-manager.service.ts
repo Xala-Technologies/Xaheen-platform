@@ -304,18 +304,22 @@ export class TemplateVersionManagerService extends EventEmitter {
         "Version created successfully",
         {
           executionContext: {
-            operationId,
-            operation: "CREATE_VERSION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: user.id,
+            timestamp: new Date(),
+            command: "CREATE_VERSION",
+            arguments: [templateId, version],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CREATE_VERSION",
-            userId: user.id,
-            templateId,
-            version,
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
             metadata: {
+              templateId,
+              version,
               breaking: metadata.breaking,
               prerelease: versionHistory.prerelease,
               dependencyCount: versionHistory.dependencies.length
@@ -353,18 +357,24 @@ export class TemplateVersionManagerService extends EventEmitter {
         `Failed to create version: ${error instanceof Error ? error.message : String(error)}`,
         {
           executionContext: {
-            operationId,
-            operation: "CREATE_VERSION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: user.id,
+            timestamp: new Date(),
+            command: "CREATE_VERSION",
+            arguments: [templateId, version],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CREATE_VERSION",
-            userId: user.id,
-            templateId,
-            version,
-            error: error instanceof Error ? error.message : String(error)
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+            metadata: {
+              templateId,
+              version
+            }
           },
           structuredData: {}
         }
@@ -483,20 +493,23 @@ export class TemplateVersionManagerService extends EventEmitter {
         "Version resolved successfully",
         {
           executionContext: {
-            operationId,
-            operation: "RESOLVE_VERSION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            timestamp: new Date(),
+            command: "RESOLVE_VERSION",
+            arguments: [templateId, versionConstraint],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "RESOLVE_VERSION",
-            userId: "system",
-            templateId,
-            constraint: versionConstraint,
-            resolved: resolvedVersion,
-            strategy,
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
             metadata: {
+              templateId,
+              constraint: versionConstraint,
+              resolved: resolvedVersion,
+              strategy,
               dependencyCount: resolvedDependencies.length,
               conflictCount: conflicts.length
             }
@@ -514,18 +527,23 @@ export class TemplateVersionManagerService extends EventEmitter {
         `Failed to resolve version: ${error instanceof Error ? error.message : String(error)}`,
         {
           executionContext: {
-            operationId,
-            operation: "RESOLVE_VERSION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            timestamp: new Date(),
+            command: "RESOLVE_VERSION",
+            arguments: [templateId, versionConstraint],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "RESOLVE_VERSION",
-            userId: "system",
-            templateId,
-            constraint: versionConstraint,
-            error: error instanceof Error ? error.message : String(error)
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+            metadata: {
+              templateId,
+              constraint: versionConstraint
+            }
           },
           structuredData: {}
         }
@@ -618,18 +636,22 @@ export class TemplateVersionManagerService extends EventEmitter {
         "Compatibility check completed",
         {
           executionContext: {
-            operationId,
-            operation: "CHECK_COMPATIBILITY",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: "system",
+            timestamp: new Date(),
+            command: "CHECK_COMPATIBILITY",
+            arguments: [templateId, version],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CHECK_COMPATIBILITY",
-            userId: "system",
-            templateId,
-            version,
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
             metadata: {
+              templateId,
+              version,
               compatible,
               issueCount: issues.length,
               warningCount: warnings.length,
@@ -649,18 +671,24 @@ export class TemplateVersionManagerService extends EventEmitter {
         `Failed to check compatibility: ${error instanceof Error ? error.message : String(error)}`,
         {
           executionContext: {
-            operationId,
-            operation: "CHECK_COMPATIBILITY",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: "system",
+            timestamp: new Date(),
+            command: "CHECK_COMPATIBILITY",
+            arguments: [templateId, version],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CHECK_COMPATIBILITY",
-            userId: "system",
-            templateId,
-            version,
-            error: error instanceof Error ? error.message : String(error)
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+            metadata: {
+              templateId,
+              version
+            }
           },
           structuredData: {}
         }
@@ -759,19 +787,23 @@ export class TemplateVersionManagerService extends EventEmitter {
         "Migration created successfully",
         {
           executionContext: {
-            operationId,
-            operation: "CREATE_MIGRATION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: user.id,
+            timestamp: new Date(),
+            command: "CREATE_MIGRATION",
+            arguments: [templateId, fromVersion, toVersion],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CREATE_MIGRATION",
-            userId: user.id,
-            templateId,
-            fromVersion,
-            toVersion,
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "completed",
             metadata: {
+              templateId,
+              fromVersion,
+              toVersion,
               type: migrationType,
               breaking: migration.breaking,
               automated: migration.automated
@@ -809,19 +841,25 @@ export class TemplateVersionManagerService extends EventEmitter {
         `Failed to create migration: ${error instanceof Error ? error.message : String(error)}`,
         {
           executionContext: {
-            operationId,
-            operation: "CREATE_MIGRATION",
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
+            sessionId: operationId,
+            userId: user.id,
+            timestamp: new Date(),
+            command: "CREATE_MIGRATION",
+            arguments: [templateId, fromVersion, toVersion],
+            workingDirectory: process.cwd()
           },
           mcpOperation: {
-            type: "VERSION_MANAGEMENT",
-            subtype: "CREATE_MIGRATION",
-            userId: user.id,
-            templateId,
-            fromVersion,
-            toVersion,
-            error: error instanceof Error ? error.message : String(error)
+            operationId,
+            operationType: "template_render",
+            startTime: new Date(startTime),
+            endTime: new Date(),
+            status: "failed",
+            error: error instanceof Error ? error.message : String(error),
+            metadata: {
+              templateId,
+              fromVersion,
+              toVersion
+            }
           },
           structuredData: {}
         }

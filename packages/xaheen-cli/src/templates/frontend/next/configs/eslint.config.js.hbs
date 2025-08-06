@@ -367,10 +367,10 @@ const xalaUiRules = {
         JSXElement(node) {
           const elementName = node.openingElement.name.name;
           if (!allowedComponents.includes(elementName) && /^[A-Z]/.test(elementName)) {
-            // Check if it's imported from @xala-technologies/ui-system
+            // Check if it's imported from @xaheen/design-system
             const sourceCode = context.getSourceCode();
             const imports = sourceCode.ast.body.filter(node => node.type === 'ImportDeclaration');
-            const xalaImports = imports.find(imp => imp.source.value === '@xala-technologies/ui-system');
+            const xalaImports = imports.find(imp => imp.source.value === '@xaheen/design-system');
             
             if (!xalaImports || !xalaImports.specifiers.some(spec => spec.imported.name === elementName)) {
               context.report({

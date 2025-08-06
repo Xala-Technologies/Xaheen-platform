@@ -77,6 +77,10 @@ export type CLIAction =
 	| "fix-tests"
 	| "norwegian"
 	| "index"
+	// Registry-specific actions
+	| "info"
+	| "build"
+	| "serve"
 	// Documentation-specific actions
 	| "portal"
 	| "onboarding"

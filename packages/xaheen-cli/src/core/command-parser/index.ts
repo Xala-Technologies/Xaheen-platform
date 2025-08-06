@@ -9,6 +9,7 @@ import type {
 import { CLIError } from "../../types/index.js";
 import { logger } from "../../utils/logger.js";
 import { aiGenerateCommand } from "../../commands/ai-generate.js";
+import { RegistryCommandHandler } from "./handlers/RegistryCommandHandler.js";
 
 export class CommandParser {
 	private program: Command;
@@ -16,10 +17,12 @@ export class CommandParser {
 	private legacyMappings: Map<string, CommandRoute> = new Map();
 	private registeredCommands: Set<string> = new Set();
 	private aliasResolver: AliasResolverMiddleware;
+	private registryHandler: RegistryCommandHandler;
 
 	constructor() {
 		this.program = new Command();
 		this.aliasResolver = new AliasResolverMiddleware();
+		this.registryHandler = new RegistryCommandHandler();
 		this.setupProgram();
 		this.setupRoutes();
 		this.setupAliasCommands();
@@ -463,6 +466,44 @@ export class CommandParser {
 				domain: "mcp",
 				action: "plugin-disable",
 				handler: this.handleMCPPluginDisable.bind(this),
+			},
+
+			// Registry domain routes
+			{
+				pattern: "registry add <components...>",
+				domain: "registry",
+				action: "add",
+				handler: this.handleRegistryAdd.bind(this),
+			},
+			{
+				pattern: "registry list",
+				domain: "registry", 
+				action: "list",
+				handler: this.handleRegistryList.bind(this),
+			},
+			{
+				pattern: "registry info <component>",
+				domain: "registry",
+				action: "info", 
+				handler: this.handleRegistryInfo.bind(this),
+			},
+			{
+				pattern: "registry search <query>",
+				domain: "registry",
+				action: "search",
+				handler: this.handleRegistrySearch.bind(this),
+			},
+			{
+				pattern: "registry build",
+				domain: "registry",
+				action: "build",
+				handler: this.handleRegistryBuild.bind(this),
+			},
+			{
+				pattern: "registry serve",
+				domain: "registry",
+				action: "serve",
+				handler: this.handleRegistryServe.bind(this),
 			},
 
 			// Help domain routes
@@ -1958,6 +1999,42 @@ export class CommandParser {
 
 		// Parse and execute the deploy status command
 		await deployCommand.parseAsync(argv.slice(2));
+	}
+
+	// Registry Command Handlers
+	private async handleRegistryAdd(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({
+			...command,
+			arguments: { components: command.target ? [command.target] : [] }
+		});
+	}
+
+	private async handleRegistryList(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({ ...command, action: 'list' });
+	}
+
+	private async handleRegistryInfo(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({
+			...command,
+			action: 'info',
+			arguments: { component: command.target }
+		});
+	}
+
+	private async handleRegistrySearch(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({
+			...command,
+			action: 'search', 
+			arguments: { query: command.target }
+		});
+	}
+
+	private async handleRegistryBuild(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({ ...command, action: 'build' });
+	}
+
+	private async handleRegistryServe(command: CLICommand): Promise<void> {
+		await this.registryHandler.execute({ ...command, action: 'serve' });
 	}
 
 	public async parse(args?: string[]): Promise<void> {

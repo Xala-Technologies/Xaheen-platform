@@ -166,8 +166,8 @@ export class TemplateOrchestrator {
       // 5. Execute template composition with inheritance
       const compositionResult = await templateComposer.composeTemplate(
         migratedTemplate.template.path,
-        request.composition.slots,
-        request.composition.mixins,
+        [...request.composition.slots], // Convert readonly array to mutable
+        [...request.composition.mixins], // Convert readonly array to mutable
         compositionContext
       );
 
@@ -1084,6 +1084,7 @@ interface ${request.componentName}Props {
         },
         {
           type: 'insert',
+          target: 'end', // Add target for insert transformation
           replacement: '  } catch (error) {\n    console.error(`Component error:`, error);\n    return <div className="error">Error rendering component</div>;\n  }'
         }
       ],

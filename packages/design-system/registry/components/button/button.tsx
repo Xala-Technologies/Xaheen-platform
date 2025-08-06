@@ -8,8 +8,7 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from '@radix-ui/react-slot';
-import { cn } from '@/utils/cn';
-import { LoadingSpinner } from '@/components/loading-spinner';
+import { cn } from '../../lib/utils';
 
 const buttonVariants = cva(
   [
@@ -173,10 +172,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <div className="flex items-center gap-2">
-            <LoadingSpinner 
-              size={size === 'md' ? 'sm' : size === 'lg' ? 'md' : 'lg'} 
-              className="text-current" 
-            />
+            <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             {loadingText && (
               <span className="sr-only">
                 {loadingText}

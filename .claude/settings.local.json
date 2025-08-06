@@ -86,7 +86,13 @@
       "Bash(bun publish:*)",
       "WebFetch(domain:ui.shadcn.com)",
       "WebFetch(domain:github.com)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(npm run storybook:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm:*)"
     ],
     "deny": []
   }
